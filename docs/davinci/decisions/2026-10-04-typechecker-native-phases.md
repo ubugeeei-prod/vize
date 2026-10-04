@@ -28,8 +28,9 @@ including the checker count.
 
 The corrected unchanged-main phase lane completed at infrastructure head
 `b364bbfbd767aa0189fc85651a3b22b22a390b81`; its receipt and limits are below.
-Current-main delivery phase evidence is pending the rebased exact-head rerun;
-later post-Stack phase evidence requires another base refresh.
+The actual-main replay completed at head `286687f85a2363cd4b2da628fdddb1ea583cc682`;
+its complete receipt is below. Final delivery-head source/phase CI must still
+qualify queue entry; later post-Stack phase evidence requires another base.
 A local protocol-only discovery
 used an explicitly identified development binary, without a main or speed
 claim: all 15 original/replayed native diagnostic streams, statuses and
@@ -217,6 +218,48 @@ Independent audit script SHA-256 is
 `1cb65eb8bd0f4e5591438d86f96d6be2382cd84ff45d5402835142fadc32e677`;
 its compact JSON receipt SHA-256 is
 `1c4684a84e486fa3690614258fec305a6878e1f00d08fe9745e81d7bb13caa44`.
+
+## Actual-main replay
+
+[Same-slice actual-main receipt](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5976968509).
+
+Head `286687f85a2363cd4b2da628fdddb1ea583cc682`, actual production main
+`6987c523ecd2bee6e8489e2973e4b7499ce25018`, completed
+[run 37179733714](https://github.com/ubugeeei-prod/vize/actions/runs/37179733714)
+with Vize 0.431.0 and the same pinned native 7.0.2 runtime/scheduler protocol.
+[Artifact 11295241244](https://github.com/ubugeeei-prod/vize/actions/runs/37179733714/artifacts/11295241244)
+has digest `sha256:8fc184c6a43131f6b92fd0b02cd13a182f48f06508aa39b900d0c3956afdd89a`;
+top-level JSON SHA-256 is
+`0ad109167c72baf25acac73af31775901bfd14c49ec7d16150f7a219d178b212`.
+This table retains the same instrumentation-only units and limitations.
+
+| Corpus/mode                | Shards | Config | Parse | Bind |   Check |   Total |
+| -------------------------- | -----: | -----: | ----: | ---: | ------: | ------: |
+| shared-barrel500/max       |      1 |      9 |    42 |   15 |     146 |     214 |
+| shared-barrel500/1T        |      1 |      9 |    43 |   15 |     145 |     213 |
+| shared-leaf501-default/max |      1 |      8 |    47 |   19 |     248 |     324 |
+| shared-leaf501-default/1T  |      1 |      8 |    52 |   12 |     255 |     328 |
+| generated500/max           |      7 |    2–4 | 53–86 | 9–30 | 203–224 | 292–331 |
+| generated500/1T            |      1 |      8 |    60 |   13 |   1,031 |   1,123 |
+
+Generated/max reported Check sums to 1,504 ms and Total to 2,195 ms across
+concurrent shards; original instrumented child walls range 306.2–335.8 ms.
+These are work/child observations rather than an end-to-end Vize comparison.
+Startup/program fields remain unknown; the largest reported phase is Check.
+
+Independent actual-main audit exits 0 and preserves the complete input, ordered
+report, raw diagnostic/config/member, virtual byte and public mapping counts
+recorded above. All three archived before/repaired mtime ns strings equal
+`1700000000000000000`; each source body is exactly 94 bytes before/after repair.
+The required-main ancestry and infrastructure-only 12-path delta also pass.
+The sorted 8,901-file archive vector has SHA-256
+`ff89524dfc673c5ff8336a737b2a7cc8a5a489e53c5fa1b4ce939393a65d1ec5`;
+generic independent audit script SHA-256 is
+`789071f24e990b880ab2ab0c4287ce1d92782d50bce56bf4d2e09edbfefeacfc`;
+its new actual-main audit JSON SHA-256 is
+`23ad6f6f2e02fed07222dbcbdfde0e6682131f1ba72f544e1e0e3949a566c9a7`.
+This qualifies the measured head only. The final docs successor must rerun
+source/phase CI; later protected queue and actual merge must be verified.
 
 ## Phase-driven next experiment
 
