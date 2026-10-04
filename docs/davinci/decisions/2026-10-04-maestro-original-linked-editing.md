@@ -80,3 +80,10 @@ other Descriptor/dialect profiles retain genuine refusals. Standard native tag
 DocumentHighlights, shared full-session history reports, all initialization/
 diagnostic/state controls and default product replacement remain unfinished.
 These laws do not close #6883 or promote the complete #3471 history fixture.
+
+The first e7e0f94 source feature builder failed before native runtime on the
+moved refusal loop's module visibility and the digest array's unsupported hex
+formatting trait. The successor preserves the original navigation-only function
+visibility and compares all 32 SHA bytes directly. Native SourceProject/RPC,
+minimal and strict tails were unexecuted for that source; it was never queued.
+Fresh exact-source and protected acceptance is required without a waiver.

@@ -63,9 +63,14 @@ fn original_3471_standard_inner_pair_responses_are_complete_and_dev_oracle_equal
         );
     }
     use sha2::{Digest, Sha256};
+    let digest: [u8; 32] = Sha256::digest(SOURCE.as_bytes()).into();
     assert_eq!(
-        vize_l0::cstr!("{:x}", Sha256::digest(SOURCE.as_bytes())),
-        "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+        digest,
+        [
+            0xa6, 0xb9, 0xb9, 0x8e, 0xde, 0x93, 0xce, 0x6a, 0x05, 0x92, 0x5d, 0xab, 0x00, 0x2d,
+            0xb4, 0x81, 0x52, 0x94, 0x94, 0x41, 0x49, 0x9a, 0x8e, 0x36, 0x2b, 0xef, 0xe2, 0x07,
+            0x8d, 0xe3, 0xb1, 0x35
+        ]
     );
 }
 #[test]

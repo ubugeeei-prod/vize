@@ -1,7 +1,11 @@
 //! Sticky original-worker refusals answer owned queued requests.
 use super::{Command, Control, NavigationRefusal, Receiver};
 
-pub(super) fn refused(receiver: Receiver<Command>, control: &Control, refusal: NavigationRefusal) {
+pub(in crate::source_project::navigation) fn refused(
+    receiver: Receiver<Command>,
+    control: &Control,
+    refusal: NavigationRefusal,
+) {
     while !control.retired() {
         let Ok(command) = receiver.recv() else { break };
         if control.retired() {
