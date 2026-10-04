@@ -39,13 +39,15 @@ establish that the final message contains the requested attribution.
 
 Use `PR_TITLE` with `COMMIT_MESSAGES` for squash merges. Each source change carries
 the relevant reporter's verified public identity as `Co-authored-by`; preserving
-source messages gives the queue an explicit attribution record, including when
-the reporter is also the primary author. GitHub still normalizes a single
-commit's trailer when its email exactly matches the primary author, as observed
-in the first #7721 candidate `2d778ebc`. For that same-author case use the
-reporter's verified public GitHub noreply identity; `71201308` is ubugeeei's
-verified account id. The new #7696 candidate `c7d3f8c7` preserves that explicit
-noreply credit. An address is never invented for another reporter.
+source messages retains explicit attribution in the actual multi-commit #7696
+candidate `c7d3f8c7`. It does not guarantee a redundant primary-author trailer:
+GitHub normalized the single-commit #7721 candidate `2d778ebc` and #7727
+candidate `25a0fb5f`, including the latter's public noreply identity. Keep the
+verified reporter trailer in source and the PR description, and inspect actual
+final credit separately. A distinct reporter must survive as Co-author; a
+normalized same-account reporter must remain the verified primary author.
+Public noreply identities avoid publishing private addresses but do not bypass
+account deduplication. An address or different author is never invented.
 Conventional titles, protected checks,
 Stack order and queue admission stay unchanged. The setting can be restored to
 `BLANK`, but existing signed history is never rewritten. Previously generated
