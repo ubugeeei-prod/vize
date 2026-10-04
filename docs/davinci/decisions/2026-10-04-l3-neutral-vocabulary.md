@@ -7,6 +7,8 @@ This specifies the destination; it implements no new op or runtime target.
 
 ## Present artifacts
 
+The present-state source audit is pinned to [commit `da66dc241c`](https://github.com/ubugeeei-prod/vize/commit/da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5). Later implementation changes do not update this dated census automatically.
+
 `davinci/vize_l3/src/op/kind.rs` defines 16 Vapor-shaped kinds with `l3.*`
 mnemonics. `Program` stores compact ops, owned regions, explicit state edges,
 effect scopes, value operands and placement records. The validator checks
