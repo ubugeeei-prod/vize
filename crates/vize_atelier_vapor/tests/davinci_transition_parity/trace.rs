@@ -26,7 +26,13 @@ pub(super) fn trace(input: Value) -> Vec<Value> {
     let output = child.wait_with_output().unwrap();
     assert!(
         output.status.success(),
-        "Transition runner failed:\n{}",
+        "Transition runner failed for {} ({}):\nstdout:\n{}\nstderr:\n{}",
+        input
+            .get("scenario")
+            .and_then(Value::as_str)
+            .unwrap_or("<missing>"),
+        output.status,
+        String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
     serde_json::from_slice(&output.stdout)
