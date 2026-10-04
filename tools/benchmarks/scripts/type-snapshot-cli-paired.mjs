@@ -180,7 +180,7 @@ export function main(argv = process.argv.slice(2)) {
           `| ${row.id} | ${row.cold.base.ms.toFixed(1)} / ${row.cold.head.ms.toFixed(1)} | ${row.baseMedianMs.toFixed(1)} / ${row.headMedianMs.toFixed(1)} | ${row.headToBaseMedianRatio.toFixed(3)} | ${row.medianPairedHeadToBaseRatio.toFixed(3)} |`,
       ),
       "",
-      `Exact parent/base \`${metadata.baseSha}\` and head \`${metadata.headSha}\`; ${WARMUPS} warmups and ${PAIRS} alternating fresh-process pairs.`,
+      `Exact full Stack base \`${metadata.baseSha}\` and head \`${metadata.headSha}\`; ${WARMUPS} warmups and ${PAIRS} alternating fresh-process pairs.`,
       "Cold samples are each row's first check process; filesystem caches were not evicted. All plant gates and complete normalized diagnostics/program signatures passed. Profiles are separate, untimed runs.",
       "",
     ];

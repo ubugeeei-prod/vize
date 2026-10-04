@@ -119,14 +119,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Select the exact common ancestor
-        env:
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      - name: Select the exact full Stack baseline against main
         run: |
           set -euo pipefail
-          [[ "$PR_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
-          echo "BASE_SHA=$(git -C head merge-base "$PR_BASE_SHA" "$HEAD_SHA")" >> "$GITHUB_ENV"
+          stack_base_sha="$(git -C head merge-base origin/main "$HEAD_SHA")"
+          [[ "$stack_base_sha" =~ ^[0-9a-f]{40}$ ]]
+          echo "BASE_SHA=$stack_base_sha" >> "$GITHUB_ENV"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           path: base

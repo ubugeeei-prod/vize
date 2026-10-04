@@ -90,11 +90,7 @@ export function normalizeCliReport(result, cwd, expectedVueFiles = []) {
     [...expectedVueFiles].sort(),
     "check did not report the entire Vue corpus",
   );
-  assert.equal(
-    report.fileCount,
-    files.length,
-    "fileCount disagrees with report coverage",
-  );
+  assert.equal(report.fileCount, files.length, "fileCount disagrees with report coverage");
   const programs = report.programs
     .map((program) => {
       assert(Array.isArray(program.files), "program has no source membership");

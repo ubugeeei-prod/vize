@@ -37,7 +37,9 @@ registrations, concurrent projects, and warmed-cache admission beyond 512
 modules. Existing scoped-world and source-snapshot laws remain required.
 
 The dependent PR also builds the actual CLI at its exact common ancestor and
-head. Both executables run against the same generated 500-SFC corpus and a
+head, deriving the full Stack baseline from its common ancestor with `main`
+so the parent's first-use module cloning costs are included. Both executables
+run against the same generated 500-SFC corpus and a
 shared imported-barrel corpus. Each side/thread mode must retain full
 normalized diagnostic fingerprints on every run and pass the existing
 minimal and corpus-scale planted diagnostic gates before timing is published.
@@ -49,7 +51,7 @@ raw samples and diagnostic records accompany the report.
 
 The historical full-command max target is 42.55 ms, derived from the 425.5 ms
 baseline in [the prerequisite record](./2026-10-04-typechecker-snapshot-performance.md).
-A gain against this PR's immediate parent alone does not establish that target
+A gain in the imported graph alone does not establish that target
 or native Davinci product completion. #7698 remains open until the pinned
 full-command 10x criterion, real-project and persistent-session edit evidence
 are met. Publication and merge are pending until exact-head Actions and the
