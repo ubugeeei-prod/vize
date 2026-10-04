@@ -1,0 +1,312 @@
+fn unique_case_dir(name: &str) -> PathBuf {
+    static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
+
+    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("workspace root should exist");
+    let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
+    workspace_root
+        .join("target")
+        .join("vize-tests")
+        .join("tests")
+        .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
+}
+
+fn create_project_case(name: &str, files: &[(&str, &str)]) -> PathBuf {
+    let project_root = unique_case_dir(name);
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(&project_root).unwrap();
+    link_workspace_node_modules(&project_root).unwrap();
+    write_project_tsconfig(&project_root);
+
+    for (path, source) in files {
+        let file_path = project_root.join(path);
+        if let Some(parent) = file_path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(file_path, source).unwrap();
+    }
+
+    project_root
+}
+
+fn create_project_case_without_node_modules(name: &str, files: &[(&str, &str)]) -> PathBuf {
+    let project_root = unique_case_dir(name);
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(&project_root).unwrap();
+    write_project_tsconfig(&project_root);
+
+    for (path, source) in files {
+        let file_path = project_root.join(path);
+        if let Some(parent) = file_path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(file_path, source).unwrap();
+    }
+
+    project_root
+}
+
+fn write_project_tsconfig(project_root: &Path) {
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+}
+
+fn snapshot_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, String)>> {
+    let mut checker = BatchTypeChecker::new(project_root).ok()?;
+    checker.scan_project().ok()?;
+    let result = checker.check_project().ok()?;
+
+    let mut snapshot: Vec<_> = result
+        .diagnostics
+        .into_iter()
+        .map(|diagnostic| {
+            (
+                relative_path(project_root, &diagnostic.file),
+                diagnostic.code,
+                cstr!(
+                    "{}:{}:{} {}",
+                    diagnostic.line + 1,
+                    diagnostic.column + 1,
+                    match diagnostic.severity {
+                        1 => "error",
+                        2 => "warning",
+                        3 => "info",
+                        _ => "hint",
+                    },
+                    diagnostic.message
+                ),
+            )
+        })
+        .collect();
+    snapshot.sort();
+    Some(snapshot)
+}
+
+fn corsa_type_mismatch_snapshot(
+    file_text: &str,
+    declaration_marker: &str,
+    initializer_marker: &str,
+) -> Vec<(std::string::String, std::string::String)> {
+    static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);
+
+    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("workspace root should exist");
+    let case_id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);
+    let project_root = workspace_root
+        .join("target")
+        .join("vize-tests")
+        .join("tests")
+        .join(format!("corsa-type-probe-{}-{case_id}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(&project_root).expect("project root should exist");
+    let src_dir = project_root.join("src");
+    std::fs::create_dir_all(&src_dir).expect("src dir should exist");
+    link_workspace_node_modules(&project_root).expect("workspace node_modules should link");
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}"#,
+    )
+    .expect("tsconfig should write");
+    let file = src_dir.join("App.virtual.ts");
+    std::fs::write(&file, file_text).expect("virtual ts should write");
+
+    let corsa_path =
+        resolve_test_tsgo_binary().expect("tsgo executable should resolve for corsa api tests");
+    let config_wire = project_root.join("tsconfig.json").display().to_string();
+    let file_wire = file.display().to_string();
+    let declaration_offset = file_text
+        .find(declaration_marker)
+        .expect("declaration marker should exist");
+    let initializer_offset = file_text
+        .find(initializer_marker)
+        .map(|offset| offset + initializer_marker.len().saturating_sub(1))
+        .expect("initializer marker should exist");
+
+    let result = block_on(async {
+        let session = ProjectSession::spawn(
+            ApiSpawnConfig::new(corsa_path)
+                .with_mode(ApiMode::AsyncJsonRpcStdio)
+                .with_cwd(project_root.as_path()),
+            config_wire,
+            None,
+        )
+        .await
+        .expect("corsa project session should initialize");
+        assert!(
+            session
+                .project()
+                .root_files
+                .iter()
+                .any(|file| file.ends_with("App.virtual.ts")),
+            "root files did not include App.virtual.ts: {:?}",
+            session.project().root_files
+        );
+        let declaration = session
+            .get_type_at_position(file_wire.as_str(), declaration_offset as u32)
+            .await
+            .expect("declaration type should load")
+            .expect("declaration type should exist");
+        let initializer = session
+            .get_type_at_position(file_wire.as_str(), initializer_offset as u32)
+            .await
+            .expect("initializer type should load")
+            .expect("initializer type should exist");
+        let declaration_text = session
+            .type_to_string(declaration.id, None, None)
+            .await
+            .expect("declaration type should render");
+        let initializer_text = session
+            .type_to_string(initializer.id, None, None)
+            .await
+            .expect("initializer type should render");
+        session.close().await.expect("session should close");
+        vec![
+            ("declaration".into(), declaration_text),
+            ("initializer".into(), initializer_text),
+        ]
+    });
+    let _ = std::fs::remove_dir_all(&project_root);
+    result
+}
+
+fn link_workspace_node_modules(project_root: &Path) -> std::io::Result<()> {
+    let Some(workspace_root) = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+    else {
+        return Err(std::io::Error::other("workspace root not found"));
+    };
+    let workspace_node_modules = resolve_workspace_node_modules(workspace_root);
+
+    let target = project_root.join("node_modules");
+    if target.is_symlink() || target.is_file() {
+        std::fs::remove_file(&target)?;
+    } else if target.exists() {
+        std::fs::remove_dir_all(&target)?;
+    }
+    std::fs::create_dir_all(&target)?;
+
+    if let Some(ref workspace_node_modules) = workspace_node_modules {
+        link_or_stub_package(workspace_node_modules, &target, "vue", write_test_vue_stub)?;
+        link_or_stub_package(
+            workspace_node_modules,
+            &target,
+            "vite",
+            write_test_vite_stub,
+        )?;
+
+        if let Some(vue_namespace) = resolve_test_vue_runtime_namespace(workspace_node_modules) {
+            symlink_path(&vue_namespace, &target.join("@vue"))?;
+        } else {
+            write_test_vue_runtime_dom_stub(&target)?;
+        }
+    } else {
+        write_test_vue_stub(&target)?;
+        write_test_vite_stub(&target)?;
+    }
+
+    if let Some(source) = vize_carton::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
+        && source.exists()
+    {
+        let file_name = source.file_name().ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "invalid corsa binary path",
+            )
+        })?;
+        symlink_path(
+            &source,
+            &target
+                .join("@typescript")
+                .join("native-preview")
+                .join("lib")
+                .join(file_name),
+        )?;
+        symlink_path(&source, &target.join(".bin").join(file_name))?;
+    }
+
+    Ok(())
+}
+
+fn resolve_test_vue_runtime_namespace(workspace_node_modules: &Path) -> Option<PathBuf> {
+    let vue_source = workspace_node_modules.join("vue");
+    let adjacent = resolve_adjacent_vue_namespace(&vue_source);
+    let ancestor = {
+        let path = workspace_node_modules.join("@vue");
+        path.exists().then_some(path)
+    };
+
+    adjacent
+        .filter(|path| is_vue_runtime_namespace(path))
+        .or_else(|| ancestor.filter(|path| is_vue_runtime_namespace(path)))
+}
+
+fn resolve_adjacent_vue_namespace(vue_source: &Path) -> Option<PathBuf> {
+    let mut candidates = Vec::new();
+
+    if let Some(parent) = vue_source.parent() {
+        candidates.push(parent.join("@vue"));
+    }
+
+    if let Ok(real_vue_source) = std::fs::canonicalize(vue_source)
+        && let Some(parent) = real_vue_source.parent()
+    {
+        candidates.push(parent.join("@vue"));
+    }
+
+    candidates
+        .into_iter()
+        .find(|candidate| candidate.exists() && is_vue_runtime_namespace(candidate))
+}
+
+fn is_vue_runtime_namespace(path: &Path) -> bool {
+    path.join("runtime-dom").exists() || path.join("runtime-core").exists()
+}
+
+fn link_or_stub_package(
+    workspace_node_modules: &Path,
+    target: &Path,
+    package: &str,
+    stub_writer: fn(&Path) -> std::io::Result<()>,
+) -> std::io::Result<()> {
+    let source = workspace_node_modules.join(package);
+    if source.exists() {
+        let link_source = package_link_source(&source, package);
+        symlink_path(&link_source, &target.join(package))
+    } else {
+        stub_writer(target)
+    }
+}
+
+fn package_link_source(source: &Path, package: &str) -> PathBuf {
+    if package == "vue" {
+        vize_carton::path::canonicalize_non_verbatim(source)
+    } else {
+        source.to_path_buf()
+    }
+}

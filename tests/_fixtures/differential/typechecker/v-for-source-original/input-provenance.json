@@ -1,0 +1,81 @@
+{
+  "schema": "vize.typechecker.originalProjectProvenance",
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+  "parent": "b77e0a21485b9c9fb23506ee9b30fc857e4345a1",
+  "historicalIssue": 3818,
+  "originalTest": "v_for_source_callbacks_report_implicit_any_at_the_authored_parameter",
+  "originalTestSource": {
+    "path": "crates/vize_canon/src/batch/type_checker/tests/recent_issues/v_for_source_callbacks.rs",
+    "blob": "64432e2a79f44519b47f4466cf8a5bd0818a6bed",
+    "sha256": "3d33956b4de2a0af20d1274dd2093f959600df6fefea9f81650158650d3e3e1d",
+    "revision": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+    "carrier": "original-test.rs.txt"
+  },
+  "selectedFunction": {
+    "utf8Start": 196,
+    "utf8End": 1197,
+    "sha256": "08947ad0613edc2fecf95303674564f86810f1d325f3dec666b6be3b578f523b"
+  },
+  "projectHelperSource": {
+    "path": "crates/vize_canon/src/batch/type_checker/tests.rs",
+    "blob": "a7c74b9593646b124c753b35fa395f5bc215b9b6",
+    "sha256": "45997a074c644c38d72b013d6d2cad889a3a21d2a189669ff0bb2c2088391489",
+    "revision": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+    "excerpt": {
+      "carrier": "original-helper.rs.txt",
+      "utf8Start": 50636,
+      "utf8End": 61048,
+      "sha256": "b3beb7d333a17aa20c66d8be50cb26b1414d5b4fc3810f3250c56e3b1d98baab"
+    }
+  },
+  "originalChange": {
+    "sha256": "892e5418ad74c6d99c4006ace43c2ef1f457bd01904977a8f8e25d9ebed0922c",
+    "chunks": [
+      {
+        "carrier": "original-change-1.patch.txt",
+        "utf8Start": 0,
+        "utf8End": 11926,
+        "sha256": "d036fb589a0986653cc6c0181124d498f8271b89e9e0c882d4794731b1f9610e"
+      },
+      {
+        "carrier": "original-change-2.patch.txt",
+        "utf8Start": 11926,
+        "utf8End": 25727,
+        "sha256": "28e63da1f0643fdb2a0f76e08b5095896d414e7061fca5c5208fa8405f6cef51"
+      }
+    ]
+  },
+  "configLiteralUtf8Start": 52426,
+  "authoredParameter": {
+    "utf8Start": 104,
+    "authoredIdentifier": "value",
+    "positionContract": "one-based authored UTF16 start; end not historically observed"
+  },
+  "originalCheckerOptions": "default BatchTypeChecker; no extra checker flags",
+  "originalPackagePolicy": "link workspace Vue/Vite/@vue when available, otherwise test support stubs; proposed mandatory fixture must use pinned real runtime and record actual package identities",
+  "expectedContract": "complete original authored tuple assertion; original helper sorts the entire vector, which has one row here",
+  "originalRuntimePolicy": "optional runtime guard; public diagnostics sorted by snapshot helper; each selected original project expects zero or one row",
+  "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+  "missingHistoricalState": [
+    "actual historical loader/SDK snapshot",
+    "returned-order identity for multi-row outputs"
+  ],
+  "execution": "pending fresh required T1 source-built Actions",
+  "native": "unsupported",
+  "inputs": [
+    {
+      "file": "src/App.vue",
+      "source": "original-project/src/App.vue.txt",
+      "sha256": "7fc0b2dfdbe12dda3f1cf7d43e50895789c0bbf6c2b6bee5b18b77951a466830",
+      "originalLiteralUtf8Start": 483
+    },
+    {
+      "file": "tsconfig.json",
+      "source": "original-project/tsconfig.json.txt",
+      "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047",
+      "originalLiteralUtf8Start": null
+    }
+  ]
+}

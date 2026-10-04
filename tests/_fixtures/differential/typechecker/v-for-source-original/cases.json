@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+  "historicalIssue": 3818,
+  "sourceRevision": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "complete-original-html-callback",
+      "inputs": [
+        {
+          "file": "src/App.vue",
+          "source": "original-project/src/App.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "original-project/tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 36,
+          "severity": 1,
+          "code": 7006,
+          "message": "Parameter 'value' implicitly has an 'any' type."
+        }
+      ]
+    }
+  ]
+}

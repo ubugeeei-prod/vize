@@ -1086,6 +1086,38 @@
           "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
         }
       ]
+    },
+    {
+      "id": "typechecker/v-for-source-original/complete-original-html-callback",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "v-for-source-original",
+      "case": "complete-original-html-callback",
+      "test": "v_for_source_callbacks_preserve_complete_original_diagnostics",
+      "regressionCommit": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+      "sourceRevision": "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+      "packReference": {
+        "path": "v-for-source-original/cases.json",
+        "sha256": "c6a3a04713ad1061795fb9b0d22b1329ebba1db7dfa5c7abdb2ef4f22468a8d4"
+      },
+      "inputs": [
+        {
+          "file": "src/App.vue",
+          "path": "v-for-source-original/original-project/src/App.vue.txt",
+          "sha256": "7fc0b2dfdbe12dda3f1cf7d43e50895789c0bbf6c2b6bee5b18b77951a466830"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "v-for-source-original/original-project/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        }
+      ]
     }
   ]
 }

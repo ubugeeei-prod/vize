@@ -1,0 +1,334 @@
+diff --git a/crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs b/crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs
+index 9a6c55cc2b..fdf9575765 100644
+--- a/crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs
++++ b/crates/vize_canon/src/batch/type_checker/tests/recent_issues.rs
+@@ -17,6 +17,7 @@ mod spread_props;
+ mod spread_scope_bindings;
+ mod ts_extension_substitution;
+ mod unmapped_template_fallback;
++mod v_for_source_callbacks;
+ mod vapor_anchors;
+ #[test]
+ fn issue_2645_infers_generic_sfc_props_in_tsx() {
+diff --git a/crates/vize_canon/src/batch/type_checker/tests/recent_issues/v_for_source_callbacks.rs b/crates/vize_canon/src/batch/type_checker/tests/recent_issues/v_for_source_callbacks.rs
+new file mode 100644
+index 0000000000..64432e2a79
+--- /dev/null
++++ b/crates/vize_canon/src/batch/type_checker/tests/recent_issues/v_for_source_callbacks.rs
+@@ -0,0 +1,155 @@
++//! Diagnostics inside v-for source expressions must map back to authored bytes (#3756).
++
++use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
++
++#[test]
++fn v_for_source_callbacks_report_implicit_any_at_the_authored_parameter() {
++    if resolve_test_tsgo_binary().is_none() {
++        return;
++    }
++    let project_root = create_project_case(
++        "v-for-source-callback-diagnostics",
++        &[(
++            "src/App.vue",
++            r#"<script setup lang="ts">
++const items: any = []
++</script>
++
++<template>
++  <div v-for="item in items.filter(value => value)" :key="item" />
++</template>
++"#,
++        )],
++    );
++
++    let snapshot = snapshot_project_diagnostics(&project_root);
++    let _ = std::fs::remove_dir_all(&project_root);
++    assert_eq!(
++        snapshot,
++        // vue-tsc 3.3.4 with TypeScript 6.0.3, on the byte-identical fixture:
++        // src/App.vue(6,36): error TS7006: Parameter 'value' implicitly has an 'any' type.
++        Some(vec![(
++            vize_carton::String::from("src/App.vue"),
++            Some(7006),
++            vize_carton::String::from("6:36:error Parameter 'value' implicitly has an 'any' type."),
++        )]),
++    );
++}
++
++#[test]
++fn component_v_for_source_diagnostics_are_mapped_once() {
++    if resolve_test_tsgo_binary().is_none() {
++        return;
++    }
++    let project_root = create_project_case(
++        "component-v-for-source-callback-diagnostics",
++        &[
++            (
++                "src/Child.vue",
++                r#"<script setup lang="ts">
++defineProps<{ value: unknown }>()
++</script>
++"#,
++            ),
++            (
++                "src/App.vue",
++                r#"<script setup lang="ts">
++import Child from './Child.vue'
++const items: any = []
++</script>
++
++<template>
++  <Child v-for="item in items.filter(value => value)" :key="item" :value="item" />
++</template>
++"#,
++            ),
++        ],
++    );
++
++    let snapshot = snapshot_project_diagnostics(&project_root);
++    let _ = std::fs::remove_dir_all(&project_root);
++    assert_eq!(
++        snapshot,
++        Some(vec![(
++            vize_carton::String::from("src/App.vue"),
++            Some(7006),
++            vize_carton::String::from("7:38:error Parameter 'value' implicitly has an 'any' type."),
++        )]),
++    );
++}
++
++#[test]
++fn generic_slot_v_for_source_does_not_expose_a_contextual_typing_gap() {
++    if resolve_test_tsgo_binary().is_none() {
++        return;
++    }
++    let project_root = create_project_case(
++        "generic-slot-v-for-source-callback",
++        &[
++            (
++                "src/Child.vue",
++                r#"<script setup lang="ts" generic="T">
++defineProps<{ items: T[] }>()
++defineSlots<{ default(props: { items: T[] }): unknown }>()
++</script>
++<template><slot :items="items" /></template>
++"#,
++            ),
++            (
++                "src/App.vue",
++                r#"<script setup lang="ts">
++import Child from './Child.vue'
++const items = [{ id: 1 }]
++</script>
++<template>
++  <Child v-slot="{ items: pageItems }" :items="items">
++    <div v-for="item in pageItems.map(value => value)" :key="item.id" />
++  </Child>
++</template>
++"#,
++            ),
++        ],
++    );
++
++    let snapshot = snapshot_project_diagnostics(&project_root);
++    let _ = std::fs::remove_dir_all(&project_root);
++    // vue-tsc 3.3.4 contextually types `value` through the generic slot. Until
++    // Vize resolves those generics, do not surface a Vize-only TS7006 (#3756).
++    assert_eq!(snapshot, Some(Vec::new()));
++}
++
++#[test]
++fn v_for_source_resolves_template_only_props_before_mapping_diagnostics() {
++    if resolve_test_tsgo_binary().is_none() {
++        return;
++    }
++    let project_root = create_project_case(
++        "v-for-source-template-prop",
++        &[
++            (
++                "src/contracts.ts",
++                r#"export interface DialogProps {
++  messages: Array<{ text: string }>
++}
++"#,
++            ),
++            (
++                "src/App.vue",
++                r#"<script setup lang="ts">
++import type { DialogProps } from './contracts'
++defineProps<DialogProps>()
++</script>
++<template>
++  <section v-for="message in messages.slice(0, Math.max(0, messages.length))" :key="message.text">
++    <span v-for="word in message.text.split(' ')" :key="word">{{ word }}</span>
++  </section>
++</template>
++"#,
++            ),
++        ],
++    );
++
++    let snapshot = snapshot_project_diagnostics(&project_root);
++    let _ = std::fs::remove_dir_all(&project_root);
++    assert_eq!(snapshot, Some(Vec::new()));
++}
+diff --git a/crates/vize_canon/src/virtual_ts/props.rs b/crates/vize_canon/src/virtual_ts/props.rs
+index f32d1a1893..9725f36ed5 100644
+--- a/crates/vize_canon/src/virtual_ts/props.rs
++++ b/crates/vize_canon/src/virtual_ts/props.rs
+@@ -1,9 +1,11 @@
++mod keyed_template_names;
+ mod options_api;
+ mod setup_scoped;
+ mod template_bindings;
+ mod template_names;
+ mod with_defaults;
+-use super::helpers::{is_reserved_identifier, to_safe_identifier};
++use super::helpers::to_safe_identifier;
++use keyed_template_names::collect_keyed_template_prop_names;
+ pub(crate) use options_api::OptionsApiPropsSource;
+ pub(crate) use options_api::append_default_props;
+ use options_api::emit_options_api_props_type;
+@@ -63,35 +65,6 @@ fn emit_unchecked_template_prop_binding(ts: &mut String, prop_name: &str) {
+     append!(*ts, "  void {binding_name};\n");
+ }
+ 
+-fn can_emit_keyed_template_prop_binding(prop_name: &str) -> bool {
+-    let mut chars = prop_name.chars();
+-    let Some(first) = chars.next() else {
+-        return false;
+-    };
+-    (first.is_ascii_alphabetic() || first == '_' || first == '$')
+-        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
+-        && !prop_name.starts_with('$')
+-        && !is_reserved_identifier(prop_name)
+-}
+-fn collect_keyed_template_prop_names(
+-    summary: &Croquis,
+-    emitted_names: &FxHashSet<String>,
+-) -> Vec<String> {
+-    let mut names = FxHashSet::default();
+-    for undef in &summary.undefined_refs {
+-        let name = undef.name.as_str();
+-        if emitted_names.contains(name)
+-            || should_skip_template_prop_binding(summary, name)
+-            || !can_emit_keyed_template_prop_binding(name)
+-        {
+-            continue;
+-        }
+-        names.insert(name.into());
+-    }
+-    let mut names: Vec<String> = names.into_iter().collect();
+-    names.sort_unstable();
+-    names
+-}
+ fn should_emit_keyed_template_prop_bindings(
+     summary: &Croquis,
+     type_name: &str,
+diff --git a/crates/vize_canon/src/virtual_ts/props/keyed_template_names.rs b/crates/vize_canon/src/virtual_ts/props/keyed_template_names.rs
+new file mode 100644
+index 0000000000..86c8eff344
+--- /dev/null
++++ b/crates/vize_canon/src/virtual_ts/props/keyed_template_names.rs
+@@ -0,0 +1,68 @@
++use super::super::helpers::is_reserved_identifier;
++use super::template_bindings::should_skip_template_prop_binding;
++use vize_carton::{FxHashSet, String};
++use vize_croquis::builtins::{is_event_local, is_js_global, is_render_local, is_vue_builtin};
++use vize_croquis::drawer::{extract_identifiers_oxc, is_keyword};
++use vize_croquis::{Croquis, ScopeData};
++
++fn can_emit_keyed_template_prop_binding(prop_name: &str) -> bool {
++    let mut chars = prop_name.chars();
++    let Some(first) = chars.next() else {
++        return false;
++    };
++    (first.is_ascii_alphabetic() || first == '_' || first == '$')
++        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '$')
++        && !prop_name.starts_with('$')
++        && !is_reserved_identifier(prop_name)
++}
++
++pub(super) fn collect_keyed_template_prop_names(
++    summary: &Croquis,
++    emitted_names: &FxHashSet<String>,
++) -> Vec<String> {
++    let mut names = FxHashSet::default();
++    for undef in &summary.undefined_refs {
++        let name = undef.name.as_str();
++        if emitted_names.contains(name)
++            || should_skip_template_prop_binding(summary, name)
++            || !can_emit_keyed_template_prop_binding(name)
++        {
++            continue;
++        }
++        names.insert(name.into());
++    }
++
++    // A v-for source is emitted as the loop initializer rather than as a
++    // standalone template expression. Include its root references in the
++    // imported/opaque defineProps fallback so template-only props such as
++    // `messages` still receive a local binding. Scope locals and language/
++    // template globals must remain untouched (for example a nested `group`
++    // alias or `Math` in the source expression).
++    for scope in summary.scopes.iter() {
++        let ScopeData::VFor(data) = scope.data() else {
++            continue;
++        };
++        for ident in extract_identifiers_oxc(data.source.as_str()) {
++            let name = ident.as_str();
++            if emitted_names.contains(name)
++                || should_skip_template_prop_binding(summary, name)
++                || !can_emit_keyed_template_prop_binding(name)
++                || summary
++                    .scopes
++                    .iter()
++                    .any(|candidate| candidate.has_binding(name))
++                || is_js_global(name)
++                || is_render_local(name)
++                || is_event_local(name)
++                || is_vue_builtin(name)
++                || is_keyword(name)
++            {
++                continue;
++            }
++            names.insert(name.into());
++        }
++    }
++    let mut names: Vec<String> = names.into_iter().collect();
++    names.sort_unstable();
++    names
++}
+diff --git a/crates/vize_canon/src/virtual_ts/scope/closures.rs b/crates/vize_canon/src/virtual_ts/scope/closures.rs
+index ad449d03d7..e6972e573c 100644
+--- a/crates/vize_canon/src/virtual_ts/scope/closures.rs
++++ b/crates/vize_canon/src/virtual_ts/scope/closures.rs
+@@ -237,7 +237,6 @@ pub(super) fn generate_scope_node(
+             if let Some(guard) = enclosing_guard {
+                 append!(*ts, "{indent}if ({guard}) {{\n");
+             }
+-
+             append_v_for_comment(
+                 ts,
+                 &loop_indent,
+@@ -245,16 +244,15 @@ pub(super) fn generate_scope_node(
+                 data.value_alias.as_str(),
+                 data.source.as_str(),
+             );
+-
+             emit_v_for_loop_open(
+                 ts,
++                mappings,
++                ctx.template_offset,
++                ctx.summary.scopes.v_for_source_offset(scope.id),
+                 &loop_indent,
+-                data.value_alias.as_str(),
+-                data.key_alias.as_deref(),
+-                data.index_alias.as_deref(),
+-                data.source.as_str(),
++                data,
++                ctx.template_prop_names,
+             );
+-
+             // A positive narrowing outside a callback is not retained for captured
+             // object properties. Recheck those terms so discriminated unions narrow.
+             let callback_guard = enclosing_guard.and_then(callback_vif_guard);

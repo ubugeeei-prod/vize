@@ -1,0 +1,334 @@
+diff --git a/crates/vize_canon/src/virtual_ts/scope/component_props.rs b/crates/vize_canon/src/virtual_ts/scope/component_props.rs
+index 1798c29bb9..a061cc81b5 100644
+--- a/crates/vize_canon/src/virtual_ts/scope/component_props.rs
++++ b/crates/vize_canon/src/virtual_ts/scope/component_props.rs
+@@ -245,11 +245,12 @@ fn generate_closure_component_props_recursive(
+             );
+             emit_v_for_loop_open(
+                 ts,
++                mappings,
++                ctx.source_context.offset,
++                ctx.summary.scopes.v_for_source_offset(scope.id),
+                 &loop_indent,
+-                data.value_alias.as_str(),
+-                data.key_alias.as_deref(),
+-                data.index_alias.as_deref(),
+-                data.source.as_str(),
++                data,
++                ctx.template_prop_names,
+             );
+ 
+             // Mark v-for variables as used to avoid TS6133
+diff --git a/crates/vize_canon/src/virtual_ts/scope/emit.rs b/crates/vize_canon/src/virtual_ts/scope/emit.rs
+index 34da093bfb..7305c5b8a7 100644
+--- a/crates/vize_canon/src/virtual_ts/scope/emit.rs
++++ b/crates/vize_canon/src/virtual_ts/scope/emit.rs
+@@ -1,13 +1,13 @@
+ //! Shared text-emission helpers for v-for loops and v-slot prop types.
+ 
+-use vize_carton::String;
+ use vize_carton::append;
+ use vize_carton::cstr;
++use vize_carton::{FxHashSet, String};
+ use vize_carton::{camelize, capitalize};
+-use vize_croquis::Croquis;
++use vize_croquis::{Croquis, VForScopeData};
+ 
+-use crate::virtual_ts::helpers::to_safe_identifier;
+-use crate::virtual_ts::types::VirtualTsOptions;
++use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
++use crate::virtual_ts::{expressions::rewrite_reserved_template_prop, helpers::to_safe_identifier};
+ 
+ /// Type annotation for a `v-slot` scope's props. When the slot is on a child
+ /// component (`component` is `Some`), the props are inferred from that child's
+@@ -155,23 +155,43 @@ pub(super) fn append_v_for_comment(
+ /// object source yields `value: T[keyof T]` and `key: keyof T` (matching
+ /// vue-tsc) instead of the old array-only `(source).forEach` assumption that
+ /// mis-typed objects and raised spurious TS2339/TS2537. The source expression is
+-/// passed through verbatim so any `as Type` assertion flows into the helper.
++/// rewritten through the template-prop bridge so a source such as `messages`
++/// resolves to `__props.messages`; all other authored syntax stays verbatim.
+ pub(super) fn emit_v_for_loop_open(
+     ts: &mut String,
++    mappings: &mut Vec<VizeMapping>,
++    template_offset: u32,
++    source_offset: Option<u32>,
+     indent: &str,
+-    value_alias: &str,
+-    key_alias: Option<&str>,
+-    index_alias: Option<&str>,
+-    source: &str,
++    data: &VForScopeData,
++    template_prop_names: &FxHashSet<String>,
+ ) {
+-    append!(*ts, "{indent}__vForList({source}).forEach(([{value_alias}");
+-    if let Some(key) = key_alias {
++    append!(*ts, "{indent}__vForList(");
++    let source_gen_start = ts.len();
++    let rewritten_source =
++        rewrite_reserved_template_prop(data.source.as_str(), template_prop_names);
++    ts.push_str(
++        rewritten_source
++            .as_ref()
++            .map_or(data.source.as_str(), |source| source.as_str()),
++    );
++    let source_gen_end = ts.len();
++    if let Some(source_offset) = source_offset {
++        let source_start = (template_offset + source_offset) as usize;
++        mappings.push(VizeMapping {
++            gen_range: source_gen_start..source_gen_end,
++            src_range: source_start..(source_start + data.source.len()),
++            sub_spans: Vec::new(),
++        });
++    }
++    append!(*ts, ").forEach(([{}", data.value_alias);
++    if let Some(key) = data.key_alias.as_deref() {
+         append!(*ts, ", {key}");
+-    } else if index_alias.is_some() {
++    } else if data.index_alias.is_some() {
+         // Keep the index in the third tuple slot even when no key alias is bound.
+         ts.push_str(", _key");
+     }
+-    if let Some(index) = index_alias {
++    if let Some(index) = data.index_alias.as_deref() {
+         append!(*ts, ", {index}");
+     }
+     ts.push_str("]) => {\n");
+diff --git a/crates/vize_croquis/src/drawer/template/directives/control_flow.rs b/crates/vize_croquis/src/drawer/template/directives/control_flow.rs
+index e7e43d125a..92dcff5df9 100644
+--- a/crates/vize_croquis/src/drawer/template/directives/control_flow.rs
++++ b/crates/vize_croquis/src/drawer/template/directives/control_flow.rs
+@@ -99,7 +99,7 @@ impl Drawer {
+                 .cloned()
+                 .unwrap_or_else(|| CompactString::const_new("_"));
+ 
+-            self.croquis.scopes.enter_v_for_scope(
++            let scope_id = self.croquis.scopes.enter_v_for_scope(
+                 VForScopeData {
+                     value_alias: value_alias.clone(),
+                     value_bindings: smallvec![value_alias],
+@@ -111,6 +111,9 @@ impl Drawer {
+                 for_node.loc.start.offset,
+                 for_node.loc.end.offset,
+             );
++            self.croquis
++                .scopes
++                .set_v_for_source_offset(scope_id, for_node.source.loc().start.offset);
+             // Entering a v-for scope: O(1) flag read by `is_in_vfor_scope`.
+             self.vfor_depth += 1;
+             for var in &vars_added {
+diff --git a/crates/vize_croquis/src/drawer/template/visit_element/first_pass.rs b/crates/vize_croquis/src/drawer/template/visit_element/first_pass.rs
+index b2e449b52c..e6425f49cf 100644
+--- a/crates/vize_croquis/src/drawer/template/visit_element/first_pass.rs
++++ b/crates/vize_croquis/src/drawer/template/visit_element/first_pass.rs
+@@ -8,7 +8,7 @@ use vize_relief::{ElementNode, ExpressionNode, PropNode};
+ 
+ use super::bounds::element_subtree_end;
+ use super::scopes::ElementDirectiveState;
+-use super::v_for_scope::v_for_alias_declaration_offsets;
++use super::v_for_scope::{v_for_alias_declaration_offsets, v_for_source_offset};
+ 
+ impl Drawer {
+     pub(super) fn collect_element_directive_state(
+@@ -42,9 +42,15 @@ impl Drawer {
+                         );
+                         if let Some(aliases) = aliases {
+                             let alias_offsets = v_for_alias_declaration_offsets(exp, &aliases);
++                            let source_offset = v_for_source_offset(exp, &aliases);
+                             let end = *subtree_end.get_or_insert_with(|| element_subtree_end(el));
+-                            state.for_scope =
+-                                Some((aliases, alias_offsets, el.loc.start.offset, end));
++                            state.for_scope = Some((
++                                aliases,
++                                alias_offsets,
++                                source_offset,
++                                el.loc.start.offset,
++                                end,
++                            ));
+                         }
+                     }
+                 } else if dir.name == "bind" {
+diff --git a/crates/vize_croquis/src/drawer/template/visit_element/scopes.rs b/crates/vize_croquis/src/drawer/template/visit_element/scopes.rs
+index 57791b4f0e..7a071eaaa8 100644
+--- a/crates/vize_croquis/src/drawer/template/visit_element/scopes.rs
++++ b/crates/vize_croquis/src/drawer/template/visit_element/scopes.rs
+@@ -1,6 +1,6 @@
+ use crate::drawer::Drawer;
+ use crate::drawer::helpers::{ConditionalKind, VForScopeAliases, extract_identifiers_oxc};
+-use crate::scope::{ParamNames, VForScopeData, VSlotScopeData};
++use crate::scope::{ParamNames, ScopeKind, VForScopeData, VSlotScopeData};
+ use vize_carton::{CompactString, SmallVec};
+ use vize_relief::ElementNode;
+ 
+@@ -18,6 +18,7 @@ pub(super) type SlotScopeInfo = (
+ pub(super) type ForScopeInfo = (
+     VForScopeAliases,
+     SmallVec<[(CompactString, u32); 4]>,
++    Option<u32>,
+     u32,
+     u32,
+ );
+@@ -85,7 +86,7 @@ impl Drawer {
+         key_expression: Option<CompactString>,
+         scope_vars: &mut Vec<CompactString>,
+     ) -> usize {
+-        let Some((aliases, alias_offsets, start, end)) = for_scope else {
++        let Some((aliases, alias_offsets, source_offset, start, end)) = for_scope else {
+             return 0;
+         };
+ 
+@@ -98,8 +99,19 @@ impl Drawer {
+         if self.options.detect_undefined {
+             self.mark_v_for_source_scope_refs(aliases.source.as_str());
+         }
+-
+-        self.croquis.scopes.enter_v_for_scope(
++        // Generic slot props are not yet instantiated from sibling bindings. Mapping a
++        // callback that consumes one would expose a Vize-only implicit-any diagnostic.
++        let source_has_slot_bound_callback = aliases.source.contains("=>")
++            && extract_identifiers_oxc(aliases.source.as_str())
++                .iter()
++                .any(|name| {
++                    self.croquis
++                        .scopes
++                        .lookup(name.as_str())
++                        .is_some_and(|(scope, _)| scope.kind == ScopeKind::VSlot)
++                });
++
++        let scope_id = self.croquis.scopes.enter_v_for_scope(
+             VForScopeData {
+                 value_alias: aliases.value_pattern,
+                 value_bindings: aliases.value_bindings,
+@@ -111,6 +123,11 @@ impl Drawer {
+             start,
+             end,
+         );
++        if !source_has_slot_bound_callback && let Some(source_offset) = source_offset {
++            self.croquis
++                .scopes
++                .set_v_for_source_offset(scope_id, source_offset);
++        }
+         // Entering a v-for scope: O(1) flag read by `is_in_vfor_scope`.
+         self.vfor_depth += 1;
+ 
+diff --git a/crates/vize_croquis/src/drawer/template/visit_element/v_for_scope.rs b/crates/vize_croquis/src/drawer/template/visit_element/v_for_scope.rs
+index 37b7e0f67a..6a7bf4689c 100644
+--- a/crates/vize_croquis/src/drawer/template/visit_element/v_for_scope.rs
++++ b/crates/vize_croquis/src/drawer/template/visit_element/v_for_scope.rs
+@@ -34,6 +34,20 @@ pub(super) fn v_for_alias_declaration_offsets(
+     offsets
+ }
+ 
++pub(super) fn v_for_source_offset(
++    exp: &ExpressionNode<'_>,
++    aliases: &VForScopeAliases,
++) -> Option<u32> {
++    let (content, base_offset) = expression_content_and_offset(exp);
++    source_offset_in_expression(content, base_offset, aliases.source.as_str())
++}
++
++fn source_offset_in_expression(content: &str, base_offset: u32, source: &str) -> Option<u32> {
++    content
++        .rfind(source)
++        .map(|relative| base_offset + relative as u32)
++}
++
+ fn expression_content_and_offset<'a>(exp: &'a ExpressionNode<'_>) -> (&'a str, u32) {
+     let loc = exp.loc();
+     let content = match exp {
+@@ -86,3 +100,24 @@ fn find_identifier_token(text: &str, name: &str) -> Option<usize> {
+ fn is_identifier_continue(byte: u8) -> bool {
+     byte == b'_' || byte == b'$' || byte.is_ascii_alphanumeric()
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::source_offset_in_expression;
++
++    #[test]
++    fn source_offsets_keep_whitespace_and_choose_the_final_duplicate() {
++        assert_eq!(
++            source_offset_in_expression("  item in item  ", 40, "item"),
++            Some(50)
++        );
++        assert_eq!(
++            source_offset_in_expression(
++                "({ id }, key) of rows.filter(row => row.id)",
++                7,
++                "rows.filter(row => row.id)"
++            ),
++            Some(24)
++        );
++    }
++}
+diff --git a/crates/vize_croquis/src/scope/chain.rs b/crates/vize_croquis/src/scope/chain.rs
+index 5eefe428ef..6705672fef 100644
+--- a/crates/vize_croquis/src/scope/chain.rs
++++ b/crates/vize_croquis/src/scope/chain.rs
+@@ -1,17 +1,15 @@
+ //! Scope chain management for Vue templates and scripts.
+ //!
+-//! This module provides the core scope management functionality:
+ //! - [`Scope`] - A single scope in the scope chain
+ //! - [`ScopeChain`] - Manages the hierarchical scope chain
+ //!
+-//! Split into:
+ //! - Core types, `Scope`, and `ScopeChain` struct with basic accessors (this file)
+ //! - [`builder`]: Methods for entering/creating scopes
+ //! - [`resolution`]: Binding lookup, mutation tracking, and depth computation
+ 
+ mod builder;
+ mod resolution;
+-
++mod v_for_offsets;
+ use core::fmt;
+ 
+ use vize_carton::{
+@@ -219,10 +217,10 @@ impl Scope {
+ pub struct ScopeChain {
+     /// All scopes (indexed by ScopeId)
+     pub(crate) scopes: Vec<Scope>,
+-    /// Current scope ID
+     pub(crate) current: ScopeId,
+     /// v-slot scopes whose directive argument was dynamic (`v-slot:[name]`).
+     dynamic_v_slot_scopes: FxHashSet<ScopeId>,
++    v_for_source_offsets: FxHashMap<ScopeId, u32>,
+ }
+ 
+ impl fmt::Debug for ScopeChain {
+@@ -326,6 +324,7 @@ impl ScopeChain {
+             scopes: vec![root],
+             current: ScopeId::ROOT,
+             dynamic_v_slot_scopes: FxHashSet::default(),
++            v_for_source_offsets: FxHashMap::default(),
+         }
+     }
+ 
+@@ -345,6 +344,7 @@ impl ScopeChain {
+             scopes,
+             current: ScopeId::ROOT,
+             dynamic_v_slot_scopes: FxHashSet::default(),
++            v_for_source_offsets: FxHashMap::default(),
+         }
+     }
+ 
+diff --git a/crates/vize_croquis/src/scope/chain/v_for_offsets.rs b/crates/vize_croquis/src/scope/chain/v_for_offsets.rs
+new file mode 100644
+index 0000000000..adcb0c3afa
+--- /dev/null
++++ b/crates/vize_croquis/src/scope/chain/v_for_offsets.rs
+@@ -0,0 +1,14 @@
++use super::ScopeChain;
++use crate::scope::ScopeId;
++
++impl ScopeChain {
++    pub(crate) fn set_v_for_source_offset(&mut self, id: ScopeId, offset: u32) {
++        self.v_for_source_offsets.insert(id, offset);
++    }
++
++    /// Authored template offset where a v-for source expression begins.
++    #[inline]
++    pub fn v_for_source_offset(&self, id: ScopeId) -> Option<u32> {
++        self.v_for_source_offsets.get(&id).copied()
++    }
++}

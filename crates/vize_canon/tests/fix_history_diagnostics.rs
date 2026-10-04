@@ -156,6 +156,17 @@ fn split_script_setup_preserves_complete_original_diagnostics() {
     );
 }
 
+#[test]
+fn v_for_source_callbacks_preserve_complete_original_diagnostics() {
+    check_pack(
+        "v-for-source-original",
+        "v_for_source_callbacks_preserve_complete_original_diagnostics",
+        "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+        Some(3818),
+        &["complete-original-html-callback"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -182,7 +193,8 @@ fn check_pack(
             | "slot-outlet-key"
             | "options-api-any-instance"
             | "authored-unused-symbols"
-            | "split-script-original" => regression,
+            | "split-script-original"
+            | "v-for-source-original" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );
