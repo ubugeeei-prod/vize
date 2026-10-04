@@ -31,14 +31,14 @@ after the provider actually merges; if publication must precede it, use a
 proper linear native Stack with the exact real parent, never a merge branch or
 prose-only dependency. Do not alter an already healthy queued prefix.
 
-| Actual source | Existing authority and limit |
-| --- | --- |
-| `davinci/vize_l2/src/lang/js/file.rs` | `ProgramInput::checked` proves original admitted source, whole SourceBlock/profile/default parser options; FileProducer visits the Program once. Script and definition units are incomplete. |
-| `lang/js/file/walk.rs` | The actual original statement event rejects setup/ordinary eligibility for every function before its normal declaration event; existing body statements and references retain their real lexical scope. |
-| `lang/js/file/walk/functions.rs` | A genuine FunctionDeclaration supplies original return annotation, formal parameters, body and authored span. The old blanket return refusal is the only proposed production seam. |
-| `lang/js/file/walk/annotations.rs` | The existing private primitive match returns only bigint/boolean/null/number/string/symbol/undefined. #7756 exposes a private boolean check; it adds no annotation row. |
-| `davinci/vize_l4/src/targets/ts.rs` | Completed whole-Module File projects its exact authored bytes plus the existing module suffix; original File/unit borrow and link sinks remain unchanged. |
-| `crates/vize_canon/src/corsa_bridge/original_program.rs` | Existing explicit checker authenticates actual source path/bytes/configured root/project and independent full LSP report; no default or unsaved-buffer claim. |
+| Actual source                                            | Existing authority and limit                                                                                                                                                                            |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `davinci/vize_l2/src/lang/js/file.rs`                    | `ProgramInput::checked` proves original admitted source, whole SourceBlock/profile/default parser options; FileProducer visits the Program once. Script and definition units are incomplete.            |
+| `lang/js/file/walk.rs`                                   | The actual original statement event rejects setup/ordinary eligibility for every function before its normal declaration event; existing body statements and references retain their real lexical scope. |
+| `lang/js/file/walk/functions.rs`                         | A genuine FunctionDeclaration supplies original return annotation, formal parameters, body and authored span. The old blanket return refusal is the only proposed production seam.                      |
+| `lang/js/file/walk/annotations.rs`                       | The existing private primitive match returns only bigint/boolean/null/number/string/symbol/undefined. #7756 exposes a private boolean check; it adds no annotation row.                                 |
+| `davinci/vize_l4/src/targets/ts.rs`                      | Completed whole-Module File projects its exact authored bytes plus the existing module suffix; original File/unit borrow and link sinks remain unchanged.                                               |
+| `crates/vize_canon/src/corsa_bridge/original_program.rs` | Existing explicit checker authenticates actual source path/bytes/configured root/project and independent full LSP report; no default or unsaved-buffer claim.                                           |
 
 Paths below `lang/js` are beneath `davinci/vize_l2/src/`.
 
@@ -100,17 +100,17 @@ The following are planned laws, not tests run by this private design.
 Freeze inputs and full expected observations before Actions; do not derive
 expected issue vectors, diagnostics or authored coordinates from native output.
 
-| Family | Required proof |
-| --- | --- |
-| Exact old boundary | Preserve `function f(value): number { return value; }` byte-for-byte as a new positive, removing only that exact obsolete entry from the old function negative list; every other input/assertion stays. |
-| Seven keywords | Real TS and TSX observations admit each of bigint/boolean/null/number/string/symbol/undefined; original function/parameter declarations and value references have exact units/scopes/spans, with no added type references. |
-| Binding behavior | Typed-return function uses real parameters, recursion, forward root reads and sibling shadowing; lexical parents and post-function references remain original. Existing typed-parameter laws remain intact. |
-| Geometry/custody | Unicode, CRLF, comments and a nonzero original SourceBlock retain the same Program/Function/annotation pointers, authored declaration/use/function spans and exact source allocation. Real TSX owner cannot be replaced by generic File. |
-| Direct versus later export | Direct typed-return declaration is incomplete with exact original partial binding/export/issue; later `export { f }` resolves the genuine admitted function; untyped direct export remains unchanged. |
-| Other forms | Every non-keyword return type, unsupported function/parameter/body/sibling and unresolved read keeps complete authored issue vectors; no newly supported primitive annotation hides a later failure. |
-| Profile/source | Actual Script/d.ts/nondefault/unambiguous/copied-root observations retain original parser or ProgramInput refusal, without mutating a raw AST to fabricate a profile. |
-| Interruption/lifetime | Existing real observer unwind points also exercise a typed-return input; interrupted units remain incomplete, no later declarations are visited, normal original owners survive until their actual drop. Keep all old unwind controls. |
-| Setup boundary | A genuine once Descriptor/setup Program/File can be neutrally complete, while VueSetup and ordinary/native setup cursor refuse before consuming template children. No new SetupAnnotation or erase receipt. |
+| Family                     | Required proof                                                                                                                                                                                                                           |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Exact old boundary         | Preserve `function f(value): number { return value; }` byte-for-byte as a new positive, removing only that exact obsolete entry from the old function negative list; every other input/assertion stays.                                  |
+| Seven keywords             | Real TS and TSX observations admit each of bigint/boolean/null/number/string/symbol/undefined; original function/parameter declarations and value references have exact units/scopes/spans, with no added type references.               |
+| Binding behavior           | Typed-return function uses real parameters, recursion, forward root reads and sibling shadowing; lexical parents and post-function references remain original. Existing typed-parameter laws remain intact.                              |
+| Geometry/custody           | Unicode, CRLF, comments and a nonzero original SourceBlock retain the same Program/Function/annotation pointers, authored declaration/use/function spans and exact source allocation. Real TSX owner cannot be replaced by generic File. |
+| Direct versus later export | Direct typed-return declaration is incomplete with exact original partial binding/export/issue; later `export { f }` resolves the genuine admitted function; untyped direct export remains unchanged.                                    |
+| Other forms                | Every non-keyword return type, unsupported function/parameter/body/sibling and unresolved read keeps complete authored issue vectors; no newly supported primitive annotation hides a later failure.                                     |
+| Profile/source             | Actual Script/d.ts/nondefault/unambiguous/copied-root observations retain original parser or ProgramInput refusal, without mutating a raw AST to fabricate a profile.                                                                    |
+| Interruption/lifetime      | Existing real observer unwind points also exercise a typed-return input; interrupted units remain incomplete, no later declarations are visited, normal original owners survive until their actual drop. Keep all old unwind controls.   |
+| Setup boundary             | A genuine once Descriptor/setup Program/File can be neutrally complete, while VueSetup and ordinary/native setup cursor refuse before consuming template children. No new SetupAnnotation or erase receipt.                              |
 
 Expected first production diff: `walk/functions.rs` only, plus narrow existing
 function test registration/obsolete-list entry and new return-case test files.
