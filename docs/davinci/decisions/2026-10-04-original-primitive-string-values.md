@@ -117,3 +117,65 @@ classification with `is_primitive()` and adds genuine same-owner DOM/SSR
 BindingId, declaration class and const/mutable read equality laws. No unmerged
 SSR target source or artificial target dependency is imported. Fresh exact source
 and full protected acceptance remain required.
+
+## First protected composition and exact inherited attribution
+
+Exact corrected source `a77ef92b89` Check `37167993830` and all four required
+contexts succeeded. Genuine 96 JS/TS source classes, 21 same-owner DOM/SSR reads,
+legal strict literal and original enum/Declaration layout laws passed. The
+independent PR entered candidate `db719dc18a09` / Check `37168519585` after
+clean actual-main and healthy-tail unions. Its native 100 measurements and
+ratchets held, but the four formatter ceilings failed:
+
+| Formatter | Actual | Fixed ceiling |
+| --- | ---: | ---: |
+| simple SFC | 293896 | 293575 |
+| reused SFC | 275027 | 274723 |
+| large script | 929114 | 929044 |
+| complex template | 244583 | 244347 |
+
+The owned PR was promptly drafted and dequeued, including the raced fresh
+`b2bb7ed7` admission; its then-current queue and auto-merge were confirmed null. The failed raw job is retained
+at `/tmp/vize-primitive-string-db719-instruction-failure.log`. No red candidate
+or failed formatter measurement earns protected acceptance.
+
+The actual preceding candidate `20d07392b300` / Check `37168403389` already failed
+those same four ceilings before this provider. Its three complete formatter
+run JSON payloads are byte-identical to all three owned-candidate payloads,
+SHA256 `47244fdabf53df44ff1f78c52c7dff3abb6f9ff335342e45d33bd1069f5cf599`.
+Inputs and measurement methodology agree. Binary hashes differ (`5adf807e` versus
+`46514494`), so binary identity is not asserted. Glyph's normal dependencies are
+L0/L1, and this provider changes L2/L3; the observed failure predates its delta.
+Full tiny profiles and attribution receipt are retained at
+`/tmp/vize-primitive-string-a77-preflight-20261004/formatter-predecessor-attribution.json`.
+
+The failed prospective prefix included `f60de62e`; after its withdrawal, the
+independent healthy Canon candidate `1d91` passed all 104 fixed measurements.
+One new genuine owned candidate excluding that failed prefix is authorized after
+fresh actual-main/tail preflight and fresh exact source proof if its head changes.
+The held private `4aee` replay recorded this attribution but was not pushed, preserving
+the already healthy exact `a77` admission instead of invalidating its proof. No
+formatter source, calibration, instruction boundary, threshold, headroom or budget
+changed; the unrelated formatter optimization remained independent.
+
+## Literal protected acceptance
+
+The one fresh healthy candidate `154136bb049dc57252d3a5090687bd58caca87db`
+actually merged #7689 at `2026-10-04T02:08:56Z`, with a valid verified signature.
+Exact source remains `a77ef92b89`; protected Check `37169188504`, Nuxt
+`37169188157` and Musea `37169188134` are terminal success. All four full Rust
+shards pass (3856 + 3784 + 3714 + 3922 = 15,276), with no failures or skips.
+All 100 native and four formatter measurements pass their unchanged ceilings in
+three repetitions. Genuine 96 source classes, 21 same-owner DOM/SSR reads,
+legal literal, comment/value, original enum/Declaration layout and For preservation
+laws each pass in the fresh protected artifacts.
+
+The mandatory existing Vapor capture contains twelve standalone complete modules
+and maps with 26 configurations/23 hydrations, plus eleven scriptless whole modules
+and maps with 23 configurations/22 hydrations/58 retained original descendants.
+Actual loaded default-component identity and zero unmount residue hold. The packet
+is retained at `/tmp/vize-primitive-string-154-acceptance-20261004/receipt.json`,
+SHA256 `ef955ed7ea728167f91c07758d91e30032dc02249ae33a48accb476dbaaffce4`.
+These observations close this neutral provider only. The primitive setup Vapor
+component is not emitted by #7689; its separate L3 provider and genuine L4 consumer
+still require source, whole-module/map/runtime and protected acceptance.

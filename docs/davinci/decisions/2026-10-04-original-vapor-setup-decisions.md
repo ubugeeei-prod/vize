@@ -3,11 +3,12 @@
 Issues: [#6839](https://github.com/ubugeeei-prod/vize/issues/6839) and
 [#6840](https://github.com/ubugeeei-prod/vize/issues/6840).
 
-Status: private genuine provider, not published or accepted. The source baseline
-contains actual owning setup #7658, the actual canonical visitor from setup SSR
-#7684, actual nested interpolation #7672 and the separately source-green neutral
-string provider #7689. Literal neutral-provider acceptance remains a prerequisite
-before publication; no cross-target or independent-provider Stack is fabricated.
+Status: genuine provider prepared on literal main `c13900eff34e`, containing
+actually merged owning setup #7658, canonical setup SSR visitor #7684, nested
+interpolation #7672, same-Writer #7687 and neutral string #7689. Neutral #7689
+actually merged as signed `154136bb` with unchanged 104-by-three protected gates,
+full Rust and existing native captures. No independent-provider or cross-target
+Stack is fabricated; this L3 provider's own hosted and protected proof is pending.
 
 ## Sealed original input
 
