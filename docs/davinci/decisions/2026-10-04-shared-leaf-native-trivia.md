@@ -143,3 +143,32 @@ freeze has lifted; this performance Stack remains separately held pending final
 head qualification and protected delivery. Actual protected validation and literal
 merge remain required. Demonstrated 10x and native/default migration stay
 unfinished.
+
+## Queue staging conflict and replay
+
+The qualified admission at final source `0a5b836f90` was removed after an actual
+add/add projection conflict at #7719, not a failed diagnostic or timing claim.
+Independent #7743 adds the evolved three-corpus helpers; #7719 still introduced
+their two-corpus ancestors. Its projected bottom candidate `7489944cbb` and
+original parent `7a4323281d` produced conflicts in the corpus and protocol files.
+Final `0a5b836f90` and frozen #7743 `596183affa` already share identical corpus,
+protocol and leaf-corpus blobs. [The paired issue receipt](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5977489560) retains the exact source/projection facts and removal readback.
+
+Dequeuing bottom #7702 removed all five entries atomically; no auto-merge
+requests remained and independent entries were preserved. Bottom and top stay
+draft holds until the reconstituted complete prefix qualifies. The isolated
+replay inherits actual main `da894691fff4da81b4acbe71a935c7c67fb0539a` and all
+existing meaningful source/test/fixture/documentation commits. The earliest
+benchmark consumer now uses those final neutral helper bytes, hashes the leaf
+corpus and honors its `--no-config` args. Production leaf admission and later
+parity fixtures keep their original layer; final tuning and harness blobs match
+the previously measured top exactly, while newer independent main fixes are
+preserved. This is staging repair; it establishes no additional speed gain.
+
+Fresh exact-head source Actions for every layer and complete 36-case ordered
+diagnostic/profile proof plus controlled whole-command pairs against the new
+actual-main baseline are required. Retain the old raw measurements above as
+SHA-scoped evidence. Sequential projections with independent infrastructure
+changes must be clean before native Stack admission; unchanged 100+4 ceilings
+still require actual protected measurements. No prefix-only merge, actual
+delivery or demonstrated 10x is claimed by this replay.
