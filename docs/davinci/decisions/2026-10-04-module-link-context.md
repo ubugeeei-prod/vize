@@ -8,13 +8,16 @@ are unposted. This private prerequisite design refines the reviewed private
 DocumentLinks proposal `c5044a081a4f65d0b2db0709e08f136d16abb4f5` without
 changing that commit or its worktree. Frozen design `8074694ee89a3c8c6f36928a64509aa3a7266de5`
 received root and independent peer clearance after the original EOF correction.
-Root then authorized private source/law preparation on fresh main; build,
-execution, publication and queue admission still await frozen source review.
+Root then authorized private source/law preparation on fresh main. Full root
+and independent peer source review cleared `2a4ccc626e398f305771b20da9b9cc6d330ffa93`;
+source publication and hosted execution are authorized. Actual Actions,
+protected acceptance and merge evidence remain pending.
 
 ## Current source and boundary
 
-New isolated worktree base: literal main
-`b9be9065b872086726158b67d1b4e7b8dee78a14`.
+Historical design worktree baseline: literal main
+`b9be9065b872086726158b67d1b4e7b8dee78a14`. The current implementation
+worktree uses fresh literal main `da894691fff4da81b4acbe71a935c7c67fb0539a`.
 Actual #7737's Names configuration tickets and move-only `navigation/cache.rs`
 are present. Preserve those exact owners, routes, locks and lifecycle. Their
 parser/linked identities are not module context or project-resolution proof.
@@ -208,7 +211,8 @@ define and prove a bounded point-in-time physical target contract separately.
 ## Planned source slice and evidence
 
 The original implementation hold was satisfied by focused design review;
-private source preparation is now authorized, with source review before Actions.
+private source preparation was authorized, and complete source review now
+permits automatic Actions on the independent draft PR.
 Proposed narrow ownership is new `server/state/module_links.rs` and
 `source_project/project/host/modules.rs`, tiny state registration, the two real
 mutator hooks, result publication helper and foreground/shutdown/transport
@@ -303,5 +307,8 @@ filter in normal and no-default-features builds; existing source/RPC/minimal/
 strict recipes and all instruction caps remain. The paired workflow law records
 its exact recipe. This is source preparation only: no Rust build, test execution,
 Actions, publication, queue admission or runtime/native/default credit has been
-performed. Freeze for root and retained peer review before source qualification.
+performed by the private freeze. Root and retained peer cleared the complete
+source before publication; the freshest fetched main still equals actual da894.
+Automatic exact-source normal/minimal/strict Actions are the next qualification,
+followed only after source acceptance by protected full104 and actual merge.
 Target observation/event coverage and the true module-link consumer stay next.

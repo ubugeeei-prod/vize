@@ -4,7 +4,9 @@ Private paired comments for the
 [same-server context design](./2026-10-04-module-link-context.md).
 Neither comment is posted. Root and peer cleared frozen design 8074694; private
 source/law preparation on actual da894 is authorized. No runtime execution,
-publication or queue admission accompanies this frozen source review.
+publication or queue admission accompanied the frozen source review. Root and
+peer cleared final2a4 and now authorize source publication and automatic Actions;
+the prepared comments below still await posting, with execution/merge pending.
 
 ## Draft comment for #6871
 
@@ -39,7 +41,7 @@ No inverse store/map/Names lock, I/O or await belongs under that gate.
 The repository record is
 `docs/davinci/decisions/2026-10-04-module-link-context.md`, linked from the
 canonical LSP paragraph in this same private change. The contract/callsite inventory is reviewed; private implementation preserves
-that boundary and must receive root/peer source review before Actions.
+that boundary and now has complete root/peer source clearance before Actions.
 Physical target observation/event coverage is next; no native link or module
 resolution readiness is granted by this metadata provider.
 
@@ -86,4 +88,4 @@ cancellation/empty/vectored controls. The actual background constructor owns no
 lease; pre-spawn drop is tested without an OS spawn-failure execution claim.
 Existing mandatory Actions gains exact normal/minimal module_link laws; no new
 campaign or cap change. All execution/source/protected/actual merge evidence is
-pending after frozen root/peer review. Target and dependent links remain next.
+pending after the completed frozen root/peer review. Target and dependent links remain next.
