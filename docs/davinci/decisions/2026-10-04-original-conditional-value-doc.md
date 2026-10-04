@@ -17,7 +17,13 @@ The first compact successor removed all three initial lints, then failed
 on one `explicit_auto_deref` lint before law execution; the next spelling uses
 Rust field auto-dereference to move the same boxed failure. Both failed heads
 and logs remain historical only. Fresh exact-source Actions, protected
-validation and actual merge remain required.
+validation and actual merge remain required. The subsequent head passed
+Clippy but failed to compile an identity-check closure with inferred
+lifetime-bearing raw pointer return types. The same four pointer addresses
+are cast to `*const ()` solely for equality in that test; every source/span,
+options, vector/root identity assertion and whole golden remains unchanged.
+This test-source typing repair changes no production API or ownership. The
+failed compile also has zero law execution credit.
 
 ## Same original header event
 
