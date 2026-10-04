@@ -5,10 +5,7 @@ use vize_l0::{Allocator, Box, Span, id::NodeId, side_table::SideTable};
 
 use super::{Artifact, ArtifactError, ArtifactParts, RejectedArtifact, check};
 use crate::expr::ExprRef;
-use crate::op::{
-    Attribute, BindingOp, CommentOp, ComponentOp, ElementOp, InterpolationOp, Namespace, Op,
-    Region, TextOp,
-};
+use crate::op::{Attribute, BindingOp, CommentOp, InterpolationOp, Namespace, Op, Region, TextOp};
 use crate::provenance::ProvenanceRecord;
 use crate::walk::PageWalk;
 
@@ -35,6 +32,7 @@ enum Owner<'a> {
 }
 
 mod binding;
+mod close;
 mod factory;
 mod original_for;
 mod region;
@@ -247,57 +245,6 @@ impl<'a> Builder<'a> {
             .ok_or(ArtifactError::UnfinishedOwner { node: id })?;
         let _ = self.close(frame);
         Ok(())
-    }
-
-    fn close(
-        &mut self,
-        frame: Frame<'a>,
-    ) -> Option<core::ptr::NonNull<crate::op::OriginalForOp<'a>>> {
-        let children = Region { ops: frame.ops };
-        let bindings = frame.bindings;
-        let span = frame.span;
-        let mut original = None;
-        let op = match frame.owner {
-            Owner::OriginalFor(id) => {
-                let owner = Box::new_in(
-                    crate::op::OriginalForOp {
-                        id,
-                        region: children,
-                        span,
-                    },
-                    &self.allocator,
-                );
-                original = Some(core::ptr::NonNull::from(owner.as_ref()));
-                Op::OriginalFor(owner)
-            }
-            Owner::Element {
-                tag,
-                namespace,
-                attributes,
-            } => Op::Element(Box::new_in(
-                ElementOp {
-                    tag,
-                    namespace,
-                    attributes,
-                    bindings,
-                    children,
-                    span,
-                },
-                &self.allocator,
-            )),
-            Owner::Component { name, attributes } => Op::Component(Box::new_in(
-                ComponentOp {
-                    name,
-                    attributes,
-                    bindings,
-                    children,
-                    span,
-                },
-                &self.allocator,
-            )),
-        };
-        self.push(op);
-        original
     }
 
     fn push(&mut self, op: Op<'a>) {
