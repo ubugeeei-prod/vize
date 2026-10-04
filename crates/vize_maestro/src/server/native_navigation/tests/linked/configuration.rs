@@ -91,7 +91,7 @@ fn standard_native_real_no_op_configuration_keeps_original_complete_pending_wire
 }
 
 #[test]
-fn standard_native_route_ticket_from_foreign_equal_state_cannot_publish_real_wire() {
+fn foreign_equal_state_ticket_refuses_native_endpoint_and_fresh_rpc_still_succeeds() {
     let mut service = service(true, true);
     open(&mut service, SOURCE, 1);
     let foreign = ServerState::new();
