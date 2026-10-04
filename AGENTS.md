@@ -42,6 +42,11 @@ product fix-history gates still apply; use the [order record](./docs/davinci/dec
   [decision record](./docs/davinci/decisions/2026-09-27-level-restructure.md).
 - **Keep PRs small** and give them conventional titles, e.g.
   `refactor(l1): …`.
+- **Use `wt` for isolated worktrees** and assign independent slices to
+  sub-agents. Recheck remote heads before writing to an existing PR branch.
+- **Prioritize third-party reports.** Include the issue reporter in a
+  `Co-authored-by` trailer with a verified public identity. Carry fixes through
+  actual merge and frequent releases of the existing products.
 - **Put moves in move-only commits.** Git rename detection then keeps
   in-flight fixes rebasable.
 - **Script renames.** On a conflict, re-run the script on `main`.
@@ -74,7 +79,10 @@ product fix-history gates still apply; use the [order record](./docs/davinci/dec
 - **Performance:**
   - Add no extra pipeline stages and no serialization between levels.
   - Instruction-count gates run in the merge queue.
-  - Budgets only ratchet down.
+- Budgets only ratchet down.
+- The type checker has a **10x speed target**. Record a reproducible baseline,
+  compare the same workload and diagnostics on Actions, and report the measured
+  result separately from the target.
 - **Asking the maintainer:** ask only for decisions that are genuinely
   theirs, and present them as multiple-choice options.
 

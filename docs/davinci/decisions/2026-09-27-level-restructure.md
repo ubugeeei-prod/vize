@@ -248,7 +248,7 @@ Tracked in [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) and [#6855
 - **Other frameworks:** only the neutral types and names are designed before the talk. Flow is not in scope at all.
 - **Goal (A):** for the in-scope inputs, all five products run on the shared L1/L2 structure as far as native work goes, with per-product native-only acceptance rates.
 - **Deletion (B)** follows later, under the criteria above; the fail-closed [readiness audit and crate-removal guard](./2026-09-28-deletion-readiness.md) record #6854's product, tier, dialect, project and stability blockers; route swaps remain unguarded.
-- Unfinished work is reported as unfinished. There are no legacy-backed shortcuts. [The October delivery checkpoints](./2026-10-01-native-delivery-checkpoints.md) set October 10/17 targets and October 18–23 stabilization, without a deadline guarantee.
+- Unfinished work is reported as unfinished. There are no legacy-backed shortcuts. [The October delivery checkpoints](./2026-10-01-native-delivery-checkpoints.md) set October 10/17 targets and October 18–23 stabilization, without a deadline guarantee. The [October 4 delivery instruction](./2026-10-04-delivery-control.md) prioritizes community reports, actual PR/Stack/queue delivery, frequent existing-product releases and a measured 10x typechecker target.
 
 ## Performance
 
