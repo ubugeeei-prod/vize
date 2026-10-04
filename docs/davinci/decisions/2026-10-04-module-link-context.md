@@ -17,7 +17,10 @@ protected acceptance and merge evidence remain pending.
 
 Historical design worktree baseline: literal main
 `b9be9065b872086726158b67d1b4e7b8dee78a14`. The current implementation
-worktree uses fresh literal main `da894691fff4da81b4acbe71a935c7c67fb0539a`.
+reviewed implementation used literal main `da894691fff4da81b4acbe71a935c7c67fb0539a`.
+The current isolated replay uses literal main
+`9702c014e06a268d2651202b7fcb951db7e729df`; the original design and implementation
+worktrees remain preserved.
 Actual #7737's Names configuration tickets and move-only `navigation/cache.rs`
 are present. Preserve those exact owners, routes, locks and lifecycle. Their
 parser/linked identities are not module context or project-resolution proof.
@@ -308,7 +311,26 @@ strict recipes and all instruction caps remain. The paired workflow law records
 its exact recipe. This is source preparation only: no Rust build, test execution,
 Actions, publication, queue admission or runtime/native/default credit has been
 performed by the private freeze. Root and retained peer cleared the complete
-source before publication; the freshest fetched main still equals actual da894.
+source before initial publication on actual da894. The subsequent replay
+preserves the reviewed implementation/law blobs and every incoming decision;
+only the shared central decision paragraph needed conflict resolution.
 Automatic exact-source normal/minimal/strict Actions are the next qualification,
 followed only after source acceptance by protected full104 and actual merge.
 Target observation/event coverage and the true module-link consumer stay next.
+
+## Publication replay
+
+Draft [#7771](https://github.com/ubugeeei-prod/vize/pull/7771) first published on
+actual da894 with paired issue decisions. Main then advanced through #7762,
+#7761, #7767 and #7768. A new `wt` replays all genuine commits, retaining the
+separate behavior-preserving extraction commits and the old source/worktree.
+The current base is literal `9702c014e06a268d2651202b7fcb951db7e729df`. The old b7 Actions
+reported Rust-builder and tooling failures; their full logs are retained.
+Rust E0282 is repaired by an explicit `Vec<Value>` annotation in the unchanged
+whole-frame decoder. The tooling boundary now recognizes only the exact
+reviewed host `ProjectModel` import at `module_links.rs`, with new foreign-path,
+alias, storage, glob and other-call negatives; all old boundary vectors remain.
+All other product/law blobs equal the reviewed source. The failed logs grant
+no acceptance to the replay. Current-head hosted normal/minimal,
+older controls and strict warnings must pass before protected full104/merge.
+Physical target observation/events and the true link consumer remain next.

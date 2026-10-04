@@ -39,5 +39,11 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       "host_project_selection",
     );
   }
+  if (file === "crates/vize_maestro/src/server/state/module_links.rs") {
+    storage = storage.replace(
+      /^use vize_carton::config::ProjectModel;$/gmu,
+      "host_applied_project_selection",
+    );
+  }
   return withoutProfileHostImports(withoutI18nHostImports(storage, file), file);
 }

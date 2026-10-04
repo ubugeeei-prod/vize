@@ -93,3 +93,16 @@ lease; pre-spawn drop is tested without an OS spawn-failure execution claim.
 Existing mandatory Actions gains exact normal/minimal module_link laws; no new
 campaign or cap change. All execution/source/protected/actual merge evidence is
 pending after the completed frozen root/peer review. Target and dependent links remain next.
+
+## Initial publication replay
+
+The first independent draft #7771 and both actual issue comments preserve the
+reviewed da894/2a4 preparation. Main advanced immediately after publication;
+a fresh isolated replay onto literal `9702c014e06a268d2651202b7fcb951db7e729df` preserves all
+reviewed production and whole-law semantics, pure extraction commits and
+incoming central prose. Rust E0282 receives only an explicit `Vec<Value>` law
+annotation; the storage guard gains an exactpath/exactsymbol host ProjectModel
+allowance with genuine storage/alias/foreign negatives, preserving all old rows.
+The old b7 source run failed in Rust-builder/tooling and supplies no current
+acceptance. Fresh automatic source gates and protected full104/actual merge
+remain required; target observation/events and native DocumentLinks stay next.

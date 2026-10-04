@@ -135,7 +135,7 @@ fn frame(value: &Value) -> Vec<u8> {
 }
 fn frames(bytes: &[u8]) -> Vec<Value> {
     let mut input = bytes;
-    let mut values = Vec::new();
+    let mut values: Vec<Value> = Vec::new();
     while !input.is_empty() {
         let end = input
             .windows(4)
