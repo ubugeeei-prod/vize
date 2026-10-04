@@ -1,5 +1,6 @@
 //! Opt-in configured native bare-template callbacks with whole-input refusal.
-//! Only the genuine filename root callback is provided initially. Existing
+//! Generic checked element dispatch requires an actual registered capability.
+//! The filename root callback remains the only provided builtin here. Existing
 //! selected header/child APIs and the default product route are unchanged.
 
 use vize_l0::{SourceFrameError, Span, String, config::VueVersion};

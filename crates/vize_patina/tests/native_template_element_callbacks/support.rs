@@ -2,7 +2,7 @@ use std::sync::{
     Arc, Mutex,
     atomic::{AtomicBool, AtomicUsize, Ordering},
 };
-use vize_l0::Span;
+use vize_l0::{Span, String, ToCompactString, cstr};
 use vize_l1::markup::{DirectiveName, NativeLintComponent};
 use vize_patina::{
     HelpLevel, LintContext, LintResult, Linter, Locale, Rule, RuleCategory, RuleMeta, RuleRegistry,
@@ -91,7 +91,7 @@ impl Rule for Audit {
         Some(self)
     }
     fn run_on_template<'a>(&self, context: &mut LintContext<'a>, root: &RootNode<'a>) {
-        let marker = format!("{}/root", self.marker);
+        let marker = cstr!("{}/root", self.marker);
         context.warn_with_help(
             context.t_fmt(MESSAGE, &[("name", &marker)]),
             &root.loc,
@@ -134,11 +134,11 @@ impl NativeTemplateRule for Audit {
         self.events
             .lock()
             .unwrap()
-            .push(format!("{}/root", self.marker));
+            .push(cstr!("{}/root", self.marker));
         if let Some(flag) = &self.widen {
             flag.store(true, Ordering::SeqCst);
         }
-        let marker = format!("{}/root", self.marker);
+        let marker = cstr!("{}/root", self.marker);
         context.warn_root_with_help(MESSAGE, &[("name", &marker)], HELP);
         Ok(())
     }
@@ -151,7 +151,7 @@ impl NativeTemplateRule for Audit {
             element.original().component(),
             context.owner().component()
         ));
-        self.events.lock().unwrap().push(format!(
+        self.events.lock().unwrap().push(cstr!(
             "{}/element:{}",
             self.marker,
             element.original().surface().tag()
@@ -199,13 +199,13 @@ impl NativeTemplateRule for Audit {
             observed.push(AttributeObservation {
                 ordinal: original.ordinal(),
                 name: original.surface().name.text.into(),
-                value: attribute.value().map(str::to_owned),
+                value: attribute.value().map(ToCompactString::to_compact_string),
                 range: span,
                 head: attribute.directive(),
                 binding,
                 argument,
             });
-            self.events.lock().unwrap().push(format!(
+            self.events.lock().unwrap().push(cstr!(
                 "{}/attribute:{}:{}-{}:{}:{:?}:{:?}:{:?}",
                 self.marker,
                 original.ordinal(),
@@ -279,9 +279,9 @@ pub fn pair(linter: &Linter, source: &str, file: &str) -> LintResult {
     let original = linter.lint_template(source, file);
     let native = linter.lint_native_template(source, file).unwrap();
     assert_eq!(complete(&native), complete(&original), "{source}");
-    assert_eq!(format!("{native:#?}"), format!("{original:#?}"));
+    assert_eq!(cstr!("{native:#?}"), cstr!("{original:#?}"));
     let repeat = linter.lint_native_template(source, file).unwrap();
-    assert_eq!(format!("{repeat:#?}"), format!("{native:#?}"));
+    assert_eq!(cstr!("{repeat:#?}"), cstr!("{native:#?}"));
     native
 }
 
@@ -289,6 +289,18 @@ pub fn pair(linter: &Linter, source: &str, file: &str) -> LintResult {
 /// generic rule's original callbacks on a fixed, valid control. Only authored
 /// ranges vary below; this is a dev oracle, not a historical output recapture.
 pub fn original_single(linter: &Linter, source: &str, file: &str, attributes: &[&str]) {
+    assert_eq!(
+        complete(&linter.lint_template(source, file)),
+        single_expected(linter, source, file, attributes)
+    );
+}
+
+pub fn single_expected(
+    linter: &Linter,
+    source: &str,
+    file: &str,
+    attributes: &[&str],
+) -> serde_json::Value {
     let control = linter.lint_template("<div data-control='text'/>", file);
     assert_eq!(control.diagnostics.len(), 2);
     let control = complete(&control);
@@ -300,11 +312,8 @@ pub fn original_single(linter: &Linter, source: &str, file: &str, attributes: &[
         diagnostic["end"] = range.end.into();
         diagnostics.push(diagnostic);
     }
-    assert_eq!(
-        complete(&linter.lint_template(source, file)),
-        serde_json::json!({
-            "filename": file, "diagnostics": diagnostics, "error_count": 0,
-            "warning_count": attributes.len() + 1,
-        })
-    );
+    serde_json::json!({
+        "filename": file, "diagnostics": diagnostics, "error_count": 0,
+        "warning_count": attributes.len() + 1,
+    })
 }

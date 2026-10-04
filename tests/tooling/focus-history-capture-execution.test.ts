@@ -6,7 +6,10 @@ import { test } from "node:test";
 import { buildProductObserver } from "../differential/observer-build.ts";
 import { FOCUS_OBSERVER } from "../differential/focus-history.ts";
 import { runFocusCapture } from "../differential/focus-history-capture.ts";
-import { compareFocusCurrentOutputs } from "../differential/focus-history-current-oracle.ts";
+import {
+  compareFocusCurrentOutputs,
+  validateFocusCurrentComparison,
+} from "../differential/focus-history-current-oracle.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -34,6 +37,7 @@ void test("source-built focus witnesses match reviewed whole current outputs and
     );
     const comparison = compareFocusCurrentOutputs(root, report, built.receipt);
     fs.writeFileSync(comparisonPath, `${JSON.stringify(comparison, null, 2)}\n`);
+    validateFocusCurrentComparison(root, comparison, built.receipt);
     t.diagnostic(
       `Complete current-output comparison and unchanged raw capture/source receipt: ${evidenceDir}`,
     );
@@ -50,6 +54,23 @@ void test("source-built focus witnesses match reviewed whole current outputs and
         pairedComparisons: 0,
       },
       JSON.stringify(report.rows, null, 2),
+    );
+    assert.deepEqual(
+      comparison.summary,
+      {
+        reviewedCurrentOutputOracles: 8,
+        completeLegacyMatches: 8,
+        nativeRefusalMatches: 8,
+        nativeRefused: 8,
+        currentOutputDrift: 0,
+        captureFailures: 0,
+        wholeCurrentComparisons: 32,
+        historicalCompleteOutputAuthorities: 0,
+        nativeHandled: 0,
+        nativeEquivalent: 0,
+        pairedComparisons: 0,
+      },
+      JSON.stringify(comparison.rows, null, 2),
     );
   } catch (error) {
     // Compile logs already retained by the shared source-build helper are not

@@ -9,7 +9,13 @@ fn normally_owned_checked_attribute_reports_only_its_exact_component_and_full_ra
     let root =
         NativeLintComponent::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
             .unwrap();
-    let element = root.children().next().unwrap().into_element().unwrap();
+    let mut children = root.children();
+    assert!(matches!(
+        children.next().unwrap().surface(),
+        vize_l1::SurfaceChild::Text(_)
+    ));
+    let element = children.next().unwrap().into_element().unwrap();
+    assert_eq!(element.ordinal(), 1);
     let original = element.attributes().next().unwrap();
     let (checked, binding) = header::wide_binding(&element, original).unwrap();
     let proof = NativeTemplateAttribute::from_checked(
@@ -84,4 +90,22 @@ fn same_source_buffer_and_equal_span_cannot_substitute_for_the_contexts_original
     let result = context.finish();
     assert!(result.diagnostics.is_empty());
     assert_eq!((result.error_count, result.warning_count), (0, 0));
+}
+
+#[test]
+fn an_authentic_attribute_of_another_element_cannot_join_a_same_component_checked_header() {
+    let allocator = Allocator::new();
+    let source = "<div title='same'/><span title='same'/>";
+    let root =
+        NativeLintComponent::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
+            .unwrap();
+    let mut children = root.children();
+    let first = children.next().unwrap().into_element().unwrap();
+    let second = children.next().unwrap().into_element().unwrap();
+    assert!(core::ptr::eq(first.component(), second.component()));
+    let original = first.attributes().next().unwrap();
+    assert_eq!(
+        header::wide_binding(&second, original).err().unwrap(),
+        crate::native::NativeLintRefusal::SourceMismatch
+    );
 }

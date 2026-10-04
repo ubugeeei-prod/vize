@@ -296,3 +296,5 @@ fn unsupported_host_dialect_options_refuse_before_any_actual_profile_or_callback
         assert!(log.lock().unwrap().is_empty());
     }
 }
+
+mod unprovided;

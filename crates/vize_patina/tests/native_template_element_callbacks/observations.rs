@@ -1,5 +1,6 @@
 use super::support::*;
 use std::sync::atomic::Ordering;
+use vize_l0::{String, cstr};
 use vize_l1::markup::{ArgSyntax, DirectivePrefix};
 use vize_patina::{HelpLevel, Locale, native::template::NativeTemplateAttributeProfile as Profile};
 
@@ -87,27 +88,27 @@ fn fixed_bind_prop_full_names_modifiers_and_non_ascii_arguments_retain_original_
         assert_eq!(geometry.prefix, prefix);
         assert_eq!(
             geometry.arg,
-            Some(ArgSyntax::Static(span(&source, argument)))
+            Some(ArgSyntax::Static(span(source, argument)))
         );
-        assert_eq!(actual.argument, Some(span(&source, argument)));
+        assert_eq!(actual.argument, Some(span(source, argument)));
         assert_eq!(actual.name, head);
         assert_eq!(actual.binding, "bind");
         assert_eq!(actual.value.as_deref(), Some(value));
         if let Some(name) = name {
-            assert_eq!(geometry.name, span(&source, name));
+            assert_eq!(geometry.name, span(source, name));
         } else {
             assert_eq!(
                 geometry.name,
-                vize_l0::Span::new(span(&source, head).start, span(&source, head).start)
+                vize_l0::Span::new(span(source, head).start, span(source, head).start)
             );
         }
-        let end = span(&source, head).end;
+        let end = span(source, head).end;
         assert_eq!(
             geometry.modifiers,
             if modifiers.is_empty() {
                 vize_l0::Span::new(end, end)
             } else {
-                span(&source, modifiers)
+                span(source, modifiers)
             }
         );
     }
@@ -128,7 +129,7 @@ fn nested_quoted_and_template_literal_dynamic_heads_are_lexical_observations_not
             DirectivePrefix::Full,
         ),
     ] {
-        let source = format!("界\r\n<div {head}=\"opaque\"></div>");
+        let source = cstr!("界\r\n<div {head}=\"opaque\"></div>");
         for locale in LOCALES {
             let rule = Audit::new(&FIRST, "actual", Profile::Bindings, events());
             let observations = rule.observations.clone();
@@ -141,10 +142,7 @@ fn nested_quoted_and_template_literal_dynamic_heads_are_lexical_observations_not
             let attribute = &observed[0].attributes[0];
             assert_eq!(attribute.name, head);
             assert_eq!(attribute.binding, "dynamic-bind");
-            assert_eq!(
-                attribute.range,
-                span(&source, &format!("{head}=\"opaque\""))
-            );
+            assert_eq!(attribute.range, span(&source, &cstr!("{head}=\"opaque\"")));
             assert_eq!(attribute.argument, Some(span(&source, argument)));
             assert_eq!(
                 attribute.head.unwrap().arg,
@@ -179,11 +177,13 @@ fn opaque_values_and_lexically_complete_invalid_javascript_do_not_gain_semantic_
 #[test]
 fn wide_nested_headers_preserve_full_original_output_and_preorder_without_allocation_free_credit() {
     let attributes = |prefix: char| {
-        (0..12)
-            .map(|n| format!(" {prefix}{n}='{prefix}{n}'"))
-            .collect::<String>()
+        let mut header = String::new("");
+        for n in 0..12 {
+            header.push_str(cstr!(" {prefix}{n}='{prefix}{n}'").as_str());
+        }
+        header
     };
-    let source = format!(
+    let source = cstr!(
         "<div{}><section{}><span{}/></section></div>",
         attributes('a'),
         attributes('b'),
@@ -211,7 +211,7 @@ fn wide_nested_headers_preserve_full_original_output_and_preorder_without_alloca
             assert_eq!(attribute.ordinal, ordinal);
             assert_eq!(
                 attribute.range,
-                span(&source, &format!("{prefix}{ordinal}='{prefix}{ordinal}'"))
+                span(&source, &cstr!("{prefix}{ordinal}='{prefix}{ordinal}'"))
             );
         }
     }

@@ -1,4 +1,5 @@
 use super::support::*;
+use vize_l0::cstr;
 use vize_patina::{
     HelpLevel, Locale,
     native::{
@@ -32,15 +33,23 @@ fn incomplete_dynamic_lexer_heads_preclude_all_root_and_element_callbacks() {
                 "even pending root callbacks must not run"
             );
             let original = configured.lint_template(source, "exact.vue");
-            assert!(
-                original
-                    .diagnostics
-                    .iter()
-                    .any(|d| d.rule_name == "parser/template")
-            );
+            let full = source
+                .strip_prefix("<div ")
+                .unwrap()
+                .strip_suffix("/>")
+                .unwrap();
+            let mut expected = single_expected(&configured, source, "exact.vue", &[full]);
+            let start = source.find('=').unwrap() as u32;
+            expected["diagnostics"].as_array_mut().unwrap().push(serde_json::json!({
+                "rule_name": "parser/template", "severity": "error",
+                "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+                "start": start, "end": start + 1, "help": null, "labels": [], "fix": null,
+            }));
+            expected["error_count"] = 1.into();
+            assert_eq!(complete(&original), expected);
             assert_eq!(
-                format!("{original:#?}"),
-                format!("{:#?}", configured.lint_template(source, "exact.vue")),
+                cstr!("{original:#?}"),
+                cstr!("{:#?}", configured.lint_template(source, "exact.vue")),
                 "retain complete original error metadata/order, never partial native clean output"
             );
         }
@@ -87,7 +96,7 @@ fn unsupported_event_and_structural_headers_cannot_publish_previously_pending_el
         ("<span @click='handler'/>", "@click='handler'"),
         ("<span v-show='opaque'/>", "v-show='opaque'"),
     ] {
-        let source = format!("<div id='first'/>{late}");
+        let source = cstr!("<div id='first'/>{late}");
         for locale in LOCALES {
             let log = events();
             let configured = linter(
@@ -295,3 +304,6 @@ fn callback_error_discards_its_own_pending_warning_and_stops_later_actual_instan
     assert!(!observed.iter().any(|e| e.starts_with("second/element:")));
     assert!(!observed.iter().any(|e| e.contains("element:span")));
 }
+
+mod geometry;
+mod parser;

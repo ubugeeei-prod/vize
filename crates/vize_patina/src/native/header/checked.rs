@@ -180,6 +180,9 @@ impl<'o, 'a> CheckedAttribute<'o, 'a> {
                 span: self.head_span,
             });
         };
+        if WIDE {
+            self.binding_geometry(head, argument)?;
+        }
         let range = match argument {
             ArgSyntax::Static(range) | ArgSyntax::Dynamic(range) => range,
         };
@@ -195,6 +198,45 @@ impl<'o, 'a> CheckedAttribute<'o, 'a> {
             // lexer error. This is HTML-head completion, never JS validity.
             ArgSyntax::Dynamic(argument) => AttributeBinding::DynamicBind { argument },
         })
+    }
+
+    /// The existing decomposition may overwrite an earlier dynamic argument
+    /// with a closed suffix or a second argument. A clean lexer alone cannot
+    /// grant the wider view that category. Join only retained absolute spans
+    /// and their constant boundary bytes; no head scan or decomposition repeats.
+    fn binding_geometry(
+        &self,
+        head: DirectiveName,
+        argument: ArgSyntax,
+    ) -> Result<(), NativeLintRefusal> {
+        let refusal = || NativeLintRefusal::UnresolvedBinding {
+            span: self.head_span,
+        };
+        let block = self.original.component().block();
+        let origin = match head.prefix {
+            DirectivePrefix::Bind | DirectivePrefix::Prop => self.head_span.start + 1,
+            DirectivePrefix::Full if head.name.end < self.head_span.end => {
+                if attribute::project(block, Span::new(head.name.end, head.name.end + 1))? != ":" {
+                    return Err(refusal());
+                }
+                head.name.end + 1
+            }
+            _ => return Err(refusal()),
+        };
+        let valid = match argument {
+            ArgSyntax::Static(range) => range.start == origin && range.end == head.modifiers.start,
+            ArgSyntax::Dynamic(range) => {
+                range.start == origin + 1
+                    && range.end < self.head_span.end
+                    && range.end + 1 == head.modifiers.start
+                    && attribute::project(block, Span::new(origin, origin + 1))? == "["
+                    && attribute::project(block, Span::new(range.end, range.end + 1))? == "]"
+            }
+        };
+        if !valid {
+            return Err(refusal());
+        }
+        Ok(())
     }
 }
 
