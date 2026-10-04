@@ -16,5 +16,7 @@ mod package_registration_cache_tests;
 mod package_registration_shadow_tests;
 #[path = "imports_package_registration_tests.rs"]
 mod package_registration_tests;
+#[path = "imports_source_cache_tests.rs"]
+mod source_cache_tests;
 #[path = "imports_tests.rs"]
 mod tests;

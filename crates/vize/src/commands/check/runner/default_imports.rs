@@ -95,7 +95,7 @@ pub(super) fn collect_default_run_files(
     retain_unignored(&mut files, context.check_ignore_set);
     let inputs = files.clone();
     let mut reported_files = canonical_file_set(&files, canonical_paths);
-    let mut import_session = LocalImportSession::new(resolver);
+    let mut import_session = LocalImportSession::with_source_reuse(resolver);
     let discovered = register_transitive_local_imports_with_session(
         &mut files,
         LocalImportContext {

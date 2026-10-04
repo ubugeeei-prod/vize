@@ -167,7 +167,11 @@ fn prepare_and_execute(
     let mut authored_imports = Vec::new();
     let mut explicit_program_declarations = Vec::new();
     let mut package_routes = std::mem::take(&mut candidate.package_routes);
-    let mut import_session = LocalImportSession::new(package_route_resolver);
+    let mut import_session = if args.patterns.is_empty() && candidate.rebuild_supporting_files {
+        LocalImportSession::with_source_reuse(package_route_resolver)
+    } else {
+        LocalImportSession::new(package_route_resolver)
+    };
     // Validate only the paths requested by the user. Their relative imports
     // may legitimately leave this root and still belong to the TS program.
     validate_inputs_in_root(explicit_input_root, &candidate.inputs, validate_inputs)?;

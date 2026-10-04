@@ -99,13 +99,13 @@ pub(super) fn collect_transitive_local_imports_with_session(
         let Some(dir) = file.parent() else {
             continue;
         };
-        let Ok(source) = std::fs::read_to_string(&file) else {
+        let Ok(occurrences) = session.source_occurrences.occurrences(&file) else {
             continue;
         };
         // Scan the raw file text directly — the byte scanner only reacts to
         // `import`/`from` string operands, so an SFC's `<template>`/`<style>`
         // are inert and no `.vue` parse is needed on this hot path.
-        for occurrence in extract_module_specifier_occurrences(&source) {
+        for occurrence in occurrences {
             let specifier = occurrence.specifier;
             let relative_specifier = is_relative_specifier(&specifier);
             let absolute_specifier = Path::new(specifier.as_str()).is_absolute();
