@@ -153,3 +153,60 @@ fn parallel_consumers_keep_cycles_and_missing_exports_explicit() {
         }
     });
 }
+
+#[test]
+fn warmed_dependency_facts_do_not_expand_the_world_admission_limit() {
+    let dir = tempfile::tempdir().unwrap();
+    let filename = dir.path().join("Host.vue");
+    let count = super::MAX_MODULES + 1;
+    let sources = TypeSourceSnapshot::new((0..count).map(|index| {
+        (
+            dir.path().join(cstr!("api{index}.ts").as_str()),
+            Arc::<str>::from(cstr!("export type Type{index} = {index};").as_str()),
+        )
+    }));
+    for index in 0..count {
+        let source =
+            cstr!("import type {{ Type{index} }} from './api{index}'; type Root = Type{index}");
+        let world = ScriptCompileContext::new(&source).resolve_type_world_with_sources(
+            filename.to_str().unwrap(),
+            None,
+            false,
+            &sources,
+        );
+        assert_eq!(body(&world, &cstr!("Type{index}")), cstr!("{index}"));
+    }
+    let mut source = vize_carton::String::default();
+    for index in 0..count {
+        source.push_str(&cstr!(
+            "import type {{ Type{index} }} from './api{index}';\n"
+        ));
+    }
+    source.push_str("type Root = [");
+    for index in 0..count {
+        source.push_str(&cstr!("Type{index},"));
+    }
+    source.push_str("];");
+    let world = ScriptCompileContext::new(&source).resolve_type_world_with_sources(
+        filename.to_str().unwrap(),
+        None,
+        false,
+        &sources,
+    );
+    assert_eq!(
+        world
+            .modules
+            .values()
+            .filter(|module| module.complete)
+            .count(),
+        super::MAX_MODULES
+    );
+    assert_eq!(
+        world
+            .modules
+            .values()
+            .filter(|module| !module.complete)
+            .count(),
+        2
+    );
+}

@@ -16,6 +16,8 @@ use vize_carton::{FxHashMap, String};
 use super::external_types::FileTypeSummary;
 use super::type_world::ParsedTypeModule;
 
+type ModuleCell = Arc<OnceLock<Option<ParsedTypeModule>>>;
+
 #[derive(Debug, Default)]
 pub struct TypeSourceSnapshot {
     overlays: FxHashMap<PathBuf, Arc<str>>,
@@ -23,7 +25,7 @@ pub struct TypeSourceSnapshot {
     resolutions: Mutex<FxHashMap<(PathBuf, String), Option<PathBuf>>>,
     pub(super) summaries: Mutex<FxHashMap<PathBuf, FileTypeSummary>>,
     /// Unresolved dependency facts; each world resolves targets on its own clone.
-    pub(super) modules: Mutex<FxHashMap<PathBuf, Arc<OnceLock<Option<ParsedTypeModule>>>>>,
+    pub(super) modules: Mutex<FxHashMap<PathBuf, ModuleCell>>,
 }
 
 impl TypeSourceSnapshot {
