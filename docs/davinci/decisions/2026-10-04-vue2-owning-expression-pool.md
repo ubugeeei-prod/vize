@@ -129,6 +129,15 @@ no speed result is implied. All fields, original laws and borrowed contracts
 stay exact. This failed build executed no new Rust unit/doctest evidence;
 the complete raw log and its SHA256 remain in the source review packet.
 
+The [actual archive-compilation receipt](https://github.com/ubugeeei-prod/vize/issues/6842#issuecomment-5980036160)
+records source4dc3/Check37202708927/build111437568840 passing production
+Clippy, then stopping at E0529 in the new repeated-occurrence law. The existing
+safe `children.as_slice()` preserves its exact two-child pattern and every
+original assertion/pointer/source fact. An unused import in a new law module
+is removed; all91 original law files, production, CF/positive bodies, fixtures,
+storage and caps stay exact. The archive refusal supplies no unit/doctest
+execution; its complete raw log remains historical evidence.
+
 ## Review and validation boundary
 
 Twelve new Rust laws cover complete before/after slot and descriptor facts,

@@ -1,4 +1,3 @@
-use super::*;
 use crate::check_fidelity;
 use crate::dialect::vue2::surface::parse_component_with_authored_block;
 use vize_l0::{Allocator, SourceRoot};

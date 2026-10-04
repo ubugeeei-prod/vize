@@ -164,7 +164,7 @@ fn repeated_callbacks_and_equal_bytes_keep_their_actual_distinct_original_roots(
         .observe_vue2_descriptor(&other_arena, &copy, options())
         .into_expression_pool();
     let component = pool.selected().unwrap().component();
-    let [first, second] = &*component.tree().children else {
+    let [first, second] = component.tree().children.as_slice() else {
         panic!("original direct parents");
     };
     let SurfaceChild::Element(first) = first else {
