@@ -199,7 +199,7 @@ improve, and imported 1T improves. Leaf 1T and both generated500 rows remain
 unresolved; generated500 default max does not establish a gain or 10x. Startup
 and native Program remain unknown; concurrent profile sums are not wall time.
 
-Independent raw audits retain all 396 process records, 168 corpus memberships,
+Independent raw audits retain all 396 process records, 168 authored CLI input/config metadata captures (not native/transitive graph captures or seven retained configs),
 36 cases/144 ordered runtime reports/36 positive profiles, 108 timed samples,
 12 timed profile references, all 48 profile hashes, 60 plant gates, 284 authored
 fixture files, eleven script hashes and three lock hashes. Regenerating the

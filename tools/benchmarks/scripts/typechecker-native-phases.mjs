@@ -27,6 +27,8 @@ import { corpusManifest, prepareCliCorpora, selfTestCorpus } from "./type-snapsh
 import { MODES, selfTest as selfTestProtocol, writeJson } from "./type-snapshot-cli-protocol.mjs";
 import { createPhaseRunner } from "./typechecker-native-phase-runner.mjs";
 import { selfTestNativePhaseReport } from "./typechecker-native-phase-report.mjs";
+import { profileNativeReferences } from "./typechecker-native-profile-corpus.mjs";
+import { captureSourceCustody } from "./typechecker-native-source-custody.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const COPIED = {
@@ -63,15 +65,11 @@ export function main(argv = process.argv.slice(2)) {
     3,
     "usage: typechecker-native-phases.mjs VIZE_BIN PROJECTION_BIN OUTPUT",
   );
-  assert.match(process.env.SOURCE_SHA ?? "", /^[0-9a-f]{40}$/u);
-  assert.equal(
-    successful(command("git", ["rev-parse", "HEAD"], ROOT), "git HEAD"),
-    process.env.SOURCE_SHA,
-  );
-  assert.equal(
-    successful(command("git", ["diff", "--name-only", "HEAD"], ROOT), "clean source"),
-    "",
-  );
+  const custody = captureSourceCustody({
+    driverRoot: ROOT,
+    sourceRoot: process.env.NATIVE_PHASE_SOURCE_ROOT,
+  });
+  const profiling = custody.nativeProfile !== "none";
   const output = resolve(argv[2]);
   const directory = `${output}.samples`;
   assert(!existsSync(output) && !existsSync(directory), "output must be fresh");
@@ -108,6 +106,11 @@ export function main(argv = process.argv.slice(2)) {
     "typechecker-native-phase-report.mjs",
     "typechecker-native-phase-runner.mjs",
     "typechecker-native-phase-forwarding.test.mjs",
+    "typechecker-native-profile-corpus-fixture.mjs",
+    ...["graph-archive", "profile-replay", "profile-corpus", "source-custody"].flatMap((name) => [
+      "typechecker-native-" + name + ".mjs",
+      "typechecker-native-" + name + ".test.mjs",
+    ]),
   ];
   for (const [file, expected] of Object.entries(COPIED))
     assert.equal(
@@ -115,29 +118,18 @@ export function main(argv = process.argv.slice(2)) {
       expected,
       "neutral generator drift",
     );
-  const mainSourceSha = process.env.MAIN_SOURCE_SHA ?? null;
-  if (mainSourceSha !== null) assert.match(mainSourceSha, /^[0-9a-f]{40}$/u);
-  const changedPaths = mainSourceSha
-    ? successful(
-        command("git", ["diff", "--name-only", mainSourceSha, "HEAD"], ROOT),
-        "source delta",
-      )
-        .split("\n")
-        .filter(Boolean)
-    : null;
-  const infrastructurePath =
-    /^(?:tools\/benchmarks\/scripts\/(?:typechecker-native-[^/]+|type-snapshot-cli-(?:corpus|leaf-corpus|protocol))\.mjs|crates\/vize_canon\/examples\/native_phase_projection\.rs|\.github\/workflows\/typechecker-native-phases\.yml|docs\/davinci\/decisions\/(?:2026-10-04-typechecker-native-phases|2026-09-27-level-restructure)\.md)$/u;
   const metadata = {
     schemaVersion: 1,
     kind: "native-backend-phase-observation",
-    sourceSha: process.env.SOURCE_SHA,
-    mainProductionSourceSha: mainSourceSha,
+    sourceSha: custody.source.sha,
+    driverSha: custody.driver.sha,
+    sourceCustody: custody,
+    mainProductionSourceSha: custody.baseline.sha,
     sourceBaseline: {
       mainHeadSha: process.env.MAIN_HEAD_SHA ?? null,
       prBaseSha: process.env.PR_BASE_SHA ?? null,
-      changedPaths,
-      productionMatchesBaseline:
-        changedPaths?.every((path) => infrastructurePath.test(path)) ?? null,
+      changedPaths: custody.changedPaths,
+      productionMatchesBaseline: custody.productionMatchesBaseline,
     },
     generatedAt: new Date().toISOString(),
     runId: process.env.GITHUB_RUN_ID ?? null,
@@ -188,10 +180,18 @@ export function main(argv = process.argv.slice(2)) {
         "early wrappers replay while other original shard checks may still run; every wrapper wall/phase value is instrumentation only",
       instructionCeilingsChanged: false,
       incrementalCache: false,
+      nativeProfile: custody.nativeProfile,
+      nativeMemberAuthority:
+        "raw native listFilesOnly/config/member bytes; graph closure unclaimed",
+      cliProgramsAuthority: "authored/configured CLI metadata, not native transitive membership",
+      startupMs: null,
+      programConstructionMs: null,
     },
     rows: [],
     freshness: [],
   };
+  assert.equal(metadata.dependencies.runtime, "7.0.2", "unsupported native npm package version");
+  assert.equal(metadata.versions.native, "Version 7.0.2", "unsupported native binary version");
   writeJson(join(directory, "provenance.json"), metadata);
   const { project, pair } = createPhaseRunner({ root: ROOT, directory, binaries, wrapper });
   try {
@@ -225,6 +225,7 @@ export function main(argv = process.argv.slice(2)) {
                     { ...corpus, dir: cwd, args: cwd === fullPlant.dir ? corpus.args : ["."] },
                     mode,
                     `${label}-plant-${cwd === fullPlant.dir ? "corpus" : cwd.split(/[/\\]/u).at(-1)}`,
+                    profiling,
                   ),
                 );
               return gatePairs.get(cwd)[side];
@@ -234,6 +235,18 @@ export function main(argv = process.argv.slice(2)) {
             checked[side].report,
           );
         metadata.rows.at(-1).plants = gates;
+        if (profiling)
+          metadata.rows.at(-1).nativeProfiles = profileNativeReferences({
+            corpus,
+            checked,
+            gatePairs,
+            fullPlant,
+            mode,
+            label,
+            directory,
+            project,
+            pair,
+          });
       }
       const after = project(corpus, `${corpus.id}-after`);
       assert.equal(after.text, before.text, "code or complete mapping/link projection changed");
@@ -313,6 +326,11 @@ export function main(argv = process.argv.slice(2)) {
         hash,
         `helper changed: ${file}`,
       );
+    assert.deepEqual(
+      captureSourceCustody({ driverRoot: ROOT, sourceRoot: process.env.NATIVE_PHASE_SOURCE_ROOT }),
+      custody,
+      "source custody changed during replay",
+    );
     metadata.status = "complete";
     writeJson(output, metadata);
     console.log(

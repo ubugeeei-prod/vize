@@ -59,11 +59,15 @@ export function createPhaseRunner({ root, directory, binaries, wrapper }) {
     );
     return { text: result.stdout, sha256: fileSha256(`${stem}.json`) };
   }
-  function run(corpus, mode, wrapped, label, captureVirtual = false) {
+  function run(corpus, mode, wrapped, label, captureVirtual = false, profile = false) {
     const id = `${String(sequence++).padStart(3, "0")}-${label}-${wrapped ? "wrapped" : "direct"}`;
     const nativeDir = join(directory, "native", id);
     const settingsPath = join(directory, "raw", `${id}.settings.json`);
-    writeJson(settingsPath, { directory: nativeDir, runtime: binaries.native.measuredPath });
+    writeJson(settingsPath, {
+      directory: nativeDir,
+      runtime: binaries.native.measuredPath,
+      profile: wrapped && profile ? "pprof" : null,
+    });
     const expected = readdirSync(corpus.dir).filter((file) => file.endsWith(".vue"));
     const authoredInputs = corpusManifest(corpus.dir)
       .files.filter((file) => /\.(?:vue|[cm]?[jt]sx?)$/u.test(file.file))
@@ -187,7 +191,7 @@ export function createPhaseRunner({ root, directory, binaries, wrapper }) {
       for (const file of virtualTargets) rmSync(join(corpus.dir, file), { force: true });
     }
   }
-  function pair(corpus, mode, label, virtual = false) {
+  function pair(corpus, mode, label, virtual = false, profile = false) {
     const manifest = corpusManifest(corpus.dir);
     const snapshot = join(directory, "inputs", label);
     mkdirSync(snapshot, { recursive: true });
@@ -205,7 +209,7 @@ export function createPhaseRunner({ root, directory, binaries, wrapper }) {
     }
     writeJson(join(snapshot, "manifest.json"), manifest);
     const direct = run(corpus, mode, false, label, virtual);
-    const wrapped = run(corpus, mode, true, label, virtual);
+    const wrapped = run(corpus, mode, true, label, virtual, profile);
     assert.equal(
       wrapped.fingerprint,
       direct.fingerprint,
