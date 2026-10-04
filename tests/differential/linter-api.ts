@@ -2,13 +2,10 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { compareBytes } from "./compare.mjs";
-import {
-  loadProductManifest,
-  readPinnedArtifact,
-  sha256,
-  validateResultEnvelope,
-} from "./harness.mjs";
+import { loadProductManifest, readPinnedArtifact, sha256 } from "./harness.mjs";
 import { validateProductObserverReceipt, type ObserverSpec } from "./observer-build.ts";
+import { summary, validateLinterReport } from "./linter-api-report.ts";
+export { validateLinterReport } from "./linter-api-report.ts";
 
 export const LINTER_OBSERVER: ObserverSpec = {
   product: "linter",
@@ -17,7 +14,7 @@ export const LINTER_OBSERVER: ObserverSpec = {
   sourcePath: "crates/vize_patina/examples/lint_history_observer/main.rs",
   probes: [["--contract"]],
 };
-const NATIVE_REASON = "whole-product native linter path unavailable";
+export const NATIVE_REASON = "whole-product native linter path unavailable";
 const OPTIONS = {
   preset: "Incremental",
   locale: "En",
@@ -83,67 +80,6 @@ export function loadLinterManifest(manifestPath: string, repoRoot: string) {
     return { ...fixture, ...inputs.get(fixture.id) };
   });
   return { ...loaded, cases };
-}
-
-function summary(rows: any[]) {
-  return {
-    plannedCases: rows.length,
-    legacyMatches: rows.filter((row) => row.legacy.verdict === "matched-reference").length,
-    legacyFailures: rows.filter((row) => row.legacy.state === "failed").length,
-    baselineDrift: rows.filter((row) => row.legacy.verdict === "baseline-drift").length,
-    nativeUnsupported: rows.length,
-    nativeHandled: 0,
-    nativeEquivalent: 0,
-    pairedComparisons: 0,
-  };
-}
-
-export function validateLinterReport(
-  loaded: ReturnType<typeof loadLinterManifest>,
-  report: any,
-  receipt: any,
-) {
-  validateResultEnvelope(loaded, report, receipt.source.sourceRevision);
-  assert.deepEqual(report.buildReceipt, receipt);
-  for (const row of report.rows) {
-    const fixture = loaded.cases.find((fixture: any) => fixture.id === row.id);
-    assert(fixture);
-    assert.equal(row.target, "lint");
-    assert.deepEqual(row.native, { state: "unsupported", reason: NATIVE_REASON });
-    assert.deepEqual(row.comparison, { state: "not-compared" });
-    assert.deepEqual(row.legacy.argv, fixture.argv);
-    assert.equal(row.legacy.inputSha256, sha256(fixture.input));
-    assert(["completed", "failed"].includes(row.legacy.state));
-    assert(Array.isArray(row.legacy.attempts) && row.legacy.attempts.length <= 2);
-    let previous: Buffer | undefined;
-    for (const attempt of row.legacy.attempts) {
-      const bytes = Buffer.from(attempt.stdoutBase64, "base64");
-      const stderr = Buffer.from(attempt.stderrBase64, "base64");
-      assert.equal(attempt.stdoutSha256, sha256(bytes));
-      assert.equal(attempt.stderrSha256, sha256(stderr));
-      assert.deepEqual(attempt.referenceComparison, compareBytes(fixture.expected, bytes));
-      if (row.legacy.state === "completed") {
-        assert.equal(attempt.exitStatus, 0);
-        assert.equal(attempt.signal, null);
-        assert.equal(attempt.processError, null);
-        assert.equal(stderr.length, 0);
-        if (previous) assert(bytes.equals(previous), "actual complete observation did not repeat");
-      }
-      previous = bytes;
-    }
-    if (row.legacy.state === "completed") {
-      assert.equal(row.legacy.attempts.length, 2, "both fresh process observations are required");
-      const matched = row.legacy.attempts.every(
-        (attempt: any) => attempt.referenceComparison.state === "equal",
-      );
-      assert.equal(row.legacy.verdict, matched ? "matched-reference" : "baseline-drift");
-    } else {
-      assert.equal(row.legacy.verdict, "failed");
-      assert(typeof row.legacy.error === "string" && row.legacy.error.length > 0);
-    }
-  }
-  assert.deepEqual(report.summary, summary(report.rows), "inconsistent actual result accounting");
-  return report.summary;
 }
 
 export function runLinterApiPack({
