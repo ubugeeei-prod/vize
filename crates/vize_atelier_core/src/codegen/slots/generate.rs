@@ -206,6 +206,9 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             .children
             .iter()
             .filter(|child| {
+                if has_slot_template && matches!(child, TemplateChildNode::Comment(_)) {
+                    return false;
+                }
                 if let TemplateChildNode::Element(template_el) = child {
                     !(template_el.tag == "template" && has_v_slot(template_el))
                 } else {

@@ -254,6 +254,9 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         let mut out = String::from("{ ");
+        if !named_slots.is_empty() {
+            super::normalize_implicit_slot_children(&mut default_children);
+        }
         for el in named_slots {
             out.push_str(&self.vnode_slot_entry_fn_property(el));
             out.push_str(", ");
@@ -298,6 +301,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         let mut out = String::from("_createSlots({ ");
+        super::normalize_implicit_slot_children(&mut default_children);
         let mut wrote = false;
         if !default_children.is_empty() {
             out.push_str("default: _withCtx(() => ");

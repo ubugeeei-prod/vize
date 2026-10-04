@@ -21,7 +21,9 @@ pub(super) fn lower<'a>(
     let mut block = BlockIRNode::new(ctx.allocator);
     // Borrow contiguous runs: neither clone AST nodes nor lower named carriers
     // into the default slot. Preserve ordinary children in authored order.
-    for run in children.split(structural_slots::is_slot) {
+    for run in children.split(|child| {
+        structural_slots::is_slot(child) || matches!(child, TemplateChildNode::Comment(_))
+    }) {
         if !run.is_empty() {
             let lowered = transform_children(ctx, run);
             block.operation.extend(lowered.operation);

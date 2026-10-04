@@ -15,6 +15,10 @@ pub(super) fn collect_pieces(
     buckets: &mut [StdVec<SlotPiece>],
 ) -> Result<(), EmitError> {
     let mut group_keys = group_branch_key_starts(cx, children, facts);
+    let has_template_slots = facts
+        .groups
+        .iter()
+        .any(|group| matches!(group.carrier, SlotCarrier::Template(_)));
     if children
         .ops
         .iter()
@@ -38,6 +42,10 @@ pub(super) fn collect_pieces(
         return Ok(());
     }
     for op in children.ops.iter() {
+        if has_template_slots && matches!(op, Op::Comment(_)) {
+            let _id = cx.walk.mint();
+            continue;
+        }
         match op {
             Op::Element(element) if is_slot_template(element) => {
                 let id = cx.walk.mint();

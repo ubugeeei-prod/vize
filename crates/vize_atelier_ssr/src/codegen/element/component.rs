@@ -150,6 +150,10 @@ impl<'a> SsrCodegenContext<'a> {
             }
         }
 
+        if !named_slots.is_empty() {
+            super::normalize_implicit_slot_children(&mut default_children);
+        }
+
         self.use_core_helper(RuntimeHelper::WithCtx);
         self.push("{\n");
         self.indent_level += 1;
@@ -223,6 +227,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         self.push("_createSlots({\n");
+        super::normalize_implicit_slot_children(&mut default_children);
         self.indent_level += 1;
         if !default_children.is_empty() {
             self.process_component_slot_property(

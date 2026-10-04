@@ -78,7 +78,7 @@ fn collect(
         .iter()
         .any(|op| !matches!(op, Op::Text(_) | Op::Interpolation(_)));
     for op in children.ops.iter() {
-        if skip_ws && is_whitespace_text(op) {
+        if matches!(op, Op::Comment(_)) || (skip_ws && is_whitespace_text(op)) {
             let _id = cx.walk.mint();
             continue;
         }
