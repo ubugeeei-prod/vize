@@ -5,6 +5,9 @@ Issue: [#7698](https://github.com/ubugeeei-prod/vize/issues/7698); [same-slice d
 Initial unchanged main production source: `ac1675fef35c5637c38b1e366a91d6bdfe419885`.
 The source must be refreshed and the phase probe rerun after the corrected
 performance Stack merges; this independent lane creates no dependency on it.
+Current independent-infrastructure main base after the verified 0.431.0 release:
+`6987c523ecd2bee6e8489e2973e4b7499ce25018`. Fresh exact-head source/phase
+Actions on that actual main are required before this PR's independent delivery.
 
 This is an independent benchmark-only follow-up to the fresh-process type
 checker target. Production generation, source membership, compiler semantic
@@ -25,7 +28,8 @@ including the checker count.
 
 The corrected unchanged-main phase lane completed at infrastructure head
 `b364bbfbd767aa0189fc85651a3b22b22a390b81`; its receipt and limits are below.
-Final shipping-main phase evidence remains pending the later rebase and rerun.
+Current-main delivery phase evidence is pending the rebased exact-head rerun;
+later post-Stack phase evidence requires another base refresh.
 A local protocol-only discovery
 used an explicitly identified development binary, without a main or speed
 claim: all 15 original/replayed native diagnostic streams, statuses and
@@ -102,9 +106,14 @@ assert starts/reuses/refreshes/fallbacks; an empty `check_incremental(&[])` call
 currently performs a fresh CLI check. Neither an advertised flag nor this phase
 observation proves a default speedup, universal gain or 10x feasibility.
 
-No queue entry is authorized during the release freeze. Record exact Actions
-source, artifacts, unsupported fields and limitations before proposing any
-production change or merging this infrastructure lane.
+[The verified 0.431.0 release](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-5976860493)
+lifted the global release freeze. [The delivery decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5976896802) permits this independent
+benchmark infrastructure to enter the protected queue after fresh exact-head
+source/phase Actions and an actual-main replay; it need not wait for the five
+performance layers. Their correctness holds remain. Record exact Actions,
+artifacts, unsupported fields and limits before queue entry. The later
+post-Stack phase/reuse proposal still requires all five layers actually merged,
+and no production cache is implemented or authorized by this delivery decision.
 
 ## Rejected first hosted receipt
 
@@ -229,7 +238,8 @@ config/extends/alias, package/declaration, augmentation/global and helper/runtim
 identity changes. Only a separate direct unwrapped paired CLI benchmark can
 establish end-to-end gain. First rerun this phase lane on the actually merged
 corrected Stack/main; these main-base observations cannot substitute for it.
-The rebase requires all five layers of native Stack 7720 actually merged:
+The later post-Stack phase/reuse rebase requires all five layers of native
+Stack 7720 actually merged:
 #7702 → #7719 → #7725 → #7728 → #7754. Shard counts and phase observations may
 change after those source changes. Retained disk/session results cannot be used
 as the original fresh-CLI 10x result; semantic state is a different contract.
