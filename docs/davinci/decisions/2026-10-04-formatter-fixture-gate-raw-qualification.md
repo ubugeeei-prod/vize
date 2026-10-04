@@ -134,3 +134,21 @@ Paired [original fixture assessment](https://github.com/ubugeeei-prod/vize/issue
 and [separate printer engineering TODO](https://github.com/ubugeeei-prod/vize/issues/6847#issuecomment-5975313832)
 are carried with the genuine [whole scriptless source owner](./2026-10-04-native-scriptless-sfc-formatting.md).
 The issue remains open until actual delivery and acceptance.
+
+## Historical whole-SFC pairing wording
+
+The following pre-delivery child wording is retained verbatim; its pending
+closure state has been superseded by the separately merged #7703 assessment.
+
+Default formatter, script/style Docs and broader Vue/dialects/embeds/options/edits
+remain unfinished. The original formatter fixture-gate assessment and proposed
+[#6882](https://github.com/ubugeeei-prod/vize/issues/6882) closure are separate
+from native product parity/default migration; its issue remains open until the
+reviewed assessment is actually delivered and accepted. No native300 equivalence,
+legacy fallback/default switch, public FormatOptions parity, oracle or budget
+change is claimed.
+
+The same source delivery carries the reviewed [original fixture-gate assessment](./2026-10-04-formatter-fixture-gate-assessment.md)
+and its paired issue decision, preserving the complete accepted3e evidence and
+historical pending semantics. Its proposed original fixture closure does not
+prove native300/public-option parity or switch a default route.

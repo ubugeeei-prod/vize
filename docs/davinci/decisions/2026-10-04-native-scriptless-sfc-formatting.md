@@ -71,17 +71,17 @@ owned canonical source checks are the only local validation. Private source
 checks/prior provider observations grant no whole-product runtime acceptance.
 
 Default formatter, script/style Docs and broader Vue/dialects/embeds/options/edits
-remain unfinished. The original formatter fixture-gate assessment and proposed
-[#6882](https://github.com/ubugeeei-prod/vize/issues/6882) closure are separate
-from native product parity/default migration; its issue remains open until the
-reviewed assessment is actually delivered and accepted. No native300 equivalence,
-legacy fallback/default switch, public FormatOptions parity, oracle or budget
-change is claimed.
+remain unfinished. The original fixture-history issue
+[#6882](https://github.com/ubugeeei-prod/vize/issues/6882) closed after the separate
+signed #7703 assessment actually merged. That closure is separate from native
+product parity/default migration; no native300 equivalence, legacy fallback,
+default switch, public FormatOptions parity, oracle or budget change is claimed.
 
-The same source delivery carries the reviewed [original fixture-gate assessment](./2026-10-04-formatter-fixture-gate-assessment.md)
-and its paired issue decision, preserving the complete accepted3e evidence and
-historical pending semantics. Its proposed original fixture closure does not
-prove native300/public-option parity or switch a default route. Independent
+The [current assessment](./2026-10-04-formatter-fixture-gate-assessment.md) remains
+unchanged from actual main. This child preserves its original detailed
+[raw qualification](./2026-10-04-formatter-fixture-gate-raw-qualification.md)
+and the complete accepted3e evidence as history. Neither fixture closure nor
+these recorded details prove native300/public-option parity or switch a route. Independent
 prepublication custody review strengthens two suffix-only retained-source
 checks to ENTIRE independently authored blocks and uses exact source-case
 classification; original inputs, outputs, refusals and all29 laws stay intact.
@@ -107,3 +107,20 @@ The corrected whole owner replays from `3a7043ebc5b5f626ed0da0d7d576cdc193182e97
 onto the final repaired provider based on fresh main. Every whole runtime and
 law blob remains byte-exact; current native Stack membership, fresh exact-head
 Actions, unchanged measured ceilings and protected actual merge remain required.
+
+## Actual provider delivery and remaining child
+
+The native Stack's provider #7681 actually merged at signed
+`0518df8697b37234b108c149cf79d52c6a195e51`. Protected Check `37172559233`
+passes the full suites, differential corpora and all104 unchanged ceilings;
+three exact formatter vectors are 290652/271810/928892/243340. Its explicit
+issue-reporter Co-authored-by trailer remains in the literal signed squash.
+GitHub automatically retargets this remaining child to main while retaining
+Stack #7694, position2 above the merged position1. Replay only the six child
+commits onto fresh literal main `cf3b457baff6b6ab1735ffde825f5604455e0979`.
+All native runtime and 29 law blobs remain byte-identical to original `3a7043`.
+Resolve the independently delivered assessment by preserving actual main's
+canonical record and retaining the original child details/pending words in
+the linked historical companion. All other incoming lane paragraphs remain
+exact. This child's fresh exact-source Actions, measured unchanged ceilings
+and actual protected native Stack merge remain mandatory.
