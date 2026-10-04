@@ -179,3 +179,29 @@ generated Nuxt inputs' existing adapter policy. Extend rejection controls
 for errors, missing results, empty code and wrong result paths. This changes
 the acceptance law, so the earlier pass stays source-qualified and fresh
 exact-head Actions remain required before readiness or protected delivery.
+
+## Fixed action history and final acceptance source
+
+Paired with [the correction comment](https://github.com/ubugeeei-prod/vize/issues/7838#issuecomment-5983779303).
+
+At `df39178639e39b034c3bb21ef35c8f678a527bb4`, source Check 37228361954
+and genuine Nuxt 3 run 37228361558 completed successfully, including the
+strict original-result acceptance law. That execution used checkout
+`0a6132fad90869e355dcbc9f091219c2e0f9c9ec`; it does not qualify a later
+current-main composition or protected delivery.
+
+The distinct GitHub Advanced Security `zizmor` check 111512676431 failed
+at the added Rust setup pin on workflow line 63: `6bed0761` is outside the
+referenced repository's master history. Its official generated stable
+branch exists, but that does not satisfy the upstream
+[full-SHA history requirement](https://github.com/dtolnay/rust-toolchain/blob/7e38f4b43b4db5c8dd498af069a4f6196df1d067/README.md#choice-of-full-length-commit-sha).
+The official comparison against master is diverged (one stable-only commit).
+
+Pin this one added action to verified official master
+`7e38f4b43b4db5c8dd498af069a4f6196df1d067`, retaining the explicit
+`toolchain: "1.98.0"`. Upstream also specifies master when using an explicit
+toolchain input. No source compiler, fixture, lock, observer, assertion,
+profile, cache policy or timing recipe changes. Preserve the exact prior
+source results and security failure; require fresh complete source checks
+and genuine Nuxt execution after this meaningful correction. Publication
+hold and measurement authorization remain unchanged.
