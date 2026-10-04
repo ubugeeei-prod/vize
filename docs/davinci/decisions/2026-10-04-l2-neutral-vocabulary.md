@@ -9,10 +9,11 @@ It changes no enum, parser, dump protocol or product route.
 
 The present-state source audit is pinned to [commit `da66dc241c`](https://github.com/ubugeeei-prod/vize/commit/da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5). Later implementation changes do not update this dated census automatically.
 
-`davinci/vize_l2/src/op.rs` contains eight child-position `Op` variants and
+`davinci/vize_l2/src/op.rs` contains nine child-position `Op` variants (eight distinct mnemonics) and
 four common attached `BindingOp` variants, followed by ten explicit Vue
 bindings. Regions are owned by their ops; attached bindings have one owner.
-The concrete enums and arena payloads are Drop-free with pinned footprints.
+`OriginalFor` and `For` share `ui.for` but retain distinct original-head
+ownership. The concrete enums and arena payloads are Drop-free with pinned footprints.
 Keep those properties: this is not a proposal for a uniform extensible
 `Operation` record, runtime string dispatch, or per-op serialization.
 
@@ -21,6 +22,12 @@ syntactic surface. Its modifiers, absent-name spelling and carrier are not
 a canonical cross-framework content contract. Common `BindOp`, `OnOp` and
 `ModelOp` similarly retain dialect modifiers or attribute encodings. Their
 `ui.*` names alone do not prove neutrality.
+
+The sealed `artifact::Artifact` and `file::FileArtifact` already own canonical
+regions, scopes, provenance and native file facts. `OnHandlerRef::Body`
+retains a genuine whole-handler File identity rather than an `ExprRef`.
+These implemented boundaries must survive vocabulary migration; they do
+not by themselves establish whole-dialect/product acceptance.
 
 ## Semantic membership rule
 
@@ -39,20 +46,21 @@ produces an explicit unsupported diagnostic rather than silently disappearing.
 
 The following names are design destinations, not newly available mnemonics.
 
-| Current type / mnemonic                | Destination                                                                                                                             | Contract or reason                                                                                                           |
-| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `ElementOp` / `ui.element`             | Keep core                                                                                                                               | Element identity, namespace, ordered attributes/bindings and owned children                                                  |
-| `ComponentOp` / `ui.component`         | Keep core                                                                                                                               | Resolved component reference, ordered inputs and owned content; runtime invocation is target policy                          |
-| `TextOp` / `ui.text`                   | Keep core                                                                                                                               | Literal text with authored provenance                                                                                        |
-| `InterpolationOp` / `ui.interpolation` | Keep core                                                                                                                               | An expression rendered as text; conversion semantics must be specified                                                       |
-| `CommentOp` / `ui.comment`             | Keep core                                                                                                                               | Preserved comment; target policy decides whether its output is applicable                                                    |
-| `IfOp` / `ui.if`                       | Keep core                                                                                                                               | Ordered conditions and one owned region per branch                                                                           |
-| `ForOp` / `ui.for`                     | Keep core                                                                                                                               | Source expression, iteration bindings, key semantics and owned repeated region                                               |
-| `SlotOp` / `ui.slot`                   | Core `ContentInvokeOp` / `ui.content-invoke` after legalization                                                                         | Named content reference, ordered arguments and an owned fallback region                                                      |
-| `SlotContentOp` / `ui.slot-content`    | Authored form becomes `framework::vue::SlotContentOp` / `vue.slot-content`; legalizes to core `ContentProvideOp` / `ui.content-provide` | Named content definition with parameter bindings, captures and its own region; `v-slot` spelling/modifiers stay Vue-specific |
-| `BindOp` / `ui.bind`                   | Keep core after modifier legalization                                                                                                   | Ordered one-way value binding; explicit neutral property/attribute channel and name/spread form                              |
-| `OnOp` / `ui.on`                       | Keep core after modifier legalization                                                                                                   | Event name and handler with specified attachment/lifetime; Vue event guards are dialect semantics                            |
-| `ModelOp` / `ui.model`                 | Keep core read/write contract; move Vue realization annotations into Vue records                                                        | Matched value-type flow; IME, `.lazy`, `.number`, `.trim` and runtime helper selection are not generic attributes            |
+| Current type / mnemonic                | Destination                                                                                                                             | Contract or reason                                                                                                                     |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `ElementOp` / `ui.element`             | Keep core                                                                                                                               | Element identity, namespace, ordered attributes/bindings and owned children                                                            |
+| `ComponentOp` / `ui.component`         | Keep core                                                                                                                               | Resolved component reference, ordered inputs and owned content; runtime invocation is target policy                                    |
+| `TextOp` / `ui.text`                   | Keep core                                                                                                                               | Literal text with authored provenance                                                                                                  |
+| `InterpolationOp` / `ui.interpolation` | Keep core                                                                                                                               | An expression rendered as text; conversion semantics must be specified                                                                 |
+| `CommentOp` / `ui.comment`             | Keep core                                                                                                                               | Preserved comment; target policy decides whether its output is applicable                                                              |
+| `IfOp` / `ui.if`                       | Keep core                                                                                                                               | Ordered conditions and one owned region per branch                                                                                     |
+| `ForOp` / `ui.for`                     | Keep core                                                                                                                               | Source expression, iteration bindings, key semantics and owned repeated region                                                         |
+| `OriginalForOp` / `ui.for`             | Keep the distinct original-head core representation                                                                                     | Own the repeated region; retain actual collection/parameter roots beside the same File instead of synthesizing declaration expressions |
+| `SlotOp` / `ui.slot`                   | Core `ContentInvokeOp` / `ui.content-invoke` after legalization                                                                         | Named content reference, ordered arguments and an owned fallback region                                                                |
+| `SlotContentOp` / `ui.slot-content`    | Authored form becomes `framework::vue::SlotContentOp` / `vue.slot-content`; legalizes to core `ContentProvideOp` / `ui.content-provide` | Named content definition with parameter bindings, captures and its own region; `v-slot` spelling/modifiers stay Vue-specific           |
+| `BindOp` / `ui.bind`                   | Keep core after modifier legalization                                                                                                   | Ordered one-way value binding; explicit neutral property/attribute channel and name/spread form                                        |
+| `OnOp` / `ui.on`                       | Keep core after modifier legalization                                                                                                   | Event name and expression or genuine File-owned whole handler, with specified attachment/lifetime; Vue guards are dialect semantics    |
+| `ModelOp` / `ui.model`                 | Keep core read/write contract; move Vue realization annotations into Vue records                                                        | Matched value-type flow; IME, `.lazy`, `.number`, `.trim` and runtime helper selection are not generic attributes                      |
 
 All ten existing Vue bindings remain typed Vue dialect payloads:
 
@@ -125,8 +133,9 @@ child/attached enums may contain explicit dialect cases without importing
 Vue meaning into generic passes. Add a dialect case only alongside a real
 lowering/consumer, not speculatively for future frameworks.
 
-Implement #6838's canonical artifact and #6841's Vue feature composition with
-small slices. Rename/move commits stay separate from semantic legalization.
+Complete #6838's canonical artifact integration and #6841's Vue feature
+composition with small slices, retaining the already implemented sealed
+Artifact/File providers and their original body/head/reference associations. Rename/move commits stay separate from semantic legalization.
 When mnemonic changes land, update dump printers/parsers, exhaustive matches,
 provenance, verifiers, fixtures and supported protocol versions together.
 Internal level formats may break; published legacy APIs and byte output keep
