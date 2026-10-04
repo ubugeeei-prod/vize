@@ -75,3 +75,13 @@ must be frozen before native qualification. Original and prepared callback maps
 remain actual source geometry; generated VLQ maps are not a Glyph product API.
 Equal undefined/noop getter outcomes are explicit no-credit controls, not
 positive semantics. Default routing and the closed #6882 history stay unchanged.
+
+## First hosted build
+
+Draft #7795 source `d9a3053225` failed in the hosted test build before any
+new law executed. The slice-pointer custody assertion passed a dereferenced
+allocator Vec instead of its actual error slice. The narrow correction uses
+`container.errors.as_slice()` and keeps the same complete allocation/length
+identity assertion. Production, every input, all other assertions and all
+compile-fail examples remain unchanged. Fresh exact-head Actions must prove
+the corrected source; the failed build grants no test or runtime acceptance.

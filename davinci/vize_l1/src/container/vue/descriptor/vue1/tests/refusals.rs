@@ -97,7 +97,10 @@ fn later_unsupported_slots_retain_whole_original_capture_without_component_entry
             owner.issues()
         );
         assert!(core::ptr::eq(refusal.issues(), owner.issues()));
-        assert!(core::ptr::eq(refusal.errors(), &*owner.container().errors));
+        assert!(core::ptr::eq(
+            refusal.errors(),
+            owner.container().errors.as_slice()
+        ));
         assert_eq!(
             (measured.counts().splitters, measured.counts().components),
             (1, 0)
