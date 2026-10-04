@@ -97,3 +97,10 @@ Root authorizes the sole necessary parent workflow-law representation change:
 prove outer [unchanged neutral text, wholeV2], second always(), equal base and
 exact neutral [Vue2text,Vue1text], same sole first-shard guard/base350. All its
 other selectors/process-status/upload laws and every runtime fixture stay exact.
+
+Full immutable d3 review conserves the genuine f3 union and clears collection/
+order/upload/wiring, but rejects two Node source mistakes: authored hash-key
+rename and host-only Error branding. Restore runtimeCredit solely in authored
+projection and retain genuine VM name/message/stack via isNativeError; no fixed
+hash/fixture/helper/production/action/law expectation changes or new execution.
+Historical d3 supplies no acceptance; exact successor frozen review is required.

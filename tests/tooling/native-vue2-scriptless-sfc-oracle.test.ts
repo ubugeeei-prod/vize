@@ -192,7 +192,7 @@ test("independent whole Vue2 SFC frames compiler results and bounded dev/prod me
       width: row.width,
       indent: row.indent,
       lineEnding: row.lineEnding,
-      runtimeRequested: row.runtimeCredit,
+      runtimeCredit: row.runtimeCredit,
       semantic: row.semantic,
       events: row.events,
       calls: row.calls,

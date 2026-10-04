@@ -1,4 +1,5 @@
 import { writeFileSync } from "node:fs";
+import { isNativeError } from "node:util/types";
 import { executeWhole } from "./vue2-whole-sfc-oracle.ts";
 
 export type RuntimeRequest = {
@@ -18,9 +19,9 @@ export type RuntimeAttempt = {
 };
 export type RuntimeObservation = RuntimeRequest & { attempts: RuntimeAttempt[] };
 export const observedError = (error: unknown) => ({
-  name: error instanceof Error ? error.name : "NonErrorThrow",
-  message: error instanceof Error ? error.message : String(error),
-  stack: error instanceof Error ? (error.stack ?? null) : null,
+  name: isNativeError(error) ? error.name : "NonErrorThrow",
+  message: isNativeError(error) ? error.message : String(error),
+  stack: isNativeError(error) ? (error.stack ?? null) : null,
 });
 
 // Both environments execute independently; no expected comparison runs here.

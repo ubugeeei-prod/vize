@@ -250,14 +250,11 @@ stay byte-exact, and the actual19-file canonical check passes.
 
 This genuine private source change carries only the two applicable provider
 terminal receipts above, plus this paired decision. Before publication require
-root and reused retained-peer complete frozen-source/law/golden/action review.
-Then automatic exact-source Actions must build genuine fresh whole outputs;
-keep source SHA, execution SHA and run separate, remove stale captures and
-never recapture failures to edit independent expected goldens. Preserve all
-old48 Vue2 text outputs and original seven Vue2/five Vue1 whole oracle packets.
-Coordinate the actual historical-text composite capture slot with its Vue1
-owner; preserve current workflow350 and every existing guard/action/order.
-No unpublished helper/receipt/capture receives dependency or execution credit.
+root/reused-peer frozen-source/law/golden/action review, then automatic source
+Actions. Keep source/execution/run separate and remove stale captures; preserve
+all old48/sevenV2/fiveV1 goldens without failure-driven recapture. Coordinate
+Vue1 capture and preserve workflow350/guards/order; no unpublished receipt
+receives dependency or execution credit.
 
 Both syntax/text providers merged, but current capture wiring genuinely
 requires the public #7777 parent. Publish with its actual branch as base,
@@ -289,11 +286,9 @@ before any native capture (`4a32485f52077b8b31297f8a277561a9fd024766e594d4d94e16
 Its reconstructed authored projection is hashed by the reference test.
 Unchanged pinned primary package bytes independently supply full before/after
 SFC frames, render/staticRenderFns/errors/tips and recursive bounded VNodes.
-Pure existing Node reference execution passes 29 complete dev/prod meanings
-and lookup/read/filter-invocation sequences; three empty/multi-root/attribute
-warning controls retain full compiler records with runtimeCredit=false.
-The fresh native join is explicitly skipped without its future source-built
-capture. These primary results are not implementation/runtime acceptance.
+Historical pure Node verifies29 full dev/prod meaning/event packets; three controls
+retain complete compiler records with runtimeCredit=false.
+Historical reference checks skip native joins without capture and grant no implementation credit.
 
 The distinct whole-SFC action removes stale output, collects every actual
 attempt before expected-output assertions, retains both validation logs/statuses
@@ -348,3 +343,8 @@ union preserves parent production/runtime laws/fixtures/actions; only the
 direct-hook workflow law adapts to the exact outer order/always/base/guard350.
 V1/V2 exports and23 canonical additions preserve all parent rows; full review
 precedes publication/Stack; protected104/current captures/actual merge stay pending.
+
+The d3 source review rejects two Node mistakes: authored projection renamed its
+frozen runtimeCredit key, and host Error branding lost VM name/message/stack.
+The successor restores only that authored key and uses genuine cross-realm
+isNativeError, preserving fixtures/helper/production/wiring and zero execution.
