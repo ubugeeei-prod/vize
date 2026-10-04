@@ -4887,6 +4887,7 @@ dependencies = [
  "futures",
  "ignore",
  "insta",
+ "libc",
  "memchr",
  "oxc_allocator",
  "oxc_ast",

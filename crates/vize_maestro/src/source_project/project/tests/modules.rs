@@ -5,6 +5,8 @@ use super::{block_on, uri};
 use crate::server::{ModuleLinkContextError, ServerState};
 #[cfg(feature = "native")]
 mod publication;
+#[cfg(all(feature = "native", unix))]
+mod targets;
 
 #[test]
 fn module_link_borrowed_shared_and_minimal_hosts_cannot_fabricate_project_context() {

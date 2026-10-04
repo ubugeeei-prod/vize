@@ -5,7 +5,7 @@
 )]
 #![allow(
     dead_code,
-    reason = "private context/publication prerequisite; target and module-link consumer are not implemented"
+    reason = "private metadata/physical prerequisites; native module-link consumer is not implemented"
 )]
 
 use super::ServerState;
@@ -16,6 +16,7 @@ use std::{
 use vize_carton::config::ProjectModel;
 use vize_l0::config::TypeCheckerConfig;
 mod mutation;
+pub(super) mod physical;
 #[cfg(test)]
 mod tests;
 
@@ -28,6 +29,7 @@ pub(crate) enum ModuleLinkRetirement {
     InputError,
     GenerationExhausted,
     MutationUnwound,
+    EventEpochExhausted,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -51,6 +53,7 @@ enum Phase {
 pub(super) struct Session {
     identity: Arc<()>,
     generation: u64,
+    observed_file_epoch: u64,
     phase: Phase,
     load_origin: Option<PathBuf>,
 }
@@ -60,6 +63,7 @@ impl Default for Session {
         Self {
             identity: Arc::new(()),
             generation: 0,
+            observed_file_epoch: 0,
             phase: Phase::Live,
             load_origin: None,
         }

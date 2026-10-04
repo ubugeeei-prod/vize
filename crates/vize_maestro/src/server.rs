@@ -27,6 +27,8 @@ mod initial_diagnostics;
 #[cfg(feature = "experimental-source-navigation")]
 mod module_input;
 #[cfg(feature = "experimental-source-navigation")]
+mod module_target;
+#[cfg(feature = "experimental-source-navigation")]
 mod native_navigation;
 mod open_document;
 mod semantic_tokens;
@@ -38,6 +40,10 @@ mod workspace_symbols;
 pub use capabilities::server_capabilities;
 #[cfg(feature = "experimental-source-navigation")]
 pub(crate) use module_input::ModuleLinkInput;
+#[cfg(feature = "experimental-source-navigation")]
+pub(crate) use module_target::{
+    ModuleTargetError, PhysicalTargets, TargetPolicy, WatcherCoverageError,
+};
 #[cfg(feature = "native")]
 pub use state::BatchTypeCheckCache;
 pub use state::{LspFeatureConfig, ServerState};
@@ -45,6 +51,8 @@ pub use state::{LspFeatureConfig, ServerState};
 pub(crate) use state::{
     ModuleLinkContext, ModuleLinkContextError, ModuleLinkRetirement, ModuleLinkTerminationLease,
 };
+#[cfg(feature = "experimental-source-navigation")]
+pub(crate) use state::{ModuleTargetGateError, ModuleTargetStamp};
 #[cfg(feature = "experimental-source-navigation")]
 pub(crate) use state::{
     NativeLinkedNamesRoute, NativeLinkedNamesTicket, NativeNamesConfigurationError,

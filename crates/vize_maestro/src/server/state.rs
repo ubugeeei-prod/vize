@@ -61,6 +61,8 @@ use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 
 pub use features::LspFeatureConfig;
 #[cfg(feature = "experimental-source-navigation")]
+pub(crate) use module_links::physical::{ModuleTargetGateError, ModuleTargetStamp};
+#[cfg(feature = "experimental-source-navigation")]
 pub(crate) use module_links::{
     ModuleLinkContext, ModuleLinkContextError, ModuleLinkRetirement, ModuleLinkTerminationLease,
 };
