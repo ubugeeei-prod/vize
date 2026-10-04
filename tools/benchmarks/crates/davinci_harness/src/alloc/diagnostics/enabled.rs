@@ -41,12 +41,12 @@ pub fn begin_session() {
     let Ok(path) = std::env::var("VIZE_ALLOCATION_TRACE_PATH") else {
         return;
     };
-    assert!(
-        cfg!(target_os = "linux"),
-        "diagnostic requires Linux thread IDs"
-    );
     assert!(PATH.set(path).is_ok(), "one diagnostic session per process");
-    assert_ne!(ledger::tid(), 0, "measuring thread identity");
+    assert_ne!(
+        ledger::tid(),
+        0,
+        "positive actual Linux measuring thread identity"
+    );
     ledger::begin();
 }
 

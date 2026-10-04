@@ -119,3 +119,12 @@ An existing standalone custom-harness precedent preserves process-global
 counting and genuine spawned workers, but it is not adopted by this diagnostic.
 The final fix will need exact source Actions, unchanged performance caps,
 protected candidate acceptance and actual merge evidence.
+
+The first diagnostic dispatch on `1e54247cf1` (Check 37184897212,
+job 111384678751) stopped in explicit-feature Clippy: a compile-time Linux
+assertion triggered `assertions_on_constants`. The matrix step was skipped;
+none of the 64 planned processes executed. The existing positive actual Linux
+TID assertion now carries that platform contract without a redundant constant
+assertion. A preparation-only identity receipt is written before source checks
+so setup failures remain uploadable. This repair preserves all ordinal/identity
+guards and measurement semantics; it grants no cause or acceptance credit.
