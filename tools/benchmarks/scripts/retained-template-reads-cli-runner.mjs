@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
   appendFileSync,
+  copyFileSync,
+  mkdirSync,
+  rmSync,
   existsSync,
   readdirSync,
   readFileSync,
@@ -136,46 +139,9 @@ export function prepareRun(baseInput, headInput, directory, root) {
   return { metadata, binaries, binarySources, runtimePath, vuePackageDir };
 }
 
-export function compareProjections(directory, binaries, corpus) {
-  const captured = {};
-  const files = {};
-  for (const side of SIDES) {
-    const result = spawnSync(binaries[`${side}Projection`].measuredPath, [corpus.dir], {
-      encoding: "utf8",
-      timeout: 300_000,
-      maxBuffer: 256 * 1024 * 1024,
-      env: checkEnvironment({ rayon: null }),
-    });
-    const stem = join(directory, "projections", `${corpus.id}-${side}`);
-    writeFileSync(`${stem}.json`, result.stdout ?? "");
-    writeFileSync(`${stem}.stderr.txt`, result.stderr ?? "");
-    assert.equal(result.error, undefined, `${side} projection: ${result.error?.message}`);
-    assert.equal(result.status, 0, `${side} projection: ${result.stderr}`);
-    assert.equal(result.stderr, "", "unexpected projection stderr");
-    const projection = JSON.parse(result.stdout);
-    assert(Array.isArray(projection.files) && Array.isArray(projection.edgeCases));
-    assert(projection.edgeCases.length > 0, "projection semantic edge cases are missing");
-    const expected = corpus.manifest.files
-      .filter((file) => file.file.endsWith(".vue"))
-      .map((file) => file.file);
-    assert.deepEqual(
-      projection.files.map((file) => file.file),
-      expected,
-      "projection omitted Vue inputs",
-    );
-    captured[side] = result.stdout;
-    files[side] = { file: relative(directory, `${stem}.json`), sha256: fileSha256(`${stem}.json`) };
-  }
-  assert(
-    captured.head === captured.base,
-    `${corpus.id}: generated code, mappings or semantic links differ`,
-  );
-  return { ...files, equal: true };
-}
-
 export function createRunner(directory, binaries, runtimePath) {
   let sequence = 0;
-  return function run(side, mode, corpus, cwd, phase, profile = false) {
+  return function run(side, mode, corpus, cwd, phase, profile = false, saveVirtual = false) {
     const id = `${String(sequence++).padStart(3, "0")}-${corpus.id}-${mode.id}-${phase}-${side}`;
     const args = [
       "check",
@@ -191,6 +157,14 @@ export function createRunner(directory, binaries, runtimePath) {
     ];
     const profileFile = join(directory, "profiles", `${id}.json`);
     if (profile) args.push("--profile-json", profileFile);
+    if (saveVirtual)
+      for (const file of [
+        ...corpus.manifest.files
+          .filter((file) => file.file.endsWith(".vue"))
+          .map((file) => file.file),
+        "__vize_helpers.d.ts",
+      ])
+        args.push("--save-virtual-ts-for", file);
     const env = checkEnvironment(mode);
     const start = performance.now();
     const result = spawnSync(binaries[side].measuredPath, args, {
@@ -207,7 +181,8 @@ export function createRunner(directory, binaries, runtimePath) {
       mode: mode.id,
       phase,
       profiling: profile,
-      ms: profile ? undefined : performance.now() - start,
+      savingVirtualTs: saveVirtual,
+      ms: profile || saveVirtual ? undefined : performance.now() - start,
       status: result.status,
       signal: result.signal,
       command: [binaries[side].measuredPath, ...args],
@@ -266,4 +241,66 @@ export function createRunner(directory, binaries, runtimePath) {
       report: JSON.parse(result.stdout),
     };
   };
+}
+
+export function captureCliVirtualTs(directory, run, corpus, mode, fingerprint) {
+  const targets = [
+    ...corpus.manifest.files
+      .filter((file) => file.file.endsWith(".vue"))
+      .map((file) => `${file.file}.virtual.ts`),
+    "__vize_helpers.d.ts",
+  ];
+  const captures = {};
+  for (const side of SIDES) {
+    for (const file of targets)
+      assert(!existsSync(join(corpus.dir, file)), `virtual TS output already exists: ${file}`);
+    const files = [];
+    let result;
+    try {
+      result = run(side, mode, corpus, corpus.dir, "virtual-ts", false, true);
+      assert.equal(result.ms, undefined, "virtual TS capture entered timing samples");
+      assert.equal(
+        result.fingerprint,
+        fingerprint,
+        "saving actual virtual TS changed diagnostics/programs",
+      );
+      for (const file of targets) {
+        const original = join(corpus.dir, file);
+        assert(existsSync(original), `CLI omitted virtual TS output: ${file}`);
+        const bytes = readFileSync(original);
+        assert(bytes.length > 0, `CLI wrote empty virtual TS output: ${file}`);
+        const archived = join(directory, "virtual-ts", corpus.id, mode.id, side, file);
+        mkdirSync(dirname(archived), { recursive: true });
+        copyFileSync(original, archived);
+        if (side === "head") {
+          const base = join(directory, "virtual-ts", corpus.id, mode.id, "base", file);
+          assert(bytes.equals(readFileSync(base)), `actual CLI virtual TS differs: ${file}`);
+        }
+        files.push({ file, bytes: bytes.length, sha256: fileSha256(archived) });
+      }
+    } finally {
+      for (const file of targets) rmSync(join(corpus.dir, file), { force: true });
+    }
+    captures[side] = {
+      sampleId: result.id,
+      fileCount: files.length,
+      vueVirtualBytes: files
+        .filter((file) => file.file.endsWith(".vue.virtual.ts"))
+        .reduce((sum, file) => sum + file.bytes, 0),
+      sharedHelperBytes: files.find((file) => file.file === "__vize_helpers.d.ts").bytes,
+      totalBytes: files.reduce((sum, file) => sum + file.bytes, 0),
+      sha256: diagnosticFingerprint(files),
+      files,
+    };
+    writeJson(
+      join(directory, "virtual-ts", corpus.id, mode.id, `${side}.manifest.json`),
+      captures[side],
+    );
+  }
+  assert.equal(
+    captures.head.sha256,
+    captures.base.sha256,
+    "actual CLI virtual TS manifest differs",
+  );
+  return { ...captures, equal: true };
 }

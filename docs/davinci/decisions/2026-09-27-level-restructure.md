@@ -341,7 +341,7 @@ See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-
 - **Full queue Rust execution (#6830, #6861):** reuse one bound workspace archive and four unfiltered workers; keep required TSGO, doctests and all 11 feature recipes. Runtime evidence and acceptance conditions are in [the full Rust shard decision](./2026-09-27-ci-full-rust-shards.md).
 
 [Options API computed regressions](./2026-09-27-options-computed-regressions.md)
-record #6921 owner history, shared parse facts, setter guards and registered typechecker fixtures for #6879. [Retained template reads](./2026-10-04-typechecker-retained-template-reads.md) records #7698's exact-content/module-gated reuse in the existing import-retention visitor, unchanged fallback semantics and instruction ceilings, with same-run whole-command and complete projection/diagnostic parity required before delivery.
+record #6921 owner history, shared parse facts, setter guards and registered typechecker fixtures for #6879. [Retained template reads](./2026-10-04-typechecker-retained-template-reads.md) records #7698's exact-content/module-gated reuse in the existing import-retention visitor with unchanged fallback semantics and instruction ceilings; initial hosted runs prove 40,000 retained walks but do not reproduce a default-width whole-command gain, so the candidate stays outside the queue while actual CLI virtual files and original diagnostic ordering receive complete parity gates.
 
 [Canon slot outlet regression preparation](./2026-09-27-canon-slot-outlet-union.md)
 records #6922 owner history, unbounded inferred payloads, string widening and required full diagnostic proof.
