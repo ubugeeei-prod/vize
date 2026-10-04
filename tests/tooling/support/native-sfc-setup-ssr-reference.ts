@@ -267,10 +267,10 @@ export function checkSetupCustody(row: any, expected: any) {
     );
     assert.equal(originalBytes(row.source, interpolation.span), interpolation.raw);
     assert.equal(interpolation.raw, interpolation.decoded);
-    assert.notEqual(
+    assert.equal(
       interpolation.regionScope,
       row.setup.scope,
-      "template resolution and setup declaration have distinct original scopes",
+      "root template resolution retains the original setup unit scope",
     );
     for (const read of interpolation.reads) {
       assert.equal(originalBytes(row.source, read.span), read.name);

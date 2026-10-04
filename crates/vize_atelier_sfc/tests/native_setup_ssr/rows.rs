@@ -69,7 +69,7 @@ pub fn setup(
         assert_eq!(resolution.node(), *node);
         let region_scope = resolution.scope().unwrap();
         assert_eq!(setup.file().scopes()[region_scope.index() as usize].id, region_scope);
-        assert_ne!(region_scope, setup.scope());
+        assert_eq!(region_scope, setup.scope());
         let table = resolution.table().unwrap();
         assert_eq!(row.reads().len(), table.occurrences().len());
         let reads: Vec<_> = row.reads().iter().zip(table.occurrences()).map(|(read, occurrence)| {
