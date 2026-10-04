@@ -61,6 +61,8 @@ protected native Stack queue actually finish.
 
 [PR #7705](https://github.com/ubugeeei-prod/vize/pull/7705) was closed unqueued
 after its local whole-CLI experiment showed no demonstrated benefit. The
+[complete experiment record](./2026-10-04-check-import-occurrence-cache.md)
+retains its paired samples, binary hashes and actual profile. The
 [issue receipt](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5975755104)
 records exact base `da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5` and candidate
 `a2f8356f860ffbb5c822c3001dfbe784d24dca0e`, identically configured `ci-opt`
