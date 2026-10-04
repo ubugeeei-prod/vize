@@ -2,6 +2,7 @@
 
 Issue: [#6847](https://github.com/ubugeeei-prod/vize/issues/6847).
 Paired decision: [observed provider and whole SFC owner](https://github.com/ubugeeei-prod/vize/issues/6847#issuecomment-5974770888).
+Source review: [genuine ownership and lifecycle controls](https://github.com/ubugeeei-prod/vize/issues/6847#issuecomment-5974971006).
 
 This useful reusable provider starts privately in a NEW isolated `wt` from
 frozen published BigInt `954ed27c97c6b1c39ae472590b6c67c03ecf032e` (#7669).
@@ -18,6 +19,8 @@ byte-identically after visibility normalization; behavior follows in a separate
 feature change. Existing preobserved template API outputs/refusals remain exact.
 The original private move/source and failing root-module path observation stay
 preserved; this corrected move also resolves its own explicit Builder path.
+Actual-parent replay preserves its source as move-only `cf6c24d756`, followed
+by the separate feature and frozen-law commits.
 
 The same original-child Builder visit now offers observe-at-child mode.
 Existing sealed NativeChild::reborrow preserves actual component/parent/ordinal/
