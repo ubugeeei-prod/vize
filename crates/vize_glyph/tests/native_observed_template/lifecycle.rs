@@ -24,7 +24,7 @@ fn real_success_and_failure_carrier_unwind_keeps_original_selected_source_maps_a
                     refusal: NativeTemplateRefusal::Expression {
                         offset: 9,
                         refusal: ExpressionRefusal::UnsupportedNode {
-                            span: Span::new(2, 10),
+                            span: Span::new(2, 9),
                         },
                     },
                 }),

@@ -34,7 +34,17 @@ fn late_mapped_unsupported_current_is_owned_in_the_prefix_and_later_source_is_un
             panic!("actual unsupported Call")
         };
         let span = current.syntax().decoded_span(call.span).unwrap();
-        assert_eq!(span, Span::new(2, 10));
+        assert_eq!(span, Span::new(2, 9));
+        assert_eq!(span.slice(current.syntax().source().text()), "f(...b)");
+        let authored = current.syntax().authored_span(call.span).unwrap();
+        assert_eq!(
+            authored,
+            Span::new(
+                current.content_span().start + 6,
+                current.content_span().start + 13
+            )
+        );
+        assert_eq!(authored.slice(&source), "f(...b)");
         assert_eq!(
             failure.refusal(),
             ObservedNativeTemplateRefusal::Document {

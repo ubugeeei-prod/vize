@@ -71,6 +71,16 @@ explicitly refused until genuine providers and whole output laws are ready.
 Full-source/changed/options/errors/fixedpoint and actual whole Descriptor replay
 remain consumer obligations, without a public raw-parts/capture admission path.
 
+[Original Call coordinate repair](https://github.com/ubugeeei-prod/vize/issues/6847#issuecomment-5975056466):
+the first published `4e090ebf` compiled and retained 203 passing laws, but two
+new laws counted the same original mapped Call end as 10 instead of 9. Keep
+that failed source and six original logs; independent typed/source review
+confirms decoded `a+f(...b)` and Call `2..9`, authored Call after `a&#43;`
+at relative `6..13`. Correct only those coordinates and add independent
+decoded/authored spelling witnesses, retaining all original inputs, full
+outputs, refusal and ownership assertions. Production and budgets stay exact;
+fresh corrected-head acceptance remains required.
+
 Only pure format/source/canonical checks run locally. No Cargo/npm build/test/
 install or duplicate manual full campaign; fresh exact-head Actions/capture,
 protected full/all-100 and literal native Stack merge remain required. Incoming
