@@ -1,0 +1,99 @@
+name: Type source snapshot benchmark
+
+on:
+  pull_request:
+    paths:
+      - "crates/vize_atelier_sfc/src/script/context/type_world/**"
+      - "crates/vize_atelier_sfc/src/script/context/type_world.rs"
+      - "crates/vize_atelier_sfc/src/script/context/source_snapshot/**"
+      - "crates/vize_atelier_sfc/src/script/context/source_snapshot.rs"
+      - "crates/vize_atelier_sfc/examples/type_snapshot_bench.rs"
+      - "tools/benchmarks/scripts/type-snapshot-paired.mjs"
+      - ".github/workflows/type-snapshot-bench.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: type-snapshot-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+jobs:
+  paired-snapshot:
+    name: Type source snapshot parity and paired analysis
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          path: head
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Select the exact common ancestor
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$PR_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          echo "BASE_SHA=$(git -C head merge-base "$PR_BASE_SHA" "$HEAD_SHA")" >> "$GITHUB_ENV"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          path: base
+          ref: ${{ env.BASE_SHA }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+        with:
+          wild-version: "0.9.0"
+      - uses: ./head/.github/actions/setup-rust-sticky-cache
+        with:
+          key: type-snapshot-head
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          target-path: head/target
+          secondary-key: type-snapshot-base
+          secondary-target-path: base/target
+          secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: head/package.json
+          run-install: false
+      - name: Verify scoped types, overlays, root edits and concurrent consumers
+        working-directory: head
+        run: |
+          cargo test --locked -p vize_atelier_sfc script::context::type_world
+          cargo test --locked -p vize_atelier_sfc script::context::source_snapshot
+          cargo clippy --locked -p vize_atelier_sfc --lib --tests --example type_snapshot_bench -- -D warnings
+      - name: Build identical public type-world probes at exact base and head
+        run: |
+          set -euo pipefail
+          [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
+          [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
+          mkdir -p base/crates/vize_atelier_sfc/examples
+          cp head/crates/vize_atelier_sfc/examples/type_snapshot_bench.rs base/crates/vize_atelier_sfc/examples/
+          cmp head/crates/vize_atelier_sfc/examples/type_snapshot_bench.rs base/crates/vize_atelier_sfc/examples/type_snapshot_bench.rs
+          cargo build --locked --manifest-path base/Cargo.toml --profile ci-opt -p vize_atelier_sfc --example type_snapshot_bench
+          cargo build --locked --manifest-path head/Cargo.toml --profile ci-opt -p vize_atelier_sfc --example type_snapshot_bench
+      - name: Compare complete module facts and nine alternating measurement pairs
+        run: |
+          node head/tools/benchmarks/scripts/type-snapshot-paired.mjs \
+            "$GITHUB_WORKSPACE/base/target/ci-opt/examples/type_snapshot_bench" \
+            "$GITHUB_WORKSPACE/head/target/ci-opt/examples/type_snapshot_bench" \
+            "$GITHUB_WORKSPACE/type-snapshot-bench.json"
+      - name: Upload input corpus, complete fact signatures and raw timings
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: type-snapshot-bench
+          path: |
+            type-snapshot-bench.json
+            type-snapshot-bench.json.samples/
+          if-no-files-found: error
+          retention-days: 30
