@@ -39,6 +39,7 @@ pub use selected_template::{
     native_template_document, observed_native_template_document,
     observed_native_template_document_with_policy,
 };
+pub use sfc::NativeSfcDirectivePolicy;
 pub use sfc::{
     NativeSfcBlockRole, NativeSfcObservation, NativeSfcOptions, NativeSfcRefusal,
     observe_native_sfc_in,
