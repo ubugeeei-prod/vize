@@ -103,3 +103,25 @@ Full TS types, full Vue setup functions, runtime erasure, unsaved editor/import
 graph/configuration ABA, #6879/#6849 closure, default migration and measured
 same-diagnostic 10x remain unfinished. This source grants only the bounded
 neutral provider; existing product defaults retain their original route.
+
+## Actual required CLI phase prerequisite
+
+The later source `ea79da7c` genuinely included the completed incoming central
+union but still descended from `9702c014`. Its new main-selected native-phase
+workflow used actual main `912d311cc378db3506eb7ce78a6f51b0a37f91ff`.
+[Run37186377940](https://github.com/ubugeeei-prod/vize/actions/runs/37186377940),
+job111389056058 failed at the exact neutral-input self-test with
+`MODULE_NOT_FOUND`: `tools/benchmarks/scripts/typechecker-native-phases.mjs`
+was absent from that source. Production CLI build and actual shard captures
+were skipped; this run proves no native phase, diagnosis, map or timing.
+Complete raw job log SHA256 is
+`c103f6b0f5c682392a483fd54356ae38bfc93b37924a0e1e2a3b82632e841873`.
+
+Root authorized the concrete missing-harness prerequisite: replay the genuine
+whole Stack onto that actual `912d311c` ancestor, retaining its authentic CLI
+instrumentation/example/helpers and all incoming decisions. Every return
+production/law/oracle byte remains unchanged; this factual record is additive.
+No helper copy, workflow waiver, manual retry or expected recapture supplies
+qualification. Former source results remain historical. Fresh automatic whole
+head source/native-phase Actions and protected complete unchanged caps still
+precede readiness and actual signed merge; Draft layers stay unqueued meanwhile.
