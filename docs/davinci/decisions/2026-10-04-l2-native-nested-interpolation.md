@@ -17,7 +17,10 @@ real Element/For scope. Existing genuine declaration lookup and NativeVisibility
 supply setup declarations or original template aliases. For aliases can resolve
 at L2 without granting any target For runtime or alias spelling admission.
 
-Every returned L1 preparation failure is normally stored in the actual File,
+The reviewed File Facts storage row changes alloc Vec bound uses from 28 to 30
+for exactly the complete failure collection declaration and its empty initializer;
+no new direct import, String storage, instruction ceiling or allocation suppression
+is introduced. Every returned L1 preparation failure is normally stored in the actual File,
 including any stock syntax the failure produced. Its checked original construct
 span accompanies a precise typed preparation issue. Foreign/recovered/no-parse
 failures do not invent parser observations. The original selected Component
