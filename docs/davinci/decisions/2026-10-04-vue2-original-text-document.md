@@ -228,3 +228,12 @@ bytes, original custody, action/oracle behavior and ceilings. Recursive direct
 rustfmt source checking now resolves the real modules; no local Rust build
 or test is run. This failed source supplies no native acceptance. Fresh exact
 source Actions and all actual captures/laws/protected proof remain required.
+
+Fresh `33fbb488cf` passes hosted fmt and Clippy, then rejects one test-only
+parent pointer comparison with E0308: the original child accessor returns
+`&Element` while its real CST surface stores `&Box<Element>`. The law now
+compares the actual `&**element` address, preserving the same original physical
+parent assertion rather than comparing a carrier. Every production/API,
+input, expected output, other assertion, oracle/action and cap stays unchanged.
+The complete rejected build log is retained; failed `33fb` carries no test or
+native-capture acceptance. A fresh exact source remains mandatory.

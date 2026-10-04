@@ -136,7 +136,7 @@ fn nonzero_unicode_nested_owner_short_borrows_and_unwind_keep_all_original_facts
         };
         assert!(core::ptr::eq(
             document.original().child().parent_element().unwrap(),
-            element
+            &**element
         ));
         assert!(core::ptr::eq(document.original().child().surface(), node));
         assert_eq!(document.original().chain() as *const _, chain);
