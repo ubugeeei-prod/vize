@@ -44,7 +44,13 @@ fn genuine_js_ts_setup_for_alias_and_original_handler_scopes_survive_value_consu
             .map_err(|_| "sole genuine DOM cursor")?;
         let ssr = ssr::build_native_selected_setup_ssr_decisions(&setup)
             .map_err(|_| "sole genuine SSR cursor")?;
-        for facts in [dom.original_attributes(), ssr.original_attributes()] {
+        let vapor = vapor::build_native_selected_setup_vapor_decisions(&setup)
+            .map_err(|_| "sole genuine Vapor cursor")?;
+        for facts in [
+            dom.original_attributes(),
+            ssr.original_attributes(),
+            vapor.original_attributes(),
+        ] {
             let facts = facts.ok_or("complete whole row gate")?;
             let value = facts.value(0, actual, 0).ok_or("same actual allocation")?;
             check(facts.len() == 1 && core::ptr::eq(value.file(), file))?;
@@ -67,6 +73,7 @@ fn genuine_js_ts_setup_for_alias_and_original_handler_scopes_survive_value_consu
         // refusal. Its eventual bounded runtime family remains attribute-free.
         check(!dom.dom().ok_or("DOM facts")?.unsupported().is_empty())?;
         check(!ssr.ssr().ok_or("SSR facts")?.unsupported().is_empty())?;
+        check(!vapor.vapor().ok_or("Vapor facts")?.unsupported().is_empty())?;
     }
     Ok(())
 }

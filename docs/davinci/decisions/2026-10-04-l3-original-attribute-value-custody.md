@@ -10,8 +10,10 @@ NativeSelectedSetup entries derive their
 own complete File internally. They enable one private allocation-free monotonic
 OriginalAttributeCursor in the existing common canonical Enter/Binding/Leave
 walk. The old generic/ordinary build_with signature and constructors retain None.
-An internal BuildContext preserves the actual SSR setup context and leaves room
-for the independently owned Vapor setup context, without a sibling dependency.
+An internal BuildContext preserves distinct actual SSR setup, Vapor setup and
+original File contexts, without a sibling target dependency. The true child
+replays onto literal fcf8 containing actual For2df, SSR4aea and Vapor setupfcf8;
+all accepted For phases, attribute-free runtime policy and old setup laws remain.
 
 The cursor initially requires complete File and pointer-identical File artifact.
 Each target's existing Element attribute loop consumes the next whole normal
@@ -45,12 +47,13 @@ its genuine checked style view; the scriptless fourteen-source pack still
 refuses styles and grants no styled output qualification. Writers and module assembly are unchanged in this
 source slice; their now-reachable output requires the mandatory qualification.
 
-Nine authored laws cover the twelve original title positives in each actual
+Ten authored laws cover the twelve original title positives in each actual
 native target walk and the two unchanged class/entity-text boundaries; empty,
 unknown, bare and nested Unicode slots; real JS/TS setup/For/HandlerBody identity
 and scopes; generic None compatibility; neutral missing rows; foreign/sibling/
 slot/node/order/duplicate refusals; the genuine styled SSR owner/source/slot
-join; and attached diagnostic prefixes on incomplete Files. A complete-field privacy doc denies constructing sealed final facts. Tests
+join; authentic JS/TS const/let/var setup contexts in all three targets;
+and attached diagnostic prefixes on incomplete Files. A complete-field privacy doc denies constructing sealed final facts. Tests
 are source-authored, not locally compiled or accepted. Existing sticky lower
 parse/park/close/attach/drop/forget interruption laws remain unchanged.
 
