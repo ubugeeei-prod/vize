@@ -56,3 +56,8 @@ reproduced independently with the old public formatter. This change does not
 repair or normalize it. TODO [#6845](https://github.com/ubugeeei-prod/vize/issues/6845):
 track the separate newline repair with its own legacy corpus fixture; do not
 claim canonical EOL output from this filter regression.
+
+The separate newline repair is implemented under [#7697](https://github.com/ubugeeei-prod/vize/issues/7697).
+Its [CRLF decision](./2026-10-04-glyph-crlf-template.md) replaces only redundant
+CR bytes in the Vue 2 reference, adds a separate exact legacy corpus input and
+requires actual Actions plus unchanged instruction budgets before merge credit.

@@ -68,8 +68,17 @@ source-built CLI capture remains pending and is recorded separately from the
 two candidate captures above. Five cases are now planned; native formatter is
 unsupported for all five, with no paired or native-equivalent credit.
 
-The Vue 2 CRLF case retains an independently reproduced preexisting `CRCRLF`
-layout ending. It proves exact output and filter preservation without claiming
-canonical newline output. The separate repair remains a recorded TODO in the
-[filter decision](../../../../docs/davinci/decisions/2026-09-27-glyph-vue2-filters.md).
-Global corpus membership and the two old `.vue` inputs remain unchanged.
+## CRLF template repair (#7697)
+
+The Vue 2 CRLF reference now removes only the redundant CR from the former
+`CRCRLF` layout output. This deliberate behavioral repair resolves the
+[filter decision's newline TODO](../../../../docs/davinci/decisions/2026-09-27-glyph-vue2-filters.md).
+Filter expressions and all other reference bytes stay unchanged; historical
+`capture/` artifacts retain their original evidence.
+
+A sixth configured case, `sfc-crlf-template-layout`, specifies canonical CRLF
+output independently: its already formatted CRLF input must remain byte exact
+and report unchanged, while its LF counterpart converges to the same bytes.
+The shared CLI runner verifies all six references over three passes. Physical
+inputs remain `.vue.txt`, so the two existing `.vue` corpus members and generated
+ledgers stay unchanged. Native support and paired-comparison credit remain zero.

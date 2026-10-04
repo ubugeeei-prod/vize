@@ -93,7 +93,7 @@ function referenceReport() {
 }
 
 void test("formatter differential manifest preserves captured baselines and versioned regression inputs", () => {
-  assert.equal(loaded.cases.length, 5);
+  assert.equal(loaded.cases.length, 6);
   for (const fixture of loaded.cases) {
     assert.equal(fixture.expectations.legacy.state, fixture.config.length ? "pending" : "captured");
     assert.equal(fixture.adapters.native, null);

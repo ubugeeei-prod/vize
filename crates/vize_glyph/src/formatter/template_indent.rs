@@ -101,6 +101,13 @@ pub(super) fn write_indented_template(
     indent: &[u8],
     newline: &[u8],
 ) {
+    // LF layout keeps its existing hot loop. CRLF needs to consume the CR
+    // left by splitting on LF before writing the configured terminator.
+    if newline == b"\r\n" {
+        write_indented_crlf_template(output, source, indent);
+        return;
+    }
+
     if !needs_raw_line_mask(source.as_bytes()) {
         for line in source.as_bytes().split(|byte| *byte == b'\n') {
             write_line(output, line, indent, newline, false);
@@ -112,6 +119,23 @@ pub(super) fn write_indented_template(
     let raw_mask = compute_raw_line_mask(&lines);
     for (line, raw) in lines.into_iter().zip(raw_mask) {
         write_line(output, line, indent, newline, raw);
+    }
+}
+
+fn write_indented_crlf_template(output: &mut Vec<u8>, source: &str, indent: &[u8]) {
+    if !needs_raw_line_mask(source.as_bytes()) {
+        for line in source.as_bytes().split(|byte| *byte == b'\n') {
+            let line = line.strip_suffix(b"\r").unwrap_or(line);
+            write_line(output, line, indent, b"\r\n", false);
+        }
+        return;
+    }
+
+    let lines: Vec<_> = source.as_bytes().split(|byte| *byte == b'\n').collect();
+    let raw_mask = compute_raw_line_mask(&lines);
+    for (line, raw) in lines.into_iter().zip(raw_mask) {
+        let line = line.strip_suffix(b"\r").unwrap_or(line);
+        write_line(output, line, indent, b"\r\n", raw);
     }
 }
 

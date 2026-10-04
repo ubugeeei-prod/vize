@@ -243,7 +243,7 @@
         ]
       },
       "provenance": {
-        "issues": [6845, 6882],
+        "issues": [6845, 6882, 7697],
         "commits": [
           {
             "sha": "07ac185bac5ce8b6a99191be10c24a1dac854a78",
@@ -299,7 +299,7 @@
           "artifacts": [
             {
               "path": "sfc-vue2-filter-chain-crlf/reference.expected.txt",
-              "sha256": "efcf8db57763299b6b43f3403606dab1a3895ee837064ef4307a4f5e6c57908b",
+              "sha256": "b140c1362b12ca62e5b6c05d9cc0c3b6d090fc011b1432ff5ddb5988bf942180",
               "role": "issue-authored-regression-reference",
               "provenance": {
                 "issue": 6845,
@@ -320,7 +320,7 @@
           "missingFields": [
             "structured-FormatResult.changed; public Rust witness covers this field"
           ],
-          "referenceState": "public-api-verified; source-built CLI pending"
+          "referenceState": "issue-7697-authored-CRLF-repair; exact-source Actions required"
         }
       },
       "comparison": {
@@ -560,6 +560,138 @@
       "comparison": {
         "contract": "formatter-byte-output-v1",
         "requiredFacets": ["full-output-bytes", "idempotence"],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
+      "id": "formatter/sfc/crlf-template-layout",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-crlf-template-layout",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "1f9fd6023fe41aac95d4d169b993132d785292b9fcbe87861d285a923aaf6ceb",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "22f88baec64dae7bd57de65c80b6b06750337fe420f16fc127c335bd190204a3",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [
+          7697,
+          6098
+        ],
+        "commits": [
+          {
+            "sha": "da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/formatter/template_indent.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 7697,
+            "path": "crates/vize_glyph/tests/sfc_crlf_template.rs",
+            "symbol": "crlf_template_corpus_has_exact_bytes_and_fixed_point"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/sfc_crlf_template.rs",
+          "symbol": "crlf_template_corpus_has_exact_bytes_and_fixed_point",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "FormatResult.changed"
+          ],
+          "limitations": [
+            "Public API and exact CLI execution require current-source Actions; LF-loop RED was reproduced with the unmodified real write_line function."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "crlf"
+            ],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with explicit pinned JSON project config; branch Actions execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-crlf-template-layout/reference.expected.txt",
+              "sha256": "1f9fd6023fe41aac95d4d169b993132d785292b9fcbe87861d285a923aaf6ceb",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 7697,
+                "path": "crates/vize_glyph/tests/sfc_crlf_template.rs",
+                "symbol": "crlf_template_corpus_has_exact_bytes_and_fixed_point",
+                "assertion": "complete CRLF source equals the authored reference over three passes with changed=false"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-7697-authored-CRLF-repair; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
         "transportMappings": []
       },
       "scenarios": [
