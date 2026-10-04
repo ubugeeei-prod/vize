@@ -24,7 +24,7 @@ import {
 import { packageVersion, resolveVuePackageDir } from "./check-gate-env.mjs";
 import { gateVize, prepareMinimalPlants, prepareCorpusPlant } from "./check-gate-plants.mjs";
 import { corpusManifest, prepareCliCorpora, selfTestCorpus } from "./type-snapshot-cli-corpus.mjs";
-import { MODES, writeJson } from "./type-snapshot-cli-protocol.mjs";
+import { MODES, selfTest as selfTestProtocol, writeJson } from "./type-snapshot-cli-protocol.mjs";
 import { createPhaseRunner } from "./typechecker-native-phase-runner.mjs";
 import { selfTestNativePhaseReport } from "./typechecker-native-phase-report.mjs";
 
@@ -54,6 +54,7 @@ function successful(result, label) {
 export function main(argv = process.argv.slice(2)) {
   if (argv.length === 1 && argv[0] === "--self-test") {
     selfTestNativePhaseReport();
+    selfTestProtocol();
     selfTestCorpus();
     return;
   }
@@ -114,11 +115,30 @@ export function main(argv = process.argv.slice(2)) {
       expected,
       "neutral generator drift",
     );
+  const mainSourceSha = process.env.MAIN_SOURCE_SHA ?? null;
+  if (mainSourceSha !== null) assert.match(mainSourceSha, /^[0-9a-f]{40}$/u);
+  const changedPaths = mainSourceSha
+    ? successful(
+        command("git", ["diff", "--name-only", mainSourceSha, "HEAD"], ROOT),
+        "source delta",
+      )
+        .split("\n")
+        .filter(Boolean)
+    : null;
+  const infrastructurePath =
+    /^(?:tools\/benchmarks\/scripts\/(?:typechecker-native-[^/]+|type-snapshot-cli-(?:corpus|leaf-corpus|protocol))\.mjs|crates\/vize_canon\/examples\/native_phase_projection\.rs|\.github\/workflows\/typechecker-native-phases\.yml|docs\/davinci\/decisions\/(?:2026-10-04-typechecker-native-phases|2026-09-27-level-restructure)\.md)$/u;
   const metadata = {
     schemaVersion: 1,
     kind: "native-backend-phase-observation",
     sourceSha: process.env.SOURCE_SHA,
-    mainProductionSourceSha: process.env.MAIN_SOURCE_SHA ?? null,
+    mainProductionSourceSha: mainSourceSha,
+    sourceBaseline: {
+      mainHeadSha: process.env.MAIN_HEAD_SHA ?? null,
+      prBaseSha: process.env.PR_BASE_SHA ?? null,
+      changedPaths,
+      productionMatchesBaseline:
+        changedPaths?.every((path) => infrastructurePath.test(path)) ?? null,
+    },
     generatedAt: new Date().toISOString(),
     runId: process.env.GITHUB_RUN_ID ?? null,
     runAttempt: process.env.GITHUB_RUN_ATTEMPT ?? null,

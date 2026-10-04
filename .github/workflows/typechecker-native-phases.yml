@@ -10,6 +10,15 @@ on:
       - "tools/benchmarks/scripts/type-snapshot-cli-protocol.mjs"
       - "crates/vize_canon/examples/native_phase_projection.rs"
       - "docs/davinci/decisions/2026-10-04-typechecker-native-phases.md"
+      - "tools/benchmarks/scripts/generate.mjs"
+      - "tools/benchmarks/scripts/check-gate-*.mjs"
+      - "tools/benchmarks/scripts/typecheck-command.mjs"
+      - "tools/benchmarks/scripts/benchmark-binary.mjs"
+      - "crates/vize_canon/**"
+      - "crates/vize/src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "pnpm-lock.yaml"
 
 permissions:
   contents: read
@@ -35,17 +44,18 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Verify exact head and source baseline
+      - name: Verify exact head and record main baseline
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           set -euo pipefail
-          [[ "$BASE_REF" == "main" ]]
           [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
           [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          source_base_sha="$(git merge-base "$BASE_SHA" "$SOURCE_SHA")"
+          main_head_sha="$(git rev-parse refs/remotes/origin/main)"
+          source_base_sha="$(git merge-base "$main_head_sha" "$SOURCE_SHA")"
           echo "MAIN_SOURCE_SHA=$source_base_sha" >> "$GITHUB_ENV"
+          echo "MAIN_HEAD_SHA=$main_head_sha" >> "$GITHUB_ENV"
+          echo "PR_BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"
       - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with:
@@ -59,17 +69,6 @@ jobs:
         with:
           node-version-file: package.json
           run-install: false
-      - name: Verify infrastructure-only source boundary
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: |
-          node --input-type=module - <<'JS'
-          import assert from 'node:assert/strict';
-          import { execFileSync } from 'node:child_process';
-          const base=execFileSync('git',['merge-base',process.env.BASE_SHA,process.env.SOURCE_SHA],{encoding:'utf8'}).trim();
-          const paths=execFileSync('git',['diff','--name-only',base,process.env.SOURCE_SHA],{encoding:'utf8'}).trim().split('\n');
-          for(const path of paths) assert(/^(?:tools\/benchmarks\/scripts\/(?:typechecker-native-[^/]+|type-snapshot-cli-(?:corpus|leaf-corpus|protocol))\.mjs|crates\/vize_canon\/examples\/native_phase_projection\.rs|\.github\/workflows\/typechecker-native-phases\.yml|docs\/davinci\/decisions\/(?:2026-10-04-typechecker-native-phases|2026-09-27-level-restructure)\.md)$/.test(path),`production change in phase-only probe: ${path}`);
-          JS
       - name: Install pinned native runtime and shared Vue dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check exact neutral inputs, strict phase parser and projection probe
@@ -77,7 +76,7 @@ jobs:
           node tools/benchmarks/scripts/typechecker-native-phases.mjs --self-test
           node --test tools/benchmarks/scripts/typechecker-native-phase-forwarding.test.mjs
           cargo clippy --locked -p vize_canon --example native_phase_projection -- -D warnings
-      - name: Build the unchanged production CLI and standalone projection example
+      - name: Build the actual production CLI and standalone projection example
         run: |
           set -euo pipefail
           git diff --exit-code HEAD

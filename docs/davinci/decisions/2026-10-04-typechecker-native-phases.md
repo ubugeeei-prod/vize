@@ -6,7 +6,7 @@ Initial unchanged main production source: `ac1675fef35c5637c38b1e366a91d6bdfe419
 The source must be refreshed and the phase probe rerun after the corrected
 performance Stack merges; this independent lane creates no dependency on it.
 Current independent-infrastructure main base after the verified 0.431.0 release:
-`7516c514bc58a73f1415585021ea34d801b5836d`. Fresh exact-head source/phase
+`b9be9065b872086726158b67d1b4e7b8dee78a14`. Fresh exact-head source/phase
 Actions on that actual main are required before this PR's independent delivery.
 
 This is an independent benchmark-only follow-up to the fresh-process type
@@ -47,8 +47,9 @@ remain `null / unknown`; an unexplained residual does not establish OS startup.
 ## Protocol
 
 - Build a fresh CLI from the infrastructure PR's exact head with the existing
-  `ci-opt` settings, after proving that the production tree matches the main
-  merge base. Pin the CLI and standalone projection executable and record
+  `ci-opt` settings. Record main head, its merge base, PR base and all changed
+  paths; independently prove this infrastructure PR has no production delta.
+  Pin the CLI and standalone projection executable and record
   the native runtime's exact path, version and SHA-256. Recheck identities.
 - Preserve the neutral generator files byte-for-byte from production provider
   `3712c7cb784848655050221538a6b9cfa8bb0dd9`, recording their SHA-256 in the
@@ -301,3 +302,31 @@ prior `6987…` phase receipt cannot qualify this new base. Rebuild and rerun ex
 head source/phase Actions and every direct/wrapped byte/map/ordered report gate
 on `7516c514bc58a73f1415585021ea34d801b5836d` before independent queue admission.
 No production or benchmark source is modified by this record placement.
+
+## Final pre-review qualification and permanent workflow correction
+
+Infrastructure head `8f70a8cccc33f98bd9aba08c4bad35a14746bf7b` qualified main
+`7516c514bc58a73f1415585021ea34d801b5836d`: [source run 37180946644](https://github.com/ubugeeei-prod/vize/actions/runs/37180946644)
+and [phase run 37180946439](https://github.com/ubugeeei-prod/vize/actions/runs/37180946439) passed. Artifact 11295024357 digest
+`sha256:873e25725314688c2e47ad36c73dd2c8aa766e644112442ec6c9c5acb21857ab`;
+root JSON `3eb67cd157c5604cadc3ee77da1703ec4fd7ade8b40a6921558dfcdc1b0c200f`;
+independent audit `a3fc7834dc27eb1a33554a7399497366a52c73a80bd0a457be66797d51bf6f00`;
+8,901-file vector `acede3e3cae553881977580db70611d583f2ced9941305fd97ba8d9bacfe1219`.
+All 45 full ordered pairs, 75 shards, 6,016 saved files, complete maps and
+three exact archived ns restorations passed; these historical gates cannot
+qualify the subsequent reviewed source. Check remains the largest reported
+phase, with startup/program unknown and no shipping gain established.
+
+Review found the permanent pull-request workflow incorrectly rejected future
+production changes and parent-based native Stack PRs. Remove that rejection
+from the permanent lane, retain exact-head/clean-source checks, and compute
+the baseline from fetched main rather than a parent PR base. Archive both bases,
+changed paths and `productionMatchesBaseline`; false or unknown never establishes
+unchanged production. This PR's independent 12-path boundary audit remains a
+required delivery gate. Widen triggers to actual runner helpers, Canon/CLI APIs
+and lock files so changed dependencies run the lane. Invoke the copied protocol's
+existing self-test explicitly without modifying its pinned bytes. Rebase onto
+actual main `b9be9065b872086726158b67d1b4e7b8dee78a14` and rerun exact source/phase
+Actions and the full raw audit before queue admission; no production/cache change.
+
+[Same-slice workflow decision and exact historical receipt](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5977170087).
