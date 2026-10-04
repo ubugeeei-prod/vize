@@ -28,6 +28,10 @@ pub struct TextExpression<'a> {
 }
 
 #[derive(Debug)]
+#[expect(
+    clippy::large_enum_variant,
+    reason = "Keep successful owning handoffs inline to avoid a heap allocation per callback/filter slot"
+)]
 enum Artifact<'a> {
     Retained(RetainedExpression<'a>),
     Original(Box<NativeSyntax<'a>>),

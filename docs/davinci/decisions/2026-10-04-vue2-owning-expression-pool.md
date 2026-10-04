@@ -118,6 +118,17 @@ preserves every old reviewed inventory row, including the original descriptor
 arena Vec1/1; six new exact rows record required normal owning/snapshot storage.
 No storage site is hidden and no instruction/resource ceiling is raised.
 
+The [actual source-lint receipt](https://github.com/ubugeeei-prod/vize/issues/6842#issuecomment-5979941239)
+records sourcef4ea/Check37202134543 Rust build111435919583 stopping at
+`clippy::large_enum_variant`. On this Linux x86_64 runner, Clippy1.98 reports
+the private successful inline `RetainedExpression` variant as at least600 bytes
+and the returned original Box variant as8 bytes. A reasoned expectation on
+that private enum preserves the original inline handoff and avoids a new heap
+allocation per successful slot. Its normal Vec stride/payload cost remains;
+no speed result is implied. All fields, original laws and borrowed contracts
+stay exact. This failed build executed no new Rust unit/doctest evidence;
+the complete raw log and its SHA256 remain in the source review packet.
+
 ## Review and validation boundary
 
 Twelve new Rust laws cover complete before/after slot and descriptor facts,
