@@ -1,15 +1,10 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { TestContext } from "node:test";
 
-import {
-  resolveVizeCommand,
-  runVizeCheck,
-  symlinkVueTypes,
-} from "../../../_helpers/realworld-typecheck.ts";
+import { resolveVizeCommand, symlinkVueTypes } from "../../../_helpers/realworld-typecheck.ts";
 
 import {
   type Topology,
@@ -19,6 +14,7 @@ import {
   assertReport,
   assertOnlyInjectedCall,
 } from "./partition-assertions.ts";
+import { secondaryCapture } from "./partition-capture.ts";
 
 // Secondary synthetic visibility controls for #7817, never primary Router
 // provider evidence. The parent oracle owns exact source CLI/LSP custody.
@@ -45,10 +41,6 @@ const NEGATIVES = [
 
 function json(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
-}
-
-function sha256(source: string): string {
-  return createHash("sha256").update(source).digest("hex");
 }
 
 function source(topology: Topology, statement: string, broken: boolean): string {
@@ -90,6 +82,7 @@ export async function runPartitionControls(t: TestContext, corsaPath: string): P
     "parent supplies actual Corsa",
   );
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-page-partition-secondary-"));
+  const capture = secondaryCapture(cli, corsaPath, workspace);
   const write = (relative: string, content: string) => {
     const target = path.join(workspace, relative);
     fs.mkdirSync(path.dirname(target), { recursive: true });
@@ -166,33 +159,15 @@ export async function runPartitionControls(t: TestContext, corsaPath: string): P
       const patterns = topology === "shared-leaf" ? [...ROOTS, "shared.ts"] : ROOTS;
       const observations = [1, 2].map((servers) => {
         assert.deepEqual(resolveVizeCommand(), [cli]);
-        const result = runVizeCheck(workspace, corsaPath, [
+        const result = capture.run(st, { label, topology, requestedServers: servers }, patterns, [
           ...patterns,
-          "--servers",
-          String(servers),
-          "--show-virtual-ts",
-        ]) as Observation;
+          "globals.d.ts",
+          HELPER,
+          "tsconfig.json",
+          "package.json",
+          "node_modules/vue-router/package.json",
+        ]);
         assertReport(result, topology, sources, imported, broken);
-        st.diagnostic(
-          JSON.stringify({
-            authority: "secondary-synthetic-no-provider-credit",
-            label,
-            topology,
-            requestedServers: servers,
-            workspace,
-            sourceHashes: Object.fromEntries(
-              [
-                ...patterns,
-                "globals.d.ts",
-                HELPER,
-                "tsconfig.json",
-                "package.json",
-                "node_modules/vue-router/package.json",
-              ].map((file) => [file, sha256(fs.readFileSync(path.join(workspace, file), "utf8"))]),
-            ),
-            result,
-          }),
-        );
         return result;
       });
       assert.deepEqual(

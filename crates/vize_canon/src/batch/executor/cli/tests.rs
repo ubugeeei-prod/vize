@@ -23,7 +23,6 @@ fn unique_case_dir(name: &str) -> PathBuf {
             std::process::id()
         ))
 }
-
 #[test]
 fn partitions_vue_files_and_shares_program_wide_sources() {
     use super::partition_virtual_files;

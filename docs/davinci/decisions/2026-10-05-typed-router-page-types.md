@@ -126,6 +126,18 @@ invalid → repair reports against the qualified provider. It must also prove
 the secondary implicit-import global visibility and helper-absent controls.
 These tests have not yet executed on an exact hosted source.
 
+The secondary visibility controls retain original stdout/stderr bytes,
+status and process errors before JSON decoding or report assertions. Their
+existing differential artifact also includes exact command flags, binary
+identities, the genuine source-build receipt and full authored/configuration
+bytes. A failed check therefore remains reviewable after its temporary
+workspace is removed. These synthetic controls do not supply primary
+Router-provider credit or a performance result. The
+[paired transport decision](https://github.com/ubugeeei-prod/vize/issues/7817#issuecomment-5983401125)
+also records rejection of empty-segment aliases and file/directory-prefix
+collisions before extraction; the same seven offline functions pass with
+these additional adversarial subcases, without a provider execution.
+
 Before admission: qualify the prepared provider and
 source-built CLI/editor custody, pass fresh exact-source Actions and full
 runtime fixtures, preserve all unaffected corpus outputs and unchanged

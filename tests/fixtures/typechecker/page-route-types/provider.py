@@ -33,10 +33,11 @@ def members(raw, integrity, count, total):
                 or path.is_absolute()
                 or len(path.parts) < 2
                 or path.parts[0] != "package"
-                or any(part in (".", "..") for part in entry.name.split("/"))
+                or any(part in ("", ".", "..") for part in entry.name.split("/"))
                 or "\\" in entry.name
                 or "\x00" in entry.name
                 or entry.name in names
+                or any(entry.name.startswith(name + "/") or name.startswith(entry.name + "/") for name in names)
             ):
                 raise ValueError("unsafe or duplicate provider archive member")
             names.add(entry.name)

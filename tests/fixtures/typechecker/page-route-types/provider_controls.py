@@ -60,6 +60,8 @@ class ProviderTransport(unittest.TestCase):
             ("elsewhere/file", tarfile.REGTYPE),
             ("package/../outside", tarfile.REGTYPE),
             ("package/./file", tarfile.REGTYPE),
+            ("package//file", tarfile.REGTYPE),
+            ("package/file/", tarfile.REGTYPE),
             ("package\\outside", tarfile.REGTYPE),
             ("package/link", tarfile.SYMTYPE),
             ("package/hardlink", tarfile.LNKTYPE),
@@ -71,6 +73,9 @@ class ProviderTransport(unittest.TestCase):
     def test_duplicate_members_are_refused(self):
         with self.assertRaises(ValueError):
             decode([("package/file", b"first", tarfile.REGTYPE), ("package/file", b"second", tarfile.REGTYPE)])
+        for names in [("package/file", "package/file/child"), ("package/file/child", "package/file")]:
+            with self.subTest(names=names), self.assertRaises(ValueError):
+                decode([(name, b"original", tarfile.REGTYPE) for name in names])
 
     def test_existing_or_symlink_destination_refused_before_network(self):
         import tempfile

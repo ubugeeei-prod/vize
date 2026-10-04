@@ -76,6 +76,9 @@ is excluded from registered roots and alone supplies a global type; it checks
 shared-leaf and independent/no-leaf programs, disabled/explicit/shadow/no-call
 and absent-helper guards, exact 1/2-server ordered reports and virtual output,
 and unrelated ambient type errors. It is not primary Router-provider credit.
+`partition-capture.ts` saves complete original raw streams and authored/config
+bytes before decoding/assertion under `target/differential/router-page-types-secondary`;
+failed runs retain the genuine source-build receipt and exact binary/flag identities.
 
 Runtime execution and exact hosted source qualification remain pending.
 The existing global release/Fuzz admission hold applies. No speed gain or
