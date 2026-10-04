@@ -61,6 +61,12 @@ pub struct NativeSsrSfcOutput {
 }
 
 impl NativeSsrSfcOutput {
+    pub(crate) fn new(document: EmitDocument, source_map: Option<String>) -> Self {
+        Self {
+            document,
+            source_map,
+        }
+    }
     #[must_use]
     pub fn code(&self) -> &str {
         self.document.as_str()

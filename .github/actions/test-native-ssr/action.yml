@@ -25,6 +25,16 @@ runs:
       run: |
         cargo test --locked --profile ci -p vize_atelier_sfc --test native_scriptless_ssr -- --nocapture
         vp node --test tests/tooling/native-sfc-scriptless-ssr-reference.test.ts
+    - name: Test fresh whole primitive setup SFC SSR modules
+      id: native-setup-ssr
+      shell: bash
+      env:
+        VIZE_NATIVE_SETUP_SSR_CAPTURE: ${{ runner.temp }}/native-setup-ssr-modules.json
+        VIZE_NATIVE_SETUP_SSR_RUNTIME_CAPTURE: ${{ runner.temp }}/native-setup-ssr-runtime.json
+        VIZE_L4_SSR_REQUIRE_NATIVE: "1"
+      run: |
+        cargo test --locked --profile ci -p vize_atelier_sfc --test native_scriptless_setup_ssr -- --nocapture
+        vp node --test tests/tooling/native-sfc-setup-ssr-reference.test.ts
     - name: Preserve fresh SSR modules and actual runtime outcomes
       if: ${{ always() && steps.native-ssr.outcome != 'skipped' }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -39,5 +49,8 @@ runs:
           ${{ runner.temp }}/native-sfc-ssr-modules.json
           ${{ runner.temp }}/native-sfc-ssr-modules.json.positive.json
           ${{ runner.temp }}/native-sfc-ssr-runtime.json
+          ${{ runner.temp }}/native-setup-ssr-modules.json
+          ${{ runner.temp }}/native-setup-ssr-modules.json.positive.json
+          ${{ runner.temp }}/native-setup-ssr-runtime.json
         if-no-files-found: error
         retention-days: 14

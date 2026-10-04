@@ -1,0 +1,183 @@
+{
+  "modules": [
+    {
+      "name": "root-let-js",
+      "filename": "NativeSetupLet.vue",
+      "source": "<!--outside🦀--><script setup>/*original*/ let value='雪 & <one>'; const idle=0;</script><template>{{ value }}</template>",
+      "updates": {
+        "value": "changed 雪 <&>"
+      }
+    },
+    {
+      "name": "root-var-js",
+      "filename": "NativeSetupVar.vue",
+      "source": "<template>{{ value }}</template><script setup>var value=42</script>",
+      "updates": {
+        "value": -12
+      }
+    },
+    {
+      "name": "root-const-number",
+      "filename": "NativeSetupNumber.vue",
+      "source": "<script setup>const value=42</script><template>{{value}}</template>"
+    },
+    {
+      "name": "root-const-null",
+      "filename": "NativeSetupNull.vue",
+      "source": "<template>{{value}}</template><script setup>const value=null</script>"
+    },
+    {
+      "name": "root-const-boolean",
+      "filename": "NativeSetupBoolean.vue",
+      "source": "<script setup>const value=true</script><template>{{value}}</template>"
+    },
+    {
+      "name": "root-const-bigint",
+      "filename": "NativeSetupBigint.vue",
+      "source": "<template>{{value}}</template><script setup>const value=123n</script>"
+    },
+    {
+      "name": "root-literal",
+      "filename": "NativeSetupLiteral.vue",
+      "source": "<script setup>const unused=0</script><template>{{ '雪 & <literal>' }}</template>"
+    },
+    {
+      "name": "root-ts-let",
+      "filename": "NativeSetupTsLet.vue",
+      "source": "<template>{{value}}</template><script setup lang='ts'>/*original*/ let value:string='雪'; const idle:number=1;</script>",
+      "updates": {
+        "value": "TS changed 雪 & <two>"
+      }
+    },
+    {
+      "name": "root-ts-lines",
+      "filename": "NativeSetupTsLines.vue",
+      "source": "<script setup lang='ts'>let value:string='🦀雪';\r\nconst idle:number=1;\rlet second=2;\nconst third=true; let fourth=null; const fifth=3n;</script><template>{{ value }}</template>",
+      "updates": {
+        "value": "line changed 🦀"
+      }
+    },
+    {
+      "name": "static-original-on",
+      "filename": "NativeSetupOn.vue",
+      "source": "<template><button id='literal' title='雪 <one>' @click='value'>unchanged</button></template><script setup>let value=1</script>",
+      "updates": {
+        "value": 2
+      },
+      "handler": true
+    },
+    {
+      "name": "static-fragment",
+      "filename": "NativeSetupFragment.vue",
+      "source": "<script setup>const unused=0</script><template><i data-label='雪'/><!--from \"vue\"--><br/></template>"
+    },
+    {
+      "name": "root-comment-fragment",
+      "filename": "NativeSetupComment.vue",
+      "source": "<template><!--from \"vue\"-->{{value}}</template><script setup>const value='雪'</script>"
+    },
+    {
+      "name": "root-unicode-identifier",
+      "filename": "NativeSetupUnicode.vue",
+      "source": "<script setup>let 雪='🦀 & <one>'</script><template>{{雪}}</template>",
+      "updates": {
+        "雪": "changed 🦀 & <two>"
+      }
+    },
+    {
+      "name": "root-ts-const",
+      "filename": "NativeSetupTsConst.vue",
+      "source": "<template>{{value}}</template><script setup lang='ts'>const value:number=42</script>"
+    },
+    {
+      "name": "root-mixed-static",
+      "filename": "NativeSetupMixed.vue",
+      "source": "<script setup>let value='雪 & <one>'</script><template>{{value}}<i title='雪'>static</i></template>",
+      "updates": {
+        "value": "雪 & <two>"
+      }
+    }
+  ],
+  "refusals": [
+    {
+      "name": "ordinary",
+      "source": "<script></script><script setup>const value=1</script><template><i/></template>"
+    },
+    {
+      "name": "style",
+      "source": "<script setup>const value=1</script><template><i/></template><style></style>"
+    },
+    {
+      "name": "custom",
+      "source": "<custom>kept</custom><script setup>const value=1</script><template><i/></template>"
+    },
+    {
+      "name": "external",
+      "source": "<script setup src='external.js'></script><template><i/></template>"
+    },
+    {
+      "name": "missing-setup",
+      "source": "<template><i/></template>"
+    },
+    {
+      "name": "empty",
+      "source": "<script setup>/*original*/</script><template><i/></template>"
+    },
+    {
+      "name": "imports",
+      "source": "<script setup>import value from 'original'</script><template><i/></template>"
+    },
+    {
+      "name": "function",
+      "source": "<script setup>function value(){}</script><template><i/></template>"
+    },
+    {
+      "name": "array",
+      "source": "<script setup>const value=[1]</script><template><i/></template>"
+    },
+    {
+      "name": "generated-collision",
+      "source": "<script setup>const Object=1</script><template><i/></template>"
+    },
+    {
+      "name": "compound",
+      "source": "<script setup>const value=1</script><template>{{value+1}}</template>"
+    },
+    {
+      "name": "member",
+      "source": "<script setup>const value='ab'</script><template>{{value.length}}</template>"
+    },
+    {
+      "name": "adjacent-text",
+      "source": "<script setup>const value=1</script><template>hello {{value}}!</template>"
+    },
+    {
+      "name": "adjacent-interpolation",
+      "source": "<script setup>const value=1</script><template>{{value}}{{true}}</template>"
+    },
+    {
+      "name": "separated-interpolations",
+      "source": "<script setup>const value=1</script><template>{{value}}<i/>{{value}}</template>"
+    },
+    {
+      "name": "nested",
+      "source": "<script setup>const value=1</script><template><i>{{value}}</i></template>"
+    },
+    {
+      "name": "for",
+      "source": "<script setup>const rows='ab'</script><template><i v-for='item in rows'/></template>"
+    },
+    {
+      "name": "search",
+      "source": "<script setup>const value=1</script><template><search/></template>"
+    },
+    {
+      "name": "handler-unresolved",
+      "source": "<script setup>const value=1</script><template><button @click='missing'/></template>"
+    },
+    {
+      "name": "handler-safety",
+      "source": "<script setup>const value=1</script><template><button @click='return ('/></template>"
+    }
+  ]
+}

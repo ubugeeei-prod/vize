@@ -1,0 +1,2875 @@
+{
+  "schema": "vize.native-sfc.setup-ssr-reference",
+  "version": 1,
+  "compiler": {
+    "name": "@vitejs/plugin-vue",
+    "version": "6.0.7",
+    "vue": "3.5.35"
+  },
+  "fixtures": [
+    {
+      "name": "root-let-js",
+      "filename": "NativeSetupLet.vue",
+      "source": "<!--outside🦀--><script setup>/*original*/ let value='雪 & <one>'; const idle=0;</script><template>{{ value }}</template>",
+      "updates": {
+        "value": "changed 雪 <&>"
+      },
+      "sourceSha256": "755f832163d9cd713f54ab5956c159876b6ad79a005c6397831a125bf18566fe",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Let"
+        },
+        {
+          "name": "idle",
+          "kind": "Const"
+        }
+      ],
+      "inline": {
+        "code": "import { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst idle=0;\nconst _sfc_main = {\n  __name: 'NativeSetupLet',\n  __ssrInlineRender: true,\n  setup(__props) {\n/*original*/ let value='雪 & <one>'; \nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(_unref(value))}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupLet.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupLet.vue"
+          ],
+          "names": [],
+          "mappings": ";;;AAAkE,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;AAAhD,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAoC,aAAK",
+          "sourcesContent": [
+            "<!--outside🦀--><script setup>/*original*/ let value='雪 & <one>'; const idle=0;</script><template>{{ value }}</template>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "const idle=0;\nconst _sfc_main = {\n  __name: 'NativeSetupLet',\n  setup(__props, { expose: __expose }) {\n  __expose();\n/*original*/ let value='雪 & <one>'; \nconst __returned__ = { get value() { return value }, set value(v) { value = v }, idle }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`${_ssrInterpolate($setup.value)}`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupLet.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupLet.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupLet.vue"
+          ],
+          "sourcesContent": [
+            "<!--outside🦀--><script setup>/*original*/ let value='雪 & <one>'; const idle=0;</script><template>{{ value }}</template>"
+          ],
+          "mappings": "AAAkE,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;AAAhD,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;2BAAoC,YAAK",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "67eff0884ef5b81da0f74c63876174c60b395e66340d2bc973e09a1967c4bee8",
+        "map": "bd51e6ddb6779b893533521b563fc2799c1690b8ff5216e395c135f2f99eb120",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "d416a97581260d5641127a298ab0f91b8663d715b97b43e8266aee62c3dd1e84",
+        "map": "12ea3b0a506c3c96e3d44916245ed1cbf12284dd3285a62def7ab3ebdfbb3234",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "雪 &amp; &lt;one&gt;",
+          "modules": [
+            "NativeSetupLet.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "雪 &amp; &lt;one&gt;",
+          "modules": [
+            "NativeSetupLet.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "雪 &amp; &lt;one&gt;",
+          "modules": [
+            "NativeSetupLet.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "雪 &amp; &lt;one&gt;",
+            "modules": [
+              "NativeSetupLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>",
+              "idle": 0
+            },
+            "stateValues": {
+              "value": "雪 & <one>",
+              "idle": 0
+            },
+            "direct": "雪 &amp; &lt;one&gt;"
+          },
+          "updated": {
+            "html": "changed 雪 &lt;&amp;&gt;",
+            "modules": [
+              "NativeSetupLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>",
+              "idle": 0
+            },
+            "stateValues": {
+              "value": "changed 雪 <&>",
+              "idle": 0
+            },
+            "direct": "changed 雪 &lt;&amp;&gt;"
+          }
+        },
+        {
+          "initial": {
+            "html": "雪 &amp; &lt;one&gt;",
+            "modules": [
+              "NativeSetupLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>",
+              "idle": 0
+            },
+            "stateValues": {
+              "value": "雪 & <one>",
+              "idle": 0
+            },
+            "direct": "雪 &amp; &lt;one&gt;"
+          },
+          "updated": {
+            "html": "changed 雪 &lt;&amp;&gt;",
+            "modules": [
+              "NativeSetupLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>",
+              "idle": 0
+            },
+            "stateValues": {
+              "value": "changed 雪 <&>",
+              "idle": 0
+            },
+            "direct": "changed 雪 &lt;&amp;&gt;"
+          }
+        },
+        {
+          "initial": {
+            "html": "雪 &amp; &lt;one&gt;",
+            "modules": [
+              "NativeSetupLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>",
+              "idle": 0
+            },
+            "stateValues": {
+              "value": "雪 & <one>",
+              "idle": 0
+            },
+            "direct": "雪 &amp; &lt;one&gt;"
+          },
+          "updated": {
+            "html": "changed 雪 &lt;&amp;&gt;",
+            "modules": [
+              "NativeSetupLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>",
+              "idle": 0
+            },
+            "stateValues": {
+              "value": "changed 雪 <&>",
+              "idle": 0
+            },
+            "direct": "changed 雪 &lt;&amp;&gt;"
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-var-js",
+      "filename": "NativeSetupVar.vue",
+      "source": "<template>{{ value }}</template><script setup>var value=42</script>",
+      "updates": {
+        "value": -12
+      },
+      "sourceSha256": "3714d1da487a0d33810a37144a55188aed2e86d2f01358b19f7fc15cbf0ed9a1",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Var"
+        }
+      ],
+      "inline": {
+        "code": "import { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nconst _sfc_main = {\n  __name: 'NativeSetupVar',\n  __ssrInlineRender: true,\n  setup(__props) {\nvar value=42\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(_unref(value))}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupVar.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupVar.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;;;;;AAA8C,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAA5C,aAAK",
+          "sourcesContent": [
+            "<template>{{ value }}</template><script setup>var value=42</script>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "\nconst _sfc_main = {\n  __name: 'NativeSetupVar',\n  setup(__props, { expose: __expose }) {\n  __expose();\nvar value=42\nconst __returned__ = { get value() { return value }, set value(v) { value = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`${_ssrInterpolate($setup.value)}`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupVar.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupVar.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupVar.vue"
+          ],
+          "sourcesContent": [
+            "<template>{{ value }}</template><script setup>var value=42</script>"
+          ],
+          "mappings": ";;;;;AAA8C,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;2BAA5C,YAAK",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "4b92291f1906fa2f87442d80daa71473635b44afe9d3ee0fb283af3239b5f84c",
+        "map": "1669ff5934a53291546a43ae8034cec77e6be9c4c4e93828eb86e5d57f70c233",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "c7edda2104f0517cf6462299fadc1ed4c02e166d60107cf072cb15724d2c1929",
+        "map": "064cce251db19a8d33b38ee264cf32ce827bb22dc5011ba48f8ed98145d8baf1",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "42",
+          "modules": [
+            "NativeSetupVar.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "42",
+          "modules": [
+            "NativeSetupVar.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "42",
+          "modules": [
+            "NativeSetupVar.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "42",
+            "modules": [
+              "NativeSetupVar.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": 42
+            },
+            "direct": "42"
+          },
+          "updated": {
+            "html": "-12",
+            "modules": [
+              "NativeSetupVar.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": -12
+            },
+            "direct": "-12"
+          }
+        },
+        {
+          "initial": {
+            "html": "42",
+            "modules": [
+              "NativeSetupVar.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": 42
+            },
+            "direct": "42"
+          },
+          "updated": {
+            "html": "-12",
+            "modules": [
+              "NativeSetupVar.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": -12
+            },
+            "direct": "-12"
+          }
+        },
+        {
+          "initial": {
+            "html": "42",
+            "modules": [
+              "NativeSetupVar.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": 42
+            },
+            "direct": "42"
+          },
+          "updated": {
+            "html": "-12",
+            "modules": [
+              "NativeSetupVar.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": -12
+            },
+            "direct": "-12"
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-const-number",
+      "filename": "NativeSetupNumber.vue",
+      "source": "<script setup>const value=42</script><template>{{value}}</template>",
+      "sourceSha256": "6626ab1420a2296e4bddfe1be51c9cef7bc816c9686333a3c1ac1486cbf04acd",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Const"
+        }
+      ],
+      "inline": {
+        "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst value=42\nconst _sfc_main = {\n  __name: 'NativeSetupNumber',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(value)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupNumber.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupNumber.vue"
+          ],
+          "names": [],
+          "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;2BAAsB,KAAK",
+          "sourcesContent": [
+            "<script setup>const value=42</script><template>{{value}}</template>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "const value=42\nconst _sfc_main = {\n  __name: 'NativeSetupNumber',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { value }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`${_ssrInterpolate($setup.value)}`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupNumber.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupNumber.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupNumber.vue"
+          ],
+          "sourcesContent": [
+            "<script setup>const value=42</script><template>{{value}}</template>"
+          ],
+          "mappings": "AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;;2BAAsB,YAAK",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "6b2e45d7600556f4d82dbf4f05b15af4bf0cc1f197de1d35f2d66944e382376a",
+        "map": "c5c942361db227751f5fca6a59552a2d1b77c42122ba03d9307104ad98fbf5eb",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "ac9c8d5f2bd02b01f5278ecda0827f258016ebd117fa620e4f6cae9b7aad92d9",
+        "map": "a68a9edf44dd27dd40a5c108300ab00fc701352233de682e4fc1276fe3b9b312",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "42",
+          "modules": [
+            "NativeSetupNumber.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "42",
+          "modules": [
+            "NativeSetupNumber.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "42",
+          "modules": [
+            "NativeSetupNumber.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "42",
+            "modules": [
+              "NativeSetupNumber.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": 42
+            },
+            "direct": "42"
+          }
+        },
+        {
+          "initial": {
+            "html": "42",
+            "modules": [
+              "NativeSetupNumber.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": 42
+            },
+            "direct": "42"
+          }
+        },
+        {
+          "initial": {
+            "html": "42",
+            "modules": [
+              "NativeSetupNumber.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": 42
+            },
+            "direct": "42"
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-const-null",
+      "filename": "NativeSetupNull.vue",
+      "source": "<template>{{value}}</template><script setup>const value=null</script>",
+      "sourceSha256": "e78b5360ee1ecc6ac00df34a3f9f657850dc035c5a9f7d8412b35eadec4ab8e4",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Const"
+        }
+      ],
+      "inline": {
+        "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst value=null\nconst _sfc_main = {\n  __name: 'NativeSetupNull',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(value)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupNull.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupNull.vue"
+          ],
+          "names": [],
+          "mappings": ";;AAA4C,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;2BAA/C,KAAK",
+          "sourcesContent": [
+            "<template>{{value}}</template><script setup>const value=null</script>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "const value=null\nconst _sfc_main = {\n  __name: 'NativeSetupNull',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { value }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`${_ssrInterpolate($setup.value)}`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupNull.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupNull.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupNull.vue"
+          ],
+          "sourcesContent": [
+            "<template>{{value}}</template><script setup>const value=null</script>"
+          ],
+          "mappings": "AAA4C,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;;2BAA/C,YAAK",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "fa9f2d4b2601e69fd25cd8ce0fa3af9d9c4999f00b395a03c3b9d7c50387e8d1",
+        "map": "e4edc2809e9fb40bd6fd12c0eaa8de971e7d814a8bd4fb3ebdc85a497467fc1c",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "af4c2371a76ff07ca301d6148092a478e67ea2fba415548b7cbbd702b7ba6ede",
+        "map": "304d6d5ba33aaaf4cbedac1b5cccb0ef45df3b814f046100d27cc6893a1b75b7",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "",
+          "modules": [
+            "NativeSetupNull.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "",
+          "modules": [
+            "NativeSetupNull.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "",
+          "modules": [
+            "NativeSetupNull.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "",
+            "modules": [
+              "NativeSetupNull.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": null
+            },
+            "stateValues": {
+              "value": null
+            },
+            "direct": ""
+          }
+        },
+        {
+          "initial": {
+            "html": "",
+            "modules": [
+              "NativeSetupNull.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": null
+            },
+            "stateValues": {
+              "value": null
+            },
+            "direct": ""
+          }
+        },
+        {
+          "initial": {
+            "html": "",
+            "modules": [
+              "NativeSetupNull.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": null
+            },
+            "stateValues": {
+              "value": null
+            },
+            "direct": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-const-boolean",
+      "filename": "NativeSetupBoolean.vue",
+      "source": "<script setup>const value=true</script><template>{{value}}</template>",
+      "sourceSha256": "d36ac31c19a368fec942e4b34bcd8c4de49a4d19286ef68940b56cbbfc6b0f61",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Const"
+        }
+      ],
+      "inline": {
+        "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst value=true\nconst _sfc_main = {\n  __name: 'NativeSetupBoolean',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(value)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupBoolean.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupBoolean.vue"
+          ],
+          "names": [],
+          "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;2BAAsB,KAAK",
+          "sourcesContent": [
+            "<script setup>const value=true</script><template>{{value}}</template>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "const value=true\nconst _sfc_main = {\n  __name: 'NativeSetupBoolean',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { value }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`${_ssrInterpolate($setup.value)}`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupBoolean.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupBoolean.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupBoolean.vue"
+          ],
+          "sourcesContent": [
+            "<script setup>const value=true</script><template>{{value}}</template>"
+          ],
+          "mappings": "AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;;2BAAsB,YAAK",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "c0235efc622410daf8826f99e274e21c1e2e6ca0c5990811da1cb6447448c3db",
+        "map": "10d78f22bb6545d81c090b318c7559d28f0d2b7a08a18c84e051e3062595a701",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "504a86db5fa1633639427370bb67c4584cd2744507afaf784384348d046348e2",
+        "map": "a4502f3745bec1748976ca4b581c10c966993cb79897baf77ea12b68b9fc7fa7",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "true",
+          "modules": [
+            "NativeSetupBoolean.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "true",
+          "modules": [
+            "NativeSetupBoolean.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "true",
+          "modules": [
+            "NativeSetupBoolean.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "true",
+            "modules": [
+              "NativeSetupBoolean.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": true
+            },
+            "stateValues": {
+              "value": true
+            },
+            "direct": "true"
+          }
+        },
+        {
+          "initial": {
+            "html": "true",
+            "modules": [
+              "NativeSetupBoolean.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": true
+            },
+            "stateValues": {
+              "value": true
+            },
+            "direct": "true"
+          }
+        },
+        {
+          "initial": {
+            "html": "true",
+            "modules": [
+              "NativeSetupBoolean.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": true
+            },
+            "stateValues": {
+              "value": true
+            },
+            "direct": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-const-bigint",
+      "filename": "NativeSetupBigint.vue",
+      "source": "<template>{{value}}</template><script setup>const value=123n</script>",
+      "sourceSha256": "0dabe6a4fdf2a3690743fa5fcefb8da6db1146173b5f83b1db0504292deae0f0",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Const"
+        }
+      ],
+      "inline": {
+        "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst value=123n\nconst _sfc_main = {\n  __name: 'NativeSetupBigint',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(value)}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupBigint.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupBigint.vue"
+          ],
+          "names": [],
+          "mappings": ";;AAA4C,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;2BAA/C,KAAK",
+          "sourcesContent": [
+            "<template>{{value}}</template><script setup>const value=123n</script>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "const value=123n\nconst _sfc_main = {\n  __name: 'NativeSetupBigint',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { value }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`${_ssrInterpolate($setup.value)}`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupBigint.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupBigint.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupBigint.vue"
+          ],
+          "sourcesContent": [
+            "<template>{{value}}</template><script setup>const value=123n</script>"
+          ],
+          "mappings": "AAA4C,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;;2BAA/C,YAAK",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "a572d53291efa5e5f54147e0c4e42f967c7a575b61e360ec005cb04115c18839",
+        "map": "04a4c0d64c5c2ec5d6370c1bae2b64b23dc86e49811362240e31711312319b71",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "385ad8cb429d66028a936dfb4bd285d243b2bdf1241b2999afb3da4ae05ff9be",
+        "map": "bbdc215fbf800d1b54f1e80873af95ad92e44d200e1a9085c43b0af7a18705d5",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "123",
+          "modules": [
+            "NativeSetupBigint.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "123",
+          "modules": [
+            "NativeSetupBigint.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "123",
+          "modules": [
+            "NativeSetupBigint.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "123",
+            "modules": [
+              "NativeSetupBigint.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": {
+                "bigint": "123"
+              }
+            },
+            "stateValues": {
+              "value": {
+                "bigint": "123"
+              }
+            },
+            "direct": "123"
+          }
+        },
+        {
+          "initial": {
+            "html": "123",
+            "modules": [
+              "NativeSetupBigint.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": {
+                "bigint": "123"
+              }
+            },
+            "stateValues": {
+              "value": {
+                "bigint": "123"
+              }
+            },
+            "direct": "123"
+          }
+        },
+        {
+          "initial": {
+            "html": "123",
+            "modules": [
+              "NativeSetupBigint.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": {
+                "bigint": "123"
+              }
+            },
+            "stateValues": {
+              "value": {
+                "bigint": "123"
+              }
+            },
+            "direct": "123"
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-literal",
+      "filename": "NativeSetupLiteral.vue",
+      "source": "<script setup>const unused=0</script><template>{{ '雪 & <literal>' }}</template>",
+      "sourceSha256": "0b30ae041fe380d67e2c6a86b57bb56988a5439c7b43bf796f528ca9876c4663",
+      "bindings": [
+        {
+          "name": "unused",
+          "kind": "Const"
+        }
+      ],
+      "inline": {
+        "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst unused=0\nconst _sfc_main = {\n  __name: 'NativeSetupLiteral',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate('雪 & <literal>')}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupLiteral.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupLiteral.vue"
+          ],
+          "names": [],
+          "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;2BAAuB,eAAe",
+          "sourcesContent": [
+            "<script setup>const unused=0</script><template>{{ '雪 & <literal>' }}</template>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "const unused=0\nconst _sfc_main = {\n  __name: 'NativeSetupLiteral',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { unused }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`${_ssrInterpolate('雪 & <literal>')}`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupLiteral.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupLiteral.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupLiteral.vue"
+          ],
+          "sourcesContent": [
+            "<script setup>const unused=0</script><template>{{ '雪 & <literal>' }}</template>"
+          ],
+          "mappings": "AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;;2BAAuB,eAAe",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "0e6d9a8848ae74d9ce5803fc20f55b2782365ed4c78d9f02835c45f5c294ad1e",
+        "map": "bb9f53f9231cd5e6c4459f70562a340cf274dff5bae1c56ed09f5af24ddb2207",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "6801d9867ac70d508d6fa95c4573fc066d315a213ecd3a30b5336303cefab44a",
+        "map": "e0b7419f8c4c3319fa62b0bced9fa9d2613bde260cfc2f1cda5afa43a7f83756",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "雪 &amp; &lt;literal&gt;",
+          "modules": [
+            "NativeSetupLiteral.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "雪 &amp; &lt;literal&gt;",
+          "modules": [
+            "NativeSetupLiteral.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "雪 &amp; &lt;literal&gt;",
+          "modules": [
+            "NativeSetupLiteral.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "雪 &amp; &lt;literal&gt;",
+            "modules": [
+              "NativeSetupLiteral.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "unused": 0
+            },
+            "stateValues": {
+              "unused": 0
+            },
+            "direct": "雪 &amp; &lt;literal&gt;"
+          }
+        },
+        {
+          "initial": {
+            "html": "雪 &amp; &lt;literal&gt;",
+            "modules": [
+              "NativeSetupLiteral.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "unused": 0
+            },
+            "stateValues": {
+              "unused": 0
+            },
+            "direct": "雪 &amp; &lt;literal&gt;"
+          }
+        },
+        {
+          "initial": {
+            "html": "雪 &amp; &lt;literal&gt;",
+            "modules": [
+              "NativeSetupLiteral.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "unused": 0
+            },
+            "stateValues": {
+              "unused": 0
+            },
+            "direct": "雪 &amp; &lt;literal&gt;"
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-ts-let",
+      "filename": "NativeSetupTsLet.vue",
+      "source": "<template>{{value}}</template><script setup lang='ts'>/*original*/ let value:string='雪'; const idle:number=1;</script>",
+      "updates": {
+        "value": "TS changed 雪 & <two>"
+      },
+      "sourceSha256": "eefd2931888d105a8ef5af330fa69769d9361f5264de93cf871a643d9720a6e6",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Let"
+        },
+        {
+          "name": "idle",
+          "kind": "Const"
+        }
+      ],
+      "inline": {
+        "code": "import _sfc_main from \"/native-ssr/NativeSetupTsLet.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-ssr/NativeSetupTsLet.vue?vue&type=script&setup=true&lang.ts\";\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupTsLet.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nexport default _sfc_main;\n",
+        "map": {
+          "mappings": ""
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": [
+          {
+            "id": "/native-ssr/NativeSetupTsLet.vue?vue&type=script&setup=true&lang.ts",
+            "originalCode": "import { defineComponent as _defineComponent } from 'vue'\nimport { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst idle:number=1;\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'NativeSetupTsLet',\n  __ssrInlineRender: true,\n  setup(__props) {\n/*original*/ let value:string='雪'; \nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`${_ssrInterpolate(_unref(value))}`)\n}\n}\n\n})",
+            "originalMap": {
+              "version": 3,
+              "sources": [
+                "/native-ssr/NativeSetupTsLet.vue"
+              ],
+              "names": [],
+              "mappings": ";;;;AAAyF,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;AAAtD,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAA5E,aAAK",
+              "sourcesContent": [
+                "<template>{{value}}</template><script setup lang='ts'>/*original*/ let value:string='雪'; const idle:number=1;</script>"
+              ]
+            },
+            "code": "import { defineComponent as _defineComponent } from \"vue\";\nimport { unref as _unref } from \"vue\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nconst idle = 1;\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"NativeSetupTsLet\",\n\t__ssrInlineRender: true,\n\tsetup(__props) {\n\t\t/*original*/ let value = \"雪\";\n\t\treturn (_ctx, _push, _parent, _attrs) => {\n\t\t\t_push(`${_ssrInterpolate(_unref(value))}`);\n\t\t};\n\t}\n});\n",
+            "map": {
+              "mappings": ";;;AAAyF,MAAM,OAAY;;;;;eAAxC,IAAI,QAAa;;4BAAxE,OAAA,KAAA,CAAK,GAAA",
+              "names": [],
+              "sources": [
+                "/native-ssr/NativeSetupTsLet.vue"
+              ],
+              "version": 3,
+              "sourcesContent": [
+                "<template>{{value}}</template><script setup lang='ts'>/*original*/ let value:string='雪'; const idle:number=1;</script>"
+              ]
+            }
+          }
+        ]
+      },
+      "external": {
+        "code": "import _sfc_main from \"/native-ssr/NativeSetupTsLet.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-ssr/NativeSetupTsLet.vue?vue&type=script&setup=true&lang.ts\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n\t_push(`${_ssrInterpolate($setup.value)}`);\n}\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupTsLet.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nimport _export_sfc from \"\\0plugin-vue:export-helper\";\nexport default /*#__PURE__*/ _export_sfc(_sfc_main, [[\"ssrRender\", _sfc_ssrRender], [\"__file\", \"NativeSetupTsLet.vue\"]]);\n",
+        "map": {
+          "mappings": ";;;;0BAAY,OAAA,KAAK,GAAA",
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupTsLet.vue"
+          ],
+          "version": 3,
+          "sourcesContent": [
+            "<template>{{value}}</template><script setup lang='ts'>/*original*/ let value:string='雪'; const idle:number=1;</script>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": [
+          {
+            "id": "/native-ssr/NativeSetupTsLet.vue?vue&type=script&setup=true&lang.ts",
+            "originalCode": "import { defineComponent as _defineComponent } from 'vue'\nconst idle:number=1;\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'NativeSetupTsLet',\n  setup(__props, { expose: __expose }) {\n  __expose();\n/*original*/ let value:string='雪'; \nconst __returned__ = { get value() { return value }, set value(v) { value = v }, idle }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            "originalMap": {
+              "version": 3,
+              "sources": [
+                "/native-ssr/NativeSetupTsLet.vue"
+              ],
+              "sourcesContent": [
+                "<template>{{value}}</template><script setup lang='ts'>/*original*/ let value:string='雪'; const idle:number=1;</script>"
+              ],
+              "names": [],
+              "mappings": ";AAAyF,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;AAAtD,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;"
+            },
+            "code": "import { defineComponent as _defineComponent } from \"vue\";\nconst idle = 1;\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"NativeSetupTsLet\",\n\tsetup(__props, { expose: __expose }) {\n\t\t__expose();\n\t\t/*original*/ let value = \"雪\";\n\t\tconst __returned__ = {\n\t\t\tget value() {\n\t\t\t\treturn value;\n\t\t\t},\n\t\t\tset value(v) {\n\t\t\t\tvalue = v;\n\t\t\t},\n\t\t\tidle\n\t\t};\n\t\tObject.defineProperty(__returned__, \"__isScriptSetup\", {\n\t\t\tenumerable: false,\n\t\t\tvalue: true\n\t\t});\n\t\treturn __returned__;\n\t}\n});\n",
+            "map": {
+              "mappings": ";AAAyF,MAAM,OAAY;;;;;eAAxC,IAAI,QAAa",
+              "names": [],
+              "sources": [
+                "/native-ssr/NativeSetupTsLet.vue"
+              ],
+              "version": 3,
+              "sourcesContent": [
+                "<template>{{value}}</template><script setup lang='ts'>/*original*/ let value:string='雪'; const idle:number=1;</script>"
+              ]
+            }
+          }
+        ]
+      },
+      "inlineSha256": {
+        "code": "df372841dece639c175de7bdb463083c9f18f0af1582f2820c99252478952840",
+        "map": "05a5cbf347621d84cae5df0070938836df94768212099ce22afa268c31de190f",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "6e627a023116567d0d90ac7fdebeea0f126177cdfbae405f19f334e05b835a9a"
+      },
+      "externalSha256": {
+        "code": "ca7718388c0331609472870f277508209cb0aca9e1886eccd70aa1f2ba3a40d2",
+        "map": "831a908bc7c0954f4e6303d17ff019d1b7cf813a268fa2a98b6a8870977c38c0",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "83a92feaed446868e3d8d9ba2a52cd3a9201dd0d1449dbb21cb72513ef464e4f"
+      },
+      "inlineRuntime": [
+        {
+          "html": "雪",
+          "modules": [
+            "NativeSetupTsLet.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "雪",
+          "modules": [
+            "NativeSetupTsLet.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "雪",
+          "modules": [
+            "NativeSetupTsLet.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "雪",
+            "modules": [
+              "NativeSetupTsLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪",
+              "idle": 1
+            },
+            "stateValues": {
+              "value": "雪",
+              "idle": 1
+            },
+            "direct": "雪"
+          },
+          "updated": {
+            "html": "TS changed 雪 &amp; &lt;two&gt;",
+            "modules": [
+              "NativeSetupTsLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪",
+              "idle": 1
+            },
+            "stateValues": {
+              "value": "TS changed 雪 & <two>",
+              "idle": 1
+            },
+            "direct": "TS changed 雪 &amp; &lt;two&gt;"
+          }
+        },
+        {
+          "initial": {
+            "html": "雪",
+            "modules": [
+              "NativeSetupTsLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪",
+              "idle": 1
+            },
+            "stateValues": {
+              "value": "雪",
+              "idle": 1
+            },
+            "direct": "雪"
+          },
+          "updated": {
+            "html": "TS changed 雪 &amp; &lt;two&gt;",
+            "modules": [
+              "NativeSetupTsLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪",
+              "idle": 1
+            },
+            "stateValues": {
+              "value": "TS changed 雪 & <two>",
+              "idle": 1
+            },
+            "direct": "TS changed 雪 &amp; &lt;two&gt;"
+          }
+        },
+        {
+          "initial": {
+            "html": "雪",
+            "modules": [
+              "NativeSetupTsLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪",
+              "idle": 1
+            },
+            "stateValues": {
+              "value": "雪",
+              "idle": 1
+            },
+            "direct": "雪"
+          },
+          "updated": {
+            "html": "TS changed 雪 &amp; &lt;two&gt;",
+            "modules": [
+              "NativeSetupTsLet.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪",
+              "idle": 1
+            },
+            "stateValues": {
+              "value": "TS changed 雪 & <two>",
+              "idle": 1
+            },
+            "direct": "TS changed 雪 &amp; &lt;two&gt;"
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-ts-lines",
+      "filename": "NativeSetupTsLines.vue",
+      "source": "<script setup lang='ts'>let value:string='🦀雪';\r\nconst idle:number=1;\rlet second=2;\nconst third=true; let fourth=null; const fifth=3n;</script><template>{{ value }}</template>",
+      "updates": {
+        "value": "line changed 🦀"
+      },
+      "sourceSha256": "9b659e64fabcaf153e0123f104410dd949fad1b13f95c2dd065687d446b471be",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Let"
+        },
+        {
+          "name": "idle",
+          "kind": "Const"
+        },
+        {
+          "name": "second",
+          "kind": "Let"
+        },
+        {
+          "name": "third",
+          "kind": "Const"
+        },
+        {
+          "name": "fourth",
+          "kind": "Let"
+        },
+        {
+          "name": "fifth",
+          "kind": "Const"
+        }
+      ],
+      "inline": {
+        "code": "import _sfc_main from \"/native-ssr/NativeSetupTsLines.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-ssr/NativeSetupTsLines.vue?vue&type=script&setup=true&lang.ts\";\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupTsLines.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nexport default _sfc_main;\n",
+        "map": {
+          "mappings": ""
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": [
+          {
+            "id": "/native-ssr/NativeSetupTsLines.vue?vue&type=script&setup=true&lang.ts",
+            "originalCode": "import { defineComponent as _defineComponent } from 'vue'\nimport { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst idle:number=1;\rconst third=true; const fifth=3n;\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'NativeSetupTsLines',\n  __ssrInlineRender: true,\n  setup(__props) {\nlet value:string='🦀雪';\r\nlet second=2;\nlet fourth=null; \nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`${_ssrInterpolate(_unref(value))}`)\n}\n}\n\n})",
+            "originalMap": {
+              "version": 3,
+              "sources": [
+                "/native-ssr/NativeSetupTsLines.vue"
+              ],
+              "names": [],
+              "mappings": ";;;;AACA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CACpB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAkB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;AAFzB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AAC1B,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACf,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAsC,aAAK",
+              "sourcesContent": [
+                "<script setup lang='ts'>let value:string='🦀雪';\r\nconst idle:number=1;\rlet second=2;\nconst third=true; let fourth=null; const fifth=3n;</script><template>{{ value }}</template>"
+              ]
+            },
+            "code": "import { defineComponent as _defineComponent } from \"vue\";\nimport { unref as _unref } from \"vue\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nconst idle = 1;\nconst third = true;\nconst fifth = 3n;\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"NativeSetupTsLines\",\n\t__ssrInlineRender: true,\n\tsetup(__props) {\n\t\tlet value = \"🦀雪\";\n\t\tlet second = 2;\n\t\tlet fourth = null;\n\t\treturn (_ctx, _push, _parent, _attrs) => {\n\t\t\t_push(`${_ssrInterpolate(_unref(value))}`);\n\t\t};\n\t}\n});\n",
+            "map": {
+              "mappings": ";;;AACA,MAAM,OAAY;;;;;CADQ,mBAAmB;CACtB,MAAM,SAAI;EACf,IAAI,QAAY",
+              "names": [],
+              "sources": [
+                "/native-ssr/NativeSetupTsLines.vue"
+              ],
+              "version": 3,
+              "sourcesContent": [
+                "<script setup lang='ts'>let value:string='🦀雪';\r\nconst idle:number=1;\rlet second=2;\nconst third=true; let fourth=null; const fifth=3n;</script><template>{{ value }}</template>"
+              ]
+            }
+          }
+        ]
+      },
+      "external": {
+        "code": "import _sfc_main from \"/native-ssr/NativeSetupTsLines.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-ssr/NativeSetupTsLines.vue?vue&type=script&setup=true&lang.ts\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n\t_push(`${_ssrInterpolate($setup.value)}`);\n}\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupTsLines.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nimport _export_sfc from \"\\0plugin-vue:export-helper\";\nexport default /*#__PURE__*/ _export_sfc(_sfc_main, [[\"ssrRender\", _sfc_ssrRender], [\"__file\", \"NativeSetupTsLines.vue\"]]);\n",
+        "map": {
+          "mappings": ";;;;0BAEwE,OAAA,KAAK,GAAA",
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupTsLines.vue"
+          ],
+          "version": 3,
+          "sourcesContent": [
+            "<script setup lang='ts'>let value:string='🦀雪';\r\nconst idle:number=1;\rlet second=2;\nconst third=true; let fourth=null; const fifth=3n;</script><template>{{ value }}</template>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": [
+          {
+            "id": "/native-ssr/NativeSetupTsLines.vue?vue&type=script&setup=true&lang.ts",
+            "originalCode": "import { defineComponent as _defineComponent } from 'vue'\nconst idle:number=1;\rconst third=true; const fifth=3n;\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'NativeSetupTsLines',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet value:string='🦀雪';\r\nlet second=2;\nlet fourth=null; \nconst __returned__ = { get value() { return value }, set value(v) { value = v }, idle, get second() { return second }, set second(v) { second = v }, third, get fourth() { return fourth }, set fourth(v) { fourth = v }, fifth }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            "originalMap": {
+              "version": 3,
+              "sources": [
+                "/native-ssr/NativeSetupTsLines.vue"
+              ],
+              "sourcesContent": [
+                "<script setup lang='ts'>let value:string='🦀雪';\r\nconst idle:number=1;\rlet second=2;\nconst third=true; let fourth=null; const fifth=3n;</script><template>{{ value }}</template>"
+              ],
+              "names": [],
+              "mappings": ";AACA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CACpB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAkB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;AAFzB,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AAC1B,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;AACf,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;"
+            },
+            "code": "import { defineComponent as _defineComponent } from \"vue\";\nconst idle = 1;\nconst third = true;\nconst fifth = 3n;\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"NativeSetupTsLines\",\n\tsetup(__props, { expose: __expose }) {\n\t\t__expose();\n\t\tlet value = \"🦀雪\";\n\t\tlet second = 2;\n\t\tlet fourth = null;\n\t\tconst __returned__ = {\n\t\t\tget value() {\n\t\t\t\treturn value;\n\t\t\t},\n\t\t\tset value(v) {\n\t\t\t\tvalue = v;\n\t\t\t},\n\t\t\tidle,\n\t\t\tget second() {\n\t\t\t\treturn second;\n\t\t\t},\n\t\t\tset second(v) {\n\t\t\t\tsecond = v;\n\t\t\t},\n\t\t\tthird,\n\t\t\tget fourth() {\n\t\t\t\treturn fourth;\n\t\t\t},\n\t\t\tset fourth(v) {\n\t\t\t\tfourth = v;\n\t\t\t},\n\t\t\tfifth\n\t\t};\n\t\tObject.defineProperty(__returned__, \"__isScriptSetup\", {\n\t\t\tenumerable: false,\n\t\t\tvalue: true\n\t\t});\n\t\treturn __returned__;\n\t}\n});\n",
+            "map": {
+              "mappings": ";AACA,MAAM,OAAY;;;;;CADQ,MAAM,SAAS,EAAE,QAAI,YAAA;EACxB,SAAS;EACd,IAAI,QAAY",
+              "names": [],
+              "sources": [
+                "/native-ssr/NativeSetupTsLines.vue"
+              ],
+              "version": 3,
+              "sourcesContent": [
+                "<script setup lang='ts'>let value:string='🦀雪';\r\nconst idle:number=1;\rlet second=2;\nconst third=true; let fourth=null; const fifth=3n;</script><template>{{ value }}</template>"
+              ]
+            }
+          }
+        ]
+      },
+      "inlineSha256": {
+        "code": "6ad33cfafab7338e9672ec09b5f060eb07999830074890456082de0f7c8729b2",
+        "map": "05a5cbf347621d84cae5df0070938836df94768212099ce22afa268c31de190f",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "76e53b182191d283ac6cbb4daa1ab976791f680892205494765620eb1bf3da29"
+      },
+      "externalSha256": {
+        "code": "3ee300f4361241db59066273a365998fd45f5830dcbca983dfb6c85ec5a7e8d8",
+        "map": "ea48880686925dc6d7cc9f803516ed9659e80bf27e4a3c7a4f5aa498d67f786f",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "6761316368aba96874daedc9ba835a1c2283365f5b5ee4af434d4301c60720b6"
+      },
+      "inlineRuntime": [
+        {
+          "html": "🦀雪",
+          "modules": [
+            "NativeSetupTsLines.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "🦀雪",
+          "modules": [
+            "NativeSetupTsLines.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "🦀雪",
+          "modules": [
+            "NativeSetupTsLines.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "🦀雪",
+            "modules": [
+              "NativeSetupTsLines.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "🦀雪",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "stateValues": {
+              "value": "🦀雪",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "direct": "🦀雪"
+          },
+          "updated": {
+            "html": "line changed 🦀",
+            "modules": [
+              "NativeSetupTsLines.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "🦀雪",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "stateValues": {
+              "value": "line changed 🦀",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "direct": "line changed 🦀"
+          }
+        },
+        {
+          "initial": {
+            "html": "🦀雪",
+            "modules": [
+              "NativeSetupTsLines.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "🦀雪",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "stateValues": {
+              "value": "🦀雪",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "direct": "🦀雪"
+          },
+          "updated": {
+            "html": "line changed 🦀",
+            "modules": [
+              "NativeSetupTsLines.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "🦀雪",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "stateValues": {
+              "value": "line changed 🦀",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "direct": "line changed 🦀"
+          }
+        },
+        {
+          "initial": {
+            "html": "🦀雪",
+            "modules": [
+              "NativeSetupTsLines.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "🦀雪",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "stateValues": {
+              "value": "🦀雪",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "direct": "🦀雪"
+          },
+          "updated": {
+            "html": "line changed 🦀",
+            "modules": [
+              "NativeSetupTsLines.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "🦀雪",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "stateValues": {
+              "value": "line changed 🦀",
+              "idle": 1,
+              "second": 2,
+              "third": true,
+              "fourth": null,
+              "fifth": {
+                "bigint": "3"
+              }
+            },
+            "direct": "line changed 🦀"
+          }
+        }
+      ]
+    },
+    {
+      "name": "static-original-on",
+      "filename": "NativeSetupOn.vue",
+      "source": "<template><button id='literal' title='雪 <one>' @click='value'>unchanged</button></template><script setup>let value=1</script>",
+      "updates": {
+        "value": 2
+      },
+      "handler": true,
+      "sourceSha256": "41d4e1d9b2c2301920c86a4f6d7c24e080806b8c27bbbb02efa9bbbb912a15e2",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Let"
+        }
+      ],
+      "inline": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\n\nconst _sfc_main = {\n  __name: 'NativeSetupOn',\n  __ssrInlineRender: true,\n  setup(__props) {\nlet value=1\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<button${_ssrRenderAttrs(_mergeProps({\n    id: \"literal\",\n    title: \"雪 <one>\"\n  }, _attrs))}>unchanged</button>`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupOn.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupOn.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;;;;;AAAyG,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;IAAjG,EAAE,EAAC,SAAS;IAAC,KAAK,EAAC,SAAS",
+          "sourcesContent": [
+            "<template><button id='literal' title='雪 <one>' @click='value'>unchanged</button></template><script setup>let value=1</script>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "\nconst _sfc_main = {\n  __name: 'NativeSetupOn',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet value=1\nconst __returned__ = { get value() { return value }, set value(v) { value = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<button${_ssrRenderAttrs(_mergeProps({\n    id: \"literal\",\n    title: \"雪 <one>\"\n  }, _attrs))}>unchanged</button>`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupOn.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupOn.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupOn.vue"
+          ],
+          "sourcesContent": [
+            "<template><button id='literal' title='雪 <one>' @click='value'>unchanged</button></template><script setup>let value=1</script>"
+          ],
+          "mappings": ";;;;;AAAyG,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;IAAjG,EAAE,EAAC,SAAS;IAAC,KAAK,EAAC,SAAS",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "179290bd3c7407d79d043458e1d62a7f026b1f2c72c57de0cede96e3de81654d",
+        "map": "115ca075921309557886a57a89cf8b02c0240f519999ad926dc25a789d9bddd5",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "004d385ae278e36fd1435c16f8fc10167b9356d5ce22ff0d455b779ef930975d",
+        "map": "8ce4aacdacf5a22da39a5238c3fa92d59f2fb1b17cd57217d9a04ab3be3b59f2",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "<button id=\"literal\" title=\"雪 &lt;one&gt;\">unchanged</button>",
+          "modules": [
+            "NativeSetupOn.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "<button id=\"override\" title=\"&quot;&lt;&amp;&gt;\" class=\"root active\" style=\"color:red;\" disabled>unchanged</button>",
+          "modules": [
+            "NativeSetupOn.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "<button title=\"${untrusted}\\`\" class=\"雪 🌸\" style=\"display:block;\" data-x=\"猫&amp;\">unchanged</button>",
+          "modules": [
+            "NativeSetupOn.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "<button id=\"literal\" title=\"雪 &lt;one&gt;\">unchanged</button>",
+            "modules": [
+              "NativeSetupOn.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 1
+            },
+            "stateValues": {
+              "value": 1
+            },
+            "direct": "<button id=\"literal\" title=\"雪 &lt;one&gt;\">unchanged</button>"
+          },
+          "updated": {
+            "html": "<button id=\"literal\" title=\"雪 &lt;one&gt;\">unchanged</button>",
+            "modules": [
+              "NativeSetupOn.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 1
+            },
+            "stateValues": {
+              "value": 2
+            },
+            "direct": "<button id=\"literal\" title=\"雪 &lt;one&gt;\">unchanged</button>"
+          }
+        },
+        {
+          "initial": {
+            "html": "<button id=\"override\" title=\"&quot;&lt;&amp;&gt;\" class=\"root active\" style=\"color:red;\" disabled>unchanged</button>",
+            "modules": [
+              "NativeSetupOn.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 1
+            },
+            "stateValues": {
+              "value": 1
+            },
+            "direct": "<button id=\"override\" title=\"&quot;&lt;&amp;&gt;\" class=\"root active\" style=\"color:red;\" disabled>unchanged</button>"
+          },
+          "updated": {
+            "html": "<button id=\"override\" title=\"&quot;&lt;&amp;&gt;\" class=\"root active\" style=\"color:red;\" disabled>unchanged</button>",
+            "modules": [
+              "NativeSetupOn.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 1
+            },
+            "stateValues": {
+              "value": 2
+            },
+            "direct": "<button id=\"override\" title=\"&quot;&lt;&amp;&gt;\" class=\"root active\" style=\"color:red;\" disabled>unchanged</button>"
+          }
+        },
+        {
+          "initial": {
+            "html": "<button title=\"${untrusted}\\`\" class=\"雪 🌸\" style=\"display:block;\" data-x=\"猫&amp;\">unchanged</button>",
+            "modules": [
+              "NativeSetupOn.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 1
+            },
+            "stateValues": {
+              "value": 1
+            },
+            "direct": "<button title=\"${untrusted}\\`\" class=\"雪 🌸\" style=\"display:block;\" data-x=\"猫&amp;\">unchanged</button>"
+          },
+          "updated": {
+            "html": "<button title=\"${untrusted}\\`\" class=\"雪 🌸\" style=\"display:block;\" data-x=\"猫&amp;\">unchanged</button>",
+            "modules": [
+              "NativeSetupOn.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 1
+            },
+            "stateValues": {
+              "value": 2
+            },
+            "direct": "<button title=\"${untrusted}\\`\" class=\"雪 🌸\" style=\"display:block;\" data-x=\"猫&amp;\">unchanged</button>"
+          }
+        }
+      ]
+    },
+    {
+      "name": "static-fragment",
+      "filename": "NativeSetupFragment.vue",
+      "source": "<script setup>const unused=0</script><template><i data-label='雪'/><!--from \"vue\"--><br/></template>",
+      "sourceSha256": "2333b63eddae175263d9024e884bcab7cbf29d8cc9a7d19462bda92c844dbd4c",
+      "bindings": [
+        {
+          "name": "unused",
+          "kind": "Const"
+        }
+      ],
+      "inline": {
+        "code": "\nconst unused=0\nconst _sfc_main = {\n  __name: 'NativeSetupFragment',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<!--[--><i data-label=\"雪\"></i><!--from \"vue\"--><br><!--]-->`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupFragment.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupFragment.vue"
+          ],
+          "names": [],
+          "mappings": ";AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+          "sourcesContent": [
+            "<script setup>const unused=0</script><template><i data-label='雪'/><!--from \"vue\"--><br/></template>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "const unused=0\nconst _sfc_main = {\n  __name: 'NativeSetupFragment',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { unused }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<!--[--><i data-label=\"雪\"></i><!--from \"vue\"--><br><!--]-->`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupFragment.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupFragment.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupFragment.vue"
+          ],
+          "sourcesContent": [
+            "<script setup>const unused=0</script><template><i data-label='雪'/><!--from \"vue\"--><br/></template>"
+          ],
+          "mappings": "AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "caf9140243b43a3f80b986b1921d7453a525eca9c33936f243371bc3c4c1316c",
+        "map": "800e20a38a3cf10fa358a972f4cb5826094008411c85f2725bd333f2f3b01cd7",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "9569335db55816243e34cceb89a55fee7ebd2981c23052fa0d7b45c43a392bcc",
+        "map": "ee20d3fd54b1e1e7425dfcaa3eb4aaf0dfbec229e490083f948fbff36219aaf7",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "<!--[--><i data-label=\"雪\"></i><!--from \"vue\"--><br><!--]-->",
+          "modules": [
+            "NativeSetupFragment.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "<!--[--><i data-label=\"雪\"></i><!--from \"vue\"--><br><!--]-->",
+          "modules": [
+            "NativeSetupFragment.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "<!--[--><i data-label=\"雪\"></i><!--from \"vue\"--><br><!--]-->",
+          "modules": [
+            "NativeSetupFragment.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "<!--[--><i data-label=\"雪\"></i><!--from \"vue\"--><br><!--]-->",
+            "modules": [
+              "NativeSetupFragment.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "unused": 0
+            },
+            "stateValues": {
+              "unused": 0
+            },
+            "direct": "<!--[--><i data-label=\"雪\"></i><!--from \"vue\"--><br><!--]-->"
+          }
+        },
+        {
+          "initial": {
+            "html": "<!--[--><i data-label=\"雪\"></i><!--from \"vue\"--><br><!--]-->",
+            "modules": [
+              "NativeSetupFragment.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "unused": 0
+            },
+            "stateValues": {
+              "unused": 0
+            },
+            "direct": "<!--[--><i data-label=\"雪\"></i><!--from \"vue\"--><br><!--]-->"
+          }
+        },
+        {
+          "initial": {
+            "html": "<!--[--><i data-label=\"雪\"></i><!--from \"vue\"--><br><!--]-->",
+            "modules": [
+              "NativeSetupFragment.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "unused": 0
+            },
+            "stateValues": {
+              "unused": 0
+            },
+            "direct": "<!--[--><i data-label=\"雪\"></i><!--from \"vue\"--><br><!--]-->"
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-comment-fragment",
+      "filename": "NativeSetupComment.vue",
+      "source": "<template><!--from \"vue\"-->{{value}}</template><script setup>const value='雪'</script>",
+      "sourceSha256": "c11a346376bd0022828147ebc2e359c95953967c1eb3f17301791338d909961a",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Const"
+        }
+      ],
+      "inline": {
+        "code": "import { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst value='雪'\nconst _sfc_main = {\n  __name: 'NativeSetupComment',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<!--[--><!--from \"vue\"-->${_ssrInterpolate(value)}<!--]-->`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupComment.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupComment.vue"
+          ],
+          "names": [],
+          "mappings": ";;AAA6D,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;oDAA9C,KAAK",
+          "sourcesContent": [
+            "<template><!--from \"vue\"-->{{value}}</template><script setup>const value='雪'</script>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "const value='雪'\nconst _sfc_main = {\n  __name: 'NativeSetupComment',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { value }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<!--[--><!--from \"vue\"-->${_ssrInterpolate($setup.value)}<!--]-->`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupComment.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupComment.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupComment.vue"
+          ],
+          "sourcesContent": [
+            "<template><!--from \"vue\"-->{{value}}</template><script setup>const value='雪'</script>"
+          ],
+          "mappings": "AAA6D,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;;;;;oDAA9C,YAAK",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "13fac5ac77eabb31240ebdcf9c0a516a7023e06b5b72d62978fbc28c30a8af9f",
+        "map": "7ee196605ffd898ad649f1ca752feea3f1f5acaa8dbd043cf990f10c8811ca4c",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "81d6ee10653c323afa83b8c1a05a1edb04944a82249c32d65ab13678ac6973f9",
+        "map": "b4a9c8763b4382ab8c2f9d212fc116bc911da58bfb200675e8e0d8e8b6785d74",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "<!--[--><!--from \"vue\"-->雪<!--]-->",
+          "modules": [
+            "NativeSetupComment.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "<!--[--><!--from \"vue\"-->雪<!--]-->",
+          "modules": [
+            "NativeSetupComment.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "<!--[--><!--from \"vue\"-->雪<!--]-->",
+          "modules": [
+            "NativeSetupComment.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "<!--[--><!--from \"vue\"-->雪<!--]-->",
+            "modules": [
+              "NativeSetupComment.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪"
+            },
+            "stateValues": {
+              "value": "雪"
+            },
+            "direct": "<!--[--><!--from \"vue\"-->雪<!--]-->"
+          }
+        },
+        {
+          "initial": {
+            "html": "<!--[--><!--from \"vue\"-->雪<!--]-->",
+            "modules": [
+              "NativeSetupComment.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪"
+            },
+            "stateValues": {
+              "value": "雪"
+            },
+            "direct": "<!--[--><!--from \"vue\"-->雪<!--]-->"
+          }
+        },
+        {
+          "initial": {
+            "html": "<!--[--><!--from \"vue\"-->雪<!--]-->",
+            "modules": [
+              "NativeSetupComment.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪"
+            },
+            "stateValues": {
+              "value": "雪"
+            },
+            "direct": "<!--[--><!--from \"vue\"-->雪<!--]-->"
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-unicode-identifier",
+      "filename": "NativeSetupUnicode.vue",
+      "source": "<script setup>let 雪='🦀 & <one>'</script><template>{{雪}}</template>",
+      "updates": {
+        "雪": "changed 🦀 & <two>"
+      },
+      "sourceSha256": "24d42c3c9b316c47ea9e056874df3db2a5b80a7d8d53143c703d6ec438ad2976",
+      "bindings": [
+        {
+          "name": "雪",
+          "kind": "Let"
+        }
+      ],
+      "inline": {
+        "code": "import { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nconst _sfc_main = {\n  __name: 'NativeSetupUnicode',\n  __ssrInlineRender: true,\n  setup(__props) {\nlet 雪='🦀 & <one>'\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`${_ssrInterpolate(_unref(雪))}`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupUnicode.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupUnicode.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;2BAAsB,SAAC",
+          "sourcesContent": [
+            "<script setup>let 雪='🦀 & <one>'</script><template>{{雪}}</template>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "\nconst _sfc_main = {\n  __name: 'NativeSetupUnicode',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet 雪='🦀 & <one>'\nconst __returned__ = { get 雪() { return 雪 }, set 雪(v) { 雪 = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`${_ssrInterpolate($setup.雪)}`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupUnicode.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupUnicode.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupUnicode.vue"
+          ],
+          "sourcesContent": [
+            "<script setup>let 雪='🦀 & <one>'</script><template>{{雪}}</template>"
+          ],
+          "mappings": ";;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;2BAAsB,QAAC",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "a5864bd4b955dbcf7fc7a2d58dde22ae83990153d58aac597db9e9456aae73f7",
+        "map": "706b7fa08e6c632ea91a9b170f9298b0d904d4508b2eb3a7197570e5079bd8dc",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "2f3b85c408f4df8ba7c8a05a736f4f5922ed42ac0e05baed6cf2c915b90d6648",
+        "map": "3e85c3e391a5e96dfd7f94c966a802d3d9a3ef861c2470aacfe86aa793186ffa",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "🦀 &amp; &lt;one&gt;",
+          "modules": [
+            "NativeSetupUnicode.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "🦀 &amp; &lt;one&gt;",
+          "modules": [
+            "NativeSetupUnicode.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "🦀 &amp; &lt;one&gt;",
+          "modules": [
+            "NativeSetupUnicode.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "🦀 &amp; &lt;one&gt;",
+            "modules": [
+              "NativeSetupUnicode.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "雪": "🦀 & <one>"
+            },
+            "stateValues": {
+              "雪": "🦀 & <one>"
+            },
+            "direct": "🦀 &amp; &lt;one&gt;"
+          },
+          "updated": {
+            "html": "changed 🦀 &amp; &lt;two&gt;",
+            "modules": [
+              "NativeSetupUnicode.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "雪": "🦀 & <one>"
+            },
+            "stateValues": {
+              "雪": "changed 🦀 & <two>"
+            },
+            "direct": "changed 🦀 &amp; &lt;two&gt;"
+          }
+        },
+        {
+          "initial": {
+            "html": "🦀 &amp; &lt;one&gt;",
+            "modules": [
+              "NativeSetupUnicode.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "雪": "🦀 & <one>"
+            },
+            "stateValues": {
+              "雪": "🦀 & <one>"
+            },
+            "direct": "🦀 &amp; &lt;one&gt;"
+          },
+          "updated": {
+            "html": "changed 🦀 &amp; &lt;two&gt;",
+            "modules": [
+              "NativeSetupUnicode.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "雪": "🦀 & <one>"
+            },
+            "stateValues": {
+              "雪": "changed 🦀 & <two>"
+            },
+            "direct": "changed 🦀 &amp; &lt;two&gt;"
+          }
+        },
+        {
+          "initial": {
+            "html": "🦀 &amp; &lt;one&gt;",
+            "modules": [
+              "NativeSetupUnicode.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "雪": "🦀 & <one>"
+            },
+            "stateValues": {
+              "雪": "🦀 & <one>"
+            },
+            "direct": "🦀 &amp; &lt;one&gt;"
+          },
+          "updated": {
+            "html": "changed 🦀 &amp; &lt;two&gt;",
+            "modules": [
+              "NativeSetupUnicode.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "雪": "🦀 & <one>"
+            },
+            "stateValues": {
+              "雪": "changed 🦀 & <two>"
+            },
+            "direct": "changed 🦀 &amp; &lt;two&gt;"
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-ts-const",
+      "filename": "NativeSetupTsConst.vue",
+      "source": "<template>{{value}}</template><script setup lang='ts'>const value:number=42</script>",
+      "sourceSha256": "d1c75382cbd4ee4c75aed2186154d330618c5872b5c867ba07bc8f353a14f3e9",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Const"
+        }
+      ],
+      "inline": {
+        "code": "import _sfc_main from \"/native-ssr/NativeSetupTsConst.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-ssr/NativeSetupTsConst.vue?vue&type=script&setup=true&lang.ts\";\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupTsConst.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nexport default _sfc_main;\n",
+        "map": {
+          "mappings": ""
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": [
+          {
+            "id": "/native-ssr/NativeSetupTsConst.vue?vue&type=script&setup=true&lang.ts",
+            "originalCode": "import { defineComponent as _defineComponent } from 'vue'\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nconst value:number=42\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'NativeSetupTsConst',\n  __ssrInlineRender: true,\n  setup(__props) {\n\nreturn (_ctx: any,_push: any,_parent: any,_attrs: any) => {\n  _push(`${_ssrInterpolate(value)}`)\n}\n}\n\n})",
+            "originalMap": {
+              "version": 3,
+              "sources": [
+                "/native-ssr/NativeSetupTsConst.vue"
+              ],
+              "names": [],
+              "mappings": ";;;AAAsD,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;2BAA9D,KAAK",
+              "sourcesContent": [
+                "<template>{{value}}</template><script setup lang='ts'>const value:number=42</script>"
+              ]
+            },
+            "code": "import { defineComponent as _defineComponent } from \"vue\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nconst value = 42;\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"NativeSetupTsConst\",\n\t__ssrInlineRender: true,\n\tsetup(__props) {\n\t\treturn (_ctx, _push, _parent, _attrs) => {\n\t\t\t_push(`${_ssrInterpolate(value)}`);\n\t\t};\n\t}\n});\n",
+            "map": {
+              "mappings": ";;AAAsD,MAAM,QAAa;;;;;;4BAA7D,KAAK,GAAA",
+              "names": [],
+              "sources": [
+                "/native-ssr/NativeSetupTsConst.vue"
+              ],
+              "version": 3,
+              "sourcesContent": [
+                "<template>{{value}}</template><script setup lang='ts'>const value:number=42</script>"
+              ]
+            }
+          }
+        ]
+      },
+      "external": {
+        "code": "import _sfc_main from \"/native-ssr/NativeSetupTsConst.vue?vue&type=script&setup=true&lang.ts\";\nexport * from \"/native-ssr/NativeSetupTsConst.vue?vue&type=script&setup=true&lang.ts\";\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\";\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n\t_push(`${_ssrInterpolate($setup.value)}`);\n}\nimport { useSSRContext as __vite_useSSRContext } from \"vue\";\nconst _sfc_setup = _sfc_main.setup;\n_sfc_main.setup = (props, ctx) => {\n\tconst ssrContext = __vite_useSSRContext();\n\t(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupTsConst.vue\");\n\treturn _sfc_setup ? _sfc_setup(props, ctx) : undefined;\n};\nimport _export_sfc from \"\\0plugin-vue:export-helper\";\nexport default /*#__PURE__*/ _export_sfc(_sfc_main, [[\"ssrRender\", _sfc_ssrRender], [\"__file\", \"NativeSetupTsConst.vue\"]]);\n",
+        "map": {
+          "mappings": ";;;;0BAAY,OAAA,KAAK,GAAA",
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupTsConst.vue"
+          ],
+          "version": 3,
+          "sourcesContent": [
+            "<template>{{value}}</template><script setup lang='ts'>const value:number=42</script>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": [
+          {
+            "id": "/native-ssr/NativeSetupTsConst.vue?vue&type=script&setup=true&lang.ts",
+            "originalCode": "import { defineComponent as _defineComponent } from 'vue'\nconst value:number=42\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'NativeSetupTsConst',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst __returned__ = { value }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            "originalMap": {
+              "version": 3,
+              "sources": [
+                "/native-ssr/NativeSetupTsConst.vue"
+              ],
+              "sourcesContent": [
+                "<template>{{value}}</template><script setup lang='ts'>const value:number=42</script>"
+              ],
+              "names": [],
+              "mappings": ";AAAsD,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;;"
+            },
+            "code": "import { defineComponent as _defineComponent } from \"vue\";\nconst value = 42;\nexport default /*@__PURE__*/ _defineComponent({\n\t__name: \"NativeSetupTsConst\",\n\tsetup(__props, { expose: __expose }) {\n\t\t__expose();\n\t\tconst __returned__ = { value };\n\t\tObject.defineProperty(__returned__, \"__isScriptSetup\", {\n\t\t\tenumerable: false,\n\t\t\tvalue: true\n\t\t});\n\t\treturn __returned__;\n\t}\n});\n",
+            "map": {
+              "mappings": ";AAAsD,MAAM,QAAa",
+              "names": [],
+              "sources": [
+                "/native-ssr/NativeSetupTsConst.vue"
+              ],
+              "version": 3,
+              "sourcesContent": [
+                "<template>{{value}}</template><script setup lang='ts'>const value:number=42</script>"
+              ]
+            }
+          }
+        ]
+      },
+      "inlineSha256": {
+        "code": "5529ad35150bb27bc2d6cfd41fa6ec24b26df180863b73f06461bd7009d2bdae",
+        "map": "05a5cbf347621d84cae5df0070938836df94768212099ce22afa268c31de190f",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "1df6eac03fb341b7cf7f928482afa2c6e291794644fd92784dae0036ada52caf"
+      },
+      "externalSha256": {
+        "code": "549597bee506293395fe39b5284dbfefc10010e8fc3c386477de4192e618caff",
+        "map": "3da47867eb3dd71718bc740dcbdbc7a1b2747626f08b5a3248b591af4cee782a",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "260d5fa6c6e1457f0bc0f438a021d085db168e0f1e6f61cd63e85fcc4999626d"
+      },
+      "inlineRuntime": [
+        {
+          "html": "42",
+          "modules": [
+            "NativeSetupTsConst.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "42",
+          "modules": [
+            "NativeSetupTsConst.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "42",
+          "modules": [
+            "NativeSetupTsConst.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "42",
+            "modules": [
+              "NativeSetupTsConst.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": 42
+            },
+            "direct": "42"
+          }
+        },
+        {
+          "initial": {
+            "html": "42",
+            "modules": [
+              "NativeSetupTsConst.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": 42
+            },
+            "direct": "42"
+          }
+        },
+        {
+          "initial": {
+            "html": "42",
+            "modules": [
+              "NativeSetupTsConst.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": 42
+            },
+            "stateValues": {
+              "value": 42
+            },
+            "direct": "42"
+          }
+        }
+      ]
+    },
+    {
+      "name": "root-mixed-static",
+      "filename": "NativeSetupMixed.vue",
+      "source": "<script setup>let value='雪 & <one>'</script><template>{{value}}<i title='雪'>static</i></template>",
+      "updates": {
+        "value": "雪 & <two>"
+      },
+      "sourceSha256": "ea69705b75c34086b30a6653dea6481b6d00d0018a65297892ef5924f982c8a7",
+      "bindings": [
+        {
+          "name": "value",
+          "kind": "Let"
+        }
+      ],
+      "inline": {
+        "code": "import { unref as _unref } from \"vue\"\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\n\nconst _sfc_main = {\n  __name: 'NativeSetupMixed',\n  __ssrInlineRender: true,\n  setup(__props) {\nlet value='雪 & <one>'\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<!--[-->${_ssrInterpolate(_unref(value))}<i title=\"雪\">static</i><!--]-->`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupMixed.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+        "map": {
+          "version": 3,
+          "sources": [
+            "/native-ssr/NativeSetupMixed.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;mCAAsB,aAAK",
+          "sourcesContent": [
+            "<script setup>let value='雪 & <one>'</script><template>{{value}}<i title='雪'>static</i></template>"
+          ]
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "external": {
+        "code": "\nconst _sfc_main = {\n  __name: 'NativeSetupMixed',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet value='雪 & <one>'\nconst __returned__ = { get value() { return value }, set value(v) { value = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}\nimport { ssrInterpolate as _ssrInterpolate } from \"vue/server-renderer\"\n\nfunction _sfc_ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<!--[-->${_ssrInterpolate($setup.value)}<i title=\"雪\">static</i><!--]-->`)\n}\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"NativeSetupMixed.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nimport _export_sfc from '\u0000plugin-vue:export-helper'\nexport default /*#__PURE__*/_export_sfc(_sfc_main, [['ssrRender',_sfc_ssrRender],['__file',\"NativeSetupMixed.vue\"]])",
+        "map": {
+          "version": 3,
+          "names": [],
+          "sources": [
+            "/native-ssr/NativeSetupMixed.vue"
+          ],
+          "sourcesContent": [
+            "<script setup>let value='雪 & <one>'</script><template>{{value}}<i title='雪'>static</i></template>"
+          ],
+          "mappings": ";;;;;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;;;;;;;;;mCAAsB,YAAK",
+          "ignoreList": []
+        },
+        "helper": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
+        "dependencies": []
+      },
+      "inlineSha256": {
+        "code": "83b0e4afa2f78f92e7409c367c8663b5a7cbad09297c7d91d929cfbe9ed64fd0",
+        "map": "c9a40f0161d2d4c9bc825d29b1620ca29038e49855f893536260cf79bddcc04e",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "externalSha256": {
+        "code": "ece3143609c7e2080c0c9fb43bc941fc256a1b9a45cb0ccbad3efcacc4bf429e",
+        "map": "7b1740e193e4ee340d6a6d20c18ed5e25529ee2a876498a7f5edff51d0780eb0",
+        "helper": "4dad89840aeace83347d80b5af3ed54535e66187db35f057d03b4b43c4540bb5",
+        "dependencies": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "inlineRuntime": [
+        {
+          "html": "<!--[-->雪 &amp; &lt;one&gt;<i title=\"雪\">static</i><!--]-->",
+          "modules": [
+            "NativeSetupMixed.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "<!--[-->雪 &amp; &lt;one&gt;<i title=\"雪\">static</i><!--]-->",
+          "modules": [
+            "NativeSetupMixed.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        },
+        {
+          "html": "<!--[-->雪 &amp; &lt;one&gt;<i title=\"雪\">static</i><!--]-->",
+          "modules": [
+            "NativeSetupMixed.vue"
+          ],
+          "warnings": [],
+          "setupInvocations": 1
+        }
+      ],
+      "externalRuntime": [
+        {
+          "initial": {
+            "html": "<!--[-->雪 &amp; &lt;one&gt;<i title=\"雪\">static</i><!--]-->",
+            "modules": [
+              "NativeSetupMixed.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>"
+            },
+            "stateValues": {
+              "value": "雪 & <one>"
+            },
+            "direct": "<!--[-->雪 &amp; &lt;one&gt;<i title=\"雪\">static</i><!--]-->"
+          },
+          "updated": {
+            "html": "<!--[-->雪 &amp; &lt;two&gt;<i title=\"雪\">static</i><!--]-->",
+            "modules": [
+              "NativeSetupMixed.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>"
+            },
+            "stateValues": {
+              "value": "雪 & <two>"
+            },
+            "direct": "<!--[-->雪 &amp; &lt;two&gt;<i title=\"雪\">static</i><!--]-->"
+          }
+        },
+        {
+          "initial": {
+            "html": "<!--[-->雪 &amp; &lt;one&gt;<i title=\"雪\">static</i><!--]-->",
+            "modules": [
+              "NativeSetupMixed.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>"
+            },
+            "stateValues": {
+              "value": "雪 & <one>"
+            },
+            "direct": "<!--[-->雪 &amp; &lt;one&gt;<i title=\"雪\">static</i><!--]-->"
+          },
+          "updated": {
+            "html": "<!--[-->雪 &amp; &lt;two&gt;<i title=\"雪\">static</i><!--]-->",
+            "modules": [
+              "NativeSetupMixed.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>"
+            },
+            "stateValues": {
+              "value": "雪 & <two>"
+            },
+            "direct": "<!--[-->雪 &amp; &lt;two&gt;<i title=\"雪\">static</i><!--]-->"
+          }
+        },
+        {
+          "initial": {
+            "html": "<!--[-->雪 &amp; &lt;one&gt;<i title=\"雪\">static</i><!--]-->",
+            "modules": [
+              "NativeSetupMixed.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>"
+            },
+            "stateValues": {
+              "value": "雪 & <one>"
+            },
+            "direct": "<!--[-->雪 &amp; &lt;one&gt;<i title=\"雪\">static</i><!--]-->"
+          },
+          "updated": {
+            "html": "<!--[-->雪 &amp; &lt;two&gt;<i title=\"雪\">static</i><!--]-->",
+            "modules": [
+              "NativeSetupMixed.vue"
+            ],
+            "warnings": [],
+            "setupInvocations": 1,
+            "renderInvocations": 1,
+            "argumentCount": 8,
+            "actualSixthSetupState": true,
+            "initialValues": {
+              "value": "雪 & <one>"
+            },
+            "stateValues": {
+              "value": "雪 & <two>"
+            },
+            "direct": "<!--[-->雪 &amp; &lt;two&gt;<i title=\"雪\">static</i><!--]-->"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -6,9 +6,16 @@ import { nativeSsrCaptureRequired } from "../../tools/support/compat/github/nati
 void test("authentic SSR source dependencies require an affected PR capture", () => {
   for (const path of [
     "crates/vize_atelier_sfc/src/native_ssr.rs",
+    "crates/vize_atelier_sfc/src/native_ssr_setup.rs",
     "crates/vize_atelier_sfc/src/native_ssr/output.rs",
     "crates/vize_atelier_sfc/src/lib.rs",
     "crates/vize_atelier_sfc/tests/native_scriptless_ssr.rs",
+    "crates/vize_atelier_sfc/tests/native_scriptless_setup_ssr.rs",
+    "crates/vize_atelier_sfc/tests/native_setup_ssr/rows.rs",
+    "crates/vize_atelier_sfc/tests/native_setup_ssr/refusals.rs",
+    "crates/vize_atelier_sfc/tests/fixtures/native_sfc_setup_ssr_sources.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native-setup-ssr-output.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native-setup-ssr-vue-3.5.35.json",
     "crates/vize_atelier_sfc/tests/fixtures/native-sfc-ssr-vue-3.5.35.json",
     "crates/vize_atelier_sfc/tests/fixtures/native-scriptless-ssr-output.json",
     "davinci/vize_l0/src/markup/tags.rs",
@@ -17,6 +24,8 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "davinci/vize_l1/src/event/native.rs",
     "davinci/vize_l1_to_l2/src/native_file.rs",
     "davinci/vize_l1_to_l2/src/native_file/selected/walk.rs",
+    "davinci/vize_l1_to_l2/src/native_file/selected_setup.rs",
+    "davinci/vize_l1_to_l2/src/native_file/selected_setup/tests/accepted.rs",
     "davinci/vize_l2/src/file/region/native/body/header.rs",
     "davinci/vize_l2/src/lang/js/handler/native.rs",
     "davinci/vize_l3/src/decision/build.rs",
@@ -27,9 +36,12 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "davinci/vize_l4/src/module/imports.rs",
     "davinci/vize_l4/src/module/setup.rs",
     "tests/tooling/native-sfc-scriptless-ssr-reference.test.ts",
+    "tests/tooling/native-sfc-setup-ssr-reference.test.ts",
     "tests/tooling/l4-native-ssr-reference.test.ts",
     "tests/tooling/l4-selected-ssr-reference.test.ts",
     "tests/tooling/support/native-sfc-ssr-reference.ts",
+    "tests/tooling/support/native-sfc-setup-ssr-reference.ts",
+    "tests/tooling/support/native-sfc-setup-ssr-loader.ts",
     ".github/actions/test-native-ssr/action.yml",
     ".github/workflows/pr-source-checks.yml",
     ".github/workflows/check.yml",
@@ -101,6 +113,10 @@ void test("the existing first-shard action remains mandatory for merge groups an
   );
   assert(action.includes('VIZE_L4_SSR_REQUIRE_NATIVE: "1"'));
   assert(action.includes("--test native_scriptless_ssr -- --nocapture"));
+  assert(action.includes("--test native_scriptless_setup_ssr -- --nocapture"));
+  assert(action.includes("vp node --test tests/tooling/native-sfc-setup-ssr-reference.test.ts"));
+  assert(action.includes("native-setup-ssr-modules.json.positive.json"));
+  assert(action.includes("native-setup-ssr-runtime.json"));
   assert(
     action.includes("native-sfc-ssr-modules.json") &&
       action.includes("native-sfc-ssr-runtime.json"),

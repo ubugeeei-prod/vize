@@ -48,6 +48,7 @@ pub use native_vapor::{
 pub mod native;
 pub mod native_scoped_ssr;
 pub mod native_ssr;
+mod native_ssr_setup;
 pub mod rewrite_default;
 pub mod script;
 pub mod style;
@@ -114,6 +115,9 @@ pub use native_selected_setup::{
 pub use native_ssr::{
     NativeSsrSfcCompilation, NativeSsrSfcCompileError, NativeSsrSfcCompileOptions,
     NativeSsrSfcOutput, compile_native_ssr_sfc,
+};
+pub use native_ssr_setup::{
+    NativeSetupSsrSfcCompilation, NativeSetupSsrSfcCompileError, compile_native_setup_ssr_sfc,
 };
 pub use parse::parse_sfc;
 pub use script::{TypeResolutionBatchGuard, begin_type_resolution_batch};

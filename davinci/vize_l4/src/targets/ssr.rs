@@ -6,7 +6,8 @@
 
 use vize_l0::{Span, id::NodeId};
 use vize_l3::decision::ssr::{
-    NativeSsrFileAnalysis, NativeTemplateScopedSsrAnalysis, NativeTemplateSsrAnalysis, SsrFacts,
+    NativeSelectedSetupSsrAnalysis, NativeSsrFileAnalysis, NativeTemplateScopedSsrAnalysis,
+    NativeTemplateSsrAnalysis, SsrFacts,
     SsrPart, SsrUnsupported,
 };
 use vize_l3::decision::{NativeAnalysis, policy::TargetPolicy};
@@ -15,7 +16,9 @@ use crate::module::ScopeId;
 use crate::runtime::{Runtime, vocabulary};
 use crate::write::{LinkSink, Writer};
 
+mod setup;
 mod write;
+pub use setup::emit_selected_setup_template;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SsrError {
@@ -31,6 +34,7 @@ pub enum SsrErrorKind {
     MissingRuntimeHelper,
     Unsupported(SsrUnsupported),
     OutputTooLarge,
+    Expression(crate::expr::EmitError),
 }
 
 /// Emit a diagnostic SSR function from its exact sealed neutral artifact.
@@ -43,7 +47,7 @@ pub fn emit<L: LinkSink>(analysis: &NativeAnalysis<'_, '_>) -> Result<Writer<L>,
             kind: SsrErrorKind::WrongPolicy,
         });
     }
-    encode(analysis.artifact().source(), analysis.ssr(), None)
+    encode(analysis.artifact().source(), analysis.ssr(), None, None)
 }
 
 /// Consume only a complete SSR file view and retain its diagnostic owner.
@@ -51,7 +55,7 @@ pub fn emit<L: LinkSink>(analysis: &NativeAnalysis<'_, '_>) -> Result<Writer<L>,
 pub fn emit_file<L: LinkSink>(
     analysis: &NativeSsrFileAnalysis<'_, '_>,
 ) -> Result<Writer<L>, SsrError> {
-    encode(analysis.artifact().source(), analysis.ssr(), None)
+    encode(analysis.artifact().source(), analysis.ssr(), None, None)
 }
 
 /// Emit only from a genuine original-template completion receipt.
@@ -69,7 +73,7 @@ pub fn emit_file<L: LinkSink>(
 pub fn emit_template<L: LinkSink>(
     receipt: &NativeTemplateSsrAnalysis<'_, '_>,
 ) -> Result<Writer<L>, SsrError> {
-    encode(receipt.artifact().source(), receipt.ssr(), None)
+    encode(receipt.artifact().source(), receipt.ssr(), None, None)
 }
 
 /// Scope every existing HTML opening from a genuine lower style receipt.
@@ -87,13 +91,14 @@ pub fn emit_scoped_template<L: LinkSink>(
     receipt: &NativeTemplateScopedSsrAnalysis<'_, '_>,
     scope: ScopeId<'_>,
 ) -> Result<Writer<L>, SsrError> {
-    encode(receipt.artifact().source(), receipt.ssr(), Some(scope))
+    encode(receipt.artifact().source(), receipt.ssr(), Some(scope), None)
 }
 
 fn encode<L: LinkSink>(
     source: &str,
     facts: Option<&SsrFacts<'_, '_>>,
     scope: Option<ScopeId<'_>>,
+    setup: Option<&NativeSelectedSetupSsrAnalysis<'_, '_, '_>>,
 ) -> Result<Writer<L>, SsrError> {
     let error = |kind| SsrError {
         node: None,
@@ -116,7 +121,11 @@ fn encode<L: LinkSink>(
         .helper("mergeProps")
         .ok_or_else(|| error(SsrErrorKind::MissingRuntimeHelper))?;
     let mut writer = Writer::<L>::with_capacity(source.len());
-    writer.push("function ssrRender(_ctx, _push, _parent, _attrs) {");
+    writer.push(if setup.is_some() {
+        "function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {"
+    } else {
+        "function ssrRender(_ctx, _push, _parent, _attrs) {"
+    });
     writer.indent();
     writer.newline();
     if !facts.parts().is_empty() {
@@ -208,13 +217,8 @@ fn encode<L: LinkSink>(
                     node,
                     interpolation,
                 } => {
-                    return Err(SsrError {
-                        node: Some(node),
-                        span: interpolation.span,
-                        kind: SsrErrorKind::Unsupported(
-                            vize_l3::decision::ssr::SsrUnsupported::Operation,
-                        ),
-                    });
+                    let setup = setup.ok_or_else(|| error(SsrErrorKind::MissingAnalysis))?;
+                    setup::write(&mut writer, setup, node, interpolation)?;
                 }
             }
         }
