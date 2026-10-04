@@ -197,3 +197,19 @@ unchanged. This is pure source preparation, not Rust or native-output execution.
 The corrected exact freeze still requires root and final peer source review
 before any build, dispatch, publication or queue. The original `0c80` omission
 and unexecuted laws remain explicit; no acceptance transfers from that freeze.
+
+## Draft publication and pending hosted proof
+
+Root and the reused peer completed the entire corrected `2f47cb6c8c` source,
+lifetime, eleven-law/eight-new-compile-fail/positive, full 48-row oracle and
+capture-action review. The final exact peer receipt is source CLEAR only.
+Root authorized independent draft publication and automatic source Actions.
+The clean replay onto literal actual main `b9be9065b8` preserves every reviewed
+production/law/fixture/oracle/capture byte and genuine SFC export, plus incoming
+central decisions and all foreign inventory shards. This publication record
+supersedes the historical private hold above; no Rust or native capture has
+yet executed. No additional manual campaign is requested. Ready/auto-queue
+requires fresh exact-head source proof; protected full suites/all 104 original
+caps and actual merge remain required before delivery. The formatter history
+issue #6882 is now closed; historical dialect formatting/runtime/default
+completion remains independent and unfinished.
