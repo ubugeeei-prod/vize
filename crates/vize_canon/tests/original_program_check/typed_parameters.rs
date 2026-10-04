@@ -96,7 +96,10 @@ fn configured_original_typed_parameter_ts_tsx_preserve_whole_raw_reports_and_rel
     std::fs::write(&config, serde_json::to_vec(&configured).unwrap()).unwrap();
     let config_bytes = std::fs::read(&config).unwrap();
     let backend = backend();
-    let backend_hash = format!("{:x}", Sha256::digest(std::fs::read(&backend).unwrap()));
+    let backend_hash = Sha256::digest(std::fs::read(&backend).unwrap())
+        .iter()
+        .map(|byte| cstr!("{byte:02x}"))
+        .collect::<String>();
     let bridge = real_bridge(root.path());
     block_on(bridge.spawn()).unwrap();
     let mut evidence = Vec::new();

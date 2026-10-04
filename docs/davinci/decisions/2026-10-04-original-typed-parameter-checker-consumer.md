@@ -99,6 +99,14 @@ add a skip or historical registration. Successful packets use the existing
 worker artifact upload, while an assertion failure retains its full exposed
 actual report in the test log and grants no successful packet.
 
+First refreshed child `7d28bc2c` / Check 37181647572 failed before execution in
+build job 111375343808: pinned sha2's digest Array has no LowerHex implementation
+at the new backend-identity capture. The test now uses the existing production
+bytewise canonical lowercase hex recipe, without dependency/feature or oracle
+changes. The full failed build log remains retained; this grants no diagnostic
+execution or successful JSON packet. All original source/vectors and full report
+assertions stay unchanged, and the corrected head needs fresh hosted Actions.
+
 All old historical packs, vectors and native-null adapters stay byte-identical:
 29 projects / 12 packs / 102 carriers; ledger 271 / 263 / 31. Incoming #7734
 is separate. This is original native Program coverage, not historical callback
