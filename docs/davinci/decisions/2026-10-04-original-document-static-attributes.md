@@ -46,7 +46,7 @@ Eight runtime laws also retain exact source/quote geometry, owner/arena movement
 independent equal-buffer ownership and original lexical/Vue refusals. Two
 compile-fail laws retain private construction and non-Clone authority.
 The unchanged storage scanner records only the new test-owned Vec/String
-bindings (1/5 and 1/13 direct/bound counts); attribute production owns no buffers.
+bindings (1/5 and 1/15 direct/bound counts); attribute production owns no buffers.
 Actual iteration laws traverse all 64 long common-prefix names and mixed
 multiscalar/numeric-CR/literal-CRLF/once-only values, plus an exact 16 KiB opening
 value. Both 65 unique/duplicate attributes and one-byte-over openings refuse.
@@ -55,6 +55,12 @@ These are execution laws, not a new workload instruction benchmark or speedup.
 The first hosted source fails unchanged Clippy's indexing/slicing gate at two
 borrowed event-range reads. Checked get-based readback corrects both sites
 without relaxing the lint, changing original inputs or granting runtime credit.
+The next source passes production Clippy but its new boundary test compilation
+finds no_std trait omissions in test-only string generation. L0 CompactString
+construction and the actual ToCompactString trait preserve all generated source
+bytes, bounds and assertions without adding an std prelude or production change.
+The successful 0d453569 hosted100+4 proof is historical after this source edit;
+fresh exact-head runtime/browser and instruction proof remains required.
 
 ## Unfinished gates
 
