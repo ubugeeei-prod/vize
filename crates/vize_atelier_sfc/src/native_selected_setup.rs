@@ -58,6 +58,25 @@ pub enum NativeSelectedSetupSfcDomError {
 ///     let _ = compiled.observation();
 /// }
 /// ```
+/// Actual emitted For facts cannot survive destruction of their original owner:
+/// ```compile_fail
+/// use vize_l0::Allocator;
+/// use vize_l2::op::Op;
+/// use vize_l3::decision::native::build_native_selected_setup_dom_decisions;
+/// use vize_atelier_sfc::{compile_native_selected_setup_sfc_dom, NativeSelectedSfcDomOptions};
+/// fn discard_for() {
+///     let arena = Allocator::default();
+///     let compiled = compile_native_selected_setup_sfc_dom(&arena,
+///         "<script setup>let count=2</script><template><i v-for='item in count'>fixed</i></template>",
+///         NativeSelectedSfcDomOptions::default());
+///     let view = compiled.observation().admitted().unwrap();
+///     let analysis = build_native_selected_setup_dom_decisions(view.setup()).unwrap();
+///     let Op::OriginalFor(original) = &view.setup().file().artifact().root().ops[0] else { return };
+///     let row = analysis.dom().unwrap().file_for_head(original.id().node()).unwrap();
+///     drop(compiled);
+///     let _ = row.resolution();
+/// }
+/// ```
 /// Correctly typed independent owners cannot construct a paired completion:
 /// ```compile_fail
 /// use vize_l1_to_l2::native_file::{NativeSelectedSetupSfc, NativeSelectedSetupSfcObservation};
@@ -84,8 +103,10 @@ impl<'a> NativeSelectedSetupSfcDomCompilation<'a> {
 
 /// Observe the original SFC once; consume its same-owner setup and DOM decisions.
 /// Direct normalized Identifier/primitive literal template roots are bounded
-/// reads. Imports, wider TS, compound/nested reads, outer handler accesses and
-/// For loops remain precise lower/target refusals with no partial module.
+/// reads. One root mutable original For may repeat an attribute-free native
+/// Element with empty/static text body. Imports, wider TS, compound reads,
+/// outer handler accesses, constant/nested/alias-read For families remain
+/// precise lower/target refusals with no partial module.
 #[must_use]
 pub fn compile_native_selected_setup_sfc_dom<'a>(
     allocator: &'a Allocator,

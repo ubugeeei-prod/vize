@@ -14,6 +14,7 @@ const dataUrl = (text: string) =>
 const runtimeUrl = dataUrl(
   `import runtime from ${JSON.stringify(pathToFileURL(fromVue.resolve("vue")).href)};\n` +
     [
+      "renderList",
       "openBlock",
       "createElementBlock",
       "createElementVNode",

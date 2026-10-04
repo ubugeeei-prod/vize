@@ -103,7 +103,19 @@ export async function executeSetupComponent(code: string, fixture: any, native: 
       assert.equal(typeof descriptor?.set, "function");
     }
   }
+  function originalForHost(count: number) {
+    if (!fixture.forRuntime) return;
+    const expected = fixture.forRuntime;
+    const elements = host.children.filter((node: any) => node.type === expected.tag);
+    assert.equal(elements.length, count);
+    assert.deepEqual(
+      elements.map((node: any) => node.text),
+      Array(count).fill(expected.text),
+    );
+    assert.equal(host.children.length, count + 2, "the actual Fragment owns two host anchors");
+  }
   const initial = shape(app._instance.subTree);
+  originalForHost(fixture.forRuntime?.initialChildren);
   for (const [name, value] of Object.entries(fixture.updates)) {
     assert(fixture.bindings.includes(name) && !fixture.immutableBindings.includes(name));
     state[name] = value;
@@ -114,6 +126,7 @@ export async function executeSetupComponent(code: string, fixture: any, native: 
   app._instance.proxy.$forceUpdate();
   await runtime.nextTick();
   const updated = shape(app._instance.subTree);
+  originalForHost(fixture.forRuntime?.updatedChildren);
   assert.equal(calls, 1);
   assert.deepEqual(warnings, []);
   app.unmount();

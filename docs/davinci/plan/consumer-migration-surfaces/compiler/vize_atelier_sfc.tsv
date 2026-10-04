@@ -217,6 +217,9 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/native_selected_setup.rs	4	
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/native_selected_setup/tests.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/native_selected_setup/tests.rs	3	l2	L2	stage	vize_l2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/native_selected_setup/tests/nested.rs	4	l2	L2	stage	vize_l2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/native_selected_setup/tests/original_for.rs	3	l2	L2	stage	vize_l2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/native_selected_setup/tests/original_for/refusal.rs	147	l1	L1	stage	vize_l1	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/native_selected_setup/tests/original_for/refusal.rs	147	l2	L2	stage	vize_l2	preferred	3
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/native_selected_setup/tests/refusal.rs	95	l2	L2	stage	vize_l2	preferred	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/native_selected.rs	3	l0	L0	stage	vize_l0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_sfc/src/native_selected.rs	3	l1	L1	stage	vize_l1	preferred	1

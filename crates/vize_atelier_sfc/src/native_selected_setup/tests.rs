@@ -4,6 +4,7 @@ use vize_l0::{String, cstr, id::NodeId};
 use vize_l3::decision::{dom::vue::VueReadKind, native::build_native_selected_setup_dom_decisions};
 
 mod nested;
+mod original_for;
 mod refusal;
 
 macro_rules! require {

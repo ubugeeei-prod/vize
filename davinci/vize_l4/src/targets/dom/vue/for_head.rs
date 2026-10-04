@@ -31,18 +31,18 @@ pub(super) fn write<L: LinkSink>(
     let read = row
         .collection_read()
         .ok_or_else(|| reject(DomErrorKind::RuntimeAccessUnavailable))?;
-    if read.kind != VueReadKind::SetupLet
-        || !core::ptr::eq(read.occurrence, row.resolution().collection_occurrence())
-        || !core::ptr::eq(read.binding.file(), analysis.file())
-        || analysis.setup().binding(read.binding).is_err()
+    if read.kind() != VueReadKind::SetupLet
+        || !core::ptr::eq(read.occurrence(), row.resolution().collection_occurrence())
+        || !core::ptr::eq(read.binding().file(), analysis.file())
+        || analysis.setup().binding(read.binding()).is_err()
     {
         return Err(reject(DomErrorKind::RuntimeAccessUnavailable));
     }
     writer.push("$setup.");
     writer.push_named(
-        read.occurrence.name,
+        read.occurrence().name,
         row.resolution().collection_authored_span(),
-        read.occurrence.name,
+        read.occurrence().name,
     );
     Ok(())
 }

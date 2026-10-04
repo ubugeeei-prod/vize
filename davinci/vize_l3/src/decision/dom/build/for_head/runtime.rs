@@ -123,3 +123,6 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

@@ -135,3 +135,52 @@ whole original interpolation occurrence custody and pinned value/index callback
 semantics. Setup declarations and template aliases remain distinct namespaces;
 no template alias is promoted to a ScriptUnit. Registered dynamic-loop refs,
 ref arrays, child components and collection inference stay much later gaps.
+
+### Integrated prerequisites and reviewed private source
+
+Shared same-Writer provider #7687 actually merged as verified c40b55be at
+2026-10-04T01:02:59Z. Protected Check37166024540, Nuxt37166024317 and
+Musea37166024312 passed; the independent main-push campaign is separate. All
+four full Rust workers passed15,213 executions and each new provider law once.
+Actual100+4 instruction rows are identical×3 with immutable ceilings/ratchet
+and holds, including complexity5761×3. Seven complete original setup DOM
+modules/raw maps/current-source runtime hash joins pass; six prior payloads
+remain byte-identical and the original nested seventh remains accepted.
+Packet2a570ede5bac57f203d9c3021757dd82c1fb9843bac497953d002e414dea1661
+is preserved. Native nested provider #7672 is actual b2801bd8 at00:56:45Z
+with protected Check37165718664/full unchanged gates.
+
+The private mutable For source reuses existing rows and frames: Enter checks
+the original normalized collection and same selected setup binding; Leave
+seals one plain attribute-free Element with empty/static text body. Only the
+actual selected SetupLet policy opts in. Helper order and callback collisions
+are explicit; constant/generic/literal and dynamic/alias bodies remain refused.
+Independent read-only review found and corrected L4 private-field accesses
+through existing getters and found no further production blocker or row/frame/
+helper/vector growth. Compilation, genuine full native modules/maps/runtime
+and all104 protected cap checks remain required before delivery.
+
+The authored consumer pack contains ten independent JS/TS whole modules and
+full authored-anchor maps, including number/string/null/boolean collections,
+empty/static text, Unicode, safe outside-callback helper aliases and a value
+alias shadowing its enclosing setup name. Pinned Vue3.5.35 whole script/render
+code and raw maps are retained separately. Twenty current Node laws pass,
+including ten native-desired/primary runtime pairs and original setup/nested
+regressions; no Rust native execution credit is inferred from these models.
+Each pair checks Fragment256, exact child counts/text, real host fragment
+anchors, setup once, explicit getter/setter update and complete unmount.
+
+Seven Rust laws are authored for whole modules/maps and NoLinks equality,
+actual File/Program/collection/Params/scopes and alias namespace, foreign
+equal-source/ID refusal, owner movement, exact callback helper collisions,
+sticky dynamic/nested/keyed/header/mixed body refusals, unchanged constant/
+generic/literal refusal, and a caught private policy unwind at the genuine
+sole For Enter. The original whole setup/File remains live across that
+unwind; no fault field, new custody vector or normal factory callback is
+added. A typed original-For owner-drop doc refuses a borrowed receipt after
+its complete compilation is destroyed. Existing lower park/scope interruption
+laws stay mandatory in full Actions. The dedicated ten-case capture and
+current-source runtime hash joins are mandatory, with all old seven/five
+setup/click packs preserved. Native compilation/output/maps, independent
+review of these new laws, exact-head Actions and protected104cap acceptance
+are pending; the branch stays unqueued.

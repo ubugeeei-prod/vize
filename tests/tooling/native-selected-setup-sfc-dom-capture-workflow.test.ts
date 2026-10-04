@@ -12,6 +12,9 @@ test("actual selected setup consumers require source-built whole-module runtime 
     "tests/tooling/native-selected-setup-sfc-dom-capture-workflow.test.ts",
     "tests/tooling/support/native-selected-setup-sfc-dom-runtime.ts",
     "davinci/vize_l3/src/decision/native/setup.rs",
+    "davinci/vize_l3/src/decision/dom/build/for_head/runtime.rs",
+    "crates/vize_atelier_sfc/tests/fixtures/native_original_for_sfc_vue_3_5_35.json",
+    "tests/tooling/native-original-for-sfc-dom-reference.test.ts",
   ])
     assert(nativeSetupCaptureRequired([path]), path);
   assert.equal(
@@ -43,5 +46,11 @@ test("actual selected setup consumers require source-built whole-module runtime 
     action,
     /native-selected-sfc-dom-\$\{\{ github\.sha \}\}-\$\{\{ github\.run_attempt \}\}/,
   );
+  assert.match(action, /VIZE_NATIVE_ORIGINAL_FOR_SFC_DOM_REQUIRE_CAPTURE: "1"/);
+  assert.match(
+    action,
+    /original_for::ten_whole_original_for_components_and_maps_are_captured -- --exact/,
+  );
+  assert.match(action, /native-original-for-sfc-dom-runtime\.json/);
   assert.doesNotMatch(action, /continue-on-error|hashFiles|existsSync|--test-name-pattern/);
 });
