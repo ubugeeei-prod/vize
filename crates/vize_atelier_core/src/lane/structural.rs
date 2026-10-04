@@ -359,6 +359,9 @@ pub(crate) fn transform_v_if_with_directive<'a>(
 
             // Remove the placeholder we left
             ctx.remove_node();
+            // Defer removing the skipped whitespace until traversal releases
+            // its borrow of the current child. Comments keep their ownership.
+            ctx.node_removed_from = Some(if_idx + 1);
         } else {
             ctx.on_error(ErrorCode::VElseNoAdjacentIf, None);
         }

@@ -62,14 +62,25 @@ pub fn traverse_children<'a>(ctx: &mut TransformContext<'a>, parent: ParentNode<
             traverse_node(ctx, node);
         }
 
-        let node_removed = ctx.was_node_removed();
+        let node_removed_from = ctx.node_removed_from;
         ctx.reset_node_removed();
 
-        if node_removed {
+        if let Some(from) = node_removed_from {
             if let Some(children) = parent.children_mut()
                 && i < children.len()
             {
                 children.remove(i);
+                // Only a successfully joined branch requests earlier removal.
+                // Keep comments and every sibling outside that branch gap.
+                let mut gap = i;
+                while gap > from {
+                    gap -= 1;
+                    if matches!(children.get(gap), Some(TemplateChildNode::Text(t)) if t.content.trim().is_empty())
+                    {
+                        children.remove(gap);
+                        i -= 1;
+                    }
+                }
             }
         } else {
             i += 1;
