@@ -51,12 +51,13 @@ Doc failures remain separate: dynamic-plus-tail heads are provider negatives,
 while the current checked name Doc can refuse their framing first.
 
 Seven compile-fail examples preserve non-Clone/field/borrow boundaries for
-the short view, movable owner and admitted join. Dedicated provider laws
+the short view, movable owner and admitted join. Fourteen independently authored provider laws
 cover complete original observations, geometry and physical comments,
 intrinsic grammar profiles, source/shape failures and original lifetime joins.
 These authored laws and all existing conditional/head/Event/For/value controls
-require fresh exact-head hosted execution; private source review is not runtime
-proof. No local Cargo build, runtime execution, install or campaign is used.
+require fresh exact-head hosted execution. The 52 existing conditional/head/Event/For/value
+source laws remain byte-identical to literal caee. Existing rustfmt and two pure
+module-discovery controls pass; private source checks are not Rust runtime proof. No local Cargo build, runtime execution, install or campaign is used.
 
 The immediate consumer is a separate true provider child and must retain
 genuine #7774 conditional implementation ancestry. It observes during the
