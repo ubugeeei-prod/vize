@@ -110,3 +110,14 @@ and full unchanged map inside the existing target attribute loop, and seals only
 after complete File plus every original row consumed. No second tree/header/AST
 walk, allocation, indexed table, extra decode or target-name widening is added.
 The delivery hold and full fourteen-source qualification remain mandatory.
+
+Before draft publication, the same reviewed twelve-law delta is replayed onto
+literal main c34b3d7a9881c10d8ceedff25f7f850df5a6698d, preserving incoming
+original ModuleFile, borrowed syntax, Document attributes and all accepted packs.
+Twenty owned source/law files are byte-identical to reviewed1545; File module
+glue differs only by the two actual incoming module-source registrations. No
+value/header/close, custody, layout, scope or refusal behavior changes. Both
+source inventories and the storage policy are checked against this real union.
+The genuine L3 and full-output qualification children remain required, with
+source Actions and actual capture/freeze still pending. New queue admission
+remains held during the verified release flight.
