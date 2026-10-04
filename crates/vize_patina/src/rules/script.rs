@@ -182,9 +182,13 @@ pub trait ScriptRule: Send + Sync {
         self.check_program(program, source, offset, result);
     }
 
-    /// Whether this rule consumes the oxc AST via [`ScriptRule::check_program`]
-    /// / [`ScriptRule::check_program_with_sfc`]. AST rules return `true` to
-    /// receive a shared parse; byte-only rules `false`.
+    /// Actual configured native SFC capability; default refusal prevents namesake admission.
+    fn as_native_sfc_setup_rule(&self) -> Option<&dyn crate::native::sfc::NativeSfcSetupRule> {
+        None
+    }
+
+    /// AST rules return true for shared check_program/check_program_with_sfc
+    /// dispatch; byte-only rules return false.
     #[inline]
     fn uses_ast(&self) -> bool {
         false
@@ -192,10 +196,8 @@ pub trait ScriptRule: Send + Sync {
 
     /// Whether this rule reads [`SfcScriptContext::template_root`].
     ///
-    /// The `<template>` block is parsed at most once per SFC and only when some
-    /// enabled rule returns `true` here, so a rule that forgets to override
-    /// this simply sees `template_root: None` rather than paying for a parse no
-    /// one reads.
+    /// The template parses at most once, only if an enabled rule returns true.
+    /// Otherwise this rule receives template_root: None and no unused parse runs.
     #[inline]
     fn uses_template_ast(&self) -> bool {
         false

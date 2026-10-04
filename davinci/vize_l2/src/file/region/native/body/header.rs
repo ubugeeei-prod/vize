@@ -1,14 +1,16 @@
 //! Original ordinary static attributes must exhaust before an Element body.
 
-use super::super::{NativeVisibility, for_head::ObservedFor, handler::ObservedHandler};
+use super::super::{
+    NativeVisibility, attribute_value::PreparedAttributes, for_head::ObservedFor,
+    handler::ObservedHandler,
+};
 use crate::artifact::RegionBuilder;
 use crate::file::region::FileRegion;
 use crate::lang::js::file::native::NativeTemplateIssueKind as Kind;
 use crate::op::Attribute;
 use core::ops::DerefMut;
-use vize_l0::{SourceBlock, Span, Vec};
+use vize_l0::Vec;
 use vize_l1::{
-    AttrValue,
     dialect::vue3::VueDirectives,
     markup::{
         NativeAttribute, NativeElement, NativeTemplateComponent,
@@ -18,6 +20,7 @@ use vize_l1::{
 
 pub(in crate::file::region::native) struct Header<'a> {
     pub(super) attributes: Vec<'a, Attribute<'a>>,
+    pub(super) values: PreparedAttributes<'a>,
     pub(super) handlers: alloc::vec::Vec<ObservedHandler<'a>>,
     pub(super) for_head: Option<ObservedFor>,
 }
@@ -30,6 +33,7 @@ pub(super) fn construct<'a: 'b, 'b, R>(
 where
     R: DerefMut<Target = RegionBuilder<'b, 'a>>,
 {
+    let value_start = region.facts.native_attribute_values.len();
     let mut attributes = Vec::new_in(&original.component().allocator());
     let mut handlers: alloc::vec::Vec<ObservedHandler<'a>> = alloc::vec::Vec::new();
     let mut for_head = None;
@@ -55,7 +59,12 @@ where
             .ok_or(Kind::InvalidEvent)?;
         match VueDirectives.decompose(attribute.surface().name.text, name_span.start) {
             Ok(None) => {
-                let attribute = ordinary(attribute)?;
+                let attribute =
+                    if attribute.surface().eq.is_some() || attribute.surface().value.is_some() {
+                        region.observe_attribute_value(selected, attribute, attributes.len())?
+                    } else {
+                        ordinary(attribute)?
+                    };
                 if attributes
                     .iter()
                     .any(|previous: &Attribute<'_>| previous.name == attribute.name)
@@ -91,7 +100,9 @@ where
             Ok(Some(_)) | Err(_) => return Err(Kind::UnsupportedChild),
         }
     }
+    let values = region.prepare_attribute_storage(value_start, attributes.as_slice())?;
     Ok(Header {
+        values,
         attributes,
         handlers,
         for_head,
@@ -100,6 +111,7 @@ where
 
 pub(in crate::file::region::native) struct ReadyHeader<'a> {
     pub(super) attributes: Vec<'a, Attribute<'a>>,
+    pub(super) values: PreparedAttributes<'a>,
     pub(super) handlers: alloc::vec::Vec<ObservedHandler<'a>>,
 }
 
@@ -119,6 +131,7 @@ impl<'a> Header<'a> {
             let _ = region.resolve_handler(handler)?;
         }
         Ok(ReadyHeader {
+            values: self.values,
             attributes: self.attributes,
             handlers: self.handlers,
         })
@@ -136,47 +149,12 @@ fn ordinary<'a>(original: NativeAttribute<'_, 'a>) -> Result<Attribute<'a>, Kind
     {
         return Err(Kind::UnsupportedChild);
     }
-    let (value, end) = match (&surface.eq, &surface.value) {
-        (None, None) => (None, name_span.end),
-        (Some(eq), Some(value)) if !eq.is_missing() && eq.text == "=" => {
-            let eq_span = block.span_of(eq.text).ok_or(Kind::InvalidEvent)?;
-            if eq_span.start < name_span.end {
-                return Err(Kind::InvalidEvent);
-            }
-            let end = value_end(value, block, eq_span.end)?;
-            (Some(value.content.text), end)
-        }
-        _ => return Err(Kind::UnsupportedChild),
-    };
-    Ok(Attribute {
-        name,
-        value,
-        span: Span::new(name_span.start, end),
-    })
-}
-
-fn value_end(value: &AttrValue<'_>, block: SourceBlock<'_>, after: u32) -> Result<u32, Kind> {
-    if value.content.is_missing() || value.content.text.contains('&') {
+    if surface.eq.is_some() || surface.value.is_some() {
         return Err(Kind::UnsupportedChild);
     }
-    let content = block
-        .span_of(value.content.text)
-        .ok_or(Kind::InvalidEvent)?;
-    match (&value.open_quote, &value.close_quote) {
-        (None, None) if content.start >= after => Ok(content.end),
-        (Some(open), Some(close))
-            if !open.is_missing()
-                && !close.is_missing()
-                && matches!(open.text, "\"" | "'")
-                && open.text == close.text =>
-        {
-            let open = block.span_of(open.text).ok_or(Kind::InvalidEvent)?;
-            let close = block.span_of(close.text).ok_or(Kind::InvalidEvent)?;
-            if open.start < after || content.start < open.end || close.start < content.end {
-                return Err(Kind::InvalidEvent);
-            }
-            Ok(close.end)
-        }
-        _ => Err(Kind::UnsupportedChild),
-    }
+    Ok(Attribute {
+        name,
+        value: None,
+        span: name_span,
+    })
 }

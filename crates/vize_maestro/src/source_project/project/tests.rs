@@ -4,6 +4,8 @@
 )]
 
 mod lifecycle;
+#[cfg(feature = "experimental-source-navigation")]
+mod modules;
 mod shared;
 
 use std::pin::Pin;

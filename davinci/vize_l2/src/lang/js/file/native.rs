@@ -22,6 +22,10 @@ pub enum NativeTemplateIssueKind {
         span: Span,
         kind: vize_l1::markup::NativeInterpolationError,
     },
+    AttributeValue {
+        span: Span,
+        kind: vize_l1::markup::NativeAttributeOperandError,
+    },
     Artifact(ArtifactError),
     Program(FileIssueKind),
     SetupSyntax(vize_l1::embed::syntax::EmbedHole),

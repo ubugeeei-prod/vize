@@ -27,7 +27,11 @@
 //! the observer with profiling disabled therefore costs one atomic load per
 //! walk — not per node, and not per pass.
 
-use vize_l0::profiler::{SpanAttribution, global_profiler};
+mod walk;
+
+pub use walk::WalkTiming;
+
+use vize_l0::profiler::global_profiler;
 
 use super::{FailEvent, PassEvent, PassObserver, Pipeline};
 
@@ -37,16 +41,9 @@ pub struct TimingObserver {
     /// The dotted span key every walk records under.
     key: &'static str,
     /// The open walk's guard, if profiling is on and a walk is open.
-    open: Option<WalkSpan>,
+    open: WalkTiming<vize_l0::profiler::Timer>,
     /// Walks whose span was actually recorded (profiling on).
     pub recorded_walks: u32,
-}
-
-/// A walk's open timer plus the attribution it will record under.
-#[derive(Debug)]
-struct WalkSpan {
-    timer: vize_l0::profiler::Timer,
-    attribution: SpanAttribution,
 }
 
 impl Default for TimingObserver {
@@ -76,20 +73,9 @@ impl TimingObserver {
     pub const fn with_key(key: &'static str) -> Self {
         Self {
             key,
-            open: None,
+            open: WalkTiming::new(),
             recorded_walks: 0,
         }
-    }
-
-    /// The attribution a walk of `event` records under.
-    ///
-    /// `stage` is the pipeline's stage; `pass` is the group's **lead** pass,
-    /// which is the walk's identity — the passes fused behind it are named by
-    /// the pipeline, not by the span key.
-    fn attribution(event: &PassEvent<'_>) -> SpanAttribution {
-        SpanAttribution::new()
-            .with_stage(event.pipeline.stage)
-            .with_pass((event.pipeline.passes.get(event.group.start)).map_or("", |pass| pass.name))
     }
 }
 
@@ -98,31 +84,23 @@ impl PassObserver for TimingObserver {
         // A pipeline starting while a walk is open means the previous run was
         // abandoned mid-walk. Drop the stale timer rather than record it: a
         // duration that spans two runs is worse than a missing one.
-        self.open = None;
+        self.open.discard();
     }
 
     fn before_pass(&mut self, event: &PassEvent<'_>) {
-        if !event.is_group_entry() {
-            return;
-        }
-        let profiler = global_profiler();
-        // One relaxed atomic load; no timestamp is taken when profiling is
-        // off, which is what keeps an attached-but-disabled observer cheap.
-        if let Some(timer) = profiler.timer(self.key) {
-            self.open = Some(WalkSpan {
-                timer,
-                attribution: Self::attribution(event),
-            });
-        }
+        let key = self.key;
+        self.open.begin(event, || {
+            let profiler = global_profiler();
+            // One relaxed atomic load; no timestamp is taken when profiling is
+            // off, which is what keeps an attached-but-disabled observer cheap.
+            profiler.timer(key)
+        });
     }
 
     fn after_pass(&mut self, event: &PassEvent<'_>) {
-        if !event.is_group_exit() {
-            return;
-        }
-        if let Some(span) = self.open.take() {
-            let elapsed = span.timer.stop();
-            global_profiler().record_attributed(self.key, span.attribution, elapsed);
+        if let Some((timer, attribution)) = self.open.end(event) {
+            let elapsed = timer.stop();
+            global_profiler().record_attributed(self.key, attribution, elapsed);
             self.recorded_walks += 1;
         }
     }
@@ -131,6 +109,6 @@ impl PassObserver for TimingObserver {
         // A failed walk's duration measures how long it took to fail, which is
         // not the cost of the walk. Discard it rather than record a number
         // whose meaning differs from every other sample under the same key.
-        self.open = None;
+        self.open.discard();
     }
 }

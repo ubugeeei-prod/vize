@@ -13,6 +13,8 @@ use vize_l2::artifact::Artifact;
 
 use crate::placement::Placement;
 
+mod attribute_value;
+pub use attribute_value::OriginalAttributeFacts;
 mod build;
 pub mod dom;
 pub mod native;
@@ -60,6 +62,7 @@ use policy::TargetPolicy;
 pub struct NativeAnalysis<'owner, 'arena> {
     artifact: &'owner Artifact<'arena>,
     tables: DecisionTables,
+    original_attributes: Option<OriginalAttributeFacts<'owner, 'arena>>,
     dom: Option<dom::DomFacts<'owner, 'arena>>,
     ssr: Option<ssr::SsrFacts<'owner, 'arena>>,
     vapor: Option<vapor::VaporFacts<'owner, 'arena>>,
@@ -70,6 +73,12 @@ impl<'owner, 'arena> NativeAnalysis<'owner, 'arena> {
     #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
         self.artifact
+    }
+
+    /// Complete original values from this owner's existing sole attribute visits.
+    #[must_use]
+    pub fn original_attributes(&self) -> Option<&OriginalAttributeFacts<'owner, 'arena>> {
+        self.original_attributes.as_ref()
     }
 
     /// The target policy selected for these decisions.

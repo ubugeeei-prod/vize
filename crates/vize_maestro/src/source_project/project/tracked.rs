@@ -6,6 +6,12 @@
 
 use std::future::Future;
 use std::sync::Arc;
+#[cfg(feature = "experimental-source-navigation")]
+mod modules;
+#[cfg(feature = "experimental-source-navigation")]
+mod targets;
+#[cfg(feature = "experimental-source-navigation")]
+pub(crate) use modules::ModuleLinkPublicationError;
 
 use crate::source_project::{SnapshotRefusal, SourceQuery, SourceQueryResult, SourceSnapshot};
 

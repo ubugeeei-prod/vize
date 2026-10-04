@@ -43,7 +43,7 @@ pub struct NativeTemplateAttribute<'o, 'a> {
 }
 
 impl<'o, 'a> NativeTemplateAttribute<'o, 'a> {
-    pub(super) fn from_checked(
+    pub(in crate::native) fn from_checked(
         checked: CheckedAttribute<'o, 'a>,
         binding: AttributeBinding<'a>,
         profile: NativeTemplateAttributeProfile,
@@ -117,7 +117,7 @@ pub struct NativeTemplateElement<'o, 'a> {
 }
 
 impl<'o, 'a> NativeTemplateElement<'o, 'a> {
-    pub(super) fn new(
+    pub(in crate::native) fn new(
         original: NativeElement<'o, 'a>,
         attributes: SmallVec<[NativeTemplateAttribute<'o, 'a>; 8]>,
     ) -> Self {

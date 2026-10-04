@@ -67,6 +67,7 @@ use vize_l0::{CompactString, cstr};
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
+mod native;
 mod template_refs;
 #[cfg(test)]
 mod tests;
@@ -83,6 +84,10 @@ pub struct PreferUseTemplateRef;
 impl ScriptRule for PreferUseTemplateRef {
     fn meta(&self) -> &'static ScriptRuleMeta {
         &META
+    }
+
+    fn as_native_sfc_setup_rule(&self) -> Option<&dyn crate::native::sfc::NativeSfcSetupRule> {
+        Some(self)
     }
 
     #[inline]

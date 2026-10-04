@@ -11,12 +11,10 @@ on:
     # Daily 03:11 UTC, staggered from native smoke and e2e.
     - cron: "11 3 * * *"
   workflow_dispatch:
-
 concurrency:
   # A push to main must not cancel an exact-SHA full validation used by release.
   group: check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('full-{0}', github.sha) || (github.event.pull_request.number || github.ref) }}
   cancel-in-progress: true
-
 permissions:
   contents: read
 
@@ -282,6 +280,8 @@ jobs:
         run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
       - name: Prepare plugin runtime and test native JS setup
         uses: ./.github/actions/test-native-js-setup
+      - name: Capture original native attribute values and fixed fresh mounts
+        uses: ./.github/actions/test-native-attribute-values-7502
       - name: Test release scripts
         env:
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize

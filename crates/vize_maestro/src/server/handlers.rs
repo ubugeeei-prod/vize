@@ -100,7 +100,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn shutdown(&self) -> Result<()> {
-        Ok(())
+        self.finish_shutdown()
     }
 
     async fn did_open(&self, params: DidOpenTextDocumentParams) {

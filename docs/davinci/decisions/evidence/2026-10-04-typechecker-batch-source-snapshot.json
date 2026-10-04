@@ -1,0 +1,300 @@
+{
+  "schemaVersion": 1,
+  "kind": "vize-check-type-source-snapshot-paired",
+  "generatedAt": "2026-10-04T02:39:43.862Z",
+  "baseSha": "da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5",
+  "headSha": "5d0c63550d62ca3287766c2819b4f7f411009dbf",
+  "build": {
+    "profile": "ci-opt",
+    "inherits": "release",
+    "lto": "thin",
+    "codegenUnits": 16,
+    "strip": "symbols",
+    "incremental": false
+  },
+  "runner": {
+    "label": "blacksmith-32vcpu-ubuntu-2404",
+    "cpuCount": 32,
+    "availableParallelism": 32,
+    "cpuModel": "AMD EPYC",
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v24.14.0"
+  },
+  "protocol": {
+    "fileCount": 500,
+    "warmups": 2,
+    "pairs": 9,
+    "cold": "first vize check process per side/mode/corpus; filesystem caches are not evicted",
+    "steady": "fresh CLI and native TypeScript processes; filesystem caches may be warm; no persistent checker session",
+    "rotation": "base/head then head/base, alternating within each row",
+    "gates": "all minimal plants and full timed corpus plus plant, on every side and thread mode before warmups",
+    "profile": "separate --profile-json runs after all unprofiled timing pairs, excluded from timings"
+  },
+  "receipt": {
+    "run": "https://github.com/ubugeeei-prod/vize/actions/runs/37171536424",
+    "artifact": "type-snapshot-cli-bench",
+    "rawReportSha256": "53abe50518295c5fcd9895546e00e3c064339f0e3d948b2c4b11adfba90dc284"
+  },
+  "binariesSha256": {
+    "base": "48c83f282ab60212303a3e313ba68026192b60677c3407e8277d001f2a66d87b",
+    "head": "0fd816cf01cc2489175926950cfc56b053f38bc07018c59d000ee5e5ad94a880",
+    "typescript": "4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4"
+  },
+  "dependencies": {
+    "vueVersion": "3.6.0-beta.10",
+    "runtimePackageVersion": "7.0.2",
+    "headLockSha256": "9ff62041a5a606e2b3d4a53660bca3ca42c609026b104fd35d960f0f057b127f",
+    "cargoLockSha256": {
+      "base": "88227fb6c49020dd2299778023e9d86870e3bfd1a61db7575bf373a5d1fa7b5b",
+      "head": "88227fb6c49020dd2299778023e9d86870e3bfd1a61db7575bf373a5d1fa7b5b"
+    }
+  },
+  "scriptSha256": {
+    "type-snapshot-cli-paired.mjs": "e0c1adc051bcf66cc9dedb82870214c055b8a400b4f954a4634ea7b2c8cf14ee",
+    "type-snapshot-cli-protocol.mjs": "9f2cc96f411b62c945794d1e1a31fd30b6928f780bf67b8023f8e07a7164da96",
+    "type-snapshot-cli-corpus.mjs": "176e8093731467a4e1bd88b4526e71c51200471f7087d27c015b650f0a8fec1a",
+    "type-snapshot-cli-runner.mjs": "ecc8a2d50b61ab8e3e60ffccaa3418c63cd71e634370918f7061555ba6f9c64c",
+    "generate.mjs": "a3672c0952d1b545ed6f4d8bf1da2275ac38cdd6008d044001cc41b6e9109393",
+    "check-gate-env.mjs": "97f70607f64d708c18a730943eba72b00a92824f950a787234b0712c59fa7d00",
+    "check-gate-plants.mjs": "dd692bfa916c5bb728c1480268fb47b20696f1f920a39f7edf5d3fa29e4c7885",
+    "typecheck-command.mjs": "baac9132a216baebe1db3ff04c6f2122ed659b49d57cbf0cab695b54e8fd1836",
+    "benchmark-binary.mjs": "c953db1b7c57df876b13efc21d3d6333a51ccba186a86ab616c9a83a5d8cbc52"
+  },
+  "corpora": [
+    {
+      "id": "shared-barrel500",
+      "fileCount": 500,
+      "totalBytes": 291932,
+      "sha256": "1f203112735e8468965f1e02a5bba5fab4c03b9f6b62dd0de95398df7346bb20",
+      "vueBytes": 285350
+    },
+    {
+      "id": "generated500",
+      "fileCount": 500,
+      "totalBytes": 2050821,
+      "sha256": "5154a517b8fb59d9ffd1c14d5806fbb7fc870594e67124a9250c3b518bebaff4",
+      "vueBytes": 2050350
+    }
+  ],
+  "rows": [
+    {
+      "id": "shared-barrel500-max",
+      "fingerprint": "107f9cf1731e697bfc077095ae1cd2b4cbd3d172c8b3a39338dc578fdfe5ca7f",
+      "diagnostics": {
+        "errors": 0,
+        "warnings": 0,
+        "files": 535
+      },
+      "readiness": {
+        "base": {
+          "script": true,
+          "templateProp": true,
+          "templateEvent": true,
+          "componentProp": true,
+          "corpus": true
+        },
+        "head": {
+          "script": true,
+          "templateProp": true,
+          "templateEvent": true,
+          "componentProp": true,
+          "corpus": true
+        }
+      },
+      "cold": {
+        "base": {
+          "ms": 416.873731,
+          "sampleId": "000-shared-barrel500-max-cold-base"
+        },
+        "head": {
+          "ms": 365.838653,
+          "sampleId": "001-shared-barrel500-max-cold-head"
+        }
+      },
+      "baseMedianMs": 348.6011290000006,
+      "headMedianMs": 356.8382270000002,
+      "headToBaseMedianRatio": 1.0236290055159276,
+      "medianPairedHeadToBaseRatio": 1.0272010548106238,
+      "baseSamplesMs": [
+        353.6428519999995, 357.55525599999964, 347.38203800000065, 348.88992599999983,
+        347.09863199999927, 338.50143000000025, 348.6011290000006, 352.89208999999937,
+        342.96781399999963
+      ],
+      "headSamplesMs": [
+        356.8382270000002, 361.744815, 342.2852010000006, 358.3801000000003, 356.6803890000001,
+        371.39218600000004, 362.6783439999999, 341.25114100000064, 353.6052609999988
+      ],
+      "pairedHeadMinusBaseMs": {
+        "mean": 7.480499666666876,
+        "sd": 12.553037234600312,
+        "se": 4.1843457448667705,
+        "approximateT95IntervalDf8": [-2.168601620995897, 17.12960095432965]
+      }
+    },
+    {
+      "id": "shared-barrel500-1t",
+      "fingerprint": "107f9cf1731e697bfc077095ae1cd2b4cbd3d172c8b3a39338dc578fdfe5ca7f",
+      "diagnostics": {
+        "errors": 0,
+        "warnings": 0,
+        "files": 535
+      },
+      "readiness": {
+        "base": {
+          "script": true,
+          "templateProp": true,
+          "templateEvent": true,
+          "componentProp": true,
+          "corpus": true
+        },
+        "head": {
+          "script": true,
+          "templateProp": true,
+          "templateEvent": true,
+          "componentProp": true,
+          "corpus": true
+        }
+      },
+      "cold": {
+        "base": {
+          "ms": 804.3278040000005,
+          "sampleId": "035-shared-barrel500-1t-cold-base"
+        },
+        "head": {
+          "ms": 449.64291700000103,
+          "sampleId": "034-shared-barrel500-1t-cold-head"
+        }
+      },
+      "baseMedianMs": 792.3326039999993,
+      "headMedianMs": 459.6855770000002,
+      "headToBaseMedianRatio": 0.5801674381179455,
+      "medianPairedHeadToBaseRatio": 0.5787933043609227,
+      "baseSamplesMs": [
+        797.4838259999979, 781.3285219999998, 797.7819500000005, 789.2861909999992,
+        791.1168089999992, 805.7665899999993, 788.601362999998, 803.5345809999999, 792.3326039999993
+      ],
+      "headSamplesMs": [
+        464.6405859999977, 457.56323500000144, 461.7508510000007, 459.6855770000002,
+        452.5836100000015, 459.8552290000007, 466.4630010000001, 452.43518799999947,
+        456.50546100000065
+      ],
+      "pairedHeadMinusBaseMs": {
+        "mean": -335.08329977777674,
+        "sd": 9.472737996072572,
+        "se": 3.157579332024191,
+        "approximateT95IntervalDf8": [-342.3646777174245, -327.801921838129]
+      }
+    },
+    {
+      "id": "generated500-max",
+      "fingerprint": "842e6a27dedcb0d847a932adce58eafa54f9c17b3b04fd0e38919572230b9052",
+      "diagnostics": {
+        "errors": 0,
+        "warnings": 0,
+        "files": 500
+      },
+      "readiness": {
+        "base": {
+          "script": true,
+          "templateProp": true,
+          "templateEvent": true,
+          "componentProp": true,
+          "corpus": true
+        },
+        "head": {
+          "script": true,
+          "templateProp": true,
+          "templateEvent": true,
+          "componentProp": true,
+          "corpus": true
+        }
+      },
+      "cold": {
+        "base": {
+          "ms": 437.45997200000056,
+          "sampleId": "069-generated500-max-cold-base"
+        },
+        "head": {
+          "ms": 449.60822100000223,
+          "sampleId": "068-generated500-max-cold-head"
+        }
+      },
+      "baseMedianMs": 433.74281699999847,
+      "headMedianMs": 435.0069330000006,
+      "headToBaseMedianRatio": 1.0029144367363716,
+      "medianPairedHeadToBaseRatio": 1.0011899254182934,
+      "baseSamplesMs": [
+        451.12151900000026, 433.74281699999847, 432.9131249999991, 447.07248500000424,
+        429.1898999999976, 435.2756920000029, 436.1020720000015, 429.92022200000065,
+        432.2771949999951
+      ],
+      "headSamplesMs": [
+        439.046878000001, 435.0069330000006, 435.556614000001, 428.03295799999614,
+        445.0873240000001, 437.877542000002, 433.0239140000049, 430.4317949999968,
+        429.01540199999727
+      ],
+      "pairedHeadMinusBaseMs": {
+        "mean": -1.6150741111111226,
+        "sd": 9.831608197533821,
+        "se": 3.277202732511274,
+        "approximateT95IntervalDf8": [-9.17230361228212, 5.942155390059875]
+      }
+    },
+    {
+      "id": "generated500-1t",
+      "fingerprint": "842e6a27dedcb0d847a932adce58eafa54f9c17b3b04fd0e38919572230b9052",
+      "diagnostics": {
+        "errors": 0,
+        "warnings": 0,
+        "files": 500
+      },
+      "readiness": {
+        "base": {
+          "script": true,
+          "templateProp": true,
+          "templateEvent": true,
+          "componentProp": true,
+          "corpus": true
+        },
+        "head": {
+          "script": true,
+          "templateProp": true,
+          "templateEvent": true,
+          "componentProp": true,
+          "corpus": true
+        }
+      },
+      "cold": {
+        "base": {
+          "ms": 1344.9147410000005,
+          "sampleId": "102-generated500-1t-cold-base"
+        },
+        "head": {
+          "ms": 1335.4297220000008,
+          "sampleId": "103-generated500-1t-cold-head"
+        }
+      },
+      "baseMedianMs": 1340.2031090000019,
+      "headMedianMs": 1337.5751810000074,
+      "headToBaseMedianRatio": 0.9980391569140925,
+      "medianPairedHeadToBaseRatio": 1.006452734697047,
+      "baseSamplesMs": [
+        1334.5230969999975, 1340.2031090000019, 1360.5762070000055, 1313.4615919999997,
+        1350.0661869999967, 1342.7064499999906, 1312.7891029999882, 1335.5222869999998,
+        1343.2677479999984
+      ],
+      "headSamplesMs": [
+        1311.477528000003, 1373.5477969999993, 1321.3976040000052, 1336.3317270000043,
+        1356.339850000004, 1332.7252480000025, 1337.5751810000074, 1344.1400580000045,
+        1366.3215330000094
+      ],
+      "pairedHeadMinusBaseMs": {
+        "mean": 5.193416222229037,
+        "sd": 24.53901029749737,
+        "se": 8.17967009916579,
+        "approximateT95IntervalDf8": [-13.668903026447275, 24.055735470905347]
+      }
+    }
+  ]
+}

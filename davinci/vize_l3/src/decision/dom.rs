@@ -14,7 +14,7 @@ pub(super) mod build;
 mod context;
 pub mod control;
 mod dependencies;
-mod file;
+pub(in crate::decision) mod file;
 mod for_head;
 mod handler;
 pub mod vue;

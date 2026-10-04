@@ -4,12 +4,15 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { performance } from "node:perf_hooks";
+import { createNativeGraphArchive } from "./typechecker-native-graph-archive.mjs";
 import { splitNativePhaseReport } from "./typechecker-native-phase-report.mjs";
+import { replayNativeProfile } from "./typechecker-native-profile-replay.mjs";
 
 function main() {
   const settings = JSON.parse(readFileSync(process.env.NATIVE_PHASE_CONFIG, "utf8"));
+  assert([undefined, null, "pprof"].includes(settings.profile), "unsupported native profile mode");
   const args = process.argv.slice(2);
   const projectIndex = args.indexOf("--project");
   if (args.length === 1 && args[0] === "--version") {
@@ -25,7 +28,17 @@ function main() {
     return;
   }
   assert(projectIndex >= 0 && args[projectIndex + 1], "unexpected native invocation/fallback");
-  assert(!args.some((arg) => /incremental|tsBuildInfo|extendedDiagnostics/u.test(arg)));
+  if (settings.profile === "pprof")
+    assert.deepEqual(
+      args,
+      ["--checkers", "1", "--pretty", "false", "--project", args[projectIndex + 1]],
+      "profile replay requires the exact known production native argv",
+    );
+  assert(
+    !args.some((arg) =>
+      /incremental|tsBuildInfo|extendedDiagnostics|pprofDir|generateTrace/u.test(arg),
+    ),
+  );
   const config = resolve(args[projectIndex + 1]);
   const stem = join(settings.directory, `${process.pid}`);
   mkdirSync(settings.directory, { recursive: true });
@@ -34,6 +47,16 @@ function main() {
   const runtimeSha256 = sha(readFileSync(settings.runtime));
   writeFileSync(`${stem}.tsconfig.json`, configBytes);
   const compilerOptions = JSON.parse(configBytes).compilerOptions;
+  const graph = createNativeGraphArchive({
+    directory: settings.directory,
+    stem,
+    cwd: process.cwd(),
+    config,
+    configBytes,
+    runtime: settings.runtime,
+    args,
+    objectsDirectory: join(dirname(settings.directory), "graph-objects"),
+  });
   const runs = {};
   function run(id, extra = []) {
     const startedAt = performance.timeOrigin + performance.now();
@@ -83,6 +106,7 @@ function main() {
   // This deliberately warms the graph: every wall/phase value is instrumentation
   // only. Hash all private/native dependency bytes before the two diagnostic runs.
   const membersBefore = membership("membership-before");
+  graph.captureMembers(membersBefore);
   const baseline = run("baseline");
   const extended = run("extended", ["--extendedDiagnostics"]);
   const phases = splitNativePhaseReport(utf8(extended.stdout));
@@ -93,7 +117,24 @@ function main() {
     utf8(baseline.stdout),
     "phase flag changed ordered native diagnostics",
   );
+  const nativeProfile =
+    settings.profile === "pprof"
+      ? replayNativeProfile({
+          runtime: settings.runtime,
+          args,
+          cwd: process.cwd(),
+          baseline,
+          profileDirectory: join(settings.directory, "pprof-" + process.pid),
+        })
+      : null;
   const members = membership("membership-after");
+  const graphRecord = graph.finish(members);
+  const nativeGraphArchive = {
+    record: stem + ".graph.json",
+    sha256: sha(readFileSync(stem + ".graph.json")),
+    memberCount: graphRecord.membersBefore.length,
+    graphClosureClaimed: false,
+  };
   assert.deepEqual(members, membersBefore, "native program/member bytes changed during replay");
   assert.equal(new Set(members.map((file) => file.path)).size, members.length, "duplicate member");
   assert.equal(
@@ -119,6 +160,16 @@ function main() {
     phases,
     members,
     membersBefore,
+    nativeGraphArchive,
+    nativeProfile,
+    profileSemantics: nativeProfile
+      ? {
+          decoding: "not implemented; gzip container validation only",
+          cpuSamples: null,
+          allocationSamples: null,
+          phaseAttribution: null,
+        }
+      : null,
     nativeGraphBytesUnchanged: true,
     orderedDiagnosticsEqual: true,
     protocol:

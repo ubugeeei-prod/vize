@@ -34,6 +34,13 @@ impl<'owner, 'arena> NativeSsrFileAnalysis<'owner, 'arena> {
         self.file
     }
     #[must_use]
+    pub fn original_attributes(
+        &self,
+    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+        self.analysis.original_attributes()
+    }
+
+    #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
         self.file.artifact()
     }
@@ -56,5 +63,18 @@ pub fn build_ssr_file_decisions<'owner, 'arena>(
         return Err(DecisionBuildError::IncompleteFile);
     }
     let analysis = build_decisions(file.artifact(), TargetPolicy::Ssr)?;
+    Ok(NativeSsrFileAnalysis { file, analysis })
+}
+
+// Called only after the real selected template entry derives its own File.
+pub(in crate::decision) fn build_original_file_decisions<'owner, 'arena>(
+    file: &'owner FileArtifact<'arena>,
+) -> Result<NativeSsrFileAnalysis<'owner, 'arena>, DecisionBuildError> {
+    let analysis = crate::decision::build::build_with_original(
+        file,
+        TargetPolicy::Ssr,
+        &crate::decision::dom::LiteralExpressions,
+        &crate::decision::dom::vue::policy::NoReads,
+    )?;
     Ok(NativeSsrFileAnalysis { file, analysis })
 }

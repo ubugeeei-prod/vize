@@ -95,6 +95,31 @@ pub struct SourceQueryResult<T> {
 }
 
 impl<T> SourceQueryResult<T> {
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(in crate::source_project) fn snapshot(&self) -> &Arc<SourceSnapshot> {
+        &self.snapshot
+    }
+
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(in crate::source_project) fn cancellation(&self) -> AbortHandle {
+        self.cancel.clone()
+    }
+
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(in crate::source_project) fn with_current<R>(
+        &self,
+        documents: &DocumentStore,
+        action: impl FnOnce() -> R,
+    ) -> Result<R, SnapshotRefusal> {
+        self.snapshot.with_current(documents, |_| {
+            if self.cancel.is_aborted() {
+                Err(SnapshotRefusal::Cancelled)
+            } else {
+                Ok(action())
+            }
+        })?
+    }
+
     /// Perform the synchronous response/cache publication while the actual
     /// current document is read-locked. The callback must not await or re-enter
     /// DocumentStore in any way, including reads or nested apply_edits. A queued

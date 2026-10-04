@@ -43,3 +43,26 @@ test("catalog test registration cannot authorize native production or foreign pa
     assert.equal(withoutI18nHostImports(declaration, file), declaration);
   }
 });
+
+test("the configured SFC reporter admits only its exact original catalog host import", () => {
+  const file = "crates/vize_patina/src/native/sfc/context.rs";
+  const host = "use vize_carton::i18n::{Locale, t, t_fmt};";
+  const source = fs.readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
+  assert.ok(source.includes(host), file);
+  assert.doesNotMatch(withoutI18nHostImports(source, file), /\bvize_carton::/u);
+  for (const unreviewed of [
+    "use vize_carton::Allocator;",
+    "use vize_carton::CompactString;",
+    "use vize_carton::i18n::{Locale, t, t_fmt, Translator};",
+  ]) {
+    assert.equal(withoutI18nHostImports(unreviewed, file), unreviewed);
+  }
+  for (const foreign of [
+    "crates/vize_patina/src/native/sfc/owner.rs",
+    "crates/vize_patina/src/native/sfc/driver.rs",
+    "crates/vize_patina/src/native/sfc/tests/support.rs",
+    "davinci/vize_l2/src/lib.rs",
+  ]) {
+    assert.equal(withoutI18nHostImports(host, foreign), host);
+  }
+});

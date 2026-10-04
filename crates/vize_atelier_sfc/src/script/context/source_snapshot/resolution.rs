@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use vize_carton::ToCompactString;
 
-use super::{TypeSourceSnapshot, source_path};
+use super::{ResolutionScope, TypeSourceSnapshot, source_path};
 use crate::script::context::external_types::resolution::resolve_import_path;
 
 const EXTENSIONS: &[&str] = &[
@@ -21,11 +21,35 @@ const INDEX_NAMES: &[&str] = &[
 impl TypeSourceSnapshot {
     pub fn resolve_import(&self, current_file: &Path, specifier: &str) -> Option<PathBuf> {
         let current_file = source_path(current_file);
-        let key = (current_file.clone(), specifier.to_compact_string());
-        let mut resolutions = self.resolutions.lock().ok()?;
-        resolutions
+        // The uncached compatibility package resolver rejects node_modules,
+        // even when it is the filename. Parentless paths also differ from a
+        // normal importer in the root directory. Keep these rare file contexts
+        // separate while retaining their positive and negative snapshot cells.
+        let scope = match current_file.parent() {
+            Some(directory)
+                if !current_file
+                    .file_name()
+                    .is_some_and(|name| name == "node_modules") =>
+            {
+                ResolutionScope::Directory(directory.to_path_buf())
+            }
+            _ => ResolutionScope::File(current_file.clone()),
+        };
+        // This resolver uses only the importer directory and exact specifier,
+        // including for package ancestry and @/ aliases. It has no module-mode
+        // input; Canon's contextual package route resolver remains separate.
+        let key = (scope, specifier.to_compact_string());
+        let entry = self
+            .resolutions
+            .lock()
+            .ok()?
             .entry(key)
-            .or_insert_with(|| self.resolve_uncached(&current_file, specifier))
+            .or_default()
+            .clone();
+        // A shared import resolves once. Filesystem work never holds the map
+        // lock, so unrelated directories and specifiers can resolve in parallel.
+        entry
+            .get_or_init(|| self.resolve_uncached(&current_file, specifier))
             .clone()
     }
 
