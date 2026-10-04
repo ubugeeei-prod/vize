@@ -106,3 +106,15 @@ allowance with genuine storage/alias/foreign negatives, preserving all old rows.
 The old b7 source run failed in Rust-builder/tooling and supplies no current
 acceptance. Fresh automatic source gates and protected full104/actual merge
 remain required; target observation/events and native DocumentLinks stay next.
+
+## Source905 minimal build correction
+
+Actual905 executed152 SourceProject,43 RPC and21 normal module-link laws with
+full EOF/drain envelopes, but remains unaccepted: no-default test compilation
+found14 old references to APIs unavailable in that profile. Match only actual
+feature ownership: two definition/one virtual-TS laws require `native`; six
+formatter laws require `glyph`, including Glyph-only builds. Every old body,
+input/output and normal execution stays exact; unused feature-owned imports
+follow their consumers. The genuine11 minimal laws still require execution
+without either feature. Preserved raw failure is not acceptance; fresh source,
+strict/full104 and actual signed delivery remain required.

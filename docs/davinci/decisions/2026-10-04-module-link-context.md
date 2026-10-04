@@ -334,3 +334,15 @@ All other product/law blobs equal the reviewed source. The failed logs grant
 no acceptance to the replay. Current-head hosted normal/minimal,
 older controls and strict warnings must pass before protected full104/merge.
 Physical target observation/events and the true link consumer remain next.
+
+## Genuine minimal-test qualification
+
+Source905 hosted affected Clippy/build, all152 SourceProject,43 RPC and21 normal
+module-link laws passed, including actual held EOF/error/drain frames. Its new
+no-default test then failed14 pre-existing feature-owned API references before
+the11 minimal laws could run. Complete original logs remain retained;905 has no
+source acceptance. Two definition laws and one virtual-TS law gain their real
+`native` cfg; six formatter laws gain their real `glyph` cfg. Whole old bodies,
+inputs, expectations and default execution remain. Only unused feature-owned
+imports are gated; no production body changes. Fresh normal/minimal/strict
+source and protected full104/actual merge remain mandatory.
