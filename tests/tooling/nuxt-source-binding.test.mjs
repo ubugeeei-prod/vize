@@ -67,7 +67,7 @@ await test("native fixture custody requires original inputs, actual load, and bo
     assert.throws(() => verifyNuxtSourceBindingEvents(custody, events));
 });
 
-await test("actual preload guard preserves result and exception identity and rejects foreign native bytes", () => {
+await test("actual preload scopes source selection and preserves other addons and call identity", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "nuxt-native-guard-"));
   const require = createRequire(import.meta.url);
   try {
@@ -76,7 +76,7 @@ await test("actual preload guard preserves result and exception identity and rej
     const proof = {
       ...custody,
       binary: {
-        path: binary,
+        path: fs.realpathSync(binary),
         sha256: createHash("sha256").update(fs.readFileSync(binary)).digest("hex"),
       },
       calls: path.join(temporary, "calls.jsonl"),
@@ -101,10 +101,17 @@ await test("actual preload guard preserves result and exception identity and rej
         },
       },
     );
+    const otherAddon = {
+      TsconfigCache: class {
+        original = true;
+      },
+    };
+    let physical;
     const moduleApi = {
       _extensions: {
-        ".node": (module) => {
-          module.exports = native;
+        ".node": (module, filename) => {
+          physical = filename;
+          module.exports = filename === proof.binary.path ? native : otherAddon;
         },
       },
     };
@@ -112,7 +119,7 @@ await test("actual preload guard preserves result and exception identity and rej
       require: (specifier) => (specifier === "node:module" ? moduleApi : require(specifier)),
       process: {
         pid: 42,
-        env: { VIZE_NUXT_NATIVE_CUSTODY: configuration, NAPI_RS_NATIVE_LIBRARY_PATH: binary },
+        env: { VIZE_NUXT_NATIVE_CUSTODY: configuration },
       },
     };
     const source = fs.readFileSync(
@@ -150,7 +157,30 @@ await test("actual preload guard preserves result and exception identity and rej
     );
     const foreign = path.join(temporary, "vize-vitrine.foreign.node");
     fs.writeFileSync(foreign, "foreign bytes");
-    assert.throws(() => moduleApi._extensions[".node"]({ exports: null }, foreign));
+    const redirected = { exports: null };
+    moduleApi._extensions[".node"](redirected, foreign);
+    assert.equal(
+      physical,
+      proof.binary.path,
+      "requested published Vize target never loads foreign bytes",
+    );
+    assert.equal(redirected.exports.compileSfc(custody.fixtures[0].source, options), returned);
+    const other = path.join(temporary, "rolldown.linux-x64-gnu.node");
+    fs.writeFileSync(other, "original other-addon unit control");
+    const originalOther = { exports: null };
+    moduleApi._extensions[".node"](originalOther, other);
+    assert.equal(physical, other);
+    assert.equal(originalOther.exports, otherAddon);
+    assert.equal(new (class extends originalOther.exports.TsconfigCache {})().original, true);
+    assert.throws(() =>
+      vm.runInNewContext(source, {
+        ...context,
+        process: {
+          ...context.process,
+          env: { ...context.process.env, NAPI_RS_NATIVE_LIBRARY_PATH: binary },
+        },
+      }),
+    );
     fs.writeFileSync(binary, "stale source bytes");
     assert.throws(() => vm.runInNewContext(source, context));
   } finally {

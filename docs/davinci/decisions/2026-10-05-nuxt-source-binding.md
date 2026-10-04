@@ -26,9 +26,12 @@ API. Preserve the source head/tree, lock hashes, actual Cargo completion,
 declared `napi,legacy` features, original build command, raw stdout/stderr,
 toolchains, generated artifact identity and frozen binary SHA.
 
-Copy that authenticated binary into the fixture artifact and select it with
-the existing `NAPI_RS_NATIVE_LIBRARY_PATH` override. A test-only preload
-records physical native loads and rejects any other Vize addon. It forwards
+Copy that authenticated binary into the fixture artifact. A test-only
+preload sends only Vize addon requests to that binary through the original
+physical native loader; unrelated addon requests retain their original
+filenames and exports. Do not set the global `NAPI_RS_NATIVE_LIBRARY_PATH`:
+Rolldown also consumes it. The preload records both requested and actual
+Vize targets, so published target resolution cannot load published bytes. It forwards
 the original arguments to the original functions and returns the same result
 or exception object. It records complete arguments and results, including
 maps, after the native call; no production stage or serialization is added.
@@ -138,3 +141,23 @@ exception in `module-import.log` instead of diagnosing from Nuxt's generic
 error. This import gives no workload or performance credit. The underlying
 cause and quality result remain pending; do not bypass the binding guard,
 weaken fixture assertions or retry the unchanged failed source.
+
+The diagnostic source `8f77de18405ce4bef8cc795bfe980ff45ed737fc` isolated the
+actual import failure in Nuxt run 37226395369. Authenticated artifact
+11311714217 (181,867,326 bytes) has ZIP SHA-256
+`13156e6dbfd7c8492db58e4fa91a2e502c79919f9e10a153c288ca35c9022d4e`.
+Rolldown's `TsconfigCache` extends an undefined native export because its
+loader consumed the same global NAPI override and loaded the Vize addon.
+The original fixture lock pins Rolldown 1.2.11; its npm tarball SHA-512
+matches that lock and SHA-256 is
+`3acd96aab699f4936c223ebe60a52882a22aaa7dba22393f97b30729dd26516b`.
+Its original `dist/shared/binding-BY0qR5iS.mjs` explicitly reads that override.
+
+Remove the global override and scope the physical selection to Vize in the
+test preload. Preserve the actual native loader for all other addons. The
+extended control requires original Rolldown-like export/constructor identity
+and physical filename, exact selected Vize binary, unchanged compiler
+arguments/results/exceptions, and rejection of ambient global overrides or
+stale selected bytes. These synthetic controls are not runtime credit.
+Retain the original failure and require fresh exact-source Nuxt/SSR/browser
+execution; successful quality and protected delivery are still pending.

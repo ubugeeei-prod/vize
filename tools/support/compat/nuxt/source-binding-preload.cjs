@@ -9,7 +9,11 @@ const custody = JSON.parse(fs.readFileSync(process.env.VIZE_NUXT_NATIVE_CUSTODY,
 assert.equal(custody.schema, "vize.nuxt.source-binding");
 assert.equal(custody.version, 1);
 const binary = fs.realpathSync(custody.binary.path);
-assert.equal(fs.realpathSync(process.env.NAPI_RS_NATIVE_LIBRARY_PATH), binary);
+assert.ok(
+  !process.env.NAPI_RS_NATIVE_LIBRARY_PATH,
+  "global NAPI override changes unrelated addons",
+);
+assert.ok(!process.env.NAPI_RS_FORCE_WASI, "ambient WASI fallback cannot qualify native source");
 const sha256 = createHash("sha256").update(fs.readFileSync(binary)).digest("hex");
 assert.equal(sha256, custody.binary.sha256);
 const record = (event) =>
@@ -28,9 +32,10 @@ Module._extensions[".node"] = function (module, filename) {
   const actual = fs.realpathSync(filename);
   const isVize = actual === binary || /^vize[-_]vitrine.*\.node$/.test(path.basename(actual));
   if (!isVize) return original(module, filename);
-  assert.equal(actual, binary, "published or foreign Vize addon cannot replace the source binding");
-  original(module, filename);
-  record({ kind: "load" });
+  // Scope the physical binary selection to Vize. Rolldown and other napi-rs
+  // addons also consume the global NAPI override, so their loads stay original.
+  original(module, binary);
+  record({ kind: "load", requested: actual });
   const descriptors = Object.getOwnPropertyDescriptors(module.exports);
   for (const entrypoint of ["compileSfc", "compileSfcBatchWithResults"]) {
     const fn = descriptors[entrypoint]?.value;

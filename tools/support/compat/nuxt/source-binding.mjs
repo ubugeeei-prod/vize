@@ -64,7 +64,6 @@ export function prepareNuxtSourceBinding(root, artifacts) {
     custody,
     environment: {
       ...process.env,
-      NAPI_RS_NATIVE_LIBRARY_PATH: binary,
       VIZE_NUXT_NATIVE_CUSTODY: configuration,
       NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --require=${JSON.stringify(preload)}`.trim(),
     },
