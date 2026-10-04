@@ -1,6 +1,7 @@
 use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceRoot, String};
 
+use super::super::DocumentHtmlStructure;
 use super::super::{DocumentHtmlRefusal, NativeDocument};
 use crate::markup::{QuoteType, document::DocumentLexicalRefusal};
 
@@ -204,4 +205,95 @@ fn recovered_pending_vue_and_unsupported_original_frames_never_mint_attributes()
         owner.html_structure().unwrap_err(),
         DocumentHtmlRefusal::Lexical(DocumentLexicalRefusal::RecoveredSyntax)
     );
+}
+
+#[test]
+fn actual_common_prefix_attribute_iteration_stays_inside_count_and_byte_admission() {
+    let prefix = "DATA-".to_owned() + &"x".repeat(180);
+    for count in [
+        DocumentHtmlStructure::MAX_ATTRIBUTES,
+        DocumentHtmlStructure::MAX_ATTRIBUTES + 1,
+    ] {
+        let mut body = String::from("<div");
+        for ordinal in 0..count {
+            body.push(' ');
+            body.push_str(&prefix);
+            body.push_str(&ordinal.to_string());
+            body.push_str("='&NotEqualTilde;&#13;\r\n&amp;amp;'");
+        }
+        body.push_str("></div>");
+        let source = envelope(&body);
+        let allocator = Allocator::default();
+        let owner = NativeDocument::lex_in(&allocator, root(&source));
+        assert!(owner.normal_completion().is_ok());
+        if count > DocumentHtmlStructure::MAX_ATTRIBUTES {
+            assert!(matches!(
+                owner.html_structure(),
+                Err(DocumentHtmlRefusal::AttributeCountLimit(_))
+            ));
+            continue;
+        }
+        let tree = owner
+            .html_structure()
+            .expect("actual maximum admitted name workload");
+        let div = tree.elements().nth(3).expect("original div");
+        assert!(div.opening_span().len() <= DocumentHtmlStructure::MAX_OPENING_BYTES);
+        let actual: Vec<_> = div.attributes().collect();
+        assert_eq!(actual.len(), count);
+        for (ordinal, attribute) in actual.iter().enumerate() {
+            let expected = prefix.to_ascii_lowercase() + &ordinal.to_string();
+            assert_eq!(attribute.name_characters().collect::<String>(), expected);
+            assert_eq!(
+                attribute.value_characters().collect::<String>(),
+                "≂\u{338}\r\n&amp;"
+            );
+        }
+    }
+    let mut body = String::from("<div");
+    for _ in 0..DocumentHtmlStructure::MAX_ATTRIBUTES + 1 {
+        body.push_str(" X='original'");
+    }
+    body.push_str("></div>");
+    let source = envelope(&body);
+    let allocator = Allocator::default();
+    let owner = NativeDocument::lex_in(&allocator, root(&source));
+    assert!(matches!(
+        owner.html_structure(),
+        Err(DocumentHtmlRefusal::AttributeCountLimit(_))
+    ));
+}
+
+#[test]
+fn exact_opening_byte_limit_iterates_values_and_over_limit_retains_original_refusal() {
+    let prefix = "<div data-x='";
+    let suffix = "'>";
+    for extra in [0, 1] {
+        let size = DocumentHtmlStructure::MAX_OPENING_BYTES as usize + extra;
+        let value = "x".repeat(size - prefix.len() - suffix.len());
+        let mut body = String::from(prefix);
+        body.push_str(&value);
+        body.push_str(suffix);
+        body.push_str("</div>");
+        let source = envelope(&body);
+        let allocator = Allocator::default();
+        let owner = NativeDocument::lex_in(&allocator, root(&source));
+        assert!(owner.normal_completion().is_ok());
+        if extra > 0 {
+            assert!(matches!(
+                owner.html_structure(),
+                Err(DocumentHtmlRefusal::OpeningByteLimit(_))
+            ));
+            continue;
+        }
+        let tree = owner.html_structure().expect("exact original byte limit");
+        let div = tree.elements().nth(3).expect("original div");
+        assert_eq!(
+            div.opening_span().len(),
+            DocumentHtmlStructure::MAX_OPENING_BYTES
+        );
+        let attribute = div.attributes().next().expect("original static value");
+        assert_eq!(attribute.authored_value(), Some(value.as_str()));
+        assert_eq!(attribute.value_characters().count(), value.len());
+        assert!(attribute.value_characters().all(|ch| ch == 'x'));
+    }
 }

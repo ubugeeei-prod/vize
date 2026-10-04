@@ -36,6 +36,8 @@ pub enum DocumentHtmlRefusal {
     InvalidFrame(Span),
     ImpliedEnd(Span),
     PendingStructure,
+    AttributeCountLimit(Span),
+    OpeningByteLimit(Span),
 }
 
 /// Actual element ancestry for a strict explicit no-quirks HTML envelope.
@@ -46,6 +48,8 @@ pub enum DocumentHtmlRefusal {
 /// match without ASCII case, and a slash never closes a nonvoid HTML element.
 /// Static attributes borrow their original callback ranges, with HTML ASCII
 /// name folding, first duplicate retention and once-decoded scalar values.
+/// Every authored start tag has at most 64 attributes (including duplicates)
+/// and 16 KiB of original opening bytes. Larger tags explicitly refuse.
 ///
 /// Implied ends, tables, foreign content, raw-text elements, formatting,
 /// templates, Vue directive/interpolation syntax and implicit envelopes refuse
@@ -71,6 +75,11 @@ pub struct DocumentHtmlStructure<'o, 'a> {
 }
 
 impl<'o, 'a> DocumentHtmlStructure<'o, 'a> {
+    /// Maximum authored attributes per admitted tag, including duplicates.
+    pub const MAX_ATTRIBUTES: usize = 64;
+    /// Maximum original complete start-tag byte length for this provider.
+    pub const MAX_OPENING_BYTES: u32 = 16 * 1024;
+
     #[must_use]
     pub fn owner(&self) -> &'o NativeDocument<'a> {
         self.owner

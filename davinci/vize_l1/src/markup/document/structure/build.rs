@@ -53,6 +53,7 @@ impl Builder<'_, '_> {
                     let name = event.span;
                     index += 1;
                     let attributes_start = index;
+                    let mut attribute_count = 0;
                     let mut end = None;
                     while let Some(part) = self.owner.events.get(index) {
                         index += 1;
@@ -61,8 +62,13 @@ impl Builder<'_, '_> {
                                 end = Some((part.span.start, part.kind() == Kind::SelfClosingTag));
                                 break;
                             }
-                            Kind::AttributeName
-                            | Kind::AttributeNameEnd
+                            Kind::AttributeName => {
+                                attribute_count += 1;
+                                if attribute_count > DocumentHtmlStructure::MAX_ATTRIBUTES {
+                                    return Err(Refusal::AttributeCountLimit(name));
+                                }
+                            }
+                            Kind::AttributeNameEnd
                             | Kind::AttributeData
                             | Kind::AttributeEntity
                             | Kind::AttributeEnd(_) => {}
@@ -133,6 +139,9 @@ impl Builder<'_, '_> {
             .checked_sub(1)
             .ok_or(Refusal::InvalidFrame(name_span))?;
         let bytes = self.owner.source().as_bytes();
+        if gt + 1 - start > DocumentHtmlStructure::MAX_OPENING_BYTES {
+            return Err(Refusal::OpeningByteLimit(name_span));
+        }
         if bytes.get(start as usize) != Some(&b'<')
             || bytes.get(gt as usize) != Some(&b'>')
             || (slash && gt.checked_sub(1).and_then(|p| bytes.get(p as usize)) != Some(&b'/'))

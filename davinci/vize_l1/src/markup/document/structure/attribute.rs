@@ -33,7 +33,11 @@ impl<'s, 'o, 'a> Iterator for DocumentHtmlAttributes<'s, 'o, 'a> {
             let index = self.cursor;
             let attribute = read(self.tree, self.element, index)?;
             self.cursor = attribute.parts.end + 1;
-            let duplicate = self.tree.owner.events[self.element.attributes.start..index]
+            let duplicate = self
+                .tree
+                .owner
+                .events
+                .get(self.element.attributes.start..index)?
                 .iter()
                 .filter(|event| event.kind() == Kind::AttributeName)
                 .any(|event| {
@@ -120,8 +124,11 @@ impl<'s, 'o, 'a> DocumentHtmlAttribute<'s, 'o, 'a> {
     /// `&#13;` retains CR and `&amp;amp;` is never decoded for a second time.
     pub fn value_characters(&self) -> impl Iterator<Item = char> + 's {
         let owner = self.tree.owner;
-        owner.events[self.parts.clone()]
-            .iter()
+        owner
+            .events
+            .get(self.parts.clone())
+            .into_iter()
+            .flatten()
             .flat_map(move |event| {
                 if let Some(value) = event.decoded_entity() {
                     match value {

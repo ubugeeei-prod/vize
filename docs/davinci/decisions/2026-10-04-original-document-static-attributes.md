@@ -31,6 +31,10 @@ this trades quadratic duplicate filtering within a tag for zero name-set
 allocation. It is not a measured performance improvement. The callback range
 adds two usize fields per existing bounded Element (16 bytes on 64-bit targets),
 without altering published Component/tokenizer storage or live product paths.
+Admitted start tags contain at most 64 authored attributes (duplicates count)
+and 16 KiB of original opening bytes; explicit typed refusals retain larger
+sources. These bounds constrain the native provider's duplicate/name readback,
+not original lexical input size or total work across repeated consumer queries.
 
 These rules follow the [HTML tokenizer attribute states](https://html.spec.whatwg.org/multipage/parsing.html#attribute-name-state)
 and [input preprocessing](https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream).
@@ -38,11 +42,19 @@ Ten complete original JSON corpus sources bind native effective name/value
 arrays to independent actual Chromium DOMParser, including empty/Boolean quotes,
 unquoted slash, duplicate/NUL/Unicode names, metadata/void/envelope attributes,
 literal control characters, entity boundaries and once-only multiscalar values.
-Six runtime laws also retain exact source/quote geometry, owner/arena movement,
+Eight runtime laws also retain exact source/quote geometry, owner/arena movement,
 independent equal-buffer ownership and original lexical/Vue refusals. Two
 compile-fail laws retain private construction and non-Clone authority.
 The unchanged storage scanner records only the new test-owned Vec/String
-bindings (1/4 and 1/8 direct/bound counts); attribute production owns no buffers.
+bindings (1/5 and 1/13 direct/bound counts); attribute production owns no buffers.
+Actual iteration laws traverse all 64 long common-prefix names and mixed
+multiscalar/numeric-CR/literal-CRLF/once-only values, plus an exact 16 KiB opening
+value. Both 65 unique/duplicate attributes and one-byte-over openings refuse.
+These are execution laws, not a new workload instruction benchmark or speedup.
+
+The first hosted source fails unchanged Clippy's indexing/slicing gate at two
+borrowed event-range reads. Checked get-based readback corrects both sites
+without relaxing the lint, changing original inputs or granting runtime credit.
 
 ## Unfinished gates
 
@@ -55,4 +67,7 @@ Boolean-property semantics are outside static attribute value readback.
 Fresh exact-source Actions must execute the native laws and actual Chromium
 lane. Protected full suites, unchanged instruction ceilings/ratchets and actual
 signed merge/fresh-main source identity still determine delivery; source checks
-or queue entry alone give no completion credit. #6836 remains closed.
+or queue entry alone give no completion credit. This slice additionally requires
+genuine hosted unchanged 100+4 instruction measurement before queue entry;
+protected measurements still repeat on the actual composed candidate. #6836
+remains closed.
