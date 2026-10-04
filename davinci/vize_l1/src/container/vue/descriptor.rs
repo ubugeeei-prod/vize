@@ -10,6 +10,8 @@ use super::super::{Container, ContainerError};
 use crate::{embed::Lang, parse::SurfaceParseOptions};
 
 mod policy;
+mod template;
+pub use template::TemplateView;
 #[cfg(test)]
 mod style_tests;
 #[cfg(test)]
@@ -252,25 +254,6 @@ impl<'a> ScriptView<'_, 'a> {
     }
     pub fn role(&self) -> ScriptRole {
         self.role
-    }
-}
-
-/// Checked original ordinary HTML template content.
-#[derive(Debug, Clone, Copy)]
-pub struct TemplateView<'o, 'a> {
-    owner: &'o DescriptorObservation<'a>,
-    selected: Selection<'a>,
-}
-
-impl<'a> TemplateView<'_, 'a> {
-    pub fn source(&self) -> &'a str {
-        self.owner.source()
-    }
-    pub fn container_index(&self) -> usize {
-        self.selected.index
-    }
-    pub fn block(&self) -> SourceBlock<'a> {
-        self.selected.block
     }
 }
 
