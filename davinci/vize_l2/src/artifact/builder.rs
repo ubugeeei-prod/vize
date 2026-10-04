@@ -5,7 +5,7 @@ use vize_l0::{Allocator, Box, Span, id::NodeId, side_table::SideTable};
 
 use super::{Artifact, ArtifactError, ArtifactParts, RejectedArtifact, check};
 use crate::expr::ExprRef;
-use crate::op::{Attribute, BindingOp, CommentOp, InterpolationOp, Namespace, Op, Region, TextOp};
+use crate::op::{Attribute, BindingOp, CommentOp, InterpolationOp, Namespace, Op, Region};
 use crate::provenance::ProvenanceRecord;
 use crate::walk::PageWalk;
 
@@ -38,6 +38,7 @@ pub(crate) use element::ElementAllocation;
 mod factory;
 mod original_for;
 mod region;
+mod text;
 pub use factory::{ComponentBody, ComponentFactory};
 pub use region::RegionBuilder;
 
@@ -77,17 +78,6 @@ impl<'a> Builder<'a> {
             frames: Vec::new(),
             walk: PageWalk::new(),
         })
-    }
-
-    /// Build a leaf only after its span is checked against the current owner.
-    pub fn text(&mut self, content: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
-        let id = self.prepare(span)?;
-        self.mint();
-        self.push(Op::Text(Box::new_in(
-            TextOp { content, span },
-            &self.allocator,
-        )));
-        Ok(id)
     }
 
     pub fn comment(&mut self, content: &'a str, span: Span) -> Result<NodeId, ArtifactError> {
