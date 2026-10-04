@@ -52,10 +52,16 @@ install or duplicated manual full campaign is permitted. Standard target output
 must still pass its genuine L3/L4 admission, complete-module/map/runtime laws;
 broader nested text/entities, controls, setup products and #6880 remain separate.
 
-Acceptance TODO: #7672 stays unqueued until the actual #7663 setup product
-merges and its exact original <p>{{count}}</p> refusal is requalified as a
-complete positive source/module/raw-map/pinned-runtime law. The setup product
-owner supplies independent evidence; this provider owner integrates only on
-literal main. Compound/escaped/outer-handler/For negatives remain separate.
+The setup product #7663 actually merged as 85d3afe2256d at 00:14:11Z with full
+protected acceptance. Its owner supplied a narrow independent proof commit:
+all six original full fixture payloads stay unchanged; the exact original
+<script setup>let count=1</script><template><p>{{count}}</p></template> is the
+seventh complete desired module/authored-anchor map/pinned Vue source. Nine
+primary/desired Node laws passed without local native Rust credit. This true
+consumer evidence is integrated only on literal main with the new original
+Element/operand/File/occurrence/setup-scope law and mandatory seven-case native
+capture. Only that stale simple nested refusal is removed; compound/escaped/
+outer-handler/For controls remain. #7672 stays unqueued until the complete
+actual Rust modules/maps and native/primary runtime match on the final source.
 No future candidate graft, duplicate producer, artificial dependency or gate
-weakening is allowed. Current source-law acceptance does not satisfy this TODO.
+weakening is allowed. Prior source-law acceptance alone does not close this TODO.
