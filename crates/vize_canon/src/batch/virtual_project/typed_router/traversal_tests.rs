@@ -1,4 +1,4 @@
-use super::{FILE, ROUTE, SourceType, apply, output, transform, unchanged};
+use super::{FILE, ROUTE, SourceType, apply, output, rewrite, transform, unchanged};
 use crate::virtual_ts::VirtualTsOutput;
 
 fn language(script: &str, source_type: SourceType) -> (VirtualTsOutput, bool) {
@@ -288,5 +288,18 @@ fn escaped_explicit_and_property_shapes_keep_original_output_and_mapping() {
     unchanged(
         r"useR\u006fute('name'); useR\u006fute<string>(); router.useR\u006fute(); type R = typeof router.useR\u006fute; type E = typeof useR\u006fute<string>; defineP\u0061ge<{}>({});",
         false,
+    );
+}
+
+#[test]
+fn changed_generated_page_call_header_declines_edit() {
+    let script = "definePage({\n  name: 'page',\n});";
+    let mut result = output(script);
+    result.code = script.replace("definePage(", "definePage[").into();
+    let before = result.code.clone();
+    assert!(!rewrite(&mut result, script, false));
+    assert_eq!(
+        result.code, before,
+        "changed generated opening delimiter declines"
     );
 }

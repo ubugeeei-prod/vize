@@ -154,3 +154,57 @@ fn disabled_and_configured_but_unused_files_remain_byte_exact() {
     assert_eq!(l, r);
     assert!(!left.has_typed_router_imports() && !right.has_typed_router_imports());
 }
+
+#[test]
+fn multiline_page_macro_keeps_generated_body_and_exact_diagnostic_anchors() {
+    let (_disabled_root, mut disabled) = fixture_project("{}");
+    let (_enabled_root, mut enabled) = fixture_project(
+        r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
+    );
+    let relative = "src/pages/users/[id=int].vue";
+    let disabled_path = disabled.project_root.join(relative);
+    let enabled_path = enabled.project_root.join(relative);
+    let source = "<script setup lang=\"ts\">\n// 日本 😀\ndefinePage({\n  params: {\n    path: { unknownId: 'int' },\n  },\n});\nconst after = 1;\n</script>";
+    disabled.register_vue_file(&disabled_path, source).unwrap();
+    enabled.register_vue_file(&enabled_path, source).unwrap();
+    let baseline = disabled.find_by_original(&disabled_path).unwrap();
+    let generated = enabled.find_by_original(&enabled_path).unwrap();
+    let literal = file_literal(&enabled.project_root, &enabled_path).unwrap();
+    let header = cstr!("definePage<{literal}>(");
+    assert_eq!(
+        generated.content.as_str(),
+        baseline.content.replacen("definePage(", header.as_str(), 1),
+        "only the filename generic changes; all generated argument/body bytes remain exact",
+    );
+    assert!(!enabled.has_typed_router_imports());
+    for token in ["unknownId", "after"] {
+        let start = generated.content.find(token).unwrap();
+        let authored = source.find(token).unwrap();
+        for delta in [0, token.len()] {
+            let generated_endpoint = u32::try_from(start + delta).unwrap();
+            let authored_endpoint = u32::try_from(authored + delta).unwrap();
+            assert_eq!(
+                generated
+                    .source_map
+                    .get_original_position(generated_endpoint)
+                    .unwrap()
+                    .0,
+                authored_endpoint,
+                "preserve exact authored argument and following diagnostic endpoints",
+            );
+        }
+    }
+    let header_source =
+        "<script setup lang=\"ts\">\ndefinePage(\n  { name: 'page' },\n);\n</script>";
+    disabled
+        .register_vue_file(&disabled_path, header_source)
+        .unwrap();
+    enabled
+        .register_vue_file(&enabled_path, header_source)
+        .unwrap();
+    assert_eq!(
+        enabled.find_by_original(&enabled_path).unwrap().content,
+        disabled.find_by_original(&disabled_path).unwrap().content,
+        "generated indentation inside a multiline call header remains unsupported",
+    );
+}

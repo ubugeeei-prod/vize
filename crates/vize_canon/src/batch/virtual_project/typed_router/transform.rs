@@ -72,6 +72,12 @@ pub(super) fn apply(
     let mut edits = Vec::new();
     for site in collector.sites {
         let source = site.span.start as usize..site.span.end as usize;
+        if site.validation_end < site.token.end
+            || site.validation_end > site.span.end
+            || (site.kind == Kind::Page && site.validation_end <= site.token.end)
+        {
+            continue;
+        }
         let physical = source_offset(source.start);
         if !setup_range.contains(&physical)
             || physical
@@ -93,10 +99,13 @@ pub(super) fn apply(
         else {
             continue;
         };
-        let Some(authored) = script.get(source.clone()) else {
+        // Filename-only macro edits preserve the generated argument body. Setup
+        // emission indents each body line, so validate the exact call header
+        // through its opening parenthesis instead of requiring flat body bytes.
+        let Some(authored) = script.get(source.start..site.validation_end as usize) else {
             continue;
         };
-        let Some(end) = start.checked_add(source.len()) else {
+        let Some(end) = start.checked_add(authored.len()) else {
             continue;
         };
         if output.code.get(start..end) != Some(authored) {
@@ -144,6 +153,8 @@ struct Site {
     span: Span,
     token: Span,
     kind: Kind,
+    /// The complete call/query, or the macro header before its sole argument.
+    validation_end: u32,
 }
 
 struct Collector<'a> {
@@ -181,6 +192,13 @@ impl<'a> Visit<'a> for Collector<'_> {
                     span: call.span,
                     token: identifier.span,
                     kind,
+                    validation_end: if kind == Kind::Page {
+                        call.arguments
+                            .first()
+                            .map_or(call.span.end, |argument| argument.span().start)
+                    } else {
+                        call.span.end
+                    },
                 });
                 // The provider stops at this macro; its argument keeps authored route types.
                 if kind == Kind::Page && !self.javascript {
@@ -202,6 +220,7 @@ impl<'a> Visit<'a> for Collector<'_> {
                 span: query.span,
                 token: identifier.span,
                 kind: Kind::Query,
+                validation_end: query.span.end,
             });
         }
         walk::walk_ts_type_query(self, query);

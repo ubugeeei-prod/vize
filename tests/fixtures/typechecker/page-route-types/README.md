@@ -116,3 +116,11 @@ produce two route-heuristic warnings under the editor bundle; those genuine
 raw warnings are retained as failed evidence, not discarded from an accepted
 payload. Production defaults and heuristic behavior remain unchanged. This qualifies
 the explicit typechecker profile, not default-editor parity.
+
+The original multiline `definePage` negative remains strict: unknown path keys
+must produce the full reference TS2353 diagnostic and authored range. Setup
+code generation indents body lines, so filename-only macro specialization
+validates its exact mapped callee/header and preserves the generated body.
+Real registered-project controls retain whole body bytes and diagnostic map
+endpoints. Indented multiline call headers remain unsupported. Fresh hosted
+native replay is required; partial earlier cycles are not complete parity.
