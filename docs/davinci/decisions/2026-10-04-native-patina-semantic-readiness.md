@@ -211,6 +211,10 @@ It grants conditional design readiness only, no source execution or admission.
 
 ## Private original-SFC provider parent
 
+Paired private source decisions: [#6848](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5977808735) and [#6881](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-5977808871).
+The unexecuted functional/law freeze is `fb527888d0c76e01a3080f521319c124bcc19dfc`;
+these links add no production, runtime or admission credit.
+
 Implementation is isolated by `wt` on actual main
 `da894691fff4da81b4acbe71a935c7c67fb0539a`. The existing template admission
 file moves unchanged in move-only commit
