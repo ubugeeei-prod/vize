@@ -30,20 +30,6 @@ fn module_link_rpc_original_program_file_and_profile_refusals_keep_complete_erro
             "Native File observation refused",
         ),
         (
-            5,
-            "import './child.ts'; const value=1;value;",
-            "javascriptreact",
-            -32014,
-            "Native original module sources refused",
-        ),
-        (
-            6,
-            "import './child.ts'; const value:number=1;value;",
-            "typescriptreact",
-            -32014,
-            "Native original module sources refused",
-        ),
-        (
             7,
             "import './child.ts';",
             "html",

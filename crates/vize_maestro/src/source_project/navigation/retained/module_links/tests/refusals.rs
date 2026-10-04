@@ -112,29 +112,6 @@ fn module_link_real_syntax_and_incomplete_file_refuse_without_new_error_relabeli
 }
 
 #[test]
-fn module_link_jsx_profile_refusal_preserves_other_completed_program_queries() {
-    let documents = DocumentStore::new();
-    documents.open(
-        uri(),
-        "import './a.ts'; const value=1;value;".into(),
-        1,
-        "javascriptreact".into(),
-    );
-    let project = NativeNavigationProject::new(SourceQueryProject::new(&documents));
-    let worker = worker(&project);
-    assert!(
-        matches!(block_on(worker.module_operands()), Err(ModuleOperandRefusal::Sources(error))
-        if error.kind == ModuleSourceErrorKind::Profile)
-    );
-    assert!(
-        block_on(worker.definition(Position::new(0, 31)))
-            .unwrap()
-            .is_some()
-    );
-    assert_eq!(worker.counts(), (1, 2));
-}
-
-#[test]
 fn module_link_all_actual_vue_owner_families_refuse_without_program_promotion() {
     let documents = DocumentStore::new();
     documents.open(

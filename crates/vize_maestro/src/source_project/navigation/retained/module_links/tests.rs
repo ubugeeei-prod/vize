@@ -2,6 +2,7 @@
 #![expect(clippy::disallowed_types, reason = "laws compare actual snapshot Arcs")]
 
 mod capacity;
+mod jsx;
 mod lifecycle;
 mod ownership;
 mod refusals;

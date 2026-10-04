@@ -149,3 +149,36 @@ fn module_link_target_cardinality_refuses_before_any_partial_response() {
         );
     }
 }
+
+#[test]
+fn module_link_original_jsx_profile_keeps_complete_operands_and_other_queries() {
+    let documents = DocumentStore::new();
+    documents.open(
+        uri(),
+        "import './a.ts'; const value=1;value;".into(),
+        1,
+        "javascriptreact".into(),
+    );
+    let project = NativeNavigationProject::new(SourceQueryProject::new(&documents));
+    let worker = worker(&project);
+    let operands = block_on(worker.module_operands()).unwrap();
+    assert_eq!(operands.decoded_requests().collect::<Vec<_>>(), ["./a.ts"]);
+    let target = Url::parse("file:///observed/a.ts").unwrap();
+    assert_eq!(
+        operands.into_links(std::slice::from_ref(&target)),
+        Ok(vec![tower_lsp::lsp_types::DocumentLink {
+            range: range((0, 7), (0, 15)),
+            target: Some(target),
+            tooltip: None,
+            data: None,
+        }])
+    );
+    assert_eq!(
+        block_on(worker.definition(Position::new(0, 31))),
+        Ok(Some(tower_lsp::lsp_types::Location::new(
+            uri(),
+            range((0, 23), (0, 28))
+        )))
+    );
+    assert_eq!(worker.counts(), (1, 2));
+}

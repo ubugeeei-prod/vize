@@ -3,6 +3,8 @@ use super::{MaestroServer, build_lsp_service, error, send};
 use serde_json::{Value, json};
 use tower_lsp::{ClientSocket, LspService, lsp_types::Url};
 
+#[cfg(all(feature = "native", unix))]
+mod jsx;
 mod lifecycle;
 #[cfg(all(feature = "native", unix))]
 mod refusals;
