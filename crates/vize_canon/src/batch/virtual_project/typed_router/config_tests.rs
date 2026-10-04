@@ -7,7 +7,7 @@ use super::*;
 use std::fs;
 use tempfile::TempDir;
 
-fn project(config: &str) -> (TempDir, VirtualProject) {
+fn fixture_project(config: &str) -> (TempDir, VirtualProject) {
     let root = TempDir::new().unwrap();
     fs::write(root.path().join("tsconfig.json"), config).unwrap();
     let mut project = VirtualProject::new(root.path()).unwrap();
@@ -25,11 +25,12 @@ fn only_explicit_known_plugin_enables_typed_pages() {
         r#"{"vueCompilerOptions":{"plugins":[["vue-router/volar/sfc-typed-router",{}]]}}"#,
         r#"{"vueCompilerOptions":{"plugins":[{"name":"vue-router/volar/sfc-typed-router","options":{"rootDir":7}}]}}"#,
     ] {
-        let (_root, project) = project(config);
+        let (_root, project) = fixture_project(config);
         assert!(project.typed_router.root.is_none(), "{config}");
     }
-    let (_root, project) =
-        project(r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#);
+    let (_root, project) = fixture_project(
+        r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
+    );
     assert_eq!(
         project.typed_router.root.as_ref(),
         Some(&project.project_root)
@@ -38,14 +39,14 @@ fn only_explicit_known_plugin_enables_typed_pages() {
 
 #[test]
 fn plugin_root_overrides_effective_compiler_root() {
-    let (_root, project) = project(
+    let (_root, project) = fixture_project(
         r#"{"compilerOptions":{"rootDir":"src"},"vueCompilerOptions":{"plugins":[{"name":"vue-router/volar/sfc-typed-router","options":{"rootDir":"pages"}}]}}"#,
     );
     assert_eq!(
         project.typed_router.root,
         Some(project.project_root.join("pages"))
     );
-    let (_root, project) = project(
+    let (_root, project) = fixture_project(
         r#"{"compilerOptions":{"rootDir":"src"},"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
     );
     assert_eq!(
@@ -56,7 +57,7 @@ fn plugin_root_overrides_effective_compiler_root() {
 
 #[test]
 fn extends_plugins_follow_replacement_and_clear_rules() {
-    let (root, mut project) = project(r#"{"extends":"./base.json"}"#);
+    let (root, mut project) = fixture_project(r#"{"extends":"./base.json"}"#);
     fs::write(
         root.path().join("base.json"),
         r#"{"compilerOptions":{"rootDir":"src"},"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
@@ -103,8 +104,9 @@ fn file_identity_is_relative_and_literal_safe_without_route_name_guessing() {
 
 #[test]
 fn registered_import_need_is_exact_and_removed_on_replacement_or_delete() {
-    let (_root, mut project) =
-        project(r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#);
+    let (_root, mut project) = fixture_project(
+        r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
+    );
     let path = project.project_root.join("src/pages/users/[id=int].vue");
     project.register_vue_file(&path, "<script setup lang=\"ts\">import { useRoute } from 'vue-router'; const route = useRoute(); void route;</script>").unwrap();
     assert!(project.has_typed_router_imports());
@@ -136,9 +138,10 @@ fn registered_import_need_is_exact_and_removed_on_replacement_or_delete() {
 
 #[test]
 fn disabled_and_configured_but_unused_files_remain_byte_exact() {
-    let (_left_root, mut left) = project("{}");
-    let (_right_root, mut right) =
-        project(r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#);
+    let (_left_root, mut left) = fixture_project("{}");
+    let (_right_root, mut right) = fixture_project(
+        r#"{"vueCompilerOptions":{"plugins":["vue-router/volar/sfc-typed-router"]}}"#,
+    );
     let path = left.project_root.join("src/components/Unrelated.vue");
     let source =
         "<script setup lang=\"ts\">const count = 1;</script><template>{{ count }}</template>";

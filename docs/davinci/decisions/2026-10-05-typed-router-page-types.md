@@ -201,3 +201,9 @@ reject `unnecessary_sort_by` and `indexing_slicing` before tests/capture.
 Use a stable descending Reverse key and an iterator suffix with the same
 edit/path order; no warning waiver, assertions or caps change. All prior
 failures remain source-scoped and fresh exact-head Actions remain required.
+The subsequent `62a6d2f2` source passes native-phase preflight and capture,
+but [affected Rust test compilation](https://github.com/ubugeeei-prod/vize/actions/runs/37231054612/job/111520977136)
+fails E0618 because a configuration fixture local shadows its `project` helper.
+Rename that private helper to `fixture_project`, preserving every configuration
+input and assertion; fresh-source Rust execution remains required. Native-phase
+default corpus observations do not execute the new primary Router oracle.
