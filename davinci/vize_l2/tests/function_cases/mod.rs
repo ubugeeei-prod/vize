@@ -1,5 +1,6 @@
 mod rejection;
 mod semantics;
+mod typed_parameters;
 mod unwind;
 
 use oxc_parser::{Parser, ProgramObservation};
