@@ -9,20 +9,34 @@ implementation, any new framework parser, or product acceptance.
 
 The present-state source audit is pinned to [commit `da66dc241c`](https://github.com/ubugeeei-prod/vize/commit/da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5). Later implementation changes do not update this dated census automatically.
 
-The reviewed `davinci/vize_l1/src/` surface has:
+The representative `davinci/vize_l1/src/` boundaries at that commit are:
 
-| Current API                                                                | What it actually supplies                                              | Remaining boundary                                                     |
-| -------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `container::{ContainerFormat, Container, Block}` and `container::vue::Vue` | Lossless top-level Vue block spans and recoverable split errors        | Other containers and the full SFC descriptor switch remain #6837       |
-| `markup::{MarkupGrammar, Vue}`                                             | A grammar identity and directive-hook associated type                  | Only Vue is registered; `VueDirectives::decompose` is a #6836 skeleton |
-| `markup::profile::{Profile, Document, Component}`                          | Static host-rule constants                                             | The independent profile axis is nested under markup                    |
-| `embed::{Shape, Lang, Grammar, Embed}`                                     | Typed role/language and source-coordinate records                      | Language resolution and retained typed embed trees remain #6836        |
-| `parse::{parse, SurfaceParseOptions}`                                      | A lossless Vue surface tree using the L1-owned compatibility tokenizer | A five-axis registry and native provider composition are not this API  |
-| `lang::moonbit`                                                            | Feature-gated source-position facts                                    | It does not establish JS/TS language-provider completion               |
+| Current API                                                                | What it actually supplies                                                              | Remaining boundary                                                                |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `container::{ContainerFormat, Container, Block}` and `container::vue::Vue` | Lossless top-level Vue block spans and recoverable split errors                        | Other containers and the full SFC descriptor switch remain #6837                  |
+| `markup::{MarkupGrammar, Vue}`                                             | A grammar identity plus implemented allocation-free Vue directive decomposition        | The general axis registry/typed Shape dispatch remain #6841/#6836                 |
+| `markup::profile::{Profile, Document, Component}`                          | Static host-rule constants                                                             | The independent profile axis is nested under markup                               |
+| `embed::{Shape, Lang, Grammar, Embed}`                                     | Checked entity/decode coordinates and once-parsed JS/TS syntax, comments and holes     | General file-language composition and artifact identity registration remain #6836 |
+| `parse::{parse, SurfaceParseOptions}`                                      | A lossless Vue surface tree through the published facade over the shared generic lexer | A five-axis registry and native provider composition are not this API             |
+| `lang::moonbit`                                                            | Feature-gated source-position facts                                                    | It does not establish JS/TS language-provider completion                          |
 
-The generic markup lexer is opt-in. Ownership of a moved compatibility
-parser is distinct from native shared-artifact acceptance. The source audit
-here does not count legacy-backed product paths as native work.
+The generic lexer, full entity decoder and compatibility callback adapter
+are available in ordinary builds; the facade executes the same lexer.
+`markup::parse_component` supplies original native Component admission and
+Vue-owned `v-pre` control. `markup::document::NativeDocument` supplies lexical
+custody while its four browser tree policies remain explicitly unfinished.
+`dialect::{vue0, vue1, vue2, vue3}` already holds concrete version syntax and
+shared capability records; replacing transitional capability names with the
+five-axis composition remains work, not a claim that no dialect exists.
+
+`container::vue::DescriptorObservation` already resolves JS/TS language and
+language-mismatch refusals for a bounded original Vue 3 descriptor family.
+`embed::syntax` retains Programs, expressions, handlers, slot parameters and
+a separate Vue ForHead provider; the Vue 2 text provider retains actual
+filter-chain syntax. General `Shape` dispatch, whole-file language coverage,
+all registries and every product's acceptance remain separate. Existing
+private original-owner views are distinct from mutable capture records.
+This design gives no new credit to legacy-backed paths or to its own docs.
 
 ## Axis ownership
 
@@ -102,10 +116,12 @@ extension nor the L1 markup selection silently chooses an L4 target.
 3. Move `experimental_in_tag_comments` from a generic parse-switch record
    into Vue's feature/quirk composition when the new registry replaces that
    entry. Preserve explicit option compatibility on published product APIs.
-4. Resolve container, region grammar, profile, language and framework
-   capabilities once. Build embeds from authored spans and the decode map;
-   retain the provider tree and comments in the original artifact. Add no
-   reparses, serialization, or extra pipeline stage.
+4. Complete once-only container/region/profile/language/framework capability
+   composition while preserving implemented native source preparation and
+   retained syntax. Keep the existing Descriptor, NativeComponent and
+   NativeSyntax owners/private admission; a module move cannot promote a
+   public capture or equal numeric id into authority. Add no reparses,
+   serialization, or extra pipeline stage.
 5. Register JS/TS, Vue dialect and JSX/TSX combinations before claiming Vue
    Fes coverage. Register future axes only with their actual provider;
    unimplemented combinations stay unsupported and visible.
