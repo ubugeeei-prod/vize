@@ -98,12 +98,19 @@ function primary(fixture: any) {
 function assertPrimary(fixture: any, reference: any) {
   assert.deepEqual(Object.keys(reference.bindings), fixture.bindings);
   assert.equal(reference.bindings[fixture.collection], "literal-const");
-  const expectedRender = fixture.expectedCode
+  let expectedRender = fixture.expectedCode
     .slice(
       fixture.expectedCode.indexOf("function render"),
       fixture.expectedCode.indexOf("_sfc_main.render"),
     )
     .trimEnd();
+  // Pinned compiler-core 3.5.35 genVNodeCall emits flag comments only in DEV.
+  assert.equal(expectedRender.split(" /* STABLE_FRAGMENT */").length, 2);
+  assert.equal(expectedRender.split(" /* TEXT */").length, fixture.dynamic ? 2 : 1);
+  if (mode === "production") {
+    expectedRender = expectedRender.replace(", 64 /* STABLE_FRAGMENT */))", ", 64))");
+    if (fixture.dynamic) expectedRender = expectedRender.replace(", 1 /* TEXT */)", ", 1)");
+  }
   assert.equal(
     reference.render
       .slice(reference.render.indexOf("export function render"))
@@ -174,44 +181,61 @@ for (const fixture of fixtures) {
       error: null,
     };
     try {
-      // The actual pinned primary still runs when native capture failed.
+      // Each actual module is attempted once, even if its peer attempt throws.
       // Missing capture never executes the desired native module as a substitute.
-      const reference = primary(fixture);
-      attempt.reference = reference;
       const range = pack.rangeControls.includes(fixture);
-      const original = await executeConstantComponent(
-        reference.runtimeModule,
-        fixture,
-        false,
-        mode,
-        range,
-        (observation) => attempt.primaryObservations.push(observation),
-        attempt.primaryFailureEvents,
-      );
-      attempt.primary = original;
-      assertPrimary(fixture, reference);
-      if (!captured) {
-        assert(!requireCapture, "mandatory actual source-built native capture is absent");
-        return;
+      const attemptErrors: { phase: string; error: unknown }[] = [];
+      let reference: any, original: any, native: any, row: any;
+      try {
+        reference = primary(fixture);
+        attempt.reference = reference;
+        original = await executeConstantComponent(
+          reference.runtimeModule,
+          fixture,
+          false,
+          mode,
+          range,
+          (observation) => attempt.primaryObservations.push(observation),
+          attempt.primaryFailureEvents,
+        );
+        attempt.primary = original;
+      } catch (error) {
+        attemptErrors.push({ phase: "primary-attempt", error });
       }
-      const row = [...captured.fixtures, ...captured.inheritedControls].find(
-        (r: any) => r.id === fixture.id,
-      );
-      attempt.nativeCapture = row ?? null;
-      assert(row, "actual native row is absent");
-      assert.equal(row.source, fixture.source);
-      assert.equal(typeof row.code, "string");
+      try {
+        if (!captured) {
+          assert(!requireCapture, "mandatory actual source-built native capture is absent");
+        } else {
+          row = [...captured.fixtures, ...captured.inheritedControls].find(
+            (r: any) => r.id === fixture.id,
+          );
+          attempt.nativeCapture = row ?? null;
+          assert(row, "actual native row is absent");
+          assert.equal(row.source, fixture.source);
+          assert.equal(typeof row.code, "string");
+          native = await executeConstantComponent(
+            row.code,
+            fixture,
+            true,
+            mode,
+            range,
+            (observation) => attempt.nativeObservations.push(observation),
+            attempt.nativeFailureEvents,
+          );
+          attempt.native = native;
+        }
+      } catch (error) {
+        attemptErrors.push({ phase: "native-attempt", error });
+      }
+      attempt.attemptErrors = attemptErrors.map(({ phase, error }) => ({
+        phase,
+        error: runtimeErrorDetails(error),
+      }));
+      if (attemptErrors.length) throw attemptErrors[0].error;
+      // Whole expected comparisons follow both authenticated actual attempts.
+      assertPrimary(fixture, reference);
+      if (!captured) return;
       const code = row.code;
-      const native = await executeConstantComponent(
-        code,
-        fixture,
-        true,
-        mode,
-        range,
-        (observation) => attempt.nativeObservations.push(observation),
-        attempt.nativeFailureEvents,
-      );
-      attempt.native = native;
       assert.equal(code, fixture.expectedCode);
       assert.deepEqual(row.nativeMap, fixture.nativeMap);
       assert.equal(row.nativeMapRaw, fixture.nativeMapRaw);

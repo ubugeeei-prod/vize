@@ -302,3 +302,22 @@ observation parameter's redundant `= undefined` at runtime145. The equivalent
 production/oracle bytes, keeps the failed raw log, and requires fresh exact-head
 proof. The current original native/runtime campaign continues without cancellation.
 Paired [optional observation correction](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5978495339).
+
+The actual054e capture `11298784455` joins Check37191927106/checkout716941778
+(API parents releasedcaee165 and exact054e); verified archive digest7340e3d7.
+Rust whole eleven plus preserved button equality/all four source workers pass,
+and development twelve actual native/primary runtimes pass. Production twelve
+real primary results survive, but its full render comparison stops before native:
+the pinned compiler omits development-only TEXT/STABLE_FRAGMENT flag comments.
+[Original 3.5.35 codegen](https://github.com/vuejs/core/blob/v3.5.35/packages/compiler-core/src/codegen.ts#L795-L813)
+guards those comments with `__DEV__`, while its original NODE_ENV entry selects
+production decimal spelling; the official entry equals the installed package.
+Only those two known expected-primary tokens project away in production, with
+whole remaining-render equality and all native code/maps/oracles unchanged.
+Both authenticated actual runtime attempts now precede expected comparisons,
+even when one throws; retain each failure and rethrow the first, without retry,
+expected-native fallback or swallowed failure. The equivalent optional parameter
+repair is included. This partial rejected head grants no production-native proof;
+the complete private successor needs root/peer review and fresh exact Actions.
+The official release hold is lifted; readiness/protected104/actual merge still
+require real new-source qualification. Paired [primary contract correction](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5978575681).

@@ -77,7 +77,7 @@ test("actual constant action source builds all eleven whole modules before manda
   );
   assert(!reference.includes("row?.code ?? fixture.expectedCode"));
   assert(
-    reference.indexOf("const original = await executeConstantComponent") <
+    reference.indexOf("original = await executeConstantComponent") <
       reference.indexOf("if (!captured)"),
   );
   assert(reference.includes("attempts.push(attempt)"));
@@ -85,6 +85,17 @@ test("actual constant action source builds all eleven whole modules before manda
   assert(reference.includes("attempt.primaryObservations.push(observation)"));
   assert(reference.includes("attempt.nativeObservations.push(observation)"));
   assert(reference.includes("attempt.error = runtimeErrorDetails(error)"));
+  for (const phase of ["primary-attempt", "native-attempt"])
+    assert(reference.includes(`attemptErrors.push({ phase: "${phase}", error })`));
+  assert(reference.includes("if (attemptErrors.length) throw attemptErrors[0].error"));
+  assert(
+    reference.indexOf("attempt.native = native") <
+      reference.indexOf("assertPrimary(fixture, reference);"),
+  );
+  assert(reference.includes('if (mode === "production")'));
+  assert(reference.includes('expectedRender.replace(", 64 /* STABLE_FRAGMENT */))", ", 64))")'));
+  assert(reference.includes('expectedRender.replace(", 1 /* TEXT */)", ", 1)")'));
+
   const runtimeHelper = fs.readFileSync(
     new URL("./support/native-original-for-constant-sfc-dom-runtime.ts", import.meta.url),
     "utf8",
