@@ -227,3 +227,20 @@ whole original map geometry and old fixture/helper conservation. Native/primary
 execution is zero; exact source peer/Actions/protected104/literal merge are
 pending and no PR or admission is authorized. This private source does not
 promote active attribute Stack #7752 or supersede its independent receipt.
+
+## Actual-main source publication
+
+[The paired actual-main authorization](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5978076326)
+supersedes the historical private-publication hold for this bounded successor.
+Root and independent peer reviewed the complete source and documentation repair.
+Replay onto signed-valid main `76f93fe1` is clean at `d244106a`, tree `8f29c9d1`:
+all twenty owned source/law/model/harness blobs equal reviewed `3215ceb3`, the
+central record retains every other incoming line, and the canonical SFC census
+retains all incoming rows plus the three owned rows. Actual merged #7744/9cd is
+an ancestor, so the new Draft PR is independent. The entire 39-line historical
+record above remains byte-identical. No local build/runtime or new CI credit is
+inferred. Fresh exact-head Actions must establish all eight laws, eleven whole
+native/object/raw-map captures, both pinned dev/prod processes and old6/10/7/5
+packs. Source-green squash auto-merge, protected full suites/all104 unchanged
+gates, actual candidate and signed merge remain required; broader compiler
+families and product fix-history completion remain unfinished.
