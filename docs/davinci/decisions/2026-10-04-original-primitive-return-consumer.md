@@ -98,3 +98,26 @@ erasure, general return types/exports, unsaved editor snapshots, import graph,
 coherent publication and same-diagnostic measured 10x/default migration are
 unfinished. These original standalone TS/TSX inputs grant no historical or
 whole-type-system completion.
+
+## Required actual CLI phase source prerequisite
+
+The later published fourth source `a26a72a5` preserved every reviewed consumer
+fixture, law and oracle byte, but still descended from `9702c014`. Its new
+main-selected native-phase workflow used actual main
+`912d311cc378db3506eb7ce78a6f51b0a37f91ff`.
+[Run 37186380409](https://github.com/ubugeeei-prod/vize/actions/runs/37186380409),
+job 111389063226 failed at the neutral-input self-test with `MODULE_NOT_FOUND`:
+`tools/benchmarks/scripts/typechecker-native-phases.mjs` was absent from that
+source. Production CLI build and real shard captures were skipped; no phase,
+diagnostic, map or timing observation was produced. Complete raw job log
+SHA256 is `fbba15cd3f0eb631a65c4cde04ce1c04dcd2ffcedec2acc9f7212438b71f0623`.
+
+Root authorized the genuine whole-Stack replay onto that actual `912d311c`
+ancestor. The fresh parent chain retains its original CLI instrumentation,
+example, helpers and every incoming decision; this child preserves all
+reviewed production, fixture, law and oracle bytes. This failure record is
+additive. No helper copy, waiver, manual retry or expected recapture supplies
+proof. The earlier successful twelve TS6/TS7 packets remain historical rather
+than qualification of the new source. Fresh automatic whole head source and
+native-phase Actions, protected complete unchanged caps and actual signed
+merge still precede completion; Draft layers remain unqueued meanwhile.
