@@ -86,6 +86,14 @@ profile guards retain their independent laws unchanged.
 No consumer Rust build, TS7 execution or runtime acceptance is claimed here.
 Normal exact-head hosted source Actions and protected full workers must run the
 new bodies and inherited original Program/Vue/JSX/TSX/array/history controls.
+The authenticated pure Node canonical consumer census first reported only
+three missing Canon test/dev surface rows. Its unchanged actual scanner/renderer
+regenerates only the owned typechecker Canon TSV: L0 three sites, L2 one and
+raw OXC one. The direct generator then checks all nineteen canonical artifacts
+successfully; the other eighteen artifacts retain byte-exact contents. Existing
+wrapper/helper/generator/scanner/renderer hashes join the source-authentication
+receipt. This is a source inventory check, with no Rust build, install,
+diagnostic execution, fixture recapture or instruction acceptance.
 Both new bodies remain selected by the unchanged PR/full filters; they do not
 add a skip or historical registration. Successful packets use the existing
 worker artifact upload, while an assertion failure retains its full exposed
