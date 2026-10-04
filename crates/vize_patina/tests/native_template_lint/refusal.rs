@@ -1,5 +1,6 @@
 use super::support::*;
 use vize_l0::Span;
+use vize_l1::markup::NativeLintTagRefusal;
 use vize_patina::{
     HelpLevel, LintPreset, Linter, Severity,
     native::{NativeLintRefusal, template::NativeTemplateLintRefusal as Refusal},
@@ -164,20 +165,29 @@ fn dynamic_and_object_binding_keep_precise_existing_header_refusal() {
 
 #[test]
 fn own_exact_and_modified_pre_contexts_cannot_grant_body_or_whole_clean_credit() {
-    for source in [
-        "<div v-pre><span>{{ raw }}</span></div>",
-        "<div v-pre.camel><textarea>{{ raw }}</textarea></div>",
+    for (source, expected_refusal) in [
+        (
+            "<div v-pre><span>{{ raw }}</span></div>",
+            Refusal::UnsupportedContext {
+                span: Span::new(0, 11),
+            },
+        ),
+        (
+            "<div v-pre.camel><textarea>{{ raw }}</textarea></div>",
+            Refusal::Header(NativeLintRefusal::LintTag {
+                reason: NativeLintTagRefusal::AmbiguousVerbatim,
+            }),
+        ),
     ] {
         original_warning(source);
         for locale in LOCALES {
-            let refused = configured(locale, HelpLevel::Full)
-                .lint_native_template(source, FILE)
-                .unwrap_err();
-            assert!(matches!(
-                refused,
-                Refusal::UnsupportedAttribute { .. }
-                    | Refusal::Header(NativeLintRefusal::LintTag { .. })
-            ));
+            assert_eq!(
+                configured(locale, HelpLevel::Full)
+                    .lint_native_template(source, FILE)
+                    .unwrap_err(),
+                expected_refusal,
+                "{source}",
+            );
         }
     }
 }
