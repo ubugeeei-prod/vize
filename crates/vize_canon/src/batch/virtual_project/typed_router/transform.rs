@@ -123,7 +123,7 @@ pub(super) fn apply(
             );
         }
     }
-    edits.sort_by(|left, right| right.0.cmp(&left.0));
+    edits.sort_by_key(|edit| std::cmp::Reverse(edit.0));
     edits.dedup();
     let introduced_import = edits.iter().any(|(_, _, route)| *route);
     for (at, text, _) in edits {

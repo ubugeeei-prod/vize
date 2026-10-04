@@ -140,7 +140,7 @@ pub(super) fn file_literal(root: &Path, path: &Path) -> Option<String> {
     for _ in shared..root_parts.len() {
         relative.push("..");
     }
-    for component in &file_parts[shared..] {
+    for component in file_parts.iter().skip(shared) {
         relative.push(component.as_os_str());
     }
     let filename = relative.to_str()?.replace('\\', "/");

@@ -193,3 +193,11 @@ The repaired owned-stub run on local Node 25.8.1 passes all eight reported nodes
 format/lint passes on the seven recorder/oracle files, and Rust formatting
 passes; these bounded local results do not qualify the hosted whole workspace
 or any actual CLI/editor/native/provider execution. Fresh Actions are required.
+
+The next source `087c0e1b700af99a031695246323d53d8257b434` passes hosted
+check-js but [Rust source build/Clippy](https://github.com/ubugeeei-prod/vize/actions/runs/37230697388/job/111519648602)
+and [native-phase preflight](https://github.com/ubugeeei-prod/vize/actions/runs/37230696936/job/111519527193)
+reject `unnecessary_sort_by` and `indexing_slicing` before tests/capture.
+Use a stable descending Reverse key and an iterator suffix with the same
+edit/path order; no warning waiver, assertions or caps change. All prior
+failures remain source-scoped and fresh exact-head Actions remain required.
