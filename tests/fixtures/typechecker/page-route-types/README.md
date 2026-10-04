@@ -80,6 +80,13 @@ and unrelated ambient type errors. It is not primary Router-provider credit.
 bytes before decoding/assertion under `target/differential/router-page-types-secondary`;
 failed runs retain the genuine source-build receipt and exact binary/flag identities.
 
+The primary observer also saves original product/reference process bytes before
+JSON parsing or process-error throws, then restores authored source and config
+bytes in `finally`. Five transport tests with three nested cases use only owned
+Node stubs to check binary/nonzero/ENOENT output, inert error descriptors, failed
+capture, malformed JSON and reference restoration. These controls do not run
+Vize, the native provider or the official Router plugin.
+
 Runtime execution and exact hosted source qualification remain pending.
 The existing global release/Fuzz admission hold applies. No speed gain or
 complete arbitrary-plugin contract is claimed by this fix.

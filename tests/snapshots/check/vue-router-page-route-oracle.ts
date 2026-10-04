@@ -7,14 +7,10 @@ import {
   resolveTsgoBinary,
   resolveVizeCommand,
   resolveVueTscBinary,
-  runVizeCheck,
-  runVueTsc,
 } from "../../_helpers/realworld-typecheck.ts";
 import {
-  assertCli,
   configure,
   control,
-  type Config,
   type ErrorSpec,
   PAGE_PATH,
   PLAYGROUND,
@@ -28,6 +24,7 @@ import {
 import { resolveVizeLaunchCommand } from "../../tooling/support/lsp/launch.ts";
 import { runPartitionControls } from "../../fixtures/typechecker/page-route-types/partition-controls.ts";
 import { editorCycleFor } from "../../fixtures/typechecker/page-route-types/editor-cycle.ts";
+import { pageRouteObserver } from "../../fixtures/typechecker/page-route-types/cli-observer.ts";
 
 const numericMethodError = /^Property 'toUpperCase' does not exist on type 'number'\.$/;
 const fallbackError: ErrorSpec = { code: 2339, needle: "route.params.userId", token: "userId" };
@@ -72,44 +69,16 @@ await test("page-scoped Vue Router types preserve complete CLI/editor diagnostic
       const upstreamRoutes = fixture.read(ROUTES_PATH);
       t.diagnostic(JSON.stringify({ routerSource: ROUTER_REVISION, providerEvidence }));
 
-      function observe(
-        source: string,
-        errors: ErrorSpec[],
-        sourcePath = PAGE_PATH,
-        reference: (source: string) => string = (value) => value,
-        referenceConfig?: Config,
-        productConfig: Config = {},
-      ) {
-        fixture.write(sourcePath, source);
-        const productTsconfig = fixture.read("tsconfig.json");
-        const vize = runVizeCheck(fixture.workspaceDir, corsaPath, [sourcePath]);
-        provider.record({ stage: "product", sourcePath, source, productTsconfig, vize });
-        let oracle;
-        let oracleTsconfig;
-        let oracleSource;
-        try {
-          fixture.write(sourcePath, reference(source));
-          if (referenceConfig) configure(fixture, corsaPath, sourcePath, referenceConfig);
-          oracleSource = fixture.read(sourcePath);
-          oracleTsconfig = fixture.read("tsconfig.json");
-          oracle = runVueTsc(fixture.workspaceDir, vueTscPath);
-        } finally {
-          fixture.write(sourcePath, source);
-          if (referenceConfig) configure(fixture, corsaPath, sourcePath, productConfig);
-        }
-        provider.record({
-          sourcePath,
-          source,
-          productTsconfig,
-          oracleSource,
-          oracleTsconfig,
-          vize,
-          oracle,
-        });
-        t.diagnostic(JSON.stringify({ sourcePath, sourceSha256: sha256(source), vize, oracle }));
-        const rows = assertCli(vize, oracle, source, errors, sourcePath);
-        return { rows, report: vize.report };
-      }
+      const observe = pageRouteObserver(
+        t,
+        fixture,
+        (observation) => provider.record(observation),
+        verified[0],
+        corsaPath,
+        vueTscPath,
+        upstreamSource,
+        upstreamRoutes,
+      );
 
       const editorCycle = editorCycleFor(fixture, observe);
 

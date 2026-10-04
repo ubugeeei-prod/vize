@@ -41,30 +41,38 @@ fn project(enabled: bool, page: &str, shared: bool) -> (tempfile::TempDir, Virtu
         .collect();
     files.sort();
     project.register_paths(&files).unwrap();
+    project.materialize().unwrap();
     (root, project)
 }
 
 #[test]
 fn only_actual_configured_route_helper_import_joins_native_programs() {
-    let route = "import { useRoute } from 'vue-router'; const route = useRoute(); void route;";
+    let route = "const route = useRoute(); void route;";
     let (_root, enabled) = project(true, route, true);
     assert!(enabled.has_typed_router_imports());
     assert!(partition_virtual_files(&enabled, 2).shards.is_empty());
     let (_root, disabled) = project(false, route, true);
     assert!(!disabled.has_typed_router_imports());
     assert_eq!(partition_virtual_files(&disabled, 2).shards.len(), 2);
-    for page in [
-        "const unrelated = 1; void unrelated;",
-        "import { useRoute } from 'vue-router'; const route = useRoute('/known'); void route;",
-        "import { useRoute } from 'vue-router'; const route = useRoute<'/known'>(); void route;",
-        "const useRoute = () => 1; const route = useRoute(); void route;",
-        "const definePage = (value: unknown) => value; definePage({});",
+    for (page, expected_shards) in [
+        ("const unrelated = 1; void unrelated;", 2),
+        ("const route = useRoute('/known'); void route;", 2),
+        // The existing closed leaf domain declines '<' before this new guard.
+        ("const route = useRoute<'/known'>(); void route;", 0),
+        (
+            "const useRoute = () => 1; const route = useRoute(); void route;",
+            2,
+        ),
+        (
+            "const definePage = (value: unknown) => value; definePage({});",
+            2,
+        ),
     ] {
         let (_root, project) = project(true, page, true);
         assert!(!project.has_typed_router_imports(), "{page}");
         assert_eq!(
             partition_virtual_files(&project, 2).shards.len(),
-            2,
+            expected_shards,
             "{page}"
         );
     }

@@ -153,6 +153,7 @@ export function assertCli(
   source: string,
   errors: ErrorSpec[],
   sourcePath = PAGE_PATH,
+  expectedMembers = [sourcePath, ROUTES_PATH],
 ): DiagnosticRow[] {
   const expected = vueRows(oracle);
   assert.equal(oracle.status, errors.length === 0 ? 0 : 2, oracle.stderr || oracle.stdout);
@@ -183,8 +184,7 @@ export function assertCli(
   const [program] = vize.report.programs;
   assert.equal(program.root, ".");
   assert.equal(program.tsconfig, "tsconfig.json");
-  assert.ok(program.files.includes(sourcePath), json(program));
-  assert.ok(program.files.includes(ROUTES_PATH), json(program));
+  assert.deepEqual(program.files, expectedMembers, "complete ordered authored root membership");
   expected.forEach((row, index) => {
     const error = errors[index];
     const range = sourceRange(source, error);

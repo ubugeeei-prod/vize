@@ -144,3 +144,52 @@ runtime fixtures, preserve all unaffected corpus outputs and unchanged
 104 instruction ceilings, obtain protected full suites and actual signed
 merge, and include the result in the next verified non-Davinci release.
 The existing release/Fuzz queue hold remains in force.
+
+## First hosted source correction
+
+Draft [#7845](https://github.com/ubugeeei-prod/vize/pull/7845) first tested
+head `d98129ac3675125e2befc7cbc269cad5042774d8`. Its
+[Rust build](https://github.com/ubugeeei-prod/vize/actions/runs/37227638573/job/111510598262)
+failed E0364: an internal `apply` import unnecessarily widened its visibility.
+The correction keeps that import private, without a transform or API change.
+Its [JS check](https://github.com/ubugeeei-prod/vize/actions/runs/37227638573/job/111510487616)
+also found one `no-misused-spread` warning for spreading an Error instance;
+the recorder now preserves its own properties in a plain object. The earlier
+focused lint command did not establish the full configured warning gate.
+The local root-only dependency link also failed to qualify the whole workspace
+check: unchanged workspace types were unresolved and output ended with a
+printing error. The hosted fresh configured gate remains authoritative.
+Zero-warning policy and all provider flags, locks and assertions remain.
+The [paired correction](https://github.com/ubugeeei-prod/vize/issues/7817#issuecomment-5983520264)
+requires fresh exact-head Actions. The native-phase build failed the same
+Rust error before capture; native CLI/editor/provider and CPU/alloc evidence
+remain absent from that failed attempt.
+
+Independent source review also corrected prepared partition unit probes:
+unbound auto-import calls avoid the existing bare-package sharing veto,
+materialization supplies the existing guard's virtual compiler-options input,
+and an explicit generic retains the old closed-domain fallback for `<`.
+Direct import/binding coverage remains in transform and primary-provider
+tests. These are source findings before unit execution, without production
+guard changes. The primary observer now records failed original process
+bytes before parsing or throw, restores source/configuration bytes in
+`finally`, and checks the complete ordered authored root-member vector.
+That vector is distinct from a native/transitive graph-closure claim.
+
+Five raw-first transport registrations and three nested POSIX cases use only
+owned Node subprocesses and synthetic input files. They cover original binary
+output/nonzero exit, ENOENT/absent streams, persisted error descriptors and causes
+without getter execution, capture failure before launch, malformed JSON before
+parsing, throwing reference transformation and transformed reference spawn
+failure with byte-exact restoration. Their separate focused action step does
+not grant production/native/official-provider execution credit. All top-level
+registrations await their test promises under the existing lint policy.
+The first local owned-Node run caught undefined stdout/stderr on ENOENT before
+the raw record was saved (five pass/three fail including the parent). The recorder
+now distinguishes null from undefined explicitly before JSON persistence; this
+fixture transport repair does not affect any production transformation.
+The repaired owned-stub run on local Node 25.8.1 passes all eight reported nodes
+(five registrations plus three nested cases), with zero skips/failures. Focused
+format/lint passes on the seven recorder/oracle files, and Rust formatting
+passes; these bounded local results do not qualify the hosted whole workspace
+or any actual CLI/editor/native/provider execution. Fresh Actions are required.

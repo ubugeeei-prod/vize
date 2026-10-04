@@ -10,7 +10,7 @@ use super::{VirtualProject, tsconfig_paths::normalize_path_lexically};
 use crate::virtual_ts::{TemplateGlobal, VirtualTsOptions};
 
 mod transform;
-pub(super) use transform::apply;
+use transform::apply;
 #[cfg(test)]
 mod config_tests;
 

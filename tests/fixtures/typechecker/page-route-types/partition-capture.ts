@@ -18,6 +18,15 @@ function identity(file: string) {
   const raw = fs.readFileSync(file);
   return { path: file, physical: fs.realpathSync(file), bytes: raw.length, sha256: digest(raw) };
 }
+function processError(error: Error | undefined): Record<string, unknown> | null {
+  if (!error) return null;
+  return {
+    name: error.name,
+    ...Object.fromEntries(
+      Object.getOwnPropertyNames(error).map((name) => [name, Reflect.get(error, name) as unknown]),
+    ),
+  };
+}
 
 /** Save failed and successful raw observations before decoding or asserting. */
 export function secondaryCapture(cli: string, corsa: string, workspace: string) {
@@ -79,14 +88,7 @@ export function secondaryCapture(cli: string, corsa: string, workspace: string) 
         inputs,
         status: result.status,
         signal: result.signal,
-        error: result.error
-          ? {
-              ...result.error,
-              name: result.error.name,
-              message: result.error.message,
-              stack: result.error.stack,
-            }
-          : null,
+        error: processError(result.error),
         stdoutBase64: result.stdout?.toString("base64") ?? null,
         stderrBase64: result.stderr?.toString("base64") ?? null,
       };

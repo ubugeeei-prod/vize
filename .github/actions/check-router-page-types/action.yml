@@ -9,6 +9,9 @@ runs:
     - name: Verify closed provider transport controls
       shell: bash
       run: python3 -B tests/fixtures/typechecker/page-route-types/provider_controls.py -v
+    - name: Verify raw-first process capture and input restoration with owned Node stubs
+      shell: bash
+      run: vp node --test --test-concurrency=1 tests/fixtures/typechecker/page-route-types/raw-process.test.ts
     - name: Check complete configured page CLI and editor diagnostics
       shell: bash
       env:
