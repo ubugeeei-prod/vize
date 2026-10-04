@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { compareBytes } from "./compare.mjs";
 import { sha256, validateResultEnvelope } from "./harness.mjs";
-import { NATIVE_REASON, type loadLinterManifest } from "./linter-api.ts";
+import type { loadLinterManifest } from "./linter-api.ts";
+import { validateNativeContract, validateNativeRow } from "./linter-native.ts";
 
 export function summary(rows: any[]) {
   return {
@@ -9,10 +10,18 @@ export function summary(rows: any[]) {
     legacyMatches: rows.filter((row) => row.legacy.verdict === "matched-reference").length,
     legacyFailures: rows.filter((row) => row.legacy.state === "failed").length,
     baselineDrift: rows.filter((row) => row.legacy.verdict === "baseline-drift").length,
-    nativeUnsupported: rows.length,
-    nativeHandled: 0,
-    nativeEquivalent: 0,
-    pairedComparisons: 0,
+    nativeUnsupported: rows.filter((row) => row.native.state === "unsupported").length,
+    nativeFailures: rows.filter((row) => row.native.state === "failed").length,
+    nativeHandled: rows.filter((row) => row.native.state === "completed").length,
+    nativeEquivalent: rows.filter(
+      (row) =>
+        row.native.state === "completed" &&
+        row.comparison.state === "equal" &&
+        row.native.verdict === "matched-reference" &&
+        row.legacy.verdict === "matched-reference",
+    ).length,
+    pairedComparisons: rows.filter((row) => ["equal", "different"].includes(row.comparison.state))
+      .length,
   };
 }
 
@@ -23,12 +32,27 @@ export function validateLinterReport(
 ) {
   validateResultEnvelope(loaded, report, receipt.source.sourceRevision);
   assert.deepEqual(report.buildReceipt, receipt);
+  validateNativeContract(receipt);
   for (const row of report.rows) {
     const fixture = loaded.cases.find((fixture: any) => fixture.id === row.id);
     assert(fixture);
     assert.equal(row.target, "lint");
-    assert.deepEqual(row.native, { state: "unsupported", reason: NATIVE_REASON });
-    assert.deepEqual(row.comparison, { state: "not-compared" });
+    const observations = validateNativeRow(fixture, row.native, receipt);
+    if (row.legacy.state === "completed" && row.native.state === "completed") {
+      assert.deepEqual(
+        row.comparison,
+        compareBytes(Buffer.from(row.legacy.attempts[0].stdoutBase64, "base64"), observations[0]),
+      );
+      for (const original of row.legacy.attempts)
+        for (const actual of observations) {
+          assert.deepEqual(
+            row.comparison,
+            compareBytes(Buffer.from(original.stdoutBase64, "base64"), actual),
+          );
+        }
+    } else {
+      assert.deepEqual(row.comparison, { state: "not-compared" });
+    }
     assert.deepEqual(row.legacy.argv, fixture.argv);
     assert.equal(row.legacy.inputSha256, sha256(fixture.input));
     assert(["completed", "failed"].includes(row.legacy.state));

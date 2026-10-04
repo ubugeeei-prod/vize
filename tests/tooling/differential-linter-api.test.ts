@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { loadLinterManifest, validateLinterReport } from "../differential/linter-api.ts";
 import { sha256 } from "../differential/harness.mjs";
+import { nativeArgv, NATIVE_APIS, validateNativeContract } from "../differential/linter-native.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const manifestPath = path.join(repoRoot, "tests/_fixtures/differential/linter/manifest.json");
@@ -133,7 +134,46 @@ void test("linter result contract rejects omitted rows, incomplete retries and i
   const loaded = loadLinterManifest(manifestPath, repoRoot);
   // Synthetic rows validate rejection laws only; no binary is run and no actual
   // fixture/native acceptance is claimed by this contract test.
-  const receipt = { source: { sourceRevision: "a".repeat(40) } };
+  const contract = Buffer.from(
+    JSON.stringify({
+      schema: "vize.linter-history-observer",
+      version: 2,
+      apis: ["--current-api", "--report", "--static-class"],
+      preset: "Incremental",
+      locale: "En",
+      help: "Full",
+      native: "configured-bare-template",
+      nativeApis: NATIVE_APIS,
+    }) + "\n",
+  );
+  const nativeContract = Buffer.from(
+    JSON.stringify({
+      schema: "vize.linter-native-observer",
+      version: 1,
+      apis: NATIVE_APIS,
+      owner: "NativeLintComponent",
+      entry: "template",
+      wholeOutput: "Case+Observation",
+      fallback: false,
+    }) + "\n",
+  );
+  const receipt = {
+    source: { sourceRevision: "a".repeat(40) },
+    probes: [
+      {
+        argv: ["--contract"],
+        exitStatus: 0,
+        stdoutBase64: contract.toString("base64"),
+        sha256: sha256(contract),
+      },
+      {
+        argv: ["--native-contract"],
+        exitStatus: 0,
+        stdoutBase64: nativeContract.toString("base64"),
+        sha256: sha256(nativeContract),
+      },
+    ],
+  };
   const rows = loaded.cases.map((fixture: any) => {
     const attempt = {
       stdoutBase64: fixture.expected.toString("base64"),
@@ -155,7 +195,13 @@ void test("linter result contract rejects omitted rows, incomplete retries and i
         inputSha256: sha256(fixture.input),
         attempts: [attempt, { ...attempt }],
       },
-      native: { state: "unsupported", reason: "whole-product native linter path unavailable" },
+      native: {
+        state: "failed",
+        argv: nativeArgv(fixture),
+        inputSha256: sha256(fixture.input),
+        attempts: [],
+        error: "synthetic rejection control has no native execution",
+      },
       comparison: { state: "not-compared" },
     };
   });
@@ -172,7 +218,8 @@ void test("linter result contract rejects omitted rows, incomplete retries and i
       legacyMatches: 44,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: 44,
+      nativeUnsupported: 0,
+      nativeFailures: 44,
       nativeHandled: 0,
       nativeEquivalent: 0,
       pairedComparisons: 0,
@@ -195,6 +242,9 @@ void test("linter result contract rejects omitted rows, incomplete retries and i
       report.rows[0].native.state = "completed";
     },
     (report: any) => {
+      report.rows[0].native.state = "unsupported";
+    },
+    (report: any) => {
       report.rows[0].comparison.state = "equal";
     },
     (report: any) => {
@@ -204,5 +254,34 @@ void test("linter result contract rejects omitted rows, incomplete retries and i
     const report = structuredClone(baseline);
     mutate(report);
     assert.throws(() => validateLinterReport(loaded, report, receipt));
+  }
+});
+
+void test("native linter probe rejects old or invented whole-product capability", () => {
+  for (const native of ["unsupported", "complete-vue", "legacy-backed"]) {
+    const bytes = Buffer.from(
+      JSON.stringify({
+        schema: "vize.linter-history-observer",
+        version: 2,
+        apis: ["--current-api", "--report", "--static-class"],
+        preset: "Incremental",
+        locale: "En",
+        help: "Full",
+        native,
+        nativeApis: NATIVE_APIS,
+      }),
+    );
+    assert.throws(() =>
+      validateNativeContract({
+        probes: [
+          {
+            argv: ["--contract"],
+            exitStatus: 0,
+            stdoutBase64: bytes.toString("base64"),
+            sha256: sha256(bytes),
+          },
+        ],
+      }),
+    );
   }
 });

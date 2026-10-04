@@ -6,16 +6,16 @@ use vize_patina::{HelpLevel, LintPreset, Linter, Locale};
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Case {
-    id: String,
-    entry: String,
-    source: String,
-    fixed: String,
-    diagnostics: usize,
-    edit_start: Option<u32>,
-    edit_end: Option<u32>,
-    diagnostic_start: Option<u32>,
-    diagnostic_end: Option<u32>,
+pub(super) struct Case {
+    pub(super) id: String,
+    pub(super) entry: String,
+    pub(super) source: String,
+    pub(super) fixed: String,
+    pub(super) diagnostics: usize,
+    pub(super) edit_start: Option<u32>,
+    pub(super) edit_end: Option<u32>,
+    pub(super) diagnostic_start: Option<u32>,
+    pub(super) diagnostic_end: Option<u32>,
 }
 
 pub(super) fn capture(input: &str) -> Result<String, serde_json::Error> {

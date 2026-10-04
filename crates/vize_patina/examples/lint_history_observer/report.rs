@@ -24,7 +24,7 @@ struct File {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Case {
+pub(super) struct Case {
     id: String,
     history: Vec<String>,
     files: Vec<File>,

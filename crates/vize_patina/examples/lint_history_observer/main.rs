@@ -1,5 +1,5 @@
 //! Complete public Patina observations for the shared fix-history corpus.
-//! The legacy observer provides no native implementation or product route.
+//! Native observations use the opt-in configured original bare-template route.
 
 #![expect(
     clippy::disallowed_macros,
@@ -8,6 +8,7 @@
 )]
 
 mod current_api;
+mod native;
 mod report;
 mod static_class;
 
@@ -23,13 +24,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if api == "--contract" {
         writeln!(
             io::stdout().lock(),
-            "{{\"schema\":\"vize.linter-history-observer\",\"version\":1,\"apis\":[\"--current-api\",\"--report\",\"--static-class\"],\"preset\":\"Incremental\",\"locale\":\"En\",\"help\":\"Full\",\"native\":\"unsupported\"}}"
+            "{{\"schema\":\"vize.linter-history-observer\",\"version\":2,\"apis\":[\"--current-api\",\"--report\",\"--static-class\"],\"preset\":\"Incremental\",\"locale\":\"En\",\"help\":\"Full\",\"native\":\"configured-bare-template\",\"nativeApis\":[\"--native-current-api\",\"--native-report\",\"--native-static-class\"]}}"
+        )?;
+        return Ok(());
+    }
+    if api == "--native-contract" {
+        writeln!(
+            io::stdout().lock(),
+            "{{\"schema\":\"vize.linter-native-observer\",\"version\":1,\"apis\":[\"--native-current-api\",\"--native-report\",\"--native-static-class\"],\"owner\":\"NativeLintComponent\",\"entry\":\"template\",\"wholeOutput\":\"Case+Observation\",\"fallback\":false}}"
         )?;
         return Ok(());
     }
     let mut bytes = Vec::new();
     io::stdin().read_to_end(&mut bytes)?;
     let input = std::str::from_utf8(&bytes)?;
+    if matches!(
+        api.as_str(),
+        "--native-current-api" | "--native-report" | "--native-static-class"
+    ) {
+        let first = native::capture(api, input)?;
+        let repeat = native::capture(api, input)?;
+        assert_eq!(
+            first, repeat,
+            "complete native outcome changed within the same process"
+        );
+        io::stdout().lock().write_all(first.as_bytes())?;
+        return Ok(());
+    }
     let observe = match api.as_str() {
         "--current-api" => current_api::capture,
         "--report" => report::capture,

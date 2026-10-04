@@ -4,6 +4,7 @@ import path from "node:path";
 import { compareBytes } from "./compare.mjs";
 import { loadProductManifest, readPinnedArtifact, sha256 } from "./harness.mjs";
 import { validateProductObserverReceipt, type ObserverSpec } from "./observer-build.ts";
+import { decodeNativeOutcome, runNative, validateNativeContract } from "./linter-native.ts";
 import { summary, validateLinterReport } from "./linter-api-report.ts";
 export { validateLinterReport } from "./linter-api-report.ts";
 
@@ -12,9 +13,8 @@ export const LINTER_OBSERVER: ObserverSpec = {
   packageName: "vize_patina",
   exampleName: "lint_history_observer",
   sourcePath: "crates/vize_patina/examples/lint_history_observer/main.rs",
-  probes: [["--contract"]],
+  probes: [["--contract"], ["--native-contract"]],
 };
-export const NATIVE_REASON = "whole-product native linter path unavailable";
 const OPTIONS = {
   preset: "Incremental",
   locale: "En",
@@ -95,6 +95,7 @@ export function runLinterApiPack({
 }) {
   assert(path.isAbsolute(binaryPath));
   validateProductObserverReceipt(receipt, { spec: LINTER_OBSERVER, repoRoot, binaryPath });
+  validateNativeContract(receipt);
   const loaded = loadLinterManifest(manifestPath, repoRoot);
   const rows = loaded.cases.map((fixture: any) => {
     const row: any = {
@@ -107,7 +108,7 @@ export function runLinterApiPack({
         inputSha256: sha256(fixture.input),
         attempts: [],
       },
-      native: { state: "unsupported", reason: NATIVE_REASON },
+      native: null,
       comparison: { state: "not-compared" },
     };
     try {
@@ -144,6 +145,15 @@ export function runLinterApiPack({
       row.legacy.state = "failed";
       row.legacy.verdict = "failed";
       row.legacy.error = String(error);
+    }
+    row.native = runNative(binaryPath, fixture, receipt);
+    if (row.legacy.state === "completed" && row.native.state === "completed") {
+      const original = Buffer.from(row.legacy.attempts[0].stdoutBase64, "base64");
+      const native = decodeNativeOutcome(
+        Buffer.from(row.native.attempts[0].stdoutBase64, "base64"),
+        fixture,
+      );
+      row.comparison = compareBytes(original, Buffer.from(native.observation));
     }
     return row;
   });

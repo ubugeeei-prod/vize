@@ -13,17 +13,17 @@ use vize_patina::{HelpLevel, LintPreset, LintResult, Linter, Locale};
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Case {
-    id: String,
-    history: String,
-    source: String,
-    filename: String,
-    entry: String,
-    rule: String,
-    vue_version: Option<String>,
-    vapor: Option<bool>,
-    diagnostics: usize,
-    fixes: usize,
+pub(super) struct Case {
+    pub(super) id: String,
+    pub(super) history: String,
+    pub(super) source: String,
+    pub(super) filename: String,
+    pub(super) entry: String,
+    pub(super) rule: String,
+    pub(super) vue_version: Option<String>,
+    pub(super) vapor: Option<bool>,
+    pub(super) diagnostics: usize,
+    pub(super) fixes: usize,
 }
 
 #[derive(Debug)]
@@ -31,10 +31,10 @@ struct Case {
     dead_code,
     reason = "every observation field is retained in the complete Debug oracle"
 )]
-struct Application {
-    diagnostic_index: usize,
-    source: vize_l0::String,
-    result: LintResult,
+pub(super) struct Application {
+    pub(super) diagnostic_index: usize,
+    pub(super) source: vize_l0::String,
+    pub(super) result: LintResult,
 }
 
 #[derive(Debug)]
@@ -42,10 +42,10 @@ struct Application {
     dead_code,
     reason = "every observation field is retained in the complete Debug oracle"
 )]
-struct Observation {
-    initial: LintResult,
-    applications: Vec<Application>,
-    unchanged_requery: Option<LintResult>,
+pub(super) struct Observation {
+    pub(super) initial: LintResult,
+    pub(super) applications: Vec<Application>,
+    pub(super) unchanged_requery: Option<LintResult>,
 }
 
 fn query(linter: &Linter, case: &Case, source: &str) -> LintResult {
@@ -57,18 +57,22 @@ fn query(linter: &Linter, case: &Case, source: &str) -> LintResult {
     }
 }
 
-fn observe(case: &Case) -> Observation {
+pub(super) fn configured(case: &Case) -> Linter {
     let version = case.vue_version.as_deref().map(|version| match version {
         "2" => VueVersion::V2,
         "3" => VueVersion::V3,
         version => panic!("unknown fixture Vue version: {version}"),
     });
-    let linter = Linter::with_preset(LintPreset::Incremental)
+    Linter::with_preset(LintPreset::Incremental)
         .with_enabled_rules(Some(vec![case.rule.as_str().into()]))
         .with_locale(Locale::En)
         .with_help_level(HelpLevel::Full)
         .with_vue_version(version)
-        .with_vapor_mode(case.vapor);
+        .with_vapor_mode(case.vapor)
+}
+
+fn observe(case: &Case) -> Observation {
+    let linter = configured(case);
     let initial = query(&linter, case, &case.source);
     assert_eq!(initial.diagnostics.len(), case.diagnostics, "{}", case.id);
     let applications: Vec<_> = initial
