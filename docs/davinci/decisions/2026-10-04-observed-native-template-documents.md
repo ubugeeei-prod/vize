@@ -102,3 +102,11 @@ records stay intact and only owned Glyph canonical shards regenerate on fresh
 actual parents. No legacy history/default route, oracle or instruction budget
 changes. Whole formatter, broader Vue/dialect/embed/SFC/options/edits and
 [#6882](https://github.com/ubugeeei-prod/vize/issues/6882) remain unfinished.
+
+The strict-source tooling gate refuses one newly authored suffix-only custody
+assertion. Its [paired exact-custody repair](https://github.com/ubugeeei-prod/vize/issues/6847#issuecomment-5975241296)
+replaces only that check with the independently authored ENTIRE original block
+equality. Preserve strict source04a278d5 and its complete raw failure log; input,
+production, refusal, full positive output, maps, allowlist and budgets stay
+unchanged. All209 native/21 provider/four projection/two owner controls require
+a corrected exact source and final protected actual merge.

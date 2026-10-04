@@ -139,12 +139,9 @@ fn strict_late_value_keeps_original_completed_prefix_and_static_attribute_values
     );
     assert!(failure.interpolation_failure().is_none());
     assert_eq!(span.slice(source), "a&#43;b");
-    assert!(
-        owner
-            .component()
-            .block()
-            .source()
-            .ends_with("{{later}}</p>{{tail}}")
+    assert_eq!(
+        owner.component().block().source(),
+        "{{/*x*/1&#110;}}<p :id=\"a&#43;b\">{{later}}</p>{{tail}}"
     );
     let static_source = "<template><p id=\"a+b &amp; c\">{{1n}}</p></template>";
     let static_owner = selected(&arena, static_source);
