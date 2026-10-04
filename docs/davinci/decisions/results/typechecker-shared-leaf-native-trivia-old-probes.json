@@ -1,0 +1,2216 @@
+{
+  "schemaVersion": 1,
+  "kind": "untimed-local-pre-repair-native-trivia-diagnostic-proof",
+  "provenance": {
+    "kind": "untimed-exact-old-trivia-reproduction",
+    "baseSourceSha": "da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5",
+    "headSourceSha": "f574ba5da9f0660dd8d53dd2c019befd42a8f35c",
+    "nativePackageVersion": "7.0.2",
+    "nativeScheduler": "default: GOMAXPROCS cleared, --checkers 1",
+    "outerScheduler": "RAYON_NUM_THREADS=1; --servers 1 or 2",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "binarySha256": {
+      "base": "b052a9ed3fb5ff62d1e119a7a3f5a31154318add939aa5b6c287b869e4ac7385",
+      "head": "1f810201555089f794ae05c7c3130f9157fcd0e2b8f21df9610c84e25d033f78",
+      "native": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2"
+    },
+    "controllerSha256": "bb3c5b02585158cfd795f6e820a98de6224193920ebe6d0829627ecce82cba8e",
+    "rowsSha256": "bdd2e2350da59e21ba74c1ab2d9db6f500adff217b891fa98e1842a106c28073",
+    "counts": {
+      "cases": 5,
+      "fullOrderedReports": 20,
+      "untimedProfiles": 20
+    }
+  },
+  "captureSha256": {
+    "rows.json": "bdd2e2350da59e21ba74c1ab2d9db6f500adff217b891fa98e1842a106c28073",
+    "provenance.json": "ca6c1b5e1185d2c44500f92643adc598786a43185db160a5a29ff7f228676e7b",
+    "runs.ndjson": "19e16f9c2a65264ce87b98e71a4837d31a8ea11debaf04b4bcdf97190dddd98e"
+  },
+  "cases": [
+    {
+      "id": "cr",
+      "sources": {
+        "shared.ts": "export const value: LeafGlobal = 1;",
+        "loader.ts": "export * from// gap\r\"leaf-types\";",
+        "node_modules/leaf-types/package.json": "{\"name\":\"leaf-types\",\"version\":\"1.0.0\",\"types\":\"index.d.ts\"}",
+        "node_modules/leaf-types/index.d.ts": "export {}; declare global { type LeafGlobal = number; }",
+        "tsconfig.json": "{\"compilerOptions\":{\"strict\":true,\"module\":\"ESNext\",\"moduleResolution\":\"Bundler\",\"target\":\"ESNext\",\"lib\":[\"ESNext\",\"DOM\"],\"skipLibCheck\":true},\"include\":[\"*.vue\",\"*.ts\"]}",
+        "Comp0.vue": "<script setup lang=\"ts\">import { value } from './shared'; import './loader'; const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp1.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp2.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp3.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>"
+      },
+      "checks": [
+        {
+          "side": "base",
+          "servers": 1,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/000-trivia-cr-1-server-trivia-old-probe-base.json"
+        },
+        {
+          "side": "head",
+          "servers": 1,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/001-trivia-cr-1-server-trivia-old-probe-head.json"
+        },
+        {
+          "side": "base",
+          "servers": 2,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/002-trivia-cr-2-server-trivia-old-probe-base.json"
+        },
+        {
+          "side": "head",
+          "servers": 2,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 1,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "5386de331f523a6e2d996c144da6f0f18aba9dda80db977c58a4b33d6cea75df",
+          "profileFile": "profiles/003-trivia-cr-2-server-trivia-old-probe-head.json"
+        }
+      ]
+    },
+    {
+      "id": "ls",
+      "sources": {
+        "shared.ts": "export const value: LeafGlobal = 1;",
+        "loader.ts": "export * from// gap\u2028\"leaf-types\";",
+        "node_modules/leaf-types/package.json": "{\"name\":\"leaf-types\",\"version\":\"1.0.0\",\"types\":\"index.d.ts\"}",
+        "node_modules/leaf-types/index.d.ts": "export {}; declare global { type LeafGlobal = number; }",
+        "tsconfig.json": "{\"compilerOptions\":{\"strict\":true,\"module\":\"ESNext\",\"moduleResolution\":\"Bundler\",\"target\":\"ESNext\",\"lib\":[\"ESNext\",\"DOM\"],\"skipLibCheck\":true},\"include\":[\"*.vue\",\"*.ts\"]}",
+        "Comp0.vue": "<script setup lang=\"ts\">import { value } from './shared'; import './loader'; const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp1.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp2.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp3.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>"
+      },
+      "checks": [
+        {
+          "side": "base",
+          "servers": 1,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/004-trivia-ls-1-server-trivia-old-probe-base.json"
+        },
+        {
+          "side": "head",
+          "servers": 1,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/005-trivia-ls-1-server-trivia-old-probe-head.json"
+        },
+        {
+          "side": "base",
+          "servers": 2,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/006-trivia-ls-2-server-trivia-old-probe-base.json"
+        },
+        {
+          "side": "head",
+          "servers": 2,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 1,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "5386de331f523a6e2d996c144da6f0f18aba9dda80db977c58a4b33d6cea75df",
+          "profileFile": "profiles/007-trivia-ls-2-server-trivia-old-probe-head.json"
+        }
+      ]
+    },
+    {
+      "id": "ps",
+      "sources": {
+        "shared.ts": "export const value: LeafGlobal = 1;",
+        "loader.ts": "export * from// gap\u2029\"leaf-types\";",
+        "node_modules/leaf-types/package.json": "{\"name\":\"leaf-types\",\"version\":\"1.0.0\",\"types\":\"index.d.ts\"}",
+        "node_modules/leaf-types/index.d.ts": "export {}; declare global { type LeafGlobal = number; }",
+        "tsconfig.json": "{\"compilerOptions\":{\"strict\":true,\"module\":\"ESNext\",\"moduleResolution\":\"Bundler\",\"target\":\"ESNext\",\"lib\":[\"ESNext\",\"DOM\"],\"skipLibCheck\":true},\"include\":[\"*.vue\",\"*.ts\"]}",
+        "Comp0.vue": "<script setup lang=\"ts\">import { value } from './shared'; import './loader'; const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp1.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp2.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp3.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>"
+      },
+      "checks": [
+        {
+          "side": "base",
+          "servers": 1,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/008-trivia-ps-1-server-trivia-old-probe-base.json"
+        },
+        {
+          "side": "head",
+          "servers": 1,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/009-trivia-ps-1-server-trivia-old-probe-head.json"
+        },
+        {
+          "side": "base",
+          "servers": 2,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/010-trivia-ps-2-server-trivia-old-probe-base.json"
+        },
+        {
+          "side": "head",
+          "servers": 2,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 1,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "5386de331f523a6e2d996c144da6f0f18aba9dda80db977c58a4b33d6cea75df",
+          "profileFile": "profiles/011-trivia-ps-2-server-trivia-old-probe-head.json"
+        }
+      ]
+    },
+    {
+      "id": "bom",
+      "sources": {
+        "shared.ts": "export const value: LeafGlobal = 1;",
+        "loader.ts": "export * from\ufeff\"leaf-types\";",
+        "node_modules/leaf-types/package.json": "{\"name\":\"leaf-types\",\"version\":\"1.0.0\",\"types\":\"index.d.ts\"}",
+        "node_modules/leaf-types/index.d.ts": "export {}; declare global { type LeafGlobal = number; }",
+        "tsconfig.json": "{\"compilerOptions\":{\"strict\":true,\"module\":\"ESNext\",\"moduleResolution\":\"Bundler\",\"target\":\"ESNext\",\"lib\":[\"ESNext\",\"DOM\"],\"skipLibCheck\":true},\"include\":[\"*.vue\",\"*.ts\"]}",
+        "Comp0.vue": "<script setup lang=\"ts\">import { value } from './shared'; import './loader'; const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp1.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp2.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp3.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>"
+      },
+      "checks": [
+        {
+          "side": "base",
+          "servers": 1,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/012-trivia-bom-1-server-trivia-old-probe-base.json"
+        },
+        {
+          "side": "head",
+          "servers": 1,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/013-trivia-bom-1-server-trivia-old-probe-head.json"
+        },
+        {
+          "side": "base",
+          "servers": 2,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/014-trivia-bom-2-server-trivia-old-probe-base.json"
+        },
+        {
+          "side": "head",
+          "servers": 2,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 1,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "5386de331f523a6e2d996c144da6f0f18aba9dda80db977c58a4b33d6cea75df",
+          "profileFile": "profiles/015-trivia-bom-2-server-trivia-old-probe-head.json"
+        }
+      ]
+    },
+    {
+      "id": "zwsp",
+      "sources": {
+        "shared.ts": "export const value: LeafGlobal = 1;",
+        "loader.ts": "export * from\u200b\"leaf-types\";",
+        "node_modules/leaf-types/package.json": "{\"name\":\"leaf-types\",\"version\":\"1.0.0\",\"types\":\"index.d.ts\"}",
+        "node_modules/leaf-types/index.d.ts": "export {}; declare global { type LeafGlobal = number; }",
+        "tsconfig.json": "{\"compilerOptions\":{\"strict\":true,\"module\":\"ESNext\",\"moduleResolution\":\"Bundler\",\"target\":\"ESNext\",\"lib\":[\"ESNext\",\"DOM\"],\"skipLibCheck\":true},\"include\":[\"*.vue\",\"*.ts\"]}",
+        "Comp0.vue": "<script setup lang=\"ts\">import { value } from './shared'; import './loader'; const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp1.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp2.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>",
+        "Comp3.vue": "<script setup lang=\"ts\">import { value } from './shared';  const n = value;</script><template><div>{{ n }}</div></template>"
+      },
+      "checks": [
+        {
+          "side": "base",
+          "servers": 1,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/016-trivia-zwsp-1-server-trivia-old-probe-base.json"
+        },
+        {
+          "side": "head",
+          "servers": 1,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/017-trivia-zwsp-1-server-trivia-old-probe-head.json"
+        },
+        {
+          "side": "base",
+          "servers": 2,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": []
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 0,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+          "profileFile": "profiles/018-trivia-zwsp-2-server-trivia-old-probe-base.json"
+        },
+        {
+          "side": "head",
+          "servers": 2,
+          "report": {
+            "files": [
+              {
+                "file": "Comp0.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp1.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp2.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "Comp3.vue",
+                "diagnostics": []
+              },
+              {
+                "file": "loader.ts",
+                "diagnostics": []
+              },
+              {
+                "file": "shared.ts",
+                "diagnostics": ["error:1:21 [TS2304] Cannot find name 'LeafGlobal'."]
+              }
+            ],
+            "programs": [
+              {
+                "root": ".",
+                "tsconfig": "tsconfig.json",
+                "compilerOptions": {
+                  "lib": ["ESNext", "DOM"],
+                  "module": "ESNext",
+                  "moduleResolution": "Bundler",
+                  "skipLibCheck": true,
+                  "strict": true,
+                  "target": "ESNext"
+                },
+                "files": [
+                  "Comp0.vue",
+                  "Comp1.vue",
+                  "Comp2.vue",
+                  "Comp3.vue",
+                  "loader.ts",
+                  "shared.ts"
+                ]
+              }
+            ],
+            "errorCount": 1,
+            "warningCount": 0,
+            "fileCount": 6
+          },
+          "fingerprint": "5386de331f523a6e2d996c144da6f0f18aba9dda80db977c58a4b33d6cea75df",
+          "profileFile": "profiles/019-trivia-zwsp-2-server-trivia-old-probe-head.json"
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "id": "000-trivia-cr-1-server-trivia-old-probe-base",
+      "side": "base",
+      "corpus": "trivia-cr",
+      "mode": "1-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-occurrence-cli-base",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "1",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/000-trivia-cr-1-server-trivia-old-probe-base.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/cr",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/000-trivia-cr-1-server-trivia-old-probe-base.json",
+      "profileSha256": "3bcfc28c5a634aab2b130d9bd9f68d6272a47f851c48bd6c90d642c3a29ae42b"
+    },
+    {
+      "id": "001-trivia-cr-1-server-trivia-old-probe-head",
+      "side": "head",
+      "corpus": "trivia-cr",
+      "mode": "1-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-shared-leaf-f574-cli",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "1",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/001-trivia-cr-1-server-trivia-old-probe-head.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/cr",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/001-trivia-cr-1-server-trivia-old-probe-head.json",
+      "profileSha256": "ee967f3f0ea86f9c1d0dea33b0f04beff12351c8108a25f35e6d3d6932d176bb"
+    },
+    {
+      "id": "002-trivia-cr-2-server-trivia-old-probe-base",
+      "side": "base",
+      "corpus": "trivia-cr",
+      "mode": "2-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-occurrence-cli-base",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "2",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/002-trivia-cr-2-server-trivia-old-probe-base.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/cr",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/002-trivia-cr-2-server-trivia-old-probe-base.json",
+      "profileSha256": "acdbf1046a6e47771e6259b5b6cbfc0828f14cd2076ee7553d893d118da693cb"
+    },
+    {
+      "id": "003-trivia-cr-2-server-trivia-old-probe-head",
+      "side": "head",
+      "corpus": "trivia-cr",
+      "mode": "2-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 1,
+      "signal": null,
+      "command": [
+        "/tmp/vize-shared-leaf-f574-cli",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "2",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/003-trivia-cr-2-server-trivia-old-probe-head.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/cr",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "5386de331f523a6e2d996c144da6f0f18aba9dda80db977c58a4b33d6cea75df",
+      "profileFile": "profiles/003-trivia-cr-2-server-trivia-old-probe-head.json",
+      "profileSha256": "e083a8b87f3f32f2750b5bbe5564de34e3f2c55fb10052f14a9add6da06a101e"
+    },
+    {
+      "id": "004-trivia-ls-1-server-trivia-old-probe-base",
+      "side": "base",
+      "corpus": "trivia-ls",
+      "mode": "1-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-occurrence-cli-base",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "1",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/004-trivia-ls-1-server-trivia-old-probe-base.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/ls",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/004-trivia-ls-1-server-trivia-old-probe-base.json",
+      "profileSha256": "7893872664a3aabe45c0c159012c29a0ddc6968003d87528f3edca4e9ed062a9"
+    },
+    {
+      "id": "005-trivia-ls-1-server-trivia-old-probe-head",
+      "side": "head",
+      "corpus": "trivia-ls",
+      "mode": "1-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-shared-leaf-f574-cli",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "1",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/005-trivia-ls-1-server-trivia-old-probe-head.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/ls",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/005-trivia-ls-1-server-trivia-old-probe-head.json",
+      "profileSha256": "0d1dc76917e979c6b7a7ee026748b6f72dc0617492d4716fbf4538f1bf2265c8"
+    },
+    {
+      "id": "006-trivia-ls-2-server-trivia-old-probe-base",
+      "side": "base",
+      "corpus": "trivia-ls",
+      "mode": "2-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-occurrence-cli-base",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "2",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/006-trivia-ls-2-server-trivia-old-probe-base.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/ls",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/006-trivia-ls-2-server-trivia-old-probe-base.json",
+      "profileSha256": "ce3f3f96b90936cd206fc11967fe74550de1bebf98de5e7ea8d15f1c46bc6ec9"
+    },
+    {
+      "id": "007-trivia-ls-2-server-trivia-old-probe-head",
+      "side": "head",
+      "corpus": "trivia-ls",
+      "mode": "2-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 1,
+      "signal": null,
+      "command": [
+        "/tmp/vize-shared-leaf-f574-cli",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "2",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/007-trivia-ls-2-server-trivia-old-probe-head.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/ls",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "5386de331f523a6e2d996c144da6f0f18aba9dda80db977c58a4b33d6cea75df",
+      "profileFile": "profiles/007-trivia-ls-2-server-trivia-old-probe-head.json",
+      "profileSha256": "bbccd53a2d8ade3e974cc95791b3c9636de4cd43ecbaf363aeeccdf076f5166b"
+    },
+    {
+      "id": "008-trivia-ps-1-server-trivia-old-probe-base",
+      "side": "base",
+      "corpus": "trivia-ps",
+      "mode": "1-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-occurrence-cli-base",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "1",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/008-trivia-ps-1-server-trivia-old-probe-base.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/ps",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/008-trivia-ps-1-server-trivia-old-probe-base.json",
+      "profileSha256": "d830588017da0999d9f0a6c43ed4af3ea44ad07481f18b7c68dc215df0f055ed"
+    },
+    {
+      "id": "009-trivia-ps-1-server-trivia-old-probe-head",
+      "side": "head",
+      "corpus": "trivia-ps",
+      "mode": "1-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-shared-leaf-f574-cli",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "1",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/009-trivia-ps-1-server-trivia-old-probe-head.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/ps",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/009-trivia-ps-1-server-trivia-old-probe-head.json",
+      "profileSha256": "295797e73d8a28617cd2438e679b9cfd819dcd9a6f67d449520e3299a0ccc295"
+    },
+    {
+      "id": "010-trivia-ps-2-server-trivia-old-probe-base",
+      "side": "base",
+      "corpus": "trivia-ps",
+      "mode": "2-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-occurrence-cli-base",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "2",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/010-trivia-ps-2-server-trivia-old-probe-base.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/ps",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/010-trivia-ps-2-server-trivia-old-probe-base.json",
+      "profileSha256": "422a5480b1ac5515eba7161684fd23b34afe9d81bc07ac7b63e512904636ad40"
+    },
+    {
+      "id": "011-trivia-ps-2-server-trivia-old-probe-head",
+      "side": "head",
+      "corpus": "trivia-ps",
+      "mode": "2-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 1,
+      "signal": null,
+      "command": [
+        "/tmp/vize-shared-leaf-f574-cli",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "2",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/011-trivia-ps-2-server-trivia-old-probe-head.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/ps",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "5386de331f523a6e2d996c144da6f0f18aba9dda80db977c58a4b33d6cea75df",
+      "profileFile": "profiles/011-trivia-ps-2-server-trivia-old-probe-head.json",
+      "profileSha256": "4424753b613dd6bb881effacad42e0d1c8285f80f605e0ca5eb753e7aedab305"
+    },
+    {
+      "id": "012-trivia-bom-1-server-trivia-old-probe-base",
+      "side": "base",
+      "corpus": "trivia-bom",
+      "mode": "1-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-occurrence-cli-base",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "1",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/012-trivia-bom-1-server-trivia-old-probe-base.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/bom",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/012-trivia-bom-1-server-trivia-old-probe-base.json",
+      "profileSha256": "c0d5b6b643a02142c6e0b3fd5b9858ac1ae40c76957752e712e12849be9756ec"
+    },
+    {
+      "id": "013-trivia-bom-1-server-trivia-old-probe-head",
+      "side": "head",
+      "corpus": "trivia-bom",
+      "mode": "1-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-shared-leaf-f574-cli",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "1",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/013-trivia-bom-1-server-trivia-old-probe-head.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/bom",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/013-trivia-bom-1-server-trivia-old-probe-head.json",
+      "profileSha256": "be43b7cc49072d8eac494a2627acfb74e211773ffbff759928761189b46850be"
+    },
+    {
+      "id": "014-trivia-bom-2-server-trivia-old-probe-base",
+      "side": "base",
+      "corpus": "trivia-bom",
+      "mode": "2-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-occurrence-cli-base",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "2",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/014-trivia-bom-2-server-trivia-old-probe-base.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/bom",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/014-trivia-bom-2-server-trivia-old-probe-base.json",
+      "profileSha256": "5010581ffe459cede7304c50bf60edcb649cd61006b609f0392dce2d98c6515c"
+    },
+    {
+      "id": "015-trivia-bom-2-server-trivia-old-probe-head",
+      "side": "head",
+      "corpus": "trivia-bom",
+      "mode": "2-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 1,
+      "signal": null,
+      "command": [
+        "/tmp/vize-shared-leaf-f574-cli",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "2",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/015-trivia-bom-2-server-trivia-old-probe-head.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/bom",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "5386de331f523a6e2d996c144da6f0f18aba9dda80db977c58a4b33d6cea75df",
+      "profileFile": "profiles/015-trivia-bom-2-server-trivia-old-probe-head.json",
+      "profileSha256": "e47bee49e47b66e79e339285539bdb7db067eea654105e2e6fff01d7e6a3445a"
+    },
+    {
+      "id": "016-trivia-zwsp-1-server-trivia-old-probe-base",
+      "side": "base",
+      "corpus": "trivia-zwsp",
+      "mode": "1-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-occurrence-cli-base",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "1",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/016-trivia-zwsp-1-server-trivia-old-probe-base.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/zwsp",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/016-trivia-zwsp-1-server-trivia-old-probe-base.json",
+      "profileSha256": "9e743b7f7d01a990603513f373acc5bed9e6264d183b8ddf9dea778f73713060"
+    },
+    {
+      "id": "017-trivia-zwsp-1-server-trivia-old-probe-head",
+      "side": "head",
+      "corpus": "trivia-zwsp",
+      "mode": "1-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-shared-leaf-f574-cli",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "1",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/017-trivia-zwsp-1-server-trivia-old-probe-head.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/zwsp",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/017-trivia-zwsp-1-server-trivia-old-probe-head.json",
+      "profileSha256": "c8eb3f58ee48c4da13023f4c6b5ae12fc028e0e837af971be13713040559669c"
+    },
+    {
+      "id": "018-trivia-zwsp-2-server-trivia-old-probe-base",
+      "side": "base",
+      "corpus": "trivia-zwsp",
+      "mode": "2-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 0,
+      "signal": null,
+      "command": [
+        "/tmp/vize-occurrence-cli-base",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "2",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/018-trivia-zwsp-2-server-trivia-old-probe-base.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/zwsp",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "fb6a6d287551c92821524c9c9c336e2ca699ee13c9359ad6d331bfc9b5c1d0c8",
+      "profileFile": "profiles/018-trivia-zwsp-2-server-trivia-old-probe-base.json",
+      "profileSha256": "78da03c87ed429fb983a403f3e37be91a6d7c46996f4b07a5b6a6adabff89954"
+    },
+    {
+      "id": "019-trivia-zwsp-2-server-trivia-old-probe-head",
+      "side": "head",
+      "corpus": "trivia-zwsp",
+      "mode": "2-server",
+      "phase": "trivia-old-probe",
+      "profiling": true,
+      "status": 1,
+      "signal": null,
+      "command": [
+        "/tmp/vize-shared-leaf-f574-cli",
+        "check",
+        "--no-config",
+        "--quiet",
+        "--format",
+        "json",
+        "--tsconfig",
+        "tsconfig.json",
+        "--corsa-path",
+        "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+        "--servers",
+        "2",
+        "--profile-json",
+        "/tmp/vize-leaf-native-trivia-old-probe/profiles/019-trivia-zwsp-2-server-trivia-old-probe-head.json"
+      ],
+      "cwd": "/tmp/vize-leaf-native-trivia-old-probe/work/zwsp",
+      "environment": {
+        "RAYON_NUM_THREADS": "1",
+        "GOMAXPROCS": null,
+        "VIZE_BENCH": "1"
+      },
+      "fingerprint": "5386de331f523a6e2d996c144da6f0f18aba9dda80db977c58a4b33d6cea75df",
+      "profileFile": "profiles/019-trivia-zwsp-2-server-trivia-old-probe-head.json",
+      "profileSha256": "12d1a91162a409923b0c041bdb2db2ebf159884ab6c2fa1a44c4822d3b19e87e"
+    }
+  ],
+  "profiles": [
+    {
+      "file": "profiles/000-trivia-cr-1-server-trivia-old-probe-base.json",
+      "sha256": "3bcfc28c5a634aab2b130d9bd9f68d6272a47f851c48bd6c90d642c3a29ae42b",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 129315292,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/001-trivia-cr-1-server-trivia-old-probe-head.json",
+      "sha256": "ee967f3f0ea86f9c1d0dea33b0f04beff12351c8108a25f35e6d3d6932d176bb",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 53651917,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/002-trivia-cr-2-server-trivia-old-probe-base.json",
+      "sha256": "acdbf1046a6e47771e6259b5b6cbfc0828f14cd2076ee7553d893d118da693cb",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 51171583,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/003-trivia-cr-2-server-trivia-old-probe-head.json",
+      "sha256": "e083a8b87f3f32f2750b5bbe5564de34e3f2c55fb10052f14a9add6da06a101e",
+      "nativeCommandCount": 2,
+      "nativeCommandWallNs": 103968792,
+      "sharded": true,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/004-trivia-ls-1-server-trivia-old-probe-base.json",
+      "sha256": "7893872664a3aabe45c0c159012c29a0ddc6968003d87528f3edca4e9ed062a9",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 48521417,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/005-trivia-ls-1-server-trivia-old-probe-head.json",
+      "sha256": "0d1dc76917e979c6b7a7ee026748b6f72dc0617492d4716fbf4538f1bf2265c8",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 47555375,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/006-trivia-ls-2-server-trivia-old-probe-base.json",
+      "sha256": "ce3f3f96b90936cd206fc11967fe74550de1bebf98de5e7ea8d15f1c46bc6ec9",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 48540959,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/007-trivia-ls-2-server-trivia-old-probe-head.json",
+      "sha256": "bbccd53a2d8ade3e974cc95791b3c9636de4cd43ecbaf363aeeccdf076f5166b",
+      "nativeCommandCount": 2,
+      "nativeCommandWallNs": 103582083,
+      "sharded": true,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/008-trivia-ps-1-server-trivia-old-probe-base.json",
+      "sha256": "d830588017da0999d9f0a6c43ed4af3ea44ad07481f18b7c68dc215df0f055ed",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 48353583,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/009-trivia-ps-1-server-trivia-old-probe-head.json",
+      "sha256": "295797e73d8a28617cd2438e679b9cfd819dcd9a6f67d449520e3299a0ccc295",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 48037667,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/010-trivia-ps-2-server-trivia-old-probe-base.json",
+      "sha256": "422a5480b1ac5515eba7161684fd23b34afe9d81bc07ac7b63e512904636ad40",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 49014250,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/011-trivia-ps-2-server-trivia-old-probe-head.json",
+      "sha256": "4424753b613dd6bb881effacad42e0d1c8285f80f605e0ca5eb753e7aedab305",
+      "nativeCommandCount": 2,
+      "nativeCommandWallNs": 104379667,
+      "sharded": true,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/012-trivia-bom-1-server-trivia-old-probe-base.json",
+      "sha256": "c0d5b6b643a02142c6e0b3fd5b9858ac1ae40c76957752e712e12849be9756ec",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 48531959,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/013-trivia-bom-1-server-trivia-old-probe-head.json",
+      "sha256": "be43b7cc49072d8eac494a2627acfb74e211773ffbff759928761189b46850be",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 49928750,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/014-trivia-bom-2-server-trivia-old-probe-base.json",
+      "sha256": "5010581ffe459cede7304c50bf60edcb649cd61006b609f0392dce2d98c6515c",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 47351916,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/015-trivia-bom-2-server-trivia-old-probe-head.json",
+      "sha256": "e47bee49e47b66e79e339285539bdb7db067eea654105e2e6fff01d7e6a3445a",
+      "nativeCommandCount": 2,
+      "nativeCommandWallNs": 106681041,
+      "sharded": true,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/016-trivia-zwsp-1-server-trivia-old-probe-base.json",
+      "sha256": "9e743b7f7d01a990603513f373acc5bed9e6264d183b8ddf9dea778f73713060",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 46907750,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/017-trivia-zwsp-1-server-trivia-old-probe-head.json",
+      "sha256": "c8eb3f58ee48c4da13023f4c6b5ae12fc028e0e837af971be13713040559669c",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 49023333,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/018-trivia-zwsp-2-server-trivia-old-probe-base.json",
+      "sha256": "78da03c87ed429fb983a403f3e37be91a6d7c46996f4b07a5b6a6adabff89954",
+      "nativeCommandCount": 1,
+      "nativeCommandWallNs": 47944625,
+      "sharded": false,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    },
+    {
+      "file": "profiles/019-trivia-zwsp-2-server-trivia-old-probe-head.json",
+      "sha256": "12d1a91162a409923b0c041bdb2db2ebf159884ab6c2fa1a44c4822d3b19e87e",
+      "nativeCommandCount": 2,
+      "nativeCommandWallNs": 107645125,
+      "sharded": true,
+      "truncation": {
+        "dropped_spans": 0,
+        "dropped_counters": 0
+      }
+    }
+  ]
+}
