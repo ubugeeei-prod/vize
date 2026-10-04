@@ -41,6 +41,10 @@ export function writeJson(path, data) {
   writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`);
 }
 
+export function compareStrings(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 export function pairOrder(index) {
   return index % 2 === 0 ? SIDES : [...SIDES].reverse();
 }
@@ -73,7 +77,10 @@ export function normalizeCliReport(result, cwd, expectedVueFiles = []) {
     .map((entry) => {
       assert.equal(typeof entry.file, "string");
       assert(Array.isArray(entry.diagnostics));
-      return { file: portablePath(entry.file, cwd), diagnostics: [...entry.diagnostics].sort() };
+      return {
+        file: portablePath(entry.file, cwd),
+        diagnostics: [...entry.diagnostics].sort(compareStrings),
+      };
     })
     .sort((a, b) => a.file.localeCompare(b.file, "en"));
   assert.equal(
@@ -84,10 +91,10 @@ export function normalizeCliReport(result, cwd, expectedVueFiles = []) {
   const vueFiles = files
     .filter((entry) => entry.file.endsWith(".vue"))
     .map((entry) => entry.file)
-    .sort();
+    .sort(compareStrings);
   assert.deepEqual(
     vueFiles,
-    [...expectedVueFiles].sort(),
+    [...expectedVueFiles].sort(compareStrings),
     "check did not report the entire Vue corpus",
   );
   assert.equal(report.fileCount, files.length, "fileCount disagrees with report coverage");
@@ -98,7 +105,7 @@ export function normalizeCliReport(result, cwd, expectedVueFiles = []) {
         root: portablePath(program.root, cwd),
         tsconfig: program.tsconfig == null ? null : portablePath(program.tsconfig, cwd),
         compilerOptions: program.compilerOptions ?? null,
-        files: program.files.map((file) => portablePath(file, cwd)).sort(),
+        files: program.files.map((file) => portablePath(file, cwd)).sort(compareStrings),
       };
     })
     .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b), "en"));

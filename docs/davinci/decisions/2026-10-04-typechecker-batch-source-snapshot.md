@@ -56,3 +56,23 @@ or native Davinci product completion. #7698 remains open until the pinned
 full-command 10x criterion, real-project and persistent-session edit evidence
 are met. Publication and merge are pending until exact-head Actions and the
 protected native Stack queue actually finish.
+
+## Rejected occurrence-cache experiment
+
+[PR #7705](https://github.com/ubugeeei-prod/vize/pull/7705) was closed unqueued
+after its local whole-CLI experiment showed no demonstrated benefit. The
+[issue receipt](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5975755104)
+records exact base `da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5` and candidate
+`a2f8356f860ffbb5c822c3001dfbe784d24dca0e`, identically configured `ci-opt`
+builds in the same physical tree, Corsa 7.0.2 and Vue 3.6.0-beta.10.
+Fifty alternating fresh-process pairs retained complete 502-file JSON parity
+in all 100 processes. The median was 787.954 to 789.758 ms (+0.23%);
+paired mean base-minus-candidate was -2.274 ms, standard deviation 54.185 ms
+and standard error 7.663 ms. A separate profile observed 502 scans and 502
+reuses, which does not demonstrate an end-to-end gain. This local corpus is
+separate from the pinned 500-SFC Actions acceptance workload.
+
+The binary hashes were
+`b052a9ed3fb5ff62d1e119a7a3f5a31154318add939aa5b6c287b869e4ac7385` (base)
+and `a80ea53c9bff3f3582828a8d960cb33d0d388c1ee18e91f27308a9455ffb649d`
+(candidate). The rejected cache code is not part of this batch slice.

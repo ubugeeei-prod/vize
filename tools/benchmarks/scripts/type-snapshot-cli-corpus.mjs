@@ -17,7 +17,7 @@ import { dirname, join, sep } from "node:path";
 import { CORPUS_TSCONFIG, prepareCorpus } from "./check-gate-env.mjs";
 import { generateCorpus } from "./generate.mjs";
 import { diagnosticFingerprint } from "./typecheck-command.mjs";
-import { FILE_COUNT, writeJson } from "./type-snapshot-cli-protocol.mjs";
+import { FILE_COUNT, compareStrings, writeJson } from "./type-snapshot-cli-protocol.mjs";
 
 function sourceFiles(dir, prefix = "") {
   return readdirSync(join(dir, prefix), { withFileTypes: true })
@@ -26,7 +26,7 @@ function sourceFiles(dir, prefix = "") {
       const file = join(prefix, entry.name);
       return entry.isDirectory() ? sourceFiles(dir, file) : [file];
     })
-    .sort();
+    .sort(compareStrings);
 }
 
 export function corpusManifest(dir) {
