@@ -7,8 +7,10 @@ use super::{DocumentLexicalRefusal, DocumentTreePolicy, NativeDocument};
 
 mod attribute;
 mod build;
+mod node;
 
 pub use attribute::{DocumentHtmlAttribute, DocumentHtmlAttributes};
+pub use node::{DocumentHtmlChildNodes, DocumentHtmlComment, DocumentHtmlNode, DocumentHtmlText};
 
 #[derive(Debug)]
 struct Element {
@@ -22,6 +24,7 @@ struct Element {
     last_child: Option<usize>,
     ignored_slash: bool,
     attributes: core::ops::Range<usize>,
+    content_end: usize,
 }
 
 /// Why no bounded native element structure was produced for the original run.
@@ -38,6 +41,8 @@ pub enum DocumentHtmlRefusal {
     PendingStructure,
     AttributeCountLimit(Span),
     OpeningByteLimit(Span),
+    UnsupportedNodeParent(Span),
+    OutsideBodyText(Span),
 }
 
 /// Actual element ancestry for a strict explicit no-quirks HTML envelope.
@@ -53,8 +58,10 @@ pub enum DocumentHtmlRefusal {
 ///
 /// Implied ends, tables, foreign content, raw-text elements, formatting,
 /// templates, Vue directive/interpolation syntax and implicit envelopes refuse
-/// this provider. Text, comments, petite-vue semantics and general tree policies
-/// remain unfinished. This view borrows the actual original lexer owner and arena.
+/// this provider. Direct body-subtree child nodes retain original text/comment
+/// callbacks; outer insertion-mode text is a separate typed refusal. General
+/// tree policies and petite-vue remain unfinished. This view borrows the actual
+/// original lexer owner and arena.
 ///
 /// ```compile_fail
 /// use vize_l1::markup::document::DocumentHtmlStructure;
@@ -72,6 +79,7 @@ pub enum DocumentHtmlRefusal {
 pub struct DocumentHtmlStructure<'o, 'a> {
     owner: &'o NativeDocument<'a>,
     elements: Vec<'a, Element>,
+    body_tail_text: Option<Span>,
 }
 
 impl<'o, 'a> DocumentHtmlStructure<'o, 'a> {
@@ -163,6 +171,16 @@ impl<'s, 'o, 'a> DocumentHtmlElement<'s, 'o, 'a> {
     #[must_use]
     pub fn attributes(&self) -> DocumentHtmlAttributes<'s, 'o, 'a> {
         attribute::attributes(self.tree, self.element)
+    }
+
+    /// Original direct child nodes of body, div, span and true body voids.
+    /// Text callbacks coalesce across references, comments retain literal
+    /// reference bytes, and child elements use the existing original adjacency.
+    /// Head/html insertion modes refuse. Body text after its authored closing
+    /// tag also refuses rather than claiming that source-range custody models
+    /// the browser's outside-body insertion rules.
+    pub fn child_nodes(&self) -> Result<DocumentHtmlChildNodes<'s, 'o, 'a>, DocumentHtmlRefusal> {
+        node::children(self.tree, self.element)
     }
 
     #[must_use]

@@ -31,3 +31,13 @@ actual Chromium DOMParser consume the same bytes, including escaped authored
 CRLF/CR/NUL and reference boundaries. ASCII folding, normalized-name first
 duplicates, empty/Boolean/unquoted values and complete once-decoded references
 are covered. This gives no URL/property, Vue directive or petite-vue meaning.
+
+`html-body-nodes.json` retains fifteen complete original sources and whole
+direct body-subtree child-node arrays. Twelve sources admit original text,
+ordinary comments and elements; three characterize actual browser text
+reinsertion after body/html and require explicit native body-node refusal.
+The same bytes execute in native Rust and actual Chromium. Literal/reference
+line boundaries, ignored text NULL versus comment replacement, literal comment
+reference spellings, empty/long-hyphen comments, Unicode, once-only payloads,
+void/nonvoid insertion and nested original parents are covered. General HTML
+tree policies, outer node modes and petite-vue semantics remain unfinished.

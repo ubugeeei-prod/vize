@@ -14,8 +14,9 @@ mod sink;
 mod structure;
 
 pub use structure::{
-    DocumentHtmlAttribute, DocumentHtmlAttributes, DocumentHtmlElement, DocumentHtmlRefusal,
-    DocumentHtmlStructure,
+    DocumentHtmlAttribute, DocumentHtmlAttributes, DocumentHtmlChildNodes, DocumentHtmlComment,
+    DocumentHtmlElement, DocumentHtmlNode, DocumentHtmlRefusal, DocumentHtmlStructure,
+    DocumentHtmlText,
 };
 
 /// The callbacks actually emitted by the Document-profile lexer.
@@ -196,7 +197,8 @@ impl<'a> NativeDocument<'a> {
 
     /// Construct only the admitted explicit HTML envelope's element ancestry.
     /// The original retained events are consumed directly, without lexing again.
-    /// This does not certify general HTML tree, text or petite-vue semantics.
+    /// Direct child text/comment readback is scoped to the admitted body subtree;
+    /// this does not certify general HTML tree or petite-vue semantics.
     pub fn html_structure(&self) -> Result<DocumentHtmlStructure<'_, 'a>, DocumentHtmlRefusal> {
         structure::construct(self)
     }

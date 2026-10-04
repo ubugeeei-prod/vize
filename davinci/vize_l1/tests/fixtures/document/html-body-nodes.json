@@ -1,0 +1,197 @@
+[
+  {
+    "name": "empty original body",
+    "source": "<!DOCTYPE html><html><head></head><body></body></html>",
+    "nodes": [["body", []]]
+  },
+  {
+    "name": "original mixed child order and nested text",
+    "source": "<!DOCTYPE html><html><head></head><body>前🙂&amp;<div>inner<span>X</span>tail</div>after<br>last</body></html>",
+    "nodes": [
+      [
+        "body",
+        [
+          [3, "前🙂&"],
+          [1, "div"],
+          [3, "after"],
+          [1, "br"],
+          [3, "last"]
+        ]
+      ],
+      [
+        "div",
+        [
+          [3, "inner"],
+          [1, "span"],
+          [3, "tail"]
+        ]
+      ],
+      ["span", [[3, "X"]]],
+      ["br", []]
+    ]
+  },
+  {
+    "name": "literal null text is ignored but reference null is corrected",
+    "source": "<!DOCTYPE html><html><head></head><body>\u0000<div>\u0000</div>a\u0000b&#0;\u0000<span>\u0000</span>\u0000</body></html>",
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "div"],
+          [3, "ab�"],
+          [1, "span"]
+        ]
+      ],
+      ["div", []],
+      ["span", []]
+    ]
+  },
+  {
+    "name": "literal and reference line ending boundaries stay distinct",
+    "source": "<!DOCTYPE html><html><head></head><body>a\r\nb\rc&#13;\n\r&#10;d</body></html>",
+    "nodes": [["body", [[3, "a\nb\nc\r\n\n\nd"]]]]
+  },
+  {
+    "name": "complete original multiscalar numeric and once-only payloads",
+    "source": "<!DOCTYPE html><html><head></head><body>&NotEqualTilde;&fjlig;&#x80;&#xD800;&#x110000;&amp;amp;&unknown;</body></html>",
+    "nodes": [["body", [[3, "≂̸fj€��&amp;&unknown;"]]]]
+  },
+  {
+    "name": "text-context legacy references differ from attribute-context names",
+    "source": "<!DOCTYPE html><html><head></head><body>&copycat|&notit;|&amp=|&apos;</body></html>",
+    "nodes": [["body", [[3, "©cat|¬it;|&=|'"]]]]
+  },
+  {
+    "name": "comments keep literal reference spelling and break adjacent text",
+    "source": "<!DOCTYPE html><html><head></head><body>before<!--&amp;&#13;&NotEqualTilde;-->after<!----><!--a--->tail</body></html>",
+    "nodes": [
+      [
+        "body",
+        [
+          [3, "before"],
+          [8, "&amp;&#13;&NotEqualTilde;"],
+          [3, "after"],
+          [8, ""],
+          [8, "a-"],
+          [3, "tail"]
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "comment literal input preprocessing keeps unicode geometry",
+    "source": "<!DOCTYPE html><html><head></head><body><!--A\r\nB\rC\u0000雪-->x<!--&amp;--></body></html>",
+    "nodes": [
+      [
+        "body",
+        [
+          [8, "A\nB\nC�雪"],
+          [3, "x"],
+          [8, "&amp;"]
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "true voids and ignored nonvoid slash keep original parents",
+    "source": "<!DOCTYPE html><html><head></head><body>l<br/>m<hr>n<div/>inside<input><span>s</span></div>z<img></body></html>",
+    "nodes": [
+      [
+        "body",
+        [
+          [3, "l"],
+          [1, "br"],
+          [3, "m"],
+          [1, "hr"],
+          [3, "n"],
+          [1, "div"],
+          [3, "z"],
+          [1, "img"]
+        ]
+      ],
+      ["br", []],
+      ["hr", []],
+      [
+        "div",
+        [
+          [3, "inside"],
+          [1, "input"],
+          [1, "span"]
+        ]
+      ],
+      ["input", []],
+      ["span", [[3, "s"]]],
+      ["img", []]
+    ]
+  },
+  {
+    "name": "attribute payloads never leak into original text runs",
+    "source": "<!DOCTYPE html><html><head></head><body><div X='&NotEqualTilde;'>t&amp;<span Y='&amp;'>u</span>v</div></body></html>",
+    "nodes": [
+      ["body", [[1, "div"]]],
+      [
+        "div",
+        [
+          [3, "t&"],
+          [1, "span"],
+          [3, "v"]
+        ]
+      ],
+      ["span", [[3, "u"]]]
+    ]
+  },
+  {
+    "name": "decoded markup and interpolation delimiters stay plain text",
+    "source": "<!DOCTYPE html><html><head></head><body>&lt;div&gt;&amp;amp;&#123;&#123;</body></html>",
+    "nodes": [["body", [[3, "<div>&amp;{{"]]]]
+  },
+  {
+    "name": "ordinary comments outside the body retain separate scope",
+    "source": "<!DOCTYPE html><html><!--outer--><head><!--head--><meta name=x></head><!--between--><body><!--body-->x</body><!--after--></html><!--tail-->",
+    "nodes": [
+      [
+        "body",
+        [
+          [8, "body"],
+          [3, "x"]
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "literal text after body is an explicit native body refusal",
+    "source": "<!DOCTYPE html><html><head></head><body><div>x</div></body> \n</html>",
+    "bodyNodeRefusal": true,
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "div"],
+          [3, " \n"]
+        ]
+      ],
+      ["div", [[3, "x"]]]
+    ]
+  },
+  {
+    "name": "reference whitespace after body is an explicit native body refusal",
+    "source": "<!DOCTYPE html><html><head></head><body>x</body>&#13;</html>",
+    "bodyNodeRefusal": true,
+    "nodes": [["body", [[3, "x\r"]]]]
+  },
+  {
+    "name": "text after html is an explicit native body refusal",
+    "source": "<!DOCTYPE html><html><head></head><body><div>x</div></body></html><!--outside-->\r\n",
+    "bodyNodeRefusal": true,
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "div"],
+          [3, "\n"]
+        ]
+      ],
+      ["div", [[3, "x"]]]
+    ]
+  }
+]

@@ -26,6 +26,7 @@ pub(super) fn construct<'o, 'a>(
         elements: Vec::new_in(&owner.allocator),
         stack: Vec::new_in(&owner.allocator),
         mode: Mode::Doctype,
+        body_tail_text: None,
     };
     builder.run()?;
     if builder.mode != Mode::End || !builder.stack.is_empty() {
@@ -34,6 +35,7 @@ pub(super) fn construct<'o, 'a>(
     Ok(DocumentHtmlStructure {
         owner,
         elements: builder.elements,
+        body_tail_text: builder.body_tail_text,
     })
 }
 
@@ -42,6 +44,7 @@ struct Builder<'o, 'a> {
     elements: Vec<'a, Element>,
     stack: Vec<'a, usize>,
     mode: Mode,
+    body_tail_text: Option<Span>,
 }
 
 impl Builder<'_, '_> {
@@ -84,7 +87,7 @@ impl Builder<'_, '_> {
                     self.open(name, gt, slash, attributes_start..index - 1)?;
                     continue;
                 }
-                Kind::CloseTagName => self.close(event.span)?,
+                Kind::CloseTagName => self.close(event.span, index)?,
                 Kind::Declaration { terminated: true } => {
                     let raw = self.source(event.span)?;
                     if self.mode != Mode::Doctype || !raw.eq_ignore_ascii_case("<!DOCTYPE html>") {
@@ -96,6 +99,9 @@ impl Builder<'_, '_> {
                     if self.mode != Mode::InBody && !html_space(self.source(event.span)?) {
                         return Err(Refusal::ExplicitEnvelope);
                     }
+                    if matches!(self.mode, Mode::HtmlEnd | Mode::End) && !event.span.is_empty() {
+                        self.body_tail_text.get_or_insert(event.span);
+                    }
                 }
                 Kind::TextEntity if self.mode == Mode::InBody => {}
                 Kind::TextEntity => {
@@ -104,6 +110,9 @@ impl Builder<'_, '_> {
                     value.for_each(|ch| space &= matches!(ch, '\t' | '\n' | '\x0c' | '\r' | ' '));
                     if !space {
                         return Err(Refusal::ExplicitEnvelope);
+                    }
+                    if matches!(self.mode, Mode::HtmlEnd | Mode::End) {
+                        self.body_tail_text.get_or_insert(event.span);
                     }
                 }
                 Kind::Comment => self.comment(event.span)?,
@@ -162,6 +171,7 @@ impl Builder<'_, '_> {
         };
         let parent = self.stack.last().copied();
         let index = self.elements.len();
+        let content_end = attributes.end + 1;
         self.elements.push(Element {
             name,
             authored_name: name_span,
@@ -173,6 +183,7 @@ impl Builder<'_, '_> {
             next_sibling: None,
             ignored_slash: slash && !void,
             attributes,
+            content_end,
         });
         if let Some(parent) = parent {
             let previous = self
@@ -202,7 +213,7 @@ impl Builder<'_, '_> {
         Ok(())
     }
 
-    fn close(&mut self, name_span: Span) -> Result<(), Refusal> {
+    fn close(&mut self, name_span: Span, event_index: usize) -> Result<(), Refusal> {
         let raw = self.source(name_span)?;
         let name = name(raw).ok_or_else(|| unsupported(raw, name_span))?;
         let start = name_span
@@ -244,10 +255,12 @@ impl Builder<'_, '_> {
         self.stack.pop();
         // SourceRoot bounds the complete source to u32 before this producer.
         let end = name_span.end as usize + gap + 1;
-        self.elements
+        let element = self
+            .elements
             .get_mut(index)
-            .ok_or(Refusal::InvalidFrame(name_span))?
-            .closing = Some(Span::new(start, end as u32));
+            .ok_or(Refusal::InvalidFrame(name_span))?;
+        element.closing = Some(Span::new(start, end as u32));
+        element.content_end = event_index;
         Ok(())
     }
 
