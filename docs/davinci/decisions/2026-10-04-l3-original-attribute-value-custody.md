@@ -35,7 +35,7 @@ is not a new indexed semantic table, decoded-source factory or public admission
 flag. Partial scratch never escapes as completed native analysis.
 
 DOM, SSR and Vapor preserve their current name/grammar eligibility. The source
-receipt cannot lift class/style/key/ref/is, directives, NUL/CR or entity-text
+receipt cannot lift class/style/key/ref/is, directives, NUL/entity-decoded CR or entity-text
 boundaries. Source-borrowing facts grant no attribute-bearing For runtime family;
 actual collection outer/alias scope/handler phases and For pointer stay intact,
 and the bounded For target remains attribute-free. Generic analyses still carry
@@ -89,3 +89,11 @@ both checks, preserving every allocation, name/value pointer, span and complete
 cursor guard. The failed logs remain historical; no Rust or runtime acceptance
 is inferred. Fresh corrected-parent and true qualification-child Actions are
 required, distinct from the later intentional unfrozen-output rejection.
+
+The successor law-only compile correction uses a private Empty ComponentBody
+for the complete neutral Element counterfactual; the actual generic factory
+does not accept an untyped closure. The same missing-row native refusal and
+ordinary None positive remain. Raw cd6 E0277 logs stay preserved. The true
+L2 successor also retains inherited borrowed authored CR/CRLF and the old nine
+SSR modules, while genuine map-bearing decoded `&#13;` remains refused.
+These precise source/law corrections still need fresh hosted proof.
