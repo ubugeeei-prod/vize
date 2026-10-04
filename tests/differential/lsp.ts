@@ -74,7 +74,7 @@ async function runLspCase(
         Array.isArray(message.params?.diagnostics),
     );
     for (const request of fixture.requests) {
-      await wire.request(fixture.data.method, {
+      await wire.request(request.method ?? fixture.data.method, {
         textDocument: { uri: entryUri },
         ...request.params,
       });

@@ -11,7 +11,7 @@ export type FileReference = { source: string; sha256: string; runtimePath: strin
 export type FixtureData = {
   version: number;
   id: string;
-  provenance: { fixCommit: string };
+  provenance: { fixCommit: string; witness?: { path: string; sha256: string } };
   documentVersion: number;
   initializationOptions?: Record<string, boolean>;
   files?: FileReference[];
@@ -34,7 +34,7 @@ export type LspFixture = PlannedLspFixture & {
   data: FixtureData;
   files: { runtimePath: string; bytes: Buffer }[];
   entry: string;
-  requests: { params: Record<string, unknown>; result: unknown }[];
+  requests: { method?: string; params: Record<string, unknown>; result: unknown }[];
 };
 export type LoadedLspManifest = {
   manifest: {

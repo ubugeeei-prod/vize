@@ -96,7 +96,7 @@ export function inspectLspObservation(
     assert.deepEqual(client[index + 3], {
       jsonrpc: "2.0",
       id,
-      method: fixture.data.method,
+      method: request.method ?? fixture.data.method,
       params: { textDocument: { uri: entryUri }, ...request.params },
     });
     const response = uniqueResponse(server, id);

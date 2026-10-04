@@ -67,7 +67,7 @@ export function referenceObservation(fixture: LspFixture): WireObservation {
     client.push({
       jsonrpc: "2.0",
       id,
-      method: fixture.data.method,
+      method: request.method ?? fixture.data.method,
       params: { textDocument: { uri: entryUri }, ...request.params },
     });
     server.push({ jsonrpc: "2.0", id, result: materializeWorkspace(request.result, workspaceUri) });
@@ -143,11 +143,11 @@ export function referenceReport(
       };
     }),
     summary: {
-      plannedCases: 7,
-      legacyMatches: 7,
+      plannedCases: loaded.cases.length,
+      legacyMatches: loaded.cases.length,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: 7,
+      nativeUnsupported: loaded.cases.length,
       pairedComparisons: 0,
       nativeHandled: 0,
       nativeEquivalent: 0,

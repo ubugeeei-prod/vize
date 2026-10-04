@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import { loadProductManifest, readPinnedArtifact } from "./harness.mjs";
+import { loadOriginalHighlightRequests } from "./lsp-highlight-manifest.ts";
 import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } from "./lsp-types.ts";
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
@@ -72,6 +73,8 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
     } else if (data.method === "textDocument/foldingRange") {
       assert(expected === null || (Array.isArray(expected) && expected.length > 0));
       requests = [{ params: {}, result: expected }];
+    } else if (data.method === "textDocument/documentHighlight") {
+      requests = loadOriginalHighlightRequests(packRoot, data, expected);
     } else {
       assert.equal(data.method, "textDocument/onTypeFormatting", "unregistered LSP method");
       assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });
