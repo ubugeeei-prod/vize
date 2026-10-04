@@ -93,6 +93,7 @@ pub fn setup(
         }).collect();
         Some(serde_json::json!({"node":node.index(),"span":{"start":operand.content_span().start,
             "end":operand.content_span().end},"raw":operand.raw_content(),"decoded":syntax.source().text(),
+            "preparedSpan":{"start":syntax.source().span().start,"end":syntax.source().span().end},
             "regionScope":region_scope.index(),"reads":reads}))
     }).collect();
     let handlers = if handler {

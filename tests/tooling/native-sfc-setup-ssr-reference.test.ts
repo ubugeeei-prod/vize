@@ -251,7 +251,12 @@ void test(
         const invalid = structuredClone(actual),
           crab = actual.source.indexOf("🦀");
         assert(crab >= 0 && invalid.links.length > 0);
-        invalid.links[0].authored.end = Buffer.byteLength(actual.source.slice(0, crab)) + 3;
+        const crabByte = Buffer.byteLength(actual.source.slice(0, crab));
+        invalid.links.push({
+          ...invalid.links[0],
+          authored: { start: crabByte, end: crabByte + 3 },
+          segment: false,
+        });
         assert.throws(() => checkMap({ ...invalid, map: invalid.mapValue }), /UTF-8 boundaries/);
       }
       if (actual.name === "root-const-number")

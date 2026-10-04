@@ -266,14 +266,22 @@ export function checkSetupCustody(row: any, expected: any) {
       Number.isSafeInteger(interpolation.node) && Number.isSafeInteger(interpolation.regionScope),
     );
     assert.equal(originalBytes(row.source, interpolation.span), interpolation.raw);
-    assert.equal(interpolation.raw, interpolation.decoded);
+    assert(interpolation.preparedSpan, "original interpolation retains its prepared source span");
+    assert(
+      interpolation.preparedSpan.start >= interpolation.span.start &&
+        interpolation.preparedSpan.end <= interpolation.span.end,
+    );
+    assert.equal(originalBytes(row.source, interpolation.preparedSpan), interpolation.decoded);
     assert.equal(
       interpolation.regionScope,
       row.setup.scope,
       "root template resolution retains the original setup unit scope",
     );
     for (const read of interpolation.reads) {
+      assert.equal(originalBytes(interpolation.decoded, read.decodedSpan), read.name);
       assert.equal(originalBytes(row.source, read.span), read.name);
+      assert.equal(read.span.start, interpolation.preparedSpan.start + read.decodedSpan.start);
+      assert.equal(read.span.end, interpolation.preparedSpan.start + read.decodedSpan.end);
       const binding = row.setup.bindings.find((binding: any) => binding.id === read.binding);
       assert(binding && binding.name === read.name);
       assert.equal(read.declarationScope, row.setup.scope);
