@@ -104,12 +104,12 @@ fn emit<L: LinkSink>(
         COMPONENT_BINDING,
     )
     .map_err(NativeSetupSsrSfcCompileError::Assembly)?;
+    let render =
+        emit_selected_setup_template::<L>(&analysis).map_err(NativeSetupSsrSfcCompileError::Ssr)?;
     parts.script = Some(ScriptPart::Body(
         emit_selected_setup::<L>(analysis.setup()).map_err(NativeSetupSsrSfcCompileError::Setup)?,
     ));
-    parts.render = Some(
-        emit_selected_setup_template::<L>(&analysis).map_err(NativeSetupSsrSfcCompileError::Ssr)?,
-    );
+    parts.render = Some(render);
     parts.placement = RenderPlacement::Function {
         binding: "ssrRender",
         property: RenderProperty::SsrRender,

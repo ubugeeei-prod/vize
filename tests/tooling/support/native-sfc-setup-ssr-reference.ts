@@ -68,7 +68,7 @@ export async function executeExternalSetup(
               assert.equal(typeof descriptor?.set, "function");
             } else if (native) {
               assert.equal(typeof descriptor?.get, "function");
-              assert.equal(descriptor?.set, undefined);
+              assert.equal(typeof descriptor?.set, "undefined");
               const before = state[name];
               assert.equal(Reflect.set(state, name, Symbol("forbidden const mutation")), false);
               assert.equal(state[name], before);
