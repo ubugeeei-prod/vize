@@ -38,6 +38,9 @@ where
     let (token, comment) = match child.surface() {
         SurfaceChild::Text(token) => (token, false),
         SurfaceChild::Comment(token) => (token, true),
+        SurfaceChild::Interpolation(_) if child.parent_element().is_some() => {
+            return super::interpolation::observe(selected, child, region);
+        }
         SurfaceChild::Element(_) => {
             return element(
                 selected,

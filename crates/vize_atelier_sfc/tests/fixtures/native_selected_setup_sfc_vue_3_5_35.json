@@ -191,6 +191,37 @@
         "mappings": ";;;0BAAE,cAAO",
         "sourcesContent": ["{{enabled}}"]
       }
+    },
+    {
+      "id": "nested-original-counterexample",
+      "source": "<script setup>let count=1</script><template><p>{{count}}</p></template>",
+      "script": "let count=1",
+      "template": "<p>{{count}}</p>",
+      "bindings": ["count"],
+      "immutableBindings": [],
+      "updates": {
+        "count": 4
+      },
+      "expectedCode": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {\n  setup(__props, { expose: __expose }) {\n    __expose();\nlet count=1\n;\n    const __returned__ = {\n      get count() { return count },\n      set count(__value) { count = __value },\n    };\n    Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true });\n    return __returned__;\n  }\n}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($setup.count), 1 /* TEXT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "nativeMap": {
+        "version": 3,
+        "file": "SelectedSetup雪🌸.vue",
+        "sources": ["SelectedSetup雪🌸.vue"],
+        "sourcesContent": [
+          "<script setup>let count=1</script><template><p>{{count}}</p></template>"
+        ],
+        "names": ["count"],
+        "mappings": ";;;;AAAc;;;UAAIA,iBAAAA;UAAAA,iBAAAA;;;;;;;;SAA0B,mCAAA,4BAAKA"
+      },
+      "referenceScript": "\nconst _sfc_main = {\n  __name: 'SelectedSetup雪🌸',\n  setup(__props, { expose: __expose }) {\n  __expose();\nlet count=1\nconst __returned__ = { get count() { return count }, set count(v) { count = v } }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+      "referenceRender": "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", null, _toDisplayString($setup.count), 1 /* TEXT */))\n}",
+      "referenceMap": {
+        "version": 3,
+        "sources": ["SelectedSetup雪🌸.vue"],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAgB,4BAAX,YAAK",
+        "sourcesContent": ["<p>{{count}}</p>"]
+      }
     }
   ]
 }

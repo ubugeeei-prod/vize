@@ -1,23 +1,30 @@
-//! Park, authenticate, resolve and mint at one real original root event.
+//! Park, authenticate, resolve and mint at one real original child event.
 
 use super::NativeVisibility;
-use crate::artifact::ComponentFactory;
-use crate::file::region::RootRegion;
+use crate::artifact::{ComponentFactory, RegionBuilder};
+use crate::file::region::FileRegion;
 use crate::file::{NativeFileInterpolation, NativeFileInterpolationState};
 use crate::lang::js::{NativeInterpolationInput, NativeTemplateIssueKind as Kind};
+use core::ops::DerefMut;
 use vize_l0::id::NodeId;
 use vize_l1::markup::{NativeChild, NativeTemplateComponent};
+
+mod observe;
+pub(super) use observe::construct as observe;
 
 #[cfg(test)]
 mod interruption;
 
-pub(super) fn construct<'a>(
+pub(super) fn construct<'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,
     child: NativeChild<'_, 'a>,
     input: NativeInterpolationInput<'a>,
-    region: &mut RootRegion<'_, 'a, NativeVisibility>,
+    region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
     check: Result<(), Kind>,
-) -> Result<NodeId, Kind> {
+) -> Result<NodeId, Kind>
+where
+    R: DerefMut<Target = RegionBuilder<'b, 'a>>,
+{
     let index = region.facts.native_interpolations.len();
     let span = input.operand().full_span();
     region

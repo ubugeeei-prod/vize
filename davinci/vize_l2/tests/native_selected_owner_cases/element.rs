@@ -205,7 +205,6 @@ fn directive_namespace_special_and_operand_routes_remain_unavailable() -> Result
         "<div :id='x'/>",
         "<div v-pre/>",
         "<div v-if='true'/>",
-        "<div>{{1}}</div>",
         "<div>&amp;</div>",
         "<div> </div>",
         "<svg/>",

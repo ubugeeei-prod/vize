@@ -4,6 +4,9 @@ use super::{FileArtifact, RejectedFile};
 use crate::lang::js::{NativeInterpolationInput, NativeTemplateIssueKind};
 use vize_l0::id::NodeId;
 
+mod failure;
+pub use failure::NativeFileInterpolationFailure;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeFileInterpolationState {
     Pending,

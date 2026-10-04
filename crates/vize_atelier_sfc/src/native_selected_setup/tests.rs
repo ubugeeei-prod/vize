@@ -3,6 +3,7 @@ use serde_json::Value;
 use vize_l0::{String, cstr, id::NodeId};
 use vize_l3::decision::{dom::vue::VueReadKind, native::build_native_selected_setup_dom_decisions};
 
+mod nested;
 mod refusal;
 
 macro_rules! require {
@@ -18,13 +19,16 @@ fn text<'a>(value: &'a Value, key: &str) -> Result<&'a str, String> {
 }
 
 #[test]
-fn six_whole_original_setup_components_and_maps_are_captured() -> Result<(), String> {
+fn seven_whole_original_setup_components_and_maps_are_captured() -> Result<(), String> {
     let pack: Value = serde_json::from_str(include_str!(
         "../../tests/fixtures/native_selected_setup_sfc_vue_3_5_35.json"
     ))
     .map_err(|e| cstr!("{e}"))?;
     let fixtures = pack["fixtures"].as_array().ok_or("fixtures")?;
-    require!(fixtures.len() == 6, "six JS/TS whole-original sources");
+    require!(
+        fixtures.len() == 7,
+        "six original JS/TS sources plus exact nested counterexample"
+    );
     let mut rows = Vec::new();
     for fixture in fixtures {
         let id = text(fixture, "id")?;
@@ -168,7 +172,7 @@ fn six_whole_original_setup_components_and_maps_are_captured() -> Result<(), Str
             );
             seen += 1;
         }
-        require!(seen == 1, "{id}: original root expression row");
+        require!(seen == 1, "{id}: original sole expression row");
         for annotation in setup.type_annotations() {
             require!(
                 core::ptr::eq(annotation.file(), file),

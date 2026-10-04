@@ -4,8 +4,10 @@ use std::cell::Cell;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Fault {
+    BeforeObserve,
     AfterPark,
     AfterMint,
+    AfterFailurePark,
 }
 
 std::thread_local! {
@@ -27,6 +29,12 @@ fn trip(fault: Fault) {
 
 pub(super) fn after_park() {
     trip(Fault::AfterPark);
+}
+pub(super) fn before_observe() {
+    trip(Fault::BeforeObserve);
+}
+pub(super) fn after_failure_park() {
+    trip(Fault::AfterFailurePark);
 }
 pub(super) fn after_mint() {
     trip(Fault::AfterMint);

@@ -232,3 +232,31 @@ All owned emitter/product/fixture/runtime bytes remain unchanged. GitHub
 automatically retargeted the sole remaining native Stack child to main; fresh
 exact-source capture Actions and protected full/100-by-3 actual child merge
 remain required. The parent acceptance does not grant child output delivery.
+
+The DOM child #7663 actually merged at 2026-10-04T00:14:11Z as signed-valid
+`85d3afe2256d6bd5d2ec3df596333d44b556b6e5`. Protected Check `37163446627`,
+Nuxt `37163446374` and Musea `37163446416` passed. All 15,129 full Rust
+executions and eight original custody/refusal laws passed, alongside full
+workspace Clippy/archive/doctests/differential and four tooling workers. The
+protected artifact independently matches all six whole original sources,
+complete code/raw maps and real Vue setup1/render2/update/unmount receipts.
+Exact candidate measurement metadata and all100 rows agree across three runs;
+unchanged ceilings/ratchet/hold pass with complexity5761. Fresh literal main
+contains the accepted emitter/product/capture bytes; Stack7664 has both layers
+actually merged. This bounded primitive/root family is delivered, while
+imports, broader expressions, outer handlers, For and default/history remain
+unfinished. The separate original nested provider is not inferred accepted.
+
+The downstream nested qualification keeps every existing six fixture payload
+unchanged and adds the exact previously refused source
+`<script setup>let count=1</script><template><p>{{count}}</p></template>`. Its
+new authentic parent/operand/AST/File/immutable occurrence/setup scope law
+requires the genuine private nested receiver. The mandatory capture expands
+to seven complete modules/raw maps and actual Vue lifecycle receipts; only
+that original source moves out of the blanket negative, with all compound,
+escaped, outer-handler and For controls retained. Nine existing-tree Node
+primary/independent-desired laws pass; those desired outputs are not Rust
+source credit. No local build/install occurs. Actual provider source Actions
+must prove the new whole native packet before readiness/queue; independent
+original-module reference data, all old payloads and precise refusal guards
+remain unchanged. This evidence delta adds no production parse/walk/provider.
