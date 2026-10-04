@@ -49,3 +49,5 @@ modes across CLI, editor, Node and WASM formatting.
 [Configure property quotes](./formatter-property-quotes.md) for script object keys.
 
 [Configure JSX attribute quotes](./formatter-jsx-quotes.md) independently of JavaScript strings.
+
+For space and tab indentation, see [Indentation width](./formatter-indent-width.md).

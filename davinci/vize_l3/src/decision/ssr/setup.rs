@@ -99,6 +99,12 @@ impl<'view, 'owner, 'arena> NativeSelectedSetupSsrAnalysis<'view, 'owner, 'arena
         self.template.owner()
     }
     #[must_use]
+    pub fn original_attributes(
+        &self,
+    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+        self.analysis.original_attributes()
+    }
+    #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
         self.file().artifact()
     }

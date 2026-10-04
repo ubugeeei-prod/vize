@@ -13,6 +13,7 @@ mod layout;
 #[path = "template/value.rs"]
 mod value;
 pub(super) use cursor::{Cursor, verbatim};
+pub(super) use layout::{attribute_with_name, open_element_with};
 pub(super) use layout::{close_element, open_element};
 pub(super) use value::{AttributeValuePolicy, PreserveOpaque};
 

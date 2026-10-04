@@ -4,9 +4,11 @@ use crate::{LintResult, Linter};
 use vize_l0::{Allocator, SourceRoot, String, config::VueVersion};
 use vize_l1::markup::NativeLintComponent;
 
+use super::super::admission;
+
 use super::{
     NativeTemplateAttributeProfile, NativeTemplateLintContext, NativeTemplateLintRefusal,
-    NativeTemplateRule, admission,
+    NativeTemplateRule,
 };
 
 impl Linter {
@@ -50,13 +52,13 @@ impl Linter {
         }
         // Root findings are pending. A late refusal discards them wholesale.
         // There is no suppression pre-scan, second tree/header walk or reparse.
-        admission::children(
-            root.component(),
-            root.children(),
-            &mut context,
-            &callbacks,
-            profile,
-        )?;
+        admission::children(root.component(), root.children(), profile, &mut |view| {
+            for &(name, callback) in &callbacks {
+                context.current_rule = name;
+                callback.run_on_element(&mut context, view)?;
+            }
+            Ok(())
+        })?;
         Ok(context.finish())
     }
 

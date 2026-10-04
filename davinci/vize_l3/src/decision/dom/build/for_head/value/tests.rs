@@ -84,8 +84,10 @@ fn actual_callback_rejects_foreign_binding_resolution_neutral_expression_and_mis
     assert_eq!(binding.id(), foreign_binding.id());
     let reads = Reads(setup);
     let mut builder = DomBuilder::new(&LiteralExpressions, 1, Some(file), &reads);
-    builder.enter(original.id().node(), root, None).unwrap();
-    builder.enter(*body_node, body, None).unwrap();
+    builder
+        .enter(original.id().node(), root, None, &mut None)
+        .unwrap();
+    builder.enter(*body_node, body, None, &mut None).unwrap();
     assert_eq!(
         builder.for_value(resolution, expression, occurrence, binding),
         Some(VueReadKind::ForValue)
@@ -113,7 +115,7 @@ fn actual_callback_rejects_foreign_binding_resolution_neutral_expression_and_mis
         DomUnsupported::FileExpression
     );
     assert!(builder.facts.vue_expressions.get(node).is_none());
-    builder.enter(node, interpolation, None).unwrap();
+    builder.enter(node, interpolation, None, &mut None).unwrap();
     builder.leave(node).unwrap();
     builder.leave(*body_node).unwrap();
     assert!(builder.facts.vue_expressions.get(node).is_some());
@@ -186,9 +188,11 @@ fn caught_open_callback_unwind_preserves_original_program_params_and_interpolati
     let reads = Reads(setup);
     let caught = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         let mut builder = DomBuilder::new(&LiteralExpressions, 1, Some(file), &reads);
-        builder.enter(original.id().node(), root, None).unwrap();
-        builder.enter(*body_node, body, None).unwrap();
-        builder.enter(node, interpolation, None).unwrap();
+        builder
+            .enter(original.id().node(), root, None, &mut None)
+            .unwrap();
+        builder.enter(*body_node, body, None, &mut None).unwrap();
+        builder.enter(node, interpolation, None, &mut None).unwrap();
         assert_eq!(
             builder.facts.vue_expressions.get(node).unwrap().reads()[0].kind(),
             VueReadKind::ForValue

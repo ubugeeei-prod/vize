@@ -181,8 +181,8 @@ linter	Linter	source	crates/vize_patina/src/linter/rule_selection.rs	3	l0	L0	sta
 linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	106	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	106	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	107	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/script_rules.rs	107	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 linter	Linter	source	crates/vize_patina/src/linter/severity.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/tests.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/tests/jsx_streaming.rs	13	l0	L0	stage	vize_l0	preferred	1
@@ -359,6 +359,8 @@ linter	Linter	source	crates/vize_patina/src/markup/visitor.rs	12	raw_oxc	raw OXC
 linter	Linter	source	crates/vize_patina/src/markup/visitor.rs	12	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/native.rs	7	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/native.rs	7	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	source	crates/vize_patina/src/native/admission.rs	3	l0	L0	stage	vize_l0	preferred	2
+linter	Linter	source	crates/vize_patina/src/native/admission.rs	3	l1	L1	stage	vize_l1	preferred	4
 linter	Linter	source	crates/vize_patina/src/native/aria_unsupported_elements.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/attribute.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/attribute.rs	3	l1	L1	stage	vize_l1	preferred	1
@@ -392,12 +394,37 @@ linter	Linter	source	crates/vize_patina/src/native/inline_style.rs	3	l0	L0	stage
 linter	Linter	source	crates/vize_patina/src/native/inline_style.rs	3	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/no_v_html.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/no_v_html.rs	3	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	source	crates/vize_patina/src/native/sfc.rs	5	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/native/sfc.rs	5	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	source	crates/vize_patina/src/native/sfc.rs	5	l2	L2	stage	vize_l2	preferred	1
+linter	Linter	source	crates/vize_patina/src/native/sfc/context.rs	5	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/native/sfc/context.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
+linter	Linter	source	crates/vize_patina/src/native/sfc/driver.rs	7	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/native/sfc/envelope.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/native/sfc/envelope.rs	4	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	source	crates/vize_patina/src/native/sfc/owner.rs	3	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/native/sfc/owner.rs	3	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	source	crates/vize_patina/src/native/sfc/owner.rs	3	l2	L2	stage	vize_l2	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/builtin.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/builtin.rs	4	l2	L2	stage	vize_l2	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/configuration.rs	5	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/custody.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/custody.rs	4	l2	L2	stage	vize_l2	preferred	4
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/envelope.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/envelope.rs	4	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/frame_profile.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/grammar.rs	7	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/output.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/ownership.rs	9	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/ownership.rs	9	l2	L2	stage	vize_l2	preferred	4
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/refusal.rs	7	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/refusal.rs	7	l1	L1	stage	vize_l1	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/refusal.rs	7	l2	L2	stage	vize_l2	preferred	3
+linter	Linter	test/dev	crates/vize_patina/src/native/sfc/tests/support.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/tabindex_no_positive.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/tabindex_no_positive.rs	3	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/template.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/template.rs	6	l1	L1	stage	vize_l1	preferred	1
-linter	Linter	source	crates/vize_patina/src/native/template/admission.rs	3	l0	L0	stage	vize_l0	preferred	2
-linter	Linter	source	crates/vize_patina/src/native/template/admission.rs	3	l1	L1	stage	vize_l1	preferred	3
 linter	Linter	source	crates/vize_patina/src/native/template/component_name.rs	7	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/template/context.rs	5	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/native/template/context.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1

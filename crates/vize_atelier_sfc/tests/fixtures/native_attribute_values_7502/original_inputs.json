@@ -1,0 +1,138 @@
+{
+  "schema": "vize.native-attribute-values-7502.inputs",
+  "version": 1,
+  "ledgerSha256": "a7f0d7ea54e8d687057e36a778d8d7fab8bfc2f5a9fd5e31a3c226b3bc5928f8",
+  "originalFix": "578f770216b7b3b5b8c168698e664b85addfd6e0",
+  "originalParent": "a2fc9c9ec4fb2dd913dfce146691caa8009b3976",
+  "testBlob": "70872e2d54bc06021c4e791bb61a99538071f909",
+  "reporterBlob": "36819dc73df85b56b389bda9e4d10bfb9511d05b",
+  "authority": "Verbatim original sources and legacy HTML assertions; no native code/map expectations",
+  "fixtures": [
+    {
+      "id": "reporter-7502",
+      "source": "<div title=\"a &amp;lt; b\">x</div>",
+      "sourceSha256": "e1efcfc977b079a720189a6f9e9385c5bbb2b1c9027a15f6cc1be4e70365996f",
+      "existingExpectedTemplateHtml": "<div title=\"a &amp;lt; b\">x</div>",
+      "expectedTemplateHtmlSha256": "e1efcfc977b079a720189a6f9e9385c5bbb2b1c9027a15f6cc1be4e70365996f",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    },
+    {
+      "id": "original-regression-1",
+      "source": "<div title=\"&amp;lt;\">x</div>",
+      "sourceSha256": "a6f096b839f8a4c71ec6edee349eeb006398f44da284c1fb904d183fe719224d",
+      "existingExpectedTemplateHtml": "<div title=\"&amp;lt;\">x</div>",
+      "expectedTemplateHtmlSha256": "a6f096b839f8a4c71ec6edee349eeb006398f44da284c1fb904d183fe719224d",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    },
+    {
+      "id": "original-regression-2",
+      "source": "<div title=\"&#38;copy;\">x</div>",
+      "sourceSha256": "44f35a79aa9cc70731feab2f518c12939943c0e635cb82b9005cc5b2ea64a020",
+      "existingExpectedTemplateHtml": "<div title=\"&amp;copy;\">x</div>",
+      "expectedTemplateHtmlSha256": "6b5b0d6694b573f5bc5101b7422a62e4a8172df6c8eab8d6fb4b0b96e52fa061",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    },
+    {
+      "id": "original-regression-3",
+      "source": "<div title=\"&#x26;#60;\">x</div>",
+      "sourceSha256": "69f3a31fd5b96d707102ec9a3f62605e312fafa715eac6fa04294130d4f063a6",
+      "existingExpectedTemplateHtml": "<div title=\"&amp;#60;\">x</div>",
+      "expectedTemplateHtmlSha256": "5b8550616aae1c030b55469dba2c7fa8dc994996e5eea1378909e961b57492cc",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    },
+    {
+      "id": "original-regression-4",
+      "source": "<div title=\"&amp;amp;lt;\">x</div>",
+      "sourceSha256": "b72afefd8d259ad8f11e8420f18b95850207007b9420124e3c6187a7ff28b8fe",
+      "existingExpectedTemplateHtml": "<div title=\"&amp;amp;lt;\">x</div>",
+      "expectedTemplateHtmlSha256": "b72afefd8d259ad8f11e8420f18b95850207007b9420124e3c6187a7ff28b8fe",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    },
+    {
+      "id": "original-regression-5",
+      "source": "<div title=\"a&b\">x</div>",
+      "sourceSha256": "147e8e48a89ed5dde5654789a1e7fcdbb2ef0e1e0955c01d25814db7079007d6",
+      "existingExpectedTemplateHtml": "<div title=\"a&b\">x</div>",
+      "expectedTemplateHtmlSha256": "147e8e48a89ed5dde5654789a1e7fcdbb2ef0e1e0955c01d25814db7079007d6",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    },
+    {
+      "id": "original-regression-6",
+      "source": "<div title='a&amp;lt;\"b'>x</div>",
+      "sourceSha256": "764fce22cc6add3f5df78d0fcd5abd52924182fef94d3b4ec55d85105994405b",
+      "existingExpectedTemplateHtml": "<div title=\"a&amp;lt;&quot;b\">x</div>",
+      "expectedTemplateHtmlSha256": "81e45ddc23b4e999bc0d4ed83f59aa8a7bb3ae7c9e367b57900b4543f98d786f",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    },
+    {
+      "id": "original-regression-7",
+      "source": "<div title='a\"b'>x</div>",
+      "sourceSha256": "92e35a53d68ed6f01aaaaa876158c08a2236c8b22978c76b6c62dda364fb45f0",
+      "existingExpectedTemplateHtml": "<div title=\"a&quot;b\">x</div>",
+      "expectedTemplateHtmlSha256": "b70b7e15ea0b96d6bb846746b047581d2ae56d7b33bb7465b2973e9e10c4e19d",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    },
+    {
+      "id": "original-regression-8",
+      "source": "<div title=a&b>x</div>",
+      "sourceSha256": "7e5d8814bcbfa9131dafb4d6fcb7e03aa48c638897275d3c727d432cccbead6c",
+      "existingExpectedTemplateHtml": "<div title=\"a&amp;b\">x</div>",
+      "expectedTemplateHtmlSha256": "ebe21998c8f036010b644972c1a2bd16e6f41b0557934692a1fcd4232f15af98",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    },
+    {
+      "id": "original-regression-9",
+      "source": "<div title=\"&lt;b&gt;\">x</div>",
+      "sourceSha256": "95cbbc6545386277d2915cb5038f6b92127db9e9848a9d2cb8c408791c9fe323",
+      "existingExpectedTemplateHtml": "<div title=\"&lt;b&gt;\">x</div>",
+      "expectedTemplateHtmlSha256": "95cbbc6545386277d2915cb5038f6b92127db9e9848a9d2cb8c408791c9fe323",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    },
+    {
+      "id": "original-regression-10",
+      "source": "<div title=&amp;lt;>x</div>",
+      "sourceSha256": "fcef71a2094601c171074f905bd625d8c1e045266b4fc1384c40dd3b3a26eff5",
+      "existingExpectedTemplateHtml": "<div title=\"&amp;lt;\">x</div>",
+      "expectedTemplateHtmlSha256": "a6f096b839f8a4c71ec6edee349eeb006398f44da284c1fb904d183fe719224d",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    },
+    {
+      "id": "original-regression-11",
+      "source": "<div class=\"a&amp;amp;b\">x</div>",
+      "sourceSha256": "4adae86d483f8f0c634d12fcf8131af38ff7f10bd7943097ec9f3c761ec53dbe",
+      "existingExpectedTemplateHtml": "<div class=\"a&amp;amp;b\">x</div>",
+      "expectedTemplateHtmlSha256": "4adae86d483f8f0c634d12fcf8131af38ff7f10bd7943097ec9f3c761ec53dbe",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "lower-refusal"
+    },
+    {
+      "id": "original-regression-12",
+      "source": "<div title=\"a &amp;lt; b\">&amp;lt;</div>",
+      "sourceSha256": "f01754f64d4c2fb3734539d693c59cd84aca0d0e30a822fc9b35a2dc674d4795",
+      "existingExpectedTemplateHtml": "<div title=\"a &amp;lt; b\">&amp;lt;</div>",
+      "expectedTemplateHtmlSha256": "f01754f64d4c2fb3734539d693c59cd84aca0d0e30a822fc9b35a2dc674d4795",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "lower-refusal"
+    },
+    {
+      "id": "original-regression-13",
+      "source": "<div title=\"plain\">x</div>",
+      "sourceSha256": "49756af68108c435cfc34f54e62993042f9efcfa169e9283a8118fbdc3c91072",
+      "existingExpectedTemplateHtml": "<div title=\"plain\">x</div>",
+      "expectedTemplateHtmlSha256": "49756af68108c435cfc34f54e62993042f9efcfa169e9283a8118fbdc3c91072",
+      "existingOptions": "compile_vapor Default::default()",
+      "disposition": "positive"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 //! Genuine original styled-template custody through the same sole SSR walk.
 
-use super::{NativeSsrBuildError, NativeSsrFileAnalysis, SsrFacts, build_ssr_file_decisions};
+use super::{NativeSsrBuildError, NativeSsrFileAnalysis, SsrFacts};
 use crate::decision::DecisionTables;
 use vize_l2::{
     artifact::Artifact,
@@ -45,6 +45,12 @@ impl<'owner, 'arena> NativeTemplateScopedSsrAnalysis<'owner, 'arena> {
         self.analysis.file()
     }
     #[must_use]
+    pub fn original_attributes(
+        &self,
+    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+        self.analysis.original_attributes()
+    }
+    #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
         self.analysis.artifact()
     }
@@ -63,6 +69,7 @@ impl<'owner, 'arena> NativeTemplateScopedSsrAnalysis<'owner, 'arena> {
 pub fn build_native_scoped_ssr_file_decisions<'owner, 'arena>(
     view: NativeScopedTemplateView<'owner, 'arena>,
 ) -> Result<NativeTemplateScopedSsrAnalysis<'owner, 'arena>, NativeSsrBuildError> {
-    let analysis = build_ssr_file_decisions(view.file()).map_err(NativeSsrBuildError::Decision)?;
+    let analysis = super::file::build_original_file_decisions(view.file())
+        .map_err(NativeSsrBuildError::Decision)?;
     Ok(NativeTemplateScopedSsrAnalysis { view, analysis })
 }

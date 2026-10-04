@@ -1,5 +1,6 @@
 use std::sync::Mutex;
 
+use vize_atelier_sfc::script::TypeSourceSnapshot;
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::macros::PropDefinition;
 
@@ -7,6 +8,9 @@ use super::syntax::runtime_prop_shape_member_type;
 
 #[derive(Default)]
 pub(crate) struct RuntimePropResolveCache {
+    // One immutable dependency snapshot per register_paths batch. Root script
+    // text always comes from the current descriptor; later scans start fresh.
+    pub(super) type_sources: TypeSourceSnapshot,
     props: Mutex<FxHashMap<CompactString, Vec<PropDefinition>>>,
     default_names: Mutex<FxHashMap<CompactString, FxHashSet<CompactString>>>,
 }

@@ -1,6 +1,6 @@
 //! Original selected-template authority retained through the sole SSR walk.
 
-use super::{NativeSsrFileAnalysis, SsrFacts, build_ssr_file_decisions};
+use super::{NativeSsrFileAnalysis, SsrFacts};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l0::Span;
 use vize_l2::{
@@ -69,6 +69,12 @@ impl<'owner, 'arena> NativeTemplateSsrAnalysis<'owner, 'arena> {
         self.analysis.file()
     }
     #[must_use]
+    pub fn original_attributes(
+        &self,
+    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+        self.analysis.original_attributes()
+    }
+    #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
         self.analysis.artifact()
     }
@@ -97,6 +103,7 @@ pub fn build_native_ssr_file_decisions<'owner, 'arena>(
     let file = view.file().ok_or(NativeSsrBuildError::Decision(
         DecisionBuildError::IncompleteFile,
     ))?;
-    let analysis = build_ssr_file_decisions(file).map_err(NativeSsrBuildError::Decision)?;
+    let analysis =
+        super::file::build_original_file_decisions(file).map_err(NativeSsrBuildError::Decision)?;
     Ok(NativeTemplateSsrAnalysis { view, analysis })
 }

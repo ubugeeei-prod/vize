@@ -1,0 +1,7222 @@
+{
+  "schema": "vize.native-vue1-text-document-reference",
+  "version": 1,
+  "vueVersion": "1.0.28",
+  "nativeCapture": null,
+  "scope": "Independent complete LF callback goldens and actual pinned parser/getter controls. No browser decoding, mounted runtime, whole product or classic Module admission claim. Native and VM outcomes must be established by fresh source-qualified Actions.",
+  "scopes": {
+    "effects": {
+      "values": {
+        "value": {
+          "kind": "number",
+          "value": 7
+        },
+        "left": {
+          "kind": "number",
+          "value": 6
+        },
+        "right": {
+          "kind": "number",
+          "value": 3
+        },
+        "ready": {
+          "kind": "boolean",
+          "value": true
+        },
+        "msg": {
+          "kind": "boolean",
+          "value": true
+        },
+        "flag": {
+          "kind": "boolean",
+          "value": false
+        },
+        "missing": {
+          "kind": "undefined"
+        }
+      },
+      "objects": {
+        "user": {
+          "name": {
+            "kind": "string",
+            "value": "雪"
+          }
+        }
+      },
+      "calls": {
+        "sum": {
+          "operation": "add"
+        },
+        "boom": {
+          "operation": "throw",
+          "message": "fixture boom"
+        }
+      }
+    },
+    "constants": {
+      "values": {},
+      "objects": {},
+      "calls": {}
+    },
+    "effects-false": {
+      "values": {
+        "value": {
+          "kind": "number",
+          "value": 7
+        },
+        "left": {
+          "kind": "number",
+          "value": 6
+        },
+        "right": {
+          "kind": "number",
+          "value": 3
+        },
+        "ready": {
+          "kind": "boolean",
+          "value": false
+        },
+        "msg": {
+          "kind": "boolean",
+          "value": true
+        },
+        "flag": {
+          "kind": "boolean",
+          "value": false
+        },
+        "missing": {
+          "kind": "undefined"
+        }
+      },
+      "objects": {
+        "user": {
+          "name": {
+            "kind": "string",
+            "value": "雪"
+          }
+        }
+      },
+      "calls": {
+        "sum": {
+          "operation": "add"
+        },
+        "boom": {
+          "operation": "throw",
+          "message": "fixture boom"
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "atom-1-i2-Lf",
+      "source": "{{ value }}",
+      "blockSpan": [
+        0,
+        11
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        11
+      ],
+      "callback": "{{ value }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ value }}",
+      "primary": {
+        "before": {
+          "input": "{{ value }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "after": {
+          "input": "{{ value }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "atom-12-i2-Lf",
+      "source": "{{ value }}",
+      "blockSpan": [
+        0,
+        11
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        11
+      ],
+      "callback": "{{ value }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ value }}",
+      "primary": {
+        "before": {
+          "input": "{{ value }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "after": {
+          "input": "{{ value }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "atom-80-i2-Lf",
+      "source": "{{ value }}",
+      "blockSpan": [
+        0,
+        11
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        11
+      ],
+      "callback": "{{ value }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ value }}",
+      "primary": {
+        "before": {
+          "input": "{{ value }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "after": {
+          "input": "{{ value }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "number-1-i2-Lf",
+      "source": "{{ 42 }}",
+      "blockSpan": [
+        0,
+        8
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        8
+      ],
+      "callback": "{{ 42 }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ 42 }}",
+      "primary": {
+        "before": {
+          "input": "{{ 42 }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "42",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "42",
+          "getterBody": " 42",
+          "authoredPreparedSpan": [
+            3,
+            5
+          ]
+        },
+        "after": {
+          "input": "{{ 42 }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "42",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "42",
+          "getterBody": " 42",
+          "authoredPreparedSpan": [
+            3,
+            5
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 42
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 42
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "number-12-i2-Lf",
+      "source": "{{ 42 }}",
+      "blockSpan": [
+        0,
+        8
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        8
+      ],
+      "callback": "{{ 42 }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ 42 }}",
+      "primary": {
+        "before": {
+          "input": "{{ 42 }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "42",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "42",
+          "getterBody": " 42",
+          "authoredPreparedSpan": [
+            3,
+            5
+          ]
+        },
+        "after": {
+          "input": "{{ 42 }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "42",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "42",
+          "getterBody": " 42",
+          "authoredPreparedSpan": [
+            3,
+            5
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 42
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 42
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "number-80-i2-Lf",
+      "source": "{{ 42 }}",
+      "blockSpan": [
+        0,
+        8
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        8
+      ],
+      "callback": "{{ 42 }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ 42 }}",
+      "primary": {
+        "before": {
+          "input": "{{ 42 }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "42",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "42",
+          "getterBody": " 42",
+          "authoredPreparedSpan": [
+            3,
+            5
+          ]
+        },
+        "after": {
+          "input": "{{ 42 }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "42",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "42",
+          "getterBody": " 42",
+          "authoredPreparedSpan": [
+            3,
+            5
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 42
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 42
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "unicode-literal-1-i2-Lf",
+      "source": "{{ '雪' }}",
+      "blockSpan": [
+        0,
+        11
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        11
+      ],
+      "callback": "{{ '雪' }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ '雪' }}",
+      "primary": {
+        "before": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "after": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "unicode-literal-12-i2-Lf",
+      "source": "{{ '雪' }}",
+      "blockSpan": [
+        0,
+        11
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        11
+      ],
+      "callback": "{{ '雪' }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ '雪' }}",
+      "primary": {
+        "before": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "after": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "unicode-literal-80-i2-Lf",
+      "source": "{{ '雪' }}",
+      "blockSpan": [
+        0,
+        11
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        11
+      ],
+      "callback": "{{ '雪' }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ '雪' }}",
+      "primary": {
+        "before": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "after": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            8
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "binary-1-i2-Lf",
+      "source": "{{ left+right }}",
+      "blockSpan": [
+        0,
+        16
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        16
+      ],
+      "callback": "{{ left+right }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left +\n  right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            13
+          ]
+        },
+        "after": {
+          "input": "{{ left +\n  right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\n  right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "binary-12-i2-Lf",
+      "source": "{{ left+right }}",
+      "blockSpan": [
+        0,
+        16
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        16
+      ],
+      "callback": "{{ left+right }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left +\n  right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            13
+          ]
+        },
+        "after": {
+          "input": "{{ left +\n  right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\n  right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "binary-80-i2-Lf",
+      "source": "{{ left+right }}",
+      "blockSpan": [
+        0,
+        16
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        16
+      ],
+      "callback": "{{ left+right }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left + right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            13
+          ]
+        },
+        "after": {
+          "input": "{{ left + right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left + right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left + right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            15
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "call-1-i2-Lf",
+      "source": "{{ sum(left,right) }}",
+      "blockSpan": [
+        0,
+        21
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        21
+      ],
+      "callback": "{{ sum(left,right) }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ sum ( left, right ) }}",
+      "primary": {
+        "before": {
+          "input": "{{ sum(left,right) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum(left,right)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum(left,right)",
+          "getterBody": " scope.sum(scope.left,scope.right)",
+          "authoredPreparedSpan": [
+            3,
+            18
+          ]
+        },
+        "after": {
+          "input": "{{ sum ( left, right ) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum ( left, right )",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum ( left, right )",
+          "getterBody": " scope.sum(scope.left,scope.right)",
+          "authoredPreparedSpan": [
+            3,
+            22
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 9
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 9
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "call-12-i2-Lf",
+      "source": "{{ sum(left,right) }}",
+      "blockSpan": [
+        0,
+        21
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        21
+      ],
+      "callback": "{{ sum(left,right) }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ sum ( left, right ) }}",
+      "primary": {
+        "before": {
+          "input": "{{ sum(left,right) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum(left,right)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum(left,right)",
+          "getterBody": " scope.sum(scope.left,scope.right)",
+          "authoredPreparedSpan": [
+            3,
+            18
+          ]
+        },
+        "after": {
+          "input": "{{ sum ( left, right ) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum ( left, right )",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum ( left, right )",
+          "getterBody": " scope.sum(scope.left,scope.right)",
+          "authoredPreparedSpan": [
+            3,
+            22
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 9
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 9
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "call-80-i2-Lf",
+      "source": "{{ sum(left,right) }}",
+      "blockSpan": [
+        0,
+        21
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        21
+      ],
+      "callback": "{{ sum(left,right) }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ sum ( left, right ) }}",
+      "primary": {
+        "before": {
+          "input": "{{ sum(left,right) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum(left,right)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum(left,right)",
+          "getterBody": " scope.sum(scope.left,scope.right)",
+          "authoredPreparedSpan": [
+            3,
+            18
+          ]
+        },
+        "after": {
+          "input": "{{ sum ( left, right ) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum ( left, right )",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum ( left, right )",
+          "getterBody": " scope.sum(scope.left,scope.right)",
+          "authoredPreparedSpan": [
+            3,
+            22
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 9
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 9
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "conditional-1-i2-Lf",
+      "source": "{{ ready?left:right }}",
+      "blockSpan": [
+        0,
+        22
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        22
+      ],
+      "callback": "{{ ready?left:right }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ ready ?\n  left :\n  right }}",
+      "primary": {
+        "before": {
+          "input": "{{ ready?left:right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "ready?left:right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "ready?left:right",
+          "getterBody": " scope.ready?scope.left:scope.right",
+          "authoredPreparedSpan": [
+            3,
+            19
+          ]
+        },
+        "after": {
+          "input": "{{ ready ?\n  left :\n  right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "ready ?\n  left :\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "ready ?\n  left :\n  right",
+          "getterBody": " scope.ready?scope.left:scope.right",
+          "authoredPreparedSpan": [
+            3,
+            27
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 6
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "ready"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 6
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "ready"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "conditional-12-i2-Lf",
+      "source": "{{ ready?left:right }}",
+      "blockSpan": [
+        0,
+        22
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        22
+      ],
+      "callback": "{{ ready?left:right }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ ready ?\n  left :\n  right }}",
+      "primary": {
+        "before": {
+          "input": "{{ ready?left:right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "ready?left:right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "ready?left:right",
+          "getterBody": " scope.ready?scope.left:scope.right",
+          "authoredPreparedSpan": [
+            3,
+            19
+          ]
+        },
+        "after": {
+          "input": "{{ ready ?\n  left :\n  right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "ready ?\n  left :\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "ready ?\n  left :\n  right",
+          "getterBody": " scope.ready?scope.left:scope.right",
+          "authoredPreparedSpan": [
+            3,
+            27
+          ]
+        },
+        "scope": "effects-false",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 3
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "ready"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 3
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "ready"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "conditional-80-i2-Lf",
+      "source": "{{ ready?left:right }}",
+      "blockSpan": [
+        0,
+        22
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        22
+      ],
+      "callback": "{{ ready?left:right }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ ready ? left : right }}",
+      "primary": {
+        "before": {
+          "input": "{{ ready?left:right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "ready?left:right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "ready?left:right",
+          "getterBody": " scope.ready?scope.left:scope.right",
+          "authoredPreparedSpan": [
+            3,
+            19
+          ]
+        },
+        "after": {
+          "input": "{{ ready ? left : right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "ready ? left : right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "ready ? left : right",
+          "getterBody": " scope.ready?scope.left:scope.right",
+          "authoredPreparedSpan": [
+            3,
+            23
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 6
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "ready"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 6
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "ready"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "array-1-i2-Lf",
+      "source": "{{ [left,right] }}",
+      "blockSpan": [
+        0,
+        18
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        18
+      ],
+      "callback": "{{ [left,right] }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ [ left, right ] }}",
+      "primary": {
+        "before": {
+          "input": "{{ [left,right] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[left,right]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[left,right]",
+          "getterBody": " [scope.left,scope.right]",
+          "authoredPreparedSpan": [
+            3,
+            15
+          ]
+        },
+        "after": {
+          "input": "{{ [ left, right ] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[ left, right ]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[ left, right ]",
+          "getterBody": " [scope.left,scope.right]",
+          "authoredPreparedSpan": [
+            3,
+            18
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "array-12-i2-Lf",
+      "source": "{{ [left,right] }}",
+      "blockSpan": [
+        0,
+        18
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        18
+      ],
+      "callback": "{{ [left,right] }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ [ left, right ] }}",
+      "primary": {
+        "before": {
+          "input": "{{ [left,right] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[left,right]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[left,right]",
+          "getterBody": " [scope.left,scope.right]",
+          "authoredPreparedSpan": [
+            3,
+            15
+          ]
+        },
+        "after": {
+          "input": "{{ [ left, right ] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[ left, right ]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[ left, right ]",
+          "getterBody": " [scope.left,scope.right]",
+          "authoredPreparedSpan": [
+            3,
+            18
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "array-80-i2-Lf",
+      "source": "{{ [left,right] }}",
+      "blockSpan": [
+        0,
+        18
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        18
+      ],
+      "callback": "{{ [left,right] }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ [ left, right ] }}",
+      "primary": {
+        "before": {
+          "input": "{{ [left,right] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[left,right]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[left,right]",
+          "getterBody": " [scope.left,scope.right]",
+          "authoredPreparedSpan": [
+            3,
+            15
+          ]
+        },
+        "after": {
+          "input": "{{ [ left, right ] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[ left, right ]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[ left, right ]",
+          "getterBody": " [scope.left,scope.right]",
+          "authoredPreparedSpan": [
+            3,
+            18
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 6
+                  },
+                  {
+                    "kind": "number",
+                    "value": 3
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "call-binary-1-i2-Lf",
+      "source": "{{ sum(left+right,2) }}",
+      "blockSpan": [
+        0,
+        23
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        23
+      ],
+      "callback": "{{ sum(left+right,2) }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ sum ( left +\n  right, 2 ) }}",
+      "primary": {
+        "before": {
+          "input": "{{ sum(left+right,2) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum(left+right,2)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum(left+right,2)",
+          "getterBody": " scope.sum(scope.left+scope.right,2)",
+          "authoredPreparedSpan": [
+            3,
+            20
+          ]
+        },
+        "after": {
+          "input": "{{ sum ( left +\n  right, 2 ) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum ( left +\n  right, 2 )",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum ( left +\n  right, 2 )",
+          "getterBody": " scope.sum(scope.left+scope.right,2)",
+          "authoredPreparedSpan": [
+            3,
+            28
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 11
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 11
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 11
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 11
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "call-binary-12-i2-Lf",
+      "source": "{{ sum(left+right,2) }}",
+      "blockSpan": [
+        0,
+        23
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        23
+      ],
+      "callback": "{{ sum(left+right,2) }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ sum ( left +\n  right, 2 ) }}",
+      "primary": {
+        "before": {
+          "input": "{{ sum(left+right,2) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum(left+right,2)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum(left+right,2)",
+          "getterBody": " scope.sum(scope.left+scope.right,2)",
+          "authoredPreparedSpan": [
+            3,
+            20
+          ]
+        },
+        "after": {
+          "input": "{{ sum ( left +\n  right, 2 ) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum ( left +\n  right, 2 )",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum ( left +\n  right, 2 )",
+          "getterBody": " scope.sum(scope.left+scope.right,2)",
+          "authoredPreparedSpan": [
+            3,
+            28
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 11
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 11
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 11
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 11
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "call-binary-80-i2-Lf",
+      "source": "{{ sum(left+right,2) }}",
+      "blockSpan": [
+        0,
+        23
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        23
+      ],
+      "callback": "{{ sum(left+right,2) }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ sum ( left + right, 2 ) }}",
+      "primary": {
+        "before": {
+          "input": "{{ sum(left+right,2) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum(left+right,2)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum(left+right,2)",
+          "getterBody": " scope.sum(scope.left+scope.right,2)",
+          "authoredPreparedSpan": [
+            3,
+            20
+          ]
+        },
+        "after": {
+          "input": "{{ sum ( left + right, 2 ) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum ( left + right, 2 )",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum ( left + right, 2 )",
+          "getterBody": " scope.sum(scope.left+scope.right,2)",
+          "authoredPreparedSpan": [
+            3,
+            26
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 11
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 11
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 11
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 11
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "array-binary-1-i2-Lf",
+      "source": "{{ [left+right,2] }}",
+      "blockSpan": [
+        0,
+        20
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        20
+      ],
+      "callback": "{{ [left+right,2] }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ [ left +\n  right, 2 ] }}",
+      "primary": {
+        "before": {
+          "input": "{{ [left+right,2] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[left+right,2]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[left+right,2]",
+          "getterBody": " [scope.left+scope.right,2]",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "after": {
+          "input": "{{ [ left +\n  right, 2 ] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[ left +\n  right, 2 ]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[ left +\n  right, 2 ]",
+          "getterBody": " [scope.left+scope.right,2]",
+          "authoredPreparedSpan": [
+            3,
+            24
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "array-binary-12-i2-Lf",
+      "source": "{{ [left+right,2] }}",
+      "blockSpan": [
+        0,
+        20
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        20
+      ],
+      "callback": "{{ [left+right,2] }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ [ left +\n  right, 2 ] }}",
+      "primary": {
+        "before": {
+          "input": "{{ [left+right,2] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[left+right,2]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[left+right,2]",
+          "getterBody": " [scope.left+scope.right,2]",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "after": {
+          "input": "{{ [ left +\n  right, 2 ] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[ left +\n  right, 2 ]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[ left +\n  right, 2 ]",
+          "getterBody": " [scope.left+scope.right,2]",
+          "authoredPreparedSpan": [
+            3,
+            24
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "array-binary-80-i2-Lf",
+      "source": "{{ [left+right,2] }}",
+      "blockSpan": [
+        0,
+        20
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        20
+      ],
+      "callback": "{{ [left+right,2] }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ [ left + right, 2 ] }}",
+      "primary": {
+        "before": {
+          "input": "{{ [left+right,2] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[left+right,2]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[left+right,2]",
+          "getterBody": " [scope.left+scope.right,2]",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "after": {
+          "input": "{{ [ left + right, 2 ] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[ left + right, 2 ]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[ left + right, 2 ]",
+          "getterBody": " [scope.left+scope.right,2]",
+          "authoredPreparedSpan": [
+            3,
+            22
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "nonzero-child-1-i2-Lf",
+      "source": "雪\n<p>雪{{ user.name }}</p>",
+      "blockSpan": [
+        4,
+        29
+      ],
+      "path": [
+        0,
+        1
+      ],
+      "callbackSpan": [
+        10,
+        25
+      ],
+      "callback": "{{ user.name }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ user . name }}",
+      "primary": {
+        "before": {
+          "input": "{{ user.name }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "user.name",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "user.name",
+          "getterBody": "scope.user.name",
+          "authoredPreparedSpan": [
+            13,
+            22
+          ]
+        },
+        "after": {
+          "input": "{{ user . name }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "user . name",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "user . name",
+          "getterBody": " scope.user.name",
+          "authoredPreparedSpan": [
+            3,
+            14
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "user"
+              },
+              {
+                "kind": "read",
+                "name": "user.name"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "user"
+              },
+              {
+                "kind": "read",
+                "name": "user.name"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "nonzero-child-12-i2-Lf",
+      "source": "雪\n<p>雪{{ user.name }}</p>",
+      "blockSpan": [
+        4,
+        29
+      ],
+      "path": [
+        0,
+        1
+      ],
+      "callbackSpan": [
+        10,
+        25
+      ],
+      "callback": "{{ user.name }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ user . name }}",
+      "primary": {
+        "before": {
+          "input": "{{ user.name }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "user.name",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "user.name",
+          "getterBody": "scope.user.name",
+          "authoredPreparedSpan": [
+            13,
+            22
+          ]
+        },
+        "after": {
+          "input": "{{ user . name }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "user . name",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "user . name",
+          "getterBody": " scope.user.name",
+          "authoredPreparedSpan": [
+            3,
+            14
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "user"
+              },
+              {
+                "kind": "read",
+                "name": "user.name"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "user"
+              },
+              {
+                "kind": "read",
+                "name": "user.name"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "nonzero-child-80-i2-Lf",
+      "source": "雪\n<p>雪{{ user.name }}</p>",
+      "blockSpan": [
+        4,
+        29
+      ],
+      "path": [
+        0,
+        1
+      ],
+      "callbackSpan": [
+        10,
+        25
+      ],
+      "callback": "{{ user.name }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ user . name }}",
+      "primary": {
+        "before": {
+          "input": "{{ user.name }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "user.name",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "user.name",
+          "getterBody": "scope.user.name",
+          "authoredPreparedSpan": [
+            13,
+            22
+          ]
+        },
+        "after": {
+          "input": "{{ user . name }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "user . name",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "user . name",
+          "getterBody": " scope.user.name",
+          "authoredPreparedSpan": [
+            3,
+            14
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "user"
+              },
+              {
+                "kind": "read",
+                "name": "user.name"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "user"
+              },
+              {
+                "kind": "read",
+                "name": "user.name"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "block-comment-1-i2-Lf",
+      "source": "{{ /*keep*/ msg &amp;&amp; flag }}",
+      "blockSpan": [
+        0,
+        34
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        34
+      ],
+      "callback": "{{ /*keep*/ msg &amp;&amp; flag }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ /*keep*/ msg &amp;&amp;\n  flag }}",
+      "primary": {
+        "before": {
+          "input": "{{ /*keep*/ msg && flag }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "/*keep*/ msg && flag",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "/*keep*/ msg && flag",
+          "getterBody": " /*scope.keep*/scope.msg&&scope.flag",
+          "authoredPreparedSpan": [
+            3,
+            31
+          ]
+        },
+        "after": {
+          "input": "{{ /*keep*/ msg &&\n  flag }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "/*keep*/ msg &&\n  flag",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "/*keep*/ msg &&\n  flag",
+          "getterBody": " /*scope.keep*/scope.msg&&scope.flag",
+          "authoredPreparedSpan": [
+            3,
+            33
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "boolean",
+                "value": false
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "msg"
+              },
+              {
+                "kind": "read",
+                "name": "flag"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "boolean",
+                "value": false
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "msg"
+              },
+              {
+                "kind": "read",
+                "name": "flag"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "block-comment-12-i2-Lf",
+      "source": "{{ /*keep*/ msg &amp;&amp; flag }}",
+      "blockSpan": [
+        0,
+        34
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        34
+      ],
+      "callback": "{{ /*keep*/ msg &amp;&amp; flag }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ /*keep*/ msg &amp;&amp;\n  flag }}",
+      "primary": {
+        "before": {
+          "input": "{{ /*keep*/ msg && flag }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "/*keep*/ msg && flag",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "/*keep*/ msg && flag",
+          "getterBody": " /*scope.keep*/scope.msg&&scope.flag",
+          "authoredPreparedSpan": [
+            3,
+            31
+          ]
+        },
+        "after": {
+          "input": "{{ /*keep*/ msg &&\n  flag }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "/*keep*/ msg &&\n  flag",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "/*keep*/ msg &&\n  flag",
+          "getterBody": " /*scope.keep*/scope.msg&&scope.flag",
+          "authoredPreparedSpan": [
+            3,
+            33
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "boolean",
+                "value": false
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "msg"
+              },
+              {
+                "kind": "read",
+                "name": "flag"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "boolean",
+                "value": false
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "msg"
+              },
+              {
+                "kind": "read",
+                "name": "flag"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "block-comment-80-i2-Lf",
+      "source": "{{ /*keep*/ msg &amp;&amp; flag }}",
+      "blockSpan": [
+        0,
+        34
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        34
+      ],
+      "callback": "{{ /*keep*/ msg &amp;&amp; flag }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ /*keep*/ msg &amp;&amp; flag }}",
+      "primary": {
+        "before": {
+          "input": "{{ /*keep*/ msg && flag }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "/*keep*/ msg && flag",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "/*keep*/ msg && flag",
+          "getterBody": " /*scope.keep*/scope.msg&&scope.flag",
+          "authoredPreparedSpan": [
+            3,
+            31
+          ]
+        },
+        "after": {
+          "input": "{{ /*keep*/ msg && flag }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "/*keep*/ msg && flag",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "/*keep*/ msg && flag",
+          "getterBody": " /*scope.keep*/scope.msg&&scope.flag",
+          "authoredPreparedSpan": [
+            3,
+            31
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "boolean",
+                "value": false
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "msg"
+              },
+              {
+                "kind": "read",
+                "name": "flag"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "boolean",
+                "value": false
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "msg"
+              },
+              {
+                "kind": "read",
+                "name": "flag"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "encoded-operator-1-i2-Lf",
+      "source": "{{ left&#43;right }}",
+      "blockSpan": [
+        0,
+        20
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        20
+      ],
+      "callback": "{{ left&#43;right }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left &#43;\n  right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "after": {
+          "input": "{{ left +\n  right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\n  right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            21
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "encoded-operator-12-i2-Lf",
+      "source": "{{ left&#43;right }}",
+      "blockSpan": [
+        0,
+        20
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        20
+      ],
+      "callback": "{{ left&#43;right }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left &#43;\n  right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "after": {
+          "input": "{{ left +\n  right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\n  right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            21
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "encoded-operator-80-i2-Lf",
+      "source": "{{ left&#43;right }}",
+      "blockSpan": [
+        0,
+        20
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        20
+      ],
+      "callback": "{{ left&#43;right }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left &#43; right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "after": {
+          "input": "{{ left + right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left + right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left + right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            19
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "encoded-unicode-1-i2-Lf",
+      "source": "{{ &#39;雪&#39; }}",
+      "blockSpan": [
+        0,
+        19
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        19
+      ],
+      "callback": "{{ &#39;雪&#39; }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ &#39;雪&#39; }}",
+      "primary": {
+        "before": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            16
+          ]
+        },
+        "after": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            16
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "encoded-unicode-12-i2-Lf",
+      "source": "{{ &#39;雪&#39; }}",
+      "blockSpan": [
+        0,
+        19
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        19
+      ],
+      "callback": "{{ &#39;雪&#39; }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ &#39;雪&#39; }}",
+      "primary": {
+        "before": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            16
+          ]
+        },
+        "after": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            16
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "encoded-unicode-80-i2-Lf",
+      "source": "{{ &#39;雪&#39; }}",
+      "blockSpan": [
+        0,
+        19
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        19
+      ],
+      "callback": "{{ &#39;雪&#39; }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ &#39;雪&#39; }}",
+      "primary": {
+        "before": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            16
+          ]
+        },
+        "after": {
+          "input": "{{ '雪' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'雪'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'雪'",
+          "getterBody": " '雪'",
+          "authoredPreparedSpan": [
+            3,
+            16
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "雪"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "double-encoded-1-i2-Lf",
+      "source": "{{ &#39;&amp;#39;&#39; }}",
+      "blockSpan": [
+        0,
+        25
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        25
+      ],
+      "callback": "{{ &#39;&amp;#39;&#39; }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ &#39;&amp;#39;&#39; }}",
+      "primary": {
+        "before": {
+          "input": "{{ '&#39;' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'&#39;'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'&#39;'",
+          "getterBody": " '&#39;'",
+          "authoredPreparedSpan": [
+            3,
+            22
+          ]
+        },
+        "after": {
+          "input": "{{ '&#39;' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'&#39;'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'&#39;'",
+          "getterBody": " '&#39;'",
+          "authoredPreparedSpan": [
+            3,
+            22
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "&#39;"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "&#39;"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "double-encoded-12-i2-Lf",
+      "source": "{{ &#39;&amp;#39;&#39; }}",
+      "blockSpan": [
+        0,
+        25
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        25
+      ],
+      "callback": "{{ &#39;&amp;#39;&#39; }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ &#39;&amp;#39;&#39; }}",
+      "primary": {
+        "before": {
+          "input": "{{ '&#39;' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'&#39;'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'&#39;'",
+          "getterBody": " '&#39;'",
+          "authoredPreparedSpan": [
+            3,
+            22
+          ]
+        },
+        "after": {
+          "input": "{{ '&#39;' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'&#39;'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'&#39;'",
+          "getterBody": " '&#39;'",
+          "authoredPreparedSpan": [
+            3,
+            22
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "&#39;"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "&#39;"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "double-encoded-80-i2-Lf",
+      "source": "{{ &#39;&amp;#39;&#39; }}",
+      "blockSpan": [
+        0,
+        25
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        25
+      ],
+      "callback": "{{ &#39;&amp;#39;&#39; }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ &#39;&amp;#39;&#39; }}",
+      "primary": {
+        "before": {
+          "input": "{{ '&#39;' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'&#39;'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'&#39;'",
+          "getterBody": " '&#39;'",
+          "authoredPreparedSpan": [
+            3,
+            22
+          ]
+        },
+        "after": {
+          "input": "{{ '&#39;' }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "'&#39;'",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "'&#39;'",
+          "getterBody": " '&#39;'",
+          "authoredPreparedSpan": [
+            3,
+            22
+          ]
+        },
+        "scope": "constants",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "&#39;"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "string",
+                "value": "&#39;"
+              }
+            },
+            "trace": [],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "trim-1-i2-Lf",
+      "source": "{{  left+right﻿ }}",
+      "blockSpan": [
+        0,
+        21
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        21
+      ],
+      "callback": "{{  left+right﻿ }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{  left +\n  right﻿ }}",
+      "primary": {
+        "before": {
+          "input": "{{  left+right﻿ }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            5,
+            15
+          ]
+        },
+        "after": {
+          "input": "{{  left +\n  right﻿ }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\n  right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            5,
+            19
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "trim-12-i2-Lf",
+      "source": "{{  left+right﻿ }}",
+      "blockSpan": [
+        0,
+        21
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        21
+      ],
+      "callback": "{{  left+right﻿ }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{  left +\n  right﻿ }}",
+      "primary": {
+        "before": {
+          "input": "{{  left+right﻿ }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            5,
+            15
+          ]
+        },
+        "after": {
+          "input": "{{  left +\n  right﻿ }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\n  right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            5,
+            19
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "trim-80-i2-Lf",
+      "source": "{{  left+right﻿ }}",
+      "blockSpan": [
+        0,
+        21
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        21
+      ],
+      "callback": "{{  left+right﻿ }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{  left + right﻿ }}",
+      "primary": {
+        "before": {
+          "input": "{{  left+right﻿ }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            5,
+            15
+          ]
+        },
+        "after": {
+          "input": "{{  left + right﻿ }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left + right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left + right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            5,
+            17
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "lf-atom-1-i2-Lf",
+      "source": "{{\n value\n}}",
+      "blockSpan": [
+        0,
+        12
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        12
+      ],
+      "callback": "{{\n value\n}}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{\n value\n}}",
+      "primary": {
+        "before": {
+          "input": "{{\n value\n}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            4,
+            9
+          ]
+        },
+        "after": {
+          "input": "{{\n value\n}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            4,
+            9
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "lf-atom-12-i2-Lf",
+      "source": "{{\n value\n}}",
+      "blockSpan": [
+        0,
+        12
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        12
+      ],
+      "callback": "{{\n value\n}}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{\n value\n}}",
+      "primary": {
+        "before": {
+          "input": "{{\n value\n}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            4,
+            9
+          ]
+        },
+        "after": {
+          "input": "{{\n value\n}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            4,
+            9
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "lf-atom-80-i2-Lf",
+      "source": "{{\n value\n}}",
+      "blockSpan": [
+        0,
+        12
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        12
+      ],
+      "callback": "{{\n value\n}}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{\n value\n}}",
+      "primary": {
+        "before": {
+          "input": "{{\n value\n}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            4,
+            9
+          ]
+        },
+        "after": {
+          "input": "{{\n value\n}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "value",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "value",
+          "getterBody": "scope.value",
+          "authoredPreparedSpan": [
+            4,
+            9
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 7
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "value"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "mapped-lf-1-i2-Lf",
+      "source": "{{ left&#43;\nright }}",
+      "blockSpan": [
+        0,
+        21
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        21
+      ],
+      "callback": "{{ left&#43;\nright }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left &#43;\nright }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+\nright }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+\nright",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+\nright",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            18
+          ]
+        },
+        "after": {
+          "input": "{{ left +\nright }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\nright",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\nright",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            19
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "mapped-lf-12-i2-Lf",
+      "source": "{{ left&#43;\nright }}",
+      "blockSpan": [
+        0,
+        21
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        21
+      ],
+      "callback": "{{ left&#43;\nright }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left &#43;\nright }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+\nright }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+\nright",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+\nright",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            18
+          ]
+        },
+        "after": {
+          "input": "{{ left +\nright }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\nright",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\nright",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            19
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "mapped-lf-80-i2-Lf",
+      "source": "{{ left&#43;\nright }}",
+      "blockSpan": [
+        0,
+        21
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        21
+      ],
+      "callback": "{{ left&#43;\nright }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left &#43;\nright }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+\nright }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+\nright",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+\nright",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            18
+          ]
+        },
+        "after": {
+          "input": "{{ left +\nright }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\nright",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\nright",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            19
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "parentheses-1-i2-Lf",
+      "source": "{{(left+right)}}",
+      "blockSpan": [
+        0,
+        16
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        16
+      ],
+      "callback": "{{(left+right)}}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{(left +\n  right)}}",
+      "primary": {
+        "before": {
+          "input": "{{(left+right)}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "(left+right)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "(left+right)",
+          "getterBody": " (scope.left+scope.right)",
+          "authoredPreparedSpan": [
+            2,
+            14
+          ]
+        },
+        "after": {
+          "input": "{{(left +\n  right)}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "(left +\n  right)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "(left +\n  right)",
+          "getterBody": " (scope.left+scope.right)",
+          "authoredPreparedSpan": [
+            2,
+            18
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "parentheses-12-i2-Lf",
+      "source": "{{(left+right)}}",
+      "blockSpan": [
+        0,
+        16
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        16
+      ],
+      "callback": "{{(left+right)}}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{(left +\n  right)}}",
+      "primary": {
+        "before": {
+          "input": "{{(left+right)}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "(left+right)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "(left+right)",
+          "getterBody": " (scope.left+scope.right)",
+          "authoredPreparedSpan": [
+            2,
+            14
+          ]
+        },
+        "after": {
+          "input": "{{(left +\n  right)}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "(left +\n  right)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "(left +\n  right)",
+          "getterBody": " (scope.left+scope.right)",
+          "authoredPreparedSpan": [
+            2,
+            18
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "parentheses-80-i2-Lf",
+      "source": "{{(left+right)}}",
+      "blockSpan": [
+        0,
+        16
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        16
+      ],
+      "callback": "{{(left+right)}}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{(left + right)}}",
+      "primary": {
+        "before": {
+          "input": "{{(left+right)}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "(left+right)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "(left+right)",
+          "getterBody": " (scope.left+scope.right)",
+          "authoredPreparedSpan": [
+            2,
+            14
+          ]
+        },
+        "after": {
+          "input": "{{(left + right)}}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "(left + right)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "(left + right)",
+          "getterBody": " (scope.left+scope.right)",
+          "authoredPreparedSpan": [
+            2,
+            16
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "repeated-first-1-i2-Lf",
+      "source": "{{ left+right }}{{ left+right }}",
+      "blockSpan": [
+        0,
+        32
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        16
+      ],
+      "callback": "{{ left+right }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left +\n  right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            13
+          ]
+        },
+        "after": {
+          "input": "{{ left +\n  right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\n  right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "repeated-first-12-i2-Lf",
+      "source": "{{ left+right }}{{ left+right }}",
+      "blockSpan": [
+        0,
+        32
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        16
+      ],
+      "callback": "{{ left+right }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left +\n  right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            13
+          ]
+        },
+        "after": {
+          "input": "{{ left +\n  right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\n  right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "repeated-first-80-i2-Lf",
+      "source": "{{ left+right }}{{ left+right }}",
+      "blockSpan": [
+        0,
+        32
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        16
+      ],
+      "callback": "{{ left+right }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left + right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            13
+          ]
+        },
+        "after": {
+          "input": "{{ left + right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left + right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left + right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            15
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "repeated-second-1-i2-Lf",
+      "source": "{{ left+right }}{{ left+right }}",
+      "blockSpan": [
+        0,
+        32
+      ],
+      "path": [
+        1
+      ],
+      "callbackSpan": [
+        16,
+        32
+      ],
+      "callback": "{{ left+right }}",
+      "width": 1,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left +\n  right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            19,
+            29
+          ]
+        },
+        "after": {
+          "input": "{{ left +\n  right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\n  right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "repeated-second-12-i2-Lf",
+      "source": "{{ left+right }}{{ left+right }}",
+      "blockSpan": [
+        0,
+        32
+      ],
+      "path": [
+        1
+      ],
+      "callbackSpan": [
+        16,
+        32
+      ],
+      "callback": "{{ left+right }}",
+      "width": 12,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left +\n  right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            19,
+            29
+          ]
+        },
+        "after": {
+          "input": "{{ left +\n  right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left +\n  right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left +\n  right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "repeated-second-80-i2-Lf",
+      "source": "{{ left+right }}{{ left+right }}",
+      "blockSpan": [
+        0,
+        32
+      ],
+      "path": [
+        1
+      ],
+      "callbackSpan": [
+        16,
+        32
+      ],
+      "callback": "{{ left+right }}",
+      "width": 80,
+      "indentWidth": 2,
+      "lineEnding": "Lf",
+      "expected": "{{ left + right }}",
+      "primary": {
+        "before": {
+          "input": "{{ left+right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left+right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left+right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            19,
+            29
+          ]
+        },
+        "after": {
+          "input": "{{ left + right }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "left + right",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "left + right",
+          "getterBody": " scope.left+scope.right",
+          "authoredPreparedSpan": [
+            3,
+            15
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 9
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "call-binary-1-i4-Lf",
+      "source": "{{ sum(left+right,2) }}",
+      "blockSpan": [
+        0,
+        23
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        23
+      ],
+      "callback": "{{ sum(left+right,2) }}",
+      "width": 1,
+      "indentWidth": 4,
+      "lineEnding": "Lf",
+      "expected": "{{ sum ( left +\n    right, 2 ) }}",
+      "primary": {
+        "before": {
+          "input": "{{ sum(left+right,2) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum(left+right,2)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum(left+right,2)",
+          "getterBody": " scope.sum(scope.left+scope.right,2)",
+          "authoredPreparedSpan": [
+            3,
+            20
+          ]
+        },
+        "after": {
+          "input": "{{ sum ( left +\n    right, 2 ) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum ( left +\n    right, 2 )",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum ( left +\n    right, 2 )",
+          "getterBody": " scope.sum(scope.left+scope.right,2)",
+          "authoredPreparedSpan": [
+            3,
+            30
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 11
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 11
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 11
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 11
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "call-binary-12-i4-Lf",
+      "source": "{{ sum(left+right,2) }}",
+      "blockSpan": [
+        0,
+        23
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        23
+      ],
+      "callback": "{{ sum(left+right,2) }}",
+      "width": 12,
+      "indentWidth": 4,
+      "lineEnding": "Lf",
+      "expected": "{{ sum ( left +\n    right, 2 ) }}",
+      "primary": {
+        "before": {
+          "input": "{{ sum(left+right,2) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum(left+right,2)",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum(left+right,2)",
+          "getterBody": " scope.sum(scope.left+scope.right,2)",
+          "authoredPreparedSpan": [
+            3,
+            20
+          ]
+        },
+        "after": {
+          "input": "{{ sum ( left +\n    right, 2 ) }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "sum ( left +\n    right, 2 )",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "sum ( left +\n    right, 2 )",
+          "getterBody": " scope.sum(scope.left+scope.right,2)",
+          "authoredPreparedSpan": [
+            3,
+            30
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 11
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 11
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "number",
+                "value": 11
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "sum"
+              },
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              },
+              {
+                "kind": "call",
+                "name": "sum",
+                "args": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ],
+                "result": {
+                  "kind": "number",
+                  "value": 11
+                }
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "array-binary-1-i4-Lf",
+      "source": "{{ [left+right,2] }}",
+      "blockSpan": [
+        0,
+        20
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        20
+      ],
+      "callback": "{{ [left+right,2] }}",
+      "width": 1,
+      "indentWidth": 4,
+      "lineEnding": "Lf",
+      "expected": "{{ [ left +\n    right, 2 ] }}",
+      "primary": {
+        "before": {
+          "input": "{{ [left+right,2] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[left+right,2]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[left+right,2]",
+          "getterBody": " [scope.left+scope.right,2]",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "after": {
+          "input": "{{ [ left +\n    right, 2 ] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[ left +\n    right, 2 ]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[ left +\n    right, 2 ]",
+          "getterBody": " [scope.left+scope.right,2]",
+          "authoredPreparedSpan": [
+            3,
+            26
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    },
+    {
+      "id": "array-binary-12-i4-Lf",
+      "source": "{{ [left+right,2] }}",
+      "blockSpan": [
+        0,
+        20
+      ],
+      "path": [
+        0
+      ],
+      "callbackSpan": [
+        0,
+        20
+      ],
+      "callback": "{{ [left+right,2] }}",
+      "width": 12,
+      "indentWidth": 4,
+      "lineEnding": "Lf",
+      "expected": "{{ [ left +\n    right, 2 ] }}",
+      "primary": {
+        "before": {
+          "input": "{{ [left+right,2] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[left+right,2]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[left+right,2]",
+          "getterBody": " [scope.left+scope.right,2]",
+          "authoredPreparedSpan": [
+            3,
+            17
+          ]
+        },
+        "after": {
+          "input": "{{ [ left +\n    right, 2 ] }}",
+          "tokens": [
+            {
+              "tag": true,
+              "value": "[ left +\n    right, 2 ]",
+              "html": false,
+              "oneTime": false
+            }
+          ],
+          "expression": "[ left +\n    right, 2 ]",
+          "getterBody": " [scope.left+scope.right,2]",
+          "authoredPreparedSpan": [
+            3,
+            26
+          ]
+        },
+        "scope": "effects",
+        "outcomes": {
+          "test": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          },
+          "production": {
+            "result": {
+              "kind": "return",
+              "value": {
+                "kind": "array",
+                "items": [
+                  {
+                    "kind": "number",
+                    "value": 9
+                  },
+                  {
+                    "kind": "number",
+                    "value": 2
+                  }
+                ]
+              }
+            },
+            "trace": [
+              {
+                "kind": "read",
+                "name": "left"
+              },
+              {
+                "kind": "read",
+                "name": "right"
+              }
+            ],
+            "warnings": [],
+            "noop": false
+          }
+        }
+      }
+    }
+  ],
+  "primaryControls": [
+    {
+      "id": "invalid-generated-getter",
+      "scope": "effects",
+      "semanticCredit": false,
+      "input": "{{ left + }}",
+      "tokens": [
+        {
+          "tag": true,
+          "value": "left +",
+          "html": false,
+          "oneTime": false
+        }
+      ],
+      "expression": "left +",
+      "getterBody": " scope.left+",
+      "outcomes": {
+        "test": {
+          "result": {
+            "kind": "return",
+            "value": {
+              "kind": "undefined"
+            }
+          },
+          "trace": [],
+          "warnings": [
+            {
+              "method": "error",
+              "args": [
+                {
+                  "kind": "string",
+                  "value": "[Vue warn]: Invalid expression. Generated function body:  scope.left+"
+                }
+              ]
+            }
+          ],
+          "noop": true
+        },
+        "production": {
+          "result": {
+            "kind": "return",
+            "value": {
+              "kind": "undefined"
+            }
+          },
+          "trace": [],
+          "warnings": [],
+          "noop": true
+        }
+      }
+    },
+    {
+      "id": "line-comment-erases-getter",
+      "scope": "effects",
+      "semanticCredit": false,
+      "input": "{{ //keep\nvalue }}",
+      "tokens": [
+        {
+          "tag": true,
+          "value": "//keep\nvalue",
+          "html": false,
+          "oneTime": false
+        }
+      ],
+      "expression": "//keep\nvalue",
+      "getterBody": " //scope.keepvalue",
+      "outcomes": {
+        "test": {
+          "result": {
+            "kind": "return",
+            "value": {
+              "kind": "undefined"
+            }
+          },
+          "trace": [],
+          "warnings": [],
+          "noop": false
+        },
+        "production": {
+          "result": {
+            "kind": "return",
+            "value": {
+              "kind": "undefined"
+            }
+          },
+          "trace": [],
+          "warnings": [],
+          "noop": false
+        }
+      }
+    },
+    {
+      "id": "unicode-identifier-is-not-a-scope-path",
+      "scope": "effects",
+      "semanticCredit": false,
+      "input": "{{ /*keep*/ msg && 条件 }}",
+      "tokens": [
+        {
+          "tag": true,
+          "value": "/*keep*/ msg && 条件",
+          "html": false,
+          "oneTime": false
+        }
+      ],
+      "expression": "/*keep*/ msg && 条件",
+      "getterBody": " /*scope.keep*/scope.msg&&条件",
+      "outcomes": {
+        "test": {
+          "result": {
+            "kind": "throw",
+            "error": {
+              "name": "ReferenceError",
+              "message": "条件 is not defined"
+            }
+          },
+          "trace": [
+            {
+              "kind": "read",
+              "name": "msg"
+            }
+          ],
+          "warnings": [],
+          "noop": false
+        },
+        "production": {
+          "result": {
+            "kind": "throw",
+            "error": {
+              "name": "ReferenceError",
+              "message": "条件 is not defined"
+            }
+          },
+          "trace": [
+            {
+              "kind": "read",
+              "name": "msg"
+            }
+          ],
+          "warnings": [],
+          "noop": false
+        }
+      }
+    },
+    {
+      "id": "trailing-block-comment",
+      "scope": "effects",
+      "semanticCredit": false,
+      "input": "{{ value /*tail*/ }}",
+      "tokens": [
+        {
+          "tag": true,
+          "value": "value /*tail*/",
+          "html": false,
+          "oneTime": false
+        }
+      ],
+      "expression": "value /*tail*/",
+      "getterBody": " scope.value/*scope.tail*/",
+      "outcomes": {
+        "test": {
+          "result": {
+            "kind": "return",
+            "value": {
+              "kind": "number",
+              "value": 7
+            }
+          },
+          "trace": [
+            {
+              "kind": "read",
+              "name": "value"
+            }
+          ],
+          "warnings": [],
+          "noop": false
+        },
+        "production": {
+          "result": {
+            "kind": "return",
+            "value": {
+              "kind": "number",
+              "value": 7
+            }
+          },
+          "trace": [
+            {
+              "kind": "read",
+              "name": "value"
+            }
+          ],
+          "warnings": [],
+          "noop": false
+        }
+      }
+    },
+    {
+      "id": "actual-getter-throws",
+      "scope": "effects",
+      "semanticCredit": false,
+      "input": "{{ boom(value) }}",
+      "tokens": [
+        {
+          "tag": true,
+          "value": "boom(value)",
+          "html": false,
+          "oneTime": false
+        }
+      ],
+      "expression": "boom(value)",
+      "getterBody": " scope.boom(scope.value)",
+      "outcomes": {
+        "test": {
+          "result": {
+            "kind": "throw",
+            "error": {
+              "name": "Error",
+              "message": "fixture boom"
+            }
+          },
+          "trace": [
+            {
+              "kind": "read",
+              "name": "boom"
+            },
+            {
+              "kind": "read",
+              "name": "value"
+            },
+            {
+              "kind": "call",
+              "name": "boom",
+              "args": [
+                {
+                  "kind": "number",
+                  "value": 7
+                }
+              ],
+              "throws": {
+                "name": "Error",
+                "message": "fixture boom"
+              }
+            }
+          ],
+          "warnings": [],
+          "noop": false
+        },
+        "production": {
+          "result": {
+            "kind": "throw",
+            "error": {
+              "name": "Error",
+              "message": "fixture boom"
+            }
+          },
+          "trace": [
+            {
+              "kind": "read",
+              "name": "boom"
+            },
+            {
+              "kind": "read",
+              "name": "value"
+            },
+            {
+              "kind": "call",
+              "name": "boom",
+              "args": [
+                {
+                  "kind": "number",
+                  "value": 7
+                }
+              ],
+              "throws": {
+                "name": "Error",
+                "message": "fixture boom"
+              }
+            }
+          ],
+          "warnings": [],
+          "noop": false
+        }
+      }
+    },
+    {
+      "id": "actual-missing-member-throws",
+      "scope": "effects",
+      "semanticCredit": false,
+      "input": "{{ missing.value }}",
+      "tokens": [
+        {
+          "tag": true,
+          "value": "missing.value",
+          "html": false,
+          "oneTime": false
+        }
+      ],
+      "expression": "missing.value",
+      "getterBody": "scope.missing.value",
+      "outcomes": {
+        "test": {
+          "result": {
+            "kind": "throw",
+            "error": {
+              "name": "TypeError",
+              "message": "Cannot read properties of undefined (reading 'value')"
+            }
+          },
+          "trace": [
+            {
+              "kind": "read",
+              "name": "missing"
+            }
+          ],
+          "warnings": [],
+          "noop": false
+        },
+        "production": {
+          "result": {
+            "kind": "throw",
+            "error": {
+              "name": "TypeError",
+              "message": "Cannot read properties of undefined (reading 'value')"
+            }
+          },
+          "trace": [
+            {
+              "kind": "read",
+              "name": "missing"
+            }
+          ],
+          "warnings": [],
+          "noop": false
+        }
+      }
+    },
+    {
+      "id": "cr-is-no-text-framing",
+      "scope": "effects",
+      "semanticCredit": false,
+      "input": "{{ value\r }}",
+      "tokens": null,
+      "expression": null,
+      "getterBody": null,
+      "outcomes": {
+        "test": {
+          "result": null,
+          "trace": [],
+          "warnings": [],
+          "noop": false
+        },
+        "production": {
+          "result": null,
+          "trace": [],
+          "warnings": [],
+          "noop": false
+        }
+      }
+    },
+    {
+      "id": "line-comment-discards-following-operator",
+      "scope": "effects",
+      "semanticCredit": false,
+      "input": "{{ value //keep\n+ left }}",
+      "tokens": [
+        {
+          "tag": true,
+          "value": "value //keep\n+ left",
+          "html": false,
+          "oneTime": false
+        }
+      ],
+      "expression": "value //keep\n+ left",
+      "getterBody": " scope.value//scope.keep+scope.left",
+      "outcomes": {
+        "test": {
+          "result": {
+            "kind": "return",
+            "value": {
+              "kind": "number",
+              "value": 7
+            }
+          },
+          "trace": [
+            {
+              "kind": "read",
+              "name": "value"
+            }
+          ],
+          "warnings": [],
+          "noop": false
+        },
+        "production": {
+          "result": {
+            "kind": "return",
+            "value": {
+              "kind": "number",
+              "value": 7
+            }
+          },
+          "trace": [
+            {
+              "kind": "read",
+              "name": "value"
+            }
+          ],
+          "warnings": [],
+          "noop": false
+        }
+      }
+    }
+  ]
+}

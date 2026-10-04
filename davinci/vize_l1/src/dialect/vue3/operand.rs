@@ -6,6 +6,9 @@ use crate::markup::{
 };
 use vize_l0::Span;
 
+mod binding;
+pub(crate) use binding::static_binding_parts;
+
 /// The actual complete conditional directive spelling.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeConditionKind {

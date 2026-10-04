@@ -2,6 +2,7 @@
 
 use vize_l0::{Allocator, Span, Vec};
 use vize_l1::embed::syntax::EmbedHole;
+use vize_l1::markup::NativeAttributeOperandError;
 use vize_l1::markup::{NativeInterpolationOperand, NativeTemplateComponent};
 
 use super::template::Cursor;
@@ -11,6 +12,8 @@ use super::{
 
 #[path = "selected_template/builder.rs"]
 mod builder;
+#[path = "selected_template/conditional.rs"]
+mod conditional;
 #[path = "selected_template/input.rs"]
 mod input;
 #[path = "selected_template/observed.rs"]
@@ -23,7 +26,8 @@ pub use value::NativeTemplateValuePolicy;
 use value::ValuePolicy;
 
 pub use observed::{
-    ObservedNativeTemplateDocument, ObservedNativeTemplateFailure, ObservedNativeTemplateRefusal,
+    ObservedNativeTemplateDocument, ObservedNativeTemplateFailure,
+    ObservedNativeTemplateFailureParts, ObservedNativeTemplateRefusal,
     observed_native_template_document, observed_native_template_document_with_policy,
 };
 
@@ -35,6 +39,31 @@ pub enum NativeTemplateRefusal {
     /// Exact original directive-value content in authored-file coordinates.
     DirectiveValue {
         span: Span,
+    },
+    AttributeHead {
+        offset: usize,
+        kind: NativeAttributeOperandError,
+    },
+    AttributeObservation {
+        span: Span,
+        index: usize,
+        kind: NativeAttributeOperandError,
+    },
+    MissingAttributeOperand {
+        offset: usize,
+        index: usize,
+    },
+    UnquotedConditionalValue {
+        span: Span,
+    },
+    AttributeRejected {
+        span: Span,
+        index: usize,
+        hole: Option<EmbedHole>,
+    },
+    AttributeExpression {
+        span: Span,
+        refusal: ExpressionRefusal,
     },
     MissingOperand {
         offset: usize,

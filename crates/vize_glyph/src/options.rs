@@ -306,11 +306,11 @@ impl FormatOptions {
             b"\t"
         } else {
             match self.tab_width {
-                1 => b" ",
                 2 => b"  ",
-                4 => b"    ",
-                8 => b"        ",
-                _ => b"  ", // Default to 2 spaces
+                width @ 0..=24 => b"                        "
+                    .get(..usize::from(width))
+                    .unwrap_or(b"  "),
+                _ => b"  ", // Retain the legacy fallback outside shared valid widths.
             }
         }
     }

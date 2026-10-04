@@ -35,10 +35,11 @@ pub use expression::{
 pub use printer::{LineEnding, PrintOptions, print};
 pub use selected_template::{
     NativeTemplateDocument, NativeTemplateRefusal, NativeTemplateValuePolicy,
-    ObservedNativeTemplateDocument, ObservedNativeTemplateFailure, ObservedNativeTemplateRefusal,
-    native_template_document, observed_native_template_document,
-    observed_native_template_document_with_policy,
+    ObservedNativeTemplateDocument, ObservedNativeTemplateFailure,
+    ObservedNativeTemplateFailureParts, ObservedNativeTemplateRefusal, native_template_document,
+    observed_native_template_document, observed_native_template_document_with_policy,
 };
+pub use sfc::NativeSfcDirectivePolicy;
 pub use sfc::{
     NativeSfcBlockRole, NativeSfcObservation, NativeSfcOptions, NativeSfcRefusal,
     observe_native_sfc_in,
@@ -48,3 +49,9 @@ pub use template::{TemplateDocument, TemplateRefusal, UnsupportedSyntax, templat
 #[path = "native_doc/vue2_text.rs"]
 mod vue2_text;
 pub use vue2_text::{Vue2TextDocument, Vue2TextDocumentRefusal, vue2_text_document};
+
+#[path = "native_doc/vue1_text.rs"]
+mod vue1_text;
+pub use vue1_text::{
+    Vue1TextDocument, Vue1TextDocumentRefusal, Vue1TextPrintRefusal, vue1_text_document,
+};
