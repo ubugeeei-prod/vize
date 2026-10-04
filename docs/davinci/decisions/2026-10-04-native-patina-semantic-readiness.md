@@ -238,7 +238,10 @@ escaping or detaching the capability.
 
 The opt-in configured SFC driver freezes actual enabled ScriptRule instances
 in original catalog order before parsing. Native setup capability defaults to
-None, including PreferUseTemplateRef in this parent. Catalog names, filename
+None, including PreferUseTemplateRef in this parent. Offered instances at the
+two actual catalog keys NuxtConfigKeysOrder/NoGetCurrentInstance additionally
+refuse with UnprovidedInvocationPolicy; their filename/implicit-activation
+policies are not authenticated by this host and are never skipped as clean. Catalog names, filename
 or fixture IDs cannot admit a namesake override. Unknown names, missing actual
 capability, disabled-precedence violations, other enabled rule families,
 unsupported requested Vue/Vapor and type-aware configurations refuse. A
@@ -284,7 +287,7 @@ claim is made. Normal protected 104x3 ceilings/ratchet still apply unchanged.
 
 ### Frozen-law and delivery obligations
 
-Forty-two independently authored provider laws and eight compile-fail custody
+Forty-six independently authored provider laws and eight compile-fail custody
 examples are written, not compiled or executed. One exact new source-host
 catalog boundary law and the fifteen unchanged pure current-packet controls
 passed, alongside the existing catalog boundary laws. Rust/runtime acceptance
@@ -314,3 +317,31 @@ No local Rust build, installation or new manual campaign is run. A real
 PreferUseTemplateRef builtin/whole observer transition remains a separately
 reviewed true native Stack child, with no parent native-history or default
 replacement credit. #6848 and #6881 remain unfinished.
+
+### Private invocation-policy review repair
+
+Paired repair decisions: [#6848](https://github.com/ubugeeei-prod/vize/issues/6848#issuecomment-5977956599) / [#6881](https://github.com/ubugeeei-prod/vize/issues/6881#issuecomment-5977957409).
+
+Full immutable `051d31a0` review retained one source-only HOLD: actual original
+entry_may_match applies the Nuxt config filename gate even to overrides, and
+active_builtin_script_rule_entries skips implicitly enabled NoGetCurrentInstance
+without Vapor or explicit request. A provided native callback cannot bypass
+those original host policies. The new host therefore refuses only offered
+capabilities at the two genuine registry constants, after actual instance/name/
+capability/setup checks, including currently valid filename/explicit requests.
+Default-unprovided builtins still return UnprovidedRule first; disabled precedence
+and every old bare/default/parser rule remain unchanged. No legacy helper or
+new filename/source scan is added, only two bounded catalog metadata comparisons.
+
+Four new complete laws retain original History.vue empty output, genuine Nuxt
+config filename warnings, implicit-get empty/explicit-get warning, disabled
+policy instance traces/output and default missing-capability priority in all
+three locales. The implicit fixture uses real public setters: Some installs the
+actual catalog, None resets explicit-get, and actual other catalog/registered
+families are disabled. No catalog fields or fake original instance are minted.
+All original42 laws/eight custody examples and full source witnesses remain
+byte-exact; repaired46 laws are uncompiled/unexecuted. Original HOLD receipt
+`/tmp/native-dialects-patina-sfc-provider-source-review-051d-20261004.json`, SHA256
+`df28101db8c3346a6cb2bbcaa445fec4d1afbbe5a5961147405c4e6962a94915`, stays
+source review only. Fresh exact repaired-source peer/coordinating review is
+required before publication; normal Actions/protected acceptance stays pending.

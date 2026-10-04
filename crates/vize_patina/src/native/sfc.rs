@@ -38,6 +38,9 @@ pub enum NativeSfcLintRefusal {
     UnprovidedRule {
         rule: String,
     },
+    UnprovidedInvocationPolicy {
+        rule: String,
+    },
     Descriptor {
         issues: Vec<DescriptorIssue>,
         errors: Vec<ContainerError>,

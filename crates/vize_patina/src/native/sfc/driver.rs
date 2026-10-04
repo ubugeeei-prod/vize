@@ -97,6 +97,11 @@ impl Linter {
             if !instance.runs_on_script_setup() {
                 return Err(missing());
             }
+            if crate::linter::script_rules::native::requires_invocation_policy(instance) {
+                return Err(Refusal::UnprovidedInvocationPolicy {
+                    rule: String::new(name),
+                });
+            }
             callbacks.push(Callback {
                 name,
                 rule,
