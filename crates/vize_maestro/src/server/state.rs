@@ -7,6 +7,7 @@
 
 mod art_template_context;
 mod config;
+mod default;
 mod features;
 mod lint_hover;
 #[cfg(feature = "experimental-source-navigation")]
@@ -194,12 +195,6 @@ pub struct ServerState {
     /// the document whose revision moved (#3442).
     #[cfg(feature = "native")]
     corsa_overlays: corsa_overlays::CorsaOverlayCache,
-}
-
-impl Default for ServerState {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl ServerState {
