@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   closeSync,
+  copyFileSync,
   existsSync,
   mkdirSync,
   openSync,
@@ -163,6 +164,11 @@ for (const side of runner === 2 ? ["head", "base"] : ["base", "head"]) {
   data.binary = parseBuiltExecutable(jsonLines);
   data.binarySha256 = sha256(readFileSync(data.binary));
   data.binaryBytes = readFileSync(data.binary).length;
+  data.retainedBinary = `binaries/${side}`;
+  const retainedPath = join(out, data.retainedBinary);
+  mkdirSync(dirname(retainedPath), { recursive: true });
+  copyFileSync(data.binary, retainedPath);
+  assert.equal(sha256(readFileSync(retainedPath)), data.binarySha256);
   const symbols = command("nm", ["-S", "-n", "-C", data.binary], `${side}-symbols`);
   writeFileSync(
     join(out, `${side}-parser-symbols.txt`),
@@ -205,6 +211,7 @@ const report = {
       side,
       {
         path: data.binary,
+        retainedPath: data.retainedBinary,
         sha256: data.binarySha256,
         bytes: data.binaryBytes,
       },

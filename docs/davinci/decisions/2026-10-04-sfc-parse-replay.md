@@ -58,6 +58,9 @@ The throughput control and whole-CLI benchmarks are outside this experiment.
 Retain every iteration/time sample, Criterion estimate and metadata, command
 stdout/stderr, execution chronology, source/lock/config files, actual compiler,
 runner/CPU metadata, binary hashes, symbol addresses/extents and disassembly.
+Copy both built ELF files into the uploaded packet before timing, verify their
+hashes against the originals, and record retained relative paths. Execute the
+original build paths so archival custody does not change the measured argv/path.
 Always upload partial evidence on failure; retain artifacts for 30 days.
 Keep linked experiment receipts in the issue and this record before expiry.
 
@@ -67,6 +70,46 @@ A fixed-seed 10000-resample percentile interval resamples six whole pairs;
 it is conditional on that runner and its built binaries, excluding build/layout
 and between-runner uncertainty. Do not pool Criterion iterations as independent
 A/B runs, discard inconvenient observations, or call the range a confidence interval.
+
+## Initial completed hosted experiment
+
+Exact harness source `4810bf6f14597e9ee7e50e20d969e2fe0395415c`,
+[replay 37183831294](https://github.com/ubugeeei-prod/vize/actions/runs/37183831294),
+succeeded on all three reference instances. Jobs are `111381562127`,
+`111381562224` and `111381562292`; artifacts are `11296038897`,
+`11296336813` and `11296560828`, respectively. Each packet was independently
+checked against frozen source/lock hashes, two completed pre-window builds,
+36 unique chronologically ordered windows, and all 3600 raw sample pairs.
+The 10800 Criterion sample pairs are retained observations, not independent A/B runs.
+
+| Runner | Case    | Paired median head/base | Conditional 95% interval | Base first | Head first |
+| ------ | ------- | ----------------------: | ------------------------ | ---------: | ---------: |
+| 1      | simple  |                  0.9739 | 0.9431–0.9903            |     0.9455 |     0.9776 |
+| 1      | medium  |                  1.0366 | 0.9936–1.0752            |     1.0391 |     1.0341 |
+| 1      | complex |                  1.0543 | 0.9958–1.0797            |     0.9961 |     1.0661 |
+| 2      | simple  |                  0.9613 | 0.9222–0.9970            |     0.9887 |     0.9282 |
+| 2      | medium  |                  1.0377 | 1.0038–1.0657            |     1.0439 |     1.0083 |
+| 2      | complex |                  1.0933 | 1.0162–1.1124            |     1.1123 |     1.0744 |
+| 3      | simple  |                  0.9485 | 0.9245–0.9939            |     0.9472 |     0.9498 |
+| 3      | medium  |                  1.0410 | 1.0038–1.0784            |     1.0056 |     1.0467 |
+| 3      | complex |                  1.0945 | 1.0079–1.1318            |     1.1194 |     1.0696 |
+
+Medium paired medians are +3.66% to +4.10%; complex is +5.43% to +9.45%.
+Runner 1's medium and complex conditional intervals include 1; runners 2/3
+exclude 1. Simple is faster at every runner median. Order-specific estimates
+and runner differences remain visible; these results do not reproduce the
+original 18% magnitude or establish a cause or absence of regression.
+
+Actual Rust is `1.98.0 (88d9e12ae 2026-08-18)` on AMD EPYC. All three
+packets report identical base SHA256
+`66d7c178aed647eb7d5af69f2919ee61973b7627c487f209f9a8c9387b16f72b`
+and head SHA256
+`e1e8cb8c46161fbe9f7bd0a63a06e7eab69203783c045ad0dfced1b925b0fdba`.
+The parser symbol moves `0x319ba0` to `0x319d00` (+352 bytes), with equal
+`0x3a41` extent. That is layout evidence, not proof of identical instructions
+or of layout causing the timing difference. These initial successful packets
+lack the actual ELF files; preserve them as historical and require a fresh
+packet after the independent review's binary-custody repair.
 
 ## Remaining work
 
@@ -83,6 +126,9 @@ build completion and one unambiguous bench executable, and preserves the
 entire stdout/stderr streams. Regression guards cover the actual mixed stream.
 Initial partial artifact IDs are `11295943362` (runner 1), `11295709076`
 (runner 2) and `11296525246` (runner 3); none contains timed observations.
+Independent peer review identified that hashes and disassembly alone did not
+retain the original ELF bytes. The packet now retains verified copies of both
+measured binaries, enabling later independent section/layout and hash inspection.
 
 Run the exact source lane and inspect all three runner packets and order effects.
 If a smaller signal persists, inspect emitted parser code and layout before
