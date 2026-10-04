@@ -143,10 +143,17 @@ fn parse_source(source: &str, is_tsx: bool) -> ParsedTypeModule {
 }
 
 fn read_dependency_module(path: &Path, sources: &TypeSourceSnapshot) -> Option<ParsedTypeModule> {
-    let mut modules = sources.modules.lock().ok()?;
-    modules
+    // Single-flight per dependency, without holding the map lock while an
+    // unrelated dependency is read or parsed by another publication.
+    let entry = sources
+        .modules
+        .lock()
+        .ok()?
         .entry(path.to_path_buf())
-        .or_insert_with(|| {
+        .or_default()
+        .clone();
+    entry
+        .get_or_init(|| {
             read_module_source(path, sources).map(|(source, is_tsx)| parse_source(&source, is_tsx))
         })
         .clone()

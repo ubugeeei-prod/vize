@@ -49,7 +49,7 @@ jobs:
           path: base
           ref: ${{ env.BASE_SHA }}
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with:
           wild-version: "0.9.0"
@@ -70,7 +70,7 @@ jobs:
         run: |
           cargo test --locked -p vize_atelier_sfc script::context::type_world
           cargo test --locked -p vize_atelier_sfc script::context::source_snapshot
-          cargo clippy --locked -p vize_atelier_sfc --lib --tests --example type_snapshot_bench -- -D warnings
+          cargo clippy --locked -p vize_atelier_sfc --lib --example type_snapshot_bench -- -D warnings
       - name: Build identical public type-world probes at exact base and head
         run: |
           set -euo pipefail

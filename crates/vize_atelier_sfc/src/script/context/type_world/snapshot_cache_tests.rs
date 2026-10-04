@@ -1,5 +1,6 @@
 use super::super::{ScriptCompileContext, TypeSourceSnapshot};
 use std::sync::Arc;
+use vize_carton::cstr;
 use vize_croquis::types::{ResolvedTypeWorld, TypeLookup};
 
 fn body(world: &ResolvedTypeWorld, name: &str) -> vize_carton::String {
@@ -18,7 +19,7 @@ fn warm_dependencies_preserve_root_buffers_and_private_lexical_bindings() {
     let filename = dir.path().join("App.vue");
     let sources = TypeSourceSnapshot::default();
     for root_type in ["number", "string", "boolean"] {
-        let source = format!(
+        let source = cstr!(
             "import type {{ Public, Other }} from './api'; type Root = {root_type}; type Props = Public<Root> & {{ flag: Other }}"
         );
         let world = ScriptCompileContext::new(&source).resolve_type_world_with_sources(
@@ -45,6 +46,8 @@ fn warm_dependencies_preserve_root_buffers_and_private_lexical_bindings() {
     let modules = sources.modules.lock().unwrap();
     let (api, _) = modules
         .get(&api.canonicalize().unwrap())
+        .unwrap()
+        .get()
         .unwrap()
         .as_ref()
         .unwrap();
@@ -125,7 +128,7 @@ fn parallel_consumers_keep_cycles_and_missing_exports_explicit() {
         let handles: Vec<_> = (0..8)
             .map(|index| {
                 let sources = &sources;
-                let filename = dir.path().join(format!("Host{index}.vue"));
+                let filename = dir.path().join(cstr!("Host{index}.vue").as_str());
                 scope.spawn(move || {
                     let ctx = ScriptCompileContext::new(
                         "import type { Public, Missing } from './a'; type Root = Public",

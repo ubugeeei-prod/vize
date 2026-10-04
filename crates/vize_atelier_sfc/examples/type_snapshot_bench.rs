@@ -3,6 +3,14 @@
     clippy::disallowed_types,
     reason = "standalone benchmark uses shared source snapshots"
 )]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_methods,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    reason = "standalone benchmark refuses invalid inputs and renders complete type facts"
+)]
 
 use sha2::{Digest, Sha256};
 use std::{hint::black_box, path::Path, time::Instant};
