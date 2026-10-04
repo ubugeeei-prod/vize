@@ -7,6 +7,8 @@ It changes no enum, parser, dump protocol or product route.
 
 ## Present family and its limits
 
+The present-state source audit is pinned to [commit `da66dc241c`](https://github.com/ubugeeei-prod/vize/commit/da66dc241cb7e6ad25fc52fbb4a1b2c1effec9e5). Later implementation changes do not update this dated census automatically.
+
 `davinci/vize_l2/src/op.rs` contains eight child-position `Op` variants and
 four common attached `BindingOp` variants, followed by ten explicit Vue
 bindings. Regions are owned by their ops; attached bindings have one owner.
