@@ -48,6 +48,27 @@ let server;
 try {
   for (const name of [".nuxt", ".output"])
     fs.rmSync(path.join(fixture, name), { recursive: true, force: true });
+  // Nuxt replaces module-import exceptions with a generic installation error.
+  // Keep the original exception under the exact same source-binding environment.
+  const importLog = path.join(artifacts, "module-import.log");
+  const importFd = fs.openSync(importLog, "w");
+  let imported;
+  try {
+    imported = spawnSync(
+      process.execPath,
+      ["--input-type=module", "--eval", 'await import("@vizejs/nuxt")'],
+      {
+        cwd: fixture,
+        env: { ...sourceBinding.environment, NO_COLOR: "1" },
+        stdio: ["ignore", importFd, importFd],
+        timeout: 30_000,
+      },
+    );
+  } finally {
+    fs.closeSync(importFd);
+  }
+  assert.equal(imported.error, undefined);
+  assert.equal(imported.status, 0, `Source-bound Nuxt module import failed; see ${importLog}`);
   const buildLog = path.join(artifacts, "build.log");
   const buildFd = fs.openSync(buildLog, "w");
   let build;

@@ -121,3 +121,20 @@ explicit comparator. Preserve its original UTF-16 ordering with that
 comparator; no fixture, compiler, runtime assertion or performance change.
 The initial source-native build was still running and grants no execution
 credit. Fresh exact-head Actions are required after this correction.
+
+At `fe3d0d1343fe766f39ecc8fdbef0ebf12e02b6bb`, Nuxt run 37225695959 failed
+before compilation: Nuxt reports only `Could not load @vizejs/nuxt` and
+discards the import exception. Authenticate artifact 11311937358, ZIP
+SHA-256 `2fd47c55889de5704b14c978a473db2b7cb916403424a532ce63dcd24b0a8390`.
+Its Cargo exit is zero at checkout
+`d9695d2044598ae14daa69dd5cde8f93e4e02726`; actual addon SHA-256 is
+`0cac8e35fab9cbba41cf09dcf87ea94af9a5a24718e14f842357311728a38fba` with
+`default,glyph,legacy,napi` features. The packet records one physical load
+and no compiler calls. This is not a compilation, SSR or browser pass.
+
+Retain a bounded separate module import under the same source-binding
+environment before the unchanged build command. Preserve its original
+exception in `module-import.log` instead of diagnosing from Nuxt's generic
+error. This import gives no workload or performance credit. The underlying
+cause and quality result remain pending; do not bypass the binding guard,
+weaken fixture assertions or retry the unchanged failed source.
