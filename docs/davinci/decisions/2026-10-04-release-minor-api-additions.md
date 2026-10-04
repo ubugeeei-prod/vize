@@ -28,8 +28,11 @@ current delivery batch to merge before starting promotion. If main advances,
 the command must regenerate the candidate and repeat exact-head validation.
 
 Completion requires successful full Check (including `test-scripts` and all
-SemVer jobs), Fuzz replay, Miri, Real Project Matrix and Docs evidence on the
-final candidate, followed by atomic main/tag promotion and terminal publication.
+SemVer jobs), Miri and Docs evidence on the final candidate. Require successful
+Fuzz replay and Real Project Matrix evidence; a version-only release commit may
+reuse its parent's successful evidence for those two gates, as permitted by the
+[release workflow contract](../../release/pr-workflow.md). Then promote main
+and the tag atomically and complete terminal publication.
 Verify the public GitHub Release, native/editor assets, exact npm and crates.io
 versions, VS Code Marketplace and Open VSX before reporting publication. A
 draft candidate, green build or existing tag alone grants no completion credit.

@@ -1,9 +1,10 @@
 ## Rust native API migration
 
-The 0.431.0 minor release includes native Rust API additions. Existing
+The 0.431.0 minor release includes native Rust API additions. Complete
 `NativeSfcCompileOptions` struct literals need `scope_id: None` to retain the
 filename-derived scope identity, or `Some("data-v-...")` for an explicit identity.
-Exhaustive matches on `NativeSfcCompileError` and the level lowering
+Callers using `..NativeSfcCompileOptions::default()` already receive `None`.
+Exhaustive matches on `NativeSfcCompileError` and the lowering enum
 `UnsupportedReason` must handle their new refusal variants.
 
 The native pipeline remains experimental and opt-in. This release does not
