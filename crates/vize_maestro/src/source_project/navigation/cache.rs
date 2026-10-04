@@ -1,7 +1,7 @@
 //! Existing snapshot worker admission and configuration cleanup.
 use super::{
     Arc, CachedNavigation, Lang, NativeNavigationProject, NavigationRefusal, NavigationWorker,
-    Profile, ProgramOptions, QueryFamily, SnapshotRefusal, SourceSnapshot,
+    Profile, ProgramOptions, QueryFamily, SnapshotRefusal, SourceSnapshot, Url,
 };
 
 impl NativeNavigationProject<'_> {
