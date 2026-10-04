@@ -63,3 +63,20 @@ Initial source `7d6deb1b` / Check `37170712785` failed the unchanged JavaScript
 formatting gate solely on the inherited protected-evidence Markdown table. Its
 raw job is retained; normal table alignment is corrected without semantic or
 measurement changes. Fresh exact-head acceptance remains required.
+
+## Literal provider acceptance
+
+Native Stack #7714 bottom #7712 actually merged at 2026-10-04T02:56:41Z
+as signed-valid `fcf8f9e5960efaca1c4626cd6748b38f8db28abd`, exact source
+`764c6bb77b22d71d0aa047f2821bc7a5dffa3d85`. Protected Check `37171699318`,
+Musea and Nuxt are terminal SUCCESS. All four authenticated full Rust workers
+pass 15,325 tests and the five original setup custody/refusal laws. All 100 native
+and four formatter rows pass three identical measurements against unchanged
+ceilings. The canonical visitor remains byte-exact; protected twelve standalone
+and eleven scriptless modules/maps and 26/23 configurations, 23/22 hydrations
+retain zero unmount residue. Terminal receipt SHA256:
+`1ff0a091f6b40ae08a9b52e94cad515fbf0fa0c7475304b5e28ed71aaa37e682`.
+
+The dependent whole inline Block consumer #7713 retains separate source, complete
+original output/map, real runtime, protected and literal merge obligations. This
+provider acceptance grants no default replacement or compiler-history completion.

@@ -28,7 +28,6 @@ pub enum VaporErrorKind {
     StyledSource,
     ComponentFragmentLifecycle,
     ComponentEmptySetupTemplate,
-    CommentNormalization,
     Assembly(AssemblyError),
     Setup(crate::module::setup::SetupEmitError),
     GeneratedBindingCollision,
@@ -86,7 +85,7 @@ fn fragments<L: LinkSink>(
     let mut render = Writer::default();
     render.push("function render(_ctx) {");
     render.indent();
-    roots::static_roots::<L, false>(&mut prelude, &mut render, facts)?;
+    roots::static_roots(&mut prelude, &mut render, facts)?;
     roots::return_roots(&mut render, facts.roots().len());
     render.deindent();
     render.newline();

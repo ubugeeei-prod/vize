@@ -3478,8 +3478,8 @@
     },
     {
       "id": "module-comment",
-      "source": "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>",
-      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<!--import { template as _template } from vue-->\", 2)\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst unused='import x';\n;\n\n    const n0 = t0()\n    return n0\n  }\n})\nexport default _sfc_main\n",
+      "source": "<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>",
+      "code": "import { template as _template, defineVaporComponent as _defineVaporComponent } from \"vue\"\nconst t0 = _template(\"<!--import { template as _template } from 'vue'-->\", 2)\n;\nconst _sfc_main = _defineVaporComponent({\n  __multiRoot: false,\n  setup(__props) {\nconst unused='import x';\n;\n\n    const n0 = t0()\n    return n0\n  }\n})\nexport default _sfc_main\n",
       "map": {
         "version": 3,
         "sources": [
@@ -3489,7 +3489,7 @@
         "mappings": ";sBAAyD;;;;;AAA3C",
         "file": "NativeVaporSetup.vue",
         "sourcesContent": [
-          "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>"
+          "<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>"
         ]
       },
       "links": [
@@ -3501,15 +3501,15 @@
           "name": null
         },
         {
-          "generated": 252,
-          "generatedEnd": 276,
+          "generated": 254,
+          "generatedEnd": 278,
           "source": 14,
           "sourceEnd": 38,
           "name": null
         }
       ],
       "reference": {
-        "source": "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>",
+        "source": "<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>",
         "id": "module-comment",
         "filename": "/native-vapor-setup/module-comment.vue",
         "mode": "inline-production",
@@ -3517,7 +3517,7 @@
         "compilerVersion": "3.6.0-rc.9",
         "targetSelection": "explicit Vapor target on genuine parse result; original source unchanged",
         "client": {
-          "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<!--import { template as _template } from vue-->\", 2)\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
+          "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<!--import { template as _template } from &#39;vue&#39;-->\", 2)\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  return n0\n\n}\n\n}\n\n\n\n\nexport default _sfc_main",
           "map": {
             "version": 3,
             "sources": [
@@ -3526,7 +3526,7 @@
             "names": [],
             "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
             "sourcesContent": [
-              "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>"
+              "<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>"
             ]
           },
           "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
@@ -3534,7 +3534,7 @@
           "graph": [
             {
               "api": "parse",
-              "originalSource": "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>",
+              "originalSource": "<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>",
               "selectedVapor": true,
               "scriptSetup": {
                 "start": {
@@ -3556,11 +3556,11 @@
                   "offset": 57
                 },
                 "end": {
-                  "column": 106,
+                  "column": 108,
                   "line": 1,
-                  "offset": 105
+                  "offset": 107
                 },
-                "source": "<!--import { template as _template } from vue-->"
+                "source": "<!--import { template as _template } from 'vue'-->"
               },
               "rootElement": false,
               "errors": []
@@ -3573,7 +3573,7 @@
               "bindings": {
                 "unused": "literal-const"
               },
-              "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<!--import { template as _template } from vue-->\", 2)\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  return n0\n\n}\n\n}",
+              "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<!--import { template as _template } from &#39;vue&#39;-->\", 2)\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __vapor: true,\n  setup(__props) {\n\n\n  const n0 = t0()\n  return n0\n\n}\n\n}",
               "map": {
                 "version": 3,
                 "sources": [
@@ -3582,7 +3582,7 @@
                 "names": [],
                 "mappings": ";;AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
                 "sourcesContent": [
-                  "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>"
+                  "<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>"
                 ]
               },
               "imports": {}
@@ -3590,7 +3590,7 @@
           ]
         },
         "ssr": {
-          "code": "\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<!--import { template as _template } from vue-->`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"module-comment.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
+          "code": "\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<!--import { template as _template } from 'vue'-->`)\n}\n}\n\n}\n\n\n\n\nimport { useSSRContext as __vite_useSSRContext } from 'vue'\nconst _sfc_setup = _sfc_main.setup\n_sfc_main.setup = (props, ctx) => {\n  const ssrContext = __vite_useSSRContext()\n  ;(ssrContext.modules || (ssrContext.modules = new Set())).add(\"module-comment.vue\")\n  return _sfc_setup ? _sfc_setup(props, ctx) : undefined\n}\nexport default _sfc_main",
           "map": {
             "version": 3,
             "sources": [
@@ -3599,7 +3599,7 @@
             "names": [],
             "mappings": ";AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
             "sourcesContent": [
-              "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>"
+              "<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>"
             ]
           },
           "helperCode": "\nexport default (sfc, props) => {\n  const target = sfc.__vccOpts || sfc;\n  for (const [key, val] of props) {\n    target[key] = val;\n  }\n  return target;\n}\n",
@@ -3607,7 +3607,7 @@
           "graph": [
             {
               "api": "parse",
-              "originalSource": "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>",
+              "originalSource": "<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>",
               "selectedVapor": true,
               "scriptSetup": {
                 "start": {
@@ -3629,11 +3629,11 @@
                   "offset": 57
                 },
                 "end": {
-                  "column": 106,
+                  "column": 108,
                   "line": 1,
-                  "offset": 105
+                  "offset": 107
                 },
-                "source": "<!--import { template as _template } from vue-->"
+                "source": "<!--import { template as _template } from 'vue'-->"
               },
               "rootElement": false,
               "errors": []
@@ -3646,7 +3646,7 @@
               "bindings": {
                 "unused": "literal-const"
               },
-              "code": "\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<!--import { template as _template } from vue-->`)\n}\n}\n\n}",
+              "code": "\nconst unused='import x';\nconst _sfc_main = {\n  __name: 'module-comment',\n  __ssrInlineRender: true,\n  __vapor: true,\n  setup(__props) {\n\nreturn (_ctx, _push, _parent, _attrs) => {\n  _push(`<!--import { template as _template } from 'vue'-->`)\n}\n}\n\n}",
               "map": {
                 "version": 3,
                 "sources": [
@@ -3655,13 +3655,13 @@
                 "names": [],
                 "mappings": ";AAAc,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC",
                 "sourcesContent": [
-                  "<script setup>const unused='import x';</script><template><!--import { template as _template } from vue--></template>"
+                  "<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>"
                 ]
               },
               "imports": {}
             }
           ],
-          "serverHtml": "<!--import { template as _template } from vue-->",
+          "serverHtml": "<!--import { template as _template } from 'vue'-->",
           "serverDiagnostics": [],
           "serverAuthority": "actual-stock-inline-SSR-default/createSSRApp/renderToString",
           "propsBeforeNormalization": {},

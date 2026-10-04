@@ -8,11 +8,11 @@ envelope, same-Writer segment provider and neutral original string #7689 are
 actually merged. Neutral #7689 is signed `154136bb` with protected Check
 `37169188504`, full 15,276 Rust tests and unchanged 104-by-three ceilings accepted.
 Independent ownership/source review is clear, including distinct original numeric
-For source refusal and complete Identifier-collection target refusal. The new
-L3 provider #7712 actually merged as signed `fcf8f9e5960e` after protected Check
-`37171699318` and unchanged 104-by-three gates. Its native Stack #7714 keeps the
-provider as merged position 1. The consumer is replayed onto that literal main;
-new exact hosted module/map/runtime/browser/protected acceptance remains pending. The
+For source refusal and complete Identifier-collection target refusal. The genuine L3 provider #7712 is now actually merged as signed-valid
+`fcf8f9e5960efaca1c4626cd6748b38f8db28abd`, protected Check `37171699318`
+SUCCESS, full 15,325 Rust tests and unchanged 104-by-three ceilings accepted.
+The dependent consumer retains fresh exact-source, protected and literal merge
+obligations after its actual-parent replay. The
 scriptless product [#7649](https://github.com/ubugeeei-prod/vize/pull/7649) already
 merged as `f5ff5b11e9be442490b42207de7befd451d26947`; its bounded acceptance and
 the twelve standalone captures remain separate, unchanged obligations.
@@ -141,9 +141,7 @@ Seventeen original SFC fixtures freeze independent complete native modules,
 full v3 maps and every original range/named link: JS const/let/var, TS annotations,
 unused declarations, Unicode/CRLF, import-shaped inert comments, every scalar
 kind, empty/null text, LF, an authored valid surrogate pair and U+FFFD. The
-sixteen other complete source/code/maps/links/primary graphs remain unchanged
-through the explicit safe-comment correction below. Recorded/NoLinks equality
-is unconditional. Hosted
+original fourteen complete code/maps/primary graphs remain unchanged. Recorded/NoLinks equality is unconditional. Hosted
 capture must originate from the real owning L1→L2→sole L3→L4 product; frozen
 expectation fallback cannot supply mandatory Actions capture credit.
 
@@ -151,7 +149,10 @@ Each runtime requires seventeen original module groups, nineteen configurations,
 38 mounts, 38 distinct clones, seventeen genuinely hydrated configurations,
 34 hydration mounts, 52 retained original SSR nodes and two mount-only controls.
 Eight raw frames retain two successful children and six tagged missing-native-API
-TypeErrors. These are model-probe counts until exact hosted Rust capture accepts.
+TypeErrors. Source `30d34c3d` / Check `37171739461` SUCCESS produces these counts from
+actual original Rust-emitted modules, artifact `11291119364`; all seven genuine
+consumer laws and 15,277 full Rust tests pass. Its actual-parent replay requires
+fresh proof and cannot inherit protected or literal consumer acceptance.
 
 Both actual development and production runtimes in the controlled DOM consume
 the exact loaded native
@@ -196,54 +197,85 @@ fallback still require all eight payloads; the original six remain unchanged.
 This CI closure changes no module/map expectation, runtime or production policy;
 fresh exact-head Actions and protected full/104-by-three proof remain required.
 
-## Actual Chromium comment boundary
+## Original comment versus pinned primary CSR regression
 
-Exact consumer `30d34c3d` Check `37171739461` passed; eight actual payloads in
-artifact `11291119364` have authenticated ZIP digest
-`8ab419973686f3310322e176fae24d298ab9938e5a418b55913510dd1a5e39b7`.
-Synthetic checkout `7704a7d9` differs from source only in delivery documents;
-all production/test/fixture/action/manifest/lock bytes match. Read-only artifact
-custody audit passed. The subsequent real Chromium 153 development probe failed
-at the original seventeenth quoted module-comment fixture: native Comment.data
-retains `'vue'`, while actual stock retains `&#39;vue&#39;`. Sixteen completed
-fixture groups and raw failure/process/cleanup frames remain preserved; neither
-that partial browser result nor hosted happy-dom earns whole browser acceptance.
+The strict supplementary Chromium recipe consumes only the successful exact
+`30d34c3d` packet, checkout `7704a7d9`, artifact `11291119364`. It honestly fails
+on the final original `module-comment` fresh comparison; no successful row or
+production credit replaces that failed result. Its original raw frames remain
+unchanged. The separate read-only dev/prod diagnostic completes all seventeen
+groups and nineteen configurations: each flavor records 38 fresh mounts,
+38 distinct clones, 34 physical UTF-8 HTTP hydrations, 52 retained original nodes
+and two mount-only controls, plus six real missing-API TypeErrors across both
+owners. Every actual app mount has zero residue, no diagnostics and authentic
+loaded setup identity; production private state remains unobserved null.
 
-Pinned actual compileScript controls prove stock comment escaping of `&`, `<`,
-`>`, double quotes and apostrophes. The inline setup target now refuses those
-five characters as `CommentNormalization` inside the existing root/part-writing
-loop, retaining the actual original Comment node and whole span with no output.
-The guard is specific to this genuine setup entry; no parser, pipeline stage,
-extra AST walk, reconstructed comment or generic target policy is introduced.
-The exact failed original quoted source remains an unconditional complete
-source/L3-admitted/L4-refused law in both Recorded and NoLinks modes, alongside
-root/nested controls for every proved character.
+Original input:
 
-The seventeenth accepted row is explicitly a safe inert-comment counterpart:
-`from vue` replaces `from 'vue'` inside the comment only. Its new complete code,
-map, links and primary graphs are authored independently; all sixteen other rows
-are exact. This is a changed supported input, not browser credit for the failed
-source or recapture of wrong output. Fresh original Rust capture, full dev/prod
-hosted runtime and real Chromium denominators must accept it before queue entry.
-The original twelve standalone and eleven scriptless modules/maps and all six
-existing capture contracts stay mandatory and unchanged.
+```vue
+<script setup>
+const unused = "import x";
+</script>
+<template><!--import { template as _template } from 'vue'--></template>
+```
 
-TODO on #6840: independently prove and repair broader standalone/scriptless
-comment entity semantics, including physical UTF-8 SSR hydration and cleanup.
-Their historical raw-comment byte contract is not universal stock equivalence;
-this bounded successor does not silently rewrite that earlier acceptance.
-Compiler #6880, default replacement and wider setup semantics remain unfinished.
+Native fresh and cloned Comment.data preserve the literal original quotes. Stock
+compiler-vapor rc.9 serializes that comment through `escapeHtml(node.content)`,
+producing literal `&#39;vue&#39;` in its complete CSR module and real fresh/clone
+Comment.data. HTML comment parsing does not decode character references. Actual
+stock SSR emits the original literal quotes, delivered as physical UTF-8 HTTP
+HTML. Both native and stock hydration retain that exact original Comment Node
+and data; stock hydration therefore disagrees with its own fresh output.
+Happy-dom incorrectly decodes this comment entity and hides the primary CSR
+regression. Controlled-DOM equivalence cannot establish browser correctness.
 
-First scoped-refusal head `7c844900` / Check `37173114676` exposes E0716 in
-the new test: a temporary admitted view cannot outlive its genuine setup borrow.
-The law now retains that original selected view explicitly. Production guard and
-all seventeen positive expectations are unchanged; no native/browser capture was
-granted by that failed build. Fresh exact-head source and protected proof remain
-required. Source-only measured 104-by-three run `37173111736` passed unchanged
-ceilings independently; it cannot substitute for the new head's required checks.
+The original full native code/maps, complete stock CSR/SSR graphs, all seventeen
+fixtures and eight hosted payloads stay unchanged. Independent full raw review
+SHA256 `e91dd1b7d6204a8b80e851cc28e72e87d03ce5d9ac6820372e37d864a24ec151`
+confirms that only this exact primary fresh/hydrated comparison differs in each
+flavor. The diagnostic remains `diagnostic-observed`, granting no protected or literal
+merge credit. The reviewed separate strict original-source qualifier preserves
+that raw status and asserts the exact complete root Comment trees, frozen
+source/module/maps/stock graphs and pinned primary regression. Ordinary sixteen
+groups retain complete equality; all seventeen keep every identity/lifecycle law
+fatal. Filename, actual browser and hosted dev/prod flavor are bound explicitly.
+All 171 raw rows per flavor join uniquely, including terminal/global-error rows
+and complete comparison objects; every ordered original descendant path must be
+retained exactly once. Eight pure positive/negative custody laws reject swapped
+flavors, arbitrary mismatches, altered originals, missing nodes, raw contradiction
+and API-success substitution. Pure raw test process SHA256:
+`c4267a3840fcaf26f49c4c84408e7ebf167abcaba11946c4afb46506c6298de5`.
+The saved-evidence strict qualification receipt SHA256 is
+`425aebdb9db3ae5ddd95ae9ffa7dd5768ed1596e59a392ffa2c8f875efa82aee`;
+it grants no new browser execution or consumer protected acceptance. Fresh
+actual-source browser qualification must bind the unchanged frozen comparator
+and reviewed recipe hashes after exact replay Actions. TODO: complete that fresh
+qualification and protected/literal child acceptance. Never normalize comment
+data, force the native emitter to match the primary defect, recapture expectations
+or drop this original fixture. General comment/compiler history remains unfinished.
 
-The same failed source7c tooling worker also rejects the new weak prefix/suffix
-comment assertion. The law now compares the entire original comment against
-its independent exact expected spelling for every root/nested/quoted control;
-no assertion allowlist or production policy changes. This stronger oracle and
-the original view-lifetime repair require fresh source capture before acceptance.
+## Held changed-input source and minimum reconciliation
+
+Source `7472be6f7210b4df380a24d42e7f46d1178f87d6` independently passes
+Check `37173498680` and its genuine altered-seventeenth-input captures. It adds
+a `CommentNormalization` refusal and substitutes an unquoted safe comment for
+the original quoted fixture. Those sixteen originals plus one different source
+do not satisfy the original seventeen-source contract. Candidate
+`ed00d76df55129cf52034f51c099f46b8b80e594` / Check `37174202501` is removed
+from the queue under an exact fresh head/candidate lease before merge; the PR is
+draft with queue/auto-merge null. Healthy sibling candidates continue unchanged.
+Its source/browser/raw evidence stays separately preserved; this hold is an
+acceptance-scope correction, not a source CI failure or actor attribution.
+
+The private reconciliation starts from literal main
+`8ae25a161b216eaf1a8bdfe05bd0aa70f18158c2` and preserves the genuine incoming
+split test module, original view lifetime/exact-span controls and capture closure.
+Remove only the unnecessary setup comment refusal; restore the entire original
+seventeenth source/code/map/links/stock graph and generator byte-for-byte from
+the independently reviewed original pack, with all sixteen other rows unchanged.
+The original five-character root/nested and exact quoted-source controls now
+require complete native original-content output and Recorded/NoLinks equality.
+The real browser comparison keeps its separate exact primary regression oracle.
+Fresh reconciled source Actions, authenticated original captures, reviewed real
+browser recipe and full protected/literal merge remain required; no old changed
+source or original30d receipt substitutes for that new exact-source proof.

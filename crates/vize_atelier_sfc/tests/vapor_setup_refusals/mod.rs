@@ -1,4 +1,4 @@
-//! Genuine original source and target refusal laws.
+//! Genuine original source admission and target refusal laws.
 use super::*;
 
 #[test]
@@ -236,23 +236,25 @@ fn original_nested_whitespace_is_a_source_refusal_before_vapor() {
 }
 
 #[test]
-fn complete_original_normalizing_comments_are_precise_setup_target_refusals() {
+fn complete_original_comments_preserve_authored_content_in_setup_components() {
     use vize_l3::decision::vapor::VaporPart;
     let mut sources = Vec::new();
     for content in ["a&b", "a<b", "a>b", "a\"b", "a'b"] {
-        for template in [
-            format!("<!--{content}-->"),
-            format!("<div><!--{content}--></div>"),
+        for (nested, template) in [
+            (false, format!("<!--{content}-->")),
+            (true, format!("<div><!--{content}--></div>")),
         ] {
             sources.push((
                 format!("<script setup>const unused=1</script><template>{template}</template>"),
                 format!("<!--{content}-->"),
+                nested,
+                "const unused=1",
             ));
         }
     }
     // Preserve the exact authentic fixture that failed in real Chromium.
-    sources.push(("<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>".into(), "<!--import { template as _template } from 'vue'-->".into()));
-    for (source, expected_comment) in sources {
+    sources.push(("<script setup>const unused='import x';</script><template><!--import { template as _template } from 'vue'--></template>".into(), "<!--import { template as _template } from 'vue'-->".into(), false, "const unused='import x';"));
+    for (source, expected_comment, nested, script) in sources {
         for source_map in [false, true] {
             let arena = Allocator::default();
             let compilation = compile_native_vapor_setup_sfc(
@@ -275,23 +277,44 @@ fn complete_original_normalizing_comments_are_precise_setup_target_refusals() {
             let analysis = build_native_selected_setup_vapor_decisions(setup).unwrap();
             let facts = analysis.vapor().unwrap();
             assert!(facts.unsupported().is_empty(), "genuine L3 admission");
-            let (node, span) = facts
+            let span = facts
                 .roots()
                 .iter()
                 .flat_map(|root| facts.parts(root).unwrap())
                 .find_map(|part| match part {
-                    VaporPart::Comment { node, comment } => Some((*node, comment.span)),
+                    VaporPart::Comment { comment, .. } => Some(comment.span),
                     _ => None,
                 })
                 .unwrap();
-            let Err(NativeVaporSetupSfcCompileError::Vapor(error)) = compilation.result() else {
-                panic!("normalizing original comment refuses all output: {source}")
-            };
-            assert_eq!(error.kind, VaporErrorKind::CommentNormalization);
-            assert_eq!(error.node, Some(node));
-            assert_eq!(error.span, span);
+            let output = compilation.result().unwrap();
             let original = source.get(span.start as usize..span.end as usize).unwrap();
             assert_eq!(original, expected_comment);
+            assert_eq!(facts.roots().len(), 1);
+            let html = if nested {
+                format!("<div>{expected_comment}</div>")
+            } else {
+                expected_comment.clone()
+            };
+            let encoded = serde_json::to_string(&html).unwrap();
+            let flags = if nested { 3 } else { 2 };
+            let expected = format!(
+                "import {{ template as _template, defineVaporComponent as _defineVaporComponent }} from \"vue\"\nconst t0 = _template({encoded}, {flags})\n;\nconst _sfc_main = _defineVaporComponent({{\n  __multiRoot: false,\n  setup(__props) {{\n{script}\n;\n\n    const n0 = t0()\n    return n0\n  }}\n}})\nexport default _sfc_main\n"
+            );
+            assert_eq!(output.code(), expected);
+            let recorded =
+                emit_selected_setup_component::<Recorded>(&analysis, "3.6.0-rc.9").unwrap();
+            let plain = emit_selected_setup_component::<NoLinks>(&analysis, "3.6.0-rc.9").unwrap();
+            assert_eq!(recorded.text, plain.text);
+            assert_eq!(recorded.text.as_str(), expected);
+            assert_eq!(recorded.helpers, plain.helpers);
+            if source_map {
+                let map: serde_json::Value =
+                    serde_json::from_str(output.source_map().unwrap()).unwrap();
+                assert_eq!(map["sourcesContent"][0], source);
+            } else {
+                assert!(output.source_map().is_none());
+                assert!(output.document().links().is_empty());
+            }
         }
     }
 }

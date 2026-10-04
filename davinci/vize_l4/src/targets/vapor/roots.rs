@@ -5,7 +5,7 @@ use crate::runtime::{Runtime, vocabulary};
 use crate::write::{LinkSink, Writer};
 use vize_l3::decision::vapor::{VaporFacts, VaporPart};
 
-pub(super) fn static_roots<L: LinkSink, const SETUP: bool>(
+pub(super) fn static_roots<L: LinkSink>(
     prelude: &mut Writer<L>,
     render: &mut Writer<L>,
     facts: &VaporFacts<'_, '_>,
@@ -33,19 +33,6 @@ pub(super) fn static_roots<L: LinkSink, const SETUP: bool>(
             literal::raw(prelude, text.content);
         } else {
             for part in parts {
-                // Actual stock inline setup escapes HTML comment contents.
-                // Real browsers retain those entities in Comment.data; the
-                // established standalone/scriptless byte contract stays separate.
-                if SETUP
-                    && let VaporPart::Comment { node, comment } = part
-                    && comment.content.contains(['&', '<', '>', '"', '\''])
-                {
-                    return Err(VaporError {
-                        node: Some(*node),
-                        span: comment.span,
-                        kind: VaporErrorKind::CommentNormalization,
-                    });
-                }
                 literal::html_part(prelude, part);
             }
         }
