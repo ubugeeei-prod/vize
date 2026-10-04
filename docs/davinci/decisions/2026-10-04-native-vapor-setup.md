@@ -3,10 +3,14 @@
 Issue: [#6840](https://github.com/ubugeeei-prod/vize/issues/6840), with
 [#6839](https://github.com/ubugeeei-prod/vize/issues/6839) owning the sole L3 walk.
 
-Status: private implementation; the authentic setup envelope and same-Writer
-segment provider are actually merged. Neutral original string value provider
-#7689, independent current-source review and exact hosted native source/protected
-acceptance remain pending. The
+Status: proposed genuine dependent L4/product consumer. The authentic setup
+envelope, same-Writer segment provider and neutral original string #7689 are
+actually merged. Neutral #7689 is signed `154136bb` with protected Check
+`37169188504`, full 15,276 Rust tests and unchanged 104-by-three ceilings accepted.
+Independent ownership/source review is clear, including distinct original numeric
+For source refusal and complete Identifier-collection target refusal. The new
+L3 provider and exact hosted native whole-module/map/runtime/protected acceptance
+remain pending. The
 scriptless product [#7649](https://github.com/ubugeeei-prod/vize/pull/7649) already
 merged as `f5ff5b11e9be442490b42207de7befd451d26947`; its bounded acceptance and
 the twelve standalone captures remain separate, unchanged obligations.
