@@ -142,7 +142,7 @@ export async function executeConstantComponent(
         : [],
     };
   }
-  function record(phase: string, snapshot: any = undefined) {
+  function record(phase: string, snapshot?: any) {
     if (!observe) return;
     observe(
       diagnosticValue({

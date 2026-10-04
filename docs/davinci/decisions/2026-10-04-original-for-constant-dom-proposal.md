@@ -294,3 +294,11 @@ rethrows after cleanup; a cleanup-only error still fails the process. The unchan
 diagnostic serializer moves to an ordinary sibling in a move-only commit with
 explicit capture routing. Production/original eleven/inherited oracles stay exact.
 Full bounded review/fresh Actions/publication hold/protected104 remain required.
+
+The first reviewed054e automatic campaign joins actual release `caee165` in
+checkout `716941778`; fmt-rust passes, while check-js rejects one optional
+observation parameter's redundant `= undefined` at runtime145. The equivalent
+`snapshot?: any` correction preserves all observations/comparisons/cleanup and
+production/oracle bytes, keeps the failed raw log, and requires fresh exact-head
+proof. The current original native/runtime campaign continues without cancellation.
+Paired [optional observation correction](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5978495339).
