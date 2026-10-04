@@ -5,75 +5,16 @@
 
 use std::path::Path;
 
-use serde::{Deserialize, Serialize};
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
 
 mod support {
+    pub(crate) mod fix_history_contract;
     pub(crate) mod fix_history_observation;
     pub(crate) mod fix_history_paths;
 }
+use support::fix_history_contract::{Diagnostic, Input, Pack};
 use support::fix_history_observation as observation;
 use support::fix_history_paths::{link_vue, safe_relative};
-
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Input {
-    file: String,
-    source: String,
-}
-
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
-#[serde(deny_unknown_fields)]
-struct Diagnostic {
-    file: String,
-    line: u32,
-    column: u32,
-    severity: u8,
-    code: Option<u32>,
-    message: String,
-}
-
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Case {
-    id: String,
-    inputs: Vec<Input>,
-    diagnostics: Vec<Diagnostic>,
-}
-
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Contract {
-    #[serde(rename = "requiredTier")]
-    required_tier: String,
-    #[serde(rename = "positionBase")]
-    position_base: u32,
-    positions: String,
-    comparison: String,
-    #[serde(rename = "missingFields")]
-    missing_fields: Vec<String>,
-    native: String,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct CheckerOptions {
-    options_api: bool,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct Pack {
-    version: u32,
-    issue: u32,
-    regression_commit: String,
-    historical_issue: Option<u32>,
-    source_revision: String,
-    diagnostic_contract: Contract,
-    checker_options: Option<CheckerOptions>,
-    project_options: Option<serde_json::Value>,
-    cases: Vec<Case>,
-}
 
 #[test]
 fn inline_event_assignments_preserve_exact_diagnostics() {
