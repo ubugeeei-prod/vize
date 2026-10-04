@@ -10,6 +10,7 @@ use crate::lang::js::file::native::{
 use vize_l0::id::NodeId;
 use vize_l1::markup::{NativeChild, NativeRootText, NativeTemplateComponent};
 
+mod attribute_value;
 mod body;
 mod for_body;
 mod for_head;

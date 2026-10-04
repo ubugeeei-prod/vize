@@ -33,6 +33,8 @@ enum Owner<'a> {
 
 mod binding;
 mod close;
+mod element;
+pub(crate) use element::ElementAllocation;
 mod factory;
 mod original_for;
 mod region;
@@ -220,7 +222,7 @@ impl<'a> Builder<'a> {
         span: Span,
         id: NodeId,
         children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
-    ) -> Result<(), ArtifactError> {
+    ) -> Result<close::ClosedFrame<'a>, ArtifactError> {
         self.mint();
         self.frames.push(Frame {
             id,
@@ -243,8 +245,7 @@ impl<'a> Builder<'a> {
             .frames
             .pop()
             .ok_or(ArtifactError::UnfinishedOwner { node: id })?;
-        let _ = self.close(frame);
-        Ok(())
+        Ok(self.close(frame))
     }
 
     fn push(&mut self, op: Op<'a>) {
