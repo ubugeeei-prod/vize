@@ -6,14 +6,18 @@
 use alloc::vec::Vec;
 use core::ops::Range;
 use vize_l0::{Span, id::NodeId};
-use vize_l2::op::{CommentOp, ElementOp, TextOp};
+use vize_l2::op::{CommentOp, ElementOp, InterpolationOp, TextOp};
 
 pub(super) mod build;
+mod expression;
 mod file;
+mod setup;
 mod template;
 #[cfg(test)]
 mod tests;
+pub use expression::{VaporExpression, VaporValueKind};
 pub use file::{NativeVaporFileAnalysis, build_vapor_file_decisions};
+pub use setup::{NativeSelectedSetupVaporAnalysis, build_native_selected_setup_vapor_decisions};
 pub use template::{NativeTemplateVaporAnalysis, build_native_vapor_file_decisions};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -28,6 +32,11 @@ pub enum VaporUnsupported {
     RootTextMarkup,
     UnsafeComment,
     Binding,
+    ExpressionOrigin,
+    Expression,
+    SetupRead,
+    StringNormalization,
+    NestedInterpolation,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -52,6 +61,11 @@ pub enum VaporPart<'owner, 'arena> {
     Text {
         node: NodeId,
         text: &'owner TextOp<'arena>,
+    },
+    Interpolation {
+        node: NodeId,
+        interpolation: &'owner InterpolationOp<'arena>,
+        expression: VaporExpression<'owner, 'arena>,
     },
     Comment {
         node: NodeId,

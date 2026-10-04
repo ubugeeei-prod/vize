@@ -29,6 +29,10 @@ pub(super) fn html_part<L: LinkSink>(writer: &mut Writer<L>, part: &VaporPart<'_
             writer.anchor(text.span.start);
             html(writer, text.content, false);
         }
+        VaporPart::Interpolation { interpolation, .. } => {
+            writer.anchor(interpolation.span.start);
+            writer.push(" ");
+        }
         VaporPart::Comment { comment, .. } => {
             writer.anchor(comment.span.start);
             writer.push("<!--");

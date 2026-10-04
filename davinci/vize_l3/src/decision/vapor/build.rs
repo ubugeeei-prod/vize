@@ -4,20 +4,23 @@ use super::{VaporFacts, VaporPart, VaporRejection, VaporRoot, VaporUnsupported};
 use alloc::vec::Vec;
 use vize_l0::{Span, id::NodeId};
 use vize_l2::{
+    lang::js::NativeSelectedSetup,
     op::{BindingOp, ElementOp, Namespace, Op},
     walk::NodeRef,
 };
 
-pub(in crate::decision) struct VaporBuilder<'owner, 'arena> {
+pub(in crate::decision) struct VaporBuilder<'facts, 'owner, 'arena> {
+    setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>,
     facts: VaporFacts<'owner, 'arena>,
     frames: Vec<(NodeId, Option<&'owner ElementOp<'arena>>, bool)>,
     non_comments: usize,
     root_element: Option<NodeId>,
 }
 
-impl<'owner, 'arena> VaporBuilder<'owner, 'arena> {
-    pub fn new() -> Self {
+impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
+    pub fn new(setup: Option<&'facts NativeSelectedSetup<'owner, 'arena>>) -> Self {
         Self {
+            setup,
             facts: VaporFacts {
                 parts: Vec::new(),
                 roots: Vec::new(),
@@ -73,6 +76,21 @@ impl<'owner, 'arena> VaporBuilder<'owner, 'arena> {
                     self.reject(node, span, VaporUnsupported::TextNormalization);
                 }
                 self.facts.parts.push(VaporPart::Text { node, text });
+                (None, false)
+            }
+            Op::Interpolation(interpolation) if self.setup.is_some() => {
+                if !root {
+                    self.reject(node, span, VaporUnsupported::NestedInterpolation);
+                } else if let Some(setup) = self.setup {
+                    match super::expression::admit(setup, node, interpolation) {
+                        Ok(expression) => self.facts.parts.push(VaporPart::Interpolation {
+                            node,
+                            interpolation,
+                            expression,
+                        }),
+                        Err(reason) => self.reject(node, span, reason),
+                    }
+                }
                 (None, false)
             }
             Op::Comment(comment) => {

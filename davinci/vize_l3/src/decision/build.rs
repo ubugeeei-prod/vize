@@ -49,7 +49,7 @@ pub(in crate::decision) fn build_with<'owner, 'arena>(
     file: Option<&'owner FileArtifact<'arena>>,
     reads: &impl FileReads<'owner, 'arena>,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
-    build_with_context(artifact, policy, expressions, file, reads, None)
+    build_with_context(artifact, policy, expressions, file, reads, None, None)
 }
 
 pub(in crate::decision) fn build_with_ssr_setup<'owner, 'arena>(
@@ -66,6 +66,22 @@ pub(in crate::decision) fn build_with_ssr_setup<'owner, 'arena>(
         Some(file),
         &NoReads,
         Some(setup),
+        None,
+    )
+}
+
+pub(in crate::decision) fn build_with_vapor_setup<'owner, 'arena>(
+    setup: &NativeSelectedSetup<'owner, 'arena>,
+) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
+    let file = setup.file();
+    build_with_context(
+        file.artifact(),
+        TargetPolicy::Vapor,
+        &LiteralExpressions,
+        Some(file),
+        &NoReads,
+        None,
+        Some(setup),
     )
 }
 
@@ -76,6 +92,7 @@ fn build_with_context<'owner, 'arena>(
     file: Option<&'owner FileArtifact<'arena>>,
     reads: &impl FileReads<'owner, 'arena>,
     ssr_setup: Option<&NativeSelectedSetup<'owner, 'arena>>,
+    vapor_setup: Option<&NativeSelectedSetup<'owner, 'arena>>,
 ) -> Result<NativeAnalysis<'owner, 'arena>, DecisionBuildError> {
     let mut builder = Builder {
         policy,
@@ -87,7 +104,7 @@ fn build_with_context<'owner, 'arena>(
             Some(setup) => SsrBuilder::new_setup(setup),
             None => SsrBuilder::new(),
         }),
-        vapor: (policy == TargetPolicy::Vapor).then(VaporBuilder::new),
+        vapor: (policy == TargetPolicy::Vapor).then(|| VaporBuilder::new(vapor_setup)),
         dom: (policy == TargetPolicy::Dom)
             .then(|| DomBuilder::new(expressions, artifact.root().ops.len(), file, reads)),
     };
@@ -122,7 +139,7 @@ struct Builder<'facts, 'owner, 'arena, F, R> {
     controls: SideTable<ControlRegion>,
     dom: Option<DomBuilder<'facts, 'owner, 'arena, F, R>>,
     ssr: Option<SsrBuilder<'facts, 'owner, 'arena>>,
-    vapor: Option<VaporBuilder<'owner, 'arena>>,
+    vapor: Option<VaporBuilder<'facts, 'owner, 'arena>>,
 }
 
 /// One open region op, released at its matching leave event.

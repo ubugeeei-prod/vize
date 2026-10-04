@@ -1,3 +1,5 @@
+mod setup;
+
 use super::{VaporPart, VaporUnsupported, build_vapor_file_decisions};
 use crate::decision::{DecisionBuildError, build_decisions, policy::TargetPolicy};
 use alloc::format;
