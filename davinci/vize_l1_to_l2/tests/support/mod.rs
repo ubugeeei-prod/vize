@@ -20,7 +20,7 @@
 // Each test binary uses the subset of these helpers it needs.
 
 mod authored;
-mod folio_spans;
+mod dump_spans;
 
 use vize_l0::diag::Diagnostic;
 use vize_l0::dump::{Dump, Mode as DumpMode};
@@ -34,7 +34,7 @@ use vize_l2::scope::ScopeFacts;
 use vize_l2::verify::{Rigor, Violation, verify, verify_table};
 
 pub use authored::assert_authored_artifact;
-pub use folio_spans::assert_folio_spans_resolve;
+pub use dump_spans::assert_folio_spans_resolve;
 
 /// The owned snapshot of one lowering, for exact-equality pins.
 #[derive(Debug)]
