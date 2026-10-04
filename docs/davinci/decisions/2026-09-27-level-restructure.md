@@ -237,7 +237,7 @@ Tracked in [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) and [#6855
 - This supersedes charter row #1. Other frameworks are in-tree and include the compiler, with parity against each reference compiler.
 - The order is **TSRX → Solid → others** (Svelte, Angular/Analog).
 - Five independent axes: container, markup, profile, lang, framework.
-- L2 keeps neutral core ops plus framework dialect ops.
+- L2 keeps neutral core ops plus framework dialect ops. [The #6856 vocabulary review](./2026-10-04-l2-neutral-vocabulary.md) separates content invocation/provision contracts from authored Vue slots and requires typed legalization of binding modifiers; the current op family is unchanged.
 - L3 gets a neutral reactivity vocabulary (signal, derived, effect, ordering).
 - L4 gets one target per framework runtime.
 
