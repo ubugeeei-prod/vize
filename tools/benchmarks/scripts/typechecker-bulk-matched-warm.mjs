@@ -16,7 +16,7 @@ import { join, resolve } from "node:path";
 import { prepareSourceCustody } from "./typechecker-bulk-source-custody.mjs";
 
 // The actual parent-only main retains the original route and all incoming fixes.
-const baseline = "58e6a0272b4044e3aaa8b7a9cb3ac62100ccec7c";
+const baseline = "e8be174060515b5f2a97087f5dc8004dcbcae54e";
 const root = process.cwd();
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
 const source = git("rev-parse", "HEAD");

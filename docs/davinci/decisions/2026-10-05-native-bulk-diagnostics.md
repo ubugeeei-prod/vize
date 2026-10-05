@@ -249,11 +249,14 @@ control on the owned bulk branch's full qualification dispatch. Regular main,
 release and other branch runs retain their existing gates. Authenticate ancestry
 through the primary GitHub compare response and fetch only the immutable baseline
 tree even on a shallow checkout. Compile the original route at actual parent-only
-main `58e6a0272b4044e3aaa8b7a9cb3ac62100ccec7c` and the consumer source using the
+main `e8be174060515b5f2a97087f5dc8004dcbcae54e` and the consumer source using the
 same locked CI profile and exactly six explicitly named, byte-identical qualified
 Tier-L driver files; additional discovered driver names refuse the control.
 This keeps incoming projection and fingerprint corrections on both sides;
 the first-v0.433 tree would confound those corrections with the bulk delta.
+Refresh the frozen control with the actual parent whenever locked workspace
+authority changes; e8be includes the incoming cssparser lock repair on both arms
+while every Canon production blob remains unchanged from the earlier58e control.
 The baseline's only working-tree overlay is those explicit hashed test files;
 its production remains the immutable baseline. Both arms use the same absolute
 original fixture, native binary, runtime dependency root, authored patches,
