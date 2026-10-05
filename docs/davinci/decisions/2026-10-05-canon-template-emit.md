@@ -95,3 +95,15 @@ undefined updates and reports only the numeric payload. Its TS2769 printer
 compares that non-nullish source against string, omitting undefined from the
 message. Keep both positive calls and author the complete printed diagnostic
 explicitly; no source/type/input/output filtering change is made.
+
+Replay all ten existing commits onto literal main 8f667ea, preserving all
+16 owned non-doc file blobs, complete original and control inputs, independently
+authored expectations, incoming canonical clauses and reporter trailers. The
+complete owned decisions sit beside the existing focused type-check diagnostics
+paragraph, avoiding shared trailing-line conflicts within the unchanged 350-line
+cap. Earlier heads have no current runtime acceptance: the ten full CLI/native
+cases and independent actual-Vue native LSP oracle must execute on this replay,
+followed by fresh strict source checks, protected full suites and actual merge.
+No new PR or workflow lane is added. The typed hover assertion stays intact
+until the authentic native Vue oracle separates source behavior from QuickInfo
+presentation.
