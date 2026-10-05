@@ -118,9 +118,8 @@ impl NativeOracle {
             self.process.recv_response(id),
             json!({"jsonrpc":"2.0","id":id,"result":null})
         );
-        self.process.send(json!({"jsonrpc":"2.0","method":"exit"}));
         assert!(
-            self.process.wait_for_exit().success(),
+            self.process.wait_for_transport_eof().success(),
             "native shutdown failed"
         );
     }

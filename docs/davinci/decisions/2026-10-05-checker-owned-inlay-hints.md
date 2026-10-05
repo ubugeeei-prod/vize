@@ -47,6 +47,11 @@ frames. Original inputs/configs and whole native/actual vectors are saved before
 URI normalization. After both readers join, each process retains exit status and
 raw stderr, plus the executable hash, version output and harness source identity.
 Both native and Vize shutdown must succeed. These captures run on Actions.
+The stock native oracle asserts the shutdown response, closes its input transport,
+and requires actual exit success through the pinned server's accepted EOF route.
+The retained standard native `exit` trace instead returned status 1 with
+`context canceled`; that upstream limitation is neither accepted as success nor
+claimed fixed. Vize still requires its standard `exit` with stdin held open.
 The stock oracle initializes with the pinned required nullable `processId` and
 declared pull-diagnostic capabilities. Before opening a document, it asserts and
 acknowledges the complete pinned configuration-watch registration request, which

@@ -146,6 +146,7 @@ fn original_computed_types_match_complete_stock_native_hints_after_edits_and_ran
             );
             let mut normalized_expected = expected.clone();
             let mut normalized_actual = actual.clone();
+            native.project_authored_locations(&mut normalized_expected, &fixture.uri);
             normalize_locations(&mut normalized_expected);
             normalize_locations(&mut normalized_actual);
             assert_eq!(

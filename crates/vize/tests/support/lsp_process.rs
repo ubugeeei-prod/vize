@@ -196,6 +196,16 @@ impl LspProcess {
             self.stdin.is_some(),
             "LSP stdin must remain open while waiting for process exit"
         );
+        self.poll_exit()
+    }
+
+    /// End the stock native transport after its successful shutdown response.
+    pub fn wait_for_transport_eof(&mut self) -> ExitStatus {
+        assert!(self.stdin.take().is_some(), "LSP stdin already closed");
+        self.poll_exit()
+    }
+
+    fn poll_exit(&mut self) -> ExitStatus {
         let deadline = Instant::now() + PROCESS_EXIT_TIMEOUT;
         loop {
             let status = self
@@ -212,8 +222,13 @@ impl LspProcess {
                 return status;
             }
             if Instant::now() >= deadline {
+                let transport = if self.stdin.is_some() {
+                    " while stdin remained open"
+                } else {
+                    " after stdin EOF"
+                };
                 self.fail(cstr!(
-                    "LSP process did not exit within {PROCESS_EXIT_TIMEOUT:?} while stdin remained open"
+                    "LSP process did not exit within {PROCESS_EXIT_TIMEOUT:?}{transport}"
                 ));
             }
             std::thread::sleep(Duration::from_millis(10));
