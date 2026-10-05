@@ -223,10 +223,19 @@ void test(
             `${fixture.id}: actual HTML-parser hydration`,
           );
           let vaporHydrated = null;
-          if (fixture.id === "reporter") {
+          if (
+            fixture.id === "reporter" ||
+            fixture.id === "textarea-trailing-space-after-interpolation"
+          ) {
             assert.deepEqual(hydrated.diagnostics, []);
             assert(hydrated.retained);
             vaporHydrated = await observe(modules.vapor, true, vaporSsr);
+            reference.vapor.hydrated = await observe(
+              reference.vapor.code,
+              true,
+              reference.vapor.serverHtml,
+            );
+            assert.deepEqual(vaporHydrated, reference.vapor.hydrated);
             assert.deepEqual(vaporHydrated.diagnostics, []);
             assert(vaporHydrated.retained);
             assert.deepEqual(vaporHydrated.pre, fixture.pre);

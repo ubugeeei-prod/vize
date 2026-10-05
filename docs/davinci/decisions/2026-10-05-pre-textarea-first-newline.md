@@ -66,6 +66,9 @@ all default options/callbacks, historical digest and complete before/after AST.
 Every current case remains strict and both corrected vectors must participate.
 A separate complete `TrailingSpace.vue.txt` control qualifies this remaining
 textarea whitespace through actual DOM/SSR/Vapor mounting and hydration.
+Both that control and the reporter also compare actual Vapor hydration with
+the genuine stock Vapor component/server output, requiring zero diagnostics
+and retention of the original elements and live textarea values.
 The original reporter SFC remains an independent unchanged input.
 The [pinned stock parser](https://github.com/vuejs/core/blob/v3.6.0-rc.9/packages/compiler-core/src/parser.ts#L617-L627)
 also keeps RCDATA out of whitespace condensing before its first-newline rule.
