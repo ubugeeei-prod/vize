@@ -176,3 +176,15 @@ Keep both Stack layers Draft/off queue. The literal-e5 child needs independent
 source review, fresh ordinary and full whole editor Actions, then protected
 full Rust/all104, signed actual merges and supported publication. No old
 execution, native-stage/history completion or release credit transfers.
+
+The [paired unused-import correction](https://github.com/ubugeeei-prod/vize/issues/8006#issuecomment-6001256829)
+retains d72 Check 37360927155/check-js111935033092, raw SHA256
+`daccd335a737a72c0e2f819f6313f6a1ddbfb82e678e81493e7218fcc8d84d6d`.
+All 7,837 files formatted successfully; the zero-warning gate rejected only the
+old runner's now-unused authoredPosition alias. Remove that import, preserving
+the helper, complete hierarchy/folding/parents, all input/setup/other assertions
+and every budget. Restoring the import then reversing the recorded extraction
+still recovers the whole original runner. The independent d72 source receipt
+`a2d74342b0a0416d1effeadd900ea527ab0d2c43376cfa12cc8257ba7b067052`
+and separate full 37361011907 remain historical scope. Fresh exact successor
+ordinary/full Stack gates and protected actual delivery are required.

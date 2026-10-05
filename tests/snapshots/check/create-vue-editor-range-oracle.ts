@@ -9,7 +9,6 @@ import { isDiagnosticsForUri, offsetToPosition } from "../../tooling/support/lsp
 import {
   assertAuthoredRanges,
   assertTokenText,
-  authoredPosition as position,
   authoredRange as range,
   decodeSemanticTokens,
   sameRange,
