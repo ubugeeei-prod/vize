@@ -2,9 +2,12 @@
 #![cfg(test)]
 use std::path::Path;
 use std::process::Command;
+#[path = "capture.rs"]
+mod capture;
 
 pub(super) fn run_check_json(project_root: &Path, corsa_path: &Path) -> serde_json::Value {
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+    let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
+    let output = command
         .current_dir(project_root)
         .env("CORSA_PATH", corsa_path)
         .args([
@@ -15,8 +18,9 @@ pub(super) fn run_check_json(project_root: &Path, corsa_path: &Path) -> serde_js
             "--format",
             "json",
         ])
-        .output()
-        .unwrap();
+        .output();
+    capture::retain(project_root, corsa_path, &command, &output).unwrap();
+    let output = output.unwrap();
 
     let stdout = std::str::from_utf8(&output.stdout).unwrap();
     assert!(

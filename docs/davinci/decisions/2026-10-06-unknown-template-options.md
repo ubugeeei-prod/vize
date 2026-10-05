@@ -242,3 +242,25 @@ ordinary/native Actions, whole7 CLI/14 direct-service/original native vectors,
 all unchanged compatibility cases and protected full/all104 delivery. The old
 failed candidate stays failed; no stdio-RPC, history/default, global strict policy
 or 10x completion is claimed. See the [paired issue record](https://github.com/ubugeeei-prod/vize/issues/7874#issuecomment-5997806537).
+
+
+## Required compatibility snapshots cannot silently skip
+
+Independent source-only review seals private543d; runtime remains pending. The
+old Canon snapshot helper converts setup/scan/check errors to None, allowing
+early returns even with REQUIRE_TSGO. A bounded test-only helper now retains
+complete error/TypeCheckResult before required failure and preserves optional
+local no-SDK behavior. Three pure required/optional-result laws pin this policy.
+Generic setup/scan/emit errors are retained; both full declaration outputs precede
+the unchanged insta comparison. The CLI stores full stdout/stderr/status and
+original inputs before existing assertions. Regular declaration bytes and symlink
+targets are distinguished; typed Batch output does not claim raw native wire.
+
+The existing automatic native qualifier additionally runs all unchanged
+fallthrough CLI, fallthrough_unknown_attrs, wide-props and generic declaration
+cases against the same pinned binary. The CLI invocation first moves unchanged
+into a bounded leaf; the old Canon root test file shrinks. All original raw input
+strings, configs, whole goldens and timeouts stay exact. No production, filter,
+extra campaign, pipeline or cap change. This separate private successor requires
+independent review and fresh actual source/native/full protected qualification.
+Old passes/failedc48 remain historical; merge and release stay pending.
