@@ -1,6 +1,7 @@
 //! Whole responses from the same pinned native process, before projection.
 
 use super::super::super::EditorLspSession;
+use super::super::BulkDiagnostics;
 use crate::file_uri::path_to_file_uri;
 use serde_json::json;
 use std::path::Path;
@@ -69,20 +70,18 @@ fn eight_real_native_profiles_match_complete_per_file_lsp_before_and_after_edits
         editor.mirror(&a_uri, original).unwrap();
         editor.mirror(&b_uri, empty).unwrap();
         compare(&mut editor, &config, &uris, index, "initial");
-        assert!(
+        assert!(matches!(
             editor
                 .bulk_diagnostics(&root.path().join("foreign.json"), &uris)
-                .unwrap()
-                .is_none()
-        );
+                .unwrap(),
+            BulkDiagnostics::Refused
+        ));
         assert!(super::super::take_receipt().is_none());
         let absent = path_to_file_uri(&root.path().join("absent.ts"));
-        assert!(
-            editor
-                .bulk_diagnostics(&config, &[absent])
-                .unwrap()
-                .is_none()
-        );
+        assert!(matches!(
+            editor.bulk_diagnostics(&config, &[absent]).unwrap(),
+            BulkDiagnostics::Refused
+        ));
         assert!(super::super::take_receipt().is_none());
         compare(&mut editor, &config, &uris, index, "unchanged");
         editor.mirror(&a_uri, repaired).unwrap();
@@ -101,20 +100,17 @@ fn compare(
     case: usize,
     phase: &str,
 ) {
-    let bulk = editor
-        .bulk_diagnostics(config, uris)
-        .unwrap()
-        .unwrap_or_else(|| {
-            panic!("profile {case}/{phase} must exercise the actual bulk category path")
-        });
-    assert_eq!(bulk.len(), uris.len());
-    let custody = super::super::take_receipt().unwrap();
+    let outcome = editor.bulk_diagnostics(config, uris).unwrap();
+    let status = vize_l0::cstr!("{outcome:?}");
+    let bulk = match outcome {
+        BulkDiagnostics::Complete(rows) => Some(rows),
+        _ => None,
+    };
+    let custody = super::super::take_receipt();
     let mut comparisons = Vec::new();
-    for (uri, diagnostics) in uris.iter().zip(bulk) {
-        let actual = serde_json::to_value(diagnostics).unwrap();
+    for (index, uri) in uris.iter().enumerate() {
         let original = serde_json::to_value(editor.diagnostics(uri).unwrap()).unwrap();
-        assert_eq!(original["kind"], "full", "{case}/{phase}/{uri}");
-        assert_eq!(actual, original["items"], "{case}/{phase}/{uri}");
+        let actual = bulk.as_ref().and_then(|rows| rows.get(index));
         comparisons.push(json!({"uri":uri,"bulk":actual,"lsp":original}));
     }
     if let Some(dir) = std::env::var_os("VIZE_NATIVE_BULK_CAPTURE_DIR") {
@@ -123,7 +119,7 @@ fn compare(
         std::fs::write(
             dir.join("whole-diagnostics.json"),
             serde_json::to_vec_pretty(&json!({
-                "mode":"native-bulk", "custody":custody,
+                "bulkOutcome":status, "custody":custody,
                 "acknowledgedDocuments":editor.documents,
                 "configuration":std::fs::read_to_string(config).unwrap(),
                 "comparisons":comparisons,
@@ -132,4 +128,20 @@ fn compare(
         )
         .unwrap();
     }
+    // Persist every complete side before a failed comparison can abort CI.
+    let bulk =
+        bulk.unwrap_or_else(|| panic!("profile {case}/{phase} must exercise bulk: {status}"));
+    assert_eq!(bulk.len(), uris.len());
+    for comparison in comparisons {
+        assert_eq!(
+            comparison["lsp"]["kind"], "full",
+            "{case}/{phase}: {comparison}"
+        );
+        assert_eq!(
+            comparison["bulk"], comparison["lsp"]["items"],
+            "{case}/{phase}: {comparison}"
+        );
+    }
 }
+
+mod deep;

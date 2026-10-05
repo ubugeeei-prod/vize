@@ -122,6 +122,25 @@ fn incomplete_source_or_related_custody_refuses_the_whole_batch() {
 }
 
 #[test]
+fn lexical_member_aliases_cannot_be_credited_as_empty_canonical_sources() {
+    let names = ["/project/a.ts".into()];
+    assert!(conversion::requested_members_are_present(
+        &["file:///project/a.ts".into()],
+        &names
+    ));
+    for uri in [
+        "file:///project/./a.ts",
+        "file:///project//a.ts",
+        "file:///project/%61.ts",
+    ] {
+        assert!(!conversion::requested_members_are_present(
+            &[uri.into()],
+            &names
+        ));
+    }
+}
+
+#[test]
 fn native_nullable_empties_and_effective_declaration_options_preserve_category_contract() {
     let empty: Option<Vec<conversion::NativeDiagnostic>> =
         serde_json::from_value(json!(null)).unwrap();

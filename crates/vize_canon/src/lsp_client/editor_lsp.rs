@@ -29,7 +29,7 @@ use std::{
 use vize_l0::{FxHashMap, FxHashSet, String, cstr};
 #[cfg(test)]
 mod batch_test_receipt;
-mod bulk_diagnostics;
+pub(super) mod bulk_diagnostics;
 mod call_hierarchy;
 mod client;
 mod code_actions;

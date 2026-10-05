@@ -1,7 +1,7 @@
 //! Native categories projected using the pinned LSP converter's semantics.
 
 use super::positions::Positions;
-use crate::file_uri::{file_uri_to_path, path_to_file_uri};
+use crate::file_uri::path_to_file_uri;
 use lsp_types::{
     Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, Location, NumberOrString, Uri,
 };
@@ -26,15 +26,13 @@ pub(super) struct NativeDiagnostic {
 }
 
 pub(super) fn requested_members_are_present(uris: &[String], names: &[String]) -> bool {
+    // Path equality normalizes interior `.` and repeated separators, whereas
+    // URI keys retain their lexical bytes. Compare the actual grouping keys.
     let members = names
         .iter()
-        .map(|name| Path::new(name.as_str()))
+        .map(|name| path_to_file_uri(Path::new(name.as_str())))
         .collect::<FxHashSet<_>>();
-    uris.iter().all(|uri| {
-        file_uri_to_path(uri).is_some_and(|path| {
-            members.contains(path.as_path()) && path_to_file_uri(&path) == uri.as_str()
-        })
-    })
+    uris.iter().all(|uri| members.contains(uri.as_str()))
 }
 
 pub(super) fn project_diagnostics(

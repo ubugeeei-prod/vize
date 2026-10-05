@@ -25,8 +25,11 @@ complete existing document map through the original recovery helper, retain
 the response-backed generation barrier, then obtain one fresh managed snapshot.
 Require exactly one snapshot project, its exact configured path, and every
 requested physical source in the Program's complete source-name result.
-Noncanonical URI aliases refuse this route so grouping cannot produce a false
-empty result. No new process, parser, attachment, persistent snapshot, SDK
+URI membership compares exact strings derived from native source names; Path
+equality would normalize interior `.` and repeated separators, although row
+keys preserve lexical bytes. Dot, duplicate-slash and percent aliases refuse
+this route so grouping cannot produce a false empty result. No new steady-state
+process, parser, attachment, persistent snapshot, SDK
 version or product pipeline stage is introduced.
 
 Use the same snapshot for all categories. Return requested URIs in their
@@ -47,12 +50,22 @@ capabilities advertise related information and no diagnostic tags or Visual
 Studio extensions. Complete internal diagnostics are cached before the
 unchanged public projection.
 
-Release each managed snapshot eagerly on success, refusal and error while its
-owner lives. Existing owner-before-attachment shutdown and retry bodies remain
-unchanged. Unsupported methods, ambiguous projects, unowned related sources,
-invalid positions or fileless category rows refuse the whole batch; partial
-bulk vectors never enter the diagnostic cache. Transport failures propagate
-through the existing recovery path. The default unconfigured editor domain and
+Attempt eager release of each managed snapshot on every outcome while its owner
+lives. A legal deeply nested native message chain can exceed the pinned SDK's
+raw JSON reader envelope, which closes that attachment and converts the pending
+error to Protocol. Matching Json alone or swallowing failed release cannot make
+that reader healthy. The typed private route distinguishes complete, bounded
+refusal and required owner retirement. A request or release failure retires the
+failed owner's process using the existing lifecycle helper, then the entire
+original LSP diagnostic path recreates and acknowledges a healthy owner; its
+flattened messages do not have the same nested JSON shape. Retain real request,
+release and retirement causes if that whole fallback also fails. Local payload
+shape refusal does not invent upstream Unsupported provenance. Existing
+owner-before-attachment shutdown and retry bodies remain unchanged. Unsupported
+methods, ambiguous projects, unowned related sources, invalid positions or
+fileless category rows refuse the whole batch; partial bulk vectors never enter
+the diagnostic cache. Only a complete category result credits NativeBulk;
+successful original LSP fallback credits Editor. The default unconfigured editor domain and
 the existing non-Unix attachment refusal are unchanged.
 
 ## Cost and remaining gates
@@ -61,7 +74,8 @@ Project-wide collection checks the entire Program even for a small requested
 subset. Conversion builds one position index per acknowledged document and
 buffers returned categories. A late custody refusal adds this work before the
 existing fallback; fewer per-file calls alone do not prove a latency gain.
-The response-backed dirty-document readiness work is deliberately retained.
+Failure recovery additionally rebuilds the owned process. The response-backed
+dirty-document readiness work is deliberately retained.
 
 The retained eight authored profiles in
 `tests/_fixtures/differential/typechecker/native-bulk-diagnostics/profiles.json`
@@ -69,9 +83,15 @@ exercise strict/loose options, styles, syntax, checked JS, declaration,
 composite and Unicode/CRLF related diagnostics. New native laws compare complete
 preprojection vectors with the same process's original per-file LSP results for
 initial, unchanged and edited generations, including duplicate URIs and an
-empty member. Test-only receipts retain the actual successful category
+empty member. A separate retained legal `deep-chain.ts` input requires the
+actual native reader refusal, complete old/new-owner LSP equality, and a later
+acknowledged bulk generation on the same healthy successor attachment. The
+fixture's authored depth is a witness, not a production input budget. Test-only
+receipts retain the actual successful category
 snapshot, project, source names, method list and attachment. The existing eight
 generated-config laws and other original qualification commands remain intact.
+Complete sides and custody are archived before comparison assertions, including
+failures; no failed raw vector is regenerated as an expected result.
 
 Pending: technical source review, exact-head Actions, real native responses,
 full original 500 warm/no-op/leaf/shared-dependency and CLI/LSP/config/delta

@@ -5,7 +5,7 @@ use corsa::{CorsaError, runtime::block_on};
 use lsp_types::Diagnostic;
 use serde_json::json;
 use std::path::Path;
-use vize_l0::{String, cstr};
+use vize_l0::String;
 
 mod conversion;
 mod positions;
@@ -13,26 +13,50 @@ mod positions;
 mod receipt;
 
 #[cfg(test)]
+pub(in crate::lsp_client) use receipt::fallback as fallback_receipt;
+#[cfg(test)]
 pub(super) use receipt::take as take_receipt;
 
 use conversion::{NativeDiagnostic, project_diagnostics};
+
+#[derive(Debug)]
+pub(in crate::lsp_client) enum BulkDiagnostics {
+    Complete(Vec<Vec<Diagnostic>>),
+    Refused,
+    RetireOwner {
+        request_error: Option<CorsaError>,
+        release_error: Option<CorsaError>,
+    },
+}
 
 impl EditorLspSession {
     pub(in crate::lsp_client) fn bulk_diagnostics(
         &mut self,
         config: &Path,
         uris: &[String],
-    ) -> Result<Option<Vec<Vec<Diagnostic>>>, String> {
+    ) -> Result<BulkDiagnostics, String> {
         #[cfg(test)]
         receipt::reset();
         // Keep the original response-backed overlay barrier. An API socket
         // request alone does not acknowledge LSP notification installation.
         self.ready_workspace_request()?;
         let Some(api) = &self.configured_api else {
-            return Ok(None);
+            return Ok(BulkDiagnostics::Refused);
         };
-        let snapshot = block_on(api.client.update_snapshot(Default::default()))
-            .map_err(|error| cstr!("Cannot update bulk diagnosing snapshot: {error}"))?;
+        let snapshot = match block_on(api.client.update_snapshot(Default::default())) {
+            Ok(snapshot) => snapshot,
+            Err(error) => {
+                return Ok(BulkDiagnostics::RetireOwner {
+                    request_error: Some(error),
+                    release_error: None,
+                });
+            }
+        };
+        #[cfg(test)]
+        receipt::record(json!({
+            "snapshot":snapshot.handle, "snapshotProjects":snapshot.projects,
+            "attachment":api.session, "outcome":"attempted",
+        }));
         let result = (|| {
             // A single retained configured project makes default-project
             // ownership unambiguous. Mixed configured/inferred views fall back.
@@ -47,8 +71,9 @@ impl EditorLspSession {
                 api.client
                     .raw_json_request("getSourceFileNames", params.clone()),
             )?;
-            let names: Vec<String> = serde_json::from_value(names)
-                .map_err(|_| CorsaError::Unsupported("native source names payload"))?;
+            let Ok(names) = serde_json::from_value::<Vec<String>>(names) else {
+                return Ok(None);
+            };
             if !conversion::requested_members_are_present(uris, &names) {
                 return Ok(None);
             }
@@ -58,8 +83,11 @@ impl EditorLspSession {
                 // Deliberately omit `file`: native 7.0.2 accepts this on each
                 // category endpoint. The SDK's grouped endpoints are absent.
                 let value = block_on(api.client.raw_json_request(method, params.clone()))?;
-                let diagnostics: Option<Vec<NativeDiagnostic>> = serde_json::from_value(value)
-                    .map_err(|_| CorsaError::Unsupported("native category payload"))?;
+                let Ok(diagnostics) =
+                    serde_json::from_value::<Option<Vec<NativeDiagnostic>>>(value)
+                else {
+                    return Ok(None);
+                };
                 categories.push(diagnostics.unwrap_or_default());
             }
             let converted = project_diagnostics(&categories, uris, &self.documents);
@@ -75,14 +103,20 @@ impl EditorLspSession {
         })();
         // Eager release on successful conversion, bounded refusal, and error,
         // while the owning LSP process and its attachment are still alive.
-        let cleanup = block_on(snapshot.release())
-            .map_err(|error| cstr!("Cannot release bulk diagnosing snapshot: {error}"));
-        match (result, cleanup) {
-            (_, Err(error)) => Err(error),
-            (Ok(result), Ok(())) => Ok(result),
-            (Err(CorsaError::Unsupported(_)), Ok(())) => Ok(None),
-            (Err(error), Ok(())) => Err(cstr!("Cannot request native bulk diagnostics: {error}")),
-        }
+        let cleanup = block_on(snapshot.release());
+        let outcome = match (result, cleanup) {
+            (Ok(Some(result)), Ok(())) => BulkDiagnostics::Complete(result),
+            (Ok(None), Ok(())) | (Err(CorsaError::Unsupported(_)), Ok(())) => {
+                BulkDiagnostics::Refused
+            }
+            (request, release) => BulkDiagnostics::RetireOwner {
+                request_error: request.err(),
+                release_error: release.err(),
+            },
+        };
+        #[cfg(test)]
+        receipt::finish(&outcome);
+        Ok(outcome)
     }
 }
 

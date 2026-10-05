@@ -23,6 +23,8 @@ impl CorsaProjectClient {
             });
             if route == Some(Route::NativeBulk) {
                 receipt["bulk"] = super::bulk_diagnostics::take_receipt().unwrap_or(Value::Null);
+            } else if let Some(failure) = super::bulk_diagnostics::take_receipt() {
+                receipt["bulkFallback"] = failure;
             }
             let selected = editor.diagnosing_configuration(uri);
             match selected {
