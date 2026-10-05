@@ -45,10 +45,8 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "pnpm-lock.yaml"
-
 permissions:
   contents: read
-
 concurrency:
   group: typechecker-native-phases-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
@@ -155,6 +153,7 @@ jobs:
           node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs
           node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs
           node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs
+          bash tools/benchmarks/scripts/typechecker-native-unknown-options.sh
       - name: Check exact neutral inputs, strict phase parser and projection probe
         run: |
           node tools/benchmarks/scripts/typechecker-native-phases.mjs --self-test
@@ -336,6 +335,7 @@ jobs:
             ${{ runner.temp }}/typechecker-native-phases.json.samples/provenance.json
             ${{ runner.temp }}/template-dollar-emit/
             ${{ runner.temp }}/config-scoped-vue-helpers/
+            ${{ runner.temp }}/unknown-template-options/
             ${{ runner.temp }}/template-emit-ts40-projection/
             ${{ runner.temp }}/typechecker-native-phases.json.samples/failure.json
             ${{ runner.temp }}/typechecker-native-phases.json.samples/inputs/

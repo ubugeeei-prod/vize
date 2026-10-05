@@ -1,7 +1,10 @@
 //! Per-file compile settings and template-syntax mapping for the build command.
 
+#[cfg(test)]
+mod tests;
+
 use std::path::{Path, PathBuf};
-use vize_atelier_core::TemplateSyntaxMode;
+use vize_atelier_core::{TemplateSyntaxMode, WhitespaceStrategy};
 use vize_l0::String;
 use vize_l0::config::{ConfigExperimentalVueFlags, ConfigFeatureFlags, VueVersion};
 use vize_l0::hash::hash_bytes;
@@ -11,6 +14,7 @@ use crate::commands::davinci_ice;
 
 pub(super) struct BuildConfigSettings {
     pub(super) compiler_template_syntax: Option<&'static str>,
+    pub(super) compiler_whitespace: Option<&'static str>,
     pub(super) features: ConfigFeatureFlags,
     pub(super) experimental_vue: ConfigExperimentalVueFlags,
     pub(super) vapor: Option<bool>,
@@ -23,6 +27,7 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
     if no_config {
         return BuildConfigSettings {
             compiler_template_syntax: None,
+            compiler_whitespace: None,
             features: ConfigFeatureFlags::default(),
             experimental_vue: ConfigExperimentalVueFlags::default(),
             vapor: None,
@@ -31,8 +36,11 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
             host_compiler: None,
         };
     }
+    let (compiler_template_syntax, compiler_whitespace) =
+        crate::config::load_compiler_template_settings(config);
     BuildConfigSettings {
-        compiler_template_syntax: crate::config::load_compiler_template_syntax(config),
+        compiler_template_syntax,
+        compiler_whitespace,
         features: crate::config::load_config_with_features_and_source(config).features,
         experimental_vue: crate::config::load_config_experimental_vue_flags_with_source(config)
             .flags,
@@ -50,6 +58,8 @@ pub(super) struct CompileFileSettings {
     pub(super) custom_renderer: bool,
     pub(super) custom_elements: Vec<String>,
     pub(super) template_syntax: TemplateSyntaxMode,
+    pub(super) whitespace: WhitespaceStrategy,
+    pub(super) legacy_line_breaks: bool,
     pub(super) experimental_in_tag_comments: bool,
     pub(super) experimental_patterned_template: bool,
     pub(super) experimental_self_component: bool,
@@ -131,6 +141,12 @@ impl CompileFileSettings {
                 .template_syntax
                 .map(Into::into)
                 .unwrap_or_else(|| template_syntax_mode(build_config.compiler_template_syntax)),
+            whitespace: if build_config.compiler_whitespace == Some("preserve") {
+                WhitespaceStrategy::Preserve
+            } else {
+                WhitespaceStrategy::Condense
+            },
+            legacy_line_breaks: build_config.compiler_whitespace == Some("vue2-line-breaks"),
             experimental_in_tag_comments: build_config.features.experimental_in_tag_comments,
             experimental_patterned_template: build_config.features.experimental_patterned_template,
             experimental_self_component: build_config.experimental_vue.self_component,
@@ -170,6 +186,8 @@ impl CompileFileSettings {
             | (u16::from(self.experimental_in_tag_comments) << 9)
             | (u16::from(self.experimental_patterned_template) << 10)
             | (u16::from(self.experimental_self_component) << 11)
+            | (u16::from(matches!(self.whitespace, WhitespaceStrategy::Preserve)) << 12)
+            | (u16::from(self.legacy_line_breaks) << 13)
     }
 
     pub(super) fn custom_elements_hash(&self) -> u64 {

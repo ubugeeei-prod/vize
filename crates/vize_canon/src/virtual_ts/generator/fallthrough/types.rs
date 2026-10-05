@@ -156,6 +156,15 @@ fn targets_type_ref(
                 });
                 surface.push_str(reference.as_str());
                 surface.push('>');
+                if check_required
+                    && scope.is_some_and(|scope| scope.checks.check_unknown_fallthrough_props)
+                {
+                    // Omit over an open keyof loses the root's declared names.
+                    // Remove that index before excluding the authored bindings.
+                    surface = vize_carton::cstr!(
+                        "{{ [K in keyof ({surface}) as string extends K ? never : K]: ({surface})[K] }}"
+                    );
+                }
                 (root, surface)
             }
         };

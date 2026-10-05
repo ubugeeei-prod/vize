@@ -102,7 +102,7 @@ pub(super) fn emit_default_export_declaration(
     authored_default: AuthoredDefaultKind,
     static_raw_props_ref: Option<&str>,
     static_slots_ref: Option<&str>,
-    fallthrough_props_ref: Option<&str>,
+    (fallthrough_props_ref, check_unknown_fallthrough_props): (Option<&str>, bool),
 ) {
     emit_vue_component_options_type(ts, generic_component_params.is_some());
     let emit_props_static = emits_info.static_emit_props_field();
@@ -188,8 +188,12 @@ pub(super) fn emit_default_export_declaration(
         let emit_props_separator = if emit_resolvers.is_empty() { "" } else { " " };
         let slot_resolver =
             slot_resolver_field(generic_decl, generic_names, slots_is_generic, props_type);
-        let check_props_param =
-            generic_check_props_param(generic_names, fallthrough_props_ref, props_type);
+        let check_props_param = generic_check_props_param(
+            generic_names,
+            fallthrough_props_ref,
+            props_type,
+            check_unknown_fallthrough_props,
+        );
         append!(
             *ts,
             "{{ __vizeCheck: <{generic_decl}>(props: {check_props_param}) => void; __vizeResolveProps?: <{generic_decl}>(props: {check_props_param}) => {props_type}<{generic_names}>; {slot_resolver}{emit_props_static}{event_map_separator}{event_map_static}{emit_props_separator}{emit_resolvers} {component_contract_fields} }} & {authored_component}{public_component_type}",

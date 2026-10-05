@@ -6,6 +6,7 @@ use std::{
     time::{Duration, Instant},
 };
 
+use vize_atelier_core::parser::with_whitespace_mode;
 use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions,
@@ -202,31 +203,34 @@ pub(super) fn compile_file_stats_with_cache(
         scope_id: None,
     };
 
-    let result = match profile!(
-        "atelier.sfc.compile",
-        compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(
-            &descriptor,
-            compile_opts,
-            settings.template_syntax,
-            custom_elements,
-            CodegenOptions::default(),
-            SfcCompileExperimentalOptions {
-                self_component: settings.experimental_self_component,
+    let result =
+        match with_whitespace_mode(settings.whitespace, settings.legacy_line_breaks, || {
+            profile!(
+                "atelier.sfc.compile",
+                compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options(
+                    &descriptor,
+                    compile_opts,
+                    settings.template_syntax,
+                    custom_elements,
+                    CodegenOptions::default(),
+                    SfcCompileExperimentalOptions {
+                        self_component: settings.experimental_self_component,
+                    }
+                )
+            )
+        })
+        .and_then(super::compile::check_compile_result)
+        {
+            Ok(result) => result,
+            Err(error) => {
+                cache_failure(cache, cache_key, ErrorPhase::Compile, error.message.clone());
+                return Err(CompileError {
+                    path: path.clone(),
+                    error: error.message,
+                    phase: ErrorPhase::Compile,
+                });
             }
-        )
-    )
-    .and_then(super::compile::check_compile_result)
-    {
-        Ok(result) => result,
-        Err(error) => {
-            cache_failure(cache, cache_key, ErrorPhase::Compile, error.message.clone());
-            return Err(CompileError {
-                path: path.clone(),
-                error: error.message,
-                phase: ErrorPhase::Compile,
-            });
-        }
-    };
+        };
     let compile_time = compile_start.elapsed();
     if settings.record_profile_totals {
         stats.add_compile_time(compile_time);

@@ -247,3 +247,82 @@ again; `005a` execution stays historical. No new lane, retry, profile/ceiling
 change, response filtering, native shortcut or diagnostic-readiness waiver
 is added. Existing #8035 remains Draft/offqueue under the finite first-v0.433
 publication hold; its first cut remains independent.
+
+The [post-merge finite-cut decision](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5999174391) keeps #8008 open after actual signed #8035 delivery. The source5a42 59.07x observation cannot transfer to the incoming #8049 composition. One existing original400 cell will compare literal published8a source with a root-frozen cut using an independent reviewed driver, four all-or-none SHA/tree/complete-Git-entry-manifest inputs, identical complete ci-profile cleanup and every linked local artifact fresh. The four native feature/profile laws, 534+27 generated sources, 74 complete measured envelopes, 20 warm samples, all controls and raw caps remain fixed. Actual per-source locks and the complete resolved provider graph are recorded. Published8a predates the fixture: driver-owned original bytes generate the identical workload for both sides; the delivered cut retains a matching custody copy.
+
+Both full initialize packets are retained. Only serverInfo.version has a per-source authored release expectation, independently bound to the actual CLI; all other setup fields and every measured response remain exact. All 89 client/server frames and 76 unique responses are required, while asynchronous notifications remain whole observations rather than claimed equal. A public-installed replay requires an explicit publication authority and real installed executable, without a fabricated Cargo receipt or a cross-profile timing ratio. Implementation/source review and the literal-cut execution remain separate; no new run or union performance acceptance has occurred. Startup/config latency, diagnostic timeouts, memory cost and nonrunning versus OS-reaped lifecycle limits remain explicit.
+
+The [finite-cut custody follow-through](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5999523442)
+fixes the concrete 2.53 MB Git tree/default 1 MiB subprocess preparation failure
+with bounded complete Git transport and failed preparation capture. Raw control,
+cut and driver locks plus actual per-side compiler equality and the complete
+locked Linux provider graph remain outside measured windows. A separate closed
+harness-only path authority preserves original inputs and unchanged production;
+its observations establish no speed gain. Public-installed launch/capture and
+fresh source execution remain pending.
+
+The [physical SDK association correction](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5999761304)
+requires the actual executable, SDK directory, selected Linux package manifest
+and ordinary graph member hash to identify the same locked 7.0.2 provider.
+No symlink fallback or fixed package-member count establishes that association;
+fresh execution and the separate installed-public qualification remain pending.
+
+The [supported release bridge decision](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-6000212072)
+uses the literal signed Cargo0.433 SOURCE_CUT for the one original400 source
+comparison before the supported minor command. That command creates a distinct
+Cargo0.434 generated release HEAD whose sole actual parent must be SOURCE_CUT.
+The public tagged Linux replay must authenticate the complete tool-derived
+version-only bridge: all implementation, fixtures, helpers, caps, providers and
+third-party dependencies retain their exact bytes or dependency values outside
+explicit tool-owned version fields. The actual release recipe changes no tracked
+changelog; GitHub release notes grant no path allowance. Only the whole retained
+initialize.serverInfo.version has separately attested source/public CLI values;
+every other initialization field and all74 measured envelopes remain exact.
+
+The unchanged independently reviewed finite-source adapter can undergo ordinary
+existing Draft Actions. The public bridge stays private for concrete schema,
+implementation and a new exact-source peer; its earlier unexecuted tag==CUT
+guard is historical and cannot qualify supported publication. Root must freeze
+the literal cut before source original400 dispatch. Historical59x, equal-ELF
+withdrawal, memory/startup/diagnostic and nonrunning-versus-reaped limits remain.
+
+The [installed Linux original400 adapter](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5999853301)
+adds an opt-in publication authority to the same existing Linux-x64 cell. It
+requires the four literal-cut inputs plus exact authority JSON/SHA256, verifies
+the successful finite-source artifact and its complete driver/cut/provider
+custody, and installs the frozen official standalone release asset from the
+matching released tag. Whole archives, actual ELF/hash/version and failures
+remain retained; this mode performs no Cargo build or source fallback.
+
+A tagged public launch records publication custody in an owned capture root;
+default source launches still require their original Cargo receipt. The same
+original534+27,74 complete measured envelopes,20 warm rows and89+89 frames/76
+responses remain mandatory with all controls and Linux kernel observations.
+Asynchronous notifications are retained and counted, rather than asserted
+whole-equal. Public release-profile timings have no ratio against the fresh
+CI-profile source pair. This standalone distribution replay is separate from
+npm's Node-wrapper/NAPI consumer proof. Source review, Actions, the one literal
+cut comparison and installed-public execution remain pending; historical59x,
+RSS/startup/config, native diagnostics and nonrunning/zombie limits remain.
+
+The [public source-attempt custody correction](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-6000080526)
+binds the exact artifact name, workflow path, literal current attempt and saved
+run/attempt/workflow identities before public replay. Intended finite attempt1
+has no inferred retry or older-green fallback. HTTP records retain immutable
+request URLs, sanitized redirect origin/path and query digests, rather than
+uploading short-lived signed queries. Original workload, production, launch and
+bounds are unchanged; fresh source and public execution remain pending.
+
+The [concrete supported-bridge implementation](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-6000479174)
+uses public authority v2 with distinct sourceCut, tagHead, release PR and root
+whole-tree projection/digest. The same existing public preparation invokes the
+frozen read-only official recipe against actual Git objects and signed source
+commit/official release PR metadata, retaining the full receipt and raw status.
+No claimed boolean, generic version/path waiver or tracked changelog qualifies.
+The source artifact remains literal-cut/DRIVER/run/attempt1; official tag/asset,
+ELF/hash/version and launch refer to generated tagHead. The one existing setup
+version is separately attested and changed only in the cloned expected object;
+all other setup fields and all74 measured envelopes stay exact. Original inputs,
+20warm, complete frames and every provider/process/control/resource bound stay.
+This supersedes the earlier unexecuted tag==CUT guard. New source peer and actual
+literal-cut/public qualification remain required without historical gain credit.

@@ -2,6 +2,7 @@
     clippy::disallowed_macros,
     reason = "insta snapshots expand to format!"
 )]
+use super::super::compatibility_capture;
 use super::super::{BatchTypeChecker, DeclarationEmitOptions, relative_path};
 use super::*;
 
@@ -100,14 +101,27 @@ defineSlots<{
         "generic SFCs must check clean before declaration emit"
     );
 
-    let mut checker = match BatchTypeChecker::new(&project_root) {
-        Ok(checker) => checker,
-        Err(_) => return,
+    let Some(mut checker) = compatibility_capture::checked(
+        &project_root,
+        "declaration-setup",
+        BatchTypeChecker::new(&project_root),
+    ) else {
+        return;
     };
-    checker.scan_project().unwrap();
+    compatibility_capture::checked(&project_root, "declaration-scan", checker.scan_project())
+        .expect("generic declaration scan must succeed");
     let out_dir = project_root.join("types");
-    let emitted = checker
-        .emit_declarations(&DeclarationEmitOptions::new(out_dir.clone()))
+    let emitted = checker.emit_declarations(&DeclarationEmitOptions::new(out_dir.clone()));
+    if let Ok(value) = &emitted {
+        compatibility_capture::retain(
+            &project_root,
+            "declarations",
+            &serde_json::json!({
+                "status":"success", "files":value.files.iter().map(|file| serde_json::json!({"path":file.path,"content":file.content})).collect::<Vec<_>>()
+            }),
+        );
+    }
+    let emitted = compatibility_capture::checked(&project_root, "declarations", emitted)
         .expect("declaration emit must succeed for generic SFCs");
     let snapshot: Vec<_> = emitted
         .files
