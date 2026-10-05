@@ -37,7 +37,7 @@ fn undefined_default_preserves_complete_editor_diagnostics_and_optional_hover() 
     crate::runtime::block_on(async {
         let bridge = Arc::new(vize_canon::CorsaBridge::with_config(
             vize_canon::CorsaBridgeConfig {
-                corsa_path: Some(corsa),
+                corsa_path: Some(corsa.clone()),
                 working_dir: Some(project.path().to_path_buf()),
                 timeout_ms: 30_000,
                 ..Default::default()
@@ -50,6 +50,32 @@ fn undefined_default_preserves_complete_editor_diagnostics_and_optional_hover() 
             .await
             .unwrap();
         let _ = bridge.shutdown().await;
+        if let Some(capture) = std::env::var_os("VIZE_DEFAULT_PROP_CAPTURE") {
+            let capture = std::path::PathBuf::from(capture);
+            std::fs::create_dir_all(&capture).unwrap();
+            std::fs::write(
+                capture.join("editor-diagnostics.json"),
+                serde_json::to_vec_pretty(&diagnostics).unwrap(),
+            )
+            .unwrap();
+            std::fs::write(
+                capture.join("editor-hover.json"),
+                serde_json::to_vec_pretty(&hover).unwrap(),
+            )
+            .unwrap();
+            std::fs::write(capture.join("editor-source.vue"), ORIGINAL).unwrap();
+            std::fs::write(capture.join("editor-tsconfig.json"), CONFIG).unwrap();
+            std::fs::write(capture.join("editor-runtime.json"), serde_json::json!({ "nativeBinary": corsa, "workingDirectory": project.path(), "timeoutMs": 30_000 }).to_string()).unwrap();
+            for file in [
+                "vize.config.json",
+                "node_modules/vue/package.json",
+                "node_modules/vue/index.d.ts",
+            ] {
+                let target = capture.join("editor-inputs").join(file);
+                std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+                std::fs::copy(project.path().join(file), target).unwrap();
+            }
+        }
         let (line, character) = crate::ide::offset_to_position(ORIGINAL, start);
         assert_eq!(
             hover.range,
@@ -66,21 +92,5 @@ fn undefined_default_preserves_complete_editor_diagnostics_and_optional_hover() 
             contents.value,
             "```typescript\nconst onLoad: (() => void) | undefined\n```"
         );
-        if let Some(capture) = std::env::var_os("VIZE_DEFAULT_PROP_CAPTURE") {
-            let capture = std::path::PathBuf::from(capture);
-            std::fs::create_dir_all(&capture).unwrap();
-            std::fs::write(
-                capture.join("editor-diagnostics.json"),
-                serde_json::to_vec_pretty(&diagnostics).unwrap(),
-            )
-            .unwrap();
-            std::fs::write(
-                capture.join("editor-hover.json"),
-                serde_json::to_vec_pretty(&hover).unwrap(),
-            )
-            .unwrap();
-            std::fs::write(capture.join("editor-source.vue"), ORIGINAL).unwrap();
-            std::fs::write(capture.join("editor-tsconfig.json"), CONFIG).unwrap();
-        }
     });
 }

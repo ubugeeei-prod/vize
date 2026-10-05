@@ -238,6 +238,7 @@ jobs:
             --config 'profile.ci-opt.lto="thin"' \
             --config 'profile.ci-opt.codegen-units=16' \
             --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
+          export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync,readdirSync} from "node:fs";import {join} from "node:path";const root=process.env.VIZE_DEFAULT_PROP_CAPTURE;const name=readdirSync(root,{withFileTypes:true}).find(e=>e.isDirectory()).name;process.stdout.write(JSON.parse(readFileSync(join(root,name,"oracle.json"),"utf8")).nativeBinary)')"
           cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_defaults_tests \
             --config 'profile.ci-opt.inherits="release"' \
             --config 'profile.ci-opt.lto="thin"' \
@@ -253,11 +254,13 @@ jobs:
           assert.equal(cases.length, 3);
           assert.deepEqual(JSON.parse(readFileSync(join(root, 'editor-diagnostics.json'), 'utf8')), []);
           assert(existsSync(join(root, 'editor-hover.json')));
+          const editorRuntime = JSON.parse(readFileSync(join(root, 'editor-runtime.json'), 'utf8'));
           const hash = file => createHash('sha256').update(readFileSync(file)).digest('hex');
           const files = dir => readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]);
           const receipts = cases.map(name => {
             const raw = JSON.parse(readFileSync(join(root, name, 'oracle.json'), 'utf8'));
             const nativeBinary = realpathSync(raw.nativeBinary);
+            assert.equal(realpathSync(editorRuntime.nativeBinary), nativeBinary);
             let packageDir = dirname(nativeBinary);
             while (!existsSync(join(packageDir, 'package.json')) && dirname(packageDir) !== packageDir) packageDir = dirname(packageDir);
             const packagePath = join(packageDir, 'package.json');

@@ -34,3 +34,11 @@ receipts. Ordinary PR Rust's native-disabled runs are insufficient. Fresh
 exact-head source/native Actions, unchanged protected full suites and
 instruction ceilings, actual merge and published consumer proof are required.
 Queue admission remains under the release owner's publication barrier.
+
+The first required run failed closed before product checks because workspace root
+has no direct Vue dependency. Create isolated cases beneath the existing pinned
+`npm/cli` workspace package, so both independent native oracle and source CLI
+resolve its unchanged real Vue declarations without installation or symlinks.
+Pin the editor runtime to the same authenticated oracle binary, retain complete
+editor fixture/config inputs and full responses before assertions. This repairs
+qualification only; original corpus and all expected diagnostics remain intact.
