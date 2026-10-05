@@ -122,7 +122,9 @@ fn original_emit_preserves_complete_editor_diagnostics_and_typed_hover() {
             panic!("unexpected hover: {hover:?}");
         };
         assert_eq!(contents.kind, MarkupKind::Markdown);
-        native_oracle::qualify(&corsa).await;
+        if let Err(error) = native_oracle::qualify(&corsa).await {
+            panic!("independent native emit oracle failed: {error}");
+        }
         assert_eq!(
             contents.value,
             "```typescript\nconst $emit: (event: \"change\" | \"click\", ...args: never[]) => void\n```"

@@ -167,3 +167,11 @@ the extracted receipt module default sort comparator warning under the unchanged
 zero-warning budget. Supply an explicit comparator preserving the same UTF16
 lexical case-folder ordering; no diagnostic order, assertion, raw capture or
 budget changes. Fresh successor source/native proof is still required.
+
+The actual strict Rust builder rejects 39 unchecked unwrap/index accesses in the
+new independent oracle helper. Return a fallible fixture result, retain staged
+absence errors for paths/hovers/declaration fields, and let the existing test
+panic on any helper error. Checked JSON fields retain the same pinned package
+version assertion. Every original/source/config and whole diagnostic/hover
+expectation stays unchanged, with no lint exception or warning/cap waiver.
+Fresh strict/native Actions remain required.
