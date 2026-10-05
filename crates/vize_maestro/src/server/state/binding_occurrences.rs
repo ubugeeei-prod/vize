@@ -15,7 +15,25 @@ pub(super) struct OccurrenceConfig {
 pub(crate) struct CachedOccurrences {
     revision: u64,
     config: OccurrenceConfig,
-    pub(crate) facts: PhysicalOccurrences,
+    facts: OccurrenceProfile,
+}
+
+enum OccurrenceProfile {
+    Authored(PhysicalOccurrences),
+    Legacy,
+}
+
+impl CachedOccurrences {
+    pub(crate) fn authored(&self) -> Option<&PhysicalOccurrences> {
+        match &self.facts {
+            OccurrenceProfile::Authored(facts) => Some(facts),
+            OccurrenceProfile::Legacy => None,
+        }
+    }
+
+    pub(crate) fn is_legacy(&self) -> bool {
+        matches!(&self.facts, OccurrenceProfile::Legacy)
+    }
 }
 
 impl ServerState {
@@ -40,10 +58,42 @@ impl ServerState {
         config: OccurrenceConfig,
         facts: Option<PhysicalOccurrences>,
     ) {
-        let Some(revision) = revision else {
-            return;
-        };
-        let Some(facts) = facts else {
+        self.publish_occurrence_profile(
+            uri,
+            source,
+            revision,
+            config,
+            facts.map(OccurrenceProfile::Authored),
+        );
+    }
+
+    pub(super) fn publish_legacy_occurrences(
+        &self,
+        uri: &Url,
+        source: &str,
+        revision: Option<u64>,
+        config: OccurrenceConfig,
+    ) {
+        if config.features.references || config.features.code_lens {
+            self.publish_occurrence_profile(
+                uri,
+                source,
+                revision,
+                config,
+                Some(OccurrenceProfile::Legacy),
+            );
+        }
+    }
+
+    fn publish_occurrence_profile(
+        &self,
+        uri: &Url,
+        source: &str,
+        revision: Option<u64>,
+        config: OccurrenceConfig,
+        facts: Option<OccurrenceProfile>,
+    ) {
+        let Some((revision, facts)) = revision.zip(facts) else {
             return;
         };
         if self.occurrence_source_revision(uri, source) != Some(revision)

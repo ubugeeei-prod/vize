@@ -46,7 +46,7 @@ fn original_whole_highlights_references_and_lenses_replay_over_default_stdio() {
 }
 
 #[test]
-fn whole_shadow_css_unicode_art_and_refusal_responses_use_physical_coordinates() {
+fn whole_positive_domain_shadow_and_refusal_responses_use_physical_coordinates() {
     let controls: Value = serde_json::from_str(CONTROLS).unwrap();
     for session in controls["sessions"].as_array().unwrap() {
         let source = session["source"].as_str().unwrap();
@@ -86,9 +86,20 @@ fn run_session(project: &Path, entry: &str, input: &str, requests: &Value, crlf:
     assert!(initialized["result"].is_object(), "{initialized:#}");
     assert!(initialized.get("error").is_none(), "{initialized:#}");
     lsp.send(json!({"jsonrpc":"2.0","method":"initialized","params":{}}));
-    lsp.send(json!({"jsonrpc":"2.0","method":"textDocument/didOpen","params":{
-        "textDocument":{"uri":uri,"languageId":if entry.ends_with(".art.vue") {"art-vue"} else {"vue"},"version":1,"text":source}
-    }}));
+    let language = if entry.ends_with(".art.vue") {
+        "art-vue"
+    } else if entry.ends_with(".ts") {
+        "typescript"
+    } else if entry.ends_with(".js") {
+        "javascript"
+    } else {
+        "vue"
+    };
+    lsp.send(
+        json!({"jsonrpc":"2.0","method":"textDocument/didOpen","params":{
+            "textDocument":{"uri":uri,"languageId":language,"version":1,"text":source}
+        }}),
+    );
     let publication = lsp.recv_matching(|message| {
         message["method"] == "textDocument/publishDiagnostics"
             && message["params"]["uri"].as_str() == Some(uri.as_str())

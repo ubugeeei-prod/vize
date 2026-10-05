@@ -28,6 +28,35 @@ pub(crate) struct PhysicalOccurrences {
 }
 
 impl PhysicalOccurrences {
+    /// Select only original blocks owned by this existing analysis path.
+    pub(crate) fn supports_sfc_descriptor(descriptor: &SfcDescriptor<'_>) -> bool {
+        if [descriptor.script.as_ref(), descriptor.script_setup.as_ref()]
+            .into_iter()
+            .flatten()
+            .any(|script| {
+                script.src.is_some()
+                    || script
+                        .lang
+                        .as_deref()
+                        .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
+            })
+            || descriptor.styles.iter().any(|style| style.src.is_some())
+        {
+            return false;
+        }
+        match descriptor.template.as_ref() {
+            Some(template) => {
+                template.src.is_none()
+                    && template.lang.as_deref().is_none_or(|lang| lang == "html")
+                    && !template.has_root_match()
+            }
+            None => {
+                descriptor.script_setup.is_some()
+                    && descriptor.script.is_none()
+                    && descriptor.styles.is_empty()
+            }
+        }
+    }
     pub(crate) fn from_sfc(
         packet: BindingOccurrences,
         analysis: &SfcCroquisAnalysis,

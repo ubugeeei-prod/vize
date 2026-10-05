@@ -14,6 +14,8 @@ use crate::server::ServerState;
 #[cfg(test)]
 mod resident_tests;
 
+mod legacy;
+
 use tower_lsp::lsp_types::{CodeLens, Command, Position, Range, Url};
 
 /// Code lens service.
@@ -26,8 +28,13 @@ impl CodeLensService {
         let Some(packet) = state.binding_occurrence_facts(uri, content) else {
             return Vec::new();
         };
-        let mut bindings: Vec<_> = packet
-            .facts
+        if packet.is_legacy() {
+            return legacy::CodeLensService::get_lenses(state, content, uri);
+        }
+        let Some(facts) = packet.authored() else {
+            return Vec::new();
+        };
+        let mut bindings: Vec<_> = facts
             .bindings
             .values()
             .filter(|binding| binding.lens && binding.identity.block == OccurrenceBlock::Script)
@@ -36,7 +43,7 @@ impl CodeLensService {
         bindings
             .into_iter()
             .filter_map(|binding| {
-                let count = packet.facts.template_style_count(binding.identity);
+                let count = facts.template_style_count(binding.identity);
                 if count == 0 {
                     return None;
                 }

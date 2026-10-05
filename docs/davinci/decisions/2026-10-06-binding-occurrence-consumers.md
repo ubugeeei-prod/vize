@@ -25,11 +25,15 @@ raw captures. Complete current execution is required to qualify them.
 ## One demanded checker revision
 
 `update_virtual_docs` opts in while producing the existing template checker
-document for an open revision with references or lenses enabled. The script and
+document for an eligible original HTML Vue revision with references or lenses
+enabled. Script-only setup carries facts out of its existing binding-extraction
+walk; its complete virtual document and export names remain fixed. The script and
 template parsers and existing style-read analysis produce one owned packet.
 The normal generator entry points, virtual TypeScript emissions and mappings
-keep their public signatures. There is no query-time OXC parse, extra pipeline
-stage, ReferencesService request, serialization or text-count fallback.
+keep their public signatures. The authored route adds no query-time OXC parse,
+extra pipeline stage, ReferencesService request, serialization or text-count
+fallback. File/dialect domains outside that route retain their exact prior
+highlight/lens algorithms, rather than becoming a new JS/TS backend.
 
 Each declaration has a ScopeId, source block and exact authored span. Physical
 projection verifies original identifier bytes, script seams, block extents and
@@ -48,7 +52,7 @@ Retrieval rechecks the key around an owned Arc clone; no DashMap/document guard
 escapes to an await. Edit, rejected production, close and reset remove facts.
 Settings mismatches and unopened text return no eligible packet.
 
-Highlights and lenses share this Arc. Identifier highlights retain declaration
+Authored highlights and lenses share this Arc. Identifier highlights retain declaration
 WRITE/use READ as the existing UI convention, including update expressions;
 the producer does not promise semantic read/write classification. Tag pairing
 keeps its original independent stack-based authored tag resolver. Lens ordering,
@@ -63,12 +67,24 @@ hoisting, named function owners, dynamic eval, enum initializers, defaults,
 recovery syntax, split globals and mismatched or derived template source.
 
 The existing Art fragment analysis owns its selected script and variant
-templates. Original Art value/interpolation/declaration positives remain; styled
-or split-script Art refuses this profile because that fragment walk did not
-analyze the missing blocks. Effective legacy Vue2 also refuses the Vue3 facts
-profile rather than pretending that legacy aliases have Vue3 ownership. Those
-relations and all unsupported dialect projections remain unfinished. This does
-not enable legacy replacement or close #6883.
+templates. Original Art value/interpolation/declaration positives remain. The
+cache explicitly distinguishes authored facts, refused eligible input and an
+unchanged legacy domain. Plain JS/TS/JSX/TSX/HTML, non-HTML or external templates,
+root-match templates, script-only normal/mixed blocks, styled/split-script Art
+and effective legacy Vue2 retain their prior behavior. They never acquire a
+misleading complete packet from raw HTML or a partial fragment. Within eligible
+HTML Vue, incomplete ownership still refuses without a text fallback. Those
+broader relations remain unfinished; this does not replace a product or close
+#6883.
+
+Private `d126b543` was source-rejected for losing valid script-only/plain-program
+highlights and admitting unknown template lang/src as raw HTML facts. Preserve
+the sealed peer receipt `f0fa69bc` and all original/authored vectors. The bounded
+successor conserves the old algorithms in private modules, selects the explicit
+legacy domain during the existing revision update, and returns script-only setup
+facts from the already-required extraction walk. Four prepared whole laws and
+six extra stdio control projects qualify the positive/domain boundary; actual
+Rust/CLI execution remains required.
 
 ## Required execution
 
@@ -79,11 +95,12 @@ responses, with native/default/history migration credit still zero. Admission
 fixes all seven methods, binding positions and reference declaration context;
 whole comparison retains order, kinds, nulls, extra fields and omissions.
 
-The ordinary CLI integration target runs ten finite default-stdio sessions:
-the complete original project plus shadow, Unicode/CSS, Art and refusal inputs,
+The ordinary CLI integration target runs twenty-two finite default-stdio
+sessions: the complete original project plus shadow, Unicode/CSS, Art, refusal,
+script-only setup/normal, plain JS/TS and unknown-template ownership inputs,
 each with LF and CRLF opened content. Physical input files remain their pinned
 LF bytes. Every request runs twice against a complete independently authored
-vector, for 116 body replies; no observation is promoted to an oracle. It also
+vector, for 168 body replies; no observation is promoted to an oracle. It also
 requires original diagnostics publication, shutdown and actual child exit.
 Whole original references and all old highlight/tag/update vectors remain gates.
 

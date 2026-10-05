@@ -151,5 +151,5 @@ fn lens_title_counts_template_scope_while_highlights_keep_script_uses() {
         &[lens(1, "1 template/style reference")],
     );
     let packet = state.binding_occurrence_facts(&uri, text).unwrap();
-    assert_eq!(packet.facts.references.len(), 2);
+    assert_eq!(packet.authored().unwrap().references.len(), 2);
 }

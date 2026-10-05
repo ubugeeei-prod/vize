@@ -27,11 +27,10 @@ use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::Allocator;
 use vize_l0::cstr;
 
-use binding::template_used_script_bindings;
+use binding::{template_used_script_bindings, template_used_script_bindings_demand};
 
 use super::{
     ScriptCodeGenerator, StyleCodeGenerator, VirtualDocument, VirtualDocuments, VirtualLanguage,
-    script_code::extract_simple_bindings,
     template_code::{TemplateExpression, extract_expressions},
 };
 
@@ -113,6 +112,10 @@ impl VirtualCodeGenerator {
         allocator: &Allocator,
         source: Option<&str>,
     ) -> (VirtualDocuments, Option<occurrences::PhysicalOccurrences>) {
+        let source = source.filter(|source| {
+            descriptor.source.as_ref() == *source
+                && occurrences::PhysicalOccurrences::supports_sfc_descriptor(descriptor)
+        });
         let mut packet = None;
         let mut docs = VirtualDocuments::new();
 
@@ -144,8 +147,32 @@ impl VirtualCodeGenerator {
 
         // Generate script setup virtual code
         if let Some(ref script_setup) = descriptor.script_setup {
-            let template_bindings =
-                template_used_script_bindings(script_setup.content.as_ref(), &template_expressions);
+            let capture_script = source.is_some() && descriptor.template.is_none();
+            let (template_bindings, script_packet) = if capture_script {
+                template_used_script_bindings_demand(
+                    script_setup.content.as_ref(),
+                    &template_expressions,
+                    true,
+                )
+            } else {
+                (
+                    template_used_script_bindings(
+                        script_setup.content.as_ref(),
+                        &template_expressions,
+                    ),
+                    None,
+                )
+            };
+            if capture_script {
+                packet = source.zip(script_packet).and_then(|(source, packet)| {
+                    occurrences::PhysicalOccurrences::from_fragment(
+                        packet,
+                        script_setup.loc.start as u32,
+                        0,
+                        source,
+                    )
+                });
+            }
             let mut script_doc =
                 self.script_gen
                     .generate_with_exports(script_setup, true, &template_bindings);

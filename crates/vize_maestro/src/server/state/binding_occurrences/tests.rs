@@ -27,7 +27,9 @@ fn an_owned_snapshot_cannot_revalidate_after_edit_or_configuration_change() {
     *state.type_checker_legacy_vue2.write() = true;
     assert!(state.binding_occurrence_facts(&uri, SOURCE).is_none());
     state.update_virtual_docs(&uri, SOURCE);
-    assert!(state.binding_occurrence_facts(&uri, SOURCE).is_none());
+    let legacy = state.binding_occurrence_facts(&uri, SOURCE).unwrap();
+    assert!(legacy.is_legacy());
+    assert!(legacy.authored().is_none());
     *state.type_checker_legacy_vue2.write() = false;
     state.update_virtual_docs(&uri, SOURCE);
     let current = state.binding_occurrence_facts(&uri, SOURCE).unwrap();
