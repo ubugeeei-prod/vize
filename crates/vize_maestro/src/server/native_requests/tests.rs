@@ -1,10 +1,4 @@
 //! Complete stale-result and cancellation laws at the real dispatch boundary.
-#![expect(
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    reason = "full RPC values and owned fixture source"
-)]
-
 use futures::{FutureExt, channel::oneshot, executor::block_on};
 use serde_json::{Value, json};
 use tower_lsp::jsonrpc::Error;

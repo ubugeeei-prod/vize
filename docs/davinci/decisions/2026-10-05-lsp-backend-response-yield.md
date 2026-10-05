@@ -102,6 +102,8 @@ whole ContentModified on actual stdio; they prove failure/refusal, not a
 successful native-query replay. Existing full RPC, versioned diagnostics,
 editor, churn, native backend and deadline fixtures remain required.
 
+The first source Actions for Draft [PR #8022](https://github.com/ubugeeei-prod/vize/pull/8022) at e6670dc failed before test execution: fixture helpers need their exact local Clippy expectations, unused expectations must be removed, and the observational LSP migration inventory must be regenerated after the source moves. The correction is restricted to those test attributes and inventory plus this paired record; production source, original fixtures and every complete RPC assertion remain unchanged. The automatic native typechecker phase passed, but it does not replace execution of the new lifecycle/diagnostic controls or protected native suites. Fresh source Actions remain required.
+
 Rustfmt, source byte integrity, diff and unchanged 350-line policy checks are
 the only local qualification. Rust tests and the source CLI were unbuilt/unrun at the source-only peer
 checkpoint. Independent review cleared b25d89f; the genuine main replay starts

@@ -1,7 +1,8 @@
 //! Actual publishing survives unrelated revisions and cancelled collection.
 #![expect(
-    clippy::disallowed_types,
     clippy::disallowed_methods,
+    clippy::unwrap_used,
+    clippy::indexing_slicing,
     reason = "whole process and LSP notification fixture"
 )]
 
