@@ -41,10 +41,10 @@ function linkAt(message: JsonRpcMessage, index: number) {
 }
 
 void test("LSP manifest binds original complete contracts and every original request", () => {
-  assert.equal(loaded.cases.length, 13);
+  assert.equal(loaded.cases.length, 14);
   assert.deepEqual(
     loaded.cases.map((fixture) => fixture.requests.length),
-    [1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 2, 2],
+    [1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 2, 2, 1],
   );
   assert.equal(loaded.cases[1].files[0].bytes.filter((byte) => byte === 13).length, 18);
   for (const relative of [
@@ -204,7 +204,7 @@ void test("LSP unavailable executables fail every planned case without trying a 
       sourceRevision: build.sourceRevision,
     });
     assert.equal(report.binary, null);
-    assert.equal(report.summary.legacyFailures, 13);
+    assert.equal(report.summary.legacyFailures, 14);
     assert.equal(report.summary.nativeHandled, 0);
     assert(
       report.rows.every(

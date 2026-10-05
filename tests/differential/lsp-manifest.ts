@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { loadProductManifest, readPinnedArtifact } from "./harness.mjs";
 import { loadOriginalHighlightRequests } from "./lsp-highlight-manifest.ts";
+import { loadModuleResolutionLinks } from "./lsp-module-links-manifest.ts";
 import type { FixtureData, LoadedLspManifest, PlannedLspFixture, LspFixture } from "./lsp-types.ts";
 
 export const NATIVE_REASON = "native whole-product LSP adapter unavailable";
@@ -64,7 +65,9 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       }).toString("utf8"),
     ) as unknown;
     let requests: LspFixture["requests"];
-    if (data.method === "textDocument/documentLink") {
+    if (data.id === "lsp/fix-history/document-link-module-resolution-original") {
+      requests = loadModuleResolutionLinks(data, expected);
+    } else if (data.method === "textDocument/documentLink") {
       assert(
         Array.isArray(expected) && expected.length === 3,
         "three original active links required",

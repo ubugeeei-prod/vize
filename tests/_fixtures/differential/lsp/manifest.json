@@ -7,7 +7,9 @@
     {
       "id": "lsp/fix-history/inactive-imports",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "inactive-imports",
         "files": [
@@ -43,7 +45,9 @@
     {
       "id": "lsp/fix-history/on-type-crlf",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "on-type-crlf",
         "files": [
@@ -68,7 +72,9 @@
     {
       "id": "lsp/fix-history/folding-four-divs",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-four-divs",
         "files": [
@@ -92,7 +98,9 @@
     {
       "id": "lsp/fix-history/folding-multi-block",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-multi-block",
         "files": [
@@ -116,7 +124,9 @@
     {
       "id": "lsp/fix-history/folding-comment",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-comment",
         "files": [
@@ -140,7 +150,9 @@
     {
       "id": "lsp/fix-history/folding-one-line",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-one-line",
         "files": [
@@ -164,7 +176,9 @@
     {
       "id": "lsp/fix-history/folding-empty-blocks",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "folding-empty-blocks",
         "files": [
@@ -188,7 +202,9 @@
     {
       "id": "lsp/fix-history/highlight-original-rw",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-rw",
         "files": [
@@ -212,7 +228,9 @@
     {
       "id": "lsp/fix-history/highlight-original-pair",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-pair",
         "files": [
@@ -236,7 +254,9 @@
     {
       "id": "lsp/fix-history/highlight-original-tag",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-tag",
         "files": [
@@ -260,7 +280,9 @@
     {
       "id": "lsp/fix-history/highlight-original-crlf",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-crlf",
         "files": [
@@ -284,7 +306,9 @@
     {
       "id": "lsp/fix-history/highlight-original-empty",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "highlight-original-empty",
         "files": [
@@ -308,7 +332,9 @@
     {
       "id": "lsp/regression/component-hover-readability",
       "state": "active",
-      "targets": ["stdio"],
+      "targets": [
+        "stdio"
+      ],
       "inputs": {
         "root": "component-hover-readability",
         "files": [
@@ -331,6 +357,44 @@
         "sha256": "b6b3c263d95c79d0a95f49b54547dc101c5808aa38346adffdac537ec5fdbce1"
       },
       "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/document-link-module-resolution-original",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "document-link-module-resolution-original",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "4887832158be0ef54595226e4441ddf11ce433486d79446eeb7cb75499895681"
+          },
+          {
+            "path": "index.ts.txt",
+            "sha256": "6c6f805f3f3bb5f306dc9993d7ebcad35909d48fc4249432eec3aca4a8fe430c"
+          },
+          {
+            "path": "Detail.vue.txt",
+            "sha256": "c3c05a28bb0b85c98771b761a2ed2ca038f132d1af194732c38630718c250863"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "10ca0d428d6980e1a714aeee0c2a3093a41913731d2d620ef5543e6d85331db1"
+          }
+        ]
+      },
+      "case": {
+        "path": "document-link-module-resolution-original/case.json",
+        "sha256": "c7d7fced6c3189c173853620768feede36294d984fbecff1a80bd51e44968dff"
+      },
+      "requestCount": 1,
       "initializationOptions": {
         "editor": true,
         "lint": false,

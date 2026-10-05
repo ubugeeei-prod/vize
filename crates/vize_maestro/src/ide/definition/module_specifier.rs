@@ -202,7 +202,13 @@ fn resolve_file_candidate(candidate: &Path) -> Option<PathBuf> {
             "index.d.mts",
             "index.d.cts",
             "index.ts",
+            "index.tsx",
             "index.js",
+            "index.vue",
+            "index.mts",
+            "index.cts",
+            "index.mjs",
+            "index.cjs",
         ] {
             let index = candidate.join(basename);
             if index.is_file() {

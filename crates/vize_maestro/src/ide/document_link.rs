@@ -60,7 +60,7 @@ impl DocumentLinkService {
                 imports::script_source_type(script_setup.lang.as_deref()),
                 script_setup.loc.start,
                 content,
-                base_path.as_deref(),
+                uri,
                 &mut links,
             );
             Self::collect_define_art_source_links(content, uri, &mut links);
@@ -79,7 +79,7 @@ impl DocumentLinkService {
                 imports::script_source_type(script.lang.as_deref()),
                 script.loc.start,
                 content,
-                base_path.as_deref(),
+                uri,
                 &mut links,
             );
         }
@@ -258,10 +258,21 @@ impl DocumentLinkService {
                     character: end_char,
                 },
             },
-            target: Some(target),
+            target: Some(Self::encode_target_path(target)),
             tooltip: None,
             data: None,
         }
+    }
+
+    fn encode_target_path(mut target: Url) -> Url {
+        // Url owns scheme/authority, drive spelling, UTF-8 and ordinary escaping.
+        // Its path encode set leaves brackets literal; file-based route folders
+        // need those two reserved bytes encoded without changing the authority.
+        if target.path().contains(['[', ']']) {
+            let path = target.path().replace('[', "%5B").replace(']', "%5D");
+            target.set_path(&path);
+        }
+        target
     }
 }
 
@@ -272,6 +283,31 @@ mod tests {
     use super::DocumentLinkService;
     use crate::server::ServerState;
     use tower_lsp::lsp_types::Url;
+
+    #[test]
+    fn target_encoding_retains_full_windows_and_unicode_file_uris() {
+        for (input, expected) in [
+            (
+                "file:///C:/project/pages/[id]/space%20%E5%90%8D%E5%89%8D.vue",
+                "file:///C:/project/pages/%5Bid%5D/space%20%E5%90%8D%E5%89%8D.vue",
+            ),
+            (
+                "file://server/share/[id]/literal%2520.vue",
+                "file://server/share/%5Bid%5D/literal%2520.vue",
+            ),
+            (
+                "file:///project/pages/%5Bid%5D/Detail.vue",
+                "file:///project/pages/%5Bid%5D/Detail.vue",
+            ),
+        ] {
+            let encoded = DocumentLinkService::encode_target_path(Url::parse(input).unwrap());
+            assert_eq!(encoded.as_str(), expected);
+            assert_eq!(
+                DocumentLinkService::encode_target_path(encoded).as_str(),
+                expected
+            );
+        }
+    }
 
     #[test]
     fn test_define_art_source_link() {
