@@ -3,7 +3,6 @@
     clippy::disallowed_types,
     reason = "whole JSON and filesystem test fixtures"
 )]
-#![expect(clippy::disallowed_macros, reason = "fixture SHA-256 hex strings")]
 
 use std::{fs, path::Path};
 
@@ -133,7 +132,7 @@ fn run_session(project: &Path, entry: &str, mut expected: Value, crlf: bool, fil
         );
         if let Some(links) = response["result"].as_array() {
             for link in links {
-                let target = lsp_types::Url::parse(link["target"].as_str().unwrap()).unwrap();
+                let target = url::Url::parse(link["target"].as_str().unwrap()).unwrap();
                 let path = target.to_file_path().unwrap();
                 if path.file_name().unwrap() == "not-yet-created" {
                     assert!(!path.exists(), "original missing-relative contract");
@@ -204,7 +203,11 @@ fn pinned_bytes(reference: &Value) -> Vec<u8> {
 }
 
 fn digest(bytes: &[u8]) -> String {
-    format!("{:x}", Sha256::digest(bytes))
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| vize_l0::cstr!("{byte:02x}"))
+        .collect::<Vec<_>>()
+        .concat()
 }
 
 fn write(project: &Path, runtime_path: &str, source: &str) {

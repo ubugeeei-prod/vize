@@ -4218,6 +4218,7 @@ dependencies = [
  "similar",
  "tempfile",
  "unicode-width",
+ "url",
  "vize_armature",
  "vize_atelier_core",
  "vize_atelier_dom",

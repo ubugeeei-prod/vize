@@ -51,6 +51,15 @@ yet run for this source. They must pass on their own current heads. Completion
 requires the actual merge and original corpus/accepted source identity in a
 subsequent supported release; public installed RPC proof remains separate.
 
+The first fresh-main source attempt (`e0216163`, Check `37301604067`) failed
+before these stdio laws executed: `lsp-types` 0.97 exposes `Uri`, and the sha2
+0.11 digest array does not implement `LowerHex`. The test now uses the existing
+locked URL parser (2.5.8) through a test-only dependency and formats the digest
+per byte. No production dependency or resolver behavior changes. The official
+consumer-surface generator also updates the three raw-OXC import line numbers
+from 3 to 1. First raw logs remain preserved; the correction needs its own fresh
+source execution and does not inherit any runtime result from that attempt.
+
 ## TODO
 
 - Finish independent source review and exact-head Actions, then supervise the
