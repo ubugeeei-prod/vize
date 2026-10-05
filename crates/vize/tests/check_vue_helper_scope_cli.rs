@@ -155,7 +155,7 @@ fn native_oracle(
             .replace("\r\n", "\n"),
         expected
     );
-    assert_eq!(output.stderr, Vec::new());
+    assert_eq!(output.stderr, Vec::<u8>::new());
     // Keep the native oracle separate from the original CLI program membership.
     std::fs::remove_file(app.join("oracle.ts")).unwrap();
     std::fs::remove_file(app.join("oracle.tsconfig.json")).unwrap();
@@ -169,7 +169,7 @@ fn original_outside_alias_sfc_keeps_models_callable_and_native_attributes_checke
     let version = Command::new(&corsa).arg("--version").output().unwrap();
     assert_eq!(version.status.code(), Some(0));
     assert_eq!(version.stdout, b"Version 7.0.2\n");
-    assert_eq!(version.stderr, Vec::new());
+    assert_eq!(version.stderr, Vec::<u8>::new());
     for root_vue in [false, true] {
         let directory = tempfile::tempdir().unwrap();
         let root = directory.path().canonicalize().unwrap();

@@ -69,6 +69,14 @@ remain. The sole conflict relocates only this record's canonical note onto the
 existing type-checker history sentence, preserving every incoming clause and
 the 350-line record. The combined native workflow remains 349 lines.
 
+The [paired first source correction](https://github.com/ubugeeei-prod/vize/issues/7949#issuecomment-5993409758) retains native run 37301981773's e801 compile failure.
+Two complete-empty stderr assertions now specify their existing byte-vector
+type, resolving serde_json equality ambiguity without changing any expected
+byte or diagnostic. The established generator adds only the two genuine new
+test/dev inventory rows (nested Carton aliases and editor L0 aliases), retaining
+every old row. Production, original sources and all runtime vectors remain
+unchanged; no new runtime control executed before the compile failure.
+
 Fresh strict source Actions, authentic whole native/editor execution, independent
 artifact verification, protected full Rust/all 104 instruction gates, actual
 signed merge/issue closure and public release/consumer proof remain required.
