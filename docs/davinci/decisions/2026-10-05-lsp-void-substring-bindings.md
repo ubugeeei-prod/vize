@@ -23,3 +23,11 @@ Actions qualification, protected unchanged instruction ceilings, actual merge,
 release and installed editor acceptance remain pending. This is a correction
 of the current legacy product, not native-stage or complete fix-history credit;
 #6883 remains open. This change claims no measured latency or 10x improvement.
+
+The unrelated existing script `ref` documentation precedence is retained as a
+complete documentation-card object in the control matrix (including its omitted
+range). Its bare and compound template hovers remain fully typed and all its
+references/rename/source-byte laws stay exact. The original reporter bindings
+and every broken name still require typed hover from declaration and template.
+Whether a locally shadowed API name should instead prefer native script hover
+is a separate unfinished TODO, not credited to this mapping correction.

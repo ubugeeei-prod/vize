@@ -19,6 +19,8 @@ const NAMES: &[&str] = &[
     "name", "key", "ref", "type", "value", "slot", "is", "style", "tag",
 ];
 
+const REF_DECLARATION_HOVER: &str = "**ref**\n\n_Vue Composition API_\n\n```typescript\nfunction ref<T>(value: T): Ref<T>\n```\n\nTakes an inner value and returns a reactive and mutable ref object, which has a single property `.value` that points to the inner value.\n\n**Usage**\n- Import from `vue` in normal scripts.\n- Works naturally in `<script setup>` and Composition API setup functions.\n\n[Vue API Reference](https://vuejs.org/api/)";
+
 #[test]
 fn original_report_preserves_complete_typed_hover_references_and_rename() {
     let mut fixture = Fixture::new_with_vue(ORIGINAL);
@@ -87,15 +89,22 @@ fn assert_binding(fixture: &mut Fixture, source: &str, name: &str, ty: &str, nee
 }
 
 fn assert_binding_at(fixture: &mut Fixture, source: &str, name: &str, ty: &str, offsets: &[usize]) {
-    for &offset in offsets {
+    for (index, &offset) in offsets.iter().enumerate() {
+        // The existing script-only Composition API documentation card is separate
+        // from the template mapping contract reported for the `ref` control.
+        let expected = if name == "ref" && index == 0 {
+            json!({ "contents": { "kind": "markdown", "value": REF_DECLARATION_HOVER } })
+        } else {
+            json!({
+                "contents": { "kind": "markdown", "value": format!("```typescript\nconst {name}: {ty}\n```") },
+                "range": range(source, offset, name)
+            })
+        };
         // `request_with` accepts a unique suffix, preserving the exact authored position.
         let needle = &source[offset..];
         assert_eq!(
             fixture.request("textDocument/hover", source, needle),
-            json!({
-                "contents": { "kind": "markdown", "value": format!("```typescript\nconst {name}: {ty}\n```") },
-                "range": range(source, offset, name)
-            }),
+            expected,
             "hover for {name} at {offset}"
         );
     }

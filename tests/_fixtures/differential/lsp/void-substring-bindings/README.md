@@ -14,3 +14,8 @@ all source and generated expression ranges. Expected objects come from the
 authored declaration/type/occurrence contract, rather than captured broken
 responses. This corpus grants no native or complete historical LSP credit;
 #6883 remains open.
+
+The existing script-only `ref` Composition API documentation card is compared
+as a complete separate control response. Its template hover, references and
+rename retain the typed binding contract. Documentation precedence for local
+API-name shadows remains an explicitly unfinished separate concern.
