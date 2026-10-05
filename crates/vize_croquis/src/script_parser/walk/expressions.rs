@@ -66,10 +66,8 @@ pub(in crate::script_parser) fn walk_expression(
 
         // Function expressions create closure scopes
         Expression::FunctionExpression(func) => {
-            if func.id.is_some()
-                && let Some(capture) = result.occurrence_capture.as_mut()
-            {
-                capture.refuse();
+            if func.id.is_some() {
+                result.refuse_occurrences();
             }
             let params = extract_function_params_with_occurrences(result, &func.params);
             let name = func
@@ -102,6 +100,7 @@ pub(in crate::script_parser) fn walk_expression(
 
         // Call expressions may contain callbacks as arguments
         Expression::CallExpression(call) => {
+            result.refuse_direct_eval(&call.callee);
             walk_call_arguments(result, call, source);
         }
 
@@ -124,6 +123,7 @@ pub(in crate::script_parser) fn walk_expression(
         // Chained expressions
         Expression::ChainExpression(chain) => match &chain.expression {
             oxc_ast::ast::ChainElement::CallExpression(call) => {
+                result.refuse_direct_eval(&call.callee);
                 walk_call_arguments(result, call, source);
             }
             oxc_ast::ast::ChainElement::TSNonNullExpression(expr) => {

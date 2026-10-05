@@ -102,11 +102,7 @@ fn extract_identifier_refs_oxc_program(
     let allocator = Allocator::default();
     let ret = profile!(
         "croquis.helpers.identifiers.oxc_parse_program",
-        if demanded {
-            Parser::new(&allocator, expr, source_type).parse()
-        } else {
-            crate::script_parser::parse_program_for_analysis(&allocator, expr, source_type)
-        }
+        crate::script_parser::parse_program_for_analysis(&allocator, expr, source_type)
     );
     if ret.panicked {
         return None;

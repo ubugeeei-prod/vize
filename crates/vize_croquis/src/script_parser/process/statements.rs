@@ -45,6 +45,7 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
 
         // Expression statements (may contain macro calls and callback scopes)
         Statement::ExpressionStatement(expr_stmt) => {
+            result.refuse_occurrences();
             if let Expression::CallExpression(call) = &expr_stmt.expression {
                 // Detect setup context violations (watch, onMounted, etc.)
                 detect_setup_context_violation(result, call);

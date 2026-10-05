@@ -38,6 +38,12 @@ fn unvisited_top_level_runtime_forms_refuse_instead_of_claiming_no_use() {
         "const id=1; for(let i=0;i<1;i++){consume(id)}",
         "const id=1; try{consume(id)}catch{}",
         "const id=1; class C { m(){return id} }",
+        "const id=1; const {[id]: named} = object",
+        "const id=1; const f = (value = id) => value",
+        "const id=1; eval('id')",
+        "const id=1; enum E { X=id }",
+        "const id=1; function f(){ throw id }",
+        "const id=1; onMounted(function id(){ return id })",
     ] {
         refused(script, "id");
     }

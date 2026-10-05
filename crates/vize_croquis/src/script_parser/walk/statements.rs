@@ -337,8 +337,15 @@ pub(in crate::script_parser) fn walk_statement(
             }
         }
         Statement::WithStatement(with_stmt) => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             with_statement::walk_with_statement(result, with_stmt, source);
         }
-        _ => {}
+        _ => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
+        }
     }
 }

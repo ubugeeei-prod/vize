@@ -61,26 +61,30 @@ declaration spans; setup offsets shift by precisely the existing script seam.
 Unknown setup references are retained with exact AST/source spans until the
 actual plain/setup declaration packets and existing summary are joined. Only a
 known merged declaration's exact span and identity can own such a read; implicit
-globals remain unowned. The split-source law covers the setup read of `plain` as
+globals remain unowned. Ambient names such as `Math` stay pending until this
+actual join, so a genuine normal-script declaration has lexical precedence. The split-source law covers the setup read of `plain` as
 well as its template use.
 No source clamping, global counter, native IPC or per-node type query is added.
 
 ## Qualification and remaining work
 
 The orchestration extraction is a separate move-only commit; all source behavior
-changes follow it. Fourteen prepared producer laws cover the entire original,
+changes follow it. Fifteen prepared producer laws cover the entire original,
 script/template shadows, property/string/comment negatives, repeat-cache locations,
 Unicode/CRLF, both CSS blocks, joined script offsets and whole snapshot/VIR
 conservation. External or unsupported regular scripts, malformed/external styles,
 parser failures, unsupported fact forms,
-unwitnessed identifiers and default initializer patterns refuse the whole packet.
+unwitnessed identifiers, computed pattern keys and default initializer patterns refuse the whole packet.
 These refusals do not rewrite the ordinary analysis output.
 
 The initial private `0a5c3585` source review refused admission for concrete
 completeness/ownership gaps. The successor adds demand-only refusals for unwalked
 runtime forms, classes, unsupported `var` hoisting and named-function owners;
 invalid demand combinations and mismatched/derived template roots also refuse.
-The same existing template recursion carries a closed completeness bit. Parser
+Parameter initializer fields, computed destructuring keys, script direct eval and
+lifecycle named functions, runtime enum initializers and other unvisited runtime
+statements also refuse instead of blessing partial facts.
+The same existing template recursion carries a closed completeness bit. Original diagnostics retained by the exact existing recovery parser
 or semantic errors, direct eval, unsupported nodes, omitted spread arguments and
 unsupported function statements cannot produce a complete empty packet. The
 ordinary compatibility names and diagnostics retain their existing traversal.

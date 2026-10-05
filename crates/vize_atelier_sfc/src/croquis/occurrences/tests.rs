@@ -230,3 +230,19 @@ fn unprovided_blocks_or_patterns_refuse_the_whole_packet_without_new_diagnostics
         );
     }
 }
+
+#[test]
+fn split_module_declarations_shadow_ambient_owners_in_setup_and_template() {
+    let source = "<script>export const Math=1</script><script setup>const id=Math</script><template>{{ Math }}{{ id }}</template>";
+    analyze(source, |_, _, packet| {
+        let math = binding(packet, "Math");
+        assert_eq!(
+            packet
+                .occurrences()
+                .iter()
+                .filter(|reference| reference.binding == math)
+                .count(),
+            2
+        );
+    });
+}

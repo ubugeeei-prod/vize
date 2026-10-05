@@ -100,6 +100,9 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                 continue;
                             }
                             Expression::FunctionExpression(func) => {
+                                if func.id.is_some() {
+                                    result.refuse_occurrences();
+                                }
                                 lifecycle_callback_scope_recorded = true;
                                 // Enter client-only scope
                                 result.scopes.enter_client_only_scope(

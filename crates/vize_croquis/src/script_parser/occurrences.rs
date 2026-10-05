@@ -117,7 +117,8 @@ impl ScriptOccurrenceCapture {
                     ) {
                         return None;
                     }
-                    owned = true;
+                    // Ambient owners may be shadowed by a genuine normal-script
+                    // module declaration after the descriptor's split join.
                     break;
                 }
                 queue.extend(scope.parents.iter().copied());
@@ -131,6 +132,20 @@ impl ScriptOccurrenceCapture {
 }
 
 impl super::ScriptParseResult {
+    pub(crate) fn refuse_occurrences(&mut self) {
+        if let Some(capture) = self.occurrence_capture.as_mut() {
+            capture.refuse();
+        }
+    }
+
+    pub(crate) fn refuse_direct_eval(&mut self, callee: &oxc_ast::ast::Expression<'_>) {
+        if self.occurrence_capture.is_some()
+            && matches!(callee, oxc_ast::ast::Expression::Identifier(id) if id.name == "eval")
+        {
+            self.refuse_occurrences();
+        }
+    }
+
     pub(crate) fn note_identifier_occurrence(&mut self, name: &str, span: Span) {
         if let Some(capture) = self.occurrence_capture.as_mut() {
             capture.reference(self.scopes.current_id(), name, span);

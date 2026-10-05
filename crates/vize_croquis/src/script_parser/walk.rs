@@ -139,6 +139,7 @@ pub(in crate::script_parser) fn extract_function_params_with_occurrences(
         let mut has_default = false;
         for param in &params.items {
             has_default |= collect_param_sites(&param.pattern, &mut note);
+            has_default |= param.initializer.is_some();
         }
         if let Some(rest) = &params.rest {
             has_default |= collect_param_sites(&rest.rest.argument, &mut note);
@@ -163,6 +164,7 @@ pub(in crate::script_parser) fn collect_param_sites(
         BindingPattern::ObjectPattern(object) => {
             let mut has_default = false;
             for property in &object.properties {
+                has_default |= property.computed;
                 has_default |= collect_param_sites(&property.value, note);
             }
             if let Some(rest) = &object.rest {
