@@ -63,6 +63,14 @@ pub(crate) fn get_tag_at_offset(content: &str, offset: usize) -> Option<String> 
 pub(crate) fn get_attribute_and_component_at_offset(
     ctx: &IdeContext<'_>,
 ) -> Option<(String, String)> {
+    get_attribute_with_source_span_at_offset(ctx).map(|(name, tag, _)| (name, tag))
+}
+
+type AuthoredAttribute = (String, String, Option<(usize, usize)>);
+
+pub(crate) fn get_attribute_with_source_span_at_offset(
+    ctx: &IdeContext<'_>,
+) -> Option<AuthoredAttribute> {
     let content = &ctx.content;
     let cursor = ctx.offset.min(content.len());
     let (tag_start, tag_end, name_start, name_end) = find_tag_name_span(content, cursor)?;
@@ -139,7 +147,7 @@ pub(crate) fn get_attribute_and_component_at_offset(
         if let Some(model_prop_name) =
             super::component_model::prop_name_from_v_model_attribute(raw_attr_name)
         {
-            return Some((model_prop_name, tag_name.to_string()));
+            return Some((model_prop_name, tag_name.to_string(), None));
         } else if let Some(stripped) = attr_name.strip_prefix(':') {
             attr_name = stripped;
         } else if let Some(stripped) = attr_name.strip_prefix("v-bind:") {
@@ -155,7 +163,12 @@ pub(crate) fn get_attribute_and_component_at_offset(
             return None;
         }
 
-        return Some((attr_name.to_string(), tag_name.to_string()));
+        let source_span = (attr_end - attr_name.len(), attr_end);
+        return Some((
+            attr_name.to_string(),
+            tag_name.to_string(),
+            Some(source_span),
+        ));
     }
 
     None

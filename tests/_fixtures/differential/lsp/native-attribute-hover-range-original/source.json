@@ -1,0 +1,40 @@
+{
+  "issue": 7993,
+  "url": "https://github.com/ubugeeei-prod/vize/issues/7993",
+  "bodySha256": "f4dc9058c5ce2b249b783455aff490e6885dd1704cbb34fc345632847d4bf5d2",
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308,
+    "publicNoreply": "71201308+ubugeeei@users.noreply.github.com"
+  },
+  "reportedVersions": {
+    "vize": "0.432.0",
+    "typescript": "7.0.2",
+    "vue": "3.5.43"
+  },
+  "sourceBase": "92e036de6f8dc651440e7c9a2f415a3c7fa69890",
+  "historicalFullNativeResponse": "not provided; issue table is a summary, not a complete contents oracle",
+  "currentTypedRPC": "unexecuted; no native/default/history credit",
+  "originals": [
+    {
+      "path": "Field.vue.txt",
+      "sha256": "24ae0b5b278779dd760ae7fd6bcd3926dbcb87a281e5675f16c13d8b354833e7",
+      "bytes": 132
+    },
+    {
+      "path": "tsconfig.json.txt",
+      "sha256": "3e69f1b19380514b0a42913c6dc21a2fffed65855e4bad30534c3f6a71116b23",
+      "bytes": 111
+    },
+    {
+      "path": "lsp-req.mjs.txt",
+      "sha256": "4f2d195d15af1617c5400e66b1077c3908f959ae5e7281da99687100d8173c29",
+      "bytes": 3682
+    },
+    {
+      "path": "issue-body.md",
+      "sha256": "b972cf7b7992c26d057c3d62bcf8c8bb368d6284606d9018f80d16acb17886b5",
+      "bytes": 5504
+    }
+  ]
+}
