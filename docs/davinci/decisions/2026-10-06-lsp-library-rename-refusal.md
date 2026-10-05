@@ -64,3 +64,12 @@ has no compilation/native/Ready/merge/release credit. Every incoming main
 canonical byte is retained, with only this owned clause placed beside the edit
 representation record. [Paired replay receipt 6004384970](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6004384970)
 keeps the original/private proposal and the delivered feature hotfix distinct.
+
+First Draft #8071 source Check37383144254 failed before native execution on
+E0505 in the package custody pure law: its edit constructor moved a URI still
+borrowed by IdeContext. Clone that same URI at the one existing negative
+assertion, preserving complete target identity, every production/original/native
+vector and cap. The authentic 207,963-byte failed log has SHA256
+9d7bbbe4f1f705940076e718dd5b4470e976376649735102cbe5ecfa5327b9e6;
+[paired6004608394](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6004608394)
+requires meaningful fresh exact source execution without runtime credit.

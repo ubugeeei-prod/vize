@@ -198,7 +198,7 @@ fn captured_open_package_sfc_keeps_its_authored_role_without_blessing_libraries(
     let mut scope = RenameScope::new(&ctx);
     assert!(scope.admits_native(&document, &entry(native.clone())));
     assert!(scope.admits_authored(&entry(uri.clone())));
-    assert!(!scope.admits_native(&document, &entry(uri)));
+    assert!(!scope.admits_native(&document, &entry(uri.clone())));
     assert!(!scope.admits_authored(&entry(library_uri.clone())));
     let mut mixed = entry(native);
     mixed
