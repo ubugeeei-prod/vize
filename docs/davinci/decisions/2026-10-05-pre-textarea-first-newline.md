@@ -109,3 +109,13 @@ Public CLI behavior and direct native text-rule tests do not establish whole
 native/default SFC or native Vapor SSR acceptance. The differential manifest
 keeps that distinction explicit. Source Actions, peer review, protected queue
 checks and the actual merge are required before recording delivery.
+
+The protected queue exposed a conflict in the shared Tracking paragraph
+with the incoming CLI failure-oracle decision. Remove only this unchanged
+UNMERGEABLE entry after verifying its exact entry ID and source head.
+Replay the owned commits on actual main, retaining every incoming byte and
+placing only this companion link on the existing note sentence at 350 lines.
+The complete queued tail must merge cleanly without inheriting its unmerged
+PR commits. Preserve all reviewed production and whole-corpus inputs; fresh
+source Actions, 4,296+12 tokenizer records and all 17 runtime controls must
+qualify the composed source before protected admission is retried.
