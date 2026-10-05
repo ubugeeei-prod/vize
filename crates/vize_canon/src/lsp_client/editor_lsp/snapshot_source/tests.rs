@@ -18,10 +18,7 @@ fn independently_authored_unicode_crlf_text_and_identities_are_byte_exact() {
         "/../../tests/_fixtures/differential/typechecker/snapshot-source-text/protocol5-text.json"
     )))
     .unwrap();
-    assert_eq!(
-        format!("{:x}", Sha256::digest(PAYLOAD)),
-        fixture["sha256"].as_str().unwrap()
-    );
+    assert_eq!(hash(PAYLOAD).as_str(), fixture["sha256"].as_str().unwrap());
     assert_eq!(
         source_text(PAYLOAD, NAME),
         Ok((
@@ -164,6 +161,13 @@ fn exact_native_uri_membership_refuses_dot_slash_percent_and_foreign_aliases() {
     );
     assert_eq!(source_members(&[String::from("relative.ts")]), None);
     assert_eq!(source_members(&[String::from("/workspace/a\0.ts")]), None);
+}
+
+fn hash(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| vize_l0::cstr!("{byte:02x}"))
+        .collect()
 }
 
 fn word(offset: usize) -> u32 {

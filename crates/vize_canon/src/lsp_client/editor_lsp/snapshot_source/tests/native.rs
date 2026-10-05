@@ -1,9 +1,11 @@
 //! Full original stdlib bytes versus the same acknowledged snapshot's root text.
 
-use super::super::{SnapshotSourceOwner, SourceTextOutcome, SourceTextRefusal};
+use super::{
+    super::{SnapshotSourceOwner, SourceTextOutcome, SourceTextRefusal},
+    hash,
+};
 use crate::{file_uri::path_to_file_uri, lsp_client::editor_lsp::EditorLspSession};
 use serde_json::json;
-use sha2::{Digest, Sha256};
 use std::{path::Path, process::Command};
 
 #[test]
@@ -191,8 +193,4 @@ fn actual_native_snapshot_retains_complete_stdlib_and_overlay_text_with_owner_re
     }
     assert_eq!(std::fs::read(&source).unwrap(), disk_source);
     assert_eq!(std::fs::read(&config).unwrap(), config_bytes);
-}
-
-fn hash(bytes: &[u8]) -> vize_l0::String {
-    vize_l0::cstr!("{:x}", Sha256::digest(bytes))
 }

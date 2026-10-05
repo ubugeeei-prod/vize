@@ -419,9 +419,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/readi
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/retry.rs	4	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/retry.rs	40	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source.rs	15	l0	L0	stage	vize_l0	preferred	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs	6	l0	L0	stage	vize_l0	preferred	3
-typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native.rs	17	l0	L0	stage	vize_l0	preferred	2
-typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native.rs	17	carton	Carton host/compatibility	old	vize_carton	legacy	2
+typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests.rs	6	l0	L0	stage	vize_l0	preferred	4
+typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native.rs	19	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/synchronize.rs	5	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/tests.rs	175	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/type_definition.rs	3	l0	L0	stage	vize_l0	preferred	1
