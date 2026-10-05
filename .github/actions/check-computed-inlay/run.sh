@@ -7,3 +7,12 @@ cd "$NATIVE_PHASE_SOURCE_ROOT"
 cargo test --locked --profile ci-opt -p vize --test lsp_computed_inlay_cli -- --nocapture
 cargo test --locked --profile ci-opt -p vize_maestro --lib inlay_hint:: -- --nocapture
 cargo test --locked --profile ci-opt -p vize_croquis --lib builtin_types:: -- --nocapture
+cargo build --profile ci -p vize
+vp node tests/differential/build-receipt.mjs
+scorecard_status=0
+VIZE_LSP_BIN="$NATIVE_PHASE_SOURCE_ROOT/target/ci/vize" VIZE_LSP_REQUIRE_SOURCE_BUILD=1 \
+  vp node --test --test-concurrency=1 tests/tooling/lsp-vue-language-tools-oracles.test.ts || scorecard_status=$?
+mkdir -p "$VIZE_INLAY_HINT_CAPTURE/editor-only-scorecard"
+cp -R target/differential/lsp-sessions "$VIZE_INLAY_HINT_CAPTURE/editor-only-scorecard/"
+cp target/ci/vize.differential-build.json "$VIZE_INLAY_HINT_CAPTURE/editor-only-scorecard/build-receipt.json"
+exit "$scorecard_status"
