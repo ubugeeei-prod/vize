@@ -28,3 +28,14 @@ extraction avoids ratcheting that existing file upward. Source qualification,
 protected full suites, unchanged instruction budgets, actual merge and release
 remain required. Full YAML/Markdown formatting remains unfinished and is not
 credited by this correction.
+
+Initial exact-source Check [37259167045](https://github.com/ubugeeei-prod/vize/actions/runs/37259167045)
+retains its failures: three old CLI tests expected the former partial YAML/Markdown
+normalisation, the help snapshot retained unsupported default patterns, and the
+public guide grew above its existing 375-line ceiling. The successor keeps the
+original three authored inputs and asserts complete explicit refusal, empty stdout
+and unchanged bytes across check/three writes/recheck, adds alternate extensions
+and Markdown hard-break coverage, updates the help snapshot to the observed full
+output, and puts the support description into the guide's existing paragraph.
+Private normalizer laws, six-scenario corpus, source caps and instruction ceilings
+remain unchanged; the original failed run is not a successful qualification.
