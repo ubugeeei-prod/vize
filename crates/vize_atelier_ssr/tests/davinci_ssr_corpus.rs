@@ -29,10 +29,17 @@ use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sf
 use vize_atelier_ssr::differential::{SsrLaneComparison, compare_ssr_lanes};
 use vize_atelier_ssr::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 
+#[path = "davinci_ssr_corpus/group_template.rs"]
+mod group_template;
+
 #[path = "davinci_ssr_corpus/production.rs"]
 mod production;
 
 const BATTERY: &[(&str, &str)] = &[
+    (
+        "TransitionGroupDynamicSlot.vue",
+        include_str!("fixtures/transition-group-dynamic-slot-with-v-if.vue"),
+    ),
     (
         "SelectValueOrder.vue",
         include_str!("fixtures/select-value-order.vue"),

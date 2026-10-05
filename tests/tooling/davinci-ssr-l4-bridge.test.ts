@@ -8,6 +8,7 @@ import {
   metadata,
   readRepoFile,
   repoRoot,
+  walkRustFiles,
   workspacePackage,
 } from "./support/davinci-stage-dependencies.ts";
 
@@ -82,10 +83,7 @@ test("SSR L4 selection counters name every legacy reason", () => {
 
 test("the SSR plan emitter never reads the legacy template AST", () => {
   const emitRoot = path.join(repoRoot, "crates", "vize_atelier_ssr", "src", "l4");
-  const files = [path.join(emitRoot, "emit.rs")];
-  for (const entry of fs.readdirSync(path.join(emitRoot, "emit"))) {
-    files.push(path.join(emitRoot, "emit", entry));
-  }
+  const files = [path.join(emitRoot, "emit.rs"), ...walkRustFiles(path.join(emitRoot, "emit"))];
   const legacyAst =
     /\b(?:TemplateChildNode|ElementNode|RootNode|PropNode|DirectiveNode|ExpressionNode|vize_relief|vize_armature)\b/u;
   for (const file of files) {

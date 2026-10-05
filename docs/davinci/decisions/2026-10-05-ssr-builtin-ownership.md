@@ -146,3 +146,30 @@ partition to require an exact invariant rejection. Two additional compiler
 fixtures require selected/legacy full code, maps and diagnostics parity under
 all four existing option sets. No blanket group refusal or generic component
 behavior change is introduced. These new laws remain unexecuted until Actions.
+
+Check `37332106544` at source `37d51b2f` builds and passes all four Rust workers,
+including the genuine directive-partition, four-option emitter parity, complete
+public map and whole-SFC runtime laws. Authenticated worker artifact
+`11355836418` retains all eleven original current/official modules, eight current
+script maps, three required null maps, eleven official graphs, and twenty exact
+Node SSR HTML observations with empty diagnostics at literal producer
+`8bea7549138e0532310e626dc940224df2eb6bb7` / tree
+`fb4988d83b8cd47de201e8dcbc8dd7bffdb46a5c`. This bounded runtime proof does not
+make the whole source run green: its canonical production sweep still finds one
+of 42,625 full-SFC comparisons different, and tooling shard 2 fails with EISDIR.
+
+The sole canonical difference uses the unchanged 546-byte
+[original upstream SFC](https://github.com/vuejs/core/blob/3adb225775c9b28223a56e07f7a2f874b6fbb138/packages-private/vapor-e2e-test/transition-group/cases/vapor-transition-group/dynamic-slot-with-v-if.vue)
+(SHA-256 `0489bb663e6ccea0d50fb659ff301eea9f33840c4e1f47615d7024e8eb949172`).
+An authored `<template v-if #default>` under the group transparently contains a
+list. The selected template passthrough discarded the inherited nested-fragment
+flag and added list markers; the existing walker preserves that flag. Forward
+it only into the existing template passthrough, leaving ordinary physical
+element child contexts unchanged. Copy the complete pinned source byte-for-byte
+into the mandatory whole-SFC battery and require genuine selected ownership
+with strict full-field parity; no original comparison or HTML reference changes.
+The AST-custody law uses its existing recursive Rust-file walker to include the
+new nested test module without reading directories as files. Its three pure
+source laws pass locally; new Rust/canonical/runtime execution remains pending.
+The failed one-difference sweep remains failed, and the old twenty observations
+do not transfer to the source successor. Draft and release admission hold stay.

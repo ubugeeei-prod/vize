@@ -160,7 +160,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         match (segment.kind, segment.source) {
             (Kind::OpenElement, Source::Element(element)) => {
                 vize_l0::ensure_sufficient_stack(|| {
-                    self.element(segment, element, inherit, flags.css_vars)
+                    self.element(segment, element, disable, inherit, flags.css_vars)
                 })
             }
             (Kind::Component, Source::Component(component)) => {
