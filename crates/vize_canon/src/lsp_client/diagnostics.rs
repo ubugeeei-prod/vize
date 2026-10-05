@@ -22,7 +22,6 @@ mod native_bulk;
 #[cfg(test)]
 pub(super) mod test_route;
 mod virtual_overlay_diagnostics;
-
 impl CorsaProjectClient {
     /// Get cached diagnostics for a URI.
     pub fn get_diagnostics(&self, uri: &str) -> Vec<LspDiagnostic> {

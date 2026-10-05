@@ -84,10 +84,11 @@ exercise strict/loose options, styles, syntax, checked JS, declaration,
 composite and Unicode/CRLF related diagnostics. New native laws compare complete
 preprojection vectors with the same process's original per-file LSP results for
 initial, unchanged and edited generations, including duplicate URIs and an
-empty member. A separate retained legal `deep-chain.ts` input requires the
-actual native reader refusal, complete old/new-owner LSP equality, and a later
+empty member. A separate retained legal `deep-return-chain.ts` input requires the actual
+native reader refusal, complete old/new-owner LSP equality, and a later
 acknowledged bulk generation on the same healthy successor attachment. The
-fixture's authored depth is a witness, not a production input budget. Test-only
+original `deep-chain.ts` remains byte-exact as a positive collapsed-property
+control. Fixture depths are witnesses, not production input budgets. Test-only
 receipts retain the actual successful category
 snapshot, project, source names, method list and attachment. The existing eight
 generated-config laws and other original qualification commands remain intact.
@@ -96,6 +97,25 @@ failures; no failed raw vector is regenerated as an expected result.
 Test-only custody resets for every request, including disabled observation and
 unconfigured or empty batches, so a previous successful category packet cannot
 be attributed to a later original LSP fallback.
+
+
+## First hosted qualification
+
+Source `426a2453377b3cb1ea6774ecfef0a7a5b6d1c4ee` compiled on Actions.
+Native run `37306128972` passed eight unit laws and the eight-profile law:
+24 phase packets contain 72 complete original/bulk row comparisons and 78
+acknowledged category calls. Its authenticated artifact `11344635748` has ZIP
+SHA-256 `198bfaa8ae9a55779f94bcd98c90def98497ae621143337e2ccd29d3356575f8`.
+The recovery law failed because the original 80-property input produced a
+successful, equal bulk result. The pinned
+[Relater reduction](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/checker/relater.go#L4824)
+collapses adjacent property errors into one dotted path. Preserve those exact
+input bytes and failed runs; their success does not prove reader retirement.
+The successor adds a nested return-signature witness without that property
+reduction and retains the mandatory actual reader-failure/recovery assertions.
+Its runtime outcome remains pending. The first source-length gate also failed
+because module registration grew `diagnostics.rs` from 498 to 499 lines; the
+same-change repair keeps the parent cap without changing the existing body.
 
 Pending: exact-head Actions, real native responses,
 full original 500 warm/no-op/leaf/shared-dependency and CLI/LSP/config/delta

@@ -6,6 +6,29 @@ use std::path::Path;
 
 #[test]
 fn native_deep_chain_reader_refusal_retires_owner_and_preserves_whole_fallback() {
+    run_profile(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/typechecker/native-bulk-diagnostics/deep-return-chain.ts"
+        )),
+        true,
+        "return-chain",
+    );
+}
+
+#[test]
+fn native_collapsed_property_chain_preserves_complete_bulk_and_same_owner() {
+    run_profile(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/typechecker/native-bulk-diagnostics/deep-chain.ts"
+        )),
+        false,
+        "property-chain",
+    );
+}
+
+fn run_profile(source: &str, reader_refusal: bool, witness: &str) {
     let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
@@ -25,10 +48,6 @@ fn native_deep_chain_reader_refusal_retires_owner_and_preserves_whole_fallback()
         "files":["deep.ts","empty.ts"],
     })).unwrap();
     std::fs::write(&config, &config_bytes).unwrap();
-    let source = include_str!(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/../../tests/_fixtures/differential/typechecker/native-bulk-diagnostics/deep-chain.ts"
-    ));
     let path = root.path().join("deep.ts");
     let empty_path = root.path().join("empty.ts");
     std::fs::write(&path, source).unwrap();
@@ -58,7 +77,8 @@ fn native_deep_chain_reader_refusal_retires_owner_and_preserves_whole_fallback()
         .map(|uri| serde_json::to_value(client.diagnostics.get(uri.as_str())).unwrap())
         .collect::<Vec<_>>();
     capture(
-        "failed-attachment",
+        witness,
+        "original-generation",
         &json!({
             "nativeBinary":executable,"configuration":config_bytes,"originalSource":source,
             "originalWholeLsp":original,"wholeBatch":batch.as_ref().ok(),
@@ -68,22 +88,29 @@ fn native_deep_chain_reader_refusal_retires_owner_and_preserves_whole_fallback()
     );
     let batch = batch.unwrap();
     assert_eq!(batch.len(), uris.len());
-    assert_eq!(observed["mode"], "editor-lsp");
-    assert_eq!(
-        observed["bulkFallback"]["outcome"],
-        "whole-original-fallback"
-    );
-    assert!(
-        observed["bulkFallback"]["cause"]
-            .as_str()
-            .unwrap()
-            .contains("recursion limit exceeded")
-    );
-    assert_ne!(observed["attachment"], old_attachment);
-    assert_eq!(
-        observed["bulkFallback"]["wholeFallbackError"],
-        serde_json::Value::Null
-    );
+    if reader_refusal {
+        assert_eq!(observed["mode"], "editor-lsp");
+        assert_eq!(
+            observed["bulkFallback"]["outcome"],
+            "whole-original-fallback"
+        );
+        assert!(
+            observed["bulkFallback"]["cause"]
+                .as_str()
+                .unwrap()
+                .contains("recursion limit exceeded")
+        );
+        assert_ne!(observed["attachment"], old_attachment);
+        assert_eq!(
+            observed["bulkFallback"]["wholeFallbackError"],
+            serde_json::Value::Null
+        );
+    } else {
+        assert_eq!(observed["mode"], "native-bulk");
+        assert_eq!(observed["attachment"], old_attachment);
+        assert_eq!(observed["bulk"]["release"], "acknowledged");
+        assert!(observed.get("bulkFallback").is_none());
+    }
     for (actual, expected) in complete_cache.iter().zip(&original) {
         assert_eq!(expected["kind"], "full");
         assert_eq!(actual, &expected["items"]);
@@ -99,7 +126,8 @@ fn native_deep_chain_reader_refusal_retires_owner_and_preserves_whole_fallback()
     let repaired = client.request_diagnostics_batch(&uris);
     let healthy = client.batch_test_receipt(&uri);
     capture(
-        "healthy-successor",
+        witness,
+        "repaired-generation",
         &json!({
             "wholeBatch":repaired.as_ref().ok(),"wholeBatchError":repaired.as_ref().err(),
             "observed":healthy,"previousFallback":observed,
@@ -121,9 +149,9 @@ fn native_deep_chain_reader_refusal_retires_owner_and_preserves_whole_fallback()
     assert_eq!(std::fs::read(&empty_path).unwrap(), b"export {};\n");
 }
 
-fn capture(phase: &str, value: &serde_json::Value) {
+fn capture(witness: &str, phase: &str, value: &serde_json::Value) {
     if let Some(dir) = std::env::var_os("VIZE_NATIVE_BULK_CAPTURE_DIR") {
-        let dir = Path::new(&dir).join("deep-chain").join(phase);
+        let dir = Path::new(&dir).join("deep-chain").join(witness).join(phase);
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::write(
             dir.join("whole-diagnostics.json"),
