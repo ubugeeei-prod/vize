@@ -346,3 +346,5 @@ without conflict; every reviewed non-doc object and incoming source/clause
 remains intact. Fresh automatic source Actions owns all58/32/132+26/wholeRust
 execution; no prior failed or historical green receipt transfers. Publisher434
 HOLD continues to keep this same Draft PR offqueue.
+Source3ff Rust4 job112016352153 genuinely fails the new detached cached-link law: its authored generated spans13..22/26..35 were off by one. Independent literal arithmetic from the unchanged complete expected output gives prefix `(...args) => (`14B + handler00 9B + separator `&&`4B, requiring14..23/27..36; authored3..12/None/segmenttrue stay exact.
+Correct only those two new expected spans; production, wrapper/body, all other original maps/oracles and ceilings remain unchanged. Retain failed full958851B raw SHA d37aba0f7faad6e4e4485bf71db29d61b95ac14546096a7debd2535e0226e345 and authentic JUnit ZIP11378265669 SHA071f076b6ac06765d9a444ec893dc20d7c23bae92833cf98dbfb0f32c5c2d50d. Three other workers pass but whole3ff fails; fresh successor execution is mandatory and this js_ast=None law does not exercise the fast gate.

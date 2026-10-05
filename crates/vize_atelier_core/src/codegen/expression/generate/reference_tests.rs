@@ -80,8 +80,8 @@ mod tests {
         assert_eq!(
             links,
             vec![
-                (Span::new(13, 22), Span::new(3, 12), None, true),
-                (Span::new(26, 35), Span::new(3, 12), None, true),
+                (Span::new(14, 23), Span::new(3, 12), None, true),
+                (Span::new(27, 36), Span::new(3, 12), None, true),
             ]
         );
     }
