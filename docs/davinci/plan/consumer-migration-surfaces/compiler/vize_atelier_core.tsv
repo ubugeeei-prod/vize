@@ -117,6 +117,7 @@ compiler	Compiler	source	crates/vize_atelier_core/src/lane/context.rs	3	croquis	
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/context/for_bindings.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/element.rs	3	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/element/directive_expressions.rs	6	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/lane/element/directive_expressions/tests.rs	15	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/lane/element/tests.rs	6	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/extensions.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/extensions.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
