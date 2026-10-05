@@ -48,3 +48,9 @@ and all owned source/corpus bytes; this clause now occupies its relevant
 distinct canonical location at350 lines. Fresh exact source and protected
 delivery remain required; no earlier acceptance or publication is transferred.
 Paired [placement decision](https://github.com/ubugeeei-prod/vize/issues/7870#issuecomment-5988292984).
+
+The actual4e main replay retains the merged CSS source owners and every
+incoming decision; only the generated census and canonical placement needed
+conflict resolution. All BOM production, whole14 corpus, Rust laws and old
+commit author/message/reporter bytes remain exact. Fresh source and protected
+acceptance remain required. Paired [replay decision](https://github.com/ubugeeei-prod/vize/issues/7870#issuecomment-5988909053).
