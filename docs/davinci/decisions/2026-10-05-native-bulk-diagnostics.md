@@ -165,6 +165,51 @@ whole vectors on the real inputs before the optimization can be admitted.
 No production observation flag, readiness bypass, provider or budget change
 is introduced. Matched same-host timing remains a separate pending gate.
 
+Source `774e2918b46e34d45bcb495519dd75fa6884d8d4` compiled the new ignored
+law, passed affected Clippy and all four PR Rust workers, and passed native
+run `37314846723` (eight unit / three native laws). Its tooling shard 2 failed
+only because relocating the original suffix membership assertion to the shared
+fixture helper exposed an unlisted partial assertion. The repair requires the
+complete `fixture_root.join(INJECTED_FILE)` path to be present, strengthening
+fixture custody without changing source bytes, selection, budgets or the
+committed allowlist. The authoritative Rust assertion gate reruns on the
+successor. Whole-681 execution in full run `37315591587` failed actual bulk admission;
+these source/native results do not prove real Tier-L bulk admission or gain.
+
+## Actual original Tier-L refusal
+
+[Full run 37315591587](https://github.com/ubugeeei-prod/vize/actions/runs/37315591587/job/111781417778)
+passed the original integration timing test, then failed the mandatory ignored
+law at source `774e2918b46e34d45bcb495519dd75fa6884d8d4`. Artifact
+`11348018551` (8527295 bytes) has ZIP SHA-256
+`4aaeb1f89264a3a95d70354ce0e076ccc42527c770caad6d709985774e3eaaa8`;
+all CRCs passed. Every cold/broken/repaired packet contains 681 requested rows,
+and all 2043 complete fallback rows and public preprojection rows equal the
+original LSP vectors. The actual route is `editor-lsp`, with acknowledged
+snapshot release and bounded conversion refusal. This is sound fallback
+custody, not successful project-wide admission. Later LSP checks in that job
+were skipped after the real failure and receive no fresh qualification credit.
+
+The original `preferences.vue.ts` TS2769 vectors include related locations in
+the pinned native `lib.es2017.object.d.ts` (line39, columns4..36) and
+`lib.es5.d.ts` (line261, columns4..30). Those unrequested sources are absent
+from the acknowledged document-text ownership used by this converter.
+One configured project and exact requested membership passed; conversion is
+the observed refusal boundary. Do not remove related information, force a
+NativeBulk marker, weaken the whole-681 law or read changed disk bytes after
+freezing the snapshot to claim custody.
+
+The pinned native `getSourceFile` endpoint returns a snapshot-owned encoded
+AST. Existing [SDK1.14 `get_source_file`](https://github.com/ubugeeei-prod/corsa-bind/blob/34bb731bdcaf5d4c154596b0c32912cbffd60b18/src/core/corsa_client/src/api/client.rs#L403) exposes an
+opaque [`EncodedPayload`](https://github.com/ubugeeei-prod/corsa-bind/blob/34bb731bdcaf5d4c154596b0c32912cbffd60b18/src/core/corsa_client/src/api/encoded.rs#L15);
+it has no decoded text/line-map provider, and no such provider was found in
+the current repository. An invented AST decoder is outside this slice's
+no-new-adapter scope. A supported snapshot-text ownership seam or a separately
+reviewed ownership design is required before extending conversion to these
+stdlib related sources. The current prepared optimization remains Draft and
+offqueue; the independent parent release cut does not wait for it. Matched
+same-host gain remains unproved and #7698 remains open.
+
 Pending: exact-head Actions, fresh native responses after parent replay,
 full original 500 warm/no-op/leaf/shared-dependency and CLI/LSP/config/delta
 vectors, declaration controls, matched source timings, protected full suites,

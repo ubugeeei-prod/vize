@@ -83,6 +83,10 @@ pub(super) fn collect_vue_paths(fixture_root: &Path) -> Vec<PathBuf> {
         "pinned fixture fell below Tier-L scale"
     );
     paths.truncate(TIER_L_VUE_FILES);
-    assert!(paths.iter().any(|path| path.ends_with(INJECTED_FILE)));
+    assert!(
+        paths
+            .iter()
+            .any(|path| path == &fixture_root.join(INJECTED_FILE))
+    );
     paths
 }
