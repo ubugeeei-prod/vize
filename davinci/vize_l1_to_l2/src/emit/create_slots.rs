@@ -78,11 +78,14 @@ fn collect(
         .iter()
         .any(|op| !matches!(op, Op::Text(_) | Op::Interpolation(_)));
     for op in children.ops.iter() {
-        if matches!(op, Op::Comment(_)) || (skip_ws && is_whitespace_text(op)) {
+        if skip_ws && is_whitespace_text(op) {
             let _id = cx.walk.mint();
             continue;
         }
         match op {
+            Op::Comment(_) => {
+                let _id = cx.walk.mint();
+            }
             Op::If(if_op) => {
                 let is_slot = is_slot_if(cx, peek_id(cx), if_op);
                 let walk_before = cx.walk.clone();
