@@ -72,7 +72,16 @@ fn template_literal_quasi_line_starts(expr: &str) -> Vec<bool> {
 
         if let Some(quote) = in_str {
             if b == b'\\' {
-                i += 2;
+                // A legal quoted line continuation owns the next line's spaces.
+                if bytes.get(i + 1) == Some(&b'\n') {
+                    starts.push(true);
+                    i += 2;
+                } else if bytes.get(i + 1..i + 3) == Some(b"\r\n".as_slice()) {
+                    starts.push(true);
+                    i += 3;
+                } else {
+                    i += 2;
+                }
                 continue;
             }
             if b == quote {
@@ -82,9 +91,26 @@ fn template_literal_quasi_line_starts(expr: &str) -> Vec<bool> {
             continue;
         }
 
+        if b == b'/'
+            && !matches!(stack.last(), Some(Frame::Template))
+            && let Some(end) = crate::template::literal_lines::assignment_regexp_end(bytes, i)
+        {
+            i = end;
+            continue;
+        }
         match stack.last() {
             Some(Frame::Template) => match b {
-                b'\\' => i += 2,
+                b'\\' => {
+                    if bytes.get(i + 1) == Some(&b'\n') {
+                        starts.push(true);
+                        i += 2;
+                    } else if bytes.get(i + 1..i + 3) == Some(b"\r\n".as_slice()) {
+                        starts.push(true);
+                        i += 3;
+                    } else {
+                        i += 2;
+                    }
+                }
                 b'`' => {
                     stack.pop();
                     i += 1;
@@ -243,5 +269,16 @@ pub(super) fn format_interpolation_expression(
     {
         return formatted;
     }
-    script::format_js_expression(expr, options).unwrap_or_else(|| expr.trim().to_compact_string())
+    match script::format_js_expression_with_quote_style(expr, options, None) {
+        Some(formatted) if formatted.retained_bare_sequence => {
+            crate::template::directives::reanchor_continuation_lines(
+                &formatted.code,
+                options,
+                crate::template::literal_lines::Representation::JavaScript,
+            )
+            .0
+        }
+        Some(formatted) => formatted.code,
+        None => expr.trim().to_compact_string(),
+    }
 }

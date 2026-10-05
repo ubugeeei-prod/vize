@@ -4,13 +4,16 @@
 //! a lower bound; the assignment-regexp shield is deliberately bounded.
 use vize_l1::markup::entity::{DecodedEntity, EntityContext, decode_one};
 
-/// Protect decoded bare-sequence reference DATA before the existing renderer.
+/// Protect only reference DATA produced by the existing amp-decoding arm.
 /// Original HTML fallback bytes and ordinary `&&`/bitwise bytes stay exact.
-pub(super) fn encode_reference_data(value: vize_l0::String) -> vize_l0::String {
+pub(super) fn encode_reference_data(
+    value: vize_l0::String,
+    decoded_amp_positions: &[usize],
+) -> vize_l0::String {
     let mut encoded: Option<vize_l0::String> = None;
     let mut start = 0;
-    for (index, byte) in value.bytes().enumerate() {
-        if byte == b'&'
+    for &index in decoded_amp_positions {
+        if value.as_bytes().get(index) == Some(&b'&')
             && decode_one(
                 value.get(index..).unwrap_or_default().as_bytes(),
                 EntityContext::Attribute,
@@ -207,7 +210,11 @@ impl LiteralLineState {
 /// operand, never division. Existing successful parsing owns syntax validity;
 /// this only skips its quoted/backtick data, with slash escapes and classes.
 /// Other slash contexts retain both pre-existing and logical ownership rules.
-fn assignment_regexp_end(bytes: &[u8], start: usize) -> Option<usize> {
+pub(crate) fn assignment_regexp_end(bytes: &[u8], start: usize) -> Option<usize> {
+    let tail = bytes.get(start..)?;
+    if tail.starts_with(b"//") || tail.starts_with(b"/*") {
+        return None;
+    }
     let prefix = bytes.get(..start)?;
     let equals = prefix
         .iter()

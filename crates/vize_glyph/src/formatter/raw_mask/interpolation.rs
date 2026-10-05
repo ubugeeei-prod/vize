@@ -17,9 +17,9 @@ pub(super) struct InterpolationScan {
     pub(super) active: bool,
     /// Nested template-literal / `${ … }` frames within the expression.
     frames: Vec<ExprFrame>,
-    /// Open `'…'` / `"…"` string, if any. Reset at every line boundary,
-    /// since such strings cannot span a newline.
-    pub(super) string: Option<u8>,
+    /// Open ordinary string; only a legal escaped line terminator carries it.
+    string: Option<u8>,
+    continued_string: bool,
     /// Inside a `/* … */` comment.
     in_block_comment: bool,
 }
@@ -35,9 +35,16 @@ impl InterpolationScan {
     /// Whether the current line's first byte lies in template-literal quasi
     /// text, which the SFC layer must leave unindented.
     pub(super) fn line_starts_in_quasi(&self) -> bool {
-        self.string.is_none()
-            && !self.in_block_comment
-            && matches!(self.frames.last(), Some(ExprFrame::TemplateLiteral))
+        self.string.is_some()
+            || (!self.in_block_comment
+                && matches!(self.frames.last(), Some(ExprFrame::TemplateLiteral)))
+    }
+
+    pub(super) fn finish_line(&mut self) {
+        if !self.continued_string {
+            self.string = None;
+        }
+        self.continued_string = false;
     }
 
     /// Consume one token at `cursor`, returning the next cursor position.
@@ -52,6 +59,8 @@ impl InterpolationScan {
         }
         if let Some(quote) = self.string {
             if byte == b'\\' {
+                self.continued_string = bytes.get(cursor + 1).is_none()
+                    || bytes.get(cursor + 1..) == Some(b"\r".as_slice());
                 return cursor + 2;
             }
             if byte == quote {
@@ -72,6 +81,11 @@ impl InterpolationScan {
                 }
                 _ => cursor + 1,
             };
+        }
+        if byte == b'/'
+            && let Some(end) = crate::template::literal_lines::assignment_regexp_end(bytes, cursor)
+        {
+            return end;
         }
         match byte {
             b'/' if bytes.get(cursor + 1) == Some(&b'/') => bytes.len(),

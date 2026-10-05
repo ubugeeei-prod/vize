@@ -4,7 +4,7 @@
 //! `v-slot:` -> `#`) and JS expression formatting in directive values.
 
 use crate::{options::FormatOptions, script};
-use vize_l0::{String, ToCompactString, cstr};
+use vize_l0::{SmallVec, String, ToCompactString, cstr};
 
 use super::literal_lines::{LiteralLineState, Representation, encode_reference_data};
 
@@ -52,7 +52,9 @@ pub(super) fn format_directive_value(
     }
 
     let decoded = decode_expression_attribute_entities(trimmed);
-    let expression = decoded.as_deref().unwrap_or(trimmed);
+    let expression = decoded
+        .as_ref()
+        .map_or(trimmed, |value| value.code.as_str());
 
     // Vue 2 filters apply to interpolations and bound values, never events.
     if (name.starts_with(':') || name.starts_with("v-bind"))
@@ -68,9 +70,15 @@ pub(super) fn format_directive_value(
         Some(formatted) if formatted.retained_bare_sequence => {
             // These authored bytes retain absolute source indentation. Rebase
             // code continuations before the attribute printer adds its depth.
-            let (code, multiline) =
-                reanchor_continuation_lines(&formatted.code, options, Representation::JavaScript);
-            (encode_reference_data(code), multiline)
+            // The bare tag retains the exact decoded source bytes. Protect only
+            // amp DATA produced by decoding before reanchor changes byte offsets.
+            let code = encode_reference_data(
+                formatted.code,
+                decoded
+                    .as_ref()
+                    .map_or(&[], |value| value.amp_positions.as_slice()),
+            );
+            reanchor_continuation_lines(&code, options, Representation::JavaScript)
         }
         Some(formatted) => {
             let indent_multiline_value = formatted.code.contains('\n');
@@ -96,7 +104,7 @@ pub(super) fn format_directive_value(
 /// A value whose first line is blank starts on the line *after* the attribute
 /// name. `compute_raw_line_mask` keeps every line of that shape verbatim, so it
 /// never receives SFC indentation and must not be re-anchored here.
-fn reanchor_continuation_lines(
+pub(super) fn reanchor_continuation_lines(
     value: &str,
     options: &FormatOptions,
     representation: Representation,
@@ -166,12 +174,18 @@ fn blank_prefix_len(line: &str) -> usize {
     line.len() - line.trim_start_matches([' ', '\t']).len()
 }
 
-fn decode_expression_attribute_entities(value: &str) -> Option<String> {
+struct DecodedExpression {
+    code: String,
+    amp_positions: SmallVec<[usize; 2]>,
+}
+
+fn decode_expression_attribute_entities(value: &str) -> Option<DecodedExpression> {
     if !value.contains('&') {
         return None;
     }
 
     let mut decoded = String::with_capacity(value.len());
+    let mut amp_positions = SmallVec::new();
     let mut changed = false;
     let mut rest = value;
     while !rest.is_empty() {
@@ -200,6 +214,7 @@ fn decode_expression_attribute_entities(value: &str) -> Option<String> {
             rest = tail;
             changed = true;
         } else if let Some(tail) = rest.strip_prefix("&amp;") {
+            amp_positions.push(decoded.len());
             decoded.push('&');
             rest = tail;
             changed = true;
@@ -212,7 +227,10 @@ fn decode_expression_attribute_entities(value: &str) -> Option<String> {
         }
     }
 
-    changed.then_some(decoded)
+    changed.then_some(DecodedExpression {
+        code: decoded,
+        amp_positions,
+    })
 }
 
 /// Format `v-for` expression: normalize spacing in `(item, index) in items`.

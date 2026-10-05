@@ -97,7 +97,7 @@ const OWNERS: Record<
   },
   "crates/vize_glyph/src/script.rs": {
     originalSha256: "a205174795bb6d993e84b0cc29dfc5d10c36602dfb6216f1db2278a982b2e0ab",
-    actualMainSha256: "5cb5e647858c33d4fe3626da85c2854c704a5169759be4ef207426913ab102d6",
+    actualMainSha256: "023ab800f9c09e13baa254f5074a0e945c05ee5a27d04c8706eb2bd4b03c6a53",
     functions: {
       test_format_tsx_component_script:
         "d108e897e74d4289b8fdf44555eed4b7ad551aff2ac7673b5a80ca8601220d9b",

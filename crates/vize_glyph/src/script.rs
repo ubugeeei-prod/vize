@@ -138,7 +138,7 @@ pub(crate) fn format_js_expression_in_attribute_with_layout(
     format_js_expression_with_quote_style(expr, options, Some(QuoteStyle::Single))
 }
 
-fn format_js_expression_with_quote_style(
+pub(crate) fn format_js_expression_with_quote_style(
     expr: &str,
     options: &FormatOptions,
     quote_style: Option<QuoteStyle>,

@@ -258,4 +258,75 @@ export const sequenceControls = [
     ),
     html: [`<button>${text}:0</button>`],
   })),
+  event(
+    "authored-html-reference",
+    "text = '&copy;',\n          count++",
+    "<button>©:1</button>",
+    state,
+    "{{ text }}:{{ count }}",
+  ),
+  event(
+    "decoded-html-reference-data",
+    "text = '&amp;copy;',\n          count++",
+    "<button>&amp;copy;:1</button>",
+    state,
+    "{{ text }}:{{ count }}",
+  ),
+  event(
+    "mixed-reference-data-byte-offsets",
+    "text = '©:&amp;copy;|&copy;|&amp;quot;|&amp;#34;',\n          count++",
+    "<button>©:&amp;copy;|©|&amp;quot;|&amp;#34;:1</button>",
+    state,
+    "{{ text }}:{{ count }}",
+  ),
+  ...[
+    [
+      "bare-interpolation-raw-quasi",
+      "String(`first\n    raw`),\n          b",
+      "first\n    raw",
+      undefined,
+    ],
+    [
+      "bare-interpolation-quoted-lf",
+      "String('first\\\n    second'),\n          b",
+      "first    second",
+      undefined,
+    ],
+    [
+      "bare-interpolation-quoted-crlf",
+      "String('first\\\r\n    second'),\r\n          b",
+      "first    second",
+      "crlf",
+    ],
+  ].map(([id, expression, result, eol]) => ({
+    id,
+    file: `${id}.vue`,
+    source: `<template>\n  <p>{{ ${expression} }}</p>\n</template>\n`,
+    states: [state],
+    html: [`<p>${result}</p>`],
+    ...(eol ? { eol } : {}),
+  })),
+  ...[
+    [
+      "bare-interpolation-regexp-quote",
+      "text = /'/.test(String.fromCharCode(39)) ? `first\n    raw` : 'no',\n          b",
+      "first\n    raw",
+    ],
+    [
+      "bare-interpolation-regexp-backtick",
+      "text = /['`]/.test(String.fromCharCode(39)) ? `first\n    raw` : 'no',\n          b",
+      "first\n    raw",
+    ],
+    [
+      "bare-interpolation-escaped-quasi",
+      "String(`first\\\n    raw`),\n          b",
+      "first    raw",
+    ],
+  ].map(([id, expression, result]) => ({
+    id,
+    file: `${id}.vue`,
+    source: `<template>\n  <p>{{ ${expression} }}</p>\n</template>\n`,
+    states: [state],
+    html: [`<p>${result}</p>`],
+  })),
 ];

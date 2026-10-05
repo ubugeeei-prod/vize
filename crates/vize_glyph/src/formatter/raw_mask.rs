@@ -51,9 +51,6 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
     // actually following.
     let last_close_line = lines.iter().rposition(|line| contains(line, b"}}"));
     for (i, line) in lines.iter().enumerate() {
-        // `'…'` / `"…"` cannot span a newline in JS, so an unbalanced quote
-        // must not swallow the following lines as string content.
-        interpolation.string = None;
         if (!depth_stack.is_empty()
             || open_quote.as_ref().is_some_and(OpenQuote::marks_line_raw)
             || in_comment
@@ -212,6 +209,7 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
         if let Some(quote) = &mut open_quote {
             quote.literal.finish_line();
         }
+        interpolation.finish_line();
     }
     mask
 }
