@@ -166,6 +166,26 @@ fn array_recovery_and_comments_keep_full_observations_across_stack_sizes() {
     }
 }
 
+#[test]
+fn adjacent_empty_arrays_retain_complete_nonrecursive_observations() {
+    for text in [
+        "[]; /* α */",
+        "const value = [];",
+        "[[], [],];",
+        "[ /* α */ ];",
+        "[,];",
+        "[[]];",
+        "[]\n[]",
+        "[",
+    ] {
+        for selector in 0..8 {
+            let expected = on_stack(REFERENCE_STACK, move || reference(text, options(selector)));
+            let actual = on_stack(SMALL_STACK, move || native(text, options(selector)));
+            assert_eq!(actual, expected, "selector {selector}: {text}");
+        }
+    }
+}
+
 fn assert_deep_array(root: &ArrayExpression<'_>, depth: usize) {
     let mut array = root;
     for level in 0..depth {
