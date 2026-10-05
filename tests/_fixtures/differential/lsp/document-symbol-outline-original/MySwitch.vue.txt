@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const { items, checked } = defineProps<{
+  items: readonly string[];
+  checked: boolean;
+}>();
+</script>
+
+<template>
+  <span>{{ checked ? items[1] : items[0] }}</span>
+</template>
