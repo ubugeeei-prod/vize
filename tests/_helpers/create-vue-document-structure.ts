@@ -1,7 +1,7 @@
 import {
   authoredPosition as position,
   authoredRange as range,
-} from "../../tooling/support/lsp/authored-ranges.ts";
+} from "../tooling/support/lsp/authored-ranges.ts";
 
 export const expectedSymbols = [
   {

@@ -18,7 +18,7 @@ import {
 } from "../../tooling/support/lsp/authored-ranges.ts";
 import type { LspRange, PublishDiagnosticsParams } from "../../tooling/support/lsp/protocol.ts";
 import { LspSession } from "../../tooling/support/lsp/session.ts";
-import { expectedFolding, expectedSymbols } from "./create-vue-document-structure.ts";
+import { expectedFolding, expectedSymbols } from "../../_helpers/create-vue-document-structure.ts";
 
 // #2971 audit item 8: editor features must answer in *authored* `.vue`
 // coordinates, never the generated virtual-TS coordinates actually queried.

@@ -188,3 +188,15 @@ still recovers the whole original runner. The independent d72 source receipt
 `a2d74342b0a0416d1effeadd900ea527ab0d2c43376cfa12cc8257ba7b067052`
 and separate full 37361011907 remain historical scope. Fresh exact successor
 ordinary/full Stack gates and protected actual delivery are required.
+
+The [paired support-location correction](https://github.com/ubugeeei-prod/vize/issues/8006#issuecomment-6001603927)
+retains 10f ordinary PRtooling1/4 job111939628478, raw SHA256
+`cc4e4866b416b739288fd61b3b9c4790fab7a2c3d32afa0690e38405ead04ebf`.
+The existing snapshot-baselines law requires every check-directory TypeScript
+file to be a declared runner. Move the expectation-only helper byte-for-byte
+into the existing tests/_helpers directory before adjusting its two relative
+imports. Keep every declaration and the strict inventory law unchanged; add
+no fixture phase or checker filter. Full vectors/input/setup/other laws and
+e5 parent remain exact. The successful 10f Vue/editor observations retain only
+that source's scope; fresh successor ordinary/full/protected execution is
+required before actual Stack delivery.
