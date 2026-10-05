@@ -57,6 +57,8 @@ const formatterSensitiveContentIgnorePatterns = [
   "docs/content/**/*.md",
   "examples/vite-musea/playwright-report/**",
   "tools/benchmarks/crates/davinci_harness/fixtures/**",
+  // Original #7999 source/hash custody must survive repository formatting.
+  "tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**",
 ];
 
 /**

@@ -104,3 +104,23 @@ The bounded receipt is `/tmp/vize-7875-4e4c-protected-receipt.json`, paired with
 the [terminal issue receipt](https://github.com/ubugeeei-prod/vize/issues/7826#issuecomment-5989021683).
 Publication/installed-package proof remains the release owner's next supported
 candidate. Private #7866 remains unpublished; it contributes no #7999 evidence.
+
+## Original fixture formatting integration
+
+[First-source correction](https://github.com/ubugeeei-prod/vize/issues/7999#issuecomment-5989614560)
+records Check37274463184/check-js111648329654 on `8fa93b1b`: the repository
+formatter would change the exact original config and scoped-component inputs.
+Preserve all six fixture hashes and every production/capture/oracle byte, and
+add only this original SPA fixture directory to the established formatter-sensitive
+input list. Fixture lint remains enabled; no global bypass or instruction waiver
+is introduced. Both original L1/L3 Vue inventories remain exactly449 files, and
+the check snapshot declaration law passes without fabricated registrations.
+The earlier successful Nuxt source-native/generate/Chromium steps remain distinct
+from artifact qualification and cannot transfer to the successor head. Fresh
+ordinary source Actions, authentic full packets and protected suites are required.
+
+The same source tooling3 job111648482245 separately rejects growth of the existing
+Nuxt entry from639 to648 lines. Move-only `4a20cc0b09` extracts the unchanged
+`isPlainRecord`/`mergePlainRecords` statements into24-line `module-records.ts`.
+The entry shrinks to624 lines; reviewed manifest production and all existing call
+behavior remain intact. The350-line ratchet is unchanged, with no waiver.
