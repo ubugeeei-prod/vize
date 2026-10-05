@@ -53,3 +53,10 @@ Formatting the provenance JSON retains every parsed input/hash. Execution pendin
 adds the missing prop-only Canon method using its existing complete camelization
 producer, found by independent source peer before publication. No Event role or
 wire expectation changes are included; actual build/runtime credit stays pending.
+
+[Shared-return qualification](https://github.com/ubugeeei-prod/vize/issues/8009#issuecomment-5995990298):
+the attribute-only coordinate policy retains ordinary coarse queries, while the
+shared prepare cursor check and successful native-null authority also affect
+ordinary canonical answers. Full old native positives remain mandatory. Public
+history has a move-only dispatch extraction followed by the safety change; its
+final source tree matches frozen f969 exactly before this documentation receipt.
