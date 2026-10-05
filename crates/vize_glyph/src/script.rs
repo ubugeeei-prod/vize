@@ -65,8 +65,7 @@ pub(crate) fn format_script_content_stable(
     }
 
     for _ in 1..MAX_SCRIPT_STABILIZATION_PASSES {
-        // The previous pass returned an owned string; its parsed/printed AST
-        // no longer escapes, so recycle the arena before parsing that string.
+        // Recycle the arena only after the previous pass returned its owned output.
         script_allocator.reset();
         let next = match format::format_script_content_with_sort_imports(
             current.as_str(),
