@@ -78,3 +78,30 @@ source-owner coordinated append and paired issue publication. A source commit fo
 PR_TITLE/COMMIT_MESSAGES; native Stack merge has no commit-body override. Verify
 the eventual source trailer and actual squash body separately. A redundant trailer for the primary
 author may be normalized by GitHub; only an observed result receives that label.
+
+## Delivered prefix and remaining source replay
+
+The first two native Stack #7759 layers actually merged: #7756 at signed
+`30f7d963b7a4edef5e28c809bf8755cd4940ab26` and #7758 at signed
+`6302214476ca3f758cbe423b4a51ca3d371f7df0`. Their observed squash bodies
+contain no literal Co-authored-by footer; verified primary authorship remains
+present, and the cause of the absent footer is unknown.
+
+The remaining six layers replay onto literal actual main
+`d1a25ec1da2efca98534520ff8ebe84d34708e3d` and each genuine parent. The
+first remaining source is #7769, previously `49beecae4b`; it retargets from
+the delivered typed-parameter parent to main. Its three test conflicts preserve
+only reviewed primitive-return admission changes: two exact inputs leave old
+refusal lists, and their original unwind control remains. Every incoming
+canonical clause stays intact within 350 lines. Original source/profile/options,
+whole diagnostic and map controls, fixture bytes, existing history registrations,
+instruction ceilings and source authors/messages/footers remain unchanged.
+
+This is source preparation during the active publication barrier. Historical
+green receipts do not qualify the new source union. Each changed head needs
+fresh exact-head source and native-phase Actions, verified native Stack #7759
+membership/ordered parents, protected full suites and all 104 unchanged
+instruction ratchets before actual signed delivery. Native queue admission
+waits for the release owner's verified publication and root's explicit thaw.
+No whole-history, default replacement, complete native products or 10x credit
+is granted by replaying these bounded providers and consumers.
