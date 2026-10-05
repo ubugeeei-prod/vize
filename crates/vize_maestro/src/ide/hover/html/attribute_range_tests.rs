@@ -151,7 +151,7 @@ fn model_exclusion_and_authored_spans_share_the_original_attribute_lexer() {
         let uri = Url::parse("file:///tmp/NativeAttribute7993.vue").unwrap();
         state
             .documents
-            .open(uri.clone(), source.clone().into(), 1, "vue".into());
+            .open(uri.clone(), source.clone(), 1, "vue".into());
         let ctx = IdeContext::new(&state, &uri, source.find(attribute).unwrap() + 1).unwrap();
         let tuple = expected.map(|name| (name.to_owned(), "Field".to_owned()));
         assert_eq!(get_attribute_and_component_at_offset(&ctx), tuple);

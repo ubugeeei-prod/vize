@@ -109,3 +109,17 @@ admission. Previous `80f91` results never transfer to the integrated source.
 Protected suites, actual signed merge and supported public verification remain
 required. This correction supplies no new native-level, default-migration or
 whole fix-history completion credit; #6883 stays open.
+
+## Retained initial integration failure
+
+The first exact integrated source `ff5dc737` failed Check 37343248398 in
+Build affected Rust tests, job 111875583094. Strict Clippy rejected only the
+new authored guard's `source.clone().into()`: its source is already a standard
+String, so the conversion is useless. Remove that identity conversion,
+without changing any scanner/projection code, guard, input or expected vector.
+The failed run provides no complete source/Rust acceptance, and the five
+combined laws still require actual fresh execution. Also genuinely integrate
+the accepted doc-only main `58e6a027`, preserving its full delivery ledger and
+canonical clauses. Fresh successor Actions, complete typed sessions and
+protected unchanged104/actual delivery remain required; no lint allowance,
+rerun waiver or previous green transfer follows.
