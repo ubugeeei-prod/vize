@@ -15,7 +15,9 @@ test("Zed config regression retains the complete original config and authored SF
     ...manifest.controlSha256,
   })) {
     assert.equal(
-      createHash("sha256").update(fs.readFileSync(path.join(fixture, name))).digest("hex"),
+      createHash("sha256")
+        .update(fs.readFileSync(path.join(fixture, name)))
+        .digest("hex"),
       digest,
     );
   }

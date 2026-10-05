@@ -16,9 +16,11 @@
       "config": "issue-8007.config.ts.txt",
       "explicit": null,
       "initializationOptions": {},
-      "hoverProvider": false,
+      "hoverProvider": null,
       "formattingProvider": true,
-      "hover": null
+      "hover": null,
+      "hoverProviderPresent": false,
+      "formattingProviderPresent": true
     },
     {
       "id": "partial-explicit",
@@ -29,18 +31,22 @@
       "initializationOptions": {
         "formatting": true
       },
-      "hoverProvider": false,
+      "hoverProvider": null,
       "formattingProvider": true,
-      "hover": null
+      "hover": null,
+      "hoverProviderPresent": false,
+      "formattingProviderPresent": true
     },
     {
       "id": "empty-explicit",
       "config": "issue-8007.config.ts.txt",
       "explicit": {},
       "initializationOptions": {},
-      "hoverProvider": false,
+      "hoverProvider": null,
       "formattingProvider": true,
-      "hover": null
+      "hover": null,
+      "hoverProviderPresent": false,
+      "formattingProviderPresent": true
     },
     {
       "id": "recommended-explicit",
@@ -74,7 +80,9 @@
             "character": 11
           }
         }
-      }
+      },
+      "hoverProviderPresent": true,
+      "formattingProviderPresent": true
     },
     {
       "id": "no-config-default",
@@ -103,16 +111,20 @@
             "character": 11
           }
         }
-      }
+      },
+      "hoverProviderPresent": true,
+      "formattingProviderPresent": false
     },
     {
       "id": "original-vscode-config",
       "config": "issue-7196.config.ts.txt",
       "explicit": null,
       "initializationOptions": {},
-      "hoverProvider": false,
+      "hoverProvider": null,
       "formattingProvider": true,
-      "hover": null
+      "hover": null,
+      "hoverProviderPresent": false,
+      "formattingProviderPresent": true
     }
   ]
 }

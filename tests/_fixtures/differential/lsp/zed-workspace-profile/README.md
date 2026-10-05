@@ -10,6 +10,8 @@ The six cases cover project-owned defaults, a partial formatting override,
 explicit empty options, an intentional explicit recommended profile, the
 no-config recommended default, and the original #7196 project choices.
 Complete hover replies and the relevant advertised capabilities are exact.
+The current server omits disabled capability keys: absence is asserted separately
+from their JSON value, so an explicit null or false does not substitute for it.
 The existing shared completion/diagnostics/formatting/rename contract remains
 intact. Runtime discovery is provided by a `node_modules/.bin/tsgo` link, not
 by editing the reporter's config or adding initialization feature switches.

@@ -69,14 +69,22 @@ pub fn run(repo_root: &Path) -> Result<(), String> {
             let mut session = LspSession::spawn(repo_root)?;
             let result = (|| {
                 let initialization = session.initialize(&workspace, options.clone())?;
-                for (provider, expected) in [
-                    ("hoverProvider", "hoverProvider"),
-                    ("documentFormattingProvider", "formattingProvider"),
+                for (provider, expected, presence) in [
+                    ("hoverProvider", "hoverProvider", "hoverProviderPresent"),
+                    (
+                        "documentFormattingProvider",
+                        "formattingProvider",
+                        "formattingProviderPresent",
+                    ),
                 ] {
+                    let observed = initialization["capabilities"].get(provider);
                     assert_json_eq(
-                        initialization["capabilities"]
-                            .get(provider)
-                            .unwrap_or(&Value::Null),
+                        &json!(observed.is_some()),
+                        case[presence].clone(),
+                        &format!("{id} {provider} wire presence"),
+                    )?;
+                    assert_json_eq(
+                        observed.unwrap_or(&Value::Null),
                         case[expected].clone(),
                         &format!("{id} {provider}"),
                     )?;
