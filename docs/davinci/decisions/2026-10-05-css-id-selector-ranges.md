@@ -66,8 +66,7 @@ CLI inventory; the successor must execute them all.
 The current authored descendant-repeat vector also exceeded existing scope.
 The pinned selector iterator stops at the first combinator, and the unchanged
 rule never calls `next_sequence()`. Qualify that complete vector to the three
-accepted findings at columns 7, 14 and 27, as retained in official artifact
-11345443174. Preserve all 16 prior sources byte-exact. Add a separate whole
+accepted findings at columns 7, 14 and 27, as retained in official artifact 11345443174. Preserve all 16 prior sources byte-exact. Add a separate whole
 same-compound repeated-ID SFC requiring four distinct original ranges. Both
 existing suites must execute the full 17-case/35-attempt inventory; production
 traversal and strict whole assertions stay exact. The earlier partial capture
