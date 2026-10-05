@@ -76,3 +76,13 @@ Paired [custody correction](https://github.com/ubugeeei-prod/vize/issues/7826#is
 retains old denominator controls and adds original-pin/revision/function/current-
 source forgery negatives. Executed e7e052d837 has parents d1a25/123980 and
 tree25817aba4278e9c5a7149641f61bd10ab8fcec51 equal to literal123980.
+
+Reviewed complete `formatted.trim() == trimmed` equality now returns the same
+existing printed/color-restored bytes before allocating the authored token Vecs.
+The pre-existing trimmed input contract makes this the identical old token-
+comparison/no-restoration result; no fixture special case, mirrored test, new
+stage or budget change is introduced. Any layout difference retains the existing
+fallback and token-aligned group restoration. Old123 Rust execution and a197
+custody remain distinct historical heads. The new production source requires
+fresh exact-head Actions/protected all104; no measured speed or cap credit is claimed.
+Paired [equality decision](https://github.com/ubugeeei-prod/vize/issues/7826#issuecomment-5987274362).
