@@ -89,7 +89,10 @@ fn original_fragment_css_variables_keep_complete_public_result_packets() {
         let fallback = compile(source, "vapor-ssr-fallback");
         assert_eq!(fallback.code, ssr.code);
         assert_eq!(fallback.css, ssr.css);
-        assert_eq!(fallback.bindings, ssr.bindings);
+        assert_eq!(
+            serde_json::to_value(&fallback.bindings).expect("complete fallback bindings"),
+            serde_json::to_value(&ssr.bindings).expect("complete SSR bindings")
+        );
         if fixture["name"] == "reported" {
             assert_eq!(ssr.code.matches("_ssrRenderAttrs(_cssVars)").count(), 2);
         }

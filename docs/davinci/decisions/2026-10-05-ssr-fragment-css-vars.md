@@ -41,6 +41,14 @@ The original 141-byte SFC remains the input; no assertion or input is removed.
 The root/fallthrough and Suspense helper moves precede the functional change
 in a move-only commit to keep existing over-limit files from growing.
 
+Source `1f81f4864561e18036442716e52ca9cf07803f83` passes the actual app build
+and JavaScript lint but fails the SFC test build at its direct binding
+metadata comparison ([Check 37262497745](https://github.com/ubugeeei-prod/vize/actions/runs/37262497745)).
+That type has no ordinary same-type `PartialEq`. The law now compares its
+complete existing public JSON representation, retaining all binding entries,
+prop aliases and script-setup identity. Production and original assertions'
+coverage do not change; the failed build precedes runtime observation.
+
 The original SFC and nine independently authored controls retain complete
 public client, SSR and explicit Vapor-to-standard-SSR fallback results.
 Controls cover single roots, nested descendants, conditional elements and
