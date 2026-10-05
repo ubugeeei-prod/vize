@@ -157,3 +157,12 @@ fragment facades. Remove only those mistaken expectations; the configured lint,
 threshold, entire signatures/bodies, controls and budgets remain unchanged. This
 restores direct lint enforcement and provides no Rust/RPC pass. Preserve the
 failed source job and require fresh exact-head execution.
+
+Parent `a19007c0` registers only the actually observed original Field fixture
+in the L3 sorted sweep after failed source `c33b544f`: 451 files, 150 remarks,
+15 applied, 135 missed and zero complete entry changes. All prior remark entries
+and explanations remain byte-exact. This child genuinely incorporates that
+parent while preserving every consumer production, control and whole oracle
+byte, including the annotation-only `c2db4a17` correction. Old source failures
+remain failed; fresh exact-head whole RPC/source and protected acceptance remain
+required, and the finite release admission hold keeps this Stack off queue.

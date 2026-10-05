@@ -149,3 +149,16 @@ successor adds only that test import and explicitly borrows the same static
 `b"</"` as a slice. Bounds, static bytes, no-allocation behavior, all authored
 inputs/laws and ceilings remain unchanged. Retain the genuine failed build and
 require fresh exact-source archive execution; no main/runtime pass is inferred.
+
+Literal `c33b544f` source Check 37379084810 built the full affected archive
+and executed four authenticated Rust workers: 16,259 cases, 16,258 passing, one
+file-membership failure and zero JUnit skips. All sixteen prepared producer laws
+individually passed in those packets. The failed L3 remarks sweep observed only
+one new path, the pinned original `binding-occurrences-original/Field.vue`,
+beyond its 450-file baseline. Its complete entry diff was zero: all 150 remarks,
+15 applied and 135 missed, stayed unchanged. The narrow correction registers
+that exact path in sorted order, retaining every entry and explanation byte.
+It does not re-bless outputs, exclude a fixture, alter a validator or raise a cap.
+These are individual tests from the failed PR-profile run with TSGO disabled,
+not whole source or native acceptance; fresh exact-head and protected full
+qualification remain required for the 451-file membership and consumer RPCs.
