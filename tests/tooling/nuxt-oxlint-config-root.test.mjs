@@ -12,7 +12,7 @@ const directory = new URL(
 const read = (name) => fs.readFileSync(new URL(name, directory), "utf8");
 const corpus = JSON.parse(read("corpus.json"));
 
-test("original Nuxt Oxlint issue, renderer, SFC and failed artifact remain whole", () => {
+void test("original Nuxt Oxlint issue, renderer, SFC and failed artifact remain whole", () => {
   const hashes = Object.fromEntries(
     Object.keys(corpus.files).map((name) => [
       name,
@@ -33,7 +33,7 @@ test("original Nuxt Oxlint issue, renderer, SFC and failed artifact remain whole
   );
 });
 
-test("the original ordered plan renders a full valid root artifact while the old location refuses", () => {
+void test("the original ordered plan renders a full valid root artifact while the old location refuses", () => {
   const expected = {
     plugins: ["vue"],
     jsPlugins: [{ name: "vize", specifier: "oxlint-plugin-vize" }],

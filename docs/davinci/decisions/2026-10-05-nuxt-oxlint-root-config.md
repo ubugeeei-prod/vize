@@ -95,3 +95,19 @@ The genuine replay onto actual `47dcd54e31e24b8660edacb1a5dde63099eb5a30`
 preserves all21 non-doc blobs and complete incoming decisions. Source review
 grants no execution credit; fresh hosted native/full protected delivery and
 supported publication remain pending.
+
+## Initial source integration failures
+
+[Original failure custody and correction](https://github.com/ubugeeei-prod/vize/issues/7983#issuecomment-5991673501)
+retains source4a/actual mergeea2b over9f. Check37288937359 rejects two unhandled
+Node corpus registrations; explicit `void` preserves all assertions and inputs.
+Nuxt37288936439 passes inherited source compiler/SSR/Chromium and whole SPA
+controls but public ESM-only Nuxt exports reject the probe's CommonJS resolver
+before the first lint case. A project-local literal ESM host imports both
+public APIs through ordinary import conditions, retaining its complete bytes
+without private paths or fallbacks. Authentic artifact11336140619 keeps raw
+failed process, actual source/native custody and four exact original hashes.
+Nuxt2 run37288936800 passes actual corrected-default generation, full plan/
+Vite+ controls and webpack/SSR; its installed-native envelope is distinct.
+Production/oracle/corpus/caps remain unchanged. New fourteen source-linter CLI
+cases and genuine successor/protected qualification remain pending.

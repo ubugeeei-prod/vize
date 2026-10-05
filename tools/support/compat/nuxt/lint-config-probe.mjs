@@ -37,8 +37,12 @@ const externalNames = externalFiles.map((file) =>
 );
 const authoredPaths = [...originals, ...controls, ...externalNames];
 assert.equal(require("nuxt/package.json").version, version);
-const { loadNuxt } = await import(pathToFileURL(require.resolve("nuxt")).href);
-const api = await import(pathToFileURL(require.resolve("@vizejs/nuxt/lint")).href);
+const apiHost = path.join(project, "vize-lint-probe-api.mjs");
+const apiHostSource =
+  'export { loadNuxt } from "nuxt";\nexport * as api from "@vizejs/nuxt/lint";\n';
+fs.writeFileSync(apiHost, apiHostSource, { flag: "wx" });
+fs.writeFileSync(path.join(artifacts, "probe-api.mjs"), apiHostSource);
+const { loadNuxt, api } = await import(pathToFileURL(apiHost).href);
 const cli = path.join(project, "node_modules/oxlint-plugin-vize/bin/oxlint-vize");
 const rows = [];
 const writeConfig = (name, content) => {
