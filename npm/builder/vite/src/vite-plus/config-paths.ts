@@ -14,6 +14,15 @@ export function relocateTaskConfig(
   return {
     ...config,
     basePath: path.resolve(root, config.basePath ?? ""),
+    typeChecker: config.typeChecker
+      ? {
+          ...config.typeChecker,
+          tsconfig:
+            config.typeChecker.tsconfig === undefined
+              ? undefined
+              : path.resolve(root, config.typeChecker.tsconfig),
+        }
+      : undefined,
     ignores: config.ignores?.map(absolutePattern),
     entries: (config.entries ?? []).map((entry) => ({
       ...entry,
