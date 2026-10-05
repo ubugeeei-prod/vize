@@ -242,3 +242,29 @@ snapshot comparator waiver, `$ref` reclassification or instruction cap change.
 Fresh exact-source full snapshots/runtime/canonical and protected100+4/full
 Rust/actual signed merge still qualify this same Draft; prior positive source
 execution transfers no acceptance to the successor.
+
+## Hosted runner acquisition and genuine source successor
+
+The composed source `0a47e315468b055aa1bfc7912bd0c9142e86fd05` executes
+signed producer `4527835e89ed981bc02c96bd8cd709510d7b1d3f`, whose tree
+`4f41ad132e3a3e7f3c04536dc322c412c97a866c` is exactly the source tree.
+Check37367937278 does not qualify Rust, the four whole snapshots, the
+canonical corpus or the 132 mounted phases: planner111958183532,
+fmt111958183369 and dependency111958183290 never acquired a hosted runner.
+All three official annotations state that acquisition failed after multiple
+attempts; runner identity is zero and no steps executed. Source report
+111966067516 correctly fails on planner result `abandoned`; dependent suites
+are skipped. Neither this source lane nor the release coordinator cancelled
+that current run. Preserve its complete metadata, three annotations and raw
+source-report failure under receipt SHA256
+`88b21306597b9af5476a4f129f796f0d86aecf7ba3cb027ba78ae31d0db3467f`.
+The earlier superseded known-red Check37362139186 cancellation is a separate,
+explicitly archived action and grants no success to either source.
+
+The runner correction #8066 actually merges at21:02:06Z as verified signed main
+`2902dc98751b408e803ee663aeee494ffab8413b`, with parent literal mainf83.
+Incorporate that genuine incoming source once and retain all reviewed compiler,
+original corpus, 282 other active snapshots, four approved full refinements
+and raw histories. Fresh automatic Actions must execute that new source;
+no old hosted-label rerun, skipped-suite success, altered gate or protected
+instruction credit follows from this acquisition failure.
