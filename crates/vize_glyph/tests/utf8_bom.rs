@@ -71,3 +71,14 @@ fn original_bom_corpus_has_complete_output_and_fixed_points() {
         );
     }
 }
+
+#[test]
+fn only_one_encoding_marker_is_removed_without_recursive_prefix_handling() {
+    let options = FormatOptions::default();
+    let repeated = "\u{feff}".repeat(16_384);
+    assert!(format_json(&repeated, &options).is_err());
+    assert!(format_jsonc(&repeated, &options).is_err());
+    let sfc = format_sfc(&repeated, &options).unwrap();
+    assert_eq!(sfc.code.as_str(), repeated.clone() + "\n");
+    assert_eq!(format_sfc(&sfc.code, &options).unwrap().code, sfc.code);
+}

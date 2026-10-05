@@ -55,9 +55,18 @@ fn format_document(
     if let Some(document) = source.strip_prefix('\u{feff}') {
         return format_bom_document(document, options, jsonc);
     }
+    format_document_content(source, options, jsonc)
+}
+
+#[inline]
+fn format_document_content(
+    source: &str,
+    options: &FormatOptions,
+    jsonc: bool,
+) -> Result<String, FormatError> {
     if options.end_of_line == crate::EndOfLine::Auto {
         return options.format_with_source_line_ending(source, |options| {
-            format_document(source, options, jsonc)
+            format_document_content(source, options, jsonc)
         });
     }
     if source.trim().is_empty() {
@@ -102,7 +111,7 @@ fn format_bom_document(
     options: &FormatOptions,
     jsonc: bool,
 ) -> Result<String, FormatError> {
-    let formatted = format_document(document, options, jsonc)?;
+    let formatted = format_document_content(document, options, jsonc)?;
     let mut output = String::with_capacity(formatted.len() + '\u{feff}'.len_utf8());
     output.push('\u{feff}');
     output.push_str(formatted.as_str());

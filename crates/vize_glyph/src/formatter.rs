@@ -88,6 +88,11 @@ impl<'a> GlyphFormatter<'a> {
         if source.starts_with('\u{feff}') {
             return self.format_bom(source);
         }
+        self.format_document(source)
+    }
+
+    #[inline]
+    fn format_document(&self, source: &str) -> Result<FormatResult, FormatError> {
         if self.options.end_of_line == crate::EndOfLine::Auto {
             return self
                 .options
@@ -98,7 +103,7 @@ impl<'a> GlyphFormatter<'a> {
                         vue_version: self.vue_version,
                         sort_imports: self.sort_imports,
                     }
-                    .format(source)
+                    .format_document(source)
                 });
         }
         // Parse the SFC
@@ -261,7 +266,7 @@ impl<'a> GlyphFormatter<'a> {
     #[cold]
     #[inline(never)]
     fn format_bom(&self, source: &str) -> Result<FormatResult, FormatError> {
-        let result = self.format(&source['\u{feff}'.len_utf8()..])?;
+        let result = self.format_document(&source['\u{feff}'.len_utf8()..])?;
         let mut code = String::with_capacity(result.code.len() + '\u{feff}'.len_utf8());
         code.push('\u{feff}');
         code.push_str(result.code.as_str());
