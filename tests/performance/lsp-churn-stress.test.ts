@@ -18,6 +18,12 @@ import {
 } from "./support/churn-oracle.ts";
 import { runFileLifecycleChurn } from "./support/file-lifecycle-churn.ts";
 import { countFiles } from "./support/incremental-metrics.ts";
+import { prepareBaselineInputs } from "./support/current-baseline/inputs.ts";
+import {
+  beginBaselineCycle,
+  completeBaselineCycle,
+  finishBaselineSession,
+} from "./support/current-baseline/cycles.ts";
 import {
   assertSingleInjectedMismatch,
   diagnosticsTimeoutMs,
@@ -69,6 +75,12 @@ test(
         const sourceFiles = countFiles(sourceDir, new Set([".vue", ".ts", ".tsx"]));
         assert.ok(vueFiles >= 500, `expected a monorepo-scale fixture, got ${vueFiles} Vue files`);
 
+        prepareBaselineInputs(fixture, {
+          cleanSource,
+          leafBrokenSource,
+          cleanDependency,
+          brokenDependency,
+        });
         const session = new LspSession();
         const metrics = new ChurnMetrics(session.processId, {
           id: "misskey-lsp-churn",
@@ -113,6 +125,7 @@ test(
         // cycle, then every later cycle in both phases must reproduce it.
         let reference: string[][] | null = null;
         const runCycle = async (label: string) => {
+          const start = beginBaselineCycle(label);
           const consumed: PublishDiagnosticsParams[] = await metrics.measure("cycle", async () => [
             await editLeaf(leafBrokenSource, true),
             await editLeaf(cleanSource, false),
@@ -137,6 +150,15 @@ test(
           } else {
             assert.deepEqual(payloads, reference, `cycle ${label} diverged from the first cycle`);
           }
+          await completeBaselineCycle(session, {
+            label,
+            start,
+            consumed,
+            uri: componentUri,
+            version: leafVersion,
+            source: cleanSource,
+            symbol,
+          });
         };
 
         try {
@@ -262,6 +284,7 @@ test(
         }
         try {
           await session.shutdown();
+          await finishBaselineSession();
         } catch (error) {
           failure ??= error;
         }

@@ -121,7 +121,7 @@ vize fmt --check src
 vize fmt --write src
 ```
 
-Key options:
+Default discovery formats Vue, JavaScript/TypeScript and JSON/JSONC files. YAML and Markdown formatting is not implemented: `.yaml`, `.yml`, `.md` and `.markdown` are excluded from defaults, and explicit selection reports an error without changing their bytes. Key options:
 
 | Option                             | Description                                          |
 | ---------------------------------- | ---------------------------------------------------- |

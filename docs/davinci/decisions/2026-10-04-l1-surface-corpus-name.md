@@ -103,7 +103,30 @@ unfiltered worker must execute it before runtime credit. Fresh source/protected
 Actions must retain the whole raw vectors and all unchanged104×3 instruction
 ceilings. Existing full feature-enabled L1 corpus execution stays mandatory.
 
-Preparation has not compiled or executed locally, started a campaign, pushed
-this source or queued #7757. Root source review and fresh complete Actions are
+The genuine integration preserves signed actual #7770 merge
+`1744a7ee84c202ce78f03a0148f335a5022b72e3`, including its diagnostic labels
+in the complete unchanged measurement body. That merge's full Nextest case
+passed once; its prior successful stdout was not retained, so no seven-row
+numeric vector is inferred from that receipt.
+
+The optional historical `workflow_dispatch` diagnostic is separate from the
+required automatic full Nextest gate. Its instrumented arm overlays current
+budget source into frozen b9/E1 libtest manifests; a standalone `main` would
+instead build a zero-case libtest target. The launcher therefore requires the
+exact historical libtest budget bytes (SHA256
+`c7dd7a9bbff3ddb3067ca13d6c5d4964103d49eb94798f18c069cded63e732dd`)
+before tool queries, archive fetches, worktree creation or process execution.
+The changed current source is explicitly refused. A pure guard law exercises
+accepted authored bytes, a changed overlay and actual current-source refusal,
+with every external-work boundary trapped; ordinary hosted tooling also runs
+the retained diagnostic validator laws. Unsupported libtest thread arguments
+are refused by the standalone CLI rather than accepted as a false contrast.
+These controls grant no historical reconstruction or campaign execution credit.
+TODO: independently review any recovery of the historical overlay/protocol;
+the old diagnostic recipe is currently unusable on this standalone source,
+and no trial or expired-archive retrieval is authorized.
+
+Preparation has not compiled or executed the Rust controls locally, started a
+campaign, pushed this source or queued #7757. Root source review and fresh complete Actions are
 required. Oldfailed candidate acceptance is not rewritten; this correction
 provides no historical-cause,10x/native/default product or full-history credit.

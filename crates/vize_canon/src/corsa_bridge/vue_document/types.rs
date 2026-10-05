@@ -82,6 +82,7 @@ pub(crate) struct CorsaVueVirtualProject {
     pub(crate) host: CorsaVueVirtualDocument,
     pub(crate) documents: Vec<(String, String)>,
     pub(crate) session_project_root: Option<PathBuf>,
+    pub(crate) session_config_path: Option<PathBuf>,
     pub(crate) materialized_changes: crate::batch::virtual_project::MaterializedFileDelta,
 }
 

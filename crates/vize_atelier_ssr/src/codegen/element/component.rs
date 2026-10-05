@@ -14,9 +14,10 @@ impl<'a> SsrCodegenContext<'a> {
         el: &ElementNode<'a>,
         _disable_nested_fragments: bool,
         inherit_attrs: bool,
+        css_vars: bool,
     ) {
         if matches!(el.tag, "Suspense" | "suspense") {
-            self.process_suspense(el);
+            self.process_suspense(el, css_vars);
             return;
         }
         if matches!(el.tag, "Teleport" | "teleport") {
@@ -38,7 +39,12 @@ impl<'a> SsrCodegenContext<'a> {
         } else {
             self.resolve_component_binding_expr(tag)
         };
-        let props = self.build_component_props(el, false, is_dynamic_component);
+        let props = self.build_component_props_with_css_vars(
+            el,
+            false,
+            is_dynamic_component,
+            css_vars && !inherit_attrs,
+        );
         let props = self.with_scope_id_prop(props);
         let props = self.with_fallthrough_attrs(props, inherit_attrs);
 
@@ -431,7 +437,13 @@ impl<'a> SsrCodegenContext<'a> {
             }
             ComponentSlotChildren::Refs(children) => {
                 for child in vize_atelier_core::walk_probe::ssr_children(children) {
-                    self.process_child(child, false, false, false);
+                    self.process_child(
+                        child,
+                        false,
+                        false,
+                        false,
+                        super::super::css_vars::RootCssVars::default(),
+                    );
                 }
             }
         }
@@ -555,37 +567,6 @@ impl<'a> SsrCodegenContext<'a> {
                 self.strip_ctx_for_scoped_params(&out)
             }
         }
-    }
-
-    /// Process Vue's built-in <Suspense> component.
-    ///
-    /// The SSR renderer has a dedicated helper for Suspense. Rendering it through
-    /// `ssrRenderComponent(resolveComponent("Suspense"))` makes Vue attempt a
-    /// runtime component lookup and leaves Nuxt root components empty.
-    fn process_suspense(&mut self, el: &ElementNode<'a>) {
-        self.flush_push();
-        self.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
-
-        self.push_indent();
-        self.push("_ssrRenderSuspense(_push, {\n");
-        self.indent_level += 1;
-        self.push_indent();
-        self.push("default: () => {\n");
-        self.indent_level += 1;
-
-        let old_parts = std::mem::take(&mut self.current_template_parts);
-        self.process_children(&el.children, false, false, false);
-        self.flush_push();
-        self.current_template_parts = old_parts;
-
-        self.indent_level -= 1;
-        self.push_indent();
-        self.push("},\n");
-        self.push_indent();
-        self.push("_: 1\n");
-        self.indent_level -= 1;
-        self.push_indent();
-        self.push("})\n");
     }
 
     /// Process Vue's built-in <Teleport> component.

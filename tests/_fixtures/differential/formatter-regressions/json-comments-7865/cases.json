@@ -1,0 +1,113 @@
+{
+  "schema": "vize.formatter-json-comments-regression",
+  "version": 1,
+  "issue": 7865,
+  "native": "unsupported",
+  "cases": [
+    {
+      "id": "reported-devcontainer",
+      "file": ".devcontainer/devcontainer.json",
+      "source": "{\n  // comment\n  \"a\": 1\n}\n",
+      "expected": "{\n  // comment\n  \"a\": 1\n}\n",
+      "strictRejected": true
+    },
+    {
+      "id": "reported-turbo",
+      "file": "turbo.json",
+      "source": "// comment\n{\n  \"a\": 1\n}\n",
+      "expected": "// comment\n{\n  \"a\": 1\n}\n",
+      "strictRejected": true
+    },
+    {
+      "id": "reported-trailing",
+      "file": "trailing.json",
+      "source": "{\n  \"a\": 1,\n}\n",
+      "expected": "{\n  \"a\": 1\n}\n",
+      "strictRejected": true
+    },
+    {
+      "id": "reported-tsconfig-control",
+      "file": "tsconfig.json",
+      "source": "{\n  // comment\n  \"a\": 1\n}\n",
+      "expected": "{\n  // comment\n  \"a\": 1\n}\n",
+      "strictRejected": true
+    },
+    {
+      "id": "eslintrc",
+      "file": ".eslintrc.json",
+      "source": "{ /* header */ \"a\":1, }",
+      "expected": "{\n  /* header */\n  \"a\": 1\n}\n",
+      "strictRejected": true
+    },
+    {
+      "id": "biome",
+      "file": "biome.json",
+      "source": "{ /* header */ \"a\":1, }",
+      "expected": "{\n  /* header */\n  \"a\": 1\n}\n",
+      "strictRejected": true
+    },
+    {
+      "id": "zed",
+      "file": ".zed/settings.json",
+      "source": "{ /* header */ \"a\":1, }",
+      "expected": "{\n  /* header */\n  \"a\": 1\n}\n",
+      "strictRejected": true
+    },
+    {
+      "id": "package",
+      "file": "package.json",
+      "source": "{ /* header */ \"a\":1, }",
+      "expected": "{\n  /* header */\n  \"a\": 1\n}\n",
+      "strictRejected": true
+    },
+    {
+      "id": "plain-json-control",
+      "file": "plain.json",
+      "source": "{\"a\":1}\n",
+      "expected": "{\n  \"a\": 1\n}\n"
+    },
+    {
+      "id": "empty-collections",
+      "file": "empty.json",
+      "source": "{\"a\":[],\"b\":{}}",
+      "expected": "{\n  \"a\": [],\n  \"b\": {}\n}\n"
+    },
+    {
+      "id": "array-trailing",
+      "file": "array.json",
+      "source": "[1,2,]\n",
+      "expected": "[\n  1,\n  2\n]\n",
+      "strictRejected": true
+    },
+    {
+      "id": "quoted-comment-text",
+      "file": "quoted.json",
+      "source": "{\"url\":\"https://example.test/a//b\",\"block\":\"/* text */\"}\n",
+      "expected": "{\n  \"url\": \"https://example.test/a//b\",\n  \"block\": \"/* text */\"\n}\n"
+    },
+    {
+      "id": "invalid-number",
+      "file": "invalid-number.json",
+      "source": "{\"a\":01}\n",
+      "outcome": "error"
+    },
+    {
+      "id": "invalid-escape",
+      "file": "invalid-escape.json",
+      "source": "{\"a\":\"\\x\"}\n",
+      "outcome": "error"
+    },
+    {
+      "id": "unterminated-comment",
+      "file": "unterminated-comment.json",
+      "source": "{ /* oops\n \"a\":1 }\n",
+      "outcome": "error"
+    },
+    {
+      "id": "missing-value",
+      "file": "missing-value.json",
+      "source": "{\"a\":}\n",
+      "outcome": "error"
+    }
+  ]
+}

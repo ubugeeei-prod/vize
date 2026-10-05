@@ -56,26 +56,31 @@ fn unsupported_original_parameter_types_keep_the_complete_original_issue_vector(
 }
 
 #[test]
-fn direct_typed_exports_refuse_but_existing_untyped_and_later_export_events_survive() {
+fn direct_required_typed_exports_keep_original_rows_and_later_export_events_survive() {
     let arena = Allocator::default();
     let source = "export function f(value: number) { return value; }";
     let observed = Parser::new(&arena, source, SourceType::ts().with_module(true)).parse_observed();
     let file = finish(&arena, &observed).unwrap();
-    assert!(!file.is_complete());
+    assert!(file.is_complete(), "{:?}", file.issues());
+    assert!(file.issues().is_empty());
     assert_eq!(file.exports().len(), 1);
     let function = file
         .lookup(file.units()[0].scope, "f", Namespace::Value)
         .unwrap();
+    let parameter = file
+        .lookup(file.scopes()[1].id, "value", Namespace::Value)
+        .unwrap();
     assert_eq!(file.exports()[0].local, Some(function.id()));
+    assert_eq!(file.exports()[0].namespace, Namespace::Value);
+    assert_eq!(file.exports()[0].unit, file.units()[0].id);
     assert_eq!(
-        file.issues()
-            .iter()
-            .map(|issue| (issue.kind, issue.span.slice(source)))
-            .collect::<Vec<_>>(),
-        [
-            (FileIssueKind::UnsupportedSyntax, "value: number"),
-            (FileIssueKind::UnresolvedReference, "value")
-        ]
+        parameter.declaration().unwrap().kind,
+        DeclarationKind::Parameter
+    );
+    assert_eq!(file.references().len(), 1);
+    assert_eq!(
+        file.references()[0].target,
+        ReferenceTarget::Resolved(parameter.id())
     );
     for source in [
         "export function f(value) { return value; }",
@@ -111,7 +116,6 @@ fn keyword_parameter_does_not_complete_unsupported_function_fields_or_body_closu
         "function* f(value:number){yield value;}",
         "function f<T>(value:number){return value;}",
         "function f(this:object,value:number){return value;}",
-        "function f(value?:number){return value;}",
         "function f(value:number=1){return value;}",
         "function f(...value:number[]){return value;}",
         "function f({value}:{value:number}){return value;}",

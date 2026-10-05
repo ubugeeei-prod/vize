@@ -24,6 +24,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         if_op: &'r l2::IfOp<'a>,
         disable_nested_fragments: bool,
         inherit_attrs: bool,
+        css_vars: bool,
     ) -> Result<()> {
         let fact = self.segment(self.pos)?.fact;
         self.pos += 1;
@@ -69,6 +70,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 as_fragment: !disable_nested_fragments && shape.legacy_children > 1,
                 disable_nested_fragments,
                 inherit_attrs,
+                css_vars,
             });
             self.branch_key = None;
             emitted?;
@@ -146,6 +148,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                     && (shape.legacy_children > 1 || keyed_template),
                 disable_nested_fragments: true,
                 inherit_attrs: false,
+                css_vars: false,
             })
         });
         self.scoped_params.pop();

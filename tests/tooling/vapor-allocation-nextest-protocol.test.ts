@@ -81,7 +81,13 @@ test("Vapor allocation harness separates nextest discovery, selection and callba
       assert.equal(failed.stdout, "measurement callback entered\n");
       assert.match(failed.stderr, /injected measurement callback assertion/u);
     }
-    for (const args of [["--unsupported"], ["--format"], ["--format", "pretty"]]) {
+    for (const args of [
+      ["--unsupported"],
+      ["--format"],
+      ["--format", "pretty"],
+      ["--test-threads=4"],
+      ["--test-threads", "4"],
+    ]) {
       const result = run(args, true);
       assert.notEqual(result.status, 0);
       assert.equal(result.stdout, "");
@@ -90,6 +96,21 @@ test("Vapor allocation harness separates nextest discovery, selection and callba
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("historical diagnostic rejects an incompatible overlay before archive or process work", () => {
+  execFileSync(
+    "python3",
+    [
+      fileURLToPath(
+        new URL(
+          "../../tools/support/compat/github/allocation_ownership/test_verify.py",
+          import.meta.url,
+        ),
+      ),
+    ],
+    { stdio: "pipe" },
+  );
 });
 
 test("Vapor budget remains one mandatory, output-retained nextest case", () => {

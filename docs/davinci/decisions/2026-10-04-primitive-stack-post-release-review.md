@@ -124,3 +124,103 @@ linked and produced no Check/native source run. This meaningful first-layer
 qualification triggers fresh exact-head Actions after the corrected native
 registration; absent gates provide no acceptance credit. All original source
 and fixtures, every incoming main path and protected ceilings remain intact.
+
+## Remaining native retarget obligation
+
+The actual six source heads were published atomically with exact old-head
+leases and include current main plus each refreshed parent. Native Stack
+#7759 still reports the original eight positions, with its first two merged.
+The first remaining PR #7769 still names the delivered #7758 branch as its
+GitHub base. Both GraphQL and REST base updates reject the change because
+the PR is stacked; linking all eight existing PRs reports no Stack change.
+Thus source ancestry is current, but the requested public base retarget is
+unresolved. No unstack/recreation or queue admission has been attempted.
+Resolve that metadata obligation and authenticate fresh Actions before
+calling the remaining six ready for actual protected delivery.
+
+## Supported native retarget recovery
+
+The maintainer authorized the reversible membership repair after the exact
+six-head/queue-null fence. The supported unstack endpoint removed only the
+six unmerged unlocked PRs; historical Stack #7759 retains the two actually
+merged layers unchanged. The first remaining #7769 base then changed to main,
+and `gh stack link --remote origin 7769 7772 7775 7784 7791 7792` created
+native Stack #7920. GitHub independently reports all six original source
+heads, Ready state, positions 1–6, stack base main and each exact predecessor
+branch as its child base. Source ancestry remains the literal refreshed
+parent/current-main union, and auto-merge/queue entries remain null.
+This resolves the metadata TODO above without changing original source or
+fixture bytes. Fresh exact-head source/native-phase Actions and protected
+full suites/all 104 ratchets still qualify execution separately; publication
+thaw and actual signed merge are required before delivery is complete.
+
+## Actual return-provider delivery and remaining replay
+
+Native Stack #7920 bottom #7769 actually merged at `2026-10-05T04:10:18Z`
+as valid signed `473c1a0947c59cf322d70eced187265fe7caa83f`, with exact
+protected Check `37260559327` successful. The observed squash body retains
+both verified `71201308+ubugeeei@users.noreply.github.com` Co-author trailers.
+Its current full-suite and instruction results are delivery evidence for this
+bounded provider, not completion of the remaining native consumer/history.
+
+The admitted exact-green child #7772 subsequently collided only in this
+canonical record with concurrent #7922. It had no candidate or CI failure.
+Official dequeue rejected its direct parent base as having no merge queue;
+supported Draft conversion preserved source and native membership but did not
+immediately eject it. After the parent actually merged, GitHub retargeted
+#7772 to main and removed that entry automatically. Healthy parent and later
+candidates were preserved throughout; no prospective production was imported.
+The paired receipt is #6849 comment `5987945306` and PR comment `5987945559`.
+
+Replay the remaining five onto literal actual main
+`8f667ea070bb90d57ac7125db35d791025f746e2` and each genuine parent, preserving
+every incoming canonical clause within 350 lines, original complete sources,
+options/vectors/maps, history ledgers and reporter metadata. Keep #7772 Draft
+until fresh exact-head source/native Actions qualify this union. Verify all
+remaining native positions and highest contiguous ready prefix before queue
+admission; actual protected acceptance, signed delivery and release stay open.
+
+The original non-merge source commits retain authors, author dates, messages
+and reporter trailers. Historical integration merge commits remain available
+on the retained old source refs; ordinary replay does not reproduce their
+merge topology. Every owned production, control, whole input and vector blob
+remains byte-exact. The merged return provider records delivery separately
+from the still-open original consumer, fix-history and full-product gates.
+
+## Actual reference-path delivery and source refresh
+
+The previously prospective Canon census collision is resolved by actual
+#7852 delivery, signed `a28f494b65451591d2d9ff893ff19c5ebfd7af1e` at
+`2026-10-05T05:08:30Z`, with protected Check `37265302399` successful.
+The remaining five replay onto literal actual main
+`4e4c8c977d7052edbb6a2b42808ddc6e7b59f3bf`, retaining the merged reference
+module and refreshing the generated census from that real source union.
+No queued or projected production is imported to resolve the old collision.
+
+This source refresh preserves original complete inputs, options, maps and
+whole vectors. Every incoming canonical clause remains within 350 lines.
+The existing native Stack stays ordered, and each child must include its
+genuine refreshed parent. Fresh exact-head source/native Actions and full
+protected acceptance remain required; older green runs are historical. New
+queue admission waits for the root's supported release publication clearance.
+The original history ledgers, native-zero migration denominator and unfinished
+product/default/10x obligations remain unchanged.
+
+## Canonical admission correction
+
+The five fresh source Checks and native-phase successors passed on the actual
+4e replay. A later admitted #7861 candidate changed the shared type-checker
+paragraph; the previously clean six-entry tail projection became stale. The
+admission command incorrectly continued after the new preflight failed.
+Official dequeue of main-based #7772 immediately removed only all five own
+entries, without candidates, source edits or changes to the healthy eight.
+
+The source repair moves only the owned checker clauses beside the existing
+type-check section, leaving the governing paragraph available for incoming
+config-authority decisions. Every original clause and source blob is retained;
+queued production is never imported. A fresh checked composition, exact source
+and native Actions, real Stack positions and empty own queue entries must all
+pass before the next native prefix admission. Failed preflight exits explicitly
+stop the mutation stage. Superseded cancelled runs and failed aggregate reports
+retain their observed conclusions; neither is relabelled successful. Full
+protected acceptance and actual merges remain unfinished.

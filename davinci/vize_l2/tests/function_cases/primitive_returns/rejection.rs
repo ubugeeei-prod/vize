@@ -51,7 +51,7 @@ fn every_non_keyword_return_retains_the_original_whole_function_partial_issue() 
 }
 
 #[test]
-fn original_direct_typed_return_export_stays_partial_but_later_export_resolves() {
+fn original_direct_required_typed_return_export_and_later_export_keep_same_binding() {
     let arena = Allocator::default();
     let source = "export function f(value:number):number{return value;}";
     let observed = Parser::new(&arena, source, SourceType::ts().with_module(true)).parse_observed();
@@ -59,18 +59,20 @@ fn original_direct_typed_return_export_stays_partial_but_later_export_resolves()
     let function = file
         .lookup(file.units()[0].scope, "f", Namespace::Value)
         .unwrap();
-    assert!(!file.is_complete());
-    assert_eq!(
-        file.issues(),
-        &[FileIssue {
-            unit: file.units()[0].id,
-            span: Span::new(7, source.len() as u32),
-            kind: FileIssueKind::UnsupportedSyntax,
-        }]
-    );
+    assert!(file.is_complete(), "{:?}", file.issues());
+    assert!(file.issues().is_empty());
     assert_eq!(file.exports().len(), 1);
     assert_eq!(file.exports()[0].local, Some(function.id()));
-    assert!(file.references().is_empty());
+    assert_eq!(file.exports()[0].unit, file.units()[0].id);
+    assert_eq!(file.exports()[0].namespace, Namespace::Value);
+    let parameter = file
+        .lookup(file.scopes()[1].id, "value", Namespace::Value)
+        .unwrap();
+    assert_eq!(file.references().len(), 1);
+    assert_eq!(
+        file.references()[0].target,
+        ReferenceTarget::Resolved(parameter.id())
+    );
     for source in [
         "function f(value:number):number{return value;}export {f};",
         "export function f(value){return value;}",

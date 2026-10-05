@@ -221,7 +221,7 @@ impl VirtualProject {
         }
 
         profile!("canon.project.write_tsconfig", {
-            let path = self.virtual_root.join("tsconfig.json");
+            let path = self.generated_tsconfig_path();
             if let Some(query_paths) = query_paths {
                 let includes = query_paths.iter().map(PathBuf::as_path).collect::<Vec<_>>();
                 self.write_tsconfig_file_with_includes(
@@ -249,7 +249,9 @@ impl VirtualProject {
         out_dir: &Path,
         declaration_map: bool,
     ) -> CorsaResult<PathBuf> {
-        let config_path = self.virtual_root.join("tsconfig.declaration.json");
+        let config_path = self
+            .generated_tsconfig_path()
+            .with_file_name("tsconfig.declaration.json");
         self.rewrite_tsx_vue_declaration_inputs()?;
         let include_paths = self.declaration_emit_include_paths();
         profile!(
@@ -282,7 +284,7 @@ impl VirtualProject {
             files.insert(self.virtual_root.join(SHARED_HELPERS_FILE));
         }
         files.insert(self.virtual_root.join(PACKAGE_BOUNDARY_FILE));
-        files.insert(self.virtual_root.join("tsconfig.json"));
+        files.insert(self.generated_tsconfig_path());
         files
     }
 

@@ -5,6 +5,7 @@
 
 mod component;
 mod component_props;
+mod css_root;
 mod directive_props;
 mod merged;
 mod plain;
@@ -21,7 +22,10 @@ use vize_atelier_core::{
 };
 use vize_l0::{FxHashSet, String, ToCompactString};
 
-use super::{SsrCodegenContext, helpers::escape_html_attr, helpers::extract_destructure_params};
+use super::{
+    SsrCodegenContext, css_vars::RootCssVars, helpers::escape_html_attr,
+    helpers::extract_destructure_params,
+};
 use vize_l0::cstr;
 
 /// One JavaScript property emitted into a generated SSR prop object.
@@ -81,13 +85,19 @@ impl<'a> SsrCodegenContext<'a> {
         el: &ElementNode<'a>,
         disable_nested_fragments: bool,
         inherit_attrs: bool,
+        css_vars: RootCssVars,
     ) {
         match el.tag_type {
             ElementType::Element => {
-                self.process_plain_element(el, inherit_attrs);
+                self.process_plain_element(el, inherit_attrs, css_vars.enabled && !inherit_attrs);
             }
             ElementType::Component => {
-                self.process_component(el, disable_nested_fragments, inherit_attrs);
+                self.process_component(
+                    el,
+                    disable_nested_fragments,
+                    inherit_attrs,
+                    css_vars.enabled,
+                );
             }
             ElementType::Slot => {
                 self.process_slot_outlet(el);
@@ -96,12 +106,16 @@ impl<'a> SsrCodegenContext<'a> {
                 // Process template children directly. A template renders no
                 // node of its own, so a single child is still the root that
                 // inherits the component's fallthrough attrs.
-                self.process_children_with_fallthrough_attrs(
+                self.process_children_with_fallthrough_attrs_and_css_vars(
                     &el.children,
                     false,
                     disable_nested_fragments,
                     false,
                     inherit_attrs,
+                    RootCssVars {
+                        enabled: css_vars.enabled && css_vars.template_wrapper,
+                        template_wrapper: false,
+                    },
                 );
             }
         }

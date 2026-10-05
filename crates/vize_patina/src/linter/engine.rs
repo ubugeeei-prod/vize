@@ -53,31 +53,18 @@ pub(crate) struct SfcTemplateLintInput<'a> {
     pub analysis: TemplateAnalysis<'a>,
 }
 
-/// Document-level inputs shared by the template-rule passes.
-///
-/// Bundles the optional SFC descriptor with the resolved [`VueDialect`] so the
-/// rule context can gate dialect-specific rules (e.g. petite-vue keyless
-/// `v-for`) without growing the already-wide pass signatures.
-#[derive(Clone, Copy)]
-pub(crate) struct TemplateRuleEnv<'a> {
-    pub sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
-    pub dialect: VueDialect,
-    /// Markup rules `lint_sfc` runs on the L2 facade instead of the visitor.
-    /// Empty on the raw-template and standalone-HTML lanes.
-    pub facade_rules: &'static [&'static str],
-}
-
 impl<'a> TemplateRuleEnv<'a> {
     const fn relief(dialect: VueDialect) -> Self {
         Self {
             sfc_descriptor: None,
+            art_script_analysis: None,
             dialect,
             facade_rules: &[],
         }
     }
 }
 
-pub(crate) use rule_sets::analyze_descriptor_for_lint;
+pub(crate) use rule_sets::{TemplateRuleEnv, analyze_descriptor_for_lint};
 
 impl Linter {
     fn template_rule_count_for_source(
@@ -234,6 +221,7 @@ impl Linter {
         ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
         ctx.set_dialect(env.dialect);
+        ctx.art_script_analysis = env.art_script_analysis;
         if let Some(descriptor) = env.sfc_descriptor {
             ctx.set_sfc_template_descriptor(descriptor);
         }

@@ -36,8 +36,7 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
                 // Original keyword types have no type/value namespace reads.
                 // They grant neither a setup annotation nor runtime erasure.
                 let profile = self.input.source_type();
-                exported
-                    || !profile.is_typescript()
+                !profile.is_typescript()
                     || !profile.is_module()
                     || profile.is_typescript_definition()
                     || !super::annotations::is_primitive_type(&annotation.type_annotation)
@@ -77,7 +76,7 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             let annotation_supported =
                 parameter.type_annotation.as_ref().is_none_or(|annotation| {
                     let profile = child.input.source_type();
-                    !exported
+                    (!exported || !parameter.optional)
                         && profile.is_typescript()
                         && profile.is_module()
                         && !profile.is_typescript_definition()
@@ -88,7 +87,9 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             if !parameter.decorators.is_empty()
                 || !annotation_supported
                 || parameter.initializer.is_some()
-                || parameter.optional
+                || (parameter.optional
+                    && (parameter.type_annotation.is_none()
+                        || child.span(parameter.span).is_none()))
                 || parameter.accessibility.is_some()
                 || parameter.readonly
                 || parameter.r#override

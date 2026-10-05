@@ -8,7 +8,7 @@ pub(in crate::batch::executor) fn check_with_cli(
     project: &VirtualProject,
     checkers: usize,
 ) -> CorsaResult<TypeCheckResult> {
-    let config_path = project.virtual_root().join("tsconfig.json");
+    let config_path = project.generated_tsconfig_path();
     run_cli_for_config(corsa_path, project, &config_path, checkers, &|_| true)
 }
 

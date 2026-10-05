@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import MyIcon from "./MyIcon.vue";
+
+defineArt("./MyButton.vue", { title: "MyButton", category: "Base" });
+
+const count = ref(0);
+</script>
+
+<art>
+  <variant name="Default" default>
+    <MyButton @click="count++">Clicked {{ count }}</MyButton>
+  </variant>
+
+  <variant name="WithIcon">
+    <MyButton><MyIcon /> Icon</MyButton>
+  </variant>
+</art>

@@ -16,7 +16,7 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-use davinci_harness::alloc::{CountingAllocator, mark_installed, measure};
+use davinci_harness::alloc::{CountingAllocator, diagnostics, mark_installed, measure};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
@@ -120,14 +120,18 @@ fn main() -> Result<(), &'static str> {
 
 fn native_lane_stays_within_its_allocation_ceilings() {
     mark_installed();
+    diagnostics::begin_session();
     let mut failures = Vec::new();
-    for (name, source, ceiling) in FIXTURES {
+    for (index, (name, source, ceiling)) in FIXTURES.into_iter().enumerate() {
+        diagnostics::set_context((index * 2) as u64);
         let native = calls(source, false);
+        diagnostics::set_context((index * 2 + 1) as u64);
         let retained = calls(source, true);
         println!("measured {name}: native {native} retained {retained}");
         if native > ceiling {
             failures.push(format!("{name}: {native} > ceiling {ceiling}"));
         }
     }
+    diagnostics::finish_session();
     assert!(failures.is_empty(), "{}", failures.join("; "));
 }

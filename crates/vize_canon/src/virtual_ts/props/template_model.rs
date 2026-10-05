@@ -214,6 +214,7 @@ pub(crate) fn generate_props_variables(
                 if check_props {
                     emit_keyed_template_prop_binding(
                         ts,
+                        binding_mappings,
                         template_props_type_ref,
                         props_type_ref,
                         name.as_str(),
@@ -255,12 +256,14 @@ pub(crate) fn generate_props_variables(
 
 fn emit_keyed_template_prop_binding(
     ts: &mut String,
+    binding_mappings: &mut PropBindingMappings<'_>,
     props_type_ref: &str,
     key_type_ref: &str,
     prop_name: &str,
     has_default: bool,
 ) {
     let binding_name = to_safe_identifier(prop_name);
+    let start = ts.len() + "  const ".len();
     if has_default {
         append!(
             *ts,
@@ -273,6 +276,11 @@ fn emit_keyed_template_prop_binding(
         );
     }
     append!(*ts, "  void {binding_name};\n");
+    let property_start = start + binding_name.len() + " = props[(\"".len();
+    binding_mappings.link(
+        start..start + binding_name.len(),
+        property_start..property_start + prop_name.len(),
+    );
 }
 
 fn emit_unchecked_template_prop_binding(ts: &mut String, prop_name: &str) {

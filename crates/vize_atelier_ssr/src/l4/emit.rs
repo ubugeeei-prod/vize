@@ -76,6 +76,7 @@ pub(super) fn emit_plan(
         as_fragment: fragment,
         disable_nested_fragments: false,
         inherit_attrs: true,
+        css_vars: emitter.ctx.options.ssr_css_vars.is_some(),
     })?;
     if emitter.pos != emitter.segments.len() {
         return Err(AdmissionFailure::Invalid(
@@ -107,12 +108,15 @@ struct Flags {
     as_fragment: bool,
     disable_nested_fragments: bool,
     inherit_attrs: bool,
+    /// Direct physical roots (including conditional branches), not descendants.
+    css_vars: bool,
 }
 
 const PLAIN: Flags = Flags {
     as_fragment: false,
     disable_nested_fragments: false,
     inherit_attrs: false,
+    css_vars: false,
 };
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
@@ -150,10 +154,14 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let disable = flags.disable_nested_fragments;
         match (segment.kind, segment.source) {
             (Kind::OpenElement, Source::Element(element)) => {
-                vize_l0::ensure_sufficient_stack(|| self.element(segment, element, inherit))
+                vize_l0::ensure_sufficient_stack(|| {
+                    self.element(segment, element, inherit, flags.css_vars)
+                })
             }
             (Kind::Component, Source::Component(component)) => {
-                vize_l0::ensure_sufficient_stack(|| self.component(segment, component, inherit))
+                vize_l0::ensure_sufficient_stack(|| {
+                    self.component(segment, component, inherit, flags.css_vars)
+                })
             }
             (Kind::SlotOutlet, Source::Slot(slot)) => {
                 vize_l0::ensure_sufficient_stack(|| self.slot_outlet(segment, slot))
@@ -168,9 +176,9 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 require_dynamic(&segment)?;
                 text::emit_interpolation(self, &segment, interpolation)
             }
-            (Kind::If, Source::If(if_op)) => {
-                vize_l0::ensure_sufficient_stack(|| self.if_chain(if_op, disable, inherit))
-            }
+            (Kind::If, Source::If(if_op)) => vize_l0::ensure_sufficient_stack(|| {
+                self.if_chain(if_op, disable, inherit, flags.css_vars)
+            }),
             (Kind::For, Source::For(for_op)) => {
                 vize_l0::ensure_sufficient_stack(|| self.for_loop(segment, for_op, disable))
             }

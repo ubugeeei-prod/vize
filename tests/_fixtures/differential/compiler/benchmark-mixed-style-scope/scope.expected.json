@@ -1,0 +1,12 @@
+{
+  "scopeId": "data-v-abc12345",
+  "originalBlockScopes": [true, false],
+  "fullSfcObservations": 24,
+  "controls": ["original", "reordered", "ordinary-only", "scoped-only"],
+  "backends": ["dom", "ssr", "vapor"],
+  "aggregateFlags": [false, true],
+  "oracle": "official Vue compileStyle per original descriptor block; complete CSS rule-order projection and happy-dom computed styles",
+  "browserEngineParity": false,
+  "completeUpstreamSuiteAcceptance": false,
+  "nativeAcceptance": false
+}

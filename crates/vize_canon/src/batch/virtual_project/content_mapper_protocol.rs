@@ -101,6 +101,7 @@ pub(super) fn protocol_semantic_links(
             // has no corresponding kind, so it must not reach upstream.
             crate::virtual_ts::VizeSemanticLinkKind::VueComponentPropNavigation
             | crate::virtual_ts::VizeSemanticLinkKind::VueComponentPropCompletion
+            | crate::virtual_ts::VizeSemanticLinkKind::VueTemplatePropBinding
             | crate::virtual_ts::VizeSemanticLinkKind::VuePlainScriptExport
             | crate::virtual_ts::VizeSemanticLinkKind::VueOptionsApiBinding
             | crate::virtual_ts::VizeSemanticLinkKind::VueSetupImportSpecialization => None,
