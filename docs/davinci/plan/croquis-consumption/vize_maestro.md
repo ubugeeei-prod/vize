@@ -13,7 +13,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Analyzer`                     | type  | `analyzer`          |     3 |     3 |
 | `AnalyzerOptions`              | type  | `analyzer`          |     3 |     3 |
 | `ComponentShape`               | type  | `croquis`           |     1 |     1 |
-| `Croquis`                      | type  | `croquis`           |     6 |    10 |
+| `Croquis`                      | type  | `croquis`           |     7 |    11 |
 | `Drawer`                       | type  | `drawer`            |    20 |    23 |
 | `DrawerOptions`                | type  | `drawer`            |    20 |    23 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     4 |
@@ -21,11 +21,13 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScopeData`                    | type  | `scope`             |     3 |     8 |
 | `ScopeKind`                    | type  | `scope`             |     9 |    65 |
 | `SlotUsage`                    | type  | `croquis::template` |     1 |     1 |
+| `Croquis.binding_spans`        | field | `croquis`           |     1 |     1 |
 | `Croquis.component_shape`      | field | `croquis`           |     1 |     1 |
 | `Croquis.macros`               | field | `croquis`           |     7 |    14 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     3 |
 | `Croquis.scopes`               | field | `croquis`           |     9 |    16 |
 | `Croquis.template_expressions` | field | `croquis`           |     1 |     2 |
+| `Croquis.types`                | field | `croquis`           |     1 |     1 |
 
 ## Non-product `vize_croquis` imports
 
@@ -41,7 +43,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `FactConsumer`                |     6 |     8 |
 | `FactGroup`                   |     3 |     3 |
 | `PropContract`                |     2 |     3 |
-| `ReactiveKind`                |     5 |    41 |
+| `ReactiveKind`                |     6 |    43 |
 | `SfcDescriptor`               |     7 |    25 |
 | `SfcScriptBlock`              |     3 |     6 |
 | `SfcStyleBlock`               |     2 |     8 |
