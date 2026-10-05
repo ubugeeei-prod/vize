@@ -266,7 +266,7 @@ impl<'a> GlyphFormatter<'a> {
     #[cold]
     #[inline(never)]
     fn format_bom(&self, source: &str) -> Result<FormatResult, FormatError> {
-        let result = self.format_document(&source['\u{feff}'.len_utf8()..])?;
+        let result = self.format_document(source.strip_prefix('\u{feff}').unwrap_or(source))?;
         let mut code = String::with_capacity(result.code.len() + '\u{feff}'.len_utf8());
         code.push('\u{feff}');
         code.push_str(result.code.as_str());

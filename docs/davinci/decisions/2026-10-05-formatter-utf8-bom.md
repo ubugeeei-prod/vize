@@ -31,3 +31,9 @@ actual merge and release publication are required before completion. No
 native formatter migration or performance improvement is claimed. Broader
 YAML/Markdown support, JSON comments policy, whitespace preservation and
 template width remain their separate reported issues.
+
+Source Check `37258203933` at `6b3f02b5ab` rejected the cold helper's
+unchecked string slice under the unchanged Clippy string-slice rule. Retain
+the original failure and replace only that slice with checked `strip_prefix`;
+all corpus bytes, complete comparisons and budgets remain unchanged. Fresh
+exact-head source and protected execution are required.
