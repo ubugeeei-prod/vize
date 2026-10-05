@@ -81,3 +81,5 @@ Source review, exact-head native Actions, protected full suites, signed merge
 with the verified reporter trailer and external release inclusion are pending.
 This record makes no measured latency, Program-count or 10x speed claim.
 Native File and the broader LSP/typechecker history gates remain unfinished.
+
+The post-0.433 queue composition relocates only this fix's canonical link to an existing paragraph boundary; every incoming clause, original input, production body and full native oracle is retained. Fresh exact-head Actions and the current admitted-prefix composition are required before protected delivery.
