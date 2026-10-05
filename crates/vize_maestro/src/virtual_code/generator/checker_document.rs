@@ -84,10 +84,6 @@ pub(super) fn fragment_document(
     .0
 }
 
-#[expect(
-    clippy::too_many_arguments,
-    reason = "same existing fragment coordinates plus optional source witness"
-)]
 pub(super) fn fragment_document_demand(
     script: Option<&str>,
     script_setup: bool,

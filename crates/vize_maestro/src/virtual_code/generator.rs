@@ -227,10 +227,6 @@ pub(crate) fn project_template_fragment(
     )
 }
 
-#[expect(
-    clippy::too_many_arguments,
-    reason = "existing fragment coordinates with exact authored source witness"
-)]
 pub(crate) fn project_template_fragment_with_occurrences(
     script: Option<&str>,
     script_setup: bool,

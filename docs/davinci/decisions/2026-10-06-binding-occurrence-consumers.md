@@ -150,3 +150,10 @@ test-build type corrections, while every reviewed consumer source/control and
 whole original/authored oracle byte remains fixed. The peer executed no Rust or
 RPC. The new literal child requires fresh Actions; prior failed source runs and
 all broader unfinished domains remain historical, without acceptance transfer.
+
+Literal `97816a52` Check 37379363460 genuinely rejected two newly authored,
+unfulfilled `expect(too_many_arguments)` attributes on seven-argument demanded
+fragment facades. Remove only those mistaken expectations; the configured lint,
+threshold, entire signatures/bodies, controls and budgets remain unchanged. This
+restores direct lint enforcement and provides no Rust/RPC pass. Preserve the
+failed source job and require fresh exact-head execution.
