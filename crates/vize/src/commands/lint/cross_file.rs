@@ -10,7 +10,7 @@ use sfc::{CrossFileSourceOffsets, analyze_sfc_for_cross_file};
 use std::path::{Path, PathBuf};
 use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
-    DiagnosticSeverity, FileId,
+    DiagnosticSeverity, DiagnosticSource, FileId,
 };
 use vize_curator::complexity::render_cross_file_complexity;
 use vize_l0::{CompactString, FxHashMap, String, ToCompactString, cstr};
@@ -211,8 +211,12 @@ fn cross_file_diagnostic_to_lint(
 ) -> LintDiagnostic {
     let source_len = source_len as u32;
     let offset = cross_file_diagnostic_offset(diagnostic, offsets);
-    let start = (diagnostic.primary_offset + offset).min(source_len);
-    let raw_end = diagnostic.primary_end_offset + offset;
+    let map = |position| match diagnostic.primary_source {
+        DiagnosticSource::Script => offsets.map_script(position),
+        _ => position + offset,
+    };
+    let start = map(diagnostic.primary_offset).min(source_len);
+    let raw_end = map(diagnostic.primary_end_offset);
     let end = raw_end.max(start.saturating_add(1)).min(source_len);
     let message = cstr!("{}: {}", diagnostic.code(), diagnostic.message);
     let help = help_level.process(diagnostic.to_markdown().as_str());
@@ -235,6 +239,11 @@ fn cross_file_diagnostic_offset(
     diagnostic: &CrossFileDiagnostic,
     offsets: CrossFileSourceOffsets,
 ) -> u32 {
+    match diagnostic.primary_source {
+        DiagnosticSource::Script => return offsets.script,
+        DiagnosticSource::Template => return offsets.template,
+        DiagnosticSource::Unspecified => {}
+    }
     match diagnostic.kind {
         CrossFileDiagnosticKind::DuplicateElementId { .. }
         | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. }
