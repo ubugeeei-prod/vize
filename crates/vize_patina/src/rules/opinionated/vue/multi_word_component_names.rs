@@ -83,6 +83,11 @@ impl Rule for MultiWordComponentNames {
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         let filename = ctx.filename;
 
+        // Musea Art files describe variants, not component definitions.
+        if filename.ends_with(".art.vue") {
+            return;
+        }
+
         // Only check .vue files
         let Some(component_name) = Self::extract_component_name(filename) else {
             return;

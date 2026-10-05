@@ -48,7 +48,7 @@ fn test_nuxt_explicit_page_meta_import_produces_route_artifact() {
     let source =
         include_str!("../../../../../tests/_fixtures/differential/nuxt/explicit-page-meta/App.vue");
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
-    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile SFC");
+    let result = compile_nuxt(&descriptor, SfcCompileOptions::default()).expect("compile SFC");
 
     assert_eq!(result.macro_artifacts.len(), 1);
     let artifact = &result.macro_artifacts[0];
@@ -71,7 +71,7 @@ const route = useRoute()
 </script>
 <template><div>{{ route.path }}</div></template>"#;
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
-    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile SFC");
+    let result = compile_nuxt(&descriptor, SfcCompileOptions::default()).expect("compile SFC");
     assert_eq!(result.macro_artifacts.len(), 1);
     assert!(
         result
@@ -81,4 +81,19 @@ const route = useRoute()
         result.code
     );
     assert!(!result.code.contains("definePageMeta"), "{}", result.code);
+}
+
+pub(super) fn compile_nuxt(
+    descriptor: &crate::SfcDescriptor,
+    options: SfcCompileOptions,
+) -> Result<crate::SfcCompileResult, crate::SfcError> {
+    crate::compile_sfc_for_adapter_with_nuxt_page_meta(
+        descriptor,
+        options,
+        vize_atelier_core::TemplateSyntaxMode::Standard,
+        Default::default(),
+        Default::default(),
+        crate::SfcScriptOutputMode::InlineTemplate,
+        Default::default(),
+    )
 }

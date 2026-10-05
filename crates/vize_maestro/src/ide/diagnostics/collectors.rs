@@ -432,8 +432,8 @@ impl DiagnosticService {
         let is_standalone_html = crate::utils::is_standalone_html_path(uri.path());
         let preset = linter_config.preset.as_deref();
         let preset = preset.and_then(LintPreset::parse).unwrap_or_default();
-        let lint_options = linter_options::resolve_patina_options(&linter_config, &rule_options);
-
+        let lint_options =
+            linter_options::resolve_patina_options(uri, &linter_config, &rule_options);
         let mut linter = if ecosystem_enabled && linter_config.preset.is_none() {
             vize_patina::Linter::with_ecosystem()
         } else {

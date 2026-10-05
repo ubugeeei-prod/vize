@@ -29,6 +29,18 @@ export const ROOT_OXLINT_CONFIG_NAMES = [
   "oxlint.config.mts",
 ] as const;
 
+// Existing Vite configurations own their toolchain setup, including computed
+// Vite+ lint blocks. Do not evaluate them or create a competing root config.
+const ROOT_LINT_CONFIG_NAMES = [
+  ...ROOT_OXLINT_CONFIG_NAMES,
+  "vite.config.js",
+  "vite.config.mjs",
+  "vite.config.ts",
+  "vite.config.cjs",
+  "vite.config.mts",
+  "vite.config.cts",
+] as const;
+
 type Awaitable<T> = T | Promise<T>;
 
 interface NuxtLintGenerationNuxt {
@@ -115,10 +127,10 @@ function resolveVizePluginSpecifier(configDir: string): string {
   return relativeSpecifier(configDir, entry);
 }
 
-async function findRootOxlintConfig(rootDir: string): Promise<string | undefined> {
+async function findRootLintConfig(rootDir: string): Promise<string | undefined> {
   let directory = path.resolve(rootDir);
   while (true) {
-    for (const name of ROOT_OXLINT_CONFIG_NAMES) {
+    for (const name of ROOT_LINT_CONFIG_NAMES) {
       const candidate = path.join(directory, name);
       try {
         const metadata = await lstat(candidate);
@@ -156,7 +168,7 @@ function renderRootOxlintConfig(rootDir: string, generatedConfig: string): strin
 }
 
 async function initRootOxlintConfig(rootDir: string, generatedConfig: string): Promise<void> {
-  if (await findRootOxlintConfig(rootDir)) return;
+  if (await findRootLintConfig(rootDir)) return;
 
   const target = path.join(rootDir, "oxlint.config.mts");
   const handle = await open(target, "wx").catch((error: unknown) => {

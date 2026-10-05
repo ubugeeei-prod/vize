@@ -69,3 +69,18 @@ test/dev L0 helper reference in the generated Maestro surface census. No ceiling
 reference, production repair or RPC input/output changes. The original failed
 campaign remains historical evidence; the corrected head requires fresh Actions
 and protected terminal acceptance before actual merge and release.
+
+## Actual protected delivery
+
+Corrected source Check [37223617054](https://github.com/ubugeeei-prod/vize/actions/runs/37223617054)
+and protected Check [37227719900](https://github.com/ubugeeei-prod/vize/actions/runs/37227719900)
+completed successfully. The protected instruction job `111510724760` verified
+both unchanged 100/4 registries and ratchets and passed all 104 ceilings; all
+four full Rust workers and tooling shards passed. #7833 actually merged on
+2026-10-04 at 19:34:19 UTC as signed
+`688da7cc620af5a9aec82152b54d8052c64c52bc`. Its final commit message retains the
+literal distinct-reporter footer
+`Co-authored-by: naitokosuke <102337893+naitokosuke@users.noreply.github.com>`.
+Actual main delivery is complete; publication of this repair remains pending.
+Earlier failed source evidence and the unmodified original references remain
+separate; no native/history completion credit is added.

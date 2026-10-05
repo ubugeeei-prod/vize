@@ -61,6 +61,8 @@ const assertionOnlyCheckTests = {
     "LSP probe asserts exact backend-liveness diagnostics and rejects heuristic hover answers",
   "vue-benchmarks-scaled-corpus-plants":
     "scaled corpus plants assert every planted diagnostic survives full-corpus re-validation",
+  "vue-router-page-route-oracle":
+    "source-bound Router oracle asserts complete ordered CLI/editor diagnostics and authored ranges against the original generated map",
   "vue-router-patch-oracle":
     "library patch oracle asserts exact package-resolution behavior across document versions",
   "vue-router-dmts-oracle":

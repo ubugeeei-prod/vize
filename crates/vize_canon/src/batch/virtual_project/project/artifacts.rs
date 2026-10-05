@@ -25,6 +25,11 @@ impl VirtualProject {
         self.incremental_source_nodes_rebuilt += 1;
         let original_path = registered.file.original_path.clone();
         let previous_materialized = self.remove_registered_source(&original_path);
+        if registered.typed_router_import {
+            self.typed_router
+                .import_files
+                .insert(registered.file.virtual_path.clone());
+        }
         let auto_import_count = self.virtual_ts_options.auto_import_stubs.len();
         let mut artifacts = SourceArtifacts::default();
         if is_musea_art_vue_path(&registered.file.original_path)
@@ -126,6 +131,7 @@ impl VirtualProject {
             Vec::with_capacity(artifacts.virtual_paths.len() + artifacts.passthrough_paths.len());
         for path in artifacts.virtual_paths {
             self.virtual_files.remove(&path);
+            self.typed_router.import_files.remove(&path);
             self.original_contents.remove(&path);
             self.pre_rewrite_code.remove(&path);
             self.unchecked_javascript_files.remove(&path);

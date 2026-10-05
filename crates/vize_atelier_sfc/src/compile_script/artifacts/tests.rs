@@ -1,4 +1,7 @@
-use super::{erase_artifact_macro_statements, extract_macro_artifacts};
+use super::{
+    erase_artifact_macro_statements, erase_artifact_macro_statements_traced,
+    extract_macro_artifacts,
+};
 
 #[test]
 fn extracts_define_page_artifact_module() {
@@ -12,7 +15,7 @@ definePage({
 const msg = 'ready'
 "#;
 
-    let artifacts = extract_macro_artifacts(content, 10);
+    let artifacts = extract_macro_artifacts(content, 10, true);
 
     assert_eq!(artifacts.len(), 1);
     assert_eq!(artifacts[0].kind.as_str(), "vue-router.definePage");
@@ -44,7 +47,7 @@ definePageMeta({
 const msg = 'ready'
 "#;
 
-    let artifacts = extract_macro_artifacts(content, 4);
+    let artifacts = extract_macro_artifacts(content, 4, true);
 
     assert_eq!(artifacts.len(), 1);
     assert_eq!(artifacts[0].kind.as_str(), "nuxt.definePageMeta");
@@ -84,7 +87,7 @@ definePageMeta({
 const msg = 'ready'
 "#;
 
-    let artifacts = extract_macro_artifacts(content, 0);
+    let artifacts = extract_macro_artifacts(content, 0, true);
 
     assert_eq!(artifacts.len(), 1);
     assert_eq!(artifacts[0].kind.as_str(), "nuxt.definePageMeta");
@@ -117,7 +120,7 @@ fn extracts_define_route_rules_artifact_module() {
 const msg = 'ready'
 "#;
 
-    let artifacts = extract_macro_artifacts(content, 2);
+    let artifacts = extract_macro_artifacts(content, 2, true);
 
     assert_eq!(artifacts.len(), 1);
     assert_eq!(artifacts[0].kind.as_str(), "nuxt.defineRouteRules");
@@ -146,7 +149,7 @@ const LazyHydrationMyComponent = defineLazyHydrationComponent(
 )
 "#;
 
-    assert!(extract_macro_artifacts(content, 0).is_empty());
+    assert!(extract_macro_artifacts(content, 0, true).is_empty());
     assert!(erase_artifact_macro_statements(content).is_none());
 }
 
@@ -161,7 +164,7 @@ definePage(() => ({
 const msg = 'ready'
 "#;
 
-    assert!(extract_macro_artifacts(content, 0).is_empty());
+    assert!(extract_macro_artifacts(content, 0, true).is_empty());
     assert!(erase_artifact_macro_statements(content).is_none());
 }
 
@@ -183,7 +186,9 @@ fn erases_define_page_meta_top_level_statement() {
 const msg = 'ready'
 "#;
 
-    let erased = erase_artifact_macro_statements(content).expect("macro should be erased");
+    let erased = erase_artifact_macro_statements_traced(content, true)
+        .map(|(code, _)| code)
+        .expect("macro should be erased");
 
     assert!(!erased.contains("definePageMeta"));
     assert!(erased.contains("const msg = 'ready'"));
@@ -212,7 +217,7 @@ fn retains_runtime_binding_in_mixed_nuxt_import() {
     ] {
         let content =
             format!("{import}\ndefinePageMeta({{ name: 'docs' }})\nconst route = useRoute()\n");
-        let artifacts = extract_macro_artifacts(&content, 0);
+        let artifacts = extract_macro_artifacts(&content, 0, true);
         assert_eq!(artifacts.len(), 1, "{import}");
         assert!(
             artifacts[0]
@@ -221,7 +226,9 @@ fn retains_runtime_binding_in_mixed_nuxt_import() {
                 .is_some_and(|code| code.contains("import { useRoute } from '#imports'")),
             "{import}"
         );
-        let erased = erase_artifact_macro_statements(&content).expect("macro erasure");
+        let erased = erase_artifact_macro_statements_traced(&content, true)
+            .map(|(code, _)| code)
+            .expect("macro erasure");
         assert!(
             erased.contains("import { useRoute } from '#imports'"),
             "{erased}"
@@ -241,7 +248,7 @@ fn removes_all_macros_from_mixed_typed_router_import() {
         let content = format!(
             "{import}\ndefinePage({{ name: 'docs' }})\ndefinePageMeta({{ title: 'Docs' }})\nconst route = useRoute()\n"
         );
-        let artifacts = extract_macro_artifacts(&content, 0);
+        let artifacts = extract_macro_artifacts(&content, 0, true);
         assert_eq!(artifacts.len(), 2, "{import}");
         for artifact in &artifacts {
             let module = artifact.module_code.as_deref().expect("artifact module");

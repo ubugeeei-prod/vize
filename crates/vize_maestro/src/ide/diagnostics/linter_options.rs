@@ -10,6 +10,7 @@ use vize_patina::{
 
 const MUSEA_PREFER_DESIGN_TOKENS: &str = "musea/prefer-design-tokens";
 const SCRIPT_NO_RESTRICTED_MEMBERS: &str = "script/no-restricted-members";
+const PINIA_PREFER_STORE_TO_REFS: &str = "ecosystem/pinia-prefer-store-to-refs";
 
 pub(super) struct PatinaLintOptions {
     pub(super) additional_rules: Vec<String>,
@@ -57,11 +58,15 @@ impl MuseaLintOptions {
 }
 
 pub(super) fn resolve_patina_options(
+    uri: &Url,
     linter_config: &LinterConfig,
     rule_options: &ConfigLintRuleOptions,
 ) -> PatinaLintOptions {
     let mut additional_rules = linter_config.enabled_rules();
-    let disabled_rules = linter_config.disabled_rules();
+    let mut disabled_rules = linter_config.disabled_rules();
+    if !pinia_is_available(uri) {
+        disabled_rules.push(PINIA_PREFER_STORE_TO_REFS.into());
+    }
     let restricted_members = rule_options.restricted_members();
     let musea_design_tokens = rule_options.musea_design_tokens();
 
@@ -89,6 +94,18 @@ pub(super) fn resolve_patina_options(
         ),
         rule_severity_overrides: severity_overrides(linter_config.rule_severity_overrides()),
     }
+}
+
+// Match CLI package availability without changing the rule's store-name policy.
+fn pinia_is_available(uri: &Url) -> bool {
+    let Ok(file) = uri.to_file_path() else {
+        return true;
+    };
+    file.parent().is_some_and(|directory| {
+        directory
+            .ancestors()
+            .any(|parent| parent.join("node_modules/pinia/package.json").is_file())
+    })
 }
 
 pub(super) fn musea_linter_for_uri(
@@ -296,3 +313,7 @@ pub(super) fn rule_docs_url(rule_name: &str) -> Option<Url> {
     .or_else(|_| Url::parse("https://eslint.vuejs.org/rules/"))
     .ok()
 }
+
+#[cfg(test)]
+#[path = "pinia_availability_tests.rs"]
+mod pinia_availability_tests;
