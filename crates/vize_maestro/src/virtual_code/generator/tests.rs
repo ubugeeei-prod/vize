@@ -283,6 +283,7 @@ const count = ref(0)
 }
 
 #[test]
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 fn bare_void_substrings_map_to_emitted_expression_instead_of_keyword() {
     for newline in ["\n", "\r\n"] {
         for name in [
@@ -312,7 +313,7 @@ fn bare_void_substrings_map_to_emitted_expression_instead_of_keyword() {
                             Some(generated + delta)
                         );
                         assert_eq!(
-                            document.source_map.to_source(generated + delta),
+                            document.source_map.to_authored(generated + delta),
                             Some(authored + delta)
                         );
                     }

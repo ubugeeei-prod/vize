@@ -1,4 +1,5 @@
 #![cfg(test)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use serde_json::{Value, json};
