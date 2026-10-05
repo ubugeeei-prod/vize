@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use vize_carton::{String, corsa_resolver::platform_suffix, cstr};
 mod camel_case_component_props;
+mod compatibility_capture;
 #[path = "tests_symlink.rs"]
 mod symlink;
 use symlink::symlink_path;
@@ -2027,9 +2028,7 @@ fn write_project_tsconfig(project_root: &Path) {
 }
 
 fn snapshot_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, String)>> {
-    let mut checker = BatchTypeChecker::new(project_root).ok()?;
-    checker.scan_project().ok()?;
-    let result = checker.check_project().ok()?;
+    let result = compatibility_capture::check_project(project_root)?;
 
     let mut snapshot: Vec<_> = result
         .diagnostics

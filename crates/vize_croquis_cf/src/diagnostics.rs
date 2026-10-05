@@ -1,14 +1,10 @@
-//! Cross-file diagnostic types.
-//!
-//! Diagnostics produced by cross-file analysis that span multiple files.
-//! This module is split into:
-//! - Core types and constructors (this file)
-//! - [`rules`]: Diagnostic code identifiers for filtering/configuration
-//! - [`formatting`]: Rich Markdown rendering of diagnostics
+//! Cross-file diagnostic types, with identifiers and rendering in child modules.
 
 mod codes;
 mod formatting;
 mod rules;
+mod source;
+pub use source::DiagnosticSource;
 
 use super::registry::FileId;
 use vize_carton::CompactString;
@@ -364,6 +360,8 @@ pub struct CrossFileDiagnostic {
     pub severity: DiagnosticSeverity,
     /// Primary file where the issue originates.
     pub primary_file: FileId,
+    /// Coordinate space of the primary offsets; unspecified retains kind-based mapping.
+    pub primary_source: DiagnosticSource,
     /// Start offset in the primary file.
     pub primary_offset: u32,
     /// End offset in the primary file (for highlighting range).
@@ -389,8 +387,9 @@ impl CrossFileDiagnostic {
             kind,
             severity,
             primary_file,
+            primary_source: DiagnosticSource::Unspecified,
             primary_offset,
-            primary_end_offset: primary_offset, // Default to same as start
+            primary_end_offset: primary_offset,
             related_files: Vec::new(),
             message: message.into(),
             suggestion: None,
@@ -410,6 +409,7 @@ impl CrossFileDiagnostic {
             kind,
             severity,
             primary_file,
+            primary_source: DiagnosticSource::Unspecified,
             primary_offset,
             primary_end_offset,
             related_files: Vec::new(),

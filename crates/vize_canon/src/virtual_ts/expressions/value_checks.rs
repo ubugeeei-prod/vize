@@ -57,7 +57,10 @@ impl TemplateValueCheckTables {
                     options.template_ast,
                     bindings,
                     (options.has_default_alias, options.check_options.vapor),
-                    options.check_options.check_template_bindings && !legacy_vue2,
+                    (
+                        options.check_options.check_template_bindings && !legacy_vue2,
+                        options.check_options.check_unknown_directives,
+                    ),
                 )
             }),
             component_ref_callbacks: collect_component_ref_callback_bindings(
@@ -68,6 +71,21 @@ impl TemplateValueCheckTables {
                 && options.check_options.check_template_bindings
                 && !legacy_vue2,
         }
+    }
+
+    pub(crate) fn emit_valueless_directives(
+        &self,
+        ts: &mut vize_carton::String,
+        mappings: &mut Vec<crate::virtual_ts::VizeMapping>,
+        offset: u32,
+    ) {
+        super::directive_values::generate_valueless_directive_presence(
+            ts,
+            mappings,
+            &self.directive_values,
+            offset,
+            self.check_unknown_directives,
+        );
     }
 
     pub(crate) fn as_checks<'a>(

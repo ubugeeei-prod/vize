@@ -174,3 +174,45 @@ and native laws remain separate mandatory quality gates. Root's finite0.434
 cut/publication does not wait for this Draft optimization. No admission during
 its publication freeze and no genuine gain, default, CLI/LSP or10x credit until
 current source execution independently proves it.
+
+The ONE actual observer0 comparison completed Vuejob112008266883 in
+Check37382666020 on frozenfe781d9853/d43e764ad9. Artifact11376158162 is
+12030125bytes, SHA256
+3c1f8cb07b6fb07f9ebc9d677d87d4bb4e69891286961568a6e50dd55a445ff9;
+all38 ZIP members passed CRC. All2043 whole raw/public native-original LSP rows,
+853 original/config bodies and13 pre/post states matched. Each generation
+records exactly683 acknowledged requests:681 exact requested semantic names
+and one global syntax/suggestion each. Observer0 is proven in all six arms.
+Original/bulk binaries1f3cfceb/b8a1e0ba rebuilt fresh=false, and independently
+Git-authenticated876/891 physical source objects remain exact before/after.
+Native4f2de678 and all zero-retained-PID/body/driver/budget guards passed.
+
+Optimization acceptance FAILED again: original/bulk median milliseconds were
+cold5823/8203, brokenWarm3205/5155 and repairedWarm3278/5250 (ratios
+1.409/1.608/1.602). Every one of the nine pair/lane comparisons was slower.
+The supported selected semantic scope is correct but does not demonstrate
+benefit. Unchanged15000/10000 budgets remain quality bounds, not gain gates.
+No more observer or matched repeats without a reviewed meaningful causal
+correction. The actual cost mechanism remains unknown; do not invent a files
+array, concurrency budget, SDK change, source shortcut or whole-vector waiver.
+
+Current native37382615224 failed before bulk16: preceding emit/helper/TS40
+laws passed, then the PR workflow definition called the subsequently delivered
+#8056 unknown-options script absent from frozenfe/d43, yielding exit127.
+Raw256048bytes/SHA256
+bc082cb3211a1d167005454fc5e71a1855a8de23d1fc6bc6381275e5bfc2e82a
+and artifact11375732418 (3713257bytes, SHA256
+deb855a6fd7c42c24f6bdd7ac5fd7e7098ac9eb65516b261f553438985b9a7d3;
+630 CRC-passing members) retain the finite preceding-stage witnesses. There
+is no skipped current-source bulk-native credit. #8056 also changes Canon
+projection, so fe timing/whole equality cannot be transferred to new main.
+
+Genuinely compose actualcbdf9c564215a2514eea2e182dbfd79b9050691e, preserving
+all delivered #8056/#8070 implementation, original fixtures, native commands,
+canonical clauses and both new/old test registrations. Refresh the fixed
+original-control literal to that actual main for any later independently
+qualified causal correction; this performs no new timing/observer campaign.
+Fresh ordinary/native source CI must qualify this integration separately.
+KeepDraft/offqueue with performance acceptance failed. Root's finite0.434
+publication remains independent, #7698 stays open, and no latest-main/default/
+CLI/LSP/10x/native-product completion follows.
