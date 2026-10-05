@@ -13,11 +13,14 @@
 
 use super::IdeContext;
 use tower_lsp::lsp_types::{
-    CodeAction, CodeActionKind, CodeActionOrCommand, Position, Range, TextEdit, WorkspaceEdit,
+    CodeAction, CodeActionKind, CodeActionOrCommand, Diagnostic, Position, Range, TextEdit,
+    WorkspaceEdit,
 };
 // Shared, UTF-16-correct offset->(line, column) conversion (#1389).
 use vize_l0::line_index::offset_to_line_col;
 
+#[cfg(test)]
+mod diagnostic_selection_tests;
 mod script_bindings;
 #[cfg(test)]
 mod source_position_tests;
@@ -31,13 +34,27 @@ pub struct CodeActionService;
 impl CodeActionService {
     /// Get code actions for the given context and range.
     pub fn code_actions(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
+        Self::code_actions_for_diagnostics(ctx, range, &[])
+    }
+
+    /// Select lint fixes by current rule identity, retaining cursor-only actions.
+    pub(crate) fn code_actions_for_diagnostics(
+        ctx: &IdeContext,
+        range: Range,
+        diagnostics: &[Diagnostic],
+    ) -> Vec<CodeActionOrCommand> {
         let mut actions = Vec::new();
 
         // Run the template linter once over the resident descriptor; both the
         // lint-fix and `@vize:forget` collectors share that result.
         if let Some(lint) = Self::lint_template_once(ctx) {
-            actions.extend(Self::collect_lint_fixes(ctx, range, &lint));
-            actions.extend(Self::collect_forget_suppress(ctx, range, &lint));
+            actions.extend(Self::collect_lint_fixes(ctx, range, &lint, diagnostics));
+            actions.extend(Self::collect_forget_suppress(
+                ctx,
+                range,
+                &lint,
+                diagnostics,
+            ));
         }
 
         // Vue-flavored quick fixes: today this surfaces a "Wrap with `.value`"

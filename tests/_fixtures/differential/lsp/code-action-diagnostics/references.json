@@ -1,0 +1,94 @@
+{
+  "schema": "vize.lsp.code-action-diagnostics.regression",
+  "version": 1,
+  "issue": 8000,
+  "originalFiles": [
+    {
+      "path": "App.vue.txt",
+      "sha256": "7dcf16fe1a2d823b8d63ef69e16f7016bd0f6054158acc8cdeda0a6c3ffb6e19",
+      "bytes": 47
+    },
+    {
+      "path": "vize.config.json",
+      "sha256": "1d297caf631fad17f18d5ba9577567b7ccb77db5f299df777c88469ae604f75a",
+      "bytes": 103
+    },
+    {
+      "path": "issue-body.md",
+      "sha256": "c618cf07506d565bedef53653cfdcb94e2be21a59d1ceaf1945044e8920c628a",
+      "bytes": 3147
+    }
+  ],
+  "diagnostics": [
+    {
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 2
+        },
+        "end": {
+          "line": 1,
+          "character": 23
+        }
+      },
+      "severity": 2,
+      "code": "a11y/alt-text",
+      "codeDescription": {
+        "href": "https://eslint.vuejs.org/rules/a11y/alt-text.html"
+      },
+      "source": "vize/lint",
+      "message": "<img> elements must have an alt attribute\n\nHelp: Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+    },
+    {
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 2
+        },
+        "end": {
+          "line": 1,
+          "character": 23
+        }
+      },
+      "severity": 2,
+      "code": "vue/html-self-closing",
+      "codeDescription": {
+        "href": "https://eslint.vuejs.org/rules/html-self-closing.html"
+      },
+      "source": "vize/lint",
+      "message": "Void element should be self-closing\n\nHelp: Use self-closing syntax"
+    }
+  ],
+  "cli": [
+    {
+      "file": "src/App.vue",
+      "messages": [
+        {
+          "ruleId": "a11y/alt-text",
+          "ruleDocsPath": "docs/content/rules/accessibility.md",
+          "severity": 1,
+          "message": "[vize:a11y/alt-text] <img> elements must have an alt attribute",
+          "line": 2,
+          "column": 3,
+          "endLine": 2,
+          "endColumn": 24,
+          "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
+        },
+        {
+          "ruleId": "vue/html-self-closing",
+          "ruleDocsPath": "docs/content/rules/vue.md",
+          "severity": 1,
+          "message": "[vize:vue/html-self-closing] Void element should be self-closing",
+          "line": 2,
+          "column": 3,
+          "endLine": 2,
+          "endColumn": 24,
+          "help": "Use self-closing syntax"
+        }
+      ],
+      "errorCount": 0,
+      "warningCount": 2
+    }
+  ],
+  "fixedSource": "<template>\n  <img src=\"/logo.png\" alt=\"\" />\n</template>\n"
+}

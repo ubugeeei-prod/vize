@@ -8,7 +8,8 @@
 
 use super::{CodeActionService, IdeContext, get_line_indent, ranges_overlap, template_position};
 use tower_lsp::lsp_types::{
-    CodeAction, CodeActionKind, CodeActionOrCommand, Range, TextEdit, WorkspaceEdit,
+    CodeAction, CodeActionKind, CodeActionOrCommand, Diagnostic, NumberOrString, Range, TextEdit,
+    WorkspaceEdit,
 };
 
 /// One template lint pass over the resident descriptor, shared across the
@@ -29,7 +30,11 @@ impl CodeActionService {
     pub(super) fn lint_template_once(ctx: &IdeContext) -> Option<TemplateLint> {
         let descriptor = ctx.descriptor()?;
         let template = descriptor.template.as_ref()?;
-        let linter = vize_patina::Linter::new();
+        let linter = crate::ide::diagnostics::patina::linter_for_uri(
+            ctx.state,
+            ctx.uri,
+            ctx.state.lsp_features().ecosystem,
+        )?;
         let result = linter.lint_template(&template.content, ctx.uri.path());
         Some(TemplateLint {
             content: template.content.to_string(),
@@ -43,6 +48,7 @@ impl CodeActionService {
         ctx: &IdeContext,
         range: Range,
         lint: &TemplateLint,
+        requested: &[Diagnostic],
     ) -> Vec<CodeActionOrCommand> {
         let mut actions = Vec::new();
 
@@ -62,6 +68,11 @@ impl CodeActionService {
             if !ranges_overlap(&diag_range, &range) {
                 continue;
             }
+            let Some(diagnostics) =
+                selected_diagnostics(requested, lint_diag.rule_name, diag_range)
+            else {
+                continue;
+            };
 
             // Convert fix edits to LSP TextEdits
             let edits: Vec<TextEdit> = fix
@@ -94,7 +105,7 @@ impl CodeActionService {
             let action = CodeAction {
                 title: format!("Fix: {}", fix.message),
                 kind: Some(CodeActionKind::QUICKFIX),
-                diagnostics: None, // Could link to specific diagnostic
+                diagnostics: (!diagnostics.is_empty()).then_some(diagnostics),
                 edit: Some(workspace_edit),
                 command: None,
                 is_preferred: Some(true),
@@ -113,6 +124,7 @@ impl CodeActionService {
         ctx: &IdeContext,
         range: Range,
         lint: &TemplateLint,
+        requested: &[Diagnostic],
     ) -> Vec<CodeActionOrCommand> {
         let mut actions = Vec::new();
 
@@ -137,6 +149,11 @@ impl CodeActionService {
             if !ranges_overlap(&diag_range, &range) {
                 continue;
             }
+            let Some(diagnostics) =
+                selected_diagnostics(requested, lint_diag.rule_name, diag_range)
+            else {
+                continue;
+            };
 
             // Compute indentation of the diagnostic line
             let indent = get_line_indent(template_content, lint_diag.start as usize);
@@ -173,7 +190,7 @@ impl CodeActionService {
             let action = CodeAction {
                 title: format!("Suppress with @vize:forget ({})", lint_diag.rule_name),
                 kind: Some(CodeActionKind::QUICKFIX),
-                diagnostics: None,
+                diagnostics: (!diagnostics.is_empty()).then_some(diagnostics),
                 edit: Some(workspace_edit),
                 command: None,
                 is_preferred: Some(false),
@@ -186,4 +203,24 @@ impl CodeActionService {
 
         actions
     }
+}
+
+/// A client diagnostic must identify the current authored template rule exactly.
+/// Empty context retains the existing cursor-range discovery contract.
+fn selected_diagnostics(
+    requested: &[Diagnostic],
+    rule: &str,
+    range: Range,
+) -> Option<Vec<Diagnostic>> {
+    if requested.is_empty() {
+        return Some(vec![]);
+    }
+    requested
+        .iter()
+        .find(|diagnostic| {
+            diagnostic.source.as_deref() == Some(crate::ide::diagnostics::sources::LINTER)
+                && diagnostic.range == range
+                && matches!(&diagnostic.code, Some(NumberOrString::String(code)) if code == rule)
+        })
+        .map(|diagnostic| vec![diagnostic.clone()])
 }

@@ -32,7 +32,7 @@ pub(super) async fn code_actions(
     } else {
         let offset = position_to_offset(&content, range.start.line, range.start.character)?;
         let ctx = IdeContext::new(&server.state, uri, offset)?;
-        CodeActionService::code_actions(&ctx, range)
+        CodeActionService::code_actions_for_diagnostics(&ctx, range, &params.context.diagnostics)
     };
 
     #[cfg(feature = "native")]
