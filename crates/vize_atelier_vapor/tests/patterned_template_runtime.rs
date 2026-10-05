@@ -149,7 +149,7 @@ fn runtime_failure_preserves_silent_child_status_and_original_case() {
     let output = Command::new("node")
         .args([
             "-e",
-            "process.stdout.write('partial stdout'); process.exit(13)",
+            "require('node:fs').writeSync(1, 'partial stdout'); process.exit(13)",
         ])
         .output()
         .unwrap();

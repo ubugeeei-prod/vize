@@ -49,7 +49,9 @@ Deterministic genuine child-process laws cover silent exit 13, Unix signal
 termination, malformed/mismatched successful stdout, an unsettled top-level
 await and exact completed success output. A controlled unresolved promise's
 exit 13 validates the diagnostic; it does not establish the historical failure's
-cause. Existing cleanup and observer laws remain intact.
+cause. Controlled failure streams are written synchronously before forced exit, so
+these laws do not depend on pending stdout flushes. Existing cleanup and
+observer laws remain intact.
 
 ## Required follow-through
 
