@@ -55,3 +55,43 @@ Genuine current-main integration added declared-template-emit qualification to t
 The same existing PR also repairs the separate complete Misskey publication failure preserved in the [native-response companion](./2026-10-05-lsp-backend-response-yield.md). The v3 source peer authenticates the exact 13-file patch `679a5c147cfe1a40542ab4d59337fc58649661f2ddc5ee17a892363679c83970` and rejects its v2 predecessor: current-world validation must occur inside the publication mutex before comparison/replacement, and explicit saves must preserve every legacy notification. Six complete ClientSocket controls retain all original inputs and 249 normalized records. These source checks provide no runtime or speed credit; fresh combined full Check, actual native config vectors, unchanged original 500/181 cold and warm gates, whole Misskey churn, protected suites and actual merge/release remain required.
 
 The combined `cb8eb12a68` full Check37298562681 failed Vue parity111725566240 before original500/Misskey execution: two stale incoming #7909 snapshots still used untyped `$emit`. Authenticated complete artifact11339224701 (SHA256 c86c601b1482259c3f5e0a4f5f65cb729f5b9df69980b4f679dd2e4c9dbad92d) changes only five emitted initializers across all31 records, preserving every diagnostic, total and other byte. The original7909 owner independently authored each full initializer from the original five macro inputs and current generator/model rules, including optional string/number payload unions in declaration order, then reconstructed both whole files; peer SHA2560336c03eca5338f6f1c4563ac10edc105d77aec8630a5297d6ca6a27d74d9572. The successor applies only those references, preserving production/all assertions and retaining the failed capture. Separately cb8 affected Rust Actions executed all16138 tests including the original25 and six new whole ClientSocket laws successfully. These scoped observations do not qualify current-source native8/original500/Misskey, protected acceptance or speed; fresh combined Actions remain mandatory.
+
+### Current execution and packaged-editor evidence
+
+At exact `bc81bf4ec3c27716b9cd56afe01338cc77a2ffc1`, source Check
+`37300043727` passed and native `37300042987` passed all eight unchanged
+nested-config controls. The actual diagnosing editor-LSP process selected
+the exact generated config in each case, with the full requested compiler
+options and four root-file identities, complete maps and existing flattened
+diagnostic responses. Both mapped diagnostic generations and the stock strict
+and weak CLI stdout/status oracles matched. The project descriptor count is
+not a native Program count, and root files are not a transitive-graph census;
+diagnostic-group separation, startup CPU and native Program count remain null.
+Artifact `11341602935` SHA256 is
+`1d3203ac546af1222e6e351ae1180b97ffab36ade5769c9313fd6d80a3d21014`.
+
+Full Check `37300057411` passed the complete Vue parity job `111730397861`,
+including all 31 snapshot records and the original pinned 500 Vue + 181 TS /
+681-request Tier-L workload at scale 1: cold 5,563 ms, broken warm 3,262 ms,
+repaired warm 3,417 ms, within the unchanged 15,000/10,000 ms ceilings. It
+retained one session start, two reuses and refreshes, one exact warm delta,
+and zero CLI fallbacks. Artifact `11340992170` SHA256 is
+`8aae9b65bf05d8c629b345a523c0cd22fbb3a95b04df4e08e191b9ba0cab2494`.
+The original Tier-L semantic oracle is scoped to its injected error; these
+metrics do not claim complete native diagnostics for all 681 requests.
+Complete Misskey churn artifact `11341017189`, SHA256
+`c994e1f0da1adae4529c6f408924f36dca247dcc8edb93d869995121657e418a`,
+retains all 287 normalized publications and exactly one rapid version-87
+empty publication. All original churn, incremental, process and RSS caps
+passed; no matched-host speed or CPU attribution follows.
+
+The full run remains failed solely at packaged VS Code rename with
+`Content modified`; its watcher actor and refusal stamp were not retained.
+The [native-response companion](./2026-10-05-lsp-backend-response-yield.md)
+records an opt-in evidence successor which retains complete incoming events,
+refusal stamps and controlled disk/log bytes before fixture cleanup, while
+preserving every behavior, assertion and cap. Compose that successor with
+signed main `66a9b15639c828b17d5f655b3dd58f697799b3fa`; all observations above
+remain bc81-specific. Fresh source/native/full editor and original Tier-L
+execution, protected full suites and actual merge are still required. The
+whole cold 10x target remains unfinished.

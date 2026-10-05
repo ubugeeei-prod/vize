@@ -131,3 +131,31 @@ Bind the scheduled root version after acquiring that scope, then give the comple
 The pinned tower-lsp 0.20 / futures-channel 0.3 transport matters: Client clones a sender per notification, whose first poll uses its reserved slot to enqueue. Its send future can then remain Pending while flushing that already-owned message. Commit the publication at the first actual notification poll, not at flush completion: cancelling a flush cannot retract its queued message and must not requeue a second copy. The pending claim rolls back by Arc identity before dispatch; an older rollback cannot remove a newer claim. Validate source/version inside the short publication mutex before comparison or replacement, then validate again for both new and duplicate outcomes; an old caller cannot overwrite or retire newer-world ownership. Explicit didSave keeps each legacy complete notification through a saved cause, without fabricated environment invalidation. A whole-envelope control fills the original channel, verifies the diagnostic lock is free during backpressure, drops the publisher and checks exactly one complete App notification alongside the original filler and unchanged one-shot unavailable warning. A coalesced current result still completes queued initial work and publishes that notice, because cancelling the original flush may have prevented its post-send notice path. A dependency-source control requires a new complete publication at the same root version even when the deliberately missing backend leaves the fallback vector unchanged; actual changed-native-vector proof remains the unchanged Misskey/full Vue gate. All four existing complete original notification/convergence controls and the held worker controls stay intact.
 
 The added six controls and retained original source/stream are unbuilt and unexecuted locally. Fresh current-head Actions, the unchanged full churn/native/RPC/configuration suites and original 500-file controls, protected merge, and external release evidence remain mandatory. No elapsed-time, 10x, RSS, release inclusion or completed runtime claim is derived from this source-only correction.
+
+### Packaged editor rename refusal evidence
+
+The actual `bc81bf4ec3c27716b9cd56afe01338cc77a2ffc1` full Check run
+`37300057411`, editor job `111730397813`, rejected the unchanged scorecard
+rename with `Content modified` after the complete hover, quick fix,
+format-on-save and semantic-token assertions passed. Its raw log records a
+209 ms rename attempt but no source/environment stamp or watched-file
+payload. The fixture/profile cleanup removed the existing server log; the
+cause is therefore unqualified. The genuine original 500-file and complete
+Misskey controls passed at this head independently of the failed editor gate.
+
+The same existing PR adds opt-in `VIZE_LSP_TRACE_NATIVE_SCOPE=1` evidence to
+the real editor-host step: complete incoming watched-file events,
+environment-change caller provenance, and captured/current stamps only when
+a native result is already refused. Successful native requests perform no
+additional trace lookup, source scan, backend query, epoch update, or await.
+Failure-only retention copies the server's existing `lsp.log` and an explicit
+allowlist of whole controlled fixture files before cleanup, with SHA-256 and
+missing-file custody. These are disk bytes; unsaved editor buffers are not
+misrepresented as disk content. A bounded artifact retains those files,
+including the hidden log directory. Retention errors preserve the original
+test failure.
+
+No actor is presumed, no rename retry or wait is introduced, and every
+original assertion, stale-result refusal, cancellation/lifecycle law and cap
+remains mandatory. A fresh whole editor-host/full/native run must establish
+the actual cause before a production behavior correction is selected.
