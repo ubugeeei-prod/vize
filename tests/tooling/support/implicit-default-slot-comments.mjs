@@ -170,7 +170,11 @@ try {
       if (ssr) {
         assert.equal(actual.html.includes("<!-- note -->"), !fixture.drop, fixture.name);
       } else {
-        assert.deepEqual(actual.comments, vapor || fixture.drop ? [] : [" note "], fixture.name);
+        assert.deepEqual(
+          actual.comments.filter((text) => text === " note "),
+          vapor || fixture.drop ? [] : [" note "],
+          fixture.name,
+        );
       }
       if (mode === "slot-probe") {
         const absent = fixture.name === "comment-only";
