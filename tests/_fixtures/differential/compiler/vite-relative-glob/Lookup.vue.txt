@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const fixtures = import.meta.glob("../../../fixtures/*.vue", { eager: true, import: "default" });
+const selected = fixtures["../../../fixtures/Alpha.vue"];
+</script>
+
+<template>
+  <component :is="selected" />
+</template>

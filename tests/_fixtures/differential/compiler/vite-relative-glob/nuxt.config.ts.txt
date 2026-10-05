@@ -1,0 +1,7 @@
+export default defineNuxtConfig({
+  modules: ["@vizejs/nuxt"],
+  srcDir: "src/",
+  pages: false,
+  devtools: { enabled: false },
+  vize: { autoInit: false, lint: false, checker: false, musea: false }
+});

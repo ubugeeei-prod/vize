@@ -85,6 +85,7 @@ function loadCompiledSfcModule(
   realPath: string,
   isSsr: boolean,
   currentBase: string,
+  needsGlobBaseRewrite: boolean,
   loadOptions?: { ssr?: boolean; addWatchFile?: (id: string) => void },
 ): LoadResult | string | null {
   const placeholderCode = getBoundaryPlaceholderCode(realPath, !!loadOptions?.ssr);
@@ -146,7 +147,11 @@ function loadCompiledSfcModule(
   );
   rewritten.edit(rewriteDynamicTemplateImports(rewritten.code, state.dynamicImportAliasRules));
   rewritten.edit(rewriteStaticAssetUrls(rewritten.code, state.dynamicImportAliasRules));
-  rewritten.edit(rewriteImportMetaGlobBase(rewritten.code, realPath, state.root));
+  // File-based IDs let Vite retain authored glob keys and resolve outside root.
+  // Only legacy null-prefixed modules still need the #884 compatibility rewrite.
+  if (needsGlobBaseRewrite) {
+    rewritten.edit(rewriteImportMetaGlobBase(rewritten.code, realPath, state.root));
+  }
   rewritten.edit(registerSfcModule(state, rewritten.code, realPath, isSsr));
   return loadedSfcModule(rewritten.code, rewritten.map, state.isProduction, isSsr, compiled);
 }
@@ -289,7 +294,14 @@ export function loadHook(
     if (!shouldLoadCompiledVueSfcPath(state, realPath)) {
       return null;
     }
-    return loadCompiledSfcModule(state, realPath, isSsr, currentBase, loadOptions);
+    return loadCompiledSfcModule(
+      state,
+      realPath,
+      isSsr,
+      currentBase,
+      id.startsWith("\0"),
+      loadOptions,
+    );
   }
 
   if (loadableVueSfcPath) {
@@ -300,7 +312,7 @@ export function loadHook(
       return null;
     }
     const isSsr = !!loadOptions?.ssr;
-    return loadCompiledSfcModule(state, loadableVueSfcPath, isSsr, currentBase, loadOptions);
+    return loadCompiledSfcModule(state, loadableVueSfcPath, isSsr, currentBase, false, loadOptions);
   }
 
   // Handle \0-prefixed non-vue files leaked from virtual module dynamic imports.
