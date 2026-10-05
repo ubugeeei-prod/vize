@@ -17,6 +17,7 @@ pub(crate) fn get_attribute_and_component_at_offset(
 type AuthoredAttribute = (String, String, Option<(usize, usize)>);
 
 /// Model attributes retain their separate model query route.
+#[cfg(feature = "native")]
 pub(crate) fn get_non_model_attribute_at_offset(ctx: &IdeContext<'_>) -> Option<(String, String)> {
     attribute_with_source_span_at_offset(ctx, false).map(|(name, tag, _)| (name, tag))
 }
