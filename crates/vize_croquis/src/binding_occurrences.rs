@@ -181,9 +181,7 @@ impl BindingOccurrences {
         start: u32,
         end: u32,
     ) -> Option<()> {
-        let Some(binding) = self.declaration(name, declaration.0, declaration.1) else {
-            return None;
-        };
+        let binding = self.declaration(name, declaration.0, declaration.1)?;
         self.note_reference(binding, start, end, OccurrenceBlock::Style(style));
         Some(())
     }
