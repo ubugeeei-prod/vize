@@ -268,3 +268,34 @@ original corpus, 282 other active snapshots, four approved full refinements
 and raw histories. Fresh automatic Actions must execute that new source;
 no old hosted-label rerun, skipped-suite success, altered gate or protected
 instruction credit follows from this acquisition failure.
+
+## Authentic protected instruction failure and bounded work reduction
+
+Exact source a02 Check37373805875 passes all four required checks, the four
+Rust workers (16,253 tests), four refined whole snapshots, canonical corpus,
+32 mounts/132 phases, 45 full map graphs and 26 real Vue write outcomes.
+Protected candidate641 Check37378371144 nevertheless fails its unchanged
+instruction ceiling: `atelier_dom_codegen_stress-wide` measures764,504 in
+each of three repeats against745,254. Its literal immediate predecessorf036
+measures738,248 in all three repeats with the identical complete input/window.
+Remove only this known-red PR from the queue and return it to Draft.
+
+Retained complete Callgrind graphs show fifty plain handler identifiers each
+take both function and reference shape scans, together66,700 instructions.
+These scan costs are identical in predecessor/current; the additional26,256
+instructions include different compiler inlining and string append attribution.
+This evidence does not identify a unique source-level cause for that increase.
+Reduce actual redundant work within the common `js_module_compatible` gate.
+A direct retained Identifier whose full raw bytes equal its lexer-produced
+name has no comments, TS fields or nested syntax; return the same existing
+strict/module-identifier refusal before raw substring scans and the AST walk.
+This identical algorithm runs in every build. Both original handler shape
+calls and full cache/reference writes, expression links and battery8/ladder252
+dual-run coverage remain unchanged. Escapes, comments, parentheses and every
+other AST shape still take the complete old gate. Three independently authored
+whole-output/map-link/dialect-boundary laws cover Unicode, member, arrow,
+update/statement, strict names, comment markers and escaped spellings.
+All original fixtures, nineteen pins, 132 phase oracles, four approved goldens
+and budgets remain unchanged. Source inspection proves no measured saving;
+fresh exact-source suites and protected all100+4-by-three/full Rust/runtime/
+actual signed merge are still required.

@@ -19,6 +19,48 @@ use crate::parser::Parser;
 use crate::retained::differential;
 use vize_l0::Allocator;
 
+#[test]
+fn whole_retained_identifier_gate_keeps_dialect_and_original_byte_boundaries() {
+    use crate::{ExpressionNode, PropNode, TemplateChildNode};
+    use vize_l0::cstr;
+
+    let cases = [
+        ("handler00", true),
+        ("_处理$", true),
+        ("eval", false),
+        ("arguments", false),
+        ("handler00 /* --> */", false),
+        ("handler00 /* ordinary trivia */", true),
+        ("(handler00)", true),
+        (r"\u0068andler00", true),
+        ("handler00 as unknown", false),
+        ("() => handler00", true),
+    ];
+    for (raw, expected) in cases {
+        let allocator = Allocator::new();
+        let source = cstr!("<button @click=\"{raw}\"></button>");
+        let (root, errors) = Parser::new(&allocator, &source).parse();
+        assert_eq!(errors.len(), 0, "{raw}: {errors:?}");
+        let [TemplateChildNode::Element(element)] = root.children.as_slice() else {
+            panic!("the whole control must retain its original button");
+        };
+        let [PropNode::Directive(directive)] = element.props.as_slice() else {
+            panic!("the whole control must retain its original event");
+        };
+        let Some(ExpressionNode::Simple(expression)) = directive.exp.as_ref() else {
+            panic!("the original event must retain its expression");
+        };
+        let retained = crate::retained::retained_whole_expression(expression)
+            .expect("the complete original expression must be retained");
+        assert_eq!(retained.raw, raw);
+        assert_eq!(
+            crate::retained::js_module_compatible(retained),
+            expected,
+            "{raw}"
+        );
+    }
+}
+
 const BATTERY: &str = r#"<div :style="{ zIndex: items.length + 1 }" :data-x="alpha + beta">
   {{ items.filter(item => item.id > 0).length / total }}
   <button @click="handle($event)" @keyup="count++">go</button>
