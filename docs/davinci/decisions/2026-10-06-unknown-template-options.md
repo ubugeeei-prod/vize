@@ -178,3 +178,28 @@ Both pure inventories pass and the canonical record remains 350 lines. Publish
 this reviewed correction to the same Draft #8056 with fresh exact-head ordinary/
 native Actions. Fourteen whole service vectors, seven CLI cases, unchanged full
 compatibility corpora, protected suites and actual delivery remain pending.
+
+## Required forwarded keys before authored-key omission
+
+Exact source `658cefc79eb044360a34ef4a822dd7ce89808c3d` completes native run
+`37344084550` successfully, including the required seven whole CLI cases and
+fourteen direct-service vectors. Independent complete artifact custody is still
+pending. The ordinary strict Rust builder now passes, but tooling2
+`111879229531` rejects `bar` in the unchanged upstream
+`fallthroughAttributes_checkRequired` project; `fallthroughAttributes` now passes.
+This ordinary failure remains a blocker and is never relabelled green.
+
+The earlier strict-tail mapping is too late for the required path: a template-less
+Basic component contributes an open string index to its declared prop surface.
+`Omit<Surface, "foo">` loses the genuine unbound `bar` name before that mapping.
+For explicit-strict required forwarding only, remove the broad string index
+from the actual resolved surface before the existing authored-key Omit. Keep
+property values/modifiers and all optional/native/default branches. The source
+law compares both required branches and unchanged optional/native targets; the
+authentic upstream whole-empty project remains the runtime compatibility oracle.
+No original source/config/expectation, shared helper, mapper, stage or cap changes.
+
+Publish this bounded correction to the same Draft only after independent source
+review, then require fresh exact-head source/native Actions and unchanged full
+corpora. Native source success does not grant protected/merge/release or stdio-RPC
+credit. Full history and default replacement remain unfinished.
