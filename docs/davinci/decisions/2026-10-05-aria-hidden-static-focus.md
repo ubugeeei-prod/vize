@@ -79,3 +79,9 @@ to an actual structural `<template v-if="ready" inert>`: a plain template is
 correctly an element in the existing parser. Original inputs, production,
 control counts and complete expected findings remain unchanged; no runtime
 acceptance is inferred from this source correction.
+
+The [first-authored CLI metadata correction](https://github.com/ubugeeei-prod/vize/issues/7977#issuecomment-5996906835)
+uses the unchanged public `docs/content/rules/accessibility.md` namespace
+mapping in its strict whole-result oracle. No original input, production,
+diagnostic field/count, historical expected byte or runtime observation
+changes; the earlier guessed new field is not execution evidence.

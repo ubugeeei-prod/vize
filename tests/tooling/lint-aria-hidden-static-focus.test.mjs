@@ -27,7 +27,7 @@ function expected(source, filename, targets) {
     const to = position(source, start + target.length);
     return {
       ruleId: rule,
-      ruleDocsPath: "docs/content/rules/a11y.md",
+      ruleDocsPath: "docs/content/rules/accessibility.md",
       severity: 2,
       message: `[vize:${rule}] aria-hidden="true" must not be used on focusable elements`,
       line: from.line,
