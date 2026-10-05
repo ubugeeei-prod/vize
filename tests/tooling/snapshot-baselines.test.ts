@@ -55,6 +55,8 @@ const assertionOnlyCheckTests = {
     "module-resolution determinism gate asserts the pinned tsgo build and byte-identical output across fresh processes",
   "typescript-project-references-oracle":
     "solution tsconfig oracle asserts referenced-project CLI and LSP diagnostic parity",
+  "vite-plus-relative-tsconfig-oracle":
+    "source-bound task/direct oracle asserts full ordered JSON and generated TypeScript with original and inverse operational controls",
   "vue-benchmarks-correctness-plants":
     "upstream benchmark plants assert exact clean, broken, repaired, and vue-tsc parity",
   "vue-benchmarks-lsp-ref-unwrap-oracle":

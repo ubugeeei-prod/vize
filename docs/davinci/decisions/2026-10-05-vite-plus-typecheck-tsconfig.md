@@ -41,7 +41,7 @@ The corpus retains the entire issue body and every original fenced input:
 | `tsconfig.app.json` |   199 | `35feafeab4c6c9026e88096f22231f2232dda9a954add34b2b77538656738236` |
 | `src/Counter.vue`   |   118 | `6b6c71eb17b0f5be731bf41566cccdcfb19e0f1be0575ad31f458ee4c1986082` |
 
-Ten pure path/input-custody controls pass. The prepared whole-process oracle
+Thirteen pure path/input-custody and snapshot-catalog controls pass. The prepared whole-process oracle
 checks original invalid → repair → invalid diagnostics and full JSON streams,
 effective program membership/options, task/direct generated TypeScript bytes,
 absolute/nested/config-directory/explicit-override paths, missing and empty
@@ -60,8 +60,35 @@ launches the Rust executable rather than the published Node launcher. This is
 not evidence for the reported package versions or the full published `vp run`
 bootstrap. Generated TypeScript equality is not decoded source-map proof.
 
+The first automatic source Check, [37271515293](https://github.com/ubugeeei-prod/vize/actions/runs/37271515293),
+failed at source `21994cf79d82c523fdcbd1fcf72ad580e71a8119`. All five new
+oracle groups stopped before native execution because provider custody resolved
+`vize/config` from the tests directory instead of the plugin's dependency context.
+Separate gates found the missing assertion-only oracle catalog entry, the new
+original SFC absent from the L3 file inventory, and an old empty-test scaffold
+that created a discovered tsconfig while expecting unconfigured success.
+The authenticated four logs and small official ZIP are retained; no 39-process
+runtime acceptance was established. Native-phase and ordinary source build
+success are separate from this failed fixture. The bounded fixture successor
+was independently source-reviewed at tree
+`3ecfc9549e0155386dda8cae4f83066f38c4e1ba`; runtime qualification remains pending.
+
+Prepare the current CLI's JavaScript config export explicitly with `vp pack`
+inside the existing source-built tooling oracle, capturing full preparation
+streams before assertions. Resolve it through the real plugin context and
+require config normalization to be the exact local source addon's function;
+retain both provider hashes. Link the fixture's actual Vue and Vite+ providers,
+without depending on a preceding test's package preparation or root hoisting.
+Keep all original inputs and every full oracle expectation unchanged. Extract
+the old empty test without behavior changes first, then use an actual empty
+directory outside the repository to avoid its inherited tsconfig for genuine
+unconfigured success and add a strict discovered-empty
+exit-2/full-JSON/stderr pair. The actual L3 run observed 450 files, 150 remarks,
+15 applied, 135 missed and zero remark changes; add only the original Counter
+path to its census, preserving every remark and explanation. No ceiling moves.
+
 The genuine replay on actual main
-`5fb1af83bc5daf0a18838346e7036d97401dbef3` preserves every owned source/input
+`1744a7ee84c202ce78f03a0148f335a5022b72e3` preserves every owned source/input
 blob and every incoming canonical line. This main already builds the default
 CLI and writes its build receipt before PR/protected tooling tests. The oracle
 is registered through that existing tooling suite, retaining the strict receipt

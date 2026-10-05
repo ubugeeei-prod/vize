@@ -16,6 +16,7 @@ import {
 import { resolveTsgoBinary } from "../../../_helpers/realworld-typecheck.ts";
 import { originalInputs, repoRoot, sha256 } from "./fixture.ts";
 import { sourceTaskConfig } from "./factory.ts";
+import { sourceConfigProvider } from "./provider.ts";
 
 export type Report = {
   files: Array<{ file: string; diagnostics: string[]; virtualTs?: string }>;
@@ -79,7 +80,7 @@ export class ProjectOracle {
         ].map((file) => [file, sha256(fs.readFileSync(path.join(repoRoot, file)))]),
       ),
       providers: Object.fromEntries(
-        ["vue/package.json", "vite-plus/package.json", "vize/config"].map((specifier) => {
+        ["vue/package.json", "vite-plus/package.json"].map((specifier) => {
           const resolved = fs.realpathSync(createRequire(import.meta.url).resolve(specifier));
           const bytes = fs.readFileSync(resolved);
           return [
@@ -95,6 +96,7 @@ export class ProjectOracle {
         }),
       ),
       original: originalInputs().manifest,
+      configProvider: sourceConfigProvider(),
       dispatcher:
         "Source runTools/runNative selects argv; execute callback launches the default-source Rust CLI directly instead of the published Node launcher.",
     };
@@ -109,11 +111,15 @@ export class ProjectOracle {
       fs.mkdirSync(path.dirname(file), { recursive: true });
       fs.writeFileSync(file, content);
     }
-    fs.symlinkSync(
-      fs.realpathSync(path.join(repoRoot, "node_modules")),
-      path.join(root, "node_modules"),
-      process.platform === "win32" ? "junction" : "dir",
-    );
+    fs.mkdirSync(path.join(root, "node_modules"));
+    for (const name of ["vue", "vite-plus"]) {
+      const manifest = createRequire(import.meta.url).resolve(`${name}/package.json`);
+      fs.symlinkSync(
+        fs.realpathSync(path.dirname(manifest)),
+        path.join(root, "node_modules", name),
+        process.platform === "win32" ? "junction" : "dir",
+      );
+    }
     const before = process.cwd();
     process.chdir(root);
     try {
