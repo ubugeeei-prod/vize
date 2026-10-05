@@ -113,6 +113,36 @@ fn genuine_local_setup_bindings_are_visible_but_type_only_imports_are_not_values
 }
 
 #[test]
+fn named_setup_values_keep_their_complete_registration_with_both_script_frames() {
+    let source = "<script>const PlainPanel = {};</script>\n<script setup lang=\"ts\">const LocalPanel = {};let MutablePanel = {};function RenderPanel() {}class ClassPanel {};</script>\n<art><variant name=\"One\"><LocalPanel/><MutablePanel/><RenderPanel/><ClassPanel/><PlainPanel/></variant></art>";
+    let start = source.find("<PlainPanel").unwrap();
+    compare(
+        &linter().lint_sfc(source, "Gallery.art.vue"),
+        &expected("Gallery.art.vue", &[start], "PlainPanel"),
+    );
+}
+
+#[test]
+fn nested_and_erased_script_names_cannot_register_original_variants() {
+    for declaration in [
+        "{ const HiddenPanel = {}; }",
+        "function outer() { const HiddenPanel = {}; }",
+        "type HiddenPanel = {};",
+        "interface HiddenPanel {}",
+        "import { type HiddenPanel } from './Types';",
+    ] {
+        let source = format!(
+            "<script setup lang=\"ts\">{declaration}</script>\n<art><variant name=\"One\"><HiddenPanel/></variant></art>"
+        );
+        let start = source.find("<HiddenPanel").unwrap();
+        compare(
+            &linter().lint_sfc(&source, "Gallery.art.vue"),
+            &expected("Gallery.art.vue", &[start], "HiddenPanel"),
+        );
+    }
+}
+
+#[test]
 fn ordinary_vue_import_registration_and_recursive_filename_reference_are_unchanged() {
     let source = "<script setup>import MyIcon from './MyIcon.vue';</script>\n<template><MyIcon/><Card/><MissingPanel/></template>";
     let start = source.find("<MissingPanel").unwrap();

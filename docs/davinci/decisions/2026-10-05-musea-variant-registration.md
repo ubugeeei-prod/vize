@@ -10,8 +10,8 @@ and analyze original descriptor scripts once when semantic rules demand
 it. A private borrowed script-analysis slot supplies the actual registration
 callback; each original fragment retains its existing independent template
 Drawer/facts. Do not manufacture an SFC/template, rename the file or expose
-another variant's template scopes. Genuine script scopes provide imports
-and local setup values without per-variant script parsing. This is not a
+another variant's template scopes. Genuine script scopes provide imports; retained binding metadata and original
+setup definition spans provide named values without per-variant script parsing. This is not a
 general joined analysis provider: other callbacks keep their existing
 fragment-only semantics.
 
@@ -34,12 +34,13 @@ filter is used.
 
 Retain all six original files from the issues in
 `crates/vize_patina/tests/fixtures/musea-variant-bindings/`, with exact lengths,
-SHA-256 hashes and URLs. Nine complete result laws cover original imports,
+SHA-256 hashes and URLs. Eleven complete result laws cover original imports,
 macro/attribute targets with unrelated physical filenames, missing imports,
 false Art self references, distinct UTF-8/CRLF variant positions, independent
 Art blocks, real local/type-only bindings, ordinary Vue registration and
 independent fragment facts with original imported registration, and a
-complete original/foreign-buffer admission result.
+complete original/foreign-buffer admission result, named values across both
+script frames, and five nested/erased-name negatives.
 The owned Patina consumer ledger is scanner-generated; no foreign rows,
 ceilings or fixture captures are changed.
 
@@ -93,3 +94,20 @@ parser/sfc error at0/0. A ninth complete-result law checks genuine original
 markup and equal-text foreign custody. Seeded79 compiles but filters all
 eight previous registration laws, so it grants no execution credit. Fresh
 source and protected actual delivery remain required.
+
+The exact35c5fdbb source reaches genuine Nextest execution after its earlier
+gate repairs. [Paired #7897](https://github.com/ubugeeei-prod/vize/issues/7897#issuecomment-5988327204)
+and [#7900](https://github.com/ubugeeei-prod/vize/issues/7900#issuecomment-5988327384)
+retain Check37263643950: four authenticated JUnit ZIPs contain15,912 unique
+actual cases,15,911 pass, one LocalPanel false warning; eight of nine new
+laws pass. No result is recaptured to change the failed expectation.
+Top-level named values are retained in binding metadata, not ScriptSetup's
+scope binding map. Read the actual metadata only when its existing binding
+definition span belongs to the retained ScriptSetup frame. The provider
+shifts both domains together for split scripts; plain-script merged values
+remain outside that frame. Two additional complete laws retain const/let/
+function/class values across both frames and five nested/type-only/erased
+negatives. This does not claim full destructure provenance or a generic
+joined provider. Original nine laws, six source files, parsers and budgets
+remain unchanged. Real peer review, exact fresh Actions and protected
+actual delivery are still required; the draft stays unqueued.

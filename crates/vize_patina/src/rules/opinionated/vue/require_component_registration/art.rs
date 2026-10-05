@@ -23,13 +23,24 @@ pub(super) fn analysis<'a>(context: &'a LintContext<'_>) -> Option<&'a Croquis> 
 }
 
 pub(super) fn setup_bindings(context: &LintContext<'_>) -> Option<Vec<String>> {
+    let analysis = analysis(context).filter(|_| is_context(context))?;
     Some(
-        analysis(context)
-            .filter(|_| is_context(context))?
+        analysis
             .scopes
             .iter()
             .filter(|scope| scope.kind == ScopeKind::ScriptSetup)
-            .flat_map(|scope| scope.bindings())
+            // Top-level declarations live in binding metadata, not scope bindings.
+            // Merged plain-script values must not become setup-local components.
+            .flat_map(|scope| {
+                analysis.bindings.iter().filter(|(name, _)| {
+                    analysis
+                        .binding_spans
+                        .get(*name)
+                        .is_some_and(|&(start, end)| {
+                            scope.span.start <= start && end <= scope.span.end
+                        })
+                })
+            })
             .map(|(name, _)| name.to_compact_string())
             .collect(),
     )
