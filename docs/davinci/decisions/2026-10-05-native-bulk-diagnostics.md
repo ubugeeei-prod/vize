@@ -317,7 +317,10 @@ whole681 native/LSP equality remains separate quality evidence.
 Before each arm build, use Cargo's supported package/profile-scoped clean to
 evict only Canon CI artifacts, keeping external dependency caches and the already
 built CLI/LSP binaries intact. Retain clean/build outcomes and complete compiler
-artifact records before assertions; require exact source-root manifest and
+artifact records before assertions. Before clean and after build, bind actual HEAD,
+complete scoped tracked/staged/untracked Git state, and every physical Canon source
+and locked-authority body to immutable Git blobs outside timing windows; retain
+the actual state before comparison. Require exact source-root manifest and
 library/test paths, fresh=false for both owned artifacts, equal features/profile
 and distinct final binary hashes before any timing arm. This rebuild/custody work
 runs outside all unchanged timing windows, retains the same six driver overlays,

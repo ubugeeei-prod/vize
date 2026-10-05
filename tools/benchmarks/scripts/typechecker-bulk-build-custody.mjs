@@ -1,8 +1,74 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { copyFileSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+
+const sourceIdentity = (cwd, expected) => {
+  const paths = [
+    "Cargo.toml",
+    "Cargo.lock",
+    "crates/vize_canon/Cargo.toml",
+    "crates/vize_canon/src",
+    "pnpm-lock.yaml",
+    ".cargo",
+  ];
+  const git = (...args) => execFileSync("git", args, { cwd, maxBuffer: 64 * 1024 * 1024 });
+  const rows = git("ls-tree", "-r", "-z", expected, "--", ...paths)
+    .toString()
+    .split("\0")
+    .filter(Boolean)
+    .map((entry) => {
+      const tab = entry.indexOf("\t");
+      const [mode, kind, expectedGitBlob] = entry.slice(0, tab).split(" ");
+      const path = entry.slice(tab + 1);
+      assert(kind === "blob" && ["100644", "100755"].includes(mode));
+      const bytes = readFileSync(join(cwd, path));
+      const gitBlob = createHash("sha1")
+        .update("blob " + bytes.length + "\0")
+        .update(bytes)
+        .digest("hex");
+      return {
+        path,
+        expectedGitBlob,
+        gitBlob,
+        matches: gitBlob === expectedGitBlob,
+        bytes: bytes.length,
+        sha256: createHash("sha256").update(bytes).digest("hex"),
+      };
+    });
+  return {
+    expected,
+    head: git("rev-parse", "HEAD").toString().trim(),
+    diffBase64: git("diff", "--binary", expected, "--", ...paths).toString("base64"),
+    porcelainBase64: git(
+      "status",
+      "--porcelain=v1",
+      "-z",
+      "--untracked-files=all",
+      "--",
+      ...paths,
+    ).toString("base64"),
+    rows,
+  };
+};
+const assertSourceIdentity = (packet) => {
+  assert.equal(packet.head, packet.expected);
+  assert.equal(
+    packet.diffBase64,
+    "",
+    "physical Canon source or locked authority differs from immutable tree",
+  );
+  assert.equal(
+    packet.porcelainBase64,
+    "",
+    "Canon source or authority has a visible membership change",
+  );
+  assert(
+    packet.rows.length && packet.rows.every((row) => row.matches),
+    "physical Canon source bytes differ from immutable Git blobs",
+  );
+};
 
 // Shared dependency caches are safe only after rebuilding each owned Canon arm.
 export function buildMatchedBinaries({
@@ -22,6 +88,10 @@ export function buildMatchedBinaries({
     ["bulk", root],
   ]) {
     const env = { ...process.env, CARGO_TARGET_DIR: join(root, "target") };
+    const productionSource = arm === "original" ? baseline : source;
+    binaries[arm] = { productionSource, sourceBefore: sourceIdentity(cwd, productionSource) };
+    persist();
+    assertSourceIdentity(binaries[arm].sourceBefore);
     const clean = spawnSync("cargo", ["clean", "--locked", "--profile", "ci", "-p", "vize_canon"], {
       cwd,
       env,
@@ -30,9 +100,10 @@ export function buildMatchedBinaries({
     });
     writeFileSync(join(output, `${arm}-clean.stdout`), clean.stdout ?? "");
     writeFileSync(join(output, `${arm}-clean.stderr`), clean.stderr ?? "");
-    binaries[arm] = {
-      productionSource: arm === "original" ? baseline : source,
-      clean: { status: clean.status, signal: clean.signal, error: clean.error?.message },
+    binaries[arm].clean = {
+      status: clean.status,
+      signal: clean.signal,
+      error: clean.error?.message,
     };
     persist();
     assert.equal(clean.status, 0, `${arm} Canon artifact eviction failed`);
@@ -78,7 +149,9 @@ export function buildMatchedBinaries({
     );
     const test = owned.find((item) => item.target.name === "tier_l_incremental" && item.executable);
     binaries[arm].compilerArtifacts = { library, test };
+    binaries[arm].sourceAfter = sourceIdentity(cwd, productionSource);
     persist();
+    assertSourceIdentity(binaries[arm].sourceAfter);
     assert(library && test, `${arm} owned Canon library/test artifacts absent`);
     assert.equal(library.target.src_path, join(cwd, "crates/vize_canon/src/lib.rs"));
     assert.equal(test.target.src_path, join(cwd, "crates/vize_canon/tests/tier_l_incremental.rs"));
