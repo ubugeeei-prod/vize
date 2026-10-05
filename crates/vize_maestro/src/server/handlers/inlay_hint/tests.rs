@@ -56,7 +56,7 @@ fn query(service: &mut LspService<MaestroServer>, id: i32, range: Value) -> Valu
 }
 
 fn builtin_hint(line: u32, character: u32, label: &str, wrapper: &str) -> Value {
-    json!({"position":{"line":line,"character":character},"label":label,"kind":1,"tooltip":format!("Vue reactive binding ({wrapper})"),"paddingLeft":true})
+    json!({"position":{"line":line,"character":character},"label":label,"kind":1,"tooltip":vize_l0::cstr!("Vue reactive binding ({wrapper})"),"paddingLeft":true})
 }
 
 #[test]

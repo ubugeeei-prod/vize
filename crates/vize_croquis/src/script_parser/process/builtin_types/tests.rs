@@ -8,13 +8,10 @@ fn facts(source: &str) -> Vec<(String, String, String, String)> {
         .map(|fact| {
             let (start, end) = fact.span();
             (
-                fact.name().to_string(),
+                String::from(fact.name()),
                 format!("{:?}", fact.kind()),
-                fact.value_type().to_string(),
-                source
-                    .get(start as usize..end as usize)
-                    .unwrap()
-                    .to_string(),
+                String::from(fact.value_type()),
+                String::from(source.get(start as usize..end as usize).unwrap()),
             )
         })
         .collect();
@@ -92,7 +89,7 @@ fn unknown_or_non_builtin_expressions_have_no_source_type_fact() {
 }
 
 #[test]
-fn later_binding_ownership_and_native_world_lifecycle_do_not_reuse_stale_facts() {
+fn later_binding_ownership_and_fresh_parse_lifecycle_do_not_reuse_stale_facts() {
     assert_eq!(
         facts(
             "import { ref, computed } from 'vue'; const n = ref(0); let n = dynamic(); const x = computed(() => n.value * 2);"
