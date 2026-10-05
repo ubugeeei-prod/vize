@@ -112,3 +112,15 @@ Its incoming Program stack-headroom/CFG correction and all fourteen changed
 paths remain intact. Every remaining layer includes its literal refreshed
 parent; admission still waits for the release barrier and fresh exact-head
 Actions, not the historical source or private replay checks.
+
+## Retargeted first remaining source
+
+The supported membership recovery leaves the actually merged two-layer
+prefix in historical Stack #7759. The exact six remaining Ready PRs now form
+native Stack #7920, positions 1–6, rooted at main; #7769 is its first layer.
+The API base-retarget refusal and recovery are recorded in the full top
+qualification. Its first publication occurred while the old base was still
+linked and produced no Check/native source run. This meaningful first-layer
+qualification triggers fresh exact-head Actions after the corrected native
+registration; absent gates provide no acceptance credit. All original source
+and fixtures, every incoming main path and protected ceilings remain intact.
