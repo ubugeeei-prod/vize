@@ -30,7 +30,7 @@ components, Transition, Teleport and current native L4 routing are unchanged.
 The exact reported App.vue, Async.vue and issue body are immutable corpus inputs
 under `tests/_fixtures/differential/compiler/ssr-builtins-7891/`. A separate
 manifest registers this whole-SFC runtime pack without inflating the existing
-single-row CLI adapter's acceptance count. Seven newly authored controls cover
+single-row CLI adapter's acceptance count. Eight newly authored controls cover
 explicit/default-only/missing-default/other/dynamic slots, static/dynamic/no-tag
 groups, list and false-conditional ranges, comments and merged attributes. The
 attribute control uses a bound style object; static-style normalization is not

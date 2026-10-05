@@ -107,7 +107,7 @@
           "strict-whole-html",
           "zero-runtime-diagnostics",
           "both-original-failures",
-          "seven-positive-controls"
+          "eight-positive-controls"
         ]
       }
     }
