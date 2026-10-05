@@ -75,3 +75,9 @@ mandatory; the earlier passing source is historical, without failure/retry
 attribution or acceptance transferred to the successor.
 
 Paired composition repair: [#7862 comment](https://github.com/ubugeeei-prod/vize/issues/7862#issuecomment-5987659873).
+
+## Distinct compiler-contract domain after live prefix refusal
+
+Exact source `678fcf3840` passes complete Check37263129964, genuine Nuxt lanes and all four authenticated Rust shards: 15,905 cases including both CSS laws. It merges cleanly with literal main. Its actual queue entry nevertheless becomes UNMERGEABLE against unmerged prefix `bf91e7af55c2fa1eb8d588079fad70d5f73f471b`: the original SSR-slot forwarding history changes the same canonical tooling paragraph328. Candidate remains absent; remove only this entry immediately, without claiming a test failure or disturbing healthy predecessors. Preserve the refusal and all source proof as historical; no protected acceptance follows.
+
+Genuinely replay the six existing commits onto actual main `60fc40d189cf21b662b0da43109555bd775601dc`, relocating the complete owned decision/failure history to the distinct existing shared differential/compiler-contract paragraph294. All eight owned source/production/fixture/oracle byte hashes, all six original author/email/date/full-message/reporter trailers, and every complete incoming main paragraph remain exact on350 lines. The original refused prefix now composes cleanly prospectively; its unmerged code/decisions are not imported. Fresh configured exact-head Actions remain required. This repaired late entry belongs to a later frequent release cut, not the currently finite admitted batch.
