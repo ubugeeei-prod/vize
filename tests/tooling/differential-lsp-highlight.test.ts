@@ -14,7 +14,9 @@ import { referenceObservation, rewriteFrames } from "./support/lsp/differential-
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const pack = path.join(root, "tests/_fixtures/differential/lsp");
 const loaded = loadLspManifest(path.join(pack, "manifest.json"));
-const originals = loaded.cases.slice(7);
+const originals = loaded.cases.filter((fixture) =>
+  fixture.id.startsWith("lsp/fix-history/highlight-original-"),
+);
 
 void test("original five highlight sessions retain source, settings and all nine authored requests", () => {
   assert.equal(originals.length, 5);

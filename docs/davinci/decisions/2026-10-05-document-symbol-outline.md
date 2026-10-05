@@ -62,7 +62,9 @@ be retained before runtime acceptance; no local build or RPC capture is credited
 
 Prepared Rust controls cover complete reported projects, destructuring/defaults,
 exports, nested members/classes, TS/JSX, directives, UTF-16/CRLF, malformed and
-empty content, art, and honest Pug fallback. Source and protected Actions are
+empty content, art, and honest Pug fallback. Eleven local pure controls pass;
+the original five highlight sessions are selected by their fixed IDs so new
+outline cases cannot extend their original nine-request vector. Source and protected Actions are
 pending; publication, queue entry and completion require actual terminal proof.
 
 Pug has no original-span element tree in the current resident descriptor. Keep
