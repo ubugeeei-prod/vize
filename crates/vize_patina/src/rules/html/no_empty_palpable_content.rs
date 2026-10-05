@@ -40,6 +40,32 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoEmptyPalpableContent;
 
+impl NoEmptyPalpableContent {
+    /// Configure exact bare directive names without changing the default rule.
+    pub fn with_content_directives(names: Vec<vize_l0::String>) -> impl Rule {
+        ContentDirectives { names }
+    }
+}
+
+struct ContentDirectives {
+    names: Vec<vize_l0::String>,
+}
+
+impl Rule for ContentDirectives {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        if element.props.iter().any(|prop| {
+            matches!(prop, PropNode::Directive(dir) if self.names.iter().any(|name| name.as_str() == dir.name))
+        }) {
+            return;
+        }
+        NoEmptyPalpableContent.enter_element(ctx, element);
+    }
+}
+
 impl Rule for NoEmptyPalpableContent {
     fn meta(&self) -> &'static RuleMeta {
         &META

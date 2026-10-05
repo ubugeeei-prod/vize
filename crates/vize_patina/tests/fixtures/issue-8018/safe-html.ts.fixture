@@ -1,0 +1,11 @@
+import type { Directive } from "vue";
+
+// Sets innerHTML after sanitizing (sanitizer omitted here).
+export const vSafeHtml: Directive<HTMLElement, string> = {
+  mounted: (el, { value }) => {
+    el.innerHTML = value;
+  },
+  updated: (el, { value }) => {
+    el.innerHTML = value;
+  }
+};

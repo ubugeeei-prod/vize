@@ -451,6 +451,16 @@
     "LintRuleOptions": {
       "type": "object",
       "properties": {
+        "html/no-empty-palpable-content": {
+          "type": "object",
+          "properties": {
+            "contentDirectives": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        },
         "type/strict-boolean-expressions": {
           "type": "object",
           "properties": {

@@ -7,6 +7,16 @@ import "ConfigArtifactDefinitions.pkl"
 lintRuleOptionsDef: JsonSchema = new JsonSchema {
   type = "object"
   properties {
+    ["html/no-empty-palpable-content"] = new JsonSchema {
+      type = "object"
+      properties {
+        ["contentDirectives"] = new JsonSchema {
+          type = "array"
+          items = new JsonSchema { type = "string" }
+        }
+      }
+      additionalProperties = false
+    }
     ["type/strict-boolean-expressions"] = strictBooleanExpressionsOptionsDef
     ["script/no-restricted-globals"] = new JsonSchema { `$ref` = "#/definitions/NoRestrictedGlobalsOptions" }
     ["script/no-restricted-members"] = new JsonSchema { `$ref` = "#/definitions/NoRestrictedMembersOptions" }
