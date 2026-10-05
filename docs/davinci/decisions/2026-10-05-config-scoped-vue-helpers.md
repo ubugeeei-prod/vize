@@ -17,9 +17,9 @@ injection, helper type weakening or budget exception is added.
 
 The existing Batch/session repair #7857 owns configured native project selection;
 this slice changes VirtualProject helper ownership and config generation. It
-branches from actual main 7f605de65444cf3a54120709fde3c48099dddce8 and does not
-depend on that unmerged source. The original #7861 config anchor remains its
-authority. Logo assets and the three delivered bug-fix receipts are preserved.
+initially branches from actual main 7f605de65444cf3a54120709fde3c48099dddce8 and
+does not depend on that unmerged source. The original #7861 config anchor remains
+its authority. Logo assets and the three delivered bug-fix receipts are preserved.
 
 The differential corpus stores all nine original filesystem inputs. Every SFC
 is retained as `.vue.txt` and copied byte-for-byte to a live `.vue`. The existing
@@ -61,6 +61,13 @@ paths for this cross-platform alias match. Original diagnostic vectors are
 unchanged. The official native process failure status is 1, independently checked
 against retained 7.0.2 raw receipts; new runtime execution remains unqualified.
 The [paired correction decision](https://github.com/ubugeeei-prod/vize/issues/7949#issuecomment-5992964278) records this guard, status and explicit lexical sort correction.
+
+The [paired actual-main replay](https://github.com/ubugeeei-prod/vize/issues/7949#issuecomment-5993327886) starts from signed main 66a9b15639c828b17d5f655b3dd58f697799b3fa.
+All 25 owned noncanonical/nonworkflow blobs retain exact source-reviewed bytes;
+the incoming #8020 qualification step and all 16 complete existing cargo argv
+remain. The sole conflict relocates only this record's canonical note onto the
+existing type-checker history sentence, preserving every incoming clause and
+the 350-line record. The combined native workflow remains 349 lines.
 
 Fresh strict source Actions, authentic whole native/editor execution, independent
 artifact verification, protected full Rust/all 104 instruction gates, actual
