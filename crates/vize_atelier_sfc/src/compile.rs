@@ -460,10 +460,7 @@ fn compile_sfc_inner(
     }
     profile!(
         "atelier.sfc.script_context.analyze",
-        match setup_program.as_ref() {
-            Some(program) => ctx.analyze_program(program, &script_setup_content),
-            None => ctx.analyze(),
-        }
+        ctx.analyze_for_target(setup_program.as_ref(), &script_setup_content, is_vapor)
     );
     validate_macro_scope_for_descriptor(&ctx, setup_program.as_ref(), descriptor)?;
 

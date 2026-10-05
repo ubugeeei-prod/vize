@@ -91,7 +91,7 @@ impl ScriptCompileContext {
     pub fn analyze(&mut self) {
         // Temporarily take ownership of source to avoid borrow conflicts
         let source = std::mem::take(&mut self.source);
-        self.parse_with_oxc(&source);
+        self.parse_with_oxc(&source, false);
         self.source = source;
         // ScriptCompileContext is always used for <script setup>
         self.bindings.is_script_setup = true;
@@ -103,7 +103,7 @@ impl ScriptCompileContext {
     /// parse-once pipeline. `source` must be the exact text `program` was
     /// parsed from (and match the source this context was created with).
     pub fn analyze_program(&mut self, program: &oxc_ast::ast::Program<'_>, source: &str) {
-        self.process_program(program, source);
+        self.process_program(program, source, false);
         // ScriptCompileContext is always used for <script setup>
         self.bindings.is_script_setup = true;
     }

@@ -60,6 +60,28 @@ unfinished and outside this finite qualification. Actual Vapor SSR still uses
 the existing explicit standard-SSR fallback; this change provides no native
 product, Vapor SSR, Chromium, all-fixture or performance acceptance.
 
+Actual source dbd/Check37261528918 passed lexer/format/JS/browser/tooling/Nuxt,
+but its whole-runtime Rust test rejected the first reactive control's public
+binding map: imported reactive was setup-maybe-ref rather than official rc9
+setup-const. Preserve that full-map assertion and every original control.
+The initial uncommitted global producer proposal would change immutable retained
+DOM/SSR complete-result maps; withdraw that scope before publishing. Pass the
+existing real is_vapor target into the same ScriptCompileContext statement walk,
+without an extra AST walk, pipeline stage or metadata postpass. Only actual
+Vapor named-value imports from parsed exact source vue are const; retained
+DOM/SSR public maps and default context methods keep historical maybe-ref.
+Other named sources remain maybe-ref and declaration/specifier type-only skips
+remain exact. A whole parsed TS SFC checks both real target maps, Vue aliases,
+an external named value and both type-only boundaries.
+The source-backed public result authority is official
+[rc9 compileScript lines756-765](https://github.com/vuejs/core/blob/v3.6.0-rc.9/packages/compiler-sfc/src/compileScript.ts#L756).
+Independent stable3.5.35 execution corroborates that boundary, with no rc9
+execution inferred; a local rc9 probe had no installed runtime alias and did
+not run. Keep the Croquis/type34 template-fact model separate, with no broader
+import/template/native acceptance. The retained DOM/SSR discrepancy remains
+unfixed. Grandfathered parse/context/compile files do not grow; helper277.
+Failed dbd has no complete32-pair acceptance; fresh source is required.
+
 TODO: exact source Actions including whole-module runtime, root peer review,
 protected full suites and all 104 immutable instruction ceilings, signed
 actual main with reporter trailer/issue closure, then a verified frequent cut.
