@@ -9,12 +9,14 @@
     {
       "path": "RunButton.vue",
       "sha256": "8a350587761fd37d2db640b5cc5b25a2ddf87eafa282e152f67823537aea01a3",
-      "bytes": 319
+      "bytes": 319,
+      "file": "RunButton.vue.fixture"
     },
     {
       "path": "callbacks.ts",
       "sha256": "362bb6be4319de7ae78e7b5a465c88253a732a7ee9d2620be03a354f42ea51c1",
-      "bytes": 130
+      "bytes": 130,
+      "file": "callbacks.ts.fixture"
     }
   ]
 }

@@ -29,11 +29,11 @@ fn original_reporter_sfc_and_plain_typescript_are_clean() {
     for (filename, source) in [
         (
             "RunButton.vue",
-            include_str!("fixtures/issue-7913/RunButton.vue"),
+            include_str!("fixtures/issue-7913/RunButton.vue.fixture"),
         ),
         (
             "callbacks.ts",
-            include_str!("fixtures/issue-7913/callbacks.ts"),
+            include_str!("fixtures/issue-7913/callbacks.ts.fixture"),
         ),
     ] {
         let result = if filename.ends_with(".vue") {

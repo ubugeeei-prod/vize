@@ -23,3 +23,9 @@ Local formatting and source review do not establish native execution. Require
 exact-head hosted Actions, protected full Rust/fixture and unchanged instruction
 count gates, actual signed merge, issue closure and published release evidence.
 This is a legacy correction; it grants no Davinci native-stage or speed credit.
+
+Source Check `37257997293` rejected the original corpus carrier because repository
+Oxlint reports the intentionally unassigned reporter `handler`. Preserve every
+input byte/hash and use `.fixture` carriers, with original public filenames still
+passed to the actual linter. No warning budget/configuration is relaxed; fresh
+source Actions must qualify the successor.
