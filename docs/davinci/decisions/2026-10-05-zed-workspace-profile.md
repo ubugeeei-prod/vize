@@ -4,6 +4,7 @@ Issue: [#8007](https://github.com/ubugeeei-prod/vize/issues/8007).
 Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5992284213).
 Packaging follow-up: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5992554915).
 Current-wire follow-up: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5992831553).
+Legacy LSP custody: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5996545677).
 Prior VS Code rule: [#7196](https://github.com/ubugeeei-prod/vize/issues/7196),
 commit `6496dd1ea4134f1a8a36dcef593bcaa7efcf5812`.
 
@@ -62,6 +63,28 @@ filesystem reads exercise the shared selector; official pinned Zed CLI WASM
 validation checks the real SDK callback separately. This is not Zed GUI-host
 execution or new native-stage eligibility. The README explains project-owned
 defaults and deliberate explicit overrides.
+
+The three authored commits were genuinely replayed onto actual main `92e036de`,
+inheriting the separately merged backend native cfg fix. Source `97029b58`
+passed ordinary Check and current extension units, package, WASM and all six
+complete real-server laws. Its separate full Check `37318690306` failed only
+the original VitePress completion after a declaration repair. The 13,300-byte
+oracle, pinned 1,882-byte NotFound input, expected members and UTF-16 positions
+remain exact. The physical LSP executable and internal completion cause were
+not captured, so neither stale-binary nor cache causality is established.
+
+The existing Vue parity legacy build now writes its truthful source, binary
+hash and fixed legacy recipe immediately after success. Add only that closed
+recipe mode; default receipts still require the original non-legacy recipe.
+Reject cross-recipe, unknown recipe, source, hash and path mismatches before
+launch. The fixture step explicitly selects the just-built CI LSP, requires
+its source receipt and uses the existing no-cache environment contract. Retain
+the existing complete client/server/stderr capture and receipt on failure,
+including the snapshot caller's source hash. Original expectations, inputs,
+coordinates, timeouts, retries, filters, production and ceilings stay exact.
+The observer retains pending raw evidence; it does not prove internal native
+branches or generated mappings, or grant native-equivalence acceptance.
+Focused Node custody laws pass locally. Fresh successor Actions remain required.
 
 TODO: frozen source peer, current exact-head ordinary Check, existing editor
 packaging/unit and official CLI/real-server Actions, protected full Rust/all104,

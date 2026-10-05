@@ -102,6 +102,8 @@ runs:
           cargo_args+=(--jobs 2)
         fi
         cargo "${cargo_args[@]}"
+        vp exec node tests/differential/build-receipt.mjs --legacy
+        cat target/ci/vize.differential-build.json
         oracle_args=(build --profile ci -p vize_atelier_sfc --features legacy --example cli_build_result_oracle)
         if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
           oracle_args+=(--jobs 2)
@@ -152,7 +154,10 @@ runs:
       shell: bash
       env:
         VIZE_TEST_BIN: target/ci/vize
-      run: vp run --filter './tests' test:check:fixtures
+        VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+        VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+        VIZE_LSP_BUILD_RECIPE: cargo build --profile ci -p vize --features legacy
+      run: vp run --no-cache --filter './tests' test:check:fixtures
 
     # `--no-cache` is load-bearing, not a cache-hygiene preference. A cached
     # Vite+ script receives only the runner's own passthrough set plus the
@@ -233,6 +238,17 @@ runs:
         name: vue-parity-snapshot-differences
         path: tests/snapshots/**/__snapshots__/*.snap.actual
         if-no-files-found: ignore
+        retention-days: 7
+
+    - name: Retain source-built Vue LSP receipt and complete session wires
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: vue-parity-lsp-custody
+        path: |
+          target/ci/vize.differential-build.json
+          target/differential/lsp-sessions/
+        if-no-files-found: error
         retention-days: 7
 
     # `if-no-files-found: error` rather than `warn`: the runner baseline is
