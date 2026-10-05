@@ -49,7 +49,7 @@ fn held_backend(timeout_ms: u64) -> (tempfile::TempDir, ServerState) {
     let backend = root.path().join("held-corsa");
     std::fs::write(
         &backend,
-        "#!/bin/sh\necho $$ >> backend.pids\ncat > /dev/null\n",
+        "#!/bin/sh\necho $$ >> backend.pids\nexec cat > /dev/null\n",
     )
     .unwrap();
     std::fs::set_permissions(&backend, std::fs::Permissions::from_mode(0o755)).unwrap();

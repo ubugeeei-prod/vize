@@ -77,6 +77,9 @@ collection, stale publication with a newer version, and a held-IPC worker
 rejecting an unrelated change; complete resulting notifications are compared
 with a current idle collection. Closed/disabled inverse controls are retained.
 All are prepared but unexecuted; ec18 alone is superseded and ineligible.
+All three held-backend fixtures record their PID and use `exec cat`, so cleanup
+targets the actual sole stdin/IPC owner rather than relying on shell child
+optimization. No production output or complete RPC assertion is weakened.
 
 A project/config/watcher/backend epoch accompanies that source stamp. Stale
 native requests return whole ContentModified, never filtered or clamped edits;

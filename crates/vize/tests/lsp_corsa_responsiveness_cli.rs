@@ -34,7 +34,7 @@ fn workspace(root: &Path) {
     // enters synchronous IPC but cannot finish before the process is released.
     std::fs::write(
         &backend,
-        "#!/bin/sh\necho $$ >> backend.pids\n: > backend.entered\ncat > /dev/null\n",
+        "#!/bin/sh\necho $$ >> backend.pids\n: > backend.entered\nexec cat > /dev/null\n",
     )
     .unwrap();
     std::fs::set_permissions(&backend, std::fs::Permissions::from_mode(0o755)).unwrap();
