@@ -56,7 +56,7 @@ fn actual_prop_owners_survive_utf16_unsaved_defaults_and_same_name_lexical_shado
                 .replace("  status?:", "  /* 😀 */ status?:")
                 .replace(
                     "</script>",
-                    "function label(status: string) { return status; }\n</script>",
+                    "import type { ForeignProps } from \"./foreign.types\";\nfunction label(status: string) { return status; }\n</script>",
                 )
                 .replace(
                     "</template>",

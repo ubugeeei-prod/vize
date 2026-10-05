@@ -25,6 +25,9 @@ type/range. Controls retain imported/local targets, foreign same-name members,
 script parameters, v-for shadows, LF/CRLF, astral source/target positions and
 complete versioned unsaved diagnostic publications. A generator law checks the
 real emitted endpoints after import rewriting and UTF-16 round trips.
+The foreign-interface control imports its dependency into the native program;
+the corpus config matches the strict Vue-root fixture and imports retain their
+TypeScript ownership. Complete original sources and definition targets stay exact.
 
 The first hosted compile caught the new edge in exhaustive protocol and native
 inspection matches. Keep this Vize-only navigation edge out of upstream protocol
