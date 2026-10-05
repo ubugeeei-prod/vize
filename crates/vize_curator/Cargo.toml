@@ -38,3 +38,7 @@ insta.workspace = true
 
 [lints]
 workspace = true
+
+[[test]]
+name = "profile_allocation_isolation"
+harness = false

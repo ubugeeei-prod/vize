@@ -5,6 +5,7 @@ use super::{block_on, uri};
 use crate::server::{ModuleLinkContextError, ServerState};
 #[cfg(feature = "native")]
 mod publication;
+mod ready;
 #[cfg(all(feature = "native", unix))]
 mod targets;
 

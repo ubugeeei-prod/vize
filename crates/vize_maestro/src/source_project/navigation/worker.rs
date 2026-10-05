@@ -19,12 +19,14 @@ mod refusals;
 pub(super) use refusals::refused;
 pub(super) mod highlights;
 pub(super) mod linked;
+pub(super) mod module_links;
 pub(super) mod selected;
 
 pub(super) const WORKER_LIMIT: usize = 16;
 const REQUEST_LIMIT: usize = 16;
 
 pub(super) enum Command {
+    ModuleLinks(module_links::Request),
     Highlights(highlights::Request),
     LinkedEditing(linked::Request),
     TemplateDefinition(

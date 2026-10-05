@@ -62,7 +62,7 @@ current Cell discipline for Curator's scalar marks; no RefCell/lock is needed.
 
 Retain the actual native timing/export law and Curator's six-read law. Add
 controlled caller marks with a counted lazy factory: fused/barrier attribution,
-zero factory calls on non-entry or disabled starts, one returned mark per
+zero factory calls on non-entry, zero marks/timestamps on declined starts, one returned mark per
 completed walk, and exact discard on failure/restart. A non-Copy mark with a
 drop counter proves custody and no retained/double-consumed mark. These are
 lifecycle and real caller contracts, not tests of textual implementation shape.

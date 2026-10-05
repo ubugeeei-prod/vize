@@ -7,6 +7,13 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
+import {
+  assertFailedBuild,
+  type BuildResult,
+  type CompilerObservation,
+  type CompilerOutput,
+  observeCompilerResult,
+} from "../../_helpers/realworld-build-errors.ts";
 import { symlinkDirectory, withPinnedFixtureWorkspace } from "../../_helpers/realworld-patch.ts";
 import {
   type CommandResult,
@@ -43,25 +50,6 @@ const brokenHref = ':href="String(to"';
 const cleanClick = '@click="navigate"';
 const brokenClick = 'v-on:click="navigate"';
 
-type CompilerOutput = {
-  code: string;
-  css: string | null;
-  errors: string[];
-  filename: string;
-  macro_artifacts: unknown[];
-  script_lang: string;
-  warnings: string[];
-};
-
-type BuildResult = {
-  files: string[];
-  output: CompilerOutput;
-  outputText: string;
-  status: number | null;
-  stderr: string;
-  stdout: string;
-};
-
 type LintReport = Array<{
   errorCount: number;
   file: string;
@@ -85,6 +73,8 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
     async (fixture) => {
       const source = fixture.read(appPath);
       const sourceMode = fs.statSync(fixture.resolve(appPath)).mode & 0o777;
+      const observe = () =>
+        observeCompilerResult(fixture.workspaceDir, appPath, resolveVizeCommand()[0]);
       assert.equal(sha256(source), sourceSha256, "pinned Vue Router source changed");
       assert.equal(count(source, cleanHref), 1, "compiler patch anchor must stay unique");
 
@@ -150,15 +140,23 @@ test("Vue Router compiler is deterministic and recovers from an exact expression
       assert.equal(count(output.code, '_renderSlot(_ctx.$slots, "default")'), 2, output.code);
       assert.equal(output.code.includes("RouterLinkProps"), false, output.code);
 
+      assert.equal(
+        observe().outputText,
+        cleanFirst.outputText,
+        "the public SFC API must preserve the original whole CLI serialization",
+      );
+
       const brokenSource = fixture.applyExactPatch(appPath, cleanHref, brokenHref);
       const brokenFirst = runBuild(fixture.workspaceDir, ".vize-compiler-broken-first");
       const brokenSecond = runBuild(fixture.workspaceDir, ".vize-compiler-broken-second");
-      assertBrokenBuild(brokenFirst);
-      assertBrokenBuild(brokenSecond);
+      const compilerFirst = observe();
+      const compilerSecond = observe();
+      assertBrokenBuild(brokenFirst, compilerFirst);
+      assertBrokenBuild(brokenSecond, compilerSecond);
       assert.equal(
-        brokenSecond.outputText,
-        brokenFirst.outputText,
-        "broken output must be byte-stable",
+        compilerSecond.outputText,
+        compilerFirst.outputText,
+        "broken API output must be byte-stable",
       );
       assert.equal(fixture.read(appPath), brokenSource, "compiler must preserve the broken source");
       assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
@@ -420,6 +418,7 @@ function runBuild(workspaceDir: string, outputDirectory: string): BuildResult {
     files.length === 1 ? fs.readFileSync(path.join(outputRoot, files[0]), "utf8") : "";
   return {
     files,
+    outputRoot,
     output: outputText === "" ? ({} as CompilerOutput) : (JSON.parse(outputText) as CompilerOutput),
     outputText,
     status: result.status,
@@ -435,18 +434,17 @@ function assertSuccessfulBuild(result: BuildResult): void {
   assert.deepEqual(result.output.warnings, []);
 }
 
-function assertBrokenBuild(result: BuildResult): void {
-  assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.deepEqual(result.files, ["AppLink.json"]);
-  assert.equal(sha256(result.outputText), brokenOutputSha256);
+function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): void {
+  assertFailedBuild(result, appPath, compiler.output.errors);
+  assert.equal(sha256(compiler.outputText), brokenOutputSha256);
   assert.deepEqual(
     {
-      css: result.output.css,
-      errors: result.output.errors,
-      filename: result.output.filename,
-      macro_artifacts: result.output.macro_artifacts,
-      script_lang: result.output.script_lang,
-      warnings: result.output.warnings,
+      css: compiler.output.css,
+      errors: compiler.output.errors,
+      filename: compiler.output.filename,
+      macro_artifacts: compiler.output.macro_artifacts,
+      script_lang: compiler.output.script_lang,
+      warnings: compiler.output.warnings,
     },
     {
       css: null,
@@ -459,10 +457,10 @@ function assertBrokenBuild(result: BuildResult): void {
       warnings: [],
     },
   );
-  assert.equal(sha256(result.output.code), brokenCodeSha256, result.output.code);
-  assertParsesAsModule(result.output.code, "broken vue-router AppLink.json#code");
-  assert.equal(result.output.code.includes("_createElementBlock"), false, result.output.code);
-  assert.equal(count(result.output.code, "return {"), 1, result.output.code);
+  assert.equal(sha256(compiler.output.code), brokenCodeSha256, compiler.output.code);
+  assertParsesAsModule(compiler.output.code, "broken vue-router AppLink.json#code");
+  assert.equal(compiler.output.code.includes("_createElementBlock"), false, compiler.output.code);
+  assert.equal(count(compiler.output.code, "return {"), 1, compiler.output.code);
 }
 
 type LintResult = {

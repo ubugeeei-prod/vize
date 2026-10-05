@@ -4,6 +4,7 @@ mod highlights;
 mod jsx;
 mod lifecycle;
 mod linked;
+mod module_links;
 mod selected;
 mod vue;
 

@@ -8,6 +8,7 @@ mod cache;
 mod coordinates;
 mod highlights;
 mod linked;
+mod module_links;
 pub(in crate::source_project) mod names;
 pub(in crate::source_project) mod profile;
 mod retained;
@@ -25,6 +26,7 @@ use vize_l1::embed::{Lang, syntax::ProgramOptions};
 use vize_l2::file::{FileIssue, PositionQueryError};
 
 use super::{SnapshotRefusal, SourceQueryProject, SourceSnapshot};
+pub(crate) use module_links::ModuleDocumentLinkError;
 use profile::{Profile, QueryFamily};
 use worker::NavigationWorker;
 

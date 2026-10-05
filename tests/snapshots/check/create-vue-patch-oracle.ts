@@ -7,6 +7,13 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { assertParsesAsModule } from "../../_helpers/assertions.ts";
 import {
+  assertFailedBuild,
+  type BuildResult,
+  type CompilerObservation,
+  type CompilerOutput,
+  observeCompilerResult,
+} from "../../_helpers/realworld-build-errors.ts";
+import {
   createVueBrokenCount,
   createVueCleanCount,
   createVueRepairedCount,
@@ -39,16 +46,6 @@ const brokenHref = "href='https://vuejs.org/'";
 const formattedAnchor = '<a href="https://vuejs.org/" rel="noopener" target="_blank">';
 const brokenFormattedAnchor = '<a href="https://vuejs.org/" rel="noopener"  target="_blank">';
 
-type CompilerOutput = {
-  code: string;
-  css: string | null;
-  errors: string[];
-  filename: string;
-  macro_artifacts: unknown[];
-  script_lang: string;
-  warnings: string[];
-};
-
 type LintReport = Array<{
   errorCount: number;
   file: string;
@@ -72,6 +69,8 @@ test("create-vue compiler is deterministic and recovers from an exact template p
     async (fixture) => {
       const source = fixture.read(appPath);
       const sourceMode = fs.statSync(fixture.resolve(appPath)).mode & 0o777;
+      const observe = () =>
+        observeCompilerResult(fixture.workspaceDir, appPath, resolveVizeCommand()[0]);
       assert.equal(sha256(source), sourceSha256, "pinned create-vue source changed");
 
       const cleanFirst = runBuild(fixture.workspaceDir, ".vize-compiler-clean-first");
@@ -119,15 +118,23 @@ test("create-vue compiler is deterministic and recovers from an exact template p
       }
       assert.equal(count(output.code, "_cache[0] || (_cache[0] = _createElementVNode("), 1);
 
+      assert.equal(
+        observe().outputText,
+        cleanFirst.outputText,
+        "the public SFC API must preserve the original whole CLI serialization",
+      );
+
       const brokenSource = fixture.applyExactPatch(appPath, cleanHeading, brokenHeading);
       const brokenFirst = runBuild(fixture.workspaceDir, ".vize-compiler-broken-first");
       const brokenSecond = runBuild(fixture.workspaceDir, ".vize-compiler-broken-second");
-      assertBrokenBuild(brokenFirst);
-      assertBrokenBuild(brokenSecond);
+      const compilerFirst = observe();
+      const compilerSecond = observe();
+      assertBrokenBuild(brokenFirst, compilerFirst);
+      assertBrokenBuild(brokenSecond, compilerSecond);
       assert.equal(
-        brokenSecond.outputText,
-        brokenFirst.outputText,
-        "broken output must be byte-stable",
+        compilerSecond.outputText,
+        compilerFirst.outputText,
+        "broken API output must be byte-stable",
       );
       assert.equal(fixture.read(appPath), brokenSource, "compiler must preserve the broken source");
       assert.equal(fs.statSync(fixture.resolve(appPath)).mode & 0o777, sourceMode);
@@ -550,15 +557,6 @@ function symlinkVueTypes(workspaceDir: string): void {
   }
 }
 
-type BuildResult = {
-  files: string[];
-  output: CompilerOutput;
-  outputText: string;
-  status: number | null;
-  stderr: string;
-  stdout: string;
-};
-
 function runBuild(workspaceDir: string, outputDirectory: string): BuildResult {
   const [command, ...prefixArgs] = resolveVizeCommand();
   const result = spawnSync(
@@ -586,6 +584,7 @@ function runBuild(workspaceDir: string, outputDirectory: string): BuildResult {
     files.length === 1 ? fs.readFileSync(path.join(outputRoot, files[0]), "utf8") : "";
   return {
     files,
+    outputRoot,
     output: outputText === "" ? ({} as CompilerOutput) : (JSON.parse(outputText) as CompilerOutput),
     outputText,
     status: result.status,
@@ -601,10 +600,9 @@ function assertSuccessfulBuild(result: BuildResult): void {
   assert.deepEqual(result.output.warnings, []);
 }
 
-function assertBrokenBuild(result: BuildResult): void {
-  assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.deepEqual(result.files, ["App.json"]);
-  assert.deepEqual(result.output, {
+function assertBrokenBuild(result: BuildResult, compiler: CompilerObservation): void {
+  assertFailedBuild(result, appPath, compiler.output.errors);
+  assert.deepEqual(compiler.output, {
     filename: "App.vue",
     code: 'export default {\n  __name: "App",\n  setup(__props) {}\n};',
     css: null,
