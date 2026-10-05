@@ -21,7 +21,7 @@ export function runtimeProcessEvidence() {
       phase = next;
       details = { ...details, ...context };
     },
-    failure(error: unknown) {
+    failure: (error: unknown) => {
       try {
         details = {
           ...details,
