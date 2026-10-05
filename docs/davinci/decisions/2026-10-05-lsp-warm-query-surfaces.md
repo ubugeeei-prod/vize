@@ -251,3 +251,12 @@ publication hold; its first cut remains independent.
 The [post-merge finite-cut decision](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5999174391) keeps #8008 open after actual signed #8035 delivery. The source5a42 59.07x observation cannot transfer to the incoming #8049 composition. One existing original400 cell will compare literal published8a source with a root-frozen cut using an independent reviewed driver, four all-or-none SHA/tree/complete-Git-entry-manifest inputs, identical complete ci-profile cleanup and every linked local artifact fresh. The four native feature/profile laws, 534+27 generated sources, 74 complete measured envelopes, 20 warm samples, all controls and raw caps remain fixed. Actual per-source locks and the complete resolved provider graph are recorded. Published8a predates the fixture: driver-owned original bytes generate the identical workload for both sides; the delivered cut retains a matching custody copy.
 
 Both full initialize packets are retained. Only serverInfo.version has a per-source authored release expectation, independently bound to the actual CLI; all other setup fields and every measured response remain exact. All 89 client/server frames and 76 unique responses are required, while asynchronous notifications remain whole observations rather than claimed equal. A public-installed replay requires an explicit publication authority and real installed executable, without a fabricated Cargo receipt or a cross-profile timing ratio. Implementation/source review and the literal-cut execution remain separate; no new run or union performance acceptance has occurred. Startup/config latency, diagnostic timeouts, memory cost and nonrunning versus OS-reaped lifecycle limits remain explicit.
+
+The [finite-cut custody follow-through](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5999523442)
+fixes the concrete 2.53 MB Git tree/default 1 MiB subprocess preparation failure
+with bounded complete Git transport and failed preparation capture. Raw control,
+cut and driver locks plus actual per-side compiler equality and the complete
+locked Linux provider graph remain outside measured windows. A separate closed
+harness-only path authority preserves original inputs and unchanged production;
+its observations establish no speed gain. Public-installed launch/capture and
+fresh source execution remain pending.

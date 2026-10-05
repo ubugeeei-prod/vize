@@ -20,8 +20,26 @@ assert.ok(process.env.RUNNER_TEMP && process.env.GITHUB_WORKSPACE);
 assert.equal(fs.realpathSync(process.env.GITHUB_WORKSPACE), driverRoot);
 
 if (process.argv[2] === "prepare") {
-  const cut = finiteCut();
   const driver = sourceIdentity(driverRoot);
+  assert.ok(
+    !fs.existsSync(before) && !fs.existsSync(output),
+    "fresh owned directories are required",
+  );
+  fs.mkdirSync(output);
+  fs.writeFileSync(
+    path.join(output, "prepare-inputs.json"),
+    `${JSON.stringify({ driver, inputs: Object.fromEntries(["ORIGINAL_CONTROL_SHA", "ORIGINAL_AFTER_SHA", "ORIGINAL_AFTER_TREE", "ORIGINAL_MANIFEST_SHA256"].map((key) => [key, process.env[key] ?? ""])) }, null, 2)}\n`,
+  );
+  let cut: ReturnType<typeof finiteCut>;
+  try {
+    cut = finiteCut(output);
+  } catch (error) {
+    fs.writeFileSync(
+      path.join(output, "prepare-failure.json"),
+      `${JSON.stringify({ error: error instanceof Error ? error.stack : String(error) }, null, 2)}\n`,
+    );
+    throw error;
+  }
   assert.equal(driver.dirty, "");
   if (cut) {
     assert.equal(driver.revision, process.env.GITHUB_SHA, "the dispatch driver must be literal");
@@ -66,15 +84,45 @@ if (process.argv[2] === "prepare") {
     "crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs",
     "crates/vize_canon/src/corsa_bridge/vue_document/types.rs",
   ]);
-  assert.ok(production.length > 0);
+  const harnessOnly = !cut && production.length === 0;
+  if (harnessOnly) {
+    const changed = git(driverRoot, ["diff", "--name-only", baseline, head])
+      .split("\n")
+      .filter(Boolean);
+    assert.ok(changed.length > 0);
+    const harness = new Set([
+      ".github/workflows/davinci-canon-scaling.yml",
+      "tests/tooling/support/lsp/session.ts",
+      "tests/tooling/support/lsp/session-process.ts",
+      "tests/tooling/support/lsp/session-capture.ts",
+      "tests/tooling/support/lsp/published-launch.ts",
+      "docs/davinci/decisions/2026-09-27-level-restructure.md",
+      "docs/davinci/decisions/2026-10-05-lsp-warm-query-surfaces.md",
+    ]);
+    for (const file of changed)
+      assert.ok(
+        harness.has(file) ||
+          /^tests\/performance\/support\/warm-type-backed-[a-z-]+\.ts$/u.test(file),
+        `unqualified harness delta: ${file}`,
+      );
+    for (const [file, digest] of Object.entries(inputAuthority())) {
+      const original = spawnSync(
+        "git",
+        ["show", `${baseline}:tests/_fixtures/differential/lsp/warm-type-backed-requests/${file}`],
+        { cwd: driverRoot },
+      );
+      assert.equal(original.status, 0, original.stderr.toString());
+      assert.equal(
+        sha256(original.stdout),
+        digest,
+        "harness qualification preserves every original input",
+      );
+    }
+  } else assert.ok(production.length > 0);
   if (!cut) {
     for (const file of production)
       assert.ok(allowed.has(file), `unqualified production delta: ${file}`);
   }
-  assert.ok(
-    !fs.existsSync(before) && !fs.existsSync(output),
-    "fresh owned directories are required",
-  );
   const result = spawnSync("git", ["worktree", "add", "--detach", before, baseline], {
     cwd: driverRoot,
     encoding: "utf8",
@@ -88,7 +136,22 @@ if (process.argv[2] === "prepare") {
     });
     assert.equal(after.status, 0, after.stderr);
   }
-  fs.mkdirSync(output);
+  for (const [side, root] of [
+    ["before", before],
+    ["after", afterRoot],
+    ["driver", driverRoot],
+  ]) {
+    const directory = path.join(output, "source-locks", side);
+    fs.mkdirSync(directory, { recursive: true });
+    for (const file of [
+      "Cargo.toml",
+      "Cargo.lock",
+      "package.json",
+      "pnpm-lock.yaml",
+      "rust-toolchain.toml",
+    ])
+      fs.copyFileSync(path.join(root, file), path.join(directory, file));
+  }
   fs.writeFileSync(
     path.join(output, "workflow-source.json"),
     JSON.stringify(
@@ -99,7 +162,11 @@ if (process.argv[2] === "prepare") {
         production,
         afterRoot,
         driverSource: driver,
-        authority: cut ? "root-frozen-release-cut" : "owned-source-pr",
+        authority: cut
+          ? "root-frozen-release-cut"
+          : harnessOnly
+            ? "harness-only-qualification"
+            : "owned-source-pr",
         finiteCut: cut,
         originals: inputAuthority(),
         runner: {
@@ -125,7 +192,9 @@ if (process.argv[2] === "prepare") {
         ),
         scope: cut
           ? "Literal published v0.433 and root-frozen release cut; complete changed Git-entry manifest, independent driver, identical fresh ci builds, original400 and one recorded runtime"
-          : "Actual common ancestor and current source, only owned prepared-surface production delta; one worker, identical ci recipe, original400 inputs and current locked runtime",
+          : harnessOnly
+            ? "Same production source; closed reviewed harness-only delta and unchanged original inputs/locks. Qualification only, no performance or source-effect gain."
+            : "Actual common ancestor and current source, only owned prepared-surface production delta; one worker, identical ci recipe, original400 inputs and current locked runtime",
       },
       null,
       2,

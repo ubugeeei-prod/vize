@@ -62,6 +62,12 @@ export function runtimeIdentity() {
       stderr: probe.stderr,
     },
     resolvedPackageGraph: runtimeGraph([vueManifest, runtimeManifest]),
+    nativeSiblingSdkRoot: fs.realpathSync(path.join(path.dirname(runtimeManifest), "lib")),
+    driverLock: {
+      path: path.join(driverRoot, "pnpm-lock.yaml"),
+      sha256: sha256(fs.readFileSync(path.join(driverRoot, "pnpm-lock.yaml"))),
+      content: fs.readFileSync(path.join(driverRoot, "pnpm-lock.yaml"), "utf8"),
+    },
     reportedVueVersion: "3.5.41",
     dependencyQualification:
       "actual locked dependency graph; reported package version is historical",
