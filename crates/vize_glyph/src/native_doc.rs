@@ -39,6 +39,9 @@ pub use selected_template::{
     ObservedNativeTemplateFailureParts, ObservedNativeTemplateRefusal, native_template_document,
     observed_native_template_document, observed_native_template_document_with_policy,
 };
+pub use selected_template::{
+    ObservedNativeTemplateBindingFailureParts, ObservedNativeTemplateBindingParts,
+};
 pub use sfc::NativeSfcDirectivePolicy;
 pub use sfc::{
     NativeSfcBlockRole, NativeSfcObservation, NativeSfcOptions, NativeSfcRefusal,
@@ -54,4 +57,13 @@ pub use vue2_text::{Vue2TextDocument, Vue2TextDocumentRefusal, vue2_text_documen
 mod vue1_text;
 pub use vue1_text::{
     Vue1TextDocument, Vue1TextDocumentRefusal, Vue1TextPrintRefusal, vue1_text_document,
+};
+
+#[path = "native_doc/vue2_sfc.rs"]
+mod vue2_sfc;
+#[path = "native_doc/vue2_template.rs"]
+mod vue2_template;
+pub use vue2_sfc::{
+    NativeVue2SfcNode, NativeVue2SfcObservation, NativeVue2SfcOptions, NativeVue2SfcRefusal,
+    observe_native_vue2_sfc_in,
 };

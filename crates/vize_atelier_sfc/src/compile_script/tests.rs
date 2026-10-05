@@ -381,7 +381,7 @@ const msg = 'ready'
     }
 
     #[test]
-    fn test_compile_script_setup_strips_define_page_meta() {
+    fn test_compile_script_setup_preserves_define_page_meta_outside_nuxt() {
         let content = r#"
 definePageMeta({
   name: 'docs',
@@ -397,8 +397,8 @@ const msg = 'ready'
                 .unwrap();
 
         assert!(
-            !result.code.contains("definePageMeta"),
-            "definePageMeta should be removed from runtime output:\n{}",
+            result.code.contains("definePageMeta"),
+            "definePageMeta should remain in ordinary runtime output:\n{}",
             result.code
         );
         assert!(result.code.contains("ready"));

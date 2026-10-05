@@ -2,8 +2,8 @@
 //!
 //! Common utilities used across script compilation modules.
 
+use crate::compile_script::macros::runtime_erased_macro_names;
 use vize_carton::{String, ToCompactString};
-use vize_croquis::macros::runtime_erased_macro_names;
 
 /// Macro definitions found in script setup
 #[derive(Debug, Default)]

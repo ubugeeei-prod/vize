@@ -11,6 +11,7 @@ use super::super::PrintOptions;
 pub enum NativeSfcDirectivePolicy {
     Refuse,
     FormatConditionals,
+    FormatConditionalsAndStaticBindings,
 }
 
 /// The native family uses these policies directly, without legacy option conversion.

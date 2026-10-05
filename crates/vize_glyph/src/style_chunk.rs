@@ -9,14 +9,19 @@ pub(super) fn format_chunk(trimmed: &str, options: &FormatOptions) -> Result<Str
             format_chunk_once(source, options)
         })?;
     let formatted = colors.restore(formatted);
+    // Complete layout equality also proves authored tokens and groups survived.
+    if formatted.as_str().trim() == trimmed {
+        return Ok(formatted);
+    }
     // The CSS printer also performs syntax and value normalization. A formatter
     // must never silently change browser support or the scoped selector target.
     // Format only structural whitespace when the print changes authored CSS.
-    if super::authored::changes_authored_css(trimmed, formatted.as_str()) {
-        Ok(super::authored::format_layout_only(trimmed, options))
+    let formatted = if super::authored::changes_authored_css(trimmed, formatted.as_str()) {
+        super::authored::format_layout_only(trimmed, options)
     } else {
-        Ok(formatted)
-    }
+        formatted
+    };
+    Ok(super::blank_lines::preserve(trimmed, formatted, options))
 }
 
 fn format_chunk_once(trimmed: &str, options: &FormatOptions) -> Result<String, FormatError> {

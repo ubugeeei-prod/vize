@@ -1,0 +1,79 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "e5143d4f2bf69f6ba1fbb5180cebcf4776130f2b",
+  "product": "compiler",
+  "cases": [
+    {
+      "id": "compiler/sfc/ssr-slot-forwarding-original",
+      "state": "active",
+      "targets": ["dom", "ssr", "vapor"],
+      "inputs": {
+        "files": [
+          {
+            "path": "ssr-slot-forwarding/App.vue.txt",
+            "sha256": "8633501a997ae13c0bfc19867665109bc3ed5a198cb6316c0a34aff8acf41b52",
+            "role": "entry"
+          },
+          {
+            "path": "ssr-slot-forwarding/Forward.vue.txt",
+            "sha256": "0354ef9f1f20a5f730397602494a8a521b42728b7a6002850cba244e686f6c86",
+            "role": "entry"
+          },
+          {
+            "path": "ssr-slot-forwarding/Inner.vue.txt",
+            "sha256": "ebdd8e7ede250977408bede18530dbc89a56f015f8a37aaa84382c118110438c",
+            "role": "entry"
+          },
+          {
+            "path": "ssr-slot-forwarding/InnerNamed.vue.txt",
+            "sha256": "8ec6e045b31f439f14dc8ad69c7a49ce67080ae7ad46115405a046ae2ee4a565",
+            "role": "entry"
+          },
+          {
+            "path": "ssr-slot-forwarding/original-issue.md",
+            "sha256": "e9c4d3258923065aac175bd84ada935b167867eb187549789042c62fb8afc37e",
+            "role": "reporter-reproduction"
+          }
+        ]
+      },
+      "reference": {
+        "path": "ssr-slot-forwarding/runtime.expected.json",
+        "sha256": "26a5081b25e68e9caf1498f298fa4f5acc0b64d7cbac34c1384d8df783ddf1c6",
+        "source": "crates/vize_atelier_sfc/tests/ssr_slot_forwarding.rs:original_forwarding_defaults_render_like_whole_official_sfc_components"
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/7890",
+        "reporter": "ubugeeei",
+        "existingFix": "https://github.com/ubugeeei-prod/vize/pull/7853",
+        "versions": {
+          "vizeReported": "0.432.0",
+          "vueReported": "3.6.0-rc.10",
+          "vueRuntime": "3.6.0-rc.9",
+          "pluginVue": "6.0.7"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-whole-sfc-slot-forwarding-runtime-v1",
+        "native": null,
+        "reasons": {
+          "native": "Existing SFC compiler/runtime regression proof; no native-stage or default-readiness credit."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-whole-slot-forwarding-component-v1",
+        "requiredFacets": [
+          "whole-original-forward-default",
+          "complete-public-results",
+          "maps-additive",
+          "whole-stock-default-reference",
+          "complete-ssr-push-html",
+          "complete-ssr-vnode-html",
+          "production-dom",
+          "production-vapor-dom",
+          "documented-vapor-ssr-fallback"
+        ]
+      }
+    }
+  ]
+}

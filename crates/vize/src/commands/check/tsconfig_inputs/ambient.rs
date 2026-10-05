@@ -64,9 +64,33 @@ pub(crate) fn collect_hidden_ambient_declaration_files(
     // tsconfig include. Keep them as graph roots even though they are already
     // visible inputs: their referenced files still need to enter the mirror.
     let files = collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
+    let reference_roots = files
+        .iter()
+        .filter(|path| {
+            !visible.contains(*path)
+                && is_declaration_file(path)
+                && fs::read_to_string(path).is_ok_and(|content| {
+                    is_reference_manifest_declaration(&content)
+                        && content
+                            .lines()
+                            .any(|line| reference_path_attribute(line).is_some())
+                })
+        })
+        .cloned()
+        .collect::<Vec<_>>();
     let explicit_type_declarations =
         collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
-    collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations)
+    let mut declarations =
+        collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations);
+    // A hidden configured path-reference manifest owns its declaration graph
+    // even though it has no ambient declarations of its own. Canon follows
+    // its module imports; keep missing references too so TS6053 stays visible.
+    for path in reference_roots {
+        if !declarations.contains(&path) {
+            declarations.push(path);
+        }
+    }
+    declarations
         .into_iter()
         .filter(|path| !visible.contains(path))
         .collect()
@@ -300,3 +324,7 @@ fn is_shadowed_vue_package_specifier(specifier: &str) -> bool {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+#[path = "ambient/path_manifest_tests.rs"]
+mod path_manifest_tests;

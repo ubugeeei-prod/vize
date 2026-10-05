@@ -211,7 +211,7 @@ void test("canonical report controls keep pure T0, full T1, stale-success deleti
   const build = source.indexOf("buildProductObserver({");
   const raw = source.indexOf('"unaccepted-capture.json"');
   const write = source.indexOf("fs.writeFileSync(comparisonPath");
-  const validate = source.indexOf("validateFocusCurrentComparison(root");
+  const validate = source.indexOf("validateFocusNativeComparison(root");
   const aggregate = source.indexOf("assert.deepEqual(");
   assert(
     staleDelete >= 0 &&
@@ -222,7 +222,7 @@ void test("canonical report controls keep pure T0, full T1, stale-success deleti
       validate < aggregate,
   );
   assert.equal(source.split("buildProductObserver({").length - 1, 1);
-  assert.equal(source.split("runFocusCapture({").length - 1, 1);
+  assert.equal(source.split("runFocusCurrentCapture({").length - 1, 1);
 });
 
 void test("a failed or missing capture cannot inherit an old successful current-output match", () => {

@@ -112,8 +112,8 @@ pub struct TransformContext<'a> {
     /// Enables compatibility for template syntax edge-case behavior.
     pub(crate) template_syntax_quirks: bool,
     pub(crate) jsx_compat: JsxTransformCompat,
-    /// Node was removed flag
-    pub(crate) node_removed: bool,
+    /// Deferred node removal, including branch whitespace from this index.
+    pub(crate) node_removed_from: Option<usize>,
     /// Semantic analysis summary (optional, for enhanced transforms)
     pub(crate) analysis: Option<&'a Croquis>,
     /// Scope ID to bake into static VNodes hoisted outside render scope.

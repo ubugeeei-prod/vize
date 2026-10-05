@@ -5,6 +5,7 @@ use names::{
     spread_writes_back,
 };
 
+mod reassignment;
 mod records;
 mod sources;
 
@@ -213,6 +214,7 @@ pub fn check_reactive_plain_assignment_alias(
     }
 
     let Some(value) = sources::reactive_plain_identifier_value_from_expr(result, init) else {
+        reassignment::clear_replaced_origin(result, target_name);
         return;
     };
     if value.argument_name.as_str() == target_name {
@@ -234,8 +236,7 @@ pub fn check_reactive_plain_assignment_alias(
     );
 }
 
-/// Check writes like `alias = value` or `alias.count = value` where `alias`
-/// is already a plain snapshot of reactive state.
+/// Check member writes through a plain snapshot of reactive state.
 #[inline]
 pub fn check_reactive_plain_assignment_mutation(
     result: &mut ScriptParseResult,
@@ -259,8 +260,7 @@ pub fn check_reactive_plain_assignment_mutation(
     );
 }
 
-/// Check updates like `alias++` or `alias.count++` where `alias` is already a
-/// plain snapshot of reactive state.
+/// Check updates of plain-snapshot bindings or their members.
 #[inline]
 pub fn check_reactive_plain_update_mutation(
     result: &mut ScriptParseResult,

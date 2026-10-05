@@ -17,6 +17,38 @@ use vize_carton::String;
 use super::super::build::css_module_block_type;
 use crate::virtual_ts::{VizeMapping, push_ts_string_literal};
 
+/// Vue Language Tools' `__VLS_StyleScopedClasses`: the class names the SFC's
+/// styles declare, as `boolean` members, for a template that checks `:class`
+/// bindings against them. It is a module-level alias appended after every
+/// mapped byte, so it shifts no mapping and is visible from the template
+/// scope like any other module type. It only exists for a file that names it,
+/// so no other file pays for it, and one object literal keeps the type
+/// identical to the literal an author compares it with.
+pub(super) fn append_style_scoped_classes(
+    code: &mut vize_carton::String,
+    source: &str,
+    descriptor: &SfcDescriptor,
+    check_options: crate::virtual_ts::VirtualTsCheckOptions,
+) {
+    if !source.contains("__VLS_StyleScopedClasses") {
+        return;
+    }
+    let names = super::super::build::style_scoped_class_names(
+        descriptor,
+        check_options.resolve_style_class_names,
+    );
+    if names.is_empty() {
+        return;
+    }
+    code.push_str("\ntype __VLS_StyleScopedClasses = {");
+    for name in &names {
+        code.push(' ');
+        crate::virtual_ts::push_ts_string_literal(code, name.as_str());
+        code.push_str(": boolean;");
+    }
+    code.push_str(" };\nvoid ({} as __VLS_StyleScopedClasses);\n");
+}
+
 pub(super) fn append_duplicate_style_modules(
     code: &mut String,
     mappings: &mut Vec<VizeMapping>,

@@ -160,9 +160,14 @@ impl HoverService {
             return Some(hover);
         }
 
-        if let Some(mut hover) = canonical::hover(ctx, corsa_bridge.as_ref(), false).await {
-            super::declaration_keyword::align_hover(ctx, &word, &mut hover);
-            return Some(hover);
+        if let Some(answer) = canonical::hover(ctx, corsa_bridge.as_ref(), false).await {
+            return match answer {
+                canonical::Answer::Empty => None,
+                canonical::Answer::Hover(mut hover) => {
+                    super::declaration_keyword::align_hover(ctx, &word, &mut hover);
+                    Some(hover)
+                }
+            };
         }
 
         if word.is_empty() {

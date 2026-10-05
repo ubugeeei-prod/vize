@@ -80,3 +80,21 @@ assert.notDeepEqual(
 );
 
 console.log("vite-plugin-vize compile option tests passed!");
+
+for (const nuxtPageMeta of [true, false]) {
+  assert.equal(
+    buildCompileFileOptions("Page.vue", { ...batchInput, nuxtPageMeta }).nuxtPageMeta,
+    nuxtPageMeta,
+  );
+  assert.equal(
+    buildCompileBatchOptions({ ...batchInput, nuxtPageMeta }).nuxtPageMeta,
+    nuxtPageMeta,
+  );
+}
+assert.equal(fileOptions.nuxtPageMeta, undefined);
+assert.equal(batchOptions.nuxtPageMeta, undefined);
+assert.notDeepEqual(
+  buildCompileBatchOptions({ ...batchInput, nuxtPageMeta: true }),
+  batchOptions,
+  "precompile cache identity must distinguish Nuxt macro extraction",
+);

@@ -77,6 +77,13 @@ fn run() -> Result<(), String> {
     }
     let mut template_count = 0usize;
     let mut expression_count = 0usize;
+    for file in glob_files(&root, &["tests/fuzz/regressions/js_ts_expression/*"])? {
+        write_seed(
+            &expression_dir,
+            &fs::read(&file).map_err(|error| format!("cannot read {}: {error}", file.display()))?,
+        )?;
+        expression_count += 1;
+    }
     let mut program_count = 0usize;
     for file in glob_files(&root, &["tests/fuzz/regressions/l1_program/*"])? {
         let input =

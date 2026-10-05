@@ -184,3 +184,59 @@ and all original malformed caller/dependency/lock/golden controls still fail.
 Production exporter/assembly/Curator/native state, schemas, clocks and all104
 caps remain exact. Fresh exact-source Actions are required; the coordinated
 v0.433 admission hold, protected proof and actual merge remain pending.
+
+## Provider delivery on current main (2026-10-05)
+
+Resume the existing provider #7812 in native Stack #7814 after the coordinated
+publication fence was lifted. The current-main replay uses literal signed
+`4e4c8c977d7052edbb6a2b42808ddc6e7b59f3bf`, retaining the five original
+provider commits and their authors. Its reviewed facade, assembly, four whole
+snapshot laws and exact replay/negative guards remain byte-identical to
+`92225b3798afd3e3d97925c1279a0599d2c735e6`; all incoming main decisions remain
+present and the canonical record stays at 350 lines.
+
+Historical [Check 37201980329](https://github.com/ubugeeei-prod/vize/actions/runs/37201980329)
+qualified that original source. It does not qualify this delivery successor.
+Require fresh exact-head source Actions and owning Rust laws before making the
+existing layer Ready. The dependent Curator #7813 must retain this actual
+provider as its ancestor and genuine Stack #7814 position 2. Admit only the
+highest fully qualified contiguous prefix with native `gh stack merge`, then
+verify each protected candidate's full Rust/differential suites, all 104 probes
+measured three times, unchanged actual-parent ratchets and signed actual merge.
+
+The issue reporter is the publicly verified `ubugeeei` account, user ID
+71201308. This meaningful current-main delivery record carries its explicit
+coauthor trailer without rewriting the original implementation history. Pair
+this decision with #6834. Unavailable observations remain null, native exporter
+read/assembly ordering and supplied telemetry stay exact; no CPU result or 10x
+claim follows. Native clocks, TLS/locks, arena/recursion, IO and full platform
+isolation remain unfinished, so #6834 remains open.
+
+## Genuine consumer delivery on current main (2026-10-05)
+
+The existing Curator #7813 is reconciled onto its actual provider delivery
+`66dfac15e7a9eed8ce9a11c4aef17ca4138ad106`, which contains literal signed main
+`4e4c8c977d7052edbb6a2b42808ddc6e7b59f3bf`. Retain the six original Stack
+implementation commits and authors. Only the canonical decision paragraph
+needed composition: keep the original consumer contract, the provider delivery
+clause and every incoming main decision at the unchanged 350-line cap.
+All original non-document provider/consumer source, whole snapshot and actual
+System session laws, original ten-span JSON and exact replay guards remain
+byte-identical to the qualified `b0389ca7909b04d4aea26b5def66e09bab0009a4`.
+
+Historical [Check 37201997587](https://github.com/ubugeeei-prod/vize/actions/runs/37201997587)
+qualified the previous complete source, not this successor. Fresh exact-head
+Actions must execute all four provider laws and the genuine isolated native
+allocation/counter session control along with the original timing/wire laws.
+Verify GitHub native Stack #7814 positions 1/2 and actual provider ancestry,
+then make only the fully qualified contiguous prefix Ready and use native
+`gh stack merge 7813 --yes --squash`. Each current protected candidate still
+requires full Rust/differential suites, all 104 instruction probes measured
+three times, unchanged parent ratchets and actual signed merges.
+
+This meaningful delivery record pairs with #6834 and carries the verified
+reporter account 71201308 as an explicit coauthor without history rewriting.
+The sole local duration aggregate, existing clock reads and telemetry wire
+contract remain exact; reports may allocate. No native-stage adoption, CPU or
+10x result, complete std/platform isolation or issue closure follows. Native
+Timer/TLS/locks and the other recorded platform boundaries remain unfinished.

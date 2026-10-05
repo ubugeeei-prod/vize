@@ -43,8 +43,9 @@ pub(crate) use canonical::{
     matching_component_prop_navigation_positions, materialized_semantic_positions,
     merge_canonical_workspace_edits, open_canonical_script_document,
     open_canonical_virtual_document, open_canonical_virtual_document_strict,
-    open_canonical_virtual_project_document, open_canonical_virtual_project_document_strict,
-    open_canonical_virtual_workspace_document, tower_range,
+    open_canonical_virtual_navigation_project_document_strict,
+    open_canonical_virtual_project_document, open_canonical_virtual_workspace_document,
+    tower_range,
 };
 pub(crate) use html_attribute::{
     html_attribute_request_path, html_attribute_virtual_document, native_dom_attribute_info,

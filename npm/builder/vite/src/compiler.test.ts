@@ -528,7 +528,7 @@ const msg = "hello";
 const definePageMetaCompiled = compileFile(
   "/src/pages/docs.vue",
   new Map(),
-  { sourceMap: false, ssr: false, vapor: false },
+  { sourceMap: false, ssr: false, vapor: false, nuxtPageMeta: true },
   definePageMetaSource,
 );
 

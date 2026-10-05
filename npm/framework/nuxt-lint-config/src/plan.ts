@@ -104,6 +104,7 @@ function pageFiles(dirs: NuxtLintDirs): string[] {
 export function buildNuxtLintPlan(
   features: ResolvedNuxtLintFeatures,
   dirs: NuxtLintDirs,
+  nuxtVersion: 2 | 3 | 4 = 3,
 ): NuxtLintConfigItem[] {
   const items: NuxtLintConfigItem[] = [];
 
@@ -124,15 +125,19 @@ export function buildNuxtLintPlan(
     });
   }
 
-  items.push({ name: "nuxt/rules", rules: { "nuxt/prefer-import-meta": "error" } });
+  // Nuxt 2 uses process.client/server and does not extract definePageMeta.
+  // Keep the existing modern default for standalone callers without a runtime.
+  if (nuxtVersion !== 2) {
+    items.push({ name: "nuxt/rules", rules: { "nuxt/prefer-import-meta": "error" } });
 
-  const pages = pageFiles(dirs);
-  if (pages.length > 0) {
-    items.push({
-      name: "nuxt/pages",
-      files: pages,
-      rules: { "nuxt/no-page-meta-runtime-values": "error" },
-    });
+    const pages = pageFiles(dirs);
+    if (pages.length > 0) {
+      items.push({
+        name: "nuxt/pages",
+        files: pages,
+        rules: { "nuxt/no-page-meta-runtime-values": "error" },
+      });
+    }
   }
 
   items.push({

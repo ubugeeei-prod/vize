@@ -1,4 +1,4 @@
-//! Mutable root For eligibility on the existing authentic rows and frames.
+//! Root For tracking modes on the existing authentic rows and frames.
 
 use super::super::{DomBuilder, DomChild, DomChildren, DomExpressionFacts, DomFrame};
 use crate::decision::dom::{
@@ -17,13 +17,13 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         node: NodeId,
         row: &DomFileForHead<'owner, 'arena>,
     ) -> bool {
-        if !R::ORIGINAL_FOR
-            || row.collection_read().map(|read| read.kind) != Some(VueReadKind::SetupLet)
-        {
-            // Preserve old generic/constant Operation refusals and positive
-            // collection custody; the stable constant branch is not implemented.
+        if !R::ORIGINAL_FOR {
             return false;
         }
+        let kind = match row.collection_read().map(|read| read.kind) {
+            Some(kind @ (VueReadKind::SetupConst | VueReadKind::SetupLet)) => kind,
+            _ => return false,
+        };
         let span = row.original().span;
         if !self.frames.is_empty() || self.root_count != 1 || row.resolution().key().is_some() {
             self.reject(node, span, DomUnsupported::ForShape);
@@ -38,7 +38,7 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         let source = row.collection().file().artifact().source();
         // The policy holds the actual selected setup and checks same-File/unit/
         // direct-declaration membership. PrimitiveLiteral is not a numeric type.
-        if self.reads.classify(occurrence, row.collection()) != Some(VueReadKind::SetupLet)
+        if self.reads.classify(occurrence, row.collection()) != Some(kind)
             || identifier.name.as_str() != occurrence.name
             || source.get(authored.start as usize..authored.end as usize) != Some(occurrence.name)
         {
@@ -79,7 +79,15 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
             .last()
             .is_some_and(|(_, frame)| matches!(frame.node.op, Op::OriginalFor(_)));
         match op {
-            Op::Element(element) if carrier && element.attributes.is_empty() => true,
+            Op::Element(element) if carrier && element.attributes.is_empty() => {
+                // Stable lists track their direct vnodes in the outer Fragment;
+                // mutable lists disable tracking and each carrier is a block.
+                !self.frames.first().is_some_and(|(root, _)| {
+                    self.facts.file_for_heads.get(*root).is_some_and(|row| {
+                        row.collection_read().map(|read| read.kind) == Some(VueReadKind::SetupConst)
+                    })
+                })
+            }
             Op::Text(_) if !carrier => false,
             // The original interpolation must still pass the same-scope value
             // receipt and single-node closure below; this grants no outer read.
@@ -99,11 +107,14 @@ impl<'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>>
         if !frame.node.block_eligible || !matches!(frame.node.op, Op::OriginalFor(_)) {
             return;
         }
-        // The direct Element already closed on this same walk; this is one
-        // table lookup, never another body or child traversal.
+        let stable = self.facts.file_for_heads.get(node).is_some_and(|row| {
+            row.collection_read().map(|read| read.kind) == Some(VueReadKind::SetupConst)
+        });
+        // The direct Element already closed on this same walk; these are
+        // existing table lookups, never another body or child traversal.
         let valid = match frame.children.as_slice() {
             [DomChild::Node(body)] => self.facts.node(*body).is_some_and(|fact| {
-                fact.block_eligible
+                fact.block_eligible != stable
                     && matches!(fact.op(), Op::Element(element) if element.attributes.is_empty())
                     && match &fact.children {
                         DomChildren::Empty => true,

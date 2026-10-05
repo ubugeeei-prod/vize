@@ -77,7 +77,7 @@ pub use structural::{ForWrapper, WrapperAttr, WrapperClass, WrapperKey, WrapperK
 pub use vfor::split_v_for_value;
 // The one-rebuild rule (the same discipline): compound text facts and
 // their opaque display spelling share one construction rule.
-pub use text::{TextPart, TextParts, rebuild_source};
+pub use text::{TextPart, TextParts, branch_gap_text, rebuild_source};
 pub(crate) use text::{legacy_slot_filler_needs_props_placeholder, legacy_slot_filler_text};
 
 /// The L2 artifact one lowering produces: the op tree plus the three

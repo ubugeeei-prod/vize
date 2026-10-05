@@ -1,0 +1,5 @@
+<Suspense>
+  <div v-if="a" />
+  <B v-else-if="b" />
+  <C v-else />
+</Suspense>

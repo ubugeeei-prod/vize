@@ -34,8 +34,11 @@ impl VirtualProject {
         &self,
         expected_files: &FxHashSet<PathBuf>,
     ) -> Vec<PackageNodeModulesLink> {
-        let mut links = self.package_node_modules_links(expected_files);
-        links.extend(self.package_shadow_dependency_links(expected_files));
+        let mut claims = expected_files.clone();
+        claims.extend(self.workspace_alias_claims());
+        let mut links = self.package_node_modules_links(&claims);
+        links.extend(self.package_shadow_dependency_links(&claims));
+        links.extend(self.workspace_alias_links());
         links.sort_by(|left, right| {
             (&left.virtual_dir, &left.real_dir).cmp(&(&right.virtual_dir, &right.real_dir))
         });
@@ -50,9 +53,15 @@ impl VirtualProject {
         let links = self.package_links_for_files(expected_files);
         let mut desired = vize_carton::FxHashMap::default();
         for link in links {
-            let real_dir = std::fs::canonicalize(&link.real_dir)
-                .map(vize_carton::path::normalize_windows_verbatim_path)
-                .unwrap_or_else(|_| vize_carton::path::canonicalize_non_verbatim(&link.real_dir));
+            let real_dir = if self.authored_workspace_alias_target(&link.real_dir) {
+                link.real_dir
+            } else {
+                std::fs::canonicalize(&link.real_dir)
+                    .map(vize_carton::path::normalize_windows_verbatim_path)
+                    .unwrap_or_else(|_| {
+                        vize_carton::path::canonicalize_non_verbatim(&link.real_dir)
+                    })
+            };
             desired.entry(link.virtual_dir).or_insert(real_dir);
         }
         desired

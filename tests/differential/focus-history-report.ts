@@ -8,7 +8,7 @@ import {
   validateFocusProbe,
 } from "./focus-history.ts";
 
-function keys(value: any, expected: string[]) {
+export function keys(value: any, expected: string[]) {
   assert(value && typeof value === "object" && !Array.isArray(value));
   assert.deepEqual(
     Object.keys(value).sort(),
@@ -17,7 +17,7 @@ function keys(value: any, expected: string[]) {
   );
 }
 
-function processShape(attempt: any) {
+export function processShape(attempt: any) {
   keys(attempt, [
     "stdoutBase64",
     "stdoutSha256",

@@ -8,6 +8,7 @@ mod coverage;
 mod custody;
 mod geometry;
 mod interruption;
+mod jsx;
 mod profiles;
 
 fn moved<T>(owner: T) -> T {

@@ -1,7 +1,6 @@
 name: PR source checks
 on: { workflow_call: null }
-permissions:
-  contents: read
+permissions: { contents: read }
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -74,6 +73,7 @@ jobs:
         run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json" --github-output
   pr-rust-source:
     name: PR Rust Clippy, tests, and fixtures
+    permissions: { contents: read, actions: read }
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     needs: pr-source-plan
     uses: ./.github/workflows/pr-rust-checks.yml
@@ -219,7 +219,7 @@ jobs:
         uses: ./.github/actions/test-native-selected-template
       - name: Join original historical Vue interpolation Docs to pinned whole goldens
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
-        uses: ./.github/actions/test-native-historical-text-documents
+        uses: ./.github/actions/test-native-historical-sfc-documents
         with:
           comparison-base: ${{ needs.pr-source-plan.outputs.comparison-base }}
       - name: Test tooling scripts

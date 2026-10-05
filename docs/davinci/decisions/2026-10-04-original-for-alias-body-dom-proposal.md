@@ -223,3 +223,11 @@ every executable production/law/model/old-pack/runtime/action/selector byte.
 Prior successful subsets remain exact30c-only; fresh automatic source acceptance,
 official publication queue hold, protected104 and actual signed merge are still
 required. No local Rust or broad manual campaign is run.
+
+## Actual protected acceptance
+
+[Terminal acceptance](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5977092987) records actual #7744 signed merge `9cd429de` at05:50:16Z, after exact7d source Check37178620926 and released-main6987 composition were green and official0.431 publication was verified. Protected Check37180286122/all39 jobs, Musea and Nuxt succeeded. Four genuine full workspace archive workers provide 15,454 passing executions, zero failure/skip and all nine new laws once; strict Clippy, workspace/privacy docs and configured differential suites pass. The latter retain smoke/closure_evidence=false, with no history closure.
+
+Fresh protected artifact11294204116 independently proves all six whole native JS/TS modules, complete object/serialized raw maps, current-source hashes and actual pinned Vue initialization/update/unmount/TEXT1/UNKEYED256. Every old10For/7setup/5click capture/runtime file remains byte-identical accepted2df. All104 complete rows are identical across three runs; independent review joins312 raw Callgrind dumps, allocator preinitialization, original-source fixture/window/binary identity, immutable current/base caps and both ratchets. Complexity5774; formatter292335/273491/928935/244006. No budget was raised.
+
+Actual basec772 plus authored7d reproduces acceptedtree4d066 exactly, fresh main retains signed9cd and no owned queue entry remains. Earlier failed source receipts retain their historical scope. This bounded current-value singleton grants no outer/literal/mixed/grouped/nested/key/attribute/constant/generic/other-target, default/history or legacy deletion credit. No local Rust, additional broad campaign or qualified-source churn occurred.

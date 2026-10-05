@@ -88,7 +88,7 @@ const msg = 'ready'
 }
 
 #[test]
-fn skips_define_page_meta() {
+fn preserves_define_page_meta_outside_nuxt() {
     let content = r#"definePageMeta({
   name: 'docs',
   meta: {
@@ -100,7 +100,13 @@ const msg = 'ready'
 "#;
     let (_, setup, module) = extract_script_sections(content, true).unwrap();
 
-    assert_eq!(setup.as_slice(), ["const msg = 'ready'"]);
+    assert_eq!(
+        setup,
+        content
+            .lines()
+            .filter(|line| !line.trim().is_empty())
+            .collect::<Vec<_>>()
+    );
     assert!(module.is_empty());
 }
 

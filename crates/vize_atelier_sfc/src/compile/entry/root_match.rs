@@ -25,6 +25,7 @@ pub(super) fn compile_sfc_inner(
     codegen_options: CodegenOptions,
     script_output: SfcScriptOutputMode,
     experimental_options: SfcCompileExperimentalOptions,
+    nuxt_page_meta: bool,
     capture: Option<&mut StageCapture>,
 ) -> Result<SfcCompileResult, SfcError> {
     let descriptor = prepare_root_patterned_template(
@@ -50,6 +51,7 @@ pub(super) fn compile_sfc_inner(
         codegen_options,
         script_output,
         experimental_options,
+        nuxt_page_meta,
         capture,
     )
 }

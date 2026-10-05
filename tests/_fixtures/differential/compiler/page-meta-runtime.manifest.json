@@ -1,0 +1,101 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "d1a25ec1da2efca98534520ff8ebe84d34708e3d",
+  "product": "compiler",
+  "cases": [
+    {
+      "id": "compiler/sfc/page-meta-runtime",
+      "state": "active",
+      "targets": ["dom", "ssr", "vapor"],
+      "inputs": {
+        "root": "page-meta-runtime",
+        "files": [
+          {
+            "path": "Page.vue.txt",
+            "sha256": "34a8e6ffe36f1ba098ffb1606c1628f06d112f7f91c5e0fe547cd4c9e1a3cfd8",
+            "role": "entry"
+          },
+          {
+            "path": "alias.vue.txt",
+            "sha256": "ed35de8f14c92f7c2d784596ea56f006efee94b5ceae918323fab143126ee14b",
+            "role": "entry"
+          },
+          {
+            "path": "global.vue.txt",
+            "sha256": "1f730b8857ca9c716938149580612f410642ac43756b094376221bd1c63537f6",
+            "role": "entry"
+          },
+          {
+            "path": "local.vue.txt",
+            "sha256": "da26811256a4351d71ddcf39b085bfd6122526089f014933eb55dc383d433cd9",
+            "role": "entry"
+          },
+          {
+            "path": "mixed.vue.txt",
+            "sha256": "7636b61bf8c6124451c64012e1d386b74c525dc6f8886ead7ed818263491e0f6",
+            "role": "entry"
+          },
+          {
+            "path": "original-issue.md",
+            "sha256": "11e6df0a2832fea43fbd58b094ca1e77bb8932ed77bff17090099a09ab863183",
+            "role": "reporter-reproduction"
+          },
+          {
+            "path": "original-nuxt-issue.md",
+            "sha256": "9f1f7a8ea88e01ae1c3c47212ba0f6367bb88362d04517b0db8087fbd710e538",
+            "role": "reporter-reproduction"
+          },
+          {
+            "path": "reproduction.mjs.txt",
+            "sha256": "304b94f4d29c5e513cb8703144b878fad11d1a4212da6634a89b43f1d34106a9",
+            "role": "reporter-reproduction"
+          },
+          {
+            "path": "shadowed.vue.txt",
+            "sha256": "77a8e272b124b39c09d2cea46eb9084dbafc7e00a499c3ee16dd74923b980def",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "page-meta-runtime/runtime.expected.json",
+        "sha256": "bbf7fa4543225e5fccefe388c959273442fceff80c19677e6a69b5effe3583af",
+        "source": "crates/vize_atelier_sfc/tests/page_meta_runtime.rs:original_page_meta_calls_mount_and_ssr_like_the_official_compiler"
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/7821",
+        "reporter": "ubugeeei",
+        "nuxtControl": "https://github.com/ubugeeei-prod/vize/issues/7035",
+        "versions": {
+          "vize": "0.432.0",
+          "vueReported": "3.5.41",
+          "vueRuntime": "3.5.35",
+          "vaporRuntime": "3.6.0-rc.9",
+          "nuxtIntegration": "3.19.3"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-whole-sfc-page-meta-runtime-v1",
+        "native": null,
+        "reasons": {
+          "native": "Original SFC component setup and macro ownership are exercised through the existing compiler; this correction makes no native-stage or default-readiness claim."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-whole-component-and-page-meta-runtime-v1",
+        "requiredFacets": [
+          "complete-default-component",
+          "runtime-call-and-middleware-result",
+          "production-dom",
+          "complete-ssr-html",
+          "production-vapor-dom",
+          "explicit-nuxt-route-metadata",
+          "local-binding-preservation",
+          "maps-additive",
+          "documented-vapor-ssr-fallback"
+        ]
+      }
+    }
+  ]
+}

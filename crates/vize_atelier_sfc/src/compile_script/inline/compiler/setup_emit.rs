@@ -74,6 +74,7 @@ pub(super) fn emit_setup_body(
     setup_body_lines: &[String],
     source_is_ts: bool,
     _is_ts: bool,
+    is_vapor: bool,
     is_async: bool,
     css_vars: &[Cow<'_, str>],
     scope_id: &str,
@@ -157,9 +158,13 @@ pub(super) fn emit_setup_body(
         output.extend_from_slice(b" = _useSlots()\n");
     }
 
-    // useCssVars injection for v-bind() in <style>
+    // SSR's existing VDOM fallback keeps the VDOM helper.
     if has_css_vars {
-        output.extend_from_slice(b"_useCssVars(_ctx => ({\n");
+        output.extend_from_slice(if is_vapor {
+            b"_useVaporCssVars(_ctx => ({\n"
+        } else {
+            b"_useCssVars(_ctx => ({\n"
+        });
         for (i, var_expr) in css_vars.iter().enumerate() {
             let var_name = if is_prod {
                 crate::css::prod_scoped_v_bind_name(css_vars_id, var_expr)
