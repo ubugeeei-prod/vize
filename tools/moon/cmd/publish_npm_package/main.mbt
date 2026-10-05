@@ -362,7 +362,7 @@ async fn run_app() -> Int {
       )
     }
     let publish_detail = stdout_text + "\n" + stderr_text
-    if publish_detail.contains("Cannot publish over previously staged version") {
+    if is_staged_publish_error(publish_detail) {
       println(
         "\{info.name}@\{info.version} is staged in npm but not yet visible. Waiting for registry visibility before retrying.",
       )
