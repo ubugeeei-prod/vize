@@ -1,5 +1,7 @@
 //! Affected-scope ownership for materialized package dependency links.
 
+mod path_owners;
+
 use std::path::{Path, PathBuf};
 
 use vize_carton::{FxHashMap, FxHashSet};
@@ -21,12 +23,12 @@ impl VirtualProject {
     pub(super) fn track_materialized_link_path(&mut self, path: &Path) {
         let (scopes, targets) = self.package_link_scopes_for_path(path);
         for scope in scopes {
-            if self
-                .package_link_scope_files
-                .entry(scope.clone())
-                .or_default()
-                .insert(path.to_path_buf())
-            {
+            if path_owners::retain_scope_path(
+                self.package_link_scope_files
+                    .entry(scope.clone())
+                    .or_default(),
+                path,
+            ) {
                 self.incremental_package_link_scopes.insert(scope);
             }
         }
@@ -47,10 +49,7 @@ impl VirtualProject {
             let remove = self
                 .package_link_scope_files
                 .get_mut(&scope)
-                .is_some_and(|files| {
-                    files.remove(path);
-                    files.is_empty()
-                });
+                .is_some_and(|files| path_owners::release_scope_path(files, path));
             if remove {
                 self.package_link_scope_files.remove(&scope);
             }
@@ -82,26 +81,26 @@ impl VirtualProject {
         key: &PackageRouteKey,
         topology: &PackageShadowTopology,
     ) {
-        let Some(route) = self
-            .package_routes
-            .get(key)
-            .and_then(|binding| binding.route.as_ref())
-        else {
-            return;
-        };
         let mut scopes = Vec::new();
-        for nested in route.all_routes() {
-            let real_dir = nested.package_root.join("node_modules");
-            for (manifest, original) in &topology.manifests {
-                if original != &nested.manifest_path {
-                    continue;
-                }
-                let Some(shadow_root) = manifest.parent() else {
-                    continue;
-                };
-                scopes.push((shadow_root.join("node_modules"), real_dir.clone()));
-            }
+        // Bare dependencies pinned by this owner are not necessarily nested
+        // routes of its top-level package. Their known physical manifests
+        // carry the same dependency scopes that the cold materializer sees.
+        for (manifest, original) in &topology.manifests {
+            let Some(real_root) = original
+                .parent()
+                .filter(|root| self.package_route_roots.contains_key(*root))
+            else {
+                continue;
+            };
+            let Some(shadow_root) = manifest.parent() else {
+                continue;
+            };
+            scopes.push((
+                shadow_root.join("node_modules"),
+                real_root.join("node_modules"),
+            ));
         }
+        self.install_workspace_alias_scopes(topology, &mut scopes);
         scopes.sort();
         scopes.dedup();
         for (scope, target) in &scopes {
@@ -110,13 +109,18 @@ impl VirtualProject {
         self.package_shadow_link_scopes.insert(key.clone(), scopes);
     }
 
-    pub(super) fn remove_package_shadow_link_scopes(&mut self, key: &PackageRouteKey) {
+    pub(super) fn remove_package_shadow_link_scopes(
+        &mut self,
+        key: &PackageRouteKey,
+        aliases: &FxHashMap<PathBuf, PathBuf>,
+    ) {
         let Some(scopes) = self.package_shadow_link_scopes.remove(key) else {
             return;
         };
         for (scope, target) in scopes {
             self.remove_package_link_target(&scope, &target);
         }
+        self.remove_workspace_alias_claims(aliases);
     }
 
     pub(super) fn prepare_incremental_package_link_patch(&self) -> PackageLinkPatch {
@@ -236,6 +240,9 @@ impl VirtualProject {
     }
 
     fn package_links_for_scope(&self, scope: &Path) -> FxHashMap<PathBuf, PathBuf> {
+        if let Some(aliases) = self.direct_workspace_alias_for_scope(scope) {
+            return aliases;
+        }
         let Some(targets) = self.package_link_scope_targets.get(scope) else {
             return FxHashMap::default();
         };
@@ -251,7 +258,10 @@ impl VirtualProject {
         merge_aware_node_modules_links(
             &real_dir,
             scope,
-            files.into_iter().flatten().map(PathBuf::as_path),
+            files
+                .into_iter()
+                .flat_map(|files| files.keys())
+                .map(PathBuf::as_path),
         )
         .into_iter()
         .map(|link| (link.virtual_dir, canonical_link_target(&link.real_dir)))

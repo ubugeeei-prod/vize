@@ -57,7 +57,7 @@ pub(super) async fn references(
     // component-library-sized workspace and cannot add hits.
     let document_only = !ctx.state.lsp_features().cross_file;
     let document = if document_only || is_script_setup_local_binding(ctx) {
-        corsa_support::open_canonical_virtual_project_document_strict(ctx, bridge)
+        corsa_support::open_canonical_virtual_navigation_project_document_strict(ctx, bridge)
             .await
             .ok()
             .flatten()?
@@ -104,9 +104,8 @@ pub(super) async fn references(
     }
     let mut mapped = corsa_support::map_canonical_corsa_locations(ctx, &document, locations);
     mapped.extend(style_locations(ctx, &document, &mapped));
-    // The default project surface already contains open reverse importers.
-    // A component prop's navigation identity can therefore reach its parent
-    // attributes without the opt-in workspace-wide Vue scan.
+    // Public component props include unopened configured-project consumers;
+    // ordinary document-only queries retain their original local boundary.
     if document_only && !has_component_prop_navigation {
         mapped.retain(|location| location.uri == *ctx.uri);
     }
@@ -149,37 +148,7 @@ async fn component_prop_references(
     // TypeScript does not follow that edge onward to the child's template
     // binding. Ask for references at the mapped declaration as well.
     let mut positions = matches.positions.clone();
-    for definition in &matches.authored_definitions {
-        let source = if definition.uri == *ctx.uri {
-            Some(ctx.content.clone())
-        } else {
-            document
-                .authored_source(&definition.uri)
-                .map(str::to_owned)
-                .or_else(|| ctx.state.documents.text(&definition.uri))
-                .or_else(|| {
-                    definition
-                        .uri
-                        .to_file_path()
-                        .ok()
-                        .and_then(|path| std::fs::read_to_string(path).ok())
-                })
-        };
-        let Some(offset) = source.as_deref().and_then(|source| {
-            crate::ide::position_to_offset(
-                source,
-                definition.range.start.line,
-                definition.range.start.character,
-            )
-        }) else {
-            continue;
-        };
-        positions.extend(corsa_support::materialized_semantic_positions(
-            document,
-            &definition.uri,
-            offset,
-        ));
-    }
+    positions.extend(matches.authored_definition_positions(ctx, document));
     positions.sort_by(|left, right| {
         (&left.request_uri, left.line, left.character).cmp(&(
             &right.request_uri,

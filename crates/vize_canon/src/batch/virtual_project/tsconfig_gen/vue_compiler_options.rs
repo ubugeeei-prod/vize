@@ -30,6 +30,8 @@ impl VirtualProject {
     pub(in super::super) fn refresh_vue_compiler_options(&mut self) {
         let path = self.resolved_tsconfig_path();
         let options = self.load_vue_compiler_options(path.as_deref()).ok();
+        self.typed_router.root =
+            super::super::typed_router::configured_root(self, options.as_ref(), path.as_deref());
         self.virtual_ts_check_options.check_unknown_props = if path.is_none() {
             true
         } else {

@@ -79,6 +79,9 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
         id: NodeId,
         op: &'owner Op<'arena>,
         owner_span: Option<Span>,
+        original_values: &mut Option<
+            crate::decision::attribute_value::OriginalAttributeCursor<'owner, 'arena>,
+        >,
     ) -> Result<(), super::super::DecisionBuildError> {
         let span = NodeRef::Op(op).span();
         let branch_root = if let Some((_, frame)) = self.frames.last_mut()
@@ -92,44 +95,57 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
             || self.prepare_for_body(id, op)
             || (self.frames.is_empty() && self.root_count == 1 && matches!(op, Op::Element(_)));
         let conditional = self.prepare_conditional(id, op);
-        let text =
-            match op {
-                Op::Text(_) => Some(false),
-                Op::Interpolation(interpolation) => Some(
-                    self.value(id, interpolation.expression)
-                        .is_some_and(ValueKind::is_dynamic),
-                ),
-                Op::Element(element) => {
-                    if element.namespace != Namespace::Html {
-                        self.reject(id, span, DomUnsupported::Namespace);
-                    }
-                    // Neutral HTML custody does not grant a Vue component
-                    // role. The pinned Vue 3 DOM family resolves `search` as
-                    // a component; retain this actual node as a target hole.
-                    if element.tag == "search" {
-                        self.reject(id, span, DomUnsupported::ElementRole);
-                    }
-                    if element.attributes.iter().any(|attribute| {
+        let text = match op {
+            Op::Text(_) => Some(false),
+            Op::Interpolation(interpolation) => Some(
+                self.value(id, interpolation.expression)
+                    .is_some_and(ValueKind::is_dynamic),
+            ),
+            Op::Element(element) => {
+                if element.namespace != Namespace::Html {
+                    self.reject(id, span, DomUnsupported::Namespace);
+                }
+                // Neutral HTML custody does not grant a Vue component
+                // role. The pinned Vue 3 DOM family resolves `search` as
+                // a component; retain this actual node as a target hole.
+                if element.tag == "search" {
+                    self.reject(id, span, DomUnsupported::ElementRole);
+                }
+                // Complete original entries already refuse these names in
+                // L2. Generic routes retain their old short-circuit policy;
+                // a later name admission must consume suffix slots here.
+                if element
+                    .attributes
+                    .iter()
+                    .enumerate()
+                    .any(|(slot, attribute)| {
+                        crate::decision::attribute_value::observe(
+                            original_values,
+                            id,
+                            element,
+                            slot,
+                        );
                         matches!(attribute.name, "class" | "style" | "key" | "ref")
-                    }) {
-                        self.reject(id, span, DomUnsupported::SpecialAttribute);
-                    }
-                    None
+                    })
+                {
+                    self.reject(id, span, DomUnsupported::SpecialAttribute);
                 }
-                Op::Comment(_) => None,
-                Op::If(_) => None,
-                Op::OriginalFor(original) => {
-                    block_eligible = self.record_for_head(id, original);
-                    if !block_eligible {
-                        self.reject(id, span, DomUnsupported::Operation);
-                    }
-                    None
-                }
-                Op::Component(_) | Op::For(_) | Op::Slot(_) => {
+                None
+            }
+            Op::Comment(_) => None,
+            Op::If(_) => None,
+            Op::OriginalFor(original) => {
+                block_eligible = self.record_for_head(id, original);
+                if !block_eligible {
                     self.reject(id, span, DomUnsupported::Operation);
-                    None
                 }
-            };
+                None
+            }
+            Op::Component(_) | Op::For(_) | Op::Slot(_) => {
+                self.reject(id, span, DomUnsupported::Operation);
+                None
+            }
+        };
         if !self
             .frames
             .last()

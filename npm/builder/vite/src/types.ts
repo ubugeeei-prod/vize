@@ -154,6 +154,9 @@ export interface VizeOptions extends ExperimentalPluginOptions {
    */
   vapor?: boolean;
 
+  /** Extract Nuxt page metadata; the Nuxt integration enables this explicitly. */
+  nuxtPageMeta?: boolean;
+
   /**
    * Default output mode for `.jsx`/`.tsx` components without a `"use vue:*"`
    * directive. Distinct from `vapor` (which targets `.vue` SFCs): a project can

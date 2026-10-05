@@ -44,14 +44,21 @@ impl<'p, 'a, I: Input<'p, 'a>> Builder<'p, 'a, I> {
                         .ok_or(TemplateRefusal::SourceMismatch {
                             offset: self.cursor.offset,
                         })?;
-                    open_element(
-                        element.surface(),
-                        parts,
-                        &mut self.cursor,
-                        self.allocator,
-                        depth,
-                        &self.values,
-                    )?;
+                    if self.values.formats_conditionals() && super::conditional::eligible(&element)
+                    {
+                        super::conditional::open_element(self, &element, parts, depth)?;
+                    } else {
+                        // Preserve the old strict/opaque visit order for recovered
+                        // or verbatim headers; this is only negative routing.
+                        open_element(
+                            element.surface(),
+                            parts,
+                            &mut self.cursor,
+                            self.allocator,
+                            depth,
+                            &self.values,
+                        )?;
+                    }
                     self.children(element.children(), parts, depth + 1)?;
                     close_element(element.surface(), parts, &mut self.cursor)?;
                 }

@@ -22,11 +22,16 @@ pub fn compile_sfc(
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
         StyleCompileOptions, TemplateCompileOptions,
-        compile_sfc_for_adapter_with_experimental_options as sfc_compile_for_adapter,
-        parse_sfc as sfc_parse,
+        compile_sfc_for_adapter_with_experimental_options,
+        compile_sfc_for_adapter_with_nuxt_page_meta, parse_sfc as sfc_parse,
     };
 
     let opts = options.unwrap_or_default();
+    let sfc_compile_for_adapter = if opts.nuxt_page_meta.unwrap_or(false) {
+        compile_sfc_for_adapter_with_nuxt_page_meta
+    } else {
+        compile_sfc_for_adapter_with_experimental_options
+    };
     let filename: vize_l0::CompactString =
         opts.filename.as_deref().unwrap_or("anonymous.vue").into();
     let parse_opts = SfcParseOptions {

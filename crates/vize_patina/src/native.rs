@@ -10,6 +10,7 @@ use vize_l0::{
 };
 use vize_l1::markup::{NativeElement, NativeLintTagRefusal, NativeTemplateComponent};
 
+mod admission;
 mod aria_unsupported_elements;
 mod attribute;
 pub mod child_facts;
@@ -22,6 +23,7 @@ mod iframe_has_title;
 mod img_alt;
 mod inline_style;
 mod no_v_html;
+pub mod sfc;
 mod tabindex_no_positive;
 pub mod template;
 mod textarea_mustache;

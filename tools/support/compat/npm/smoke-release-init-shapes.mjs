@@ -18,6 +18,7 @@ export const FRESH_INIT_MATRIX = [
   { packageManager: "npm", shape: "vite-vue-ts", projectDirectory: "vite vue 日本語" },
   { packageManager: "npm", shape: "vite-vue-js-checkjs" },
   { packageManager: "pnpm", shape: "vite-vue-ts" },
+  { packageManager: "pnpm", shape: "vite-vue-js-checkjs" },
   { packageManager: "yarn", shape: "vite-vue-ts" },
   { packageManager: "bun", shape: "vite-vue-ts" },
   { packageManager: "vp", shape: "vite-plus-vue-ts" },

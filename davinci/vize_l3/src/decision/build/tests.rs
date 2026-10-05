@@ -13,6 +13,7 @@ fn builder(
 ) -> Builder<'static, 'static, 'static, super::LiteralExpressions, super::NoReads> {
     Builder {
         policy: TargetPolicy::Ssr,
+        original_attributes: None,
         node_count,
         frames: Default::default(),
         nodes: SideTable::new(),

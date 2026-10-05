@@ -3,6 +3,9 @@
 use clap::Args;
 use std::path::PathBuf;
 
+mod progress;
+use progress::ReadyProgress;
+
 use crate::commands::{
     build::{BuildArgs, OutputFormat, ScriptExtension},
     check::CheckArgs,
@@ -66,10 +69,10 @@ pub fn run(args: ReadyArgs) {
     }
 
     let patterns = ready_patterns(&args.patterns);
+    let mut progress = ReadyProgress::new();
 
     #[cfg(feature = "glyph")]
-    {
-        eprintln!("vize ready: fmt");
+    progress.stage("fmt", "Format", || {
         crate::commands::fmt::run(FmtArgs {
             patterns: patterns.clone(),
             check: false,
@@ -88,60 +91,64 @@ pub fn run(args: ReadyArgs) {
             profile: false,
             slow_threshold: 100,
         });
-    }
-
-    eprintln!("vize ready: lint");
-    crate::commands::lint::run(LintArgs {
-        patterns: patterns
-            .iter()
-            .map(|pattern| pattern.to_compact_string())
-            .collect(),
-        fix: false,
-        config: args.config.clone(),
-        no_config: args.no_config,
-        format: "text".into(),
-        locale: "en".into(),
-        max_warnings: None,
-        quiet: false,
-        help_level: "full".into(),
-        preset: None,
-        cross_file: false,
-        cross_file_tree: false,
-        cross_file_complexity: false,
-        type_aware: false,
-        strict_reactivity: false,
-        profile: false,
-        slow_threshold: 100,
-        profile_export: Default::default(),
     });
 
-    eprintln!("vize ready: check");
-    crate::commands::check::run(check_args(&args));
-
-    eprintln!("vize ready: build");
-    crate::commands::build::run(BuildArgs {
-        patterns,
-        output: args.output,
-        config: args.config,
-        no_config: args.no_config,
-        format: OutputFormat::Js,
-        ssr: args.ssr,
-        vapor: false,
-        custom_renderer: false,
-        custom_elements: Vec::new(),
-        template_syntax: None,
-        script_ext: args.script_ext,
-        declaration: false,
-        declaration_dir: None,
-        threads: None,
-        profile: false,
-        slow_threshold: 100,
-        continue_on_error: false,
-        dump_dir: None,
-        dump_after_change: false,
-        davinci_inject_panic: None,
-        profile_export: Default::default(),
+    progress.stage("lint", "Lint", || {
+        crate::commands::lint::run(LintArgs {
+            patterns: patterns
+                .iter()
+                .map(|pattern| pattern.to_compact_string())
+                .collect(),
+            fix: false,
+            config: args.config.clone(),
+            no_config: args.no_config,
+            format: "text".into(),
+            locale: "en".into(),
+            max_warnings: None,
+            quiet: false,
+            help_level: "full".into(),
+            preset: None,
+            cross_file: false,
+            cross_file_tree: false,
+            cross_file_complexity: false,
+            type_aware: false,
+            strict_reactivity: false,
+            profile: false,
+            slow_threshold: 100,
+            profile_export: Default::default(),
+        })
     });
+
+    progress.stage("check", "Type check", || {
+        crate::commands::check::run(check_args(&args))
+    });
+
+    progress.stage("build", "Build", || {
+        crate::commands::build::run(BuildArgs {
+            patterns,
+            output: args.output,
+            config: args.config,
+            no_config: args.no_config,
+            format: OutputFormat::Js,
+            ssr: args.ssr,
+            vapor: false,
+            custom_renderer: false,
+            custom_elements: Vec::new(),
+            template_syntax: None,
+            script_ext: args.script_ext,
+            declaration: false,
+            declaration_dir: None,
+            threads: None,
+            profile: false,
+            slow_threshold: 100,
+            continue_on_error: false,
+            dump_dir: None,
+            dump_after_change: false,
+            davinci_inject_panic: None,
+            profile_export: Default::default(),
+        })
+    });
+    progress.finish();
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]

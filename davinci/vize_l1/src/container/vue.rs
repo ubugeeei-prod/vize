@@ -14,8 +14,15 @@ mod scan;
 pub use descriptor::{
     AdmittedDescriptor, DescriptorIssue, DescriptorIssueCode, DescriptorObservation,
     DescriptorOptions, DescriptorRefusal, NativeTemplateFrameNameRefusal, NativeTemplateFrameNames,
-    ScriptRole, ScriptView, StyleView, TemplateView,
+    ScriptRole, ScriptView, StyleView, TemplateView, Vue1DescriptorObservation,
+    Vue1DescriptorRefusal, Vue1TemplateView, Vue2DescriptorObservation, Vue2DescriptorRefusal,
+    Vue2TemplateView,
 };
+
+#[cfg(test)]
+pub(crate) use descriptor::vue1::hooks as vue1_entry_hooks;
+#[cfg(test)]
+pub(crate) use descriptor::vue2::hooks as vue2_entry_hooks;
 
 use scan::{MatchedClose, find_bytes, find_close, find_template_close, read_open};
 
@@ -43,6 +50,10 @@ fn split_with<'a>(
     source: &'a str,
     mut observe: impl FnMut(usize, &Block<'a>, bool, bool, Option<MatchedClose>),
 ) -> Container<'a> {
+    #[cfg(test)]
+    vue1_entry_hooks::splitter_entry();
+    #[cfg(test)]
+    vue2_entry_hooks::splitter_entry();
     let mut result = Container {
         source,
         blocks: Vec::new_in(&allocator),

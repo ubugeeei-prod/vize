@@ -178,6 +178,28 @@ fn declared_prop_names_preserve_complete_original_diagnostics() {
     );
 }
 
+#[test]
+fn component_v_for_source_preserves_complete_original_diagnostics() {
+    check_pack(
+        "v-for-component-source-original",
+        "component_v_for_source_preserves_complete_original_diagnostics",
+        "04aedfb8e8b41dfae89fe65256e2703fc3718cf3",
+        Some(3818),
+        &["complete-original-component-callback"],
+    );
+}
+
+#[test]
+fn template_suppression_preserves_complete_original_diagnostics() {
+    check_pack(
+        "template-suppression-original",
+        "template_suppression_preserves_complete_original_diagnostics",
+        "e199979dfb32dfd8eb9ad32a2928fb010768f239",
+        Some(6009),
+        &["complete-original-template-suppression"],
+    );
+}
+
 fn check_pack(
     name: &str,
     test: &str,
@@ -206,7 +228,9 @@ fn check_pack(
             | "authored-unused-symbols"
             | "split-script-original"
             | "v-for-source-original"
-            | "declared-prop-names-original" => regression,
+            | "v-for-component-source-original"
+            | "declared-prop-names-original"
+            | "template-suppression-original" => regression,
             _ => "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
         }
     );

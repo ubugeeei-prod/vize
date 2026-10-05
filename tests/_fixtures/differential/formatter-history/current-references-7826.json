@@ -1,0 +1,30 @@
+{
+  "schema": "vize.formatter-current-reference-refinements",
+  "version": 1,
+  "issue": 7826,
+  "cases": [
+    {
+      "id": "capture/style-block-keeps-box-values-and-implicit-nested-selectors/sfc/0",
+      "api": "format_sfc",
+      "witness": {
+        "function": "style_block_keeps_box_values_and_implicit_nested_selectors",
+        "inputExpressionRangeUtf16": [
+          9531,
+          10057
+        ],
+        "inputExpressionRangeBytes": [
+          9531,
+          10057
+        ],
+        "path": "crates/vize_glyph/src/style.rs",
+        "sourceSha256": "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61"
+      },
+      "inputSha256": "c6532257a2cfa6bf988ced53ccc1cbc208a04a775b3efd81102ac52c4bd964ef",
+      "historicalExpectedSha256": "83a16896ba2557fb7d502b60a384e513cde36104ff8d0641c56f2b6df4ab4d39",
+      "currentExpected": "<template>\n  <hr />\n</template>\n\n<style scoped>\nhr {\n  border: solid;\n  border-width: thin 0 0 0;\n  margin: 0 0 0 0;\n}\n\n.wrap {\n  color: red;\n\n  .item {\n    color: blue;\n  }\n}\n</style>\n",
+      "currentExpectedSha256": "c6532257a2cfa6bf988ced53ccc1cbc208a04a775b3efd81102ac52c4bd964ef",
+      "provenance": "independently authored whole SFC reference; original input, 184-byte historical output and strict mismatch remain immutable",
+      "justification": "Restore only the authored LF separating the .wrap declaration from its implicit nested .item rule; preserve all original five declaration values, selectors, template, scoped attribute and remaining whole SFC bytes. Full source-built three-pass output and ordinary 27-case/nine-CLI controls remain mandatory."
+    }
+  ]
+}

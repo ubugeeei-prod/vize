@@ -6,6 +6,9 @@
 //! retained lane's calls print beside them; interleaved timings live in the
 //! P3-6 evidence record. Improvements ratchet a ceiling down; nothing raises
 //! one.
+//!
+//! This standalone nextest-discoverable test runs the unchanged measured body
+//! on process main so libtest reporting cannot overlap its global counters.
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 #![expect(
@@ -80,7 +83,41 @@ fn calls(source: &str, davinci_retained_lane: bool) -> u64 {
     .calls
 }
 
-#[test]
+const CASE: &str = "native_lane_stays_within_its_allocation_ceilings";
+
+fn main() -> Result<(), &'static str> {
+    let mut args = std::env::args().skip(1);
+    let (mut list, mut ignored, mut exact) = (false, false, false);
+    let mut filter = None;
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--list" => list = true,
+            "--ignored" => ignored = true,
+            "--exact" => exact = true,
+            "--nocapture" => {}
+            "--format" if args.next().as_deref() == Some("terse") => {}
+            value if !value.starts_with('-') && filter.is_none() => filter = Some(arg),
+            _ => return Err("unsupported harness argument"),
+        }
+    }
+    let selected = filter.as_ref().is_none_or(|filter| {
+        if exact {
+            filter == CASE
+        } else {
+            CASE.contains(filter)
+        }
+    });
+    if ignored || !selected {
+        return Ok(());
+    }
+    if list {
+        println!("{CASE}: test");
+        return Ok(());
+    }
+    native_lane_stays_within_its_allocation_ceilings();
+    Ok(())
+}
+
 fn native_lane_stays_within_its_allocation_ceilings() {
     mark_installed();
     let mut failures = Vec::new();

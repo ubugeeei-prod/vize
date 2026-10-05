@@ -256,3 +256,49 @@ contract, so it becomes an explicit positive and the negative moves to the
 adjacent `dom_unrelated` root. This preserves the selector policy and all native
 goldens/refusals; fresh exact-head Actions and protected acceptance remain
 required, with the failed draft never queued.
+
+## Qualified source and corrected queue prefix
+
+Exact source7b Check37170496458 is terminal SUCCESS. All 15,272 Rust executions
+pass without failures/skips, each of the seven new laws runs once, and the strict
+builder passes the owner privacy/lifetime docs. Fresh source artifact11290947543
+retains ten complete actual modules, whole map objects and serialized map strings;
+every source/code/map/raw-map hash joins current Rust output to real pinned Vue
+initialization, mutation and unmount. The old seven setup/five click payloads are
+exact, and independent same-head source/capture/API review is clear.
+
+Protected candidatec194 Check37171070123 failed formatter simple/reuse at
+293649/274797 versus unchanged293575/274723 caps, each identical three times.
+Own7695 was promptly dequeued. Authenticated before-For prefixb50
+Check37171010927 has the identical complete four formatter rows, protocol,
+fixture hashes and windows; the For delta adds zero measured formatter cost.
+The c194 native ten/seven/five packets remain exact source7b payloads, but this
+failed candidate grants no whole acceptance. Different binaries are not called
+identical. The old CRLF prefix is withdrawn, and newcandidate2df againstb481
+excludes that production change. This is a changed candidate premise, not an
+unchanged failed rerun: current protected full suites, all104 raw rows×3, maps,
+runtime and actual signed merge remain required. No cap or oracle is relaxed.
+
+## Terminal bounded delivery
+
+PR7695 actually merged at2026-10-04 02:51:56UTC as signed-valid
+`2df4fd212b365884170e8637890c085ddfa36066`; its queue entry is null and freshly
+fetched main contains the exact commit. The accepted baseb481 plus authored7b
+dry union reproduces actual tree012d41ed exactly. Protected Check37171538839,
+Musea37171538632 and Nuxt37171538540 are terminalSUCCESS; all39 Check jobs finish
+without failure. Four full archive workers contain15,320 executions with zero
+failures/skips, each of the seven new laws once. Strict workspace Clippy, owner
+privacy/lifetime docs, native parity and merge differential corpora pass.
+
+The actual100 level+4 formatter rows remain identical three times with unchanged
+registries/caps and both ratchets: complexity5774≤5781, formatter
+293575/274723/929044/244347. Protected native artifact11291328402 retains all six
+complete packet files byte-equal to qualified source7b, including the ten whole
+For modules, object/serialized maps, current-source hash joins and real pinned
+Vue initialization, mutation and unmount. Prior seven/five payloads remain exact.
+The b50/c194 failed-cap history remains above; no failed proof is transferred.
+
+This completes only the bounded mutable original For/static-body DOM slice.
+SetupConst/STABLE64, original alias-read bodies, nested/keyed/mixed/component/
+slot/ref controls, other targets and whole compiler/default/history migration
+remain unfinished or precisely refused. No broader roadmap issue is closed.

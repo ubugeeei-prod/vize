@@ -58,7 +58,8 @@ impl Rule for ComponentDefinitionNameCasing {
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
         let filename = ctx.filename;
-        if !filename.ends_with(".vue") {
+        // Musea Art files describe variants, not component definitions.
+        if !filename.ends_with(".vue") || filename.ends_with(".art.vue") {
             return;
         }
 

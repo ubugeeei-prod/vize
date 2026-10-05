@@ -83,6 +83,7 @@ export type CompileOptionsForRequest = {
   sourceMap: boolean;
   ssr: boolean;
   vapor: boolean;
+  nuxtPageMeta?: boolean;
   mode?: "module" | "function";
   customRenderer: boolean;
   customElements?: string[];
@@ -129,6 +130,9 @@ export function getCompileOptionsForRequest(
     ...resolvePluginVueCompileOptions(mergedOptions ?? {}),
   };
 
+  if (mergedOptions?.nuxtPageMeta !== undefined) {
+    options.nuxtPageMeta = mergedOptions.nuxtPageMeta;
+  }
   if (mergedOptions?.customElements !== undefined) {
     options.customElements = mergedOptions.customElements;
   }

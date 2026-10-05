@@ -3,8 +3,18 @@
 This records the read-only readiness plan for #6842 and #6882 after actual
 Vue 2 custody merge #7690, followed by the reviewed original borrowed
 provider. Root authorized this bounded provider for independent publication
-after complete source/law review. Hosted execution and protected acceptance
-remain pending; native formatter and historical runtime are unfinished.
+after complete source/law review. The provider actually merged signed
+`264c7d0740` as #7726 after source/full/all-104 protected acceptance. Terminal
+#6842 comment 5976281003 and #6882 comment 5976281152 supersede the historical
+publication-stage pending status below. Native formatter and historical
+runtime are unfinished; the [private original TextView Doc consumer plan](./2026-10-04-vue2-original-text-document.md)
+now records the separately reviewed design and authorized private consumer source,
+whose complete source/law review is now CLEAR before authorized draft
+publication and automatic source Actions. Its first
+source freeze is held only for the peer-found owned Glyph inventory omission;
+the authentic generated-only correction retains every original source/law byte.
+Its provider is now actual main, so that independent successor does not need
+to fabricate the pre-merge provider Stack described in the historical plan below.
 
 ## Literal source and delivered lower custody
 
@@ -77,8 +87,8 @@ carrier, or replace parser admission with `.expression()` plus a hole flag.
 
 ## Lowest ready provider: borrowed parser authority
 
-The following original proposal is implemented and source-reviewed for
-publication; hosted and protected execution remain pending:
+The following original proposal was implemented and source-reviewed for
+publication, then actually merged as #7726 after hosted/protected execution:
 
 ```rust
 EmbeddingObservation::admitted_expression(&self)
@@ -273,7 +283,9 @@ comment 5975680336; frozen private provider records are #6842 comment
 carry this companion and central link in its genuine source change; refresh literal
 main and peer ownership first. Exact-head Actions and all applicable
 protected suites/caps must pass and the real merge must be verified.
-#6882 remains open, so the legacy/default formatter route stays unchanged.
+#6882 was open when this historical plan was written; it subsequently closed
+on 2026-10-04 after the original fixture assessment. That history closure does
+not grant native historical formatter completion or authorize a default switch.
 Whole Vue 2/1 grammar, historical SemanticFile/versioned SFC, registry and
 runtime, Vue 0/quirks/petite, product acceptance and default cutover remain
 unfinished. Source/AST custody alone grants none of that completion.

@@ -1,0 +1,16 @@
+<script setup lang="ts">
+const items: { id: number }[] = [{ id: 1 }]
+</script>
+
+<template>
+  <div>
+    {{
+      // @ts-ignore
+      items[0].missingProperty
+    }}
+    {{
+      // @ts-expect-error
+      items[0].alsoMissing
+    }}
+  </div>
+</template>

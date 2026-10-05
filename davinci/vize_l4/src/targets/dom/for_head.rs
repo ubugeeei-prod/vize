@@ -1,9 +1,9 @@
-//! Encode only the original root For/static carrier sealed by the DOM walk.
+//! Encode only the original root For carrier sealed by the DOM walk.
 
 use super::{DomError, DomErrorKind, Emitter, ExpressionWriter, LinkSink, write::spell};
 use vize_l0::id::NodeId;
 use vize_l2::op::OriginalForOp;
-use vize_l3::decision::dom::{DomChild, DomChildren, DomNode};
+use vize_l3::decision::dom::{DomChild, DomChildren, DomNode, vue::VueReadKind};
 
 impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
     pub(super) fn original_for(
@@ -26,14 +26,20 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         let [DomChild::Node(body)] = children.as_slice() else {
             return Err(self.error(node, DomErrorKind::InvalidGrouping));
         };
+        let stable = row.collection_read().map(|read| read.kind()) == Some(VueReadKind::SetupConst);
         let alias = row.resolution().value_declaration();
         let name = alias.fact().name();
-        // No generated local is introduced inside this callback. Its two actual
-        // helper aliases must not be shadowed by the original parameter.
+        // No generated local is introduced inside this callback. All helper
+        // aliases actually used inside it must retain their original meaning.
         if name.strip_prefix('_').is_some_and(|name| {
-            [self.helpers.open_block, self.helpers.element_block]
-                .into_iter()
-                .any(|helper| self.vocabulary.name(helper) == Some(name))
+            [
+                self.helpers.open_block,
+                self.helpers.element_block,
+                self.helpers.element,
+                self.helpers.display,
+            ]
+            .into_iter()
+            .any(|helper| self.vocabulary.name(helper) == Some(name))
         }) {
             return Err(DomError {
                 node: Some(node),
@@ -48,7 +54,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         self.writer.anchor(original.span.start);
         self.writer.push("(");
         spell(&mut self.writer, self.vocabulary, self.helpers.open_block);
-        self.writer.push("(true), ");
+        self.writer.push(if stable { "(), " } else { "(true), " });
         spell(
             &mut self.writer,
             self.vocabulary,
@@ -70,7 +76,11 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         self.node(*body)?;
         self.writer.deindent();
         self.writer.newline();
-        self.writer.push("}), 256 /* UNKEYED_FRAGMENT */))");
+        self.writer.push(if stable {
+            "}), 64 /* STABLE_FRAGMENT */))"
+        } else {
+            "}), 256 /* UNKEYED_FRAGMENT */))"
+        });
         Ok(())
     }
 }

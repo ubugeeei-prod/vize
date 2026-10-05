@@ -72,10 +72,8 @@ fn dynamic_nested_keyed_attribute_and_mixed_root_bodies_remain_sticky_refusals()
             "<i v-for='item in count'>{{count}}</i>",
             DomUnsupported::ForBody,
         ),
-        (
-            "<i v-for='item in count'>{{item}}</i>",
-            DomUnsupported::ForBody,
-        ),
+        // This exact original counterexample is now covered by the full
+        // six-source original_for_value code/raw-map/runtime capture law.
         (
             "<i id='fixed' v-for='item in count'>fixed</i>",
             DomUnsupported::ForBody,
@@ -134,7 +132,7 @@ fn dynamic_nested_keyed_attribute_and_mixed_root_bodies_remain_sticky_refusals()
 }
 
 #[test]
-fn constant_generic_and_zero_occurrence_literal_for_never_gain_mutable_policy() {
+fn constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_policies() {
     let arena = Allocator::default();
     let source = "<script setup>const count=2</script><template><i v-for='item in count'>fixed</i></template>";
     let compiled = compile_native_selected_setup_sfc_dom(
@@ -142,13 +140,10 @@ fn constant_generic_and_zero_occurrence_literal_for_never_gain_mutable_policy() 
         source,
         NativeSelectedSfcDomOptions::default(),
     );
-    assert!(matches!(
-        compiled.result().err(),
-        Some(NativeSelectedSetupSfcDomError::Dom(DomError {
-            kind: DomErrorKind::Unsupported(DomUnsupported::Operation),
-            ..
-        }))
-    ));
+    let pack = super::super::original_for_constant::fixture::pack().unwrap();
+    let positive = &pack.fixtures[0];
+    assert_eq!(positive.source, source);
+    assert_eq!(compiled.result().unwrap().code(), positive.expected_code);
     let view = compiled.observation().admitted().unwrap();
     let file = view.setup().file();
     let generic = vize_l3::decision::build_dom_file_decisions(file).unwrap();

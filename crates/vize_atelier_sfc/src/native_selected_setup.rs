@@ -103,9 +103,10 @@ impl<'a> NativeSelectedSetupSfcDomCompilation<'a> {
 
 /// Observe the original SFC once; consume its same-owner setup and DOM decisions.
 /// Direct normalized Identifier/primitive literal template roots are bounded
-/// reads. One root mutable original For may repeat an attribute-free native
-/// Element with empty/static text body. Imports, wider TS, compound reads,
-/// outer handler accesses, constant/nested/alias-read For families remain
+/// reads. One root primitive original For may repeat an attribute-free native
+/// Element with empty/static text or one bare current value-alias interpolation.
+/// Imports, wider TS, compound reads, outer handler accesses and
+/// nested/other-alias-read For families remain
 /// precise lower/target refusals with no partial module.
 #[must_use]
 pub fn compile_native_selected_setup_sfc_dom<'a>(

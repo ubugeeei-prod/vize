@@ -233,13 +233,11 @@ impl FormatOptions {
 
     /// Convert to `oxc_formatter::JsFormatOptions`
     pub fn to_oxc_format_options(&self) -> oxc_formatter::JsFormatOptions {
-        // OXC 0.142 renamed `FormatOptions` to `JsFormatOptions` and moved the
-        // language-agnostic width/indent/line-ending types into
-        // `oxc_formatter_core`, which `oxc_formatter` takes but does not
-        // re-export.
+        // Oxc 0.142 renamed FormatOptions to JsFormatOptions; shared layout types
+        // live in oxc_formatter_core and are not re-exported by oxc_formatter.
         use oxc_formatter::{
-            ArrowParentheses, BracketSameLine, BracketSpacing, QuoteStyle, Semicolons,
-            TrailingCommas,
+            ArrowParentheses, BracketSameLine, BracketSpacing, QuoteProperties, QuoteStyle,
+            Semicolons, TrailingCommas,
         };
         use oxc_formatter_core::{IndentStyle, IndentWidth, LineEnding, LineWidth};
 
@@ -260,6 +258,16 @@ impl FormatOptions {
                 QuoteStyle::Single
             } else {
                 QuoteStyle::Double
+            },
+            jsx_quote_style: if self.jsx_single_quote {
+                QuoteStyle::Single
+            } else {
+                QuoteStyle::Double
+            },
+            quote_properties: match self.quote_props {
+                QuoteProps::AsNeeded => QuoteProperties::AsNeeded,
+                QuoteProps::Consistent => QuoteProperties::Consistent,
+                QuoteProps::Preserve => QuoteProperties::Preserve,
             },
             semicolons: if self.semi {
                 Semicolons::Always
@@ -298,11 +306,11 @@ impl FormatOptions {
             b"\t"
         } else {
             match self.tab_width {
-                1 => b" ",
                 2 => b"  ",
-                4 => b"    ",
-                8 => b"        ",
-                _ => b"  ", // Default to 2 spaces
+                width @ 0..=24 => b"                        "
+                    .get(..usize::from(width))
+                    .unwrap_or(b"  "),
+                _ => b"  ", // Retain the legacy fallback outside shared valid widths.
             }
         }
     }

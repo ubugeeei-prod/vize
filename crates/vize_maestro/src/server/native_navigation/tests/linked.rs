@@ -6,6 +6,7 @@ use std::{future::Future, task::Context};
 use tower_lsp::LspService;
 const URI: &str = "file:///App.vue";
 const SOURCE: &str = include_str!("../../../../tests/fixtures/native-linked-history-3471.vue");
+mod configuration;
 mod frame;
 fn service(native: bool, rename: bool) -> LspService<MaestroServer> {
     let (mut service, socket) = build_lsp_service();

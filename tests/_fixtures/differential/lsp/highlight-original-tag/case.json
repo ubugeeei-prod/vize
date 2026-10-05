@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/highlight-original-tag",
+  "provenance": {
+    "fixCommit": "ddef7d9268425346f5b01b3da5ed592eb544b6dc",
+    "witnessPath": "tests/tooling/lsp-document-highlight.test.ts",
+    "witnessTest": "documentHighlight on a tag name highlights open and close tags as TEXT",
+    "witness": {
+      "sha256": "6ae6e35fc14315a77062fc2cebf3f95bb38f9021273e9c81c12cc7f57838e24f",
+      "blob": "70530cead8a7b03abc527b60387119b251fe9e1d",
+      "path": "highlight-original/witness.test.ts.txt"
+    },
+    "inputOrigin": "byte-exact original constant or original empty string; original CRLF escapes materialized once",
+    "contractOrigin": "independently authored full objects from original positions/kinds and original source-order producer; old projected/sorted assertions are not raw-wire receipts",
+    "helperSources": [
+      {
+        "path": "tests/tooling/support/lsp/session.ts",
+        "blob": "d907340de29e4e6bffa7dda6d1c39f42f7632a82",
+        "sha256": "bc508b5e55315f5cc9158da6a89fa7fd16d0d7d452f5195632090012cf8d6b68"
+      },
+      {
+        "path": "tests/tooling/support/lsp/assertions.ts",
+        "blob": "53cef0953f95c54573b7e8c9743316d1255270bf",
+        "sha256": "da824068a73181f754c568947e962917143df24f8c552550fd65121ee0a3f793"
+      }
+    ]
+  },
+  "input": {
+    "source": "Dh.vue.txt",
+    "runtimePath": "Dh.vue",
+    "sha256": "00b388e44d389ca87a73008dcc543baf4d90c4ee97b825ed888add69234be7eb"
+  },
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "c59212e28f7e033a42d3c82c5d3e9428c7c286aa842240af335224bd1f610edd"
+  },
+  "method": "textDocument/documentHighlight",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "original default legacy selected responses only; no native or whole-fix/history acceptance"
+}

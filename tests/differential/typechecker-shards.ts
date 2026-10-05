@@ -188,6 +188,9 @@ export function aggregateTypecheckerWorkers({
   artifactRoot: string;
   outputDir: string;
 }) {
+  for (const name of ["report.json", "acceptance.json"]) {
+    fs.rmSync(path.join(outputDir, name), { force: true });
+  }
   const loaded = loadTypecheckerManifest(
     path.join(repoRoot, "tests/_fixtures/differential/typechecker/manifest.json"),
   );
@@ -196,9 +199,16 @@ export function aggregateTypecheckerWorkers({
     .readdirSync(artifactRoot)
     .sort()
     .map((directory) => {
+      const identity = /^rust-test-shard-([1-4])-[1-9]\d*-[1-9]\d*$/.exec(directory);
+      assert(identity, "an official Rust worker artifact directory is required");
       const root = path.join(artifactRoot, directory);
       const worker: Worker = JSON.parse(
         fs.readFileSync(path.join(root, "typechecker-fixtures/worker.json"), "utf8"),
+      );
+      assert.equal(
+        worker.shard,
+        Number(identity[1]),
+        "worker packet must match its artifact shard",
       );
       return validateWorker(
         loaded,

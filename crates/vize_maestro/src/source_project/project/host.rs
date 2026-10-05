@@ -9,6 +9,9 @@ use std::sync::Arc;
 use super::{ActiveQueries, AtomicU64, Mutex, SourceQueryProject, SourceSnapshotCache};
 use crate::document::DocumentStore;
 use crate::server::ServerState;
+#[cfg(feature = "experimental-source-navigation")]
+mod modules;
+mod names;
 
 /// The variants keep physical host ownership; none grant native File admission.
 #[derive(Clone)]
@@ -48,11 +51,6 @@ impl<'host> SourceQueryProject<'host> {
         let DocumentHost::Server(state) = &self.host else {
             return None;
         };
-        Some(super::super::navigation::profile::VueConfiguration {
-            version: state.type_checker_vue_version(),
-            configured_dialect: state.get_dialect_config(),
-            legacy: state.legacy_vue2_enabled(),
-            patterned: state.patterned_template_enabled(),
-        })
+        Some(names::configuration(state.native_names_settings()))
     }
 }

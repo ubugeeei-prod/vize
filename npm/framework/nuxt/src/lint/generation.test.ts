@@ -118,7 +118,16 @@ void test("Nuxt 2 recreates its generated config after clearing the build direct
   assert.equal(await absent(generated), true);
   await callHooks(hooks, "build:templates");
   assert.equal(await absent(generated), false);
-  assert.match(await readFile(generated, "utf8"), /"jsPlugins"/);
+  const artifact = JSON.parse(await readFile(generated, "utf8")) as {
+    rules?: Record<string, string>;
+    overrides: Array<{ rules?: Record<string, string> }>;
+  };
+  assert.equal(artifact.rules?.["vize/nuxt/prefer-import-meta"], undefined);
+  assert.ok(
+    artifact.overrides.every(
+      ({ rules }) => rules?.["vize/nuxt/no-page-meta-runtime-values"] === undefined,
+    ),
+  );
 });
 
 void test("regeneration resolves addons afresh and rewrites same-length changes", async (t) => {

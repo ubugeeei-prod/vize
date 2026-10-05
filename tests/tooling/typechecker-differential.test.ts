@@ -63,10 +63,10 @@ function capture(pack: keyof typeof TYPECHECKER_TESTS): Capture {
 }
 
 test("the shared registry retains all existing production projects and exact input bytes", () => {
-  assert.equal(loaded.cases.length, 30);
+  assert.equal(loaded.cases.length, 32);
   assert.equal(
     loaded.cases.reduce((count, fixture) => count + fixture.inputs.length, 0),
-    107,
+    112,
   );
   assert.deepEqual(
     [...new Set(loaded.cases.map((fixture) => fixture.pack))],
@@ -194,17 +194,17 @@ test("complete legacy-only observations stay in the denominator with zero native
     capture,
   );
   const report = typecheckerReport(loaded, captures, sourceRevision);
-  assert.equal(report.summary.legacyMatches, 30);
+  assert.equal(report.summary.legacyMatches, 32);
   const acceptance = summarizeNativeAcceptance(loaded, report, {
     sourceRevision,
     buildReceiptSha256: sha256(receipt),
     requiredStages: ["parse", "facts", "emit", "check"],
   });
   assert.deepEqual(acceptance.total, {
-    planned: 30,
+    planned: 32,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 30,
+    unsupported: 32,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -238,7 +238,7 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
   );
   for (const item of assignment) item.archiveReceiptSha256 = sha256(actualReceipt);
   const write = (shard: number, captures: Capture[]) => {
-    const destination = path.join(artifacts, `shard-${shard}`);
+    const destination = path.join(artifacts, `rust-test-shard-${shard}-123-1`);
     fs.mkdirSync(path.join(destination, "typechecker-fixtures"), { recursive: true });
     const tests = captures.map((item) => item.test);
     const xml = Buffer.from(tests.map((name) => junit(name)).join("\n"));
@@ -266,13 +266,64 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
   write(3, []);
   assert.throws(run, /four complete worker artifacts/);
   write(4, []);
-  assert.equal(run().report.summary.legacyMatches, 30);
+  assert.equal(run().report.summary.legacyMatches, 32);
+  const absent = () => {
+    for (const name of ["report.json", "acceptance.json"]) {
+      assert.equal(fs.existsSync(path.join(outputDir, name)), false);
+    }
+  };
+  const packet = (shard: number) =>
+    path.join(artifacts, `rust-test-shard-${shard}-123-1/typechecker-fixtures/worker.json`);
+  const first = fs.readFileSync(packet(1));
+  const swap = () => {
+    const left = path.dirname(path.dirname(packet(1)));
+    const right = path.dirname(path.dirname(packet(2)));
+    const temporary = path.join(artifacts, "swapping-workers");
+    fs.renameSync(left, temporary);
+    fs.renameSync(right, left);
+    fs.renameSync(temporary, right);
+  };
+  swap();
+  assert.throws(run, /worker packet must match its artifact shard/);
+  absent();
+  swap();
+  run();
+  assert.throws(() =>
+    aggregateTypecheckerWorkers({ repoRoot: directory, artifactRoot: artifacts, outputDir }),
+  );
+  absent();
+  for (const [scope, key] of [
+    ["worker", "sourceRevision"],
+    ["worker", "sourceTree"],
+    ["worker", "manifestSha256"],
+    ["worker", "junitSha256"],
+    ["capture", "binarySha256"],
+    ["receipt", "archiveSha256"],
+    ["receipt", "requireTsgo"],
+  ]) {
+    run();
+    const changed = JSON.parse(first.toString());
+    const target =
+      scope === "worker"
+        ? changed
+        : scope === "capture"
+          ? changed.captures[0]
+          : JSON.parse(actualReceipt.toString());
+    target[key] = key === "requireTsgo" ? null : "f".repeat(key.startsWith("source") ? 40 : 64);
+    if (scope === "receipt")
+      changed.receiptBase64 = Buffer.from(JSON.stringify(target)).toString("base64");
+    fs.writeFileSync(packet(1), JSON.stringify(changed));
+    assert.throws(run, key);
+    absent();
+    fs.writeFileSync(packet(1), first);
+  }
   write(4, [assignment[0]]);
   assert.throws(run, /duplicate captured test body/);
   write(4, []);
-  const fourth = path.join(artifacts, "shard-4/typechecker-fixtures/worker.json");
+  const fourth = packet(4);
   const stale = JSON.parse(fs.readFileSync(fourth, "utf8"));
   stale.sourceRevision = "0".repeat(40);
   fs.writeFileSync(fourth, JSON.stringify(stale));
   assert.throws(run);
+  absent();
 });

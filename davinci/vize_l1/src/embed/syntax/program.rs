@@ -96,3 +96,6 @@ mod observation_tests;
 
 #[cfg(test)]
 mod jsdoc_tests;
+
+#[cfg(test)]
+mod stack_tests;

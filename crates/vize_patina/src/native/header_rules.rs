@@ -25,6 +25,22 @@ pub(super) fn inspect_attributes<'o, 'a>(
     element: &NativeElement<'o, 'a>,
     mut visit: impl FnMut(&NativeAttribute<'o, 'a>, header::Binding<'a>),
 ) -> Result<(NativeLintTag<'o, 'a>, Span), NativeLintRefusal> {
+    inspect_checked::<false>(element, |checked, binding| {
+        let binding = checked.narrow(binding)?;
+        visit(checked.original(), binding);
+        Ok(())
+    })
+}
+
+/// The same original iteration under an explicit caller-owned binding policy.
+/// Wider use requires the bare driver's clean whole-component admission.
+pub(super) fn inspect_checked<'o, 'a, const WIDE: bool>(
+    element: &NativeElement<'o, 'a>,
+    mut visit: impl FnMut(
+        header::CheckedAttribute<'o, 'a>,
+        header::AttributeBinding<'a>,
+    ) -> Result<(), NativeLintRefusal>,
+) -> Result<(NativeLintTag<'o, 'a>, Span), NativeLintRefusal> {
     let receipt = element
         .lint_tag()
         .map_err(|reason| NativeLintRefusal::LintTag { reason })?;
@@ -41,19 +57,25 @@ pub(super) fn inspect_attributes<'o, 'a>(
     let opening = header::opening_range(element)?;
     let mut names: SmallVec<[&str; 8]> = SmallVec::new();
     for original in element.attributes() {
-        let binding = header::strict_binding(element, &original)?;
-        if let header::Binding::Static { name, .. } = &binding {
+        let (checked, binding) = if WIDE {
+            header::wide_binding(element, original)?
+        } else {
+            header::strict_binding(element, original)?
+        };
+        if let header::AttributeBinding::Static { name, .. } = &binding {
             if names
                 .iter()
                 .any(|previous| previous.eq_ignore_ascii_case(name))
             {
-                let span =
-                    attribute::span(element.component().block(), original.surface().name.text)?;
+                let span = attribute::span(
+                    element.component().block(),
+                    checked.original().surface().name.text,
+                )?;
                 return Err(NativeLintRefusal::DuplicateAttribute { span });
             }
             names.push(name);
         }
-        visit(&original, binding);
+        visit(checked, binding)?;
     }
     Ok((receipt, opening))
 }

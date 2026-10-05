@@ -1,0 +1,1 @@
+{"html":"<div>page</div>","call":{"layout":"plain"},"mixedCall":{"layout":"plain","middleware":"guard:/test"},"nuxtCalls":[]}

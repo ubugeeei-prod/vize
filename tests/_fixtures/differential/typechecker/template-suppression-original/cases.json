@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "e199979dfb32dfd8eb9ad32a2928fb010768f239",
+  "historicalIssue": 6009,
+  "sourceRevision": "e199979dfb32dfd8eb9ad32a2928fb010768f239",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "complete-original-template-suppression",
+      "inputs": [
+        {
+          "file": "src/App.vue",
+          "source": "original-project/src/App.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "original-project/tsconfig.json.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

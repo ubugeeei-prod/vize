@@ -214,7 +214,9 @@ pub(super) fn compile_file_stats_with_cache(
                 self_component: settings.experimental_self_component,
             }
         )
-    ) {
+    )
+    .and_then(super::compile::check_compile_result)
+    {
         Ok(result) => result,
         Err(error) => {
             cache_failure(cache, cache_key, ErrorPhase::Compile, error.message.clone());

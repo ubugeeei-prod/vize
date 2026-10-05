@@ -60,3 +60,50 @@ Keep #6832 OPEN for remaining native/dialect paths, snapshots, published
 feature compatibility, serialized naming, crate audit and production capture.
 These corpus checks do not close product fix-history gates or establish a
 native/default product replacement. Vue Fes completion remains separate.
+
+## Preserved allocation failure and same-PR harness correction
+
+Historical protected candidate `e1c0c8609e64035a9705cd76257e9d3fdaf966b4`
+failed Check37181078166 shard2 with native text78 against unchanged ceiling75.
+The exact original failure and all seven native/retained rows remain in
+[#7764](https://github.com/ubugeeei-prod/vize/issues/7764). The diagnostic
+#7770 is separate, and its64 serial attempts did not reproduce that failure.
+The three excess calls' historical ownership remains UNKNOWN.
+
+This same existing PR prepares a measurement-ownership correction using the
+already-established standalone allocation-law protocol from L0/L1. Explicit
+Cargo registration sets `davinci_vapor_native_budget` to `harness = false`;
+the single unchanged case body then runs on process main instead of alongside
+libtest's running-test map, timeout deque and result-channel bookkeeping.
+This removes the known possible runner overlap, not an evidenced historical
+explanation of78. It does not filter allocator calls, replace the allocator,
+change process-global accounting or omit genuine workers spawned by a routine.
+
+The original seven source literals, ceilings75/74/110/100/134/106/158, native/
+retained order, one warm-up, compile/result/allocator drops, measured windows
+and final aggregated failure assertion remain byte-identical. No production,
+allocation counter, thread-local suppression, extra warm-up, retry or budget
+change is introduced. Existing source/default contracts and every original
+42-case L1 corpus boundary remain.
+
+The realCASE/main CLI is the existing nextest discovery/exact-selector protocol:
+listing prints one original case without measuring; ignored or excluded
+selection returns without measuring; default/exact/substr selection executes
+the complete original callback once. Unsupported arguments fail before entry
+and an assertion remains a nonzero process exit. The focused hosted tooling law
+compiles that actualCASE/main unchanged with an instrumented callback to reject
+discovery execution, hidden selected-case omission and swallowed assertions.
+That control is not an allocation measurement.
+
+A narrowly scoped inherited nextest output override retains this one case's
+seven success rows in PR/full JUnit artifacts. It changes no selection, retry,
+concurrency, profile or other test-output policy. The pinned nextest0.9.146
+archive/list must genuinely discover the original case and its assigned
+unfiltered worker must execute it before runtime credit. Fresh source/protected
+Actions must retain the whole raw vectors and all unchanged104×3 instruction
+ceilings. Existing full feature-enabled L1 corpus execution stays mandatory.
+
+Preparation has not compiled or executed locally, started a campaign, pushed
+this source or queued #7757. Root source review and fresh complete Actions are
+required. Oldfailed candidate acceptance is not rewritten; this correction
+provides no historical-cause,10x/native/default product or full-history credit.

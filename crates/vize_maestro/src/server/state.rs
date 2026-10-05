@@ -7,8 +7,13 @@
 
 mod art_template_context;
 mod config;
+mod default;
 mod features;
 mod lint_hover;
+#[cfg(feature = "experimental-source-navigation")]
+mod module_links;
+#[cfg(feature = "experimental-source-navigation")]
+mod native_names;
 mod resident;
 mod virtual_docs;
 mod workspace_folders;
@@ -55,6 +60,17 @@ use crate::document::DocumentStore;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 
 pub use features::LspFeatureConfig;
+#[cfg(feature = "experimental-source-navigation")]
+pub(crate) use module_links::physical::{ModuleTargetGateError, ModuleTargetStamp};
+#[cfg(feature = "experimental-source-navigation")]
+pub(crate) use module_links::{
+    ModuleLinkContext, ModuleLinkContextError, ModuleLinkRetirement, ModuleLinkTerminationLease,
+};
+#[cfg(feature = "experimental-source-navigation")]
+pub(crate) use native_names::{
+    NativeLinkedNamesRoute, NativeLinkedNamesTicket, NativeNamesConfigurationError,
+    NativeNamesParserTicket, NativeNamesSettings,
+};
 
 #[cfg(feature = "native")]
 pub use batch_cache::BatchTypeCheckCache;
@@ -65,6 +81,10 @@ pub struct ServerState {
     pub documents: DocumentStore,
     #[cfg(feature = "experimental-source-navigation")]
     native_linked_editing: AtomicBool,
+    #[cfg(feature = "experimental-source-navigation")]
+    native_names: RwLock<native_names::Generations>,
+    #[cfg(feature = "experimental-source-navigation")]
+    module_links: RwLock<module_links::Session>,
     /// Memoized SFC descriptors, one parse per buffer revision (P5-6a).
     pub(crate) resident: resident::ResidentCache,
     /// Virtual code generator (reusable)
@@ -179,12 +199,6 @@ pub struct ServerState {
     corsa_overlays: corsa_overlays::CorsaOverlayCache,
 }
 
-impl Default for ServerState {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl ServerState {
     pub fn new() -> Self {
         let default_features = LspFeatureConfig::default();
@@ -205,6 +219,8 @@ impl ServerState {
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new((TypeCheckerConfig::default(), 60_000)),
+            #[cfg(feature = "experimental-source-navigation")]
+            module_links: RwLock::new(module_links::Session::default()),
             global_types: RwLock::new(GlobalTypesConfig::default()),
             // Options API matches vue-tsc by default; config may opt out.
             type_checker_options_api: RwLock::new(true),
@@ -215,6 +231,8 @@ impl ServerState {
             experimental_patterned_template: AtomicBool::new(false),
             #[cfg(feature = "experimental-source-navigation")]
             native_linked_editing: AtomicBool::new(false),
+            #[cfg(feature = "experimental-source-navigation")]
+            native_names: RwLock::new(native_names::Generations::default()),
             linter_config: RwLock::new(LinterConfig::default()),
             linter_rule_options: RwLock::new(vize_l0::config::ConfigLintRuleOptions::default()),
             dialect_config: RwLock::new(None),
@@ -313,17 +331,6 @@ impl ServerState {
             Some(_) => VueDialect::Vue,
             None => vize_l0::dialect::standalone_html_dialect(None, content),
         }
-    }
-
-    /// Get the enabled LSP feature set.
-    #[inline]
-    pub(crate) fn lsp_features(&self) -> LspFeatureConfig {
-        *self.lsp_features.read()
-    }
-
-    #[inline]
-    pub(crate) fn legacy_vue2_enabled(&self) -> bool {
-        *self.type_checker_legacy_vue2.read() || self.lsp_features().legacy_vue2
     }
 
     /// Resolve Vue 3 Options API template bindings. Implied by legacy mode.

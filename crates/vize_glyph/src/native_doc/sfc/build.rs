@@ -7,7 +7,10 @@ use vize_l1::markup::NativeTemplateComponent;
 
 use super::super::{Doc, NativeTemplateValuePolicy, observed_native_template_document_with_policy};
 use super::observation::Outcome;
-use super::{NativeSfcBlockRole, NativeSfcObservation, NativeSfcOptions, NativeSfcRefusal};
+use super::{
+    NativeSfcBlockRole, NativeSfcDirectivePolicy, NativeSfcObservation, NativeSfcOptions,
+    NativeSfcRefusal,
+};
 
 /// Observe one complete original SFC under explicit native policies.
 ///
@@ -17,7 +20,12 @@ use super::{NativeSfcBlockRole, NativeSfcObservation, NativeSfcOptions, NativeSf
 /// the same observed-template child traversal and complete root framing.
 /// Every refusal retains the actual descriptor/options, selected owner when
 /// created, and every successfully made observation including the rejected one.
-/// An actual interpolation observation failure is retained separately.
+/// Actual interpolation/conditional/binding observer failures remain separate.
+/// Default strict directive refusal remains unchanged; the explicit conditional
+/// option formats only quoted original v-if/v-else-if values through the same
+/// original-child traversal and genuine L1 head/expression provider.
+/// The combined option additionally formats original quoted static bindings,
+/// keeping their distinct original owners without changing conditional indices.
 ///
 /// Prefix/opening-tag and closing-tag/suffix bytes remain authored. One full
 /// Doc includes them in layout lookahead; no template-only print is spliced
@@ -33,6 +41,10 @@ pub fn observe_native_sfc_in<'a>(
         selected: None,
         operands: std::vec::Vec::new(),
         interpolation_failure: None,
+        attributes: std::vec::Vec::new(),
+        attribute_failure: None,
+        bindings: std::vec::Vec::new(),
+        binding_failure: None,
         options,
         outcome: Outcome::Refused(NativeSfcRefusal::Descriptor),
     };
@@ -66,17 +78,32 @@ fn build<'a>(
     let template = match observed_native_template_document_with_policy(
         selected,
         allocator,
-        NativeTemplateValuePolicy::RefuseValuedDirectives,
+        match observation.options.directives {
+            NativeSfcDirectivePolicy::Refuse => NativeTemplateValuePolicy::RefuseValuedDirectives,
+            NativeSfcDirectivePolicy::FormatConditionals => {
+                NativeTemplateValuePolicy::FormatConditionals
+            }
+            NativeSfcDirectivePolicy::FormatConditionalsAndStaticBindings => {
+                NativeTemplateValuePolicy::FormatConditionalsAndStaticBindings
+            }
+        },
     ) {
         Ok(document) => {
-            let (_, operands, document) = document.into_parts();
-            observation.operands = operands;
+            let (original, document) = document.into_observations();
+            observation.operands = original.operands;
+            observation.attributes = original.attributes;
+            observation.bindings = original.bindings;
             document
         }
         Err(failure) => {
-            let (_, operands, refusal, original_failure) = failure.into_parts();
-            observation.operands = operands;
-            observation.interpolation_failure = original_failure;
+            let (original, refusal) = failure.into_observations();
+            observation.operands = original.operands;
+            observation.interpolation_failure = original.failure;
+            observation.attributes = original.attributes;
+            observation.attribute_failure =
+                original.attribute_failure.map(|(_, _, failure)| failure);
+            observation.bindings = original.bindings;
+            observation.binding_failure = original.binding_failure.map(|(_, _, failure)| failure);
             return Err(NativeSfcRefusal::Template(refusal));
         }
     };

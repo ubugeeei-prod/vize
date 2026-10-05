@@ -24,9 +24,8 @@ fn actual_js_ts_jsx_and_stock_parse_options_cannot_be_substituted() {
         matches!(file.original_module_sources(ProgramInput::checked(ts.admitted().unwrap(), block, 0).unwrap()), Err(error) if error.kind == ModuleSourceErrorKind::Profile)
     );
     let jsx = observe(&arena, block, SourceType::mjs().with_jsx(true));
-    let jsx_file = lower(&arena, &jsx, block, 0);
     assert!(
-        matches!(jsx_file.original_module_sources(ProgramInput::checked(jsx.admitted().unwrap(), block, 0).unwrap()), Err(error) if error.kind == ModuleSourceErrorKind::Profile)
+        matches!(file.original_module_sources(ProgramInput::checked(jsx.admitted().unwrap(), block, 0).unwrap()), Err(error) if error.kind == ModuleSourceErrorKind::Profile)
     );
     for options in [
         ParseOptions {

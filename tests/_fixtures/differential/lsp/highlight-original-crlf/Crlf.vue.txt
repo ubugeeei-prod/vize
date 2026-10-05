@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const tag = 1
+const use = tag + 1
+</script>

@@ -80,6 +80,10 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
     }
 }
 
+pub(super) fn is_primitive_type(annotation: &TSType<'_>) -> bool {
+    primitive_type(annotation).is_some()
+}
+
 fn primitive_type(annotation: &TSType<'_>) -> Option<SetupPrimitiveType> {
     Some(match annotation {
         TSType::TSBigIntKeyword(_) => SetupPrimitiveType::BigInt,

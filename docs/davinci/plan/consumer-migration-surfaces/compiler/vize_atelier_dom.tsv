@@ -139,4 +139,4 @@ compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/support/mod.rs	12	l1_to
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/table_control_flow.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/template_syntax_quirks_recovery.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/text_shape_matrix.rs	26	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/v_pre_freezes_its_subtree.rs	32	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_dom/tests/v_pre_freezes_its_subtree.rs	36	l0	L0	stage	vize_l0	preferred	2

@@ -1,6 +1,6 @@
 //! Genuine original template completion retains its lower owner through L3.
 
-use super::{NativeVaporFileAnalysis, VaporFacts, build_vapor_file_decisions};
+use super::{NativeVaporFileAnalysis, VaporFacts};
 use crate::decision::{DecisionBuildError, DecisionTables};
 use vize_l2::{
     artifact::Artifact,
@@ -48,6 +48,12 @@ impl<'owner, 'arena> NativeTemplateVaporAnalysis<'owner, 'arena> {
         self.analysis.file()
     }
     #[must_use]
+    pub fn original_attributes(
+        &self,
+    ) -> Option<&crate::decision::OriginalAttributeFacts<'owner, 'arena>> {
+        self.analysis.original_attributes()
+    }
+    #[must_use]
     pub fn artifact(&self) -> &'owner Artifact<'arena> {
         self.analysis.artifact()
     }
@@ -67,6 +73,6 @@ pub fn build_native_vapor_file_decisions<'owner, 'arena>(
     view: NativeTemplateView<'owner, 'arena>,
 ) -> Result<NativeTemplateVaporAnalysis<'owner, 'arena>, DecisionBuildError> {
     let file = view.file().ok_or(DecisionBuildError::IncompleteFile)?;
-    let analysis = build_vapor_file_decisions(file)?;
+    let analysis = super::file::build_original_file_decisions(file)?;
     Ok(NativeTemplateVaporAnalysis { view, analysis })
 }

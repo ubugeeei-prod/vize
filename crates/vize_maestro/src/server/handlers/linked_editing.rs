@@ -8,13 +8,18 @@ pub(super) async fn linked_editing_range(
     server: &MaestroServer,
     params: LinkedEditingRangeParams,
 ) -> Result<Option<LinkedEditingRanges>> {
+    #[cfg(not(feature = "experimental-source-navigation"))]
     if !server.state.lsp_features().rename {
         return Ok(None);
     }
 
     #[cfg(feature = "experimental-source-navigation")]
-    if server.state.native_linked_editing_enabled() {
-        return server.native_linked_editing(params).await;
+    match server.state.capture_native_linked_route() {
+        crate::server::NativeLinkedNamesRoute::Disabled => return Ok(None),
+        crate::server::NativeLinkedNamesRoute::Legacy => {}
+        crate::server::NativeLinkedNamesRoute::Native(ticket) => {
+            return server.native_linked_editing(params, ticket).await;
+        }
     }
 
     let uri = &params.text_document_position_params.text_document.uri;

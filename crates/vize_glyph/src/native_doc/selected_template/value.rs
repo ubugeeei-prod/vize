@@ -7,11 +7,17 @@ use super::super::template::AttributeValuePolicy;
 use super::{NativeTemplateRefusal, TemplateRefusal};
 
 /// Whether typed directive values may remain opaque authored source.
-/// Neither policy parses values or grants directive-value semantics.
+/// The first two policies keep their original opaque/strict contracts.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeTemplateValuePolicy {
     PreserveOpaque,
     RefuseValuedDirectives,
+    /// Observe quoted original conditional expressions at the same header event.
+    /// All other valued directives still refuse; this grants no L2 semantics.
+    FormatConditionals,
+    /// Observe original conditionals and complete static binding expressions.
+    /// This is explicit; default refusal and opaque policies remain unchanged.
+    FormatConditionalsAndStaticBindings,
 }
 
 pub(super) struct ValuePolicy<'a> {
@@ -22,6 +28,16 @@ pub(super) struct ValuePolicy<'a> {
 impl<'a> ValuePolicy<'a> {
     pub(super) fn new(block: SourceBlock<'a>, policy: NativeTemplateValuePolicy) -> Self {
         Self { block, policy }
+    }
+    pub(super) fn formats_conditionals(&self) -> bool {
+        matches!(
+            self.policy,
+            NativeTemplateValuePolicy::FormatConditionals
+                | NativeTemplateValuePolicy::FormatConditionalsAndStaticBindings
+        )
+    }
+    pub(super) fn formats_bindings(&self) -> bool {
+        self.policy == NativeTemplateValuePolicy::FormatConditionalsAndStaticBindings
     }
 }
 

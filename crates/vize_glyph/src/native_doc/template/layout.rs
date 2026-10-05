@@ -17,17 +17,38 @@ pub(in crate::native_doc) fn open_element<'a, P: AttributeValuePolicy<'a>>(
     depth: usize,
     policy: &P,
 ) -> Result<(), P::Refusal> {
+    open_element_with(
+        element,
+        element.open.attrs.iter(),
+        parts,
+        cursor,
+        allocator,
+        depth,
+        |attribute, parts, cursor| attribute_document(attribute, parts, cursor, allocator, policy),
+    )
+}
+
+/// Share layout while keeping the receiver's actual original attribute iterator.
+pub(in crate::native_doc) fn open_element_with<'a, T, R: From<TemplateRefusal>>(
+    element: &Element<'a>,
+    attributes: impl IntoIterator<Item = T>,
+    parts: &mut Vec<'a, Doc<'a>>,
+    cursor: &mut Cursor<'a>,
+    allocator: &'a Allocator,
+    depth: usize,
+    mut attribute_document: impl FnMut(T, &mut Vec<'a, Doc<'a>>, &mut Cursor<'a>) -> Result<(), R>,
+) -> Result<(), R> {
     cursor.token(&element.open.lt_name)?;
     parts.push(Doc::text(element.open.lt_name.leading));
     let mut opening = Vec::new_in(&allocator);
     opening.push(Doc::text(element.open.lt_name.text));
-    let mut attributes = Vec::new_in(&allocator);
-    for attribute in &element.open.attrs {
-        attributes.push(Doc::line(Line::Space));
-        attribute_document(attribute, &mut attributes, cursor, allocator, policy)?;
+    let mut attribute_docs = Vec::new_in(&allocator);
+    for attribute in attributes {
+        attribute_docs.push(Doc::line(Line::Space));
+        attribute_document(attribute, &mut attribute_docs, cursor)?;
     }
-    if !attributes.is_empty() {
-        opening.push(Doc::concat(attributes).indent(depth + 1, allocator));
+    if !attribute_docs.is_empty() {
+        opening.push(Doc::concat(attribute_docs).indent(depth + 1, allocator));
     }
     let line = if element.open.slash.is_some() {
         Line::Space
@@ -89,6 +110,29 @@ fn attribute_document<'a, P: AttributeValuePolicy<'a>>(
             syntax: UnsupportedSyntax::Directive,
         })?;
     let name = super::super::directive::name_document(block, head, allocator)?;
+    attribute_with_name(
+        attribute,
+        name,
+        parts,
+        cursor,
+        allocator,
+        |content, offset| {
+            policy.value(head.is_some(), content, offset)?;
+            Ok(None)
+        },
+    )
+}
+
+/// The supplied name Doc has already been checked against this original token.
+/// The value callback runs at the same checked content visit before projection.
+pub(in crate::native_doc) fn attribute_with_name<'a, R: From<TemplateRefusal>>(
+    attribute: &Attribute<'a>,
+    name: Doc<'a>,
+    parts: &mut Vec<'a, Doc<'a>>,
+    cursor: &mut Cursor<'a>,
+    allocator: &'a Allocator,
+    mut value_document: impl FnMut(&vize_l1::Token<'a>, usize) -> Result<Option<Doc<'a>>, R>,
+) -> Result<(), R> {
     cursor.trivia(&attribute.name)?;
     let mut value_parts = Vec::new_in(&allocator);
     value_parts.push(name);
@@ -102,13 +146,19 @@ fn attribute_document<'a, P: AttributeValuePolicy<'a>>(
             value_parts.push(Doc::text(open.text));
             let offset = cursor.offset;
             cursor.token(&value.content)?;
-            policy.value(head.is_some(), &value.content, offset)?;
-            verbatim(&mut value_parts, &value.content);
+            if let Some(document) = value_document(&value.content, offset)? {
+                value_parts.push(Doc::text(value.content.leading));
+                value_parts.push(document);
+            } else {
+                verbatim(&mut value_parts, &value.content);
+            }
         } else {
             let offset = cursor.offset;
             cursor.trivia(&value.content)?;
-            policy.value(head.is_some(), &value.content, offset)?;
-            value_parts.push(Doc::text(value.content.text));
+            value_parts.push(
+                value_document(&value.content, offset)?
+                    .unwrap_or_else(|| Doc::text(value.content.text)),
+            );
         }
         if let Some(close) = &value.close_quote {
             cursor.token(close)?;

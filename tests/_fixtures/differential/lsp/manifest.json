@@ -7,9 +7,7 @@
     {
       "id": "lsp/fix-history/inactive-imports",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "inactive-imports",
         "files": [
@@ -45,9 +43,7 @@
     {
       "id": "lsp/fix-history/on-type-crlf",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "on-type-crlf",
         "files": [
@@ -72,9 +68,7 @@
     {
       "id": "lsp/fix-history/folding-four-divs",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-four-divs",
         "files": [
@@ -98,9 +92,7 @@
     {
       "id": "lsp/fix-history/folding-multi-block",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-multi-block",
         "files": [
@@ -124,9 +116,7 @@
     {
       "id": "lsp/fix-history/folding-comment",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-comment",
         "files": [
@@ -150,9 +140,7 @@
     {
       "id": "lsp/fix-history/folding-one-line",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-one-line",
         "files": [
@@ -176,9 +164,7 @@
     {
       "id": "lsp/fix-history/folding-empty-blocks",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-empty-blocks",
         "files": [
@@ -193,6 +179,126 @@
         "sha256": "5e4d4019317ac60d49fd299ea66effb06d8af25553e0d1d70cbc00f2ff5161e4"
       },
       "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/highlight-original-rw",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "highlight-original-rw",
+        "files": [
+          {
+            "path": "Dh.vue.txt",
+            "sha256": "00b388e44d389ca87a73008dcc543baf4d90c4ee97b825ed888add69234be7eb"
+          }
+        ]
+      },
+      "case": {
+        "path": "highlight-original-rw/case.json",
+        "sha256": "54cffe97d43ef7d18f86f8b717c58fdb5b236f1de3ad90def18df06dca40f66b"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/highlight-original-pair",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "highlight-original-pair",
+        "files": [
+          {
+            "path": "FourDivs.vue.txt",
+            "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+          }
+        ]
+      },
+      "case": {
+        "path": "highlight-original-pair/case.json",
+        "sha256": "6fd5e7d5699f0213dbebeea1d49b7c3dc3d1609eddba43169ca6d155003afec3"
+      },
+      "requestCount": 4,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/highlight-original-tag",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "highlight-original-tag",
+        "files": [
+          {
+            "path": "Dh.vue.txt",
+            "sha256": "00b388e44d389ca87a73008dcc543baf4d90c4ee97b825ed888add69234be7eb"
+          }
+        ]
+      },
+      "case": {
+        "path": "highlight-original-tag/case.json",
+        "sha256": "1a18424f61466d7e009d81ee246a490748a8deb8c919854302c226ae8b910c7b"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/highlight-original-crlf",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "highlight-original-crlf",
+        "files": [
+          {
+            "path": "Crlf.vue.txt",
+            "sha256": "a5bccd052e55e8daf4cd31ceb631dd7f7ebdcd4177590a019686925ae9a0c39c"
+          }
+        ]
+      },
+      "case": {
+        "path": "highlight-original-crlf/case.json",
+        "sha256": "83600af714ee519520d0910076c12785c37225cb934f0b8de6aa688a1f064245"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
+      "id": "lsp/fix-history/highlight-original-empty",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "highlight-original-empty",
+        "files": [
+          {
+            "path": "Empty.vue.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        ]
+      },
+      "case": {
+        "path": "highlight-original-empty/case.json",
+        "sha256": "458678a7146176cb85f7cfeac41f47d884fe6b2741f90e1afc63ca8b9494799a"
+      },
+      "requestCount": 2,
       "initializationOptions": {
         "editor": true,
         "lint": false,

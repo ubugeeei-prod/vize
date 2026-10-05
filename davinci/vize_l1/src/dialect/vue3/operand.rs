@@ -1,8 +1,13 @@
 //! Conditional operand selection belongs to the Vue dialect.
 
 use super::VueDirectives;
-use crate::markup::{ArgSyntax, DirectiveNameError, DirectivePrefix, DirectiveSyntax};
+use crate::markup::{
+    ArgSyntax, DirectiveName, DirectiveNameError, DirectivePrefix, DirectiveSyntax,
+};
 use vize_l0::Span;
+
+mod binding;
+pub(crate) use binding::static_binding_parts;
 
 /// The actual complete conditional directive spelling.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -16,23 +21,31 @@ pub(crate) fn conditional_head(
     offset: u32,
     source: &str,
 ) -> Result<Option<NativeConditionKind>, DirectiveNameError> {
-    let Some(head) = VueDirectives.decompose(raw, offset)? else {
-        return Ok(None);
-    };
+    let parts = VueDirectives.decompose(raw, offset)?;
+    Ok(conditional_parts(parts, offset + raw.len() as u32, source))
+}
+
+// Reuse the actual dialect decomposition at the same original header event.
+pub(crate) fn conditional_parts(
+    parts: Option<DirectiveName>,
+    name_end: u32,
+    source: &str,
+) -> Option<NativeConditionKind> {
+    let head = parts?;
     // Only a complete argument/modifier-free conditional head is admitted.
     // The provider retains unsupported variants in their original surface.
     if head.prefix != DirectivePrefix::Full
         || head.arg.is_some()
         || head.modifiers.start != head.modifiers.end
-        || head.name.end != offset + raw.len() as u32
+        || head.name.end != name_end
     {
-        return Ok(None);
+        return None;
     }
-    Ok(match head.name.slice(source) {
+    match head.name.slice(source) {
         "if" => Some(NativeConditionKind::If),
         "else-if" => Some(NativeConditionKind::ElseIf),
         _ => None,
-    })
+    }
 }
 
 /// Only the complete, argument/modifier-free Vue v-for header selects this owner.

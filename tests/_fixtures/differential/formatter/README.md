@@ -1,6 +1,6 @@
 # Formatter differential fixtures
 
-`sfc-public-node-line-endings` (#7736) is an additive configured case shared by
+`sfc-mixed-raw-line-endings` (#7736/#7745) is an additive configured case shared by
 the source-built CLI and actual exported Node `formatSfc` regressions. Its complete
 authored reference uses CRLF layout across script/template/style while retaining
 the raw `<pre>` body's LF bytes. All three passes must match without modifying
@@ -112,3 +112,32 @@ inputs, references, captures and history plans remain unchanged.
 The actual exported Node API tests Auto against the same mixed-raw input and
 original 170-byte reference above. The CLI config remains explicit CRLF, and
 the shared corpus has nine cases. No duplicate reference is recaptured.
+
+## Configured property quotes (#7753)
+
+A tenth case selects `quoteProps: "preserve"` for a TypeScript setup script.
+The independently authored complete reference retains optional quoted keys and
+unquoted keys exactly as the existing policy requires; surrounding formatting
+reaches a three-pass fixed point. Previous nine references/history captures,
+including the mixed raw separator and actual public Node proof, remain unchanged.
+Actual current-source Rust/CLI execution is required; derived references are not
+old-output observations or native acceptance credit.
+
+## Independent JSX quote preference (#7763)
+
+The eleventh configured case uses the existing `jsxSingleQuote: true` option.
+Its independently authored 227-byte reference separates JS strings, ordinary
+JSX attributes, apostrophe fallback and equal-count entity escaping, while
+ordinary template HTML retains its existing bytes. Actual source-built CLI must
+match all eleven references over three passes. All previous ten cases, historical
+captures/plans and native-provider credit boundaries remain unchanged.
+
+## Configured three-space indentation (#7793)
+
+The twelfth case preserves the original 34-byte template input and independently
+authored 39-byte reference for `tabWidth: 3`. Public Rust controls cover every
+shared valid width from 0 through 24, tabs, layout newlines, raw bodies, immutable
+inputs/options and three passes. All previous eleven cases, historical captures,
+300 API plans and original native nine plans/25 calls remain unchanged.
+Actual source-built CLI execution is required; this authored reference is not an
+observed pre-fix output or native migration credit.

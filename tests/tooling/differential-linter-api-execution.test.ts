@@ -9,6 +9,7 @@ import {
   LINTER_OBSERVER,
   runLinterApiPack,
 } from "../differential/linter-api.ts";
+import { expectedNativeReason } from "../differential/linter-native.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -41,11 +42,11 @@ void test("shared linter corpus retains all 44 complete actual public observatio
       legacyMatches: 44,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: 36,
+      nativeUnsupported: 34,
       nativeFailures: 0,
-      nativeHandled: 8,
-      nativeEquivalent: 8,
-      pairedComparisons: 8,
+      nativeHandled: 10,
+      nativeEquivalent: 10,
+      pairedComparisons: 10,
     },
     JSON.stringify(report.rows, null, 2),
   );
@@ -57,7 +58,13 @@ void test("shared linter corpus retains all 44 complete actual public observatio
   assert.deepEqual(
     handled.map((row: any) => row.id).sort(),
     loaded.cases
-      .filter((fixture: any) => fixture.id.startsWith("linter/component-name/"))
+      .filter(
+        (fixture: any) =>
+          fixture.id.startsWith("linter/component-name/") ||
+          ["linter/current-api/ref-string-untyped", "linter/current-api/ref-string-typed"].includes(
+            fixture.id,
+          ),
+      )
       .map((fixture: any) => fixture.id)
       .sort(),
   );
@@ -65,23 +72,7 @@ void test("shared linter corpus retains all 44 complete actual public observatio
     assert.equal(row.native.attempts.length, 2);
     if (row.native.state === "unsupported") {
       const fixture = loaded.cases.find((fixture: any) => fixture.id === row.id);
-      const input = JSON.parse(fixture.input.toString());
-      const kind =
-        fixture.argv[0] === "--report"
-          ? "ApiUnavailable"
-          : input.entry !== "template"
-            ? "EntryUnavailable"
-            : input.vue_version === "2"
-              ? "UnsupportedVueVersion"
-              : input.vapor === true
-                ? "UnsupportedVaporMode"
-                : "UnprovidedRule";
-      assert.equal(row.native.reason.kind, kind, row.id);
-      if (kind === "UnprovidedRule")
-        assert.equal(
-          row.native.reason.detail,
-          `UnprovidedRule { rule: "${input.rule ?? "vapor/prefer-static-class"}" }`,
-        );
+      assert.deepEqual(row.native.reason, expectedNativeReason(fixture), row.id);
     }
   }
 });

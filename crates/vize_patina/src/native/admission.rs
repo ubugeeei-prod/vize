@@ -1,31 +1,48 @@
 //! One original child traversal for the bounded complete parser-output profile.
 
-use vize_l0::{Span, is_html_tag, is_math_ml_tag, is_svg_tag};
+use vize_l0::{SmallVec, Span, is_html_tag, is_math_ml_tag, is_svg_tag};
 use vize_l1::{
     SurfaceChild, Token,
     markup::{NativeChildren, NativeComponent, NativeLintTagKind},
 };
 
 use super::{
-    super::{attribute, header, header_rules},
-    NativeTemplateLintRefusal as Refusal,
+    attribute, header, header_rules,
+    template::{
+        NativeTemplateAttribute, NativeTemplateAttributeProfile, NativeTemplateElement,
+        NativeTemplateLintRefusal as Refusal,
+    },
 };
 
-pub(super) fn component(component: &NativeComponent<'_>) -> Result<(), Refusal> {
+pub(in crate::native) fn component(component: &NativeComponent<'_>) -> Result<(), Refusal> {
+    carrier(component, 0)?;
+    let block = component.block();
+    if block.start() != 0 || !core::ptr::eq(block.source(), block.root_source()) {
+        return Err(Refusal::SourceMismatch);
+    }
+    Ok(())
+}
+
+/// Only the authentic selected constructor can supply this origin. The SFC
+/// host additionally owns and validates its exact original Descriptor frames.
+pub(in crate::native) fn selected_component(
+    selected: &vize_l1::markup::NativeTemplateComponent<'_>,
+) -> Result<(), Refusal> {
+    carrier(selected.component(), selected.component().block().start())
+}
+
+fn carrier(component: &NativeComponent<'_>, base: u32) -> Result<(), Refusal> {
     let carrier = component.carrier();
     if let Some(error) = carrier.errors.first() {
-        return Err(Refusal::Recovered {
-            offset: error.offset,
-        });
+        let offset = base
+            .checked_add(error.offset)
+            .ok_or(Refusal::SourceMismatch)?;
+        return Err(Refusal::Recovered { offset });
     }
     if carrier.authored.is_some() || !carrier.unsupported.is_empty() {
         return Err(Refusal::UnsupportedComponent);
     }
-    let block = component.block();
-    if block.start() != 0
-        || !core::ptr::eq(block.source(), block.root_source())
-        || !core::ptr::eq(carrier.tree.source, block.source())
-    {
+    if !core::ptr::eq(carrier.tree.source, component.block().source()) {
         return Err(Refusal::SourceMismatch);
     }
     Ok(())
@@ -44,9 +61,11 @@ fn checked_token(component: &NativeComponent<'_>, token: &Token<'_>) -> Result<S
     Ok(span)
 }
 
-pub(super) fn children<'a>(
-    component: &NativeComponent<'a>,
-    children: NativeChildren<'_, 'a>,
+pub(in crate::native) fn children<'o, 'a>(
+    component: &'o NativeComponent<'a>,
+    children: NativeChildren<'o, 'a>,
+    profile: NativeTemplateAttributeProfile,
+    visit_element: &mut impl FnMut(&NativeTemplateElement<'o, 'a>) -> Result<(), Refusal>,
 ) -> Result<(), Refusal> {
     for child in children {
         if !core::ptr::eq(child.component(), component) {
@@ -56,30 +75,30 @@ pub(super) fn children<'a>(
             match child.surface() {
                 SurfaceChild::Element(_) => {
                     let element = child.into_element().ok_or(Refusal::SourceMismatch)?;
-                    // One strict header iteration validates all actual original
-                    // attributes before using any root-only callback outcome.
+                    // The same original header iteration checks and retains the
+                    // whole admitted header before dispatching any callbacks.
                     let mut refused_attribute = None;
-                    let (receipt, opening) =
-                        header_rules::inspect_attributes(&element, |original, binding| {
-                            let (range, supported) = match binding {
-                                header::Binding::Static { name, range, .. }
-                                    if name.bytes().all(|byte| {
-                                        byte.is_ascii_alphanumeric()
-                                            || matches!(byte, b'_' | b'-' | b':' | b'.')
-                                    }) =>
-                                {
-                                    (range, true)
+                    let mut attributes: SmallVec<[NativeTemplateAttribute<'o, 'a>; 8]> =
+                        SmallVec::new();
+                    let visit = |checked: header::CheckedAttribute<'o, 'a>, binding| {
+                        if !header_gaps(checked.original().surface()) {
+                            refused_attribute.get_or_insert(checked.range());
+                        } else {
+                            match NativeTemplateAttribute::from_checked(checked, binding, profile) {
+                                Ok(attribute) => attributes.push(attribute),
+                                Err(range) => {
+                                    refused_attribute.get_or_insert(range);
                                 }
-                                header::Binding::Static { range, .. }
-                                | header::Binding::Bind { range, .. }
-                                | header::Binding::Other { range, .. } => (range, false),
-                            };
-                            // Token custody is already checked by strict_binding.
-                            // Reject any recovered non-whitespace header gap too.
-                            if !supported || !header_gaps(original.surface()) {
-                                refused_attribute.get_or_insert(range);
                             }
-                        })?;
+                        }
+                        Ok(())
+                    };
+                    let (receipt, opening) = if profile == NativeTemplateAttributeProfile::Bindings
+                    {
+                        header_rules::inspect_checked::<true>(&element, visit)?
+                    } else {
+                        header_rules::inspect_checked::<false>(&element, visit)?
+                    };
                     if let Some(span) = refused_attribute {
                         return Err(Refusal::UnsupportedAttribute { span });
                     }
@@ -111,7 +130,13 @@ pub(super) fn children<'a>(
                             return Err(Refusal::UnsupportedContext { span: opening });
                         }
                     }
-                    self::children(component, element.children())
+                    let children = element.children();
+                    let view = NativeTemplateElement::new(element, attributes);
+                    visit_element(&view)?;
+                    // Retained header storage is bounded by the largest header,
+                    // including possible SmallVec spill, not by ancestor depth.
+                    drop(view);
+                    self::children(component, children, profile, visit_element)
                 }
                 SurfaceChild::Text(token) => {
                     let span = checked_token(component, token)?;

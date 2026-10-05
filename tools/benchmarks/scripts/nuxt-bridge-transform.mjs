@@ -28,7 +28,7 @@ import {
   hasComponentBridgeInput,
   hasI18nBridgeInput,
   hasStableKeyBridgeInput,
-} from "../npm/framework/nuxt/src/bridge-fast-path.ts";
+} from "../../../npm/framework/nuxt/src/bridge-fast-path.ts";
 
 function parseArgs(argv) {
   const options = { modules: 1000, runs: 3 };

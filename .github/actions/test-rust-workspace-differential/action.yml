@@ -65,6 +65,12 @@ runs:
         cargo test -p vize_atelier_core --features legacy --test davinci_l2_transform_vue2
         cargo test -p vize_vitrine --no-default-features --features wasm
         VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features legacy-differential --test davinci_markup_differential -- --nocapture
+    - name: Test complete v-pre whitespace results
+      shell: bash
+      env: { VIZE_TEST_REQUIRE_TSGO: "1" }
+      run: |
+        cargo test -p vize_atelier_dom --features legacy-differential --test v_pre_freezes_its_subtree -- --nocapture
+        cargo test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_production_cases -- --nocapture
     - name: Test Vapor and SFC contracts in production
       shell: bash
       env: { VIZE_VUE_RUNTIME_PRODUCTION: "1", VIZE_TEST_REQUIRE_TSGO: "1" }

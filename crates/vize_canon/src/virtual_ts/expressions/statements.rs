@@ -4,7 +4,6 @@
 //! optional v-if narrowing, and delegates recognized v-if chains to the
 //! control-flow emitter in [`super::vif_chain`].
 
-use super::super::helpers::generated_text_range;
 use super::super::types::VizeMapping;
 use super::component_ref_callbacks::generate_component_ref_callback_statement;
 use super::directive_values::generate_directive_value_statement;
@@ -263,11 +262,6 @@ fn emit_expression_statement(
         super::incomplete::isolate_incomplete_expression(generated_expression);
     let generated_expression = isolated_expression.as_str();
     let mapped_bounds = isolated_expression.mapped_bounds();
-    let mapping_needle = if isolated_expression.is_owned() || rewritten_expression.is_some() {
-        isolated_expression.mapped_str()
-    } else {
-        statement_expression
-    };
 
     if let Some(native_prop) = checks.native_props.get(&(expr.start, expr.end)) {
         generate_native_prop_statement(
@@ -328,13 +322,9 @@ fn emit_expression_statement(
         "{indent}void ({generated_expression}); // {}\n",
         expr.kind.as_str()
     );
-    let gen_stmt_end = ts.len();
+    let gen_expr_start = gen_stmt_start + indent.len() + "void (".len() + mapped_bounds.0;
     mappings.push(VizeMapping {
-        gen_range: generated_text_range(
-            ts.get(gen_stmt_start..gen_stmt_end).unwrap_or_default(),
-            mapping_needle,
-            gen_stmt_start,
-        ),
+        gen_range: gen_expr_start..gen_expr_start + mapped_bounds.1,
         src_range: src_start..src_end,
         sub_spans: Vec::new(),
     });

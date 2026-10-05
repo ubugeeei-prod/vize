@@ -235,10 +235,8 @@ impl<'a> SsrCodegenContext<'a> {
 
         self.use_core_helper(RuntimeHelper::WithCtx);
 
-        // Named `<template #...>` slots must keep their own entry so their
-        // slot-props pattern (e.g. `#header="{ collapsed }"`) stays bound;
-        // collapsing them into `default:` compiles the body against the
-        // instance and breaks scoped slots at runtime.
+        // Named templates retain their own entry and slot-props scope;
+        // default content instead compiles against the component instance.
         let mut default_children: std::vec::Vec<&'node TemplateChildNode<'a>> =
             std::vec::Vec::new();
         let mut named_slots: std::vec::Vec<&'node ElementNode<'a>> = std::vec::Vec::new();
@@ -254,6 +252,9 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         let mut out = String::from("{ ");
+        if !named_slots.is_empty() {
+            super::normalize_implicit_slot_children(&mut default_children);
+        }
         for el in named_slots {
             out.push_str(&self.vnode_slot_entry_fn_property(el));
             out.push_str(", ");
@@ -268,10 +269,8 @@ impl<'a> SsrCodegenContext<'a> {
         out
     }
 
-    /// `createSlots(base, [entries])` for the vnode (client-render) fallback path
-    /// of a component carrying dynamic/conditional/looped slots. Mirrors the
-    /// push-based SSR slots emission, but emits the vnode form of slot functions
-    /// (`fn: _withCtx((params) => [children])`).
+    /// VNode fallback for dynamic/conditional/looped `createSlots` entries,
+    /// using `fn: _withCtx((params) => [children])` instead of SSR push calls.
     fn vnode_create_slots_expression<'node>(
         &mut self,
         children: &'node [TemplateChildNode<'a>],
@@ -298,6 +297,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         let mut out = String::from("_createSlots({ ");
+        super::normalize_implicit_slot_children(&mut default_children);
         let mut wrote = false;
         if !default_children.is_empty() {
             out.push_str("default: _withCtx(() => ");

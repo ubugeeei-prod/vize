@@ -75,7 +75,7 @@ pub use mapping::{
 pub use pattern_diagnostics::is_unreachable_pattern_diagnostic;
 pub use semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
 #[cfg(feature = "native")]
-pub(crate) use types::CSS_MODULE_GLOBAL_MARKER;
+pub(crate) use types::{CSS_MODULE_GLOBAL_MARKER, TYPED_ROUTE_GLOBAL_MARKER};
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput};
 
 /// Shared type-only component contract for plain-TS JSX lowering in batch and

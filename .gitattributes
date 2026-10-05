@@ -20,6 +20,8 @@ tests/_fixtures/vue-language-tools/upstream/** linguist-vendored whitespace=-bla
 
 # Keep the authored CRLF response fixture byte-exact across Git checkouts.
 tests/_fixtures/differential/lsp/on-type-crlf/App.vue.txt -text whitespace=cr-at-eol
+tests/_fixtures/differential/lsp/highlight-original-crlf/Crlf.vue.txt -text whitespace=cr-at-eol
+tests/_fixtures/differential/lsp/highlight-original/witness.test.ts.txt -text
 
 # Original type-checker sources and diff context keep their pinned bytes.
 tests/_fixtures/differential/typechecker/split-script-original/**/*.txt -text whitespace=-blank-at-eol

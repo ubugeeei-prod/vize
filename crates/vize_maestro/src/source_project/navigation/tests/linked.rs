@@ -1,5 +1,6 @@
 //! Genuine lexical owners and original history coordinates, independent of File.
 mod capacity;
+mod configuration;
 mod frame;
 mod lifecycle;
 use super::{

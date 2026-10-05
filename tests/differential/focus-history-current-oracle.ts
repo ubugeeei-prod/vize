@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { compareBytes } from "./compare.mjs";
 import { sha256 } from "./harness.mjs";
 import { loadFocusCases, rawBytes } from "./focus-history.ts";
 import { validateFocusCapture } from "./focus-history-report.ts";
@@ -22,7 +23,8 @@ export const FOCUS_CURRENT_QUALIFICATION = {
 
 /** Read the unchanged, independently authenticated first hosted packet.
  * Its original unreviewed metadata and all 32 raw attempts remain historical.
- * This forward decision adopts only the eight complete current legacy outputs.
+ * The reviewed legacy outputs and original current native refusals remain a
+ * single immutable authority; no native-equivalence decision follows.
  */
 export function loadFocusCurrentOracle(
   root: string,
@@ -39,8 +41,25 @@ export function loadFocusCurrentOracle(
   return oracle;
 }
 
-/** Compare every complete byte, independently of the capture-only protocol.
- * No native equivalence or whole-history completion follows from this match.
+function compareLane(lane: any, expected: any, admittedState: string) {
+  const expectedBytes = rawBytes(expected.attempts[0].stdoutBase64);
+  const wholeComparisons = lane.attempts.map((attempt: any) =>
+    compareBytes(expectedBytes, rawBytes(attempt.stdoutBase64)),
+  );
+  return {
+    state:
+      lane.state !== admittedState
+        ? "failed"
+        : wholeComparisons.every((comparison: any) => comparison.state === "equal")
+          ? "equal-reviewed-complete-current-output"
+          : "current-output-drift",
+    wholeComparisons,
+  };
+}
+
+/** Retain every complete comparison before aggregate rejection, including
+ * failed streams and full native refusal context. Native outputs are compared
+ * only to their current refusal baseline, never to legacy product outputs.
  */
 export function compareFocusCurrentOutputs(root: string, report: any, receipt: any) {
   const fixtures = loadFocusCases(root);
@@ -48,37 +67,52 @@ export function compareFocusCurrentOutputs(root: string, report: any, receipt: a
   const oracle = loadFocusCurrentOracle(root);
   const rows = report.rows.map((row: any, index: number) => {
     const expected = oracle.rows[index];
-    assert.equal(row.legacy.state, "captured", `actual successful legacy capture: ${row.id}`);
-    const expectedBytes = rawBytes(expected.legacy.attempts[0].stdoutBase64);
-    for (const attempt of row.legacy.attempts)
-      assert(
-        rawBytes(attempt.stdoutBase64).equals(expectedBytes),
-        `complete current Case/RuleIdentity/Observation mismatch: ${row.id}`,
-      );
     return {
       id: row.id,
       inputSha256: row.inputSha256,
       sourceSha256: row.sourceSha256,
-      legacy: "equal-reviewed-complete-current-output",
-      stdoutSha256: sha256(expectedBytes),
-      native: "UnprovidedRule/no-native-comparison",
+      legacy: compareLane(row.legacy, expected.legacy, "captured"),
+      native: compareLane(row.native, expected.native, "refused"),
+      comparison: { state: "not-compared", reason: "unprovided-rule" },
     };
   });
   return {
     schema: "vize.focus-history.current-output-comparison",
-    version: 1,
+    version: 2,
     qualification: FOCUS_CURRENT_QUALIFICATION,
     oraclePacketSha256: FOCUS_CURRENT_CAPTURE_SHA256,
     sourceRevision: report.sourceRevision,
     buildReceipt: receipt,
+    capture: report,
     rows,
     summary: {
       reviewedCurrentOutputOracles: 8,
-      completeLegacyMatches: rows.length,
-      nativeRefused: 8,
+      completeLegacyMatches: rows.filter(
+        (row: any) => row.legacy.state === "equal-reviewed-complete-current-output",
+      ).length,
+      nativeRefusalMatches: rows.filter(
+        (row: any) => row.native.state === "equal-reviewed-complete-current-output",
+      ).length,
+      nativeRefused: report.summary.nativeRefused,
+      currentOutputDrift: rows
+        .flatMap((row: any) => [row.legacy, row.native])
+        .filter((lane: any) => lane.state === "current-output-drift").length,
+      captureFailures: rows
+        .flatMap((row: any) => [row.legacy, row.native])
+        .filter((lane: any) => lane.state === "failed").length,
+      wholeCurrentComparisons: rows
+        .flatMap((row: any) => [row.legacy, row.native])
+        .reduce((count: number, lane: any) => count + lane.wholeComparisons.length, 0),
+      historicalCompleteOutputAuthorities: 0,
       nativeHandled: 0,
       nativeEquivalent: 0,
       pairedComparisons: 0,
     },
   };
+}
+
+/** A serialized comparison cannot invent clean rows, provenance or credit. */
+export function validateFocusCurrentComparison(root: string, comparison: any, receipt: any) {
+  assert.deepEqual(comparison, compareFocusCurrentOutputs(root, comparison.capture, receipt));
+  return comparison.summary;
 }

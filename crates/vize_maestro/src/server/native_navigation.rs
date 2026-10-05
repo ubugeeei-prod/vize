@@ -20,21 +20,15 @@ impl MaestroServer {
     pub(super) async fn native_linked_editing(
         &self,
         params: LinkedEditingRangeParams,
+        ticket: super::NativeLinkedNamesTicket,
     ) -> Result<Option<LinkedEditingRanges>> {
         let request = params.text_document_position_params;
-        let result = self
-            .navigation
+        self.navigation
             .as_ref()
             .ok_or_else(Error::internal_error)?
-            .linked_editing(&request.text_document.uri, request.position)
-            .await;
-        if !self.state.native_linked_editing_enabled() || !self.state.lsp_features().rename {
-            if let Some(project) = &self.navigation {
-                project.retire_linked_editing();
-            }
-            return Err(Error::new(ErrorCode::ContentModified));
-        }
-        result.map_err(query_error)
+            .linked_editing_configured(&request.text_document.uri, request.position, ticket)
+            .await
+            .map_err(query_error)
     }
 
     pub(super) async fn native_highlights(
@@ -170,6 +164,7 @@ fn query_error(refusal: NavigationRefusal) -> Error {
             ErrorCode::ContentModified,
             "Native Vue configuration superseded",
         ),
+        NavigationRefusal::NamesRouteChanged => (ErrorCode::ContentModified, "Content modified"),
         NavigationRefusal::Configuration => (
             ErrorCode::ServerError(-32009),
             "Native Vue configuration unavailable or unsupported",

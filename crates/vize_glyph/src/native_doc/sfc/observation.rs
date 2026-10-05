@@ -2,6 +2,7 @@
 
 use vize_l1::container::vue::DescriptorObservation;
 use vize_l1::markup::{
+    NativeAttributeBindingExpression, NativeAttributeExpression, NativeAttributeExpressionFailure,
     NativeInterpolationFailure, NativeInterpolationOperand, NativeTemplateComponent,
 };
 
@@ -29,6 +30,10 @@ pub struct NativeSfcObservation<'a> {
     pub(super) selected: Option<NativeTemplateComponent<'a>>,
     pub(super) operands: std::vec::Vec<NativeInterpolationOperand<'a>>,
     pub(super) interpolation_failure: Option<NativeInterpolationFailure<'a>>,
+    pub(super) attributes: std::vec::Vec<NativeAttributeExpression<'a>>,
+    pub(super) attribute_failure: Option<NativeAttributeExpressionFailure<'a>>,
+    pub(super) bindings: std::vec::Vec<NativeAttributeBindingExpression<'a>>,
+    pub(super) binding_failure: Option<NativeAttributeExpressionFailure<'a>>,
     pub(super) options: NativeSfcOptions,
     pub(super) outcome: Outcome<'a>,
 }
@@ -41,6 +46,10 @@ impl core::fmt::Debug for NativeSfcObservation<'_> {
             .field("options", &self.options)
             .field("has_selected", &self.selected.is_some())
             .field("operand_count", &self.operands.len())
+            .field("attribute_count", &self.attributes.len())
+            .field("has_attribute_failure", &self.attribute_failure.is_some())
+            .field("binding_count", &self.bindings.len())
+            .field("has_binding_failure", &self.binding_failure.is_some())
             .field("refusal", &self.refusal())
             .field(
                 "has_interpolation_failure",
@@ -65,6 +74,18 @@ impl<'a> NativeSfcObservation<'a> {
     }
     pub fn operands(&self) -> &[NativeInterpolationOperand<'a>] {
         &self.operands
+    }
+    pub fn attribute_operands(&self) -> &[NativeAttributeExpression<'a>] {
+        &self.attributes
+    }
+    pub fn attribute_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
+        self.attribute_failure.as_ref()
+    }
+    pub fn binding_operands(&self) -> &[NativeAttributeBindingExpression<'a>] {
+        &self.bindings
+    }
+    pub fn binding_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
+        self.binding_failure.as_ref()
     }
     pub fn interpolation_failure(&self) -> Option<&NativeInterpolationFailure<'a>> {
         self.interpolation_failure.as_ref()

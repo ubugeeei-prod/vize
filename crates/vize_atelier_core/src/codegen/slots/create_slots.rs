@@ -72,7 +72,9 @@ fn generate_create_slots_base(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let default_children: Vec<_> = el
         .children
         .iter()
-        .filter(|child| !child_is_slot_template(child))
+        .filter(|child| {
+            !child_is_slot_template(child) && !matches!(child, TemplateChildNode::Comment(_))
+        })
         .collect();
     let has_default_children = slot_children_have_meaningful_content(&default_children);
     // A `v-slots` spread combined with `v-if`/`v-for` slot templates keeps the

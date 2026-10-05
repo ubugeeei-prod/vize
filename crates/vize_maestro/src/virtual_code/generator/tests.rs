@@ -281,3 +281,47 @@ const count = ref(0)
         Some(BlockType::Art(ArtCursorPosition::VariantTemplate(_)))
     ));
 }
+
+#[test]
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+fn bare_void_substrings_map_to_emitted_expression_instead_of_keyword() {
+    for newline in ["\n", "\r\n"] {
+        for name in [
+            "v", "o", "i", "id", "vo", "oid", "voi", "ix", "ID", "void2", "名",
+        ] {
+            let source = format!(
+                "<script setup lang=\"ts\">\nconst {name} = 1;\n</script>\n<template>{{{{ '😀' }}}} {{{{ {name} }}}} {{{{ {name} + 1 }}}}</template>"
+            ).replace('\n', newline);
+            let state = crate::server::ServerState::new();
+            let uri = tower_lsp::lsp_types::Url::parse("file:///workspace/App.vue").unwrap();
+            let context = crate::ide::IdeContext::testing(&state, &uri, 0, source.clone());
+            let descriptor = context.descriptor().unwrap();
+            let document = VirtualCodeGenerator::new()
+                .generate(descriptor, "App.vue")
+                .template
+                .unwrap();
+            for expression in [name.to_owned(), format!("{name} + 1")] {
+                let authored = source.find(&format!("{{{{ {expression} }}}}")).unwrap() + 3;
+                let generated = document.source_map.to_generated(authored).unwrap();
+                assert_eq!(
+                    &document.content[generated..generated + expression.len()],
+                    expression,
+                    "{name}, newline={newline:?}"
+                );
+                assert_eq!(&document.content[generated - 6..generated], "void (");
+                for delta in 0..name.len() {
+                    if name.is_char_boundary(delta) {
+                        assert_eq!(
+                            document.source_map.to_generated(authored + delta),
+                            Some(generated + delta)
+                        );
+                        assert_eq!(
+                            document.source_map.to_authored(generated + delta),
+                            Some(authored + delta)
+                        );
+                    }
+                }
+            }
+        }
+    }
+}

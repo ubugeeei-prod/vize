@@ -5,12 +5,15 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { buildProductObserver } from "../differential/observer-build.ts";
 import { FOCUS_OBSERVER } from "../differential/focus-history.ts";
-import { runFocusCapture } from "../differential/focus-history-capture.ts";
-import { compareFocusCurrentOutputs } from "../differential/focus-history-current-oracle.ts";
+import { runFocusCurrentCapture } from "../differential/focus-history-current-capture.ts";
+import {
+  compareFocusNativeOutputs,
+  validateFocusNativeComparison,
+} from "../differential/focus-history-native-comparison.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-void test("source-built focus witnesses match reviewed whole current outputs and retain genuine native refusals", (t) => {
+void test("source-built focus native observations match all eight immutable whole legacy outputs", (t) => {
   const evidenceDir = path.resolve(
     root,
     process.env.VIZE_FOCUS_HISTORY_EVIDENCE_DIR ?? "target/differential/focus-history",
@@ -27,13 +30,14 @@ void test("source-built focus witnesses match reviewed whole current outputs and
       profile: process.env.CI ? "ci" : "dev",
       offline: !process.env.CI,
     });
-    const report = runFocusCapture({ repoRoot: root, ...built });
+    const report = runFocusCurrentCapture({ repoRoot: root, ...built });
     fs.writeFileSync(
       path.join(evidenceDir, "unaccepted-capture.json"),
       `${JSON.stringify(report, null, 2)}\n`,
     );
-    const comparison = compareFocusCurrentOutputs(root, report, built.receipt);
+    const comparison = compareFocusNativeOutputs(root, report, built.receipt);
     fs.writeFileSync(comparisonPath, `${JSON.stringify(comparison, null, 2)}\n`);
+    validateFocusNativeComparison(root, comparison, built.receipt);
     t.diagnostic(
       `Complete current-output comparison and unchanged raw capture/source receipt: ${evidenceDir}`,
     );
@@ -42,14 +46,29 @@ void test("source-built focus witnesses match reviewed whole current outputs and
       {
         plannedOriginalWitnesses: 8,
         legacyCaptured: 8,
-        nativeRefused: 8,
+        nativeHandled: 8,
         captureFailures: 0,
         acceptedCompleteOracles: 0,
-        nativeHandled: 0,
         nativeEquivalent: 0,
         pairedComparisons: 0,
       },
       JSON.stringify(report.rows, null, 2),
+    );
+    assert.deepEqual(
+      comparison.summary,
+      {
+        reviewedCurrentOutputOracles: 8,
+        completeLegacyMatches: 8,
+        nativeHandled: 8,
+        nativeEquivalent: 8,
+        pairedComparisons: 8,
+        currentOutputDrift: 0,
+        captureFailures: 0,
+        wholeCurrentComparisons: 32,
+        wholePairedComparisons: 32,
+        historicalCompleteOutputAuthorities: 0,
+      },
+      JSON.stringify(comparison.rows, null, 2),
     );
   } catch (error) {
     // Compile logs already retained by the shared source-build helper are not

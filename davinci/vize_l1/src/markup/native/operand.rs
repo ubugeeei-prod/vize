@@ -25,6 +25,12 @@ mod for_head;
 pub use for_head::{
     NativeAttributeForHead, NativeAttributeForHeadFailure, NativeAttributeForHeadView,
 };
+mod head;
+pub use head::NativeAttributeHead;
+mod binding;
+pub use binding::{
+    NativeAttributeBindingExpression, NativeAttributeBindingExpressionView, NativeStaticBindingHead,
+};
 mod origin;
 use origin::Origin;
 mod value;
@@ -99,38 +105,58 @@ impl<'a> NativeTemplateComponent<'a> {
         )
         .map_err(NativeAttributeOperandError::Directive)?
         .ok_or(NativeAttributeOperandError::UnsupportedDirective)?;
-        let origin = Origin::from_attribute(self, &attribute)?;
-        let source = prepare_attribute_value(
-            self.component().allocator(),
-            origin.block.root_source(),
-            origin.value_span,
-        )
-        .map_err(NativeAttributeOperandError::Source)?;
-        let lang = match self.grammar() {
-            NativeTemplateGrammar::JavaScriptModule => Lang::Js,
-            NativeTemplateGrammar::TypeScriptModule => Lang::Ts,
-        };
-        let syntax = parse_once(
-            self.component().allocator(),
-            Embed {
-                grammar: Grammar {
-                    shape: Shape::Expr,
-                    lang,
-                },
-                source,
-            },
-        )
-        .into_expression()
-        .map_err(|syntax| NativeAttributeExpressionFailure {
-            kind: NativeAttributeOperandError::UnexpectedShape,
-            syntax: Some(syntax),
-        })?;
-        Ok(NativeAttributeExpression {
-            origin,
-            kind,
-            syntax,
-        })
+        observe_conditional(self, attribute, kind)
     }
+}
+
+// Both routes have checked the actual original header and dialect selection.
+// Only this shared tail prepares and parses the complete original value.
+fn observe_conditional<'a>(
+    selected: &NativeTemplateComponent<'a>,
+    attribute: NativeAttribute<'_, 'a>,
+    kind: NativeConditionKind,
+) -> Result<NativeAttributeExpression<'a>, NativeAttributeExpressionFailure<'a>> {
+    let (origin, syntax) = observe_expression_value(selected, attribute)?;
+    Ok(NativeAttributeExpression {
+        origin,
+        kind,
+        syntax,
+    })
+}
+
+// The genuine head selection has already checked the original event. Both
+// expression families use this complete value preparation and stock parse once.
+fn observe_expression_value<'a>(
+    selected: &NativeTemplateComponent<'a>,
+    attribute: NativeAttribute<'_, 'a>,
+) -> Result<(Origin<'a>, RetainedExpression<'a>), NativeAttributeExpressionFailure<'a>> {
+    let origin = Origin::from_attribute(selected, &attribute)?;
+    let source = prepare_attribute_value(
+        selected.component().allocator(),
+        origin.block.root_source(),
+        origin.value_span,
+    )
+    .map_err(NativeAttributeOperandError::Source)?;
+    let lang = match selected.grammar() {
+        NativeTemplateGrammar::JavaScriptModule => Lang::Js,
+        NativeTemplateGrammar::TypeScriptModule => Lang::Ts,
+    };
+    let syntax = parse_once(
+        selected.component().allocator(),
+        Embed {
+            grammar: Grammar {
+                shape: Shape::Expr,
+                lang,
+            },
+            source,
+        },
+    )
+    .into_expression()
+    .map_err(|syntax| NativeAttributeExpressionFailure {
+        kind: NativeAttributeOperandError::UnexpectedShape,
+        syntax: Some(syntax),
+    })?;
+    Ok((origin, syntax))
 }
 
 impl<'a> NativeAttributeExpression<'a> {

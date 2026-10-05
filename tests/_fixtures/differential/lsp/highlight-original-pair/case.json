@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/highlight-original-pair",
+  "provenance": {
+    "fixCommit": "ddef7d9268425346f5b01b3da5ed592eb544b6dc",
+    "witnessPath": "tests/tooling/lsp-document-highlight.test.ts",
+    "witnessTest": "documentHighlight on a tag name reports the matching pair, not every same-named tag",
+    "witness": {
+      "sha256": "6ae6e35fc14315a77062fc2cebf3f95bb38f9021273e9c81c12cc7f57838e24f",
+      "blob": "70530cead8a7b03abc527b60387119b251fe9e1d",
+      "path": "highlight-original/witness.test.ts.txt"
+    },
+    "inputOrigin": "byte-exact original constant or original empty string; original CRLF escapes materialized once",
+    "contractOrigin": "independently authored full objects from original positions/kinds and original source-order producer; old projected/sorted assertions are not raw-wire receipts",
+    "helperSources": [
+      {
+        "path": "tests/tooling/support/lsp/session.ts",
+        "blob": "d907340de29e4e6bffa7dda6d1c39f42f7632a82",
+        "sha256": "bc508b5e55315f5cc9158da6a89fa7fd16d0d7d452f5195632090012cf8d6b68"
+      },
+      {
+        "path": "tests/tooling/support/lsp/assertions.ts",
+        "blob": "53cef0953f95c54573b7e8c9743316d1255270bf",
+        "sha256": "da824068a73181f754c568947e962917143df24f8c552550fd65121ee0a3f793"
+      }
+    ]
+  },
+  "input": {
+    "source": "FourDivs.vue.txt",
+    "runtimePath": "FourDivs.vue",
+    "sha256": "a6b9b98ede93ce6a05925dab002db48152949441499a8e362befe2078de3b135"
+  },
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "f18d120947e652fa66f47375ecc02dbd346952bfc5e480ad656e4f50362b36f9"
+  },
+  "method": "textDocument/documentHighlight",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "original default legacy selected responses only; no native or whole-fix/history acceptance"
+}

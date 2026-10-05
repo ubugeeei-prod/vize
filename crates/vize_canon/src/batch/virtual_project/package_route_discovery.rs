@@ -10,18 +10,10 @@ use super::dependency_scan::resolve_dependency;
 use super::package_route_reachability::{PackageRouteReachability, package_route_reaches_vue};
 
 impl VirtualProject {
-    pub(crate) fn reconcile_package_routes_for_importers(&mut self, changed: &[PathBuf]) {
-        let changed = changed
-            .iter()
-            .map(|path| {
-                let absolute = if path.is_absolute() {
-                    path.clone()
-                } else {
-                    self.project_root.join(path)
-                };
-                vize_carton::path::canonicalize_non_verbatim(&absolute)
-            })
-            .collect::<FxHashSet<_>>();
+    pub(super) fn reconcile_package_routes_for_importers_inner(
+        &mut self,
+        changed: &FxHashSet<PathBuf>,
+    ) {
         if changed.is_empty() {
             return;
         }
