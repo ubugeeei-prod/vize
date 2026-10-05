@@ -14,11 +14,14 @@ use std::process::ExitCode;
 mod common;
 #[path = "../../../support/editors/lsp_smoke.rs"]
 mod lsp_smoke;
+#[path = "../../../support/editors/zed_workspace_profile.rs"]
+mod workspace_profile;
 
 fn main() -> ExitCode {
     common::main_result(run())
 }
 
 fn run() -> Result<(), String> {
-    lsp_smoke::run_editor_contract(&common::repo_root()?, "zed", true)
+    lsp_smoke::run_editor_contract(&common::repo_root()?, "zed", true)?;
+    workspace_profile::run(&common::repo_root()?)
 }

@@ -1,0 +1,118 @@
+{
+  "issue": 8007,
+  "relatedIssue": 7196,
+  "oracle": "tools/support/editors/zed_workspace_profile.rs",
+  "sourceKind": "Authored complete SFC control; neither issue specifies a complete SFC.",
+  "originalSha256": {
+    "issue-7196.config.ts.txt": "a2671cdc32e1108d720fc06d58fd69a472de9ae14048d231f07855b810c2687e",
+    "issue-8007.config.ts.txt": "85d86406a691b230fbae44ca1fe194781385c78c7e4d281800553720dcc3ec31"
+  },
+  "controlSha256": {
+    "Profile.vue.txt": "83c9c22ec16b5bf9095dc032fb59ab2be2522e2b53dd069aa5f531feddf8bb4f"
+  },
+  "cases": [
+    {
+      "id": "project-default",
+      "config": "issue-8007.config.ts.txt",
+      "explicit": null,
+      "initializationOptions": {},
+      "hoverProvider": false,
+      "formattingProvider": true,
+      "hover": null
+    },
+    {
+      "id": "partial-explicit",
+      "config": "issue-8007.config.ts.txt",
+      "explicit": {
+        "formatting": true
+      },
+      "initializationOptions": {
+        "formatting": true
+      },
+      "hoverProvider": false,
+      "formattingProvider": true,
+      "hover": null
+    },
+    {
+      "id": "empty-explicit",
+      "config": "issue-8007.config.ts.txt",
+      "explicit": {},
+      "initializationOptions": {},
+      "hoverProvider": false,
+      "formattingProvider": true,
+      "hover": null
+    },
+    {
+      "id": "recommended-explicit",
+      "config": "issue-8007.config.ts.txt",
+      "explicit": {
+        "editor": true,
+        "ecosystem": true,
+        "lint": true,
+        "typecheck": true
+      },
+      "initializationOptions": {
+        "editor": true,
+        "ecosystem": true,
+        "lint": true,
+        "typecheck": true
+      },
+      "hoverProvider": true,
+      "formattingProvider": true,
+      "hover": {
+        "contents": {
+          "kind": "markdown",
+          "value": "```typescript\nconst total: \"3\"\n```"
+        },
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 6
+          },
+          "end": {
+            "line": 1,
+            "character": 11
+          }
+        }
+      }
+    },
+    {
+      "id": "no-config-default",
+      "config": null,
+      "explicit": null,
+      "initializationOptions": {
+        "editor": true,
+        "ecosystem": true,
+        "lint": true,
+        "typecheck": true
+      },
+      "hoverProvider": true,
+      "formattingProvider": null,
+      "hover": {
+        "contents": {
+          "kind": "markdown",
+          "value": "```typescript\nconst total: \"3\"\n```"
+        },
+        "range": {
+          "start": {
+            "line": 1,
+            "character": 6
+          },
+          "end": {
+            "line": 1,
+            "character": 11
+          }
+        }
+      }
+    },
+    {
+      "id": "original-vscode-config",
+      "config": "issue-7196.config.ts.txt",
+      "explicit": null,
+      "initializationOptions": {},
+      "hoverProvider": false,
+      "formattingProvider": true,
+      "hover": null
+    }
+  ]
+}
