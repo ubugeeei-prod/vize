@@ -34,11 +34,12 @@ filter is used.
 
 Retain all six original files from the issues in
 `crates/vize_patina/tests/fixtures/musea-variant-bindings/`, with exact lengths,
-SHA-256 hashes and URLs. Eight complete result laws cover original imports,
+SHA-256 hashes and URLs. Nine complete result laws cover original imports,
 macro/attribute targets with unrelated physical filenames, missing imports,
 false Art self references, distinct UTF-8/CRLF variant positions, independent
 Art blocks, real local/type-only bindings, ordinary Vue registration and
-independent fragment facts with original imported registration.
+independent fragment facts with original imported registration, and a
+complete original/foreign-buffer admission result.
 The owned Patina consumer ledger is scanner-generated; no foreign rows,
 ceilings or fixture captures are changed.
 
@@ -75,3 +76,20 @@ with only the actual registration and audit instances enabled. The full
 empty result and exact `MyIcon`/VFor1 then 0 callback expectations remain
 unchanged. Production, original files, all eight laws and ceilings remain
 intact; the rejected integration law grants no execution credit.
+
+The actual core `79ec736079` source rejection is preserved by [#7897](https://github.com/ubugeeei-prod/vize/issues/7897#issuecomment-5988098230)
+and [#7900](https://github.com/ubugeeei-prod/vize/issues/7900#issuecomment-5988098442):
+Check37261484923 Clippy denies panic-based offset admission; the genuine
+Croquis scanner detects Patina13/26 to15/30 drift; the old over-limit engine
+cannot grow. The unchanged private environment declaration is relocated
+in a move-only commit to the existing short rule-analysis module, with its
+parent-owned constructors retained. Engine547 shrinks below its baseline;
+context347/rule123/Art224/registration348 retain all caps. Both existing
+Node scanner providers regenerate only owned Patina shards; their Rust
+commands wrap these same generators. No corpus/census expectation is
+handwritten or weakened. Original admission handles the existing SourceRoot
+representable-span/pointer refusal before parse and returns one complete
+parser/sfc error at0/0. A ninth complete-result law checks genuine original
+markup and equal-text foreign custody. Seeded79 compiles but filters all
+eight previous registration laws, so it grants no execution credit. Fresh
+source and protected actual delivery remain required.

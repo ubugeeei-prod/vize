@@ -7,6 +7,7 @@ use vize_l0::{Allocator, SourceRoot};
 
 use super::super::{TemplateAnalysis, TemplateRuleEnv, offset_result};
 use super::empty_lint_result;
+use crate::diagnostic::LintDiagnostic;
 use crate::linter::config::{LintResult, Linter};
 use crate::linter::engine::tag_scan::{find_closing_tag, find_start_tag_end};
 
@@ -57,15 +58,24 @@ impl Linter {
         descriptor: &SfcDescriptor<'_>,
         summary: Option<&Croquis>,
     ) -> LintResult {
+        let offset = SourceRoot::new(descriptor.source.as_ref())
+            .ok()
+            .and_then(|root| root.whole_block().offset_of(source));
+        let Some(offset) = offset else {
+            let mut refused = empty_lint_result(filename);
+            refused.diagnostics.push(LintDiagnostic::error(
+                "parser/sfc",
+                "Art variant cannot be located in the original SFC source",
+                0,
+                0,
+            ));
+            refused.error_count = 1;
+            return refused;
+        };
         let allocator = Allocator::with_capacity((source.len() * 4).max(self.initial_capacity));
         let (root, errors) = Parser::new(&allocator, source).parse();
         let fatal = Self::has_fatal_template_parse_errors(&errors);
         let mut parsed = Self::template_parse_lint_result(filename, source.len(), &errors);
-        let offset = SourceRoot::new(descriptor.source.as_ref())
-            .unwrap()
-            .whole_block()
-            .offset_of(source)
-            .expect("original Art fragment");
         offset_result(&mut parsed, offset);
         let linted = self.lint_template_root(
             &allocator,
@@ -179,4 +189,36 @@ fn is_self_closing(bytes: &[u8], tag_end: usize) -> bool {
         }
     }
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::RuleRegistry;
+
+    #[test]
+    fn original_fragment_admission_refuses_equivalent_foreign_buffers_before_parse() {
+        let source = "<art><variant name='One'><div/></variant></art>";
+        let descriptor =
+            crate::linter::script_rules::parse_sfc_for_lint(source, "Gallery.art.vue").unwrap();
+        let original = descriptor.source.as_ref();
+        let start = original.find("<div/>").unwrap();
+        let fragment = &original[start..start + "<div/>".len()];
+        let linter = Linter::with_registry(RuleRegistry::new());
+        let clean = empty_lint_result("Gallery.art.vue");
+        let actual = linter.lint_art_variant(fragment, "Gallery.art.vue", &descriptor, None);
+        assert_eq!(format!("{actual:#?}"), format!("{clean:#?}"));
+        let foreign = fragment.to_owned();
+        assert_eq!(foreign, fragment);
+        let mut refused = empty_lint_result("Gallery.art.vue");
+        refused.diagnostics.push(LintDiagnostic::error(
+            "parser/sfc",
+            "Art variant cannot be located in the original SFC source",
+            0,
+            0,
+        ));
+        refused.error_count = 1;
+        let actual = linter.lint_art_variant(&foreign, "Gallery.art.vue", &descriptor, None);
+        assert_eq!(format!("{actual:#?}"), format!("{refused:#?}"));
+    }
 }
