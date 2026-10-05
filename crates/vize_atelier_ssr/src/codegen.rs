@@ -3,6 +3,7 @@
 //! SSR code generation produces JavaScript that uses template literals and `_push()` calls
 //! to build HTML strings on the server side.
 
+mod children;
 mod component_binding;
 mod component_resolution;
 pub(crate) mod css_vars;

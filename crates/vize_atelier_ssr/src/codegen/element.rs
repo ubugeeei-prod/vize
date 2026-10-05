@@ -5,6 +5,7 @@
 
 mod component;
 mod component_props;
+mod css_root;
 mod directive_props;
 mod merged;
 mod plain;
