@@ -53,17 +53,14 @@ window ends `Fragment: _Fragment } = Vue`; the new window adds
 windows, not complete DOM generated programs; do not invent the omitted bytes.
 
 The complete selected and legacy SSR programs are in the actual job log.
-Their differing `_push` lines are:
+Their differing `_push` lines are copied verbatim after removing job timestamps;
+only the lane labels below are authored:
 
-```js
-// selected
-_push(
-  `<!--[--><div> <span>{{ this is not an expression }}</span> <span :class="notEvaluated">RAW_VPRE_TOKEN</span> </div><p>${_ssrInterpolate($setup.realBinding)}</p><!--]-->`,
-);
-// legacy
-_push(
-  `<!--[--><div><span>{{ this is not an expression }}</span><span :class="notEvaluated">RAW_VPRE_TOKEN</span></div><p>${_ssrInterpolate($setup.realBinding)}</p><!--]-->`,
-);
+```text
+selected:
+  _push(`<!--[--><div> <span>{{ this is not an expression }}</span> <span :class="notEvaluated">RAW_VPRE_TOKEN</span> </div><p>${_ssrInterpolate($setup.realBinding)}</p><!--]-->`)
+legacy:
+  _push(`<!--[--><div><span>{{ this is not an expression }}</span><span :class="notEvaluated">RAW_VPRE_TOKEN</span></div><p>${_ssrInterpolate($setup.realBinding)}</p><!--]-->`)
 ```
 
 This establishes whitespace/output differences. It does not establish which
