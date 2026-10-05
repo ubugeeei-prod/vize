@@ -161,6 +161,13 @@ fn disabled_checker_keeps_proven_builtin_facts_without_guessing_computed_types()
         send(&mut service, query),
         Some(json!({"jsonrpc":"2.0","id":2,"result":[original_builtin_hint()]}))
     );
+    assert_eq!(
+        send(
+            &mut service,
+            json!({"jsonrpc":"2.0","id":3,"method":"textDocument/inlayHint","params":{"textDocument":{"uri":uri},"range":{"start":{"line":4,"character":0},"end":{"line":6,"character":0}}}})
+        ),
+        Some(json!({"jsonrpc":"2.0","id":3,"result":null}))
+    );
     let uri = tower_lsp::lsp_types::Url::parse(uri).unwrap();
     assert_eq!(
         service.inner().state.documents.text(&uri).as_deref(),
@@ -210,6 +217,13 @@ fn unavailable_checker_keeps_known_builtin_without_rendering_computed_placeholde
         Some(json!({"jsonrpc":"2.0","id":2,"result":[original_builtin_hint()]}))
     );
     assert!(service.inner().state.corsa_init_failure().is_some());
+    assert_eq!(
+        send(
+            &mut service,
+            json!({"jsonrpc":"2.0","id":3,"method":"textDocument/inlayHint","params":{"textDocument":{"uri":uri},"range":{"start":{"line":4,"character":0},"end":{"line":6,"character":0}}}})
+        ),
+        Some(json!({"jsonrpc":"2.0","id":3,"result":null}))
+    );
     assert_eq!(
         service.inner().state.documents.text(&uri).as_deref(),
         Some(ORIGINAL)

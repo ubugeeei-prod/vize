@@ -15,3 +15,10 @@ in `native-script-diagnostics.json`; the SFC template consumes those bindings.
 Plain authored variants consume their computed value without suppressing suggestions.
 Native execution and release inclusion remain pending until exact-head Actions
 and the protected delivery checks complete.
+
+`Scorecard.vue.txt` retains the complete existing Vue language-tools scorecard
+document from its captured `didOpen` request (589 UTF-8 bytes, SHA-256
+`bbfe257e3e2c98a9e43a5526a63e4797fe911d9e885fcb43a09e1473bbcdb364`).
+Its authored editor-only profile enables inlay assistance with native typecheck
+disabled. Keep its old positive Ref/ComputedRef assertions and require the whole
+three-hint response, exact ranges and edit invalidation using proven builtin facts.
