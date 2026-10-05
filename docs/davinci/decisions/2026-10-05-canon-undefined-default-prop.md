@@ -109,3 +109,14 @@ verified official oracle binary in this qualifier and retain the runtime source
 SHA/binary path in its hashed capture. Existing test helpers, fixture bytes and
 whole vectors are unchanged; only fresh corrected-head execution can qualify
 the explicit binding.
+
+Artifact76 retains all44 raw hashes and the explicit native binding, but the
+original common snapshot helper can return None on constructor/scan/check errors
+and the legacy fixture then skips its golden assertion. Preserve every original
+input/config string and all three whole-empty goldens, while adding a required
+snapshot-presence guard and capture before cleanup. Retain each complete snapshot,
+all authored src/packages/tsconfig bytes and direct Vue/Vite declarations. The
+common helper stays unchanged; required execution now fails on absent snapshots,
+and the receipt independently asserts every complete empty vector. The harness
+source hash changes explicitly; original input/config/golden bytes remain exact.
+Fresh source/native proof is required before admission, with no skip waiver.
