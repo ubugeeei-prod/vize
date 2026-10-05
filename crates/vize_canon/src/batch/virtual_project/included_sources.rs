@@ -275,11 +275,7 @@ mod tests {
         );
         assert_eq!(
             project.topology_program_files(),
-            [
-                "__vize_helpers.d.ts",
-                "__vize_vue_modules.d.ts",
-                "src/entry.ts",
-            ],
+            ["__vize_vue_modules.d.ts", "src/entry.ts"],
         );
         let _ = fs::remove_dir_all(&root);
     }
@@ -312,11 +308,7 @@ mod tests {
 
         assert_eq!(
             project.topology_program_files(),
-            [
-                "__vize_helpers.d.ts",
-                "__vize_vue_modules.d.ts",
-                "src/entry.ts",
-            ],
+            ["__vize_vue_modules.d.ts", "src/entry.ts"],
         );
         let mut registered = vec![entry, outside];
         registered.sort();

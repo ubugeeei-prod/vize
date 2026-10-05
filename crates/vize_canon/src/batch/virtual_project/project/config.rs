@@ -203,11 +203,7 @@ impl VirtualProject {
         // Plain authored scripts and declarations need no Vue preamble. It
         // references vite/client and would add ambient asset types even when
         // the project's own compilerOptions.types is empty.
-        (self
-            .virtual_files
-            .values()
-            .any(|file| file.source_map.sfc_map.is_some())
-            || self.needs_vue_jsx_compiler_options())
+        (self.shared_helper_source_count > 0)
             && (self.experimental_patterned_template
                 || (!self.legacy_vue2
                     && !matches!(

@@ -85,3 +85,13 @@ Helper eligibility also follows incremental source membership. Existing
 config membership changes enqueue the shared helper candidate, letting the
 normal materializer create or remove it. A TS → Vue → TS control verifies
 this transition without changing untouched warm source handling.
+
+Source `c6f3e029e4` passes all original-project CLI/native/Batch cases and the
+full native-phase workflow. Ordinary source Rust checks expose phantom-helper
+expectations in two plain-TS topology controls and one unnecessary warm helper
+candidate (9 entries versus the unchanged limit of 8). Update only the exact
+plain-TS include expectations. Helper eligibility is now an O(1) count owned
+by real artifact insert/remove operations; atomic re-registration compares
+before/after eligibility and enqueues the helper only on a transition. The
+strict warm limit remains 8, and unchanged Vue re-registration considers one
+source without any helper work.

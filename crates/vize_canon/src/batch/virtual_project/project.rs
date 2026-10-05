@@ -89,6 +89,7 @@ impl VirtualProject {
             experimental_patterned_template: false,
             experimental_strict_slot_children: false,
             virtual_files: FxHashMap::default(),
+            shared_helper_source_count: 0,
             source_artifacts: FxHashMap::default(),
             passthrough_files: FxHashMap::default(),
             original_index: FxHashMap::default(),

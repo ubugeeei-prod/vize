@@ -53,10 +53,8 @@ impl VirtualProject {
     }
 
     pub(super) fn mark_incremental_config_file(&mut self) {
-        self.incremental_materialized_candidates.extend([
-            self.virtual_root.join("tsconfig.json"),
-            self.virtual_root.join(SHARED_HELPERS_FILE),
-        ]);
+        self.incremental_materialized_candidates
+            .insert(self.virtual_root.join("tsconfig.json"));
     }
 
     pub(super) fn mark_incremental_stub_files(&mut self) {

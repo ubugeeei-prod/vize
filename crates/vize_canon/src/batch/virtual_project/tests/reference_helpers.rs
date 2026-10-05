@@ -29,6 +29,10 @@ fn plain_ts_to_vue_to_plain_ts_updates_shared_helpers() {
             .unwrap()
             .contains("__vize_defineProps")
     );
+    project.register_path(&component).unwrap();
+    let unchanged = project.materialize_incremental_delta().unwrap();
+    assert_eq!(unchanged.considered, 1);
+    assert!(unchanged.delta.is_empty());
     project.remove_source_and_dependencies(&component);
     let removed = project.materialize_incremental_delta().unwrap();
     assert!(removed.delta.deleted.contains(&helpers));
