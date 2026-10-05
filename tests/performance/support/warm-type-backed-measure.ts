@@ -6,6 +6,7 @@ import { createSampler } from "../../../tools/support/compat/davinci/lib/lsp-res
 import type { JsonRpcMessage } from "../../tooling/support/lsp/protocol.ts";
 import { LspRequestError, LspSession } from "../../tooling/support/lsp/session.ts";
 import { SessionRoots, type Packet, type RequestSpec } from "./warm-type-backed-packets.ts";
+import { observeWork } from "./warm-type-backed-work.ts";
 
 export class QueryRecorder {
   readonly rows: Array<Record<string, unknown>> = [];
@@ -13,13 +14,15 @@ export class QueryRecorder {
   readonly sampler: ReturnType<typeof createSampler>;
   readonly session: LspSession;
   readonly nativeExecutable: string;
+  readonly parentExecutable: string;
   readonly roots = new SessionRoots();
   readonly notifications: Array<{ method: string; params: unknown }> = [];
   readonly responses: JsonRpcMessage[] = [];
 
-  constructor(session: LspSession, nativeExecutable: string) {
+  constructor(session: LspSession, nativeExecutable: string, parentExecutable: string) {
     this.session = session;
     this.nativeExecutable = nativeExecutable;
+    this.parentExecutable = fs.realpathSync(parentExecutable);
     this.sampler = createSampler(session.processId);
     session.notificationObservers.push((method, params) =>
       this.notifications.push({ method, params }),
@@ -32,6 +35,8 @@ export class QueryRecorder {
     spec: RequestSpec,
     following?: (id: number) => JsonRpcMessage[],
   ): Promise<Packet> {
+    const parent = { pid: this.session.processId, executable: this.parentExecutable };
+    const workBefore = observeWork(this.sampler.sample(), parent);
     const before = this.sampler.sample();
     const started = performance.now();
     let result: unknown = null;
@@ -56,6 +61,7 @@ export class QueryRecorder {
     }
     const wallMs = performance.now() - started;
     const after = this.sampler.sample();
+    const workAfter = observeWork(after, parent);
     const packet = { name: spec.name, method: spec.method, result };
     let comparable: unknown;
     let comparableParams: unknown;
@@ -107,6 +113,11 @@ export class QueryRecorder {
       cpuSeconds: after.cpu_seconds - before.cpu_seconds,
       before,
       after,
+      kernelWork: {
+        scope: "raw per-thread CPU ticks and process IO outside the request wall/CPU window",
+        before: workBefore,
+        after: workAfter,
+      },
       processes,
     });
     if (error && stage !== "cancel")

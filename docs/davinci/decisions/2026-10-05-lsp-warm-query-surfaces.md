@@ -112,3 +112,38 @@ and its authenticated four JUnit artifacts prove 16,131 unique passing tests
 at historical hosted source5630f3ec, including the four whole source laws;
 they do not qualify this new head or any original400 native/wire/CPU outcome.
 Fresh exact source Actions and the first paired execution remain required.
+
+## First actual pair and CPU localization
+
+Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5995283667).
+
+Actual run37311997959 compiled common baseline a6dfe45a and successor
+48272963 with identical CI recipe, locks, physical workspace and pinned native
+runtime. Official artifact11346239589 is 4,983,594 bytes with SHA256
+67af9aead8dd3b6f97ec291ebd89158f9f9785663a14fc0d24e5713c0edaa722;
+all 767 members and CRCs are authenticated. Both processes exited cleanly and
+retained all 74 envelopes and raw wire. Baseline failures are empty; the
+successor's first unsaved-host script hover, ID26, returned null in 0.599 ms.
+The other 73 complete envelopes match after the checked private-root bijection,
+including every original warm request. This whole oracle remains red.
+
+All 20 warm wall-time medians are 2612.376 ms before and 2637.232 ms after.
+Sampled Vize CPU medians are 2.615 s and 2.630 s; live native CPU medians are
+zero. These failed-pair observations show no measured gain. Both sources log
+native 12-second timeouts. A later collected-diagnostics marker acknowledges
+collection/publication, not successful native completion; abandoned work can
+still be draining. The source path permits a fast refusal, while the particular
+null's correlated draining/error cause remains unproven. Keep the original
+null/typed/invalidation/refusal expectations and all recorded outcomes strict.
+
+Add read-only per-thread CPU ticks and process-I/O observations to the same
+existing pair outside each original request's timed wall/CPU window. Retain
+raw stat, thread name and I/O bytes plus physical executable, PID and birth
+identity. Recheck the observed process life and executable; native lifecycle
+misses retain their error instead of inventing zero work. The measured parent
+identity must remain exact. No immutable baseline patch, extra IPC, retry,
+sleep, payload filter, production behavior or pipeline stage is added. These
+observations localize thread work, not source statements or Program counts.
+Linux field authority is the [kernel proc documentation](https://www.kernel.org/doc/html/v6.7/filesystems/proc.html).
+Fresh whole execution remains required; #8035 stays Draft and offqueue under
+the finite first v0.433 publication hold.

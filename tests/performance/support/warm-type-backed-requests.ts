@@ -54,7 +54,7 @@ async function runSide(
   try {
     session = new LspSession({ repoRoot, binary });
     processId = session.processId;
-    recorder = new QueryRecorder(session, runtime.executable);
+    recorder = new QueryRecorder(session, runtime.executable, binary);
     initialization = await session.initialize(workspace, { editor: true, typecheck: true });
     session.notify("textDocument/didOpen", {
       textDocument: { uri, languageId: "vue", version: 1, text: source },
