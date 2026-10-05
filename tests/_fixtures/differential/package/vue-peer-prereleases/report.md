@@ -41,4 +41,3 @@ npx semver -r ">=2.6.0 || >=3.6.0-0" 3.6.0-rc.10 3.6.0-beta.17 3.5.43 2.7.16 3.6
 ```
 
 Related: #2142 (Vue peer failures in mixed Vue 2 / Vue 3 workspaces), which is a different case.
-
