@@ -37,3 +37,22 @@ Every whole publication mismatch is collected across all original sessions,
 then a mandatory terminal assertion rejects the test; response, version, timeout
 and shutdown contracts remain exact. Native suggestions are never filtered.
 Fresh current-source execution must authenticate all vectors before acceptance.
+
+The actual protected candidate `22e1ca79` passed all three owned LSP laws
+(27 sessions / 123 complete publications), but its full Check failed the existing
+KeepAlive official Vapor comparison. The Node child returned non-success with
+empty captured stderr, and the old helper omitted its exit status; the cause is
+unknown. The preceding actual main passed that case, which does not authorize
+retrying the same failed candidate or claiming a fixed cause.
+
+The same existing PR is genuinely rebased on actual main `69b2c8c1`, retaining
+every owned production, original input and complete LSP expectation byte. A
+minimal test-driver observation records actual exit status (including signal),
+whole stdout/stderr and input on failure. An opt-in child observation captures
+existing awaited phases and errors on stderr; successful semantic stdout, all
+original KeepAlive sources/vectors/comparisons, time budgets and failure gates
+remain unchanged. Fresh exact-source Actions must execute that unchanged case.
+If they pass, retain the older failure as unknown; the current protected complete
+suite is still mandatory before actual signed merge and installed release proof.
+
+Paired observation decision: [#7943](https://github.com/ubugeeei-prod/vize/issues/7943#issuecomment-5991040214). The driver also retains complete raw output bytes beside text, so invalid UTF-8 cannot hide a child failure.
