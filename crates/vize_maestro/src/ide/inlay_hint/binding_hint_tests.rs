@@ -57,8 +57,14 @@ fn unknown_imported_computed_result_is_not_guessed() {
     let uri = Url::parse("file:///unknown-computed.vue").unwrap();
     let range = Range::new(Position::new(0, 0), Position::new(6, 0));
     assert_eq!(
-        InlayHintService::get_hints(&super::fresh_state(), content, &uri, range),
-        Vec::new()
+        serde_json::to_value(InlayHintService::get_hints(
+            &super::fresh_state(),
+            content,
+            &uri,
+            range,
+        ))
+        .unwrap(),
+        serde_json::Value::Array(Vec::new())
     );
 }
 
