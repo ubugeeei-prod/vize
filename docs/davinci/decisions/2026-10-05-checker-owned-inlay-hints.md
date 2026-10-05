@@ -60,6 +60,14 @@ binding suggestions for `label`/`items`, whose uses occur in the SFC template.
 Assert that complete native diagnostic vector separately from the complete clean
 SFC diagnostic vector. Authored plain JS/TS controls consume their computed value;
 no suggestion/style preference is disabled and no diagnostic is filtered.
+The authored stock JS config also publishes the complete TS5055 overwrite-input
+error for `Oracle.js`, despite that document's empty pull-diagnostic vector. The
+other three stock config publications are empty. Assert the whole publication
+family after joined shutdown separately from every requested document vector,
+including source/code/severity/message/range and config URI. Retain the original
+authored options without adding `noEmit` or claiming config diagnostic parity.
+The sole stdout reader preserves these envelopes before response matching; this
+adds no native request, process, wait-order dependency or production change.
 Checker-disabled and genuinely unavailable-runtime original RPCs are retained. Existing prop/i18n/resident
 laws and the entire legacy differential corpus remain required.
 

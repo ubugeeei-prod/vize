@@ -33,6 +33,7 @@ pub struct LspProcess {
     child: Option<Child>,
     stdin: Option<ChildStdin>,
     messages: mpsc::Receiver<Result<Value, CompactString>>,
+    published_diagnostics: Arc<Mutex<Vec<Value>>>,
     stdout_reader: Option<JoinHandle<()>>,
     stderr_reader: Option<JoinHandle<()>>,
     stderr: Arc<Mutex<Vec<u8>>>,
@@ -73,12 +74,14 @@ impl LspProcess {
 
         let (messages_tx, messages) = mpsc::channel();
         let stderr = Arc::new(Mutex::new(Vec::new()));
+        let published_diagnostics = Arc::new(Mutex::new(Vec::new()));
         // Own the child before spawning either reader. If thread creation
         // panics, unwinding drops this partial guard and still reaps the LSP.
         let mut process = Self {
             child: Some(child),
             stdin: Some(stdin),
             messages,
+            published_diagnostics: Arc::clone(&published_diagnostics),
             stdout_reader: None,
             stderr_reader: None,
             stderr: Arc::clone(&stderr),
@@ -97,6 +100,12 @@ impl LspProcess {
                     Ok(message) => {
                         if let Some(capture) = &capture {
                             capture.record("response", &message);
+                        }
+                        if message["method"] == "textDocument/publishDiagnostics" {
+                            published_diagnostics
+                                .lock()
+                                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                                .push(message.clone());
                         }
                         let _ = messages_tx.send(Ok(message));
                     }
@@ -176,6 +185,14 @@ impl LspProcess {
                 )),
             }
         }
+    }
+
+    /// Whole publication envelopes survive response matching and reader shutdown.
+    pub fn published_diagnostics(&self) -> Vec<Value> {
+        self.published_diagnostics
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .clone()
     }
 
     pub fn trace_dir(&self) -> Option<&Path> {

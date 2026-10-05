@@ -122,6 +122,26 @@ impl NativeOracle {
             self.process.wait_for_transport_eof().success(),
             "native shutdown failed"
         );
+        let diagnostics = if self.uri.ends_with(".js") {
+            let path = self._root.path().join("src/Oracle.js");
+            let path = path.to_string_lossy().replace('\\', "/");
+            json!([{
+                "code":5055,"severity":1,"source":"ts",
+                "message":format!("Cannot write file '{path}' because it would overwrite input file."),
+                "range":{"start":{"line":0,"character":0},"end":{"line":0,"character":0}}
+            }])
+        } else {
+            json!([])
+        };
+        assert_eq!(
+            self.process.published_diagnostics(),
+            vec![
+                json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{
+                    "uri":file_uri(&self._root.path().join("tsconfig.json")),"diagnostics":diagnostics
+                }})
+            ],
+            "complete stock config publications, distinct from document diagnostics"
+        );
     }
 
     pub fn project_authored_locations(&self, hints: &mut Value, authored_uri: &str) {
