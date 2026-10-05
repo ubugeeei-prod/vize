@@ -153,10 +153,22 @@ test("source LSP selects each same-range original diagnostic and preserves valid
       source: "vize/lint",
       message: "Multiple consecutive spaces",
     };
+    const componentNameDiagnostic = {
+      range: { start: { line: 0, character: 10 }, end: { line: 0, character: 10 } },
+      severity: 1,
+      code: "vue/multi-word-component-names",
+      codeDescription: {
+        href: "https://eslint.vuejs.org/rules/multi-word-component-names.html",
+      },
+      source: "vize/lint",
+      message:
+        'Component name "Fix" should be multi-word to avoid conflicts with HTML elements\n\n' +
+        'Help: Rename the component to use multiple words (e.g., "TodoItem" instead of "Item")',
+    };
     session.notify("textDocument/didOpen", {
       textDocument: { uri: fixUri, languageId: "vue", version: 1, text: fixSource },
     });
-    await publication(fixUri, 1, [fixDiagnostic]);
+    await publication(fixUri, 1, [componentNameDiagnostic, fixDiagnostic]);
     const fix = {
       title: "Fix: Replace multiple spaces with single space",
       kind: "quickfix",
@@ -185,7 +197,7 @@ test("source LSP selects each same-range original diagnostic and preserves valid
       textDocument: { uri: fixUri, version: 2 },
       contentChanges: [{ range: fixRange, text: " " }],
     });
-    await publication(fixUri, 2, []);
+    await publication(fixUri, 2, [componentNameDiagnostic]);
     assert.equal(await request(fixUri, fixRange, [fixDiagnostic]), null);
     assert.equal(
       fs.readFileSync(file, "utf8"),

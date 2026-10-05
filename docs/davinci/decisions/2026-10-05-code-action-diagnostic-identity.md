@@ -58,6 +58,16 @@ process receipt and framed session (SHA-256 `7a12d20637a3823695445e5270c1779c397
 The existing consumer-surface generator also registers only the extraction's
 two moved coordinates and new test dependency row.
 
+Source `7fbe62f7` retained 33 observations before refusing the secondary
+`Fix.vue` publication: its configured single-word-name error must accompany
+the spacing warning. The complete source-derived name diagnostic now remains
+before and after the real spacing edit; the original URI, input, opinionated
+preset, individual fix actions and all 36 slots are retained. Artifact
+`11349626938` preserves that failed process and full session (SHA-256
+`53491a7805a12fd445b40241300ff1c592568ee3e73830d3b95fdb6c53c90991`).
+The accompanying Rust lib-test Clippy failure requires an equivalent borrowed
+one-element slice; production code and diagnostic payloads remain unchanged.
+
 Actual source Actions, complete new runtime observations, every old corpus,
 protected full suites/all 104 unchanged instruction ceilings, signed actual
 merge and release publication remain pending. Static source review alone gives
@@ -65,3 +75,4 @@ no runtime, Windows, native-migration, performance or delivery credit.
 
 Paired issue decision: https://github.com/ubugeeei-prod/vize/issues/8000#issuecomment-5995087452
 First source corrections: https://github.com/ubugeeei-prod/vize/issues/8000#issuecomment-5995695437
+Second source corrections: https://github.com/ubugeeei-prod/vize/issues/8000#issuecomment-5996202440

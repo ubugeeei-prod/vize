@@ -111,7 +111,7 @@ fn foreign_rule_source_numeric_code_and_stale_range_do_not_select_lint_actions()
         );
     }
     assert_eq!(
-        actions(&state, &uri, &[original.clone()]),
+        actions(&state, &uri, std::slice::from_ref(&original)),
         vec![expected(&uri, &original, true)]
     );
 }
