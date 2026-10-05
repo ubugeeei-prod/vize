@@ -53,8 +53,7 @@ Fresh source Check 37255740116 at b33 failed: the CSS oracle treated every truth
 ## Protected prefix composition preservation
 
 Corrected source `13d00ab6dc` passed complete Check37256770986,
-all49 terminal source contexts, genuine Nuxt37256770728 and scoped CSS
-37256770720. Four authenticated source JUnit packets contain 15,837 affected
+all49 terminal source contexts, genuine Nuxt37256770728 and scoped CSS 37256770720. Four authenticated source JUnit packets contain 15,837 affected
 Rust identities and both new CSS laws. Passing child stdout was not archived;
 this establishes executed fixed24 comparisons, without a retained full24-row
 raw packet claim or protected full-suite credit.
