@@ -43,8 +43,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `PropContract`                |     2 |     3 |
 | `ReactiveKind`                |     5 |    41 |
 | `SfcDescriptor`               |     7 |    25 |
-| `SfcScriptBlock`              |     2 |     5 |
+| `SfcScriptBlock`              |     3 |     6 |
 | `SfcStyleBlock`               |     2 |     8 |
+| `SfcTemplateBlock`            |     1 |     1 |
 | `SignatureContract`           |     2 |     4 |
 | `SlotContract`                |     1 |     2 |
 | `TypeEnvironment`             |     1 |     1 |

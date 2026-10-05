@@ -75,3 +75,8 @@ No native/default or whole-fix-history acceptance, speed, memory, ranking or
 10x claim follows from this change. Keep #6883 open and instruction budgets
 unchanged. The verified original reporter is included as a source Co-author;
 final same-primary squash normalization is reported from the actual commit.
+
+The source-qualified consumption and migration inventories record these legacy
+SFC/parser and raw OXC imports. Their authoritative generators refresh only the
+Maestro shards; the existing rows and fixture gates remain intact. These rows
+record current source use and grant no native migration acceptance.
