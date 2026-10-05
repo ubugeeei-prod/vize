@@ -40,6 +40,8 @@ impl MaestroServer {
         };
         self.state.update_virtual_docs(uri, &content);
         #[cfg(feature = "native")]
+        let retained = super::initial_diagnostics::RetainedDiagnostics::new(self, uri);
+        #[cfg(feature = "native")]
         super::workspace_files::invalidate_changed_document_disk_project_state(self, uri).await;
         // Apply editor text before waiting for type diagnostics. Their lock
         // cannot delay didChange or hide the new revision from pending replies.
@@ -56,6 +58,8 @@ impl MaestroServer {
         if let Some(diagnostics) = diagnostics {
             self.publish_collected_diagnostics(uri, diagnostics).await;
         }
+        #[cfg(feature = "native")]
+        retained.finish();
 
         if !self.state.is_lsp_typecheck_enabled() {
             return;
@@ -126,6 +130,8 @@ impl MaestroServer {
 
     /// Publish diagnostics for a document.
     pub(crate) async fn publish_diagnostics(&self, uri: &Url) {
+        #[cfg(feature = "native")]
+        let retained = super::initial_diagnostics::RetainedDiagnostics::new(self, uri);
         // tower-lsp polls notifications concurrently. A watched declaration
         // change can therefore overlap consecutive didChange passes for the
         // same Vue file; serialize those passes so their shared Corsa virtual
@@ -143,11 +149,15 @@ impl MaestroServer {
         if let Some(diagnostics) = diagnostics {
             self.publish_collected_diagnostics(uri, diagnostics).await;
         }
+        #[cfg(feature = "native")]
+        retained.finish();
     }
 
     /// Publish only if the document still has the version that scheduled the
     /// refresh. Watcher revalidation yields to a newer didChange publish.
     pub(crate) async fn publish_diagnostics_if_version(&self, uri: &Url, expected: i32) {
+        #[cfg(feature = "native")]
+        let retained = super::initial_diagnostics::RetainedDiagnostics::new(self, uri);
         #[cfg(feature = "native")]
         let diagnostic_lock = self.state.diagnostic_lock(uri);
         #[cfg(feature = "native")]
@@ -156,6 +166,8 @@ impl MaestroServer {
         let diagnostics = if self.state.documents.version(uri) == Some(expected) {
             self.collect_diagnostics_unlocked(uri).await
         } else {
+            #[cfg(feature = "native")]
+            self.retry_current_diagnostics(uri);
             None
         };
 
@@ -165,6 +177,8 @@ impl MaestroServer {
         if let Some(diagnostics) = diagnostics {
             self.publish_collected_diagnostics(uri, diagnostics).await;
         }
+        #[cfg(feature = "native")]
+        retained.finish();
     }
 
     /// Get block snippet completions (when outside all blocks).

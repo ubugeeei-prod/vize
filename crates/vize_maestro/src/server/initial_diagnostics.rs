@@ -16,6 +16,9 @@ use vize_l0::FxHashMap;
 
 use super::MaestroServer;
 
+mod retry;
+pub(super) use retry::RetainedDiagnostics;
+
 /// Let the editor's first interactive request claim Corsa before validation.
 /// Initial diagnostics remain prompt, while completion/hover no longer queue
 /// behind bridge startup and a full project diagnostic request.
@@ -104,6 +107,8 @@ impl PendingInitialDiagnostics {
 
 pub(super) struct InitialDiagnosticsScheduler {
     sender: Option<mpsc::SyncSender<()>>,
+    /// The active worker inserts into its queue without retaining a sender.
+    worker_owned: bool,
     #[expect(
         clippy::disallowed_types,
         reason = "shared only with the single diagnostics worker"
@@ -128,6 +133,7 @@ impl InitialDiagnosticsScheduler {
         // which would prevent shutdown when the foreground server is dropped.
         worker.initial_diagnostics = Some(Self {
             sender: None,
+            worker_owned: true,
             pending: std::sync::Arc::clone(&pending),
         });
         let spawned = thread::Builder::new()
@@ -137,12 +143,14 @@ impl InitialDiagnosticsScheduler {
         match spawned {
             Ok(_) => Self {
                 sender: Some(sender),
+                worker_owned: false,
                 pending,
             },
             Err(error) => {
                 tracing::error!("failed to start initial diagnostics worker: {error}");
                 Self {
                     sender: None,
+                    worker_owned: false,
                     pending,
                 }
             }
@@ -168,6 +176,34 @@ impl InitialDiagnosticsScheduler {
 
     pub(super) fn complete(&self, uri: &Url, version: i32) {
         self.pending.lock().complete(uri, version);
+    }
+
+    pub(super) fn retry(&self, uri: Url, version: i32) -> bool {
+        if self.sender.is_none() && !self.worker_owned {
+            return false;
+        }
+        {
+            let mut pending = self.pending.lock();
+            if !pending
+                .jobs
+                .get(&uri)
+                .is_some_and(|job| job.version >= version)
+            {
+                pending.insert(uri.clone(), version, Instant::now() + INTERACTIVE_GRACE);
+                if let Some(job) = pending.jobs.get_mut(&uri) {
+                    // This retry needs a complete pass; its initial feedback
+                    // was already attempted. Keep existing initial jobs intact.
+                    job.sync_pending = false;
+                }
+            }
+        }
+        match self.sender.as_ref().map(|sender| sender.try_send(())) {
+            None | Some(Ok(()) | Err(mpsc::TrySendError::Full(()))) => true,
+            Some(Err(mpsc::TrySendError::Disconnected(()))) => {
+                self.pending.lock().jobs.clear();
+                false
+            }
+        }
     }
 }
 

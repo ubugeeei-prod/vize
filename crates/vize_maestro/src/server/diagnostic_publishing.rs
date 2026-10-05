@@ -8,6 +8,9 @@ use crate::ide::DiagnosticService;
 
 use super::MaestroServer;
 
+#[cfg(all(test, feature = "native", unix))]
+mod retry_tests;
+
 pub(super) struct CollectedDiagnostics {
     version: i32,
     diagnostics: Vec<Diagnostic>,
@@ -100,6 +103,7 @@ impl MaestroServer {
 
         #[cfg(feature = "native")]
         if scope.as_ref().is_some_and(|scope| !scope.is_current()) {
+            self.retry_current_diagnostics(uri);
             return None;
         }
 
@@ -109,6 +113,8 @@ impl MaestroServer {
             .get(uri)
             .map(|document| document.version);
         if current_version != Some(version) {
+            #[cfg(feature = "native")]
+            self.retry_current_diagnostics(uri);
             tracing::debug!(
                 "skipping stale diagnostics for {}: collected version {}, current {:?}",
                 uri,
@@ -139,6 +145,7 @@ impl MaestroServer {
         } = collected;
         #[cfg(feature = "native")]
         if stamp.is_some_and(|stamp| !stamp.is_current(&self.state)) {
+            self.retry_current_diagnostics(uri);
             return;
         }
         tracing::info!(
@@ -147,6 +154,8 @@ impl MaestroServer {
             version
         );
         if self.state.documents.version(uri) != Some(version) {
+            #[cfg(feature = "native")]
+            self.retry_current_diagnostics(uri);
             tracing::debug!(
                 "skipping superseded diagnostics for {}: collected version {}, current {:?}",
                 uri,

@@ -60,6 +60,24 @@ Source-set mutation stamps include completion boundaries and refuse partial
 sets, changes and ABA reopen even when client versions/text are reused; ignored
 older changes and absent closes retain the complete result.
 
+Independent source review found a convergence blocker in the first proposal:
+rejecting a collected/publishing batch after unrelated document B changes can
+lose A's work because the initial worker already removed its ready job. Keep
+the whole stale-result fence and return current A work to the existing 64-URI
+coalesced scheduler with its existing grace. Both collection and publication
+rejection paths retain the current version; a borrowed attempt also retains
+work if collection/publication is cancelled. The active worker can insert into
+its shared pending queue without owning a channel sender. Foreground retry
+wakes the same lane; unavailable workers, closed documents and disabled type
+diagnostics do not claim queued work. Existing/newer initial jobs keep their
+feedback and deadline, retries do not add another parser-only stage, and a
+complete current publication retires the job. Source tests use actual
+LspService/ClientSocket notifications, the original project, cancelled scoped
+collection, stale publication with a newer version, and a held-IPC worker
+rejecting an unrelated change; complete resulting notifications are compared
+with a current idle collection. Closed/disabled inverse controls are retained.
+All are prepared but unexecuted; ec18 alone is superseded and ineligible.
+
 A project/config/watcher/backend epoch accompanies that source stamp. Stale
 native requests return whole ContentModified, never filtered or clamped edits;
 diagnostic batches keep their own stamp through their separate publication
