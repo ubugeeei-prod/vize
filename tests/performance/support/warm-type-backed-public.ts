@@ -8,6 +8,7 @@ import {
 import { finiteCut } from "./warm-type-backed-cut.ts";
 import { installPublicAsset, loadSourceReference } from "./warm-type-backed-public-assets.ts";
 import { object } from "./warm-type-backed-packets.ts";
+import { verifyReleaseBridge } from "./warm-type-backed-release-bridge.ts";
 import { runSide } from "./warm-type-backed-requests.ts";
 import {
   driverRoot,
@@ -44,11 +45,18 @@ async function prepare() {
     assert.equal(sha256(text), process.env.ORIGINAL_PUBLIC_AUTHORITY_SHA256);
     const authority = JSON.parse(text) as PublishedAuthority;
     assert.equal(authority.schema, "vize.original400.published.authority");
-    assert.equal(authority.version, 1);
+    assert.equal(authority.version, 2);
     assert.match(authority.releaseVersion, /^0\.434\.\d+$/u);
     const cut = finiteCut(output);
     assert.ok(cut, "the public replay requires the same literal root-frozen cut");
-    assert.deepEqual(authority.cut, { sha: cut.after, tree: cut.tree, manifestSha256: cut.digest });
+    assert.deepEqual(authority.sourceCut, {
+      sha: cut.after,
+      tree: cut.tree,
+      manifestSha256: cut.digest,
+      version: "0.433.0",
+    });
+    assert.equal(authority.releaseVersion, authority.tagHead.version);
+    const versionBridge = verifyReleaseBridge(authority, output);
     for (const entry of [authority.asset, authority.sourceArtifact]) {
       assert.ok(Number.isSafeInteger(entry.id) && entry.id > 0);
       assert.ok(Number.isSafeInteger(entry.size) && entry.size > 0);
@@ -59,7 +67,7 @@ async function prepare() {
     );
     assert.ok(
       Number.isSafeInteger(authority.sourceArtifact.attempt) &&
-        authority.sourceArtifact.attempt > 0,
+        authority.sourceArtifact.attempt === 1,
     );
     const driver = sourceIdentity(driverRoot);
     assert.equal(driver.dirty, "");
@@ -114,13 +122,15 @@ async function prepare() {
     save("public-runtime.json", runtime);
     save("workflow-source.json", {
       authority: "installed-public-release",
-      head: cut.after,
+      head: authority.tagHead.sha,
+      sourceCut: authority.sourceCut,
+      tagHead: authority.tagHead,
       driverSource: driver,
       finiteCut: cut,
       sourceReferenceRoot: referenceRoot,
     });
     fs.writeFileSync(path.join(output, "changed-tree-manifest.json"), cut.manifestBytes);
-    const installation = await installPublicAsset(authority, output);
+    const installation = await installPublicAsset(authority, output, versionBridge);
     save("published-installation.json", installation);
     const receiptPath = path.join(output, "published-installation.json");
     const receiptSha256 = sha256(fs.readFileSync(receiptPath));
@@ -161,6 +171,14 @@ async function measure() {
   const packet = {
     sourceBinding: binding,
     installation,
+    setupComparison: {
+      source: reference.after.initialization,
+      public: side.initialization,
+      allowedVersion: {
+        source: installation.receipt.authority.sourceCut.version,
+        public: installation.receipt.authority.tagHead.version,
+      },
+    },
     runtime,
     originals: inputAuthority(),
     side,
@@ -181,7 +199,17 @@ async function measure() {
   );
   assert.deepEqual(side.inputs.source, reference.after.inputs.source);
   assert.equal(side.inputs.sourceSha256, reference.after.inputs.sourceSha256);
-  assert.deepEqual(side.initialization, reference.after.initialization);
+  const expectedSetup = structuredClone(reference.after.initialization);
+  const expectedInfo = object(object(expectedSetup).serverInfo);
+  assert.equal(expectedInfo.name, "vize-maestro");
+  assert.equal(expectedInfo.version, installation.receipt.authority.sourceCut.version);
+  assert.equal(reference.buildCustody[1].cliVersion, `vize ${expectedInfo.version}`);
+  expectedInfo.version = installation.receipt.authority.tagHead.version;
+  assert.deepEqual(
+    side.initialization,
+    expectedSetup,
+    "only the attested release setup version differs",
+  );
   assert.equal(
     object(object(side.initialization).serverInfo).version,
     installation.receipt.authority.releaseVersion,
@@ -209,6 +237,8 @@ async function measure() {
   save("public-qualified.json", {
     installed: installation.expected,
     literalCut: binding.finiteCut.after,
+    installedTagHead: installation.receipt.authority.tagHead,
+    versionBridge: installation.receipt.versionBridge,
     wholePacketsEqual: true,
     warmRequests: 20,
     observations: side.rows.filter((row) => /^warm-[1-5]$/u.test(String(row.stage))),

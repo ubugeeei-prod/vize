@@ -84,6 +84,7 @@ async function download(
 export async function installPublicAsset(
   authority: PublishedAuthority,
   output: string,
+  versionBridge: PublishedReceipt["versionBridge"],
 ): Promise<PublishedReceipt> {
   const release = await officialJson(
     `releases/tags/v${authority.releaseVersion}`,
@@ -96,8 +97,12 @@ export async function installPublicAsset(
   assert.equal(release.draft, false);
   assert.equal(release.tag_name, `v${authority.releaseVersion}`);
   assert.ok(release.published_at);
-  assert.equal(tagCommit.sha, authority.cut.sha);
-  assert.equal(tagCommit.commit.tree.sha, authority.cut.tree);
+  assert.equal(tagCommit.sha, authority.tagHead.sha);
+  assert.equal(tagCommit.commit.tree.sha, authority.tagHead.tree);
+  assert.deepEqual(
+    tagCommit.parents.map((parent: { sha: string }) => parent.sha),
+    [authority.sourceCut.sha],
+  );
   const selected = release.assets.filter(
     (entry: { name: string }) => entry.name === "vize-x86_64-unknown-linux-gnu.tar.gz",
   );
@@ -121,6 +126,7 @@ export async function installPublicAsset(
     authority,
     release,
     tagCommit,
+    versionBridge,
     asset,
     downloadSha256: authority.asset.sha256,
     installed: {

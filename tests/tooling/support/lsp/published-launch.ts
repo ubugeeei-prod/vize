@@ -5,11 +5,26 @@ import path from "node:path";
 import { sha256 } from "../../../differential/manifest.mjs";
 import type { VerifiedLspLaunch } from "./launch.ts";
 
+type SourceIdentity = { sha: string; tree: string; version: string };
+export type VersionBridgeProjection = {
+  schema: "vize.release.source-cut-version-bridge";
+  version: 1;
+  sourceCut: SourceIdentity;
+  tagHead: SourceIdentity;
+  recipeSha256: string;
+  allPathManifestSha256: string;
+  changedPathManifestSha256: string;
+  changedPathCount: number;
+  unchangedPathCount: number;
+};
 export type PublishedAuthority = {
   schema: "vize.original400.published.authority";
-  version: 1;
+  version: 2;
   releaseVersion: string;
-  cut: { sha: string; tree: string; manifestSha256: string };
+  releasePr: number;
+  sourceCut: SourceIdentity & { manifestSha256: string };
+  tagHead: SourceIdentity;
+  versionBridge: { projection: VersionBridgeProjection; sha256: string };
   asset: { id: number; size: number; sha256: string };
   sourceArtifact: {
     id: number;
@@ -25,7 +40,8 @@ export type PublishedReceipt = {
   version: 1;
   authority: PublishedAuthority;
   release: { draft: boolean; published_at: string; tag_name: string };
-  tagCommit: { sha: string; commit: { tree: { sha: string } } };
+  tagCommit: { sha: string; commit: { tree: { sha: string } }; parents: Array<{ sha: string }> };
+  versionBridge: { path: string; sha256: string };
   asset: { name: string; id: number; size: number; digest: string; browser_download_url: string };
   downloadSha256: string;
   installed: { path: string; sha256: string; archiveMember: string };
@@ -43,11 +59,23 @@ export function validatePublishedLaunch(launch: VerifiedPublishedLspLaunch): voi
   const receipt = launch.receipt;
   assert.equal(receipt.schema, "vize.original400.published.installation");
   assert.equal(receipt.version, 1);
+  assert.equal(receipt.authority.version, 2);
+  assert.equal(receipt.authority.releaseVersion, receipt.authority.tagHead.version);
+  const bridgeBytes = fs.readFileSync(receipt.versionBridge.path);
+  assert.equal(sha256(bridgeBytes), receipt.versionBridge.sha256);
+  const bridge = JSON.parse(bridgeBytes.toString("utf8"));
+  assert.deepEqual(bridge.authorityProjection, receipt.authority.versionBridge.projection);
+  assert.equal(bridge.authorityProjectionSha256, receipt.authority.versionBridge.sha256);
+  assert.equal(bridge.status, "CANDIDATE_TREE_RELATION_VERIFIED");
   assert.equal(receipt.release.draft, false);
   assert.ok(receipt.release.published_at);
   assert.equal(receipt.release.tag_name, `v${receipt.authority.releaseVersion}`);
-  assert.equal(receipt.tagCommit.sha, receipt.authority.cut.sha);
-  assert.equal(receipt.tagCommit.commit.tree.sha, receipt.authority.cut.tree);
+  assert.equal(receipt.tagCommit.sha, receipt.authority.tagHead.sha);
+  assert.equal(receipt.tagCommit.commit.tree.sha, receipt.authority.tagHead.tree);
+  assert.deepEqual(
+    receipt.tagCommit.parents.map((parent) => parent.sha),
+    [receipt.authority.sourceCut.sha],
+  );
   assert.equal(receipt.asset.name, "vize-x86_64-unknown-linux-gnu.tar.gz");
   assert.equal(receipt.asset.id, receipt.authority.asset.id);
   assert.equal(receipt.asset.size, receipt.authority.asset.size);
@@ -55,7 +83,7 @@ export function validatePublishedLaunch(launch: VerifiedPublishedLspLaunch): voi
   assert.equal(receipt.downloadSha256, receipt.authority.asset.sha256);
   assert.equal(fs.realpathSync(launch.binary), launch.binary);
   assert.equal(launch.expected.binaryPath, launch.binary);
-  assert.equal(launch.expected.sourceRevision, receipt.authority.cut.sha);
+  assert.equal(launch.expected.sourceRevision, receipt.authority.tagHead.sha);
   assert.equal(launch.expected.cliVersion, `vize ${receipt.authority.releaseVersion}`);
   const bytes = fs.readFileSync(launch.binary);
   assert.equal(bytes.subarray(0, 4).toString("hex"), "7f454c46");
@@ -81,7 +109,7 @@ export function verifyPublishedLaunch(
     authority: "published-release",
     binary,
     expected: {
-      sourceRevision: receipt.authority.cut.sha,
+      sourceRevision: receipt.authority.tagHead.sha,
       binaryPath: binary,
       binarySha256: receipt.installed.sha256,
       cliVersion: `vize ${receipt.authority.releaseVersion}`,

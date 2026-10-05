@@ -96,6 +96,8 @@ if (process.argv[2] === "prepare") {
       "tests/tooling/support/lsp/session-process.ts",
       "tests/tooling/support/lsp/session-capture.ts",
       "tests/tooling/support/lsp/published-launch.ts",
+      "tests/performance/support/warm-type-backed-release-bridge.py",
+      "tests/performance/support/warm-type-backed-release-bridge.json",
       "docs/davinci/decisions/2026-09-27-level-restructure.md",
       "docs/davinci/decisions/2026-10-05-lsp-warm-query-surfaces.md",
     ]);

@@ -312,3 +312,17 @@ has no inferred retry or older-green fallback. HTTP records retain immutable
 request URLs, sanitized redirect origin/path and query digests, rather than
 uploading short-lived signed queries. Original workload, production, launch and
 bounds are unchanged; fresh source and public execution remain pending.
+
+The [concrete supported-bridge implementation](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-6000479174)
+uses public authority v2 with distinct sourceCut, tagHead, release PR and root
+whole-tree projection/digest. The same existing public preparation invokes the
+frozen read-only official recipe against actual Git objects and signed source
+commit/official release PR metadata, retaining the full receipt and raw status.
+No claimed boolean, generic version/path waiver or tracked changelog qualifies.
+The source artifact remains literal-cut/DRIVER/run/attempt1; official tag/asset,
+ELF/hash/version and launch refer to generated tagHead. The one existing setup
+version is separately attested and changed only in the cloned expected object;
+all other setup fields and all74 measured envelopes stay exact. Original inputs,
+20warm, complete frames and every provider/process/control/resource bound stay.
+This supersedes the earlier unexecuted tag==CUT guard. New source peer and actual
+literal-cut/public qualification remain required without historical gain credit.
