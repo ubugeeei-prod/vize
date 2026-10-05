@@ -190,10 +190,10 @@ mod tests {
             assert_eq!(convert_line_comments_to_block(source), source);
         }
         for (source, expected) in [
-            ("_ctx.雪 / 2 // note", "_ctx.雪 / 2 /* note */"),
+            ("_ctx.雪 / 2 // note", "_ctx.雪 / 2 /*  note */"),
             (
                 "_ctx.obj.return / 2 // note",
-                "_ctx.obj.return / 2 /* note */",
+                "_ctx.obj.return / 2 /*  note */",
             ),
         ] {
             assert_eq!(convert_line_comments_to_block(source), expected);
