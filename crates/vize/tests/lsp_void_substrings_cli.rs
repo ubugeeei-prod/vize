@@ -58,19 +58,15 @@ fn every_reported_name_preserves_utf16_identity_shadows_and_unsaved_edits() {
         fixture.write_file("tsconfig.json", CONFIG);
         assert_eq!(fixture.open(&source), json!([]));
         for name in NAMES {
-            let declaration = format!("{name} =");
-            let bare = format!("{name} }}}}");
-            let compound = format!("{name} + 1");
-            // Locate a whole declaration so `id` never selects the `oid` declaration.
-            let declaration = format!("const {declaration}");
-            let needles = [declaration.as_str(), bare.as_str(), compound.as_str()];
-            let offsets: Vec<_> = needles
-                .iter()
-                .enumerate()
-                .map(|(index, needle)| {
-                    source.find(needle).unwrap() + if index == 0 { "const ".len() } else { 0 }
-                })
-                .collect();
+            let declaration = format!("const {name} =");
+            let bare = format!("{{{{ {name} }}}}");
+            let compound = format!("{{{{ {name} + 1 }}}}");
+            // Full occurrence delimiters keep `x` distinct from `ix` and `idx`.
+            let offsets = [
+                source.find(&declaration).unwrap() + "const ".len(),
+                source.find(&bare).unwrap() + "{{ ".len(),
+                source.find(&compound).unwrap() + "{{ ".len(),
+            ];
             assert_binding_at(&mut fixture, &source, name, "1", &offsets);
         }
         let offsets = [
