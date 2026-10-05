@@ -8,6 +8,7 @@ cargo test --locked --profile ci-opt -p vize --test lsp_computed_inlay_cli -- --
 cargo test --locked --profile ci-opt -p vize_maestro --lib inlay_hint:: -- --nocapture
 cargo test --locked --profile ci-opt -p vize_croquis --lib builtin_types:: -- --nocapture
 cargo test --locked --profile ci-opt -p vize_croquis --lib builtin_types_default_analysis_keeps_whole_output_without_fact_storage -- --nocapture
+cargo test --locked --profile ci-opt -p vize_croquis --lib fused_resolution_ -- --nocapture
 cargo build --profile ci -p vize
 vp node tests/differential/build-receipt.mjs
 scorecard_status=0

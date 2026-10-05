@@ -134,3 +134,19 @@ false parse specialization calls that original function directly. All old inputs
 whole controls, caps and native successful-empty authority remain intact. Fresh
 source/native and original 100+4 instruction qualification are still required;
 the static attribution and restoration give no new performance acceptance.
+
+The later protected composition `ac88512` exceeded only the same full-large
+ceiling: all three runs measured 2,786,595 against 2,786,473. Its actual parent
+`b77f6a2` measured 2,785,602 in all three runs. Complete authenticated profiles
+reconcile the 993 increase as script analysis -649 and template analysis +1,642;
+the restored ordinary statement subtree decreased by 674. This is not a reason
+to raise the ceiling or change any original hint or feature oracle.
+Template reference checking currently traverses and hashes the same scope chain
+once to resolve a name and again to mark a found binding as used. Resolve and
+mark during one existing-order traversal, retaining the public mark-used API and
+every builtin, shadow, parent, missing-name and undefined-reference rule. V-for
+source reads also need only that one traversal. Whole state laws retain the old
+two-traversal contract independently, including repeated reads, additional
+parents and valid cycles. The required native helper selects both new laws;
+all original whole editor/native controls and 100+4 ceilings remain unchanged.
+Fresh source, native and instruction execution precedes renewed admission.

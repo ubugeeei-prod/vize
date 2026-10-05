@@ -54,6 +54,11 @@ impl ScopeChain {
 
     /// Mark a binding as used (searches through all parent scopes)
     pub fn mark_used(&mut self, name: &str) {
+        self.mark_used_if_defined(name);
+    }
+
+    /// Resolve and mark the same binding without a second scope traversal.
+    pub(crate) fn mark_used_if_defined(&mut self, name: &str) -> bool {
         let mut visited: SmallVec<[ScopeId; 8]> = SmallVec::new();
         let mut queue: SmallVec<[ScopeId; 8]> = smallvec![self.current];
 
@@ -68,7 +73,7 @@ impl ScopeChain {
             };
             if let Some(binding) = scope.get_binding_mut(name) {
                 binding.mark_used();
-                return;
+                return true;
             }
 
             for parent_id in &scope.parents {
@@ -77,6 +82,7 @@ impl ScopeChain {
                 }
             }
         }
+        false
     }
 
     /// Check if a binding has been marked as used (searches through all scopes)
@@ -128,3 +134,6 @@ impl ScopeChain {
         depth
     }
 }
+
+#[cfg(test)]
+mod tests;

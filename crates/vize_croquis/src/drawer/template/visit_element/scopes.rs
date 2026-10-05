@@ -170,9 +170,7 @@ impl Drawer {
     fn mark_v_for_source_scope_refs(&mut self, source: &str) {
         for ident in extract_identifiers_oxc(source) {
             let name = ident.as_str();
-            if self.croquis.scopes.is_defined(name) {
-                self.croquis.scopes.mark_used(name);
-            }
+            self.croquis.scopes.mark_used(name);
         }
     }
 
