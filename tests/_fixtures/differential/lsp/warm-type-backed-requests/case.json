@@ -26,5 +26,6 @@
   ],
   "nativeEligibility": null,
   "oracle": "crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs",
-  "runtimeOraclePending": "tests/performance/support/warm-type-backed-requests.ts"
+  "runtimeOracle": "tests/performance/support/warm-type-backed-requests.ts",
+  "runtimeQualification": "Existing Canon scaling job runs a source-bound before/current original400 pair; actual execution and protected delivery pending."
 }

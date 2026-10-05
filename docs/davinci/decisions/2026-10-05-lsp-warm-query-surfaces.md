@@ -36,3 +36,41 @@ revision, preserving the concurrent winner without panic or waiver. The existing
 generator changes only the moved import row and context test offset. Every
 original law/input and native guard remains. Current source tests and original400
 whole-wire/CPU acceptance remain pending; no infrastructure cause is invented.
+
+## Original400 same-worker qualification
+
+Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5994315127).
+
+The existing Canon scaling workflow retains its historical manual rows and
+adds one automatic PR pair inside the same comparison job. The original
+unchanged generator produces all 400 SFCs and 134 TS modules at the same
+absolute workspace path for both sources. The driver rejects unrelated
+production changes from the genuine common ancestor, requires identical
+locks/toolchain and the existing successful source-build receipts, and uses
+the same `cargo build --profile ci -p vize` recipe and physical locked Vue/native
+runtime. The reported Vue 3.5.41 remains historical; the actual resolved locked
+version and binary hashes are recorded without changing the original inputs.
+
+After the actual initial native diagnostics and the retained ten-second idle,
+a complete priming sweep is recorded separately. Every one of the reported
+five rounds of four hover/definition/completion requests is retained. Complete
+public response and request packets are compared, including resolve data;
+only physically checked private 0700 session-root spellings are replaced
+through a per-side bijection. Raw stdio bytes, framing, source receipts,
+server/native PID and birth identities, inclusive process-tree CPU and request
+wall observations remain available. No public field or failed case is filtered.
+
+Controls retain whole inputs and responses for an unsaved host change and its
+inverse, same-mtime/same-length closed dependency and strict-config edits and
+their inverses, cancellation and the next request, close refusal/reopen, an
+independent original-generator 20-SFC root and the original root afterward,
+and retirement/recovery of only physically verified native descendants. The
+changed dependency must resolve to `Ref<string>` and then `Ref<number>`; the
+config probe must change from `null` to `any` and back. Current-version native
+completion is observed before requests after edits; all control outcomes are
+aggregated before a terminal failure gate. These are strict obligations, not
+accepted observations yet. Existing source checks at 322de6b passed, but no
+original400 speed, CPU, native recovery or protected/release credit is claimed
+until the newly configured exact source pair executes and its full artifacts
+are authenticated. No additional production request, pipeline stage, IPC or
+instruction ceiling change is introduced.

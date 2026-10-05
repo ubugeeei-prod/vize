@@ -41,8 +41,10 @@ export class LspSession {
   private nextId = 0;
   private stderr = "";
 
-  constructor() {
-    this.process = spawnLspSessionProcess();
+  constructor(sourceBinding?: { repoRoot: string; binary: string }) {
+    this.process = sourceBinding
+      ? spawnLspSessionProcess(sourceBinding.repoRoot, true, sourceBinding.binary)
+      : spawnLspSessionProcess();
 
     this.process.stdout.on("data", (chunk: Buffer) => {
       this.buffer = Buffer.concat([this.buffer, chunk]);
