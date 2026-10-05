@@ -29,7 +29,7 @@ fn type_fragment(source: &str, prefix_width: usize) -> Cow<'_, str> {
 #[cfg(feature = "glyph")]
 #[cold]
 fn format_long_type(source: &str) -> Option<String> {
-    use oxc_ast::ast::{Statement, StringLiteral, TSTemplateLiteralType};
+    use oxc_ast::ast::{Statement, StringLiteral, TSTemplateLiteralType, TemplateLiteral};
     use oxc_ast_visit::Visit;
     use oxc_span::GetSpan;
 
@@ -58,6 +58,9 @@ fn format_long_type(source: &str) -> Option<String> {
     struct QuotedTypes(Vec<oxc_span::Span>);
     impl<'a> Visit<'a> for QuotedTypes {
         fn visit_string_literal(&mut self, literal: &StringLiteral<'a>) {
+            self.0.push(literal.span);
+        }
+        fn visit_template_literal(&mut self, literal: &TemplateLiteral<'a>) {
             self.0.push(literal.span);
         }
         fn visit_ts_template_literal_type(&mut self, literal: &TSTemplateLiteralType<'a>) {
@@ -168,6 +171,16 @@ mod tests {
                 format!("{{\n    value: {literal};\n    ready: boolean;\n  }}")
             );
         }
+    }
+
+    #[cfg(feature = "glyph")]
+    #[test]
+    fn actual_formatter_and_collector_preserve_plain_multiline_template_type() {
+        let source = "{ multiline?: `first\nsecond`; alpha: string; beta: number; gamma: boolean; delta?: string }";
+        assert_eq!(
+            field("props", source),
+            "  props: {\n    multiline?: `first\nsecond`;\n    alpha: string;\n    beta: number;\n    gamma: boolean;\n    delta?: string;\n  };"
+        );
     }
 
     #[cfg(not(feature = "glyph"))]

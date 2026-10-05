@@ -54,7 +54,15 @@ are observations, not a speedup claim or a new budget.
 The same committed RPC fixture and oracle can be replayed against an installed
 published CLI by supplying `VIZE_LSP_BIN` and the existing native TypeScript
 runtime; `VIZE_LSP_REQUIRE_SOURCE_BUILD=1` remains mandatory in CI. Root owns the
-supported post-release public-payload replay. Source Actions, unchanged protected
+supported post-release public-payload replay. A bounded review of the actual vendored parser identified a missing AST variant
+in the initial source: plain no-substitution template types are `TSLiteral`
+`TemplateLiteral` nodes, distinct from interpolated `TSTemplateLiteralType`. Add
+that exact visitor span hook and a whole formatter/collector control, retaining
+every frozen original input and expected response byte. The initial `0dd56c0f`
+Actions cannot grant acceptance to its meaningful successor; fresh execution is
+required. No runtime reference is re-recorded.
+
+Source Actions, unchanged protected
 104 instruction probes/full Rust/original corpus, actual signed merge and release
 publication are pending. This source record grants no runtime acceptance.
 
