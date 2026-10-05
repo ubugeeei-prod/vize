@@ -1,9 +1,5 @@
 //! Complete structured hints and writable spans survive only exact projections.
-#![expect(
-    clippy::disallowed_types,
-    clippy::disallowed_macros,
-    reason = "whole JSON test oracles"
-)]
+#![expect(clippy::disallowed_macros, reason = "whole JSON test oracles")]
 
 use super::*;
 use crate::ide::corsa_support::canonical_source_offset_to_position;

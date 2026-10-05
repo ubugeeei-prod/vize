@@ -59,7 +59,7 @@ mod tests {
 
         let error = read_message(&mut reader).unwrap_err();
         assert_eq!(error.kind(), ErrorKind::InvalidData);
-        assert!(vize_l0::cstr!("{error}").contains("missing Content-Length"));
+        assert_eq!(vize_l0::cstr!("{error}"), "missing Content-Length header");
     }
 
     #[test]
