@@ -11,6 +11,7 @@ use super::{
     extract_param_names, walk_expression,
 };
 
+mod classes;
 mod with_statement;
 
 /// Walk a statement to find nested scopes
@@ -92,38 +93,7 @@ pub(in crate::script_parser) fn walk_statement(
         }
         // Nested class declarations
         Statement::ClassDeclaration(class) => {
-            // Add class name as binding
-            if let Some(id) = &class.id {
-                result.scopes.add_binding(
-                    CompactString::new(id.name.as_str()),
-                    ScopeBinding::new(BindingType::SetupConst, class.span.start),
-                );
-            }
-            // Walk class body for methods
-            for element in class.body.body.iter() {
-                if let oxc_ast::ast::ClassElement::MethodDefinition(method) = element
-                    && let Some(body) = &method.value.body
-                {
-                    let params =
-                        extract_function_params_with_occurrences(result, &method.value.params);
-                    result.scopes.enter_closure_scope(
-                        ClosureScopeData {
-                            name: None,
-                            param_names: params,
-                            is_arrow: false,
-                            is_async: method.value.r#async,
-                            is_generator: method.value.generator,
-                        },
-                        method.span.start,
-                        method.span.end,
-                    );
-                    result.install_parameter_occurrences();
-                    for stmt in body.statements.iter() {
-                        walk_statement(result, stmt, source);
-                    }
-                    result.scopes.exit_scope();
-                }
-            }
+            classes::walk_nested_class(result, class, source);
         }
         Statement::ReturnStatement(ret) => {
             if let Some(arg) = &ret.argument {
