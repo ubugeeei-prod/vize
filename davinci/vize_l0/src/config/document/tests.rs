@@ -2,6 +2,34 @@ use super::ConfigDocument;
 use crate::config::{LintRuleSeverity, VueVersion};
 
 #[test]
+fn document_projects_only_documented_compiler_whitespace_modes() {
+    for (json, expected) in [
+        (r#"{}"#, None),
+        (r#"{"compiler":{"whitespace":null}}"#, None),
+        (r#"{"compiler":{"whitespace":false}}"#, None),
+        (r#"{"compiler":{"whitespace":42}}"#, None),
+        (r#"{"compiler":{"whitespace":{}}}"#, None),
+        (r#"{"compiler":{"whitespace":[]}}"#, None),
+        (r#"{"compiler":{"whitespace":"unknown"}}"#, None),
+        (
+            r#"{"compiler":{"whitespace":"condense"}}"#,
+            Some("condense"),
+        ),
+        (
+            r#"{"compiler":{"whitespace":"preserve"}}"#,
+            Some("preserve"),
+        ),
+        (
+            r#"{"compiler":{"whitespace":"vue2-line-breaks"}}"#,
+            Some("vue2-line-breaks"),
+        ),
+    ] {
+        let document: ConfigDocument = serde_json::from_str(json).unwrap();
+        assert_eq!(document.compiler_whitespace(), expected);
+    }
+}
+
+#[test]
 fn document_projects_aliases_and_editor_flags_without_host_state() {
     let document: ConfigDocument = serde_json::from_slice(
         br#"{

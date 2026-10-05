@@ -40,6 +40,22 @@ impl ConfigDocument {
             .map(|template_syntax| template_syntax.as_str())
     }
 
+    /// Documented template whitespace mode, without changing the effective model.
+    pub fn compiler_whitespace(&self) -> Option<&'static str> {
+        match self
+            .0
+            .compiler
+            .whitespace
+            .as_ref()
+            .and_then(serde_json::Value::as_str)
+        {
+            Some("preserve") => Some("preserve"),
+            Some("condense") => Some("condense"),
+            Some("vue2-line-breaks") => Some("vue2-line-breaks"),
+            _ => None,
+        }
+    }
+
     /// Stable compiler compatibility dialect, before legacy fallback.
     pub fn compiler_compatibility_vue_version(&self) -> Option<VueVersion> {
         self.0.compiler.compatibility.vue_version

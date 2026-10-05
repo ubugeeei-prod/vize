@@ -89,6 +89,7 @@ pub(crate) struct RawCompilerConfig {
     /// Explicit SFC Vapor mode switch from `compiler.vapor`.
     pub(crate) vapor: Option<bool>,
     pub(crate) template_syntax: Option<RawTemplateSyntaxConfig>,
+    pub(crate) whitespace: Option<serde_json::Value>,
     /// Default JSX output mode (`compiler.jsxMode`); `None` when absent, which
     /// the JSX entry points treat as VDOM.
     pub(crate) jsx_mode: Option<JsxMode>,
