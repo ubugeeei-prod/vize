@@ -69,3 +69,50 @@ void Child
         "linked range must round-trip through UTF-16 LSP coordinates"
     );
 }
+
+#[test]
+fn original_bare_prop_links_keep_emitted_binding_and_native_property_endpoints_after_rewrite() {
+    use vize_canon::virtual_ts::VizeSemanticLinkKind;
+    let uri = Url::parse("file:///workspace/App.vue").unwrap();
+    let imported = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/lsp/bare-prop-definition/StatusBox.vue.txt"
+    ));
+    let local = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/lsp/bare-prop-definition/StatusBoxLocal.vue.txt"
+    ));
+    for newline in ["\n", "\r\n"] {
+        for source in [imported, local] {
+            let source = ["<!-- 😀 -->\n", source].concat().replace('\n', newline);
+            let result =
+                DiagnosticService::generate_virtual_ts(&uri, &source, false, false).unwrap();
+            let links: Vec<_> = result
+                .semantic_links
+                .iter()
+                .filter(|link| link.kind == VizeSemanticLinkKind::VueTemplatePropBinding)
+                .collect();
+            assert_eq!(links.len(), 1);
+            let link = links[0];
+            assert_eq!(result.code.get(link.source_range.clone()), Some("status"));
+            assert_eq!(result.code.get(link.target_range.clone()), Some("status"));
+            assert_eq!(
+                result
+                    .code
+                    .get(link.source_range.start - "const ".len()..link.source_range.start),
+                Some("const ")
+            );
+            let property_prefix = &result.code[..link.target_range.start];
+            assert!(
+                property_prefix.ends_with("props[\"") || property_prefix.ends_with("props[(\"")
+            );
+            for endpoint in [link.source_range.start, link.target_range.start] {
+                let (line, character) = crate::ide::offset_to_position(&result.code, endpoint);
+                assert_eq!(
+                    crate::ide::position_to_offset(&result.code, line, character),
+                    Some(endpoint)
+                );
+            }
+        }
+    }
+}

@@ -143,10 +143,16 @@ impl SetupPropsPlan {
         ts: &mut String,
         source: PropsSource<'_>,
         check_props: bool,
+        semantic_links: &mut Vec<crate::virtual_ts::VizeSemanticLink>,
     ) {
         let summary = source.summary;
-        let mut binding_mappings =
-            PropBindingMappings::new(source.mappings, summary, source.script, source.offset);
+        let mut binding_mappings = PropBindingMappings::new(
+            source.mappings,
+            semantic_links,
+            summary,
+            source.script,
+            source.offset,
+        );
         generate_props_variables(ts, &mut binding_mappings, summary, check_props);
     }
 

@@ -657,7 +657,12 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             let maps = &mut mappings;
             let src = prop_source(maps, summary, script_content, &script_source_offset);
             profile!("canon.virtual_ts.generate_props_variables", {
-                setup_props_plan.generate_props_variables(&mut ts, src, check_props && !legacy_vue2)
+                setup_props_plan.generate_props_variables(
+                    &mut ts,
+                    src,
+                    check_props && !legacy_vue2,
+                    &mut semantic_links,
+                )
             });
             if options_api {
                 profile!(
