@@ -40,46 +40,46 @@ pub fn format_script_content(
 pub(crate) fn format_script_content_stable(
     source: &str,
     options: &FormatOptions,
-    _allocator: &Allocator,
+    allocator: &Allocator,
     source_type: SourceType,
     sort_imports: Option<&crate::ImportSortOptions>,
 ) -> Result<String, FormatError> {
     if options.end_of_line == crate::EndOfLine::Auto {
         return options.format_with_source_line_ending(source, |options| {
-            format_script_content_stable(source, options, _allocator, source_type, sort_imports)
+            format_script_content_stable(source, options, allocator, source_type, sort_imports)
         });
     }
-    let mut script_allocator = OxcAllocator::default();
     let mut current = format::format_script_content_with_sort_imports(
         source,
         options,
-        &script_allocator,
+        allocator,
         source_type,
         sort_imports,
     )?;
-    // Skip the second (idempotence) pass when the caller only needs change
-    // detection (`fmt --check`), or when the first pass was already a no-op:
-    // the input is then a fixed point, so re-formatting cannot change it.
-    if options.skip_script_stabilization || current.trim_end() == source.trim_end() {
+    // Check mode returns the first pass; a no-op already is a fixed point.
+    if options.skip_script_stabilization {
         return Ok(current);
     }
-
+    let mut current_trimmed_len = current.trim_end().len();
+    if current.as_str().get(..current_trimmed_len) == Some(source.trim_end()) {
+        return Ok(current);
+    }
     for _ in 1..MAX_SCRIPT_STABILIZATION_PASSES {
-        // Recycle the arena only after the previous pass returned its owned output.
-        script_allocator.reset();
         let next = match format::format_script_content_with_sort_imports(
             current.as_str(),
             options,
-            &script_allocator,
+            allocator,
             source_type,
             sort_imports,
         ) {
             Ok(next) => next,
             Err(_) => return Ok(current),
         };
-        if next.trim_end() == current.trim_end() {
+        let next_trimmed = next.trim_end();
+        if current.as_str().get(..current_trimmed_len) == Some(next_trimmed) {
             return Ok(next);
         }
+        current_trimmed_len = next_trimmed.len();
         current = next;
     }
 

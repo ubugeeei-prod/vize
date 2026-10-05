@@ -43,6 +43,18 @@ fn script_zod_reaches_the_pinned_fixed_point() {
 }
 
 #[test]
+fn pinned_script_fixed_points_keep_unicode_trailing_whitespace_semantics() {
+    for source in [SIGNATURE, ZOD] {
+        let options = FormatOptions::default();
+        let canonical = format_script(source, &options).unwrap();
+        for suffix in ["\u{a0}\u{2003}", "\r\n\t \u{3000}"] {
+            let padded = format!("{canonical}{suffix}");
+            assert_eq!(format_script(&padded, &options).unwrap(), canonical);
+        }
+    }
+}
+
+#[test]
 fn sfc_signature_reaches_the_pinned_fixed_point() {
     let options = FormatOptions::default();
     let first = format_sfc(SFC_SIGNATURE, &options).unwrap();
