@@ -47,3 +47,11 @@ canonical clauses and every reviewed production/test/original-corpus blob.
 The four source commits retain original authors/messages/reporter trailers;
 only canonical placement is resolved. Fresh exact-source and protected full
 qualification remain mandatory, without transferring prior runtime credit.
+
+Current-head qualification exposed the intended additional semantic edge in the
+TS-40 golden and five lines of growth in its existing long generator. Move the
+unchanged template-context emission and profile into the existing setup-props
+helper. Preserve every exact golden assertion and aggregate their failures
+across the complete matrix to capture all authentic generated edge deltas in
+one Actions run. No snapshot auto-update, force-pass or budget increase applies;
+complete original and extended native RPC expectations remain byte-identical.

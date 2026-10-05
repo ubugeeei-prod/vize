@@ -14,6 +14,29 @@ use crate::virtual_ts::props::{
 
 pub(super) use crate::virtual_ts::props::prop_source;
 
+/// Emit the existing template context before its per-prop bindings.
+pub(super) fn emit_template_context(
+    ts: &mut String,
+    options: &crate::virtual_ts::VirtualTsOptions,
+    dialect: vize_carton::config::VueVersion,
+    legacy_vue2: bool,
+    imports: &super::setup_imports::SetupImportPlan,
+    record: &super::template_record::TemplateRecord,
+) {
+    let context = profile!(
+        "canon.virtual_ts.generate_template_context",
+        crate::virtual_ts::helpers::generate_template_context(
+            options,
+            dialect,
+            legacy_vue2,
+            imports.has_own_slots(),
+            (imports.attrs_type(), record.template_refs_type()),
+        )
+    );
+    ts.push_str(&context);
+    ts.push('\n');
+}
+
 /// Build the setup props plan and emit the module-level props type in one step.
 /// Keeps `generator.rs` from re-threading `options_api_props` through a second
 /// call site (and from growing past the source-length gate).
