@@ -21,10 +21,23 @@ snapshot, later-copy negatives, original member-write positives and a shadowing
 parameter control. Source Actions and protected full fixture/Rust/instruction
 count gates, actual signed merge/issue closure and publication are required.
 This is a legacy correction, without Davinci native-stage or speed credit.
+
 Hosted Check `37258805916` inherited the parent filter-control and source-census
 failures. Its genuine successor rebases onto both repaired parent heads, preserves
 the complete loss vectors and production correction, and replays the canonical
 record without dropping either parent decision. The official census generator
 reports no additional owned rows at this layer. Fresh source qualification is
-required; the failed head stays historical and unqueued. Public native CLI proof
-for this original SFC is added with the dependent #7898 original-corpus observer.
+required; the failed head stays historical and unqueued.
+
+An existing-PR source-qualified successor adds public CLI observation for the
+complete original #7913/#7911/#7914 sources, without changing production bytes.
+The existing tooling jobs use the exact built CLI receipt/hash/revision and actual
+pinned native TypeScript 7.0.2 executable, retaining its version/binary identity
+and the Vue type-provider version/hash. Strict-reactivity configuration runs both
+with and without `--type-aware`. Compare complete per-file JSON arrays, counts,
+messages, severity, help and authored ranges, preserving the initial snapshot
+positive. Persist full inputs/configuration/stdout/stderr/exits and expected/actual
+reports under `target/differential` before comparisons; the existing always-upload
+step retains them on failure. Native CLI execution and fresh Actions acceptance
+remain pending until the successor's actual hosted run passes. No new PR or
+private #7898 production/corpus is included in this published Stack.
