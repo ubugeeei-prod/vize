@@ -54,11 +54,8 @@ pub(super) async fn hover(corsa: &Path) -> Hover {
                 "diagnostics.json",
                 serde_json::to_value(&diagnostics).unwrap(),
             ),
-            ("hover.json", serde_json::to_value(&hover).unwrap()),
-            (
-                "valid-hover.json",
-                serde_json::to_value(&valid_hover).unwrap(),
-            ),
+            ("hover.json", hover_response(&hover)),
+            ("valid-hover.json", hover_response(&valid_hover)),
             (
                 "runtime.json",
                 serde_json::json!({"nativeBinary": corsa, "workingDirectory": root.path(), "timeoutMs": 30_000}),
@@ -112,6 +109,28 @@ pub(super) async fn hover(corsa: &Path) -> Hover {
         ])
     );
     HoverService::convert_lsp_hover(hover)
+}
+
+fn hover_response(hover: &vize_canon::LspHover) -> serde_json::Value {
+    use vize_canon::{LspHoverContents, LspMarkedString};
+    let contents = match &hover.contents {
+        LspHoverContents::Markup(value) => {
+            serde_json::json!({"kind": value.kind, "value": value.value})
+        }
+        LspHoverContents::String(value) => serde_json::json!(value),
+        LspHoverContents::Array(values) => serde_json::Value::Array(
+            values
+                .iter()
+                .map(|value| match value {
+                    LspMarkedString::String(value) => serde_json::json!(value),
+                    LspMarkedString::LanguageString { language, value } => {
+                        serde_json::json!({"language": language, "value": value})
+                    }
+                })
+                .collect(),
+        ),
+    };
+    serde_json::json!({"contents": contents, "range": hover.range})
 }
 
 fn dependency(package: &Path, name: &str) -> std::path::PathBuf {

@@ -77,3 +77,7 @@ Capture its full invalid/valid QuickInfo, source/config, runtime identity and
 pinned Vue declaration bytes. Compare original and oracle presentation before
 any expectation decision; never[] is not unconditionally accepted. Refresh
 official generated consumption inventories for new source inputs.
+
+The bridge hover view supports deserialization only. The oracle capture
+serializes every contents variant and range field explicitly in the test
+helper, without changing public bridge types, content or any assertion.
