@@ -66,7 +66,8 @@ pub fn project(root: &Path, config: &[u8]) -> Result<PathBuf> {
     link_vue(root)
 }
 
-pub fn cases() -> Result<Vec<(&'static str, Vec<u8>, Vec<usize>)>> {
+pub type Case = (&'static str, Vec<u8>, Vec<usize>);
+pub fn cases() -> Result<Vec<Case>> {
     let original: Value = serde_json::from_str(CONFIG)?;
     let mut result = vec![("original", CONFIG.as_bytes().to_vec(), vec![0, 1, 2])];
     for (name, options, expected) in [

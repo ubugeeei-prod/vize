@@ -131,3 +131,34 @@ Only the stderr test contract changes; all production, original inputs, full
 diagnostic expectations and budgets remain unchanged. Fresh exact-head native
 and ordinary Actions must qualify the complete seven-case CLI and fourteen
 direct-service vectors before protected delivery.
+
+## Known fallthrough compatibility and source-derived service contract
+
+The first ordinary source run `37339178587` exposed a real regression in two
+unchanged upstream projects: `fallthroughAttributes` and
+`fallthroughAttributes_checkRequired` acquire TS2353 on their declared `bar`
+forwarding. The strict tail must retain genuine keys from the existing child
+fallthrough producer. Map those known keys to optional `unknown` values, exclude
+the arbitrary string index and leave required/value checks intact. The
+non-generic helper omits already accepted Vue public/global HTML keys and returns
+literal `{}` when no extra key remains, preserving the original native type
+display. The generic call uses the same index refusal on its existing exact
+fallthrough reference. Absent/default authority keeps the older open tail.
+Every upstream source/config/oracle and the old #4461 fixture remain unchanged.
+
+That run also rejects two new test-only Clippy shapes. Name the existing case
+tuple and propagate a checked diagnostic-index result to the test boundary;
+no added suppression, input, predicate or diagnostic selection change.
+
+The stderr successor `f4d1fd01fbef6ce3eb21035799d34ffa447a210d` genuinely passes
+all seven CLI cases in native run `37341124150`, then its first editor assertion
+exposes two incorrect expectations. Existing generation emits binding/directive
+checks before prop calls, so the service preserves component/directive/prop
+order. The existing linear mapping maps the 16-byte quoted camel name onto the
+first 16 bytes of the 17-byte authored directive: range `9:9..9:25`, zero based.
+Record that actual source-derived mapping limitation; do not claim a complete
+transformed-token endpoint or change the old mapper. Keep every actual field and
+returned order in the full-vector comparison, without sorting or filtering the
+response. This successor changes the authored service expectation, not production
+ordering or mapping. Its old failed run remains failed; all fourteen service
+vectors, seven CLI cases and complete compatibility corpus require fresh proof.

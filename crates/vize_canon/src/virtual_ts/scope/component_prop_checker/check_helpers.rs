@@ -55,8 +55,11 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         // (`depressed`) stays a strict finding (#4966). Derived from the
         // `__VizeNativeElements` program alias; degrades to `{}` on a `vue`
         // without `NativeElements`, like the native prop checks degrade.
+        // Preserve producer-derived known forwarded names without an open index.
+        // Already accepted public/HTML keys need no extra mapped intersection;
+        // the no-extra-key case remains literal `{}` in diagnostic type display.
         ts.push_str(if check_unknown_fallthrough_props {
-            "  type __VizeAllowedFallthroughAttrs<C> = {};\n"
+            "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };\n"
         } else {
             "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n"
         });

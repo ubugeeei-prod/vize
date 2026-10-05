@@ -51,8 +51,14 @@ pub(super) fn generic_check_props_param(
     let mut param = cstr!(
         "{props_type}<{generic_names}> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs"
     );
-    if fallthrough_props_ref.is_some() && !check_unknown_fallthrough_props {
-        param.push_str(" & Record<string, unknown>");
+    if let Some(fallthrough) = fallthrough_props_ref {
+        if check_unknown_fallthrough_props {
+            param.push_str(
+                cstr!(" & {{ [K in keyof ({fallthrough}) as string extends K ? never : K]?: unknown }}").as_str(),
+            );
+        } else {
+            param.push_str(" & Record<string, unknown>");
+        }
     }
     param
 }
@@ -122,7 +128,9 @@ mod tests {
                 "Props",
                 true
             ),
-            closed
+            vize_l0::cstr!(
+                "{closed} & {{ [K in keyof (Partial<__VizeNativeElement<\"span\">>) as string extends K ? never : K]?: unknown }}"
+            )
         );
         assert_eq!(
             generic_check_props_param(

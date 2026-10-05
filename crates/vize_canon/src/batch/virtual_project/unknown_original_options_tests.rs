@@ -49,7 +49,9 @@ fn original_valueless_directive_and_native_root_prop_have_strict_projection_auth
         enabled
             .lines()
             .find(|line| line.starts_with("  type __VizeAllowedFallthroughAttrs")),
-        Some("  type __VizeAllowedFallthroughAttrs<C> = {};")
+        Some(
+            "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
+        )
     );
     let mut off: Value = serde_json::from_str(CONFIG).unwrap();
     off["vueCompilerOptions"] = json!({"checkUnknownComponents":false,"checkUnknownProps":false,"checkUnknownDirectives":false});
@@ -85,6 +87,8 @@ fn explicit_prop_comment_keeps_absent_configuration_compatible() {
         enabled
             .lines()
             .find(|line| line.starts_with("  type __VizeAllowedFallthroughAttrs")),
-        Some("  type __VizeAllowedFallthroughAttrs<C> = {};")
+        Some(
+            "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
+        )
     );
 }

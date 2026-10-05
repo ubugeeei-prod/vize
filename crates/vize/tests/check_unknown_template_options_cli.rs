@@ -48,8 +48,9 @@ fn original_unknown_template_options_have_complete_true_false_and_absent_vectors
         fixture::retain(&root, name, &corsa, &command, &output).unwrap();
         let expected: Vec<_> = indexes
             .iter()
-            .map(|index| full.get(*index).unwrap())
-            .collect();
+            .map(|index| full.get(*index).ok_or("unknown diagnostic case index"))
+            .collect::<Result<_, _>>()
+            .unwrap();
         assert_eq!(
             output.status.code(),
             Some(i32::from(!expected.is_empty())),

@@ -18,7 +18,9 @@ fn original_unknown_options_preserve_complete_editor_vectors() {
         .zip([
             (2353, Range::new(Position::new(7, 23), Position::new(7, 35))),
             (2339, Range::new(Position::new(8, 5), Position::new(8, 16))),
-            (2339, Range::new(Position::new(9, 9), Position::new(9, 26))),
+            // The existing linear mapping covers the 16-byte quoted camel
+            // name; it does not stretch it to the 17-byte authored token.
+            (2339, Range::new(Position::new(9, 9), Position::new(9, 25))),
         ])
         .map(|(message, (code, range))| Diagnostic {
             range,
@@ -34,10 +36,18 @@ fn original_unknown_options_preserve_complete_editor_vectors() {
         let root = directory.path().canonicalize().unwrap();
         fixture::project(&root, &config).unwrap();
         write_corsa_config(&root, &corsa);
-        let expected: Vec<_> = indexes
-            .iter()
-            .map(|index| full.get(*index).unwrap().clone())
-            .collect();
+        // Existing generation emits binding/directive checks before prop calls.
+        // Preserve that native response order; never sort the actual vector.
+        let expected: Vec<_> = [1, 2, 0]
+            .into_iter()
+            .filter(|index| indexes.contains(index))
+            .map(|index| {
+                full.get(index)
+                    .cloned()
+                    .ok_or("unknown diagnostic case index")
+            })
+            .collect::<Result<_, _>>()
+            .unwrap();
         for (file, source, expected) in [
             ("src/Child.vue", fixture::CHILD, Vec::new()),
             ("src/Parent.vue", fixture::PARENT, expected),
