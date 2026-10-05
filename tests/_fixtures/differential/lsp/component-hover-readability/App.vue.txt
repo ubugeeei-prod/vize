@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import LongComponent from './LongComponent.vue'
+import ShortComponent from './ShortComponent.vue'
+LongComponent
+ShortComponent
+</script>
+<template>
+  <LongComponent />
+  <ShortComponent label="ready" />
+</template>

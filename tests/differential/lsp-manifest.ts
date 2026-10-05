@@ -75,6 +75,14 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/documentHighlight") {
       requests = loadOriginalHighlightRequests(packRoot, data, expected);
+    } else if (data.method === "textDocument/hover") {
+      assert(
+        Array.isArray(expected) && expected.length === 2,
+        "long and short whole hovers required",
+      );
+      requests = (expected as { position: unknown; result: unknown }[]).map(
+        ({ position, result }) => ({ params: { position }, result }),
+      );
     } else {
       assert.equal(data.method, "textDocument/onTypeFormatting", "unregistered LSP method");
       assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });

@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "id": "lsp/regression/component-hover-readability",
+  "provenance": {
+    "fixCommit": "bab753efaf566f0d51552d92064abb463f987560",
+    "issue": 8026,
+    "meaning": "source revision exhibiting the reported compaction, not fix-history completion credit",
+    "witness": {
+      "path": "source.json",
+      "sha256": "43079d69ad27b627bd4ee5708496af06f18bbc2c6c07268e26ce2efbc6c37933"
+    }
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "a72c7a09a75946282d9c0b7040aa71bc38d8b1a2f8a501fcaa1052ac3721bded"
+    },
+    {
+      "source": "LongComponent.vue.txt",
+      "runtimePath": "LongComponent.vue",
+      "sha256": "c1482d7a08b17492c7a04d137d33cf0f327b8d5ccbc85cf79147808f70c07d27"
+    },
+    {
+      "source": "ShortComponent.vue.txt",
+      "runtimePath": "ShortComponent.vue",
+      "sha256": "5b3dd7a728a708b5dfc85068a81386115896ddd0aa8657cf5b3419ad6e08ada7"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "bb9461028781af071d73dd2c21885a344631dfb89e9b132232f754195fcf527c"
+  },
+  "method": "textDocument/hover",
+  "scope": "whole default legacy component-tag responses only; no native migration/history closure credit"
+}

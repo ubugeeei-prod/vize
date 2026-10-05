@@ -1,0 +1,62 @@
+```typescript
+const LongComponent: VueComponent &
+{
+  props: {
+    title: string;
+    subtitle?: string;
+    count: number;
+    disabled?: boolean;
+    loading?: boolean;
+    searchable?: boolean;
+    multiple?: boolean;
+    placeholder?: string;
+    description?: string;
+    "literal,=[]": 'say "hello"';
+    multiline?: `first
+literal second
+literal third`;
+    selected?: {
+      identifier: string;
+      metadata?: {
+        description: string;
+        punctuation: "a;=b" | "c,d<e>";
+      };
+    };
+    entries: ReadonlyArray<
+      Record<"key;=" | "other,<>", { value: string; enabled?: boolean }>
+    >;
+    resolve?: <T extends { id: string }>(value: T) => Promise<T>;
+  };
+  emits: {
+    save: [
+      value: {
+        identifier: string;
+        metadata?: { description: string; punctuation: "a;=b" | "c,d<e>" };
+      },
+    ];
+    update: [
+      entries: ReadonlyArray<{ identifier: string; selected?: boolean }>,
+    ];
+    cancel: [reason?: "click;=cancel" | "escape,<>"];
+  };
+  slots: {
+    default(props: {
+      selected?: { identifier: string; description?: string };
+      entries: ReadonlyArray<{ identifier: string; selected?: boolean }>;
+    }): unknown;
+    footer(props: { count: number; loading: boolean }): unknown;
+  };
+  model: {
+    "modelValue": {
+      active: boolean;
+      selected?: {
+        identifier: string;
+        description: string;
+        punctuation: "a;=b" | "c,d<e>";
+      };
+    };
+  };
+}
+```
+
+Vue component: LongComponent.vue

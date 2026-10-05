@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 7,
+      "character": 5
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst LongComponent: VueComponent &\n{\n  props: {\n    title: string;\n    subtitle?: string;\n    count: number;\n    disabled?: boolean;\n    loading?: boolean;\n    searchable?: boolean;\n    multiple?: boolean;\n    placeholder?: string;\n    description?: string;\n    \"literal,=[]\": 'say \"hello\"';\n    multiline?: `first\nliteral second\nliteral third`;\n    selected?: {\n      identifier: string;\n      metadata?: {\n        description: string;\n        punctuation: \"a;=b\" | \"c,d<e>\";\n      };\n    };\n    entries: ReadonlyArray<\n      Record<\"key;=\" | \"other,<>\", { value: string; enabled?: boolean }>\n    >;\n    resolve?: <T extends { id: string }>(value: T) => Promise<T>;\n  };\n  emits: {\n    save: [\n      value: {\n        identifier: string;\n        metadata?: { description: string; punctuation: \"a;=b\" | \"c,d<e>\" };\n      },\n    ];\n    update: [\n      entries: ReadonlyArray<{ identifier: string; selected?: boolean }>,\n    ];\n    cancel: [reason?: \"click;=cancel\" | \"escape,<>\"];\n  };\n  slots: {\n    default(props: {\n      selected?: { identifier: string; description?: string };\n      entries: ReadonlyArray<{ identifier: string; selected?: boolean }>;\n    }): unknown;\n    footer(props: { count: number; loading: boolean }): unknown;\n  };\n  model: {\n    \"modelValue\": {\n      active: boolean;\n      selected?: {\n        identifier: string;\n        description: string;\n        punctuation: \"a;=b\" | \"c,d<e>\";\n      };\n    };\n  };\n}\n```\n\nVue component: LongComponent.vue"
+      },
+      "range": {
+        "start": {
+          "line": 7,
+          "character": 3
+        },
+        "end": {
+          "line": 7,
+          "character": 16
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 8,
+      "character": 5
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst ShortComponent: VueComponent &\n{\n  props: { label: string; count?: number };\n  emits: { save: [value: string] };\n  slots: { default(props: { value: string }): unknown };\n  model: { \"modelValue\": boolean };\n}\n```\n\nVue component: ShortComponent.vue"
+      },
+      "range": {
+        "start": {
+          "line": 8,
+          "character": 3
+        },
+        "end": {
+          "line": 8,
+          "character": 17
+        }
+      }
+    }
+  }
+]

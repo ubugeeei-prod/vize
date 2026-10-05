@@ -1,0 +1,46 @@
+{
+  "issue": 8026,
+  "author": {
+    "login": "ubugeeei",
+    "id": 71201308,
+    "email": "71201308+ubugeeei@users.noreply.github.com"
+  },
+  "sourceRevision": "bab753efaf566f0d51552d92064abb463f987560",
+  "inputOrigin": "maintainer-request-derived authored many-prop and short component controls frozen before product runtime",
+  "contractOrigin": "independently authored complete 80-column two-space TypeScript hover objects; original short producer contract is retained, not recorded from current product output",
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "a72c7a09a75946282d9c0b7040aa71bc38d8b1a2f8a501fcaa1052ac3721bded"
+    },
+    {
+      "source": "LongComponent.vue.txt",
+      "runtimePath": "LongComponent.vue",
+      "sha256": "c1482d7a08b17492c7a04d137d33cf0f327b8d5ccbc85cf79147808f70c07d27"
+    },
+    {
+      "source": "ShortComponent.vue.txt",
+      "runtimePath": "ShortComponent.vue",
+      "sha256": "5b3dd7a728a708b5dfc85068a81386115896ddd0aa8657cf5b3419ad6e08ada7"
+    }
+  ],
+  "references": [
+    {
+      "source": "long.expected.md.txt",
+      "sha256": "2ea2fa53226165b08206ad0d985562d049422530b6ab1f8c970292d078f14798"
+    },
+    {
+      "source": "short.expected.md.txt",
+      "sha256": "ae58cc0fae8c17e33dd1717fe28a20c2874969c6f274549344f5874cbcf15269"
+    },
+    {
+      "source": "requests.expected.json",
+      "sha256": "0440d2aef557f576f0b31b1ce63fd3c62c8c639baf3ad122bcd19a2deded0e56"
+    },
+    {
+      "source": "responses.expected.json",
+      "sha256": "bb9461028781af071d73dd2c21885a344631dfb89e9b132232f754195fcf527c"
+    }
+  ]
+}

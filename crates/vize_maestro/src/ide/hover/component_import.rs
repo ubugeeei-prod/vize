@@ -17,6 +17,7 @@ use crate::ide::markup;
 
 mod fallback;
 mod keys;
+mod presentation;
 pub(super) use fallback::vue_component_import_hover;
 use keys::field_name as key;
 
@@ -69,16 +70,16 @@ pub(super) fn component_contract_markdown(
     let mut fields = Vec::new();
 
     if let Some(props) = props_contract(macros) {
-        fields.push(format!("  props: {props};"));
+        fields.push(presentation::field("props", &props));
     }
     if let Some(emits) = emits_contract(macros) {
-        fields.push(format!("  emits: {emits};"));
+        fields.push(presentation::field("emits", &emits));
     }
     if let Some(slots) = slots_contract(macros) {
-        fields.push(format!("  slots: {slots};"));
+        fields.push(presentation::field("slots", &slots));
     }
     if let Some(model) = model_contract(macros) {
-        fields.push(format!("  model: {model};"));
+        fields.push(presentation::field("model", &model));
     }
 
     if !fields.is_empty() {
