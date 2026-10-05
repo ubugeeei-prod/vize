@@ -98,3 +98,16 @@ history #6883, native default replacement, cold/query completion and the global
 an old successful run.
 
 Paired private-source decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7874#issuecomment-5997806537).
+
+## Independent source review checkpoint
+
+The fixed private commit `5b50b9c73582dad824768c07cc15caffcfacda1b` and its
+complete 32-path source packet received independent `SOURCE_ONLY_CLEAR`. The
+review authenticated the original three inputs, actual reporter, explicit option
+precedence, both prop producers, the existing directive traversal/name mapping,
+all old workflow commands, unchanged #4461 fixture and complete canonical record.
+The source is now authorized for publication as a Draft with automatic current-head
+Actions; this supersedes the initial private-review-pending checkpoint above.
+No Rust/native runtime or diagnostic-vector acceptance follows from this review.
+Fresh whole original/control artifacts, protected suites and actual delivery
+remain required. Ready/queue admission remains subject to the first-release hold.
