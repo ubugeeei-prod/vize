@@ -10,7 +10,7 @@ use super::super::{
     context::ComponentPropsContext, dynamic_component::owned_named_dynamic_component_ast,
 };
 
-pub(super) fn named_dynamic_reference(
+pub(in crate::virtual_ts::scope) fn named_dynamic_reference(
     ctx: &ComponentPropsContext<'_, '_>,
     usage: &ComponentUsage,
 ) -> Option<String> {

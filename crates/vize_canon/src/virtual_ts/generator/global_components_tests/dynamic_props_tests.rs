@@ -201,3 +201,87 @@ fn declined_plain_and_unadmitted_roots_and_legacy_keep_complete_output() {
         }
     }
 }
+
+#[test]
+fn named_navigation_preserves_authored_expression_diagnostic_authority() {
+    let guard = "  // @ts-ignore Navigation-only reference; the authored v-bind statement owns diagnostics.\n";
+    for (script, expression, named) in [
+        (
+            "const registry = { button: 'button' };",
+            "registry.button",
+            true,
+        ),
+        (
+            "const registry = { button: 'button' };",
+            "registry.missing",
+            true,
+        ),
+        (
+            "const registry = { button: 1 };",
+            "registry.button.toUpperCase()",
+            false,
+        ),
+    ] {
+        let template = vize_carton::cstr!("😀\r\n<component :is=\"{expression}\" />");
+        for checked in [true, false] {
+            let output = generate(script, &template, checked);
+            let statement = vize_carton::cstr!("void ({expression});");
+            let statement_start = output.code.find(statement.as_str()).expect("authored is");
+            let preceding_line = output
+                .code
+                .get(..statement_start)
+                .expect("statement prefix");
+            assert!(
+                !preceding_line
+                    .trim_end()
+                    .rsplit('\n')
+                    .next()
+                    .expect("preceding generated line")
+                    .contains("@ts-ignore"),
+                "the authored expression must remain checked",
+            );
+            let authored_start = 100 + template.find(expression).expect("authored expression");
+            let expression_row = output
+                .mapping
+                .spans()
+                .iter()
+                .find(|row| row.src_range == (authored_start..authored_start + expression.len()))
+                .expect("complete original expression mapping");
+            assert_eq!(
+                output.code.get(expression_row.gen_range.clone()),
+                Some(expression)
+            );
+            if named {
+                let navigation = vize_carton::cstr!("{guard}  void {expression};\n");
+                assert!(output.code.contains(navigation.as_str()));
+                let reference_start = output.code.find(navigation.as_str()).expect("navigation")
+                    + guard.len()
+                    + "  void ".len();
+                let safe = expression.replace('.', "_");
+                let fallback = vize_carton::cstr!("  const {safe}: any = undefined as any;");
+                if let Some(fallback_start) = output.code.find(fallback.as_str()) {
+                    assert!(reference_start < fallback_start);
+                    assert!(
+                        output
+                            .code
+                            .get(fallback_start..)
+                            .expect("late fallback")
+                            .contains(vize_carton::cstr!("  void {safe};").as_str())
+                    );
+                }
+                let navigation_row = output
+                    .mapping
+                    .spans()
+                    .iter()
+                    .find(|row| {
+                        row.gen_range == (reference_start..reference_start + expression.len())
+                    })
+                    .expect("navigation keeps the existing tag source anchor");
+                let tag = 100 + template.find("component").expect("authored tag");
+                assert_eq!(navigation_row.src_range, tag..tag + expression.len());
+            } else {
+                assert!(!output.code.contains(guard));
+            }
+        }
+    }
+}

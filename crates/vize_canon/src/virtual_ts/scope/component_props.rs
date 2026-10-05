@@ -5,7 +5,7 @@ mod closure_scopes;
 mod duplicate_listeners;
 mod dynamic_reference;
 use duplicate_listeners::append_duplicate_listener_checks;
-use dynamic_reference::named_dynamic_reference;
+pub(super) use dynamic_reference::named_dynamic_reference;
 
 pub(super) use closure_scopes::generate_closure_component_props_recursive;
 pub(super) use closure_scopes::recurse_child_closure_scopes;

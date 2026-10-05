@@ -9,6 +9,7 @@ use crate::virtual_ts::semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
+use super::component_props::named_dynamic_reference;
 use super::context::ComponentPropsContext;
 
 pub(super) fn emit_references(
@@ -20,15 +21,22 @@ pub(super) fn emit_references(
 ) {
     ts.push_str("\n  // Component template navigation references\n");
     for &(idx, usage) in checkable_usages {
-        let component_ref = component_binding_reference(
-            ctx.summary,
-            ctx.options,
-            ctx.syntactic_type_only_imported_names,
-            usage.name.as_str(),
-        );
+        let named_dynamic_ref = named_dynamic_reference(ctx, usage);
+        let inference_only = named_dynamic_ref.is_some();
+        let component_ref = named_dynamic_ref.unwrap_or_else(|| {
+            component_binding_reference(
+                ctx.summary,
+                ctx.options,
+                ctx.syntactic_type_only_imported_names,
+                usage.name.as_str(),
+            )
+        });
         let tag_src_start = (ctx.template_offset + usage.start + 1) as usize;
         let tag_src_end = tag_src_start + usage.name.len();
 
+        if inference_only {
+            ts.push_str("  // @ts-ignore Navigation-only reference; the authored v-bind statement owns diagnostics.\n");
+        }
         ts.push_str("  void ");
         let tag_gen_start = ts.len();
         ts.push_str(&component_ref);

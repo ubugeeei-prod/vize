@@ -279,3 +279,54 @@ All production blobs, expected vectors/subspans/bytes, original fixtures and
 33 runtime states remain exact. Fresh peer/source/native/full Actions remain
 required; no lint suppression, provider change, local native execution or
 result transfer is introduced. Draft, open Issue and admission hold persist.
+
+## Disabled-mode navigation failure and scoped repair
+
+Root verified the first433 publication and lifted its global hold; this PR
+still requires its own complete source/native/protected qualification.
+Published `eeabaeab4c331fdc7731069e6d649131a942b1b4` passes ordinary Check
+`37336351831` (16,183 successful JUnit cases and all 11 generator laws) and
+NativePhase `37336350315` with `profile:none`. These compiled-source results
+do not establish the unchanged 33-state CLI/editor gate.
+Full Check `37338615768` has terminal FAILURE only in `test-scripts`.
+Its source-built binary SHA256 is
+`15a80e06c8f79fecb8eae340c24856c7577f87fe5ba53550dadc2ca3ccbbdf47`.
+Official artifact `11359031005` is 58,651,697 bytes, SHA256
+`0d164714a45de2c2c8b339450af55967aadb0bd57ae3859af6c30d0c0cdfea6f`;
+all 1,403 archive members are unique and their ZIP CRCs verified.
+The 15,318-byte raw dynamic receipt has SHA256
+`306c36063be2fcae98ae3cf0c3682652ef6c0324b1b48b759817c0578c5b5fee`.
+It contains 19 observations: all 11 `true` cases and seven `false` cases pass;
+the eighth `false` clean `registry.button` case fails CLI and editor with
+TS2448 at authored line6:4, naming `registry_button`. Fourteen states remain
+unexecuted. The earlier provisional attribution to the eighth `true` case is
+withdrawn after reading the full raw receipt; no success is transferred.
+
+The new member-props admission exposed an eager navigation read of the old
+sanitized placeholder before its later fallback const. The exact-owned member
+reference is option-independent: reuse it only for that navigation value read.
+A localized navigation-only `@ts-ignore` prevents this duplicate inference view
+from reporting a second wrong-member error; the unchanged mapped authored
+`v-bind` statement remains the sole expression diagnostic authority. This is
+producer-side suppression of the redundant view, not diagnostic filtering.
+Ordinary tags, plain names, legacy Vue2 and unproved owners retain their old
+bytes. The separate slot navigation remains a non-eager `typeof` query and is
+untouched; no broader slot behavior claim is made. Late fallback declarations
+and references, props/value checking and every original fixture/33 input and
+expected vector remain unchanged. New mapped laws cover both registry modes,
+clean/wrong-member/value expressions, Unicode/CRLF source offsets, exact tag
+navigation anchors and unsuppressed complete authored-expression rows. Existing
+plain/legacy whole-output/map laws remain intact. No provider, stage, global,
+new `any`, error filter, budget or local native run is introduced. Fresh peer,
+source/native/full33, protected104, actual signed merge and release remain
+required; no complete #8003 or10x credit is granted.
+
+The independently reviewed navigation repair is replayed cleanly onto actual
+main `58e6a0272b4044e3aaa8b7a9cb3ac62100ccec7c` before publication. Every owned
+production/test blob is exact to reviewed tree `5f32371a`; incoming expression,
+LSP, workflow and decision changes are preserved, and all canonical bytes
+outside this Issue's paragraph match that main. The complete original fixture
+and 33-state driver remain exact. The parent peer's source-only receipt is
+SHA256 `6de687751098b3c23e999c916bca18720a760e0fd89257dd41f00c0d5c7aca75`;
+it grants no new compile/native/runtime result. New source Actions and the
+unchanged full 33-state qualification must use this genuine composition.
