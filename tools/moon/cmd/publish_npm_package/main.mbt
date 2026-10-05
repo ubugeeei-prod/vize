@@ -362,7 +362,7 @@ async fn run_app() -> Int {
       )
     }
     let publish_detail = stdout_text + "\n" + stderr_text
-    if is_staged_publish_error(publish_detail) {
+    if is_staged_publish_error(publish_detail.to_owned()) {
       println(
         "\{info.name}@\{info.version} is staged in npm but not yet visible. Waiting for registry visibility before retrying.",
       )

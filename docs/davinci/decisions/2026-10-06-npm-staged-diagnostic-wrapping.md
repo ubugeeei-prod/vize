@@ -27,7 +27,10 @@ boundary, verify whole stderr, publisher arguments/cwd, invocation count and
 bounded version/tag probes. This is tooling behavior qualification, with no
 registry publication or product runtime acceptance implied.
 
-Validation is pending source Actions and independent technical review.
+The first source Actions run `37331722315` caught a `StringView`/`String`
+type mismatch before helper execution. Copy the existing diagnostic view only
+at the recognition call boundary; all captured streams and vectors remain exact.
+Independent source review is clear; corrected source Actions remain pending.
 Keep the conventional PR Draft with auto-merge and queue entries absent until
 the maintainer ends the first0.433 publication hold. The current immutable
 release tool/tag/candidate is untouched. Actual protected merge and inclusion
