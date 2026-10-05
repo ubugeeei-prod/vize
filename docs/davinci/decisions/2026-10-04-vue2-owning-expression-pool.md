@@ -173,3 +173,44 @@ consume each sealed retained slot without changing the short borrowed route.
 No whole-output/runtime acceptance, historical File/registry ABI completion,
 ready/queue/merge/release state, issue closure or speed claim is supplied here.
 This work remains excluded from the finite v0.433 publication batch.
+
+## Existing PR actual-main replay, 2026-10-05
+
+The [paired #6842 decision](https://github.com/ubugeeei-prod/vize/issues/6842#issuecomment-5989841485)
+and [#6882 scope receipt](https://github.com/ubugeeei-prod/vize/issues/6882#issuecomment-5989841832)
+qualify the same existing #7815 replay onto signed actual main
+`d8c3f46657f849e1839d55349b6eabdb766bfd57`.
+The prior finite-batch exclusion above is historical. The coordinator's new
+finite v0.433 publication cut permits source preparation but holds new queue
+admissions; this PR stays Draft and unadmitted until the explicit thaw.
+
+All four original author identities, dates and complete commit messages,
+including their verified712 reporter trailers, are retained. Sixteen owned
+blobs remain byte-exact: every retained-owner implementation, all twelve unit
+laws, fourteen compile-fail and two positive doctest bodies, and the scanner
+controls. The only implementation conflict is the two public re-export lists;
+their union keeps every current Vue1 API/hook and original retained Vue2 API.
+No original input, law, expected output, option, storage count or cap changes.
+
+Every complete incoming canonical line is retained at350 lines. The six
+original reviewed storage rows are added to every current row. The complete
+source scan and all eleven storage/scanner Node controls pass. These are pure
+source checks, with no native build, dependency install or runtime campaign.
+
+The old exact-source Check37203171767 on `c827ca9b` passed15,720 source-tier
+cases without failure/error/skip, all twelve new laws, fourteen compile-fail
+controls, two positive doctests and the selected64Vue1 historical capture.
+That is historical source evidence; it supplies no current replay acceptance
+and its L1 selector omitted the48Vue2 historical source composite.
+
+Fresh automatic Actions must qualify current source and all applicable laws.
+After publication thaw, verify independent Stack-null membership and exact
+current-head green checks before Ready/auto-squash. Actual protected delivery
+must prove unchanged104x3 measurements, both complete48Vue2/64Vue1 historical
+capture/oracle composites and full current Rust suites. Track the actual signed
+merge, source/observation custody and literal final reporter metadata. A queue
+entry or old source success cannot substitute for that terminal proof.
+
+TODO: whole Glyph consuming integration, original full-SFC AST/output/runtime
+after owner drop, historical File/registry/default completion, #6882 closure
+and measured speed/10x remain unfinished. No product legacy path is replaced.
