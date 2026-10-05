@@ -86,3 +86,15 @@ fallback and token-aligned group restoration. Old123 Rust execution and a197
 custody remain distinct historical heads. The new production source requires
 fresh exact-head Actions/protected all104; no measured speed or cap credit is claimed.
 Paired [equality decision](https://github.com/ubugeeei-prod/vize/issues/7826#issuecomment-5987274362).
+
+Exact73d source Check37257179839 is terminalSUCCESS: all four Rust and tooling
+workers, full source report, Nuxt3/4, Title and Zizmor pass. Executed40c9937478
+has parents ef506012/73d and tree26639d18; every owned producer/test/corpus/
+metadata/companion byte is literal73d, with only legitimate main canonical
+composition. The27-case law runs in111598786428 and lexer law111598786482.
+The actual prospective queue base b8bca915 cannot merge the overlapping canonical
+clause. Remove that queue entry, move only the owned clause to an existing
+earlier canonical line, retain all other decisions/350 lines and production/
+golden bytes, prove the prospective merge-tree clean and require fresh source
+Actions before re-entry. ProtectedAPI27/CLI9/full suites/all104 remain required.
+Paired [composition receipt](https://github.com/ubugeeei-prod/vize/issues/7826#issuecomment-5987672767).
