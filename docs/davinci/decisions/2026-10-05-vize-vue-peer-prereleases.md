@@ -13,6 +13,8 @@ ERESOLVE transcript. The existing npm SemVer implementation checks complete
 acceptance vectors for the original rc.10/beta.17, existing stable releases,
 the lower floor, and unrelated prerelease tuples. No `includePrerelease`,
 force install or legacy-peer-deps switch is used in the law.
+The existing exact manifest guard uses the new range; all its independent
+dependency, optionality, consuming-project and runtime-resolution checks stay.
 
 Source Actions, protected merge and release remain required. This regression
 law verifies source package metadata; an installed published-package check
