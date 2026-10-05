@@ -157,3 +157,22 @@ on the retained old source refs; ordinary replay does not reproduce their
 merge topology. Every owned production, control, whole input and vector blob
 remains byte-exact. The merged return provider records delivery separately
 from the still-open original consumer, fix-history and full-product gates.
+
+## Actual reference-path delivery and source refresh
+
+The previously prospective Canon census collision is resolved by actual
+#7852 delivery, signed `a28f494b65451591d2d9ff893ff19c5ebfd7af1e` at
+`2026-10-05T05:08:30Z`, with protected Check `37265302399` successful.
+The remaining five replay onto literal actual main
+`4e4c8c977d7052edbb6a2b42808ddc6e7b59f3bf`, retaining the merged reference
+module and refreshing the generated census from that real source union.
+No queued or projected production is imported to resolve the old collision.
+
+This source refresh preserves original complete inputs, options, maps and
+whole vectors. Every incoming canonical clause remains within 350 lines.
+The existing native Stack stays ordered, and each child must include its
+genuine refreshed parent. Fresh exact-head source/native Actions and full
+protected acceptance remain required; older green runs are historical. New
+queue admission waits for the root's supported release publication clearance.
+The original history ledgers, native-zero migration denominator and unfinished
+product/default/10x obligations remain unchanged.
