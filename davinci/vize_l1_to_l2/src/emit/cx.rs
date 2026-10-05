@@ -325,11 +325,6 @@ impl EmitCx<'_> {
             .map_err(|_| EmitError::unsupported(Reason::PrefixExpressionRejected))
     }
 
-    /// `emit_dynamic_directive_arg` under `prefix_identifiers`.
-    pub(super) fn prefixed_dynamic_arg(&self, js: &JsExpr<'_>) -> String {
-        prefix::prefix_dynamic_arg(&self.scope, js)
-    }
-
     pub(super) fn push_prefixed_expr(
         &mut self,
         expr: &ExprRef<'_>,

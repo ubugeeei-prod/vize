@@ -61,6 +61,7 @@ mod custom_element;
 mod cx;
 mod directive;
 mod dispatch;
+mod dynamic_arg;
 mod entity;
 mod entry;
 mod error;
