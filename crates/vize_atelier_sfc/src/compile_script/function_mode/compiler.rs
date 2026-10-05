@@ -4,8 +4,8 @@
 //! in function mode, where the setup function returns bindings for use by a separate
 //! render function.
 
+use crate::compile_script::macros::runtime_erased_macro_names;
 use vize_carton::{FxHashSet, String, ToCompactString};
-use vize_croquis::macros::runtime_erased_macro_names;
 
 use crate::script::{
     PropsDestructuredBindings, ScriptCompileContext, TemplateUsedIdentifiers, define_model_name,

@@ -302,7 +302,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
     nuxt.options.vite ||= {};
     nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
     nuxt.options.vite.plugins.push(
-      vize({ ...compilerOptions, ssrModuleIdRoot: nuxt.options.srcDir }),
+      vize({ ...compilerOptions, nuxtPageMeta: true, ssrModuleIdRoot: nuxt.options.srcDir }),
     );
   }
 

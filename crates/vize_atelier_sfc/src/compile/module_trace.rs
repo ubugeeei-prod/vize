@@ -22,6 +22,7 @@ use crate::types::{SfcDescriptor, SfcScriptBlock};
 pub(super) fn prepared_script(
     block: &SfcScriptBlock<'_>,
     trace: bool,
+    nuxt_page_meta: bool,
 ) -> (Option<LazyHydrationTransform>, String, Option<Runs>) {
     let lazy = transform_lazy_hydration_macros(&block.content);
     let source = lazy.as_ref().map_or_else(
@@ -33,7 +34,7 @@ pub(super) fn prepared_script(
         Some(lazy) => lazy.runs.compose(&block_runs()),
         None => block_runs(),
     });
-    let content = match erase_artifact_macro_statements_traced(&source) {
+    let content = match erase_artifact_macro_statements_traced(&source, nuxt_page_meta) {
         Some((erased, erased_runs)) => {
             runs = runs.map(|runs| erased_runs.compose(&runs));
             erased
