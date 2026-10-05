@@ -1,0 +1,6 @@
+{
+  "compiler": { "whitespace": "preserve" },
+  "entries": [
+    { "files": ["app/components/tight/**", "node_modules/**"], "compiler": { "whitespace": "condense" } }
+  ]
+}
