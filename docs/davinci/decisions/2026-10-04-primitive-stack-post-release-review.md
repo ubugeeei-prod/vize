@@ -125,6 +125,35 @@ qualification triggers fresh exact-head Actions after the corrected native
 registration; absent gates provide no acceptance credit. All original source
 and fixtures, every incoming main path and protected ceilings remain intact.
 
+## Remaining native retarget obligation
+
+The actual six source heads were published atomically with exact old-head
+leases and include current main plus each refreshed parent. Native Stack
+#7759 still reports the original eight positions, with its first two merged.
+The first remaining PR #7769 still names the delivered #7758 branch as its
+GitHub base. Both GraphQL and REST base updates reject the change because
+the PR is stacked; linking all eight existing PRs reports no Stack change.
+Thus source ancestry is current, but the requested public base retarget is
+unresolved. No unstack/recreation or queue admission has been attempted.
+Resolve that metadata obligation and authenticate fresh Actions before
+calling the remaining six ready for actual protected delivery.
+
+## Supported native retarget recovery
+
+The maintainer authorized the reversible membership repair after the exact
+six-head/queue-null fence. The supported unstack endpoint removed only the
+six unmerged unlocked PRs; historical Stack #7759 retains the two actually
+merged layers unchanged. The first remaining #7769 base then changed to main,
+and `gh stack link --remote origin 7769 7772 7775 7784 7791 7792` created
+native Stack #7920. GitHub independently reports all six original source
+heads, Ready state, positions 1–6, stack base main and each exact predecessor
+branch as its child base. Source ancestry remains the literal refreshed
+parent/current-main union, and auto-merge/queue entries remain null.
+This resolves the metadata TODO above without changing original source or
+fixture bytes. Fresh exact-head source/native-phase Actions and protected
+full suites/all 104 ratchets still qualify execution separately; publication
+thaw and actual signed merge are required before delivery is complete.
+
 ## Actual return-provider delivery and remaining replay
 
 Native Stack #7920 bottom #7769 actually merged at `2026-10-05T04:10:18Z`
