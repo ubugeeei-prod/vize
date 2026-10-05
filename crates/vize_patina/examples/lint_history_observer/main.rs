@@ -1,5 +1,5 @@
 //! Complete public Patina observations for the shared fix-history corpus.
-//! Native observations use the opt-in configured original bare-template route.
+//! Native observations use the opt-in configured original template/SFC routes.
 
 #![expect(
     clippy::disallowed_macros,
@@ -24,14 +24,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if api == "--contract" {
         writeln!(
             io::stdout().lock(),
-            "{{\"schema\":\"vize.linter-history-observer\",\"version\":2,\"apis\":[\"--current-api\",\"--report\",\"--static-class\"],\"preset\":\"Incremental\",\"locale\":\"En\",\"help\":\"Full\",\"native\":\"configured-bare-template\",\"nativeApis\":[\"--native-current-api\",\"--native-report\",\"--native-static-class\"]}}"
+            "{{\"schema\":\"vize.linter-history-observer\",\"version\":3,\"apis\":[\"--current-api\",\"--report\",\"--static-class\"],\"preset\":\"Incremental\",\"locale\":\"En\",\"help\":\"Full\",\"native\":\"configured-template-and-sfc\",\"nativeApis\":[\"--native-current-api\",\"--native-report\",\"--native-static-class\"]}}"
         )?;
         return Ok(());
     }
     if api == "--native-contract" {
         writeln!(
             io::stdout().lock(),
-            "{{\"schema\":\"vize.linter-native-observer\",\"version\":1,\"apis\":[\"--native-current-api\",\"--native-report\",\"--native-static-class\"],\"owner\":\"NativeLintComponent\",\"entry\":\"template\",\"wholeOutput\":\"Case+Observation\",\"fallback\":false}}"
+            "{{\"schema\":\"vize.linter-native-observer\",\"version\":2,\"apis\":[\"--native-current-api\",\"--native-report\",\"--native-static-class\"],\"owners\":{{\"template\":\"NativeLintComponent\",\"sfc\":\"NativeSfcLintOwner\"}},\"entries\":[\"template\",\"sfc\"],\"wholeOutput\":\"Case+Observation\",\"fallback\":false}}"
         )?;
         return Ok(());
     }

@@ -36,6 +36,14 @@ impl<'a> Policy<'a> {
         Self::at_version(allocator, source, options, VueVersion::V2)
     }
 
+    pub(super) fn new_vue1(
+        allocator: &'a Allocator,
+        source: &'a str,
+        options: DescriptorOptions,
+    ) -> Self {
+        Self::at_version(allocator, source, options, VueVersion::V1)
+    }
+
     fn at_version(
         allocator: &'a Allocator,
         source: &'a str,

@@ -27,6 +27,10 @@ pub use for_head::{
 };
 mod head;
 pub use head::NativeAttributeHead;
+mod binding;
+pub use binding::{
+    NativeAttributeBindingExpression, NativeAttributeBindingExpressionView, NativeStaticBindingHead,
+};
 mod origin;
 use origin::Origin;
 mod value;
@@ -112,6 +116,20 @@ fn observe_conditional<'a>(
     attribute: NativeAttribute<'_, 'a>,
     kind: NativeConditionKind,
 ) -> Result<NativeAttributeExpression<'a>, NativeAttributeExpressionFailure<'a>> {
+    let (origin, syntax) = observe_expression_value(selected, attribute)?;
+    Ok(NativeAttributeExpression {
+        origin,
+        kind,
+        syntax,
+    })
+}
+
+// The genuine head selection has already checked the original event. Both
+// expression families use this complete value preparation and stock parse once.
+fn observe_expression_value<'a>(
+    selected: &NativeTemplateComponent<'a>,
+    attribute: NativeAttribute<'_, 'a>,
+) -> Result<(Origin<'a>, RetainedExpression<'a>), NativeAttributeExpressionFailure<'a>> {
     let origin = Origin::from_attribute(selected, &attribute)?;
     let source = prepare_attribute_value(
         selected.component().allocator(),
@@ -138,11 +156,7 @@ fn observe_conditional<'a>(
         kind: NativeAttributeOperandError::UnexpectedShape,
         syntax: Some(syntax),
     })?;
-    Ok(NativeAttributeExpression {
-        origin,
-        kind,
-        syntax,
-    })
+    Ok((origin, syntax))
 }
 
 impl<'a> NativeAttributeExpression<'a> {

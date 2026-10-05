@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { compareBytes } from "./compare.mjs";
 import { loadProductManifest, readPinnedArtifact, sha256 } from "./harness.mjs";
 import { validateProductObserverReceipt, type ObserverSpec } from "./observer-build.ts";
 import { decodeNativeOutcome, runNative, validateNativeContract } from "./linter-native.ts";
 import { summary, validateLinterReport } from "./linter-api-report.ts";
+import { collectLinterAttempts } from "./linter-process.ts";
 export { validateLinterReport } from "./linter-api-report.ts";
 
 export const LINTER_OBSERVER: ObserverSpec = {
@@ -111,35 +111,28 @@ export function runLinterApiPack({
       native: null,
       comparison: { state: "not-compared" },
     };
+    row.legacy.attempts = collectLinterAttempts(binaryPath, fixture.argv, fixture.input).map(
+      (attempt) => ({
+        ...attempt,
+        referenceComparison: compareBytes(
+          fixture.expected,
+          Buffer.from(attempt.stdoutBase64, "base64"),
+        ),
+      }),
+    );
     try {
       let previous: Buffer | undefined;
-      for (let pass = 0; pass < 2; pass++) {
-        const result = spawnSync(binaryPath, fixture.argv, {
-          input: fixture.input,
-          timeout: 30_000,
-          maxBuffer: 8 * 1024 * 1024,
-        });
-        const stdout = result.stdout ?? Buffer.alloc(0);
-        const stderr = result.stderr ?? Buffer.alloc(0);
-        const comparison = compareBytes(fixture.expected, stdout);
-        row.legacy.attempts.push({
-          stdoutBase64: stdout.toString("base64"),
-          stdoutSha256: sha256(stdout),
-          stderrBase64: stderr.toString("base64"),
-          stderrSha256: sha256(stderr),
-          exitStatus: result.status,
-          signal: result.signal,
-          processError: result.error?.message ?? null,
-          referenceComparison: comparison,
-        });
-        assert.equal(result.error, undefined, result.error?.message);
-        assert.equal(result.signal, null);
-        assert.equal(result.status, 0, stderr.toString());
+      for (const attempt of row.legacy.attempts) {
+        const stdout = Buffer.from(attempt.stdoutBase64, "base64");
+        const stderr = Buffer.from(attempt.stderrBase64, "base64");
+        assert.equal(attempt.processError, null, attempt.processError ?? undefined);
+        assert.equal(attempt.signal, null);
+        assert.equal(attempt.exitStatus, 0, stderr.toString());
         assert.equal(stderr.length, 0);
         if (previous)
           assert(stdout.equals(previous), "complete observation changed between fresh processes");
         previous = stdout;
-        if (comparison.state !== "equal") row.legacy.verdict = "baseline-drift";
+        if (attempt.referenceComparison.state !== "equal") row.legacy.verdict = "baseline-drift";
       }
     } catch (error) {
       row.legacy.state = "failed";

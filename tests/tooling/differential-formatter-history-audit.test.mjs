@@ -191,6 +191,27 @@ void test("full formatter denominator rejects missing original fixes, source arm
   assert.throws(() => validateFormatterHistoryExecution(root, []));
 });
 
+void test("CSS shared-helper visibility retains the original law and refuses forged owner credit", (t) => {
+  const { audit } = loadFormatterHistoryAudit(root);
+  const entry = audit.sourceCatalog.S029;
+  const name = "css_escapes_do_not_affect_comment_depth";
+  const current = fs.readFileSync(path.join(root, entry.path));
+  assert.doesNotThrow(() => validateCurrentFormatterWitness(root, entry, name));
+  assert.throws(() =>
+    validateCurrentFormatterWitness(root, { ...entry, sha256: sha256(current) }, name),
+  );
+  assert.throws(() => validateCurrentFormatterWitness(root, { ...entry, revisions: [] }, name));
+  assert.throws(() => validateCurrentFormatterWitness(root, entry, "unregistered_escape_law"));
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "formatter-css-owner-"));
+  t.after(() => fs.rmSync(scratch, { recursive: true, force: true }));
+  const target = path.join(scratch, entry.path);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, current);
+  assert.doesNotThrow(() => validateCurrentFormatterWitness(scratch, entry, name));
+  fs.appendFileSync(target, "\n// forged current owner\n");
+  assert.throws(() => validateCurrentFormatterWitness(scratch, entry, name));
+});
+
 void test("optimized suppression owner preserves the original placement law and rejects owner drift", (t) => {
   const { audit } = loadFormatterHistoryAudit(root);
   const entry = audit.sourceCatalog.S095;

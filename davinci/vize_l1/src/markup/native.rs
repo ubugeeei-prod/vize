@@ -12,6 +12,7 @@ mod lint_tag;
 mod operand;
 mod selected;
 mod text;
+mod text_value;
 pub use child::{NativeChild, NativeChildren};
 pub use element::{
     NativeAttribute, NativeAttributes, NativeElement, NativeElementClosingName,
@@ -24,14 +25,19 @@ pub use interpolation::{
 pub use lint::NativeLintComponent;
 pub use lint_tag::{NativeLintTag, NativeLintTagKind, NativeLintTagRefusal};
 pub use operand::{
+    NativeAttributeBindingExpression, NativeAttributeBindingExpressionView,
     NativeAttributeExpression, NativeAttributeExpressionFailure, NativeAttributeExpressionView,
     NativeAttributeForHead, NativeAttributeForHeadFailure, NativeAttributeForHeadView,
     NativeAttributeHandler, NativeAttributeHandlerFailure, NativeAttributeHandlerView,
     NativeAttributeHead, NativeAttributeOperandError, NativeAttributeValue,
     NativeAttributeValueFailure, NativeAttributeValueView, NativeConditionKind,
+    NativeStaticBindingHead,
 };
 pub use selected::{NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar};
 pub use text::{NativeRootText, NativeRootTextError, NativeRootTextProfile, NativeRootTextView};
+pub use text_value::{
+    NativeTextValue, NativeTextValueError, NativeTextValueFailure, NativeTextValueView,
+};
 
 /// Complete once-parsed Component privately paired with its checked source.
 /// Raw mutable carriers cannot be inserted; consuming transfer drops authority.

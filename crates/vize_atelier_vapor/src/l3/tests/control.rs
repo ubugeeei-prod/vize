@@ -223,6 +223,33 @@ fn branch_gaps_match_the_retained_lane_and_comment_gaps_stay_legacy() {
         }
     }
     for source in [
+        include_str!(
+            "../../../../../tests/_fixtures/differential/compiler/conditional-branch-whitespace/inline.template.txt"
+        ),
+        "<p>x <i v-if=\"a\">1</i> <b v-else-if=\"b\">2</b> <u v-else>3</u> y</p>",
+    ] {
+        let allocator = Allocator::new();
+        assert!(matches!(
+            lower_source_for_vapor(&allocator, source, options()),
+            VaporL3BridgeStatus::Legacy(LegacyReason::Element)
+        ));
+        for prefix_identifiers in [false, true] {
+            let compile = |davinci_retained_lane| {
+                crate::compile_vapor(
+                    &allocator,
+                    source,
+                    crate::VaporCompilerOptions {
+                        prefix_identifiers,
+                        davinci_retained_lane,
+                        ..Default::default()
+                    },
+                )
+                .code
+            };
+            assert_eq!(compile(false), compile(true), "{source}");
+        }
+    }
+    for source in [
         "<div v-if=\"a\">A</div><!-- c --><div v-else>B</div>",
         "<div><p v-if=\"a\">A</p>  <!-- x -->  <p v-else>C</p></div>",
     ] {

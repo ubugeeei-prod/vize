@@ -70,6 +70,8 @@ pub struct SfcCompileOptionsNapi {
     pub source_map: Option<bool>,
     pub ssr: Option<bool>,
     pub vapor: Option<bool>,
+    /// Extract Nuxt page metadata only when its integration opts in.
+    pub nuxt_page_meta: Option<bool>,
     pub custom_renderer: Option<bool>,
     pub custom_elements: Option<Vec<String>>,
     pub template_syntax: Option<String>,
@@ -159,6 +161,8 @@ pub struct BatchCompileOptionsNapi {
     pub mode: Option<String>,
     pub ssr: Option<bool>,
     pub vapor: Option<bool>,
+    /// Extract Nuxt page metadata only when its integration opts in.
+    pub nuxt_page_meta: Option<bool>,
     pub custom_renderer: Option<bool>,
     pub custom_elements: Option<Vec<String>>,
     pub template_syntax: Option<String>,

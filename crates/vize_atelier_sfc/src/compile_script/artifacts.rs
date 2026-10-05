@@ -25,6 +25,7 @@ mod imports;
 pub(crate) fn extract_macro_artifacts(
     content: &str,
     absolute_offset: usize,
+    nuxt_page_meta: bool,
 ) -> Vec<SfcMacroArtifact> {
     if !contains_artifact_macro_candidate(content) {
         return Vec::new();
@@ -38,10 +39,12 @@ pub(crate) fn extract_macro_artifacts(
         return Vec::new();
     }
 
-    let static_imports = collect_static_imports(ret.program.body.iter(), content);
+    let static_imports = collect_static_imports(ret.program.body.iter(), content, nuxt_page_meta);
     let mut runtime_bindings = collect_runtime_bindings(ret.program.body.iter());
-    for name in collect_artifact_macro_import_bindings(ret.program.body.iter()) {
-        runtime_bindings.remove(&name);
+    let macro_imports =
+        collect_artifact_macro_import_bindings(ret.program.body.iter(), nuxt_page_meta);
+    for name in &macro_imports {
+        runtime_bindings.remove(name);
     }
     let mut artifacts = Vec::new();
 
@@ -52,7 +55,9 @@ pub(crate) fn extract_macro_artifacts(
         let Some(name) = call_name(call) else {
             continue;
         };
-        if runtime_bindings.contains(name) {
+        if runtime_bindings.contains(name)
+            || (name == "definePageMeta" && !nuxt_page_meta && !macro_imports.contains(name))
+        {
             continue;
         }
         let Some(kind) = macro_artifact_kind(name) else {
@@ -88,12 +93,15 @@ pub(crate) fn extract_macro_artifacts(
 }
 
 pub(crate) fn erase_artifact_macro_statements(content: &str) -> Option<String> {
-    erase_artifact_macro_statements_traced(content).map(|(erased, _)| erased)
+    erase_artifact_macro_statements_traced(content, false).map(|(erased, _)| erased)
 }
 
 /// [`erase_artifact_macro_statements`] with the erased text's provenance in
 /// `content` (Davinci P3-9 source maps).
-pub(crate) fn erase_artifact_macro_statements_traced(content: &str) -> Option<(String, Runs)> {
+pub(crate) fn erase_artifact_macro_statements_traced(
+    content: &str,
+    nuxt_page_meta: bool,
+) -> Option<(String, Runs)> {
     if !contains_artifact_macro_candidate(content) {
         return None;
     }
@@ -107,12 +115,14 @@ pub(crate) fn erase_artifact_macro_statements_traced(content: &str) -> Option<(S
     }
 
     let mut runtime_bindings = collect_runtime_bindings(ret.program.body.iter());
-    for name in collect_artifact_macro_import_bindings(ret.program.body.iter()) {
-        runtime_bindings.remove(&name);
+    let macro_imports =
+        collect_artifact_macro_import_bindings(ret.program.body.iter(), nuxt_page_meta);
+    for name in &macro_imports {
+        runtime_bindings.remove(name);
     }
     let mut ranges = Vec::new();
     for stmt in ret.program.body.iter() {
-        if is_artifact_macro_only_import(stmt) {
+        if is_artifact_macro_only_import(stmt, nuxt_page_meta) {
             let span = stmt.span();
             let start = span.start as usize;
             let end = span.end as usize;
@@ -122,7 +132,7 @@ pub(crate) fn erase_artifact_macro_statements_traced(content: &str) -> Option<(S
             continue;
         }
 
-        let import_removals = artifact_macro_import_removal_spans(stmt, content);
+        let import_removals = artifact_macro_import_removal_spans(stmt, content, nuxt_page_meta);
         if !import_removals.is_empty() {
             ranges.extend(import_removals);
             continue;
@@ -134,7 +144,9 @@ pub(crate) fn erase_artifact_macro_statements_traced(content: &str) -> Option<(S
         let Some(name) = call_name(call) else {
             continue;
         };
-        if runtime_bindings.contains(name) {
+        if runtime_bindings.contains(name)
+            || (name == "definePageMeta" && !nuxt_page_meta && !macro_imports.contains(name))
+        {
             continue;
         }
         if macro_artifact_kind(name).is_none() {

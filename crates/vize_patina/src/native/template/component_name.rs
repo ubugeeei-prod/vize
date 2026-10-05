@@ -18,7 +18,10 @@ impl NativeTemplateRule for ComponentDefinitionNameCasing {
             return Err(NativeTemplateLintRefusal::SourceMismatch);
         }
         let filename = context.filename();
-        if !filename.ends_with(".vue") || is_nuxt_route_file(filename) {
+        if !filename.ends_with(".vue")
+            || filename.ends_with(".art.vue")
+            || is_nuxt_route_file(filename)
+        {
             return Ok(());
         }
         let stem = filename
@@ -43,5 +46,38 @@ impl NativeTemplateRule for ComponentDefinitionNameCasing {
             );
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::Linter;
+    use vize_l0::{Allocator, SourceRoot};
+
+    #[test]
+    fn art_filename_skips_only_the_genuine_owned_root_callback() {
+        let allocator = Allocator::new();
+        let block = SourceRoot::new("<div />").unwrap().whole_block();
+        let root = NativeLintComponent::parse_in(&allocator, block).unwrap();
+        let foreign = NativeLintComponent::parse_in(&allocator, block).unwrap();
+        let linter = Linter::new();
+        let rule = ComponentDefinitionNameCasing;
+        for filename in [
+            "Badge.art.vue",
+            r"C:\元\Badge.art.vue",
+            "/元/Bad_File.art.vue",
+        ] {
+            let mut context = NativeTemplateLintContext::new(&linter, &root, filename);
+            assert_eq!(
+                NativeTemplateRule::run_on_template(&rule, &mut context, &foreign),
+                Err(NativeTemplateLintRefusal::SourceMismatch)
+            );
+            NativeTemplateRule::run_on_template(&rule, &mut context, &root).unwrap();
+            let result = context.finish();
+            assert_eq!(result.filename.as_str(), filename);
+            assert!(result.diagnostics.is_empty());
+            assert_eq!((result.error_count, result.warning_count), (0, 0));
+        }
     }
 }

@@ -249,3 +249,31 @@ before an actual signed merge; policy-skipped source lanes are not full-suite
 acceptance. The qualified 64-attempt outcome remains historical, cause remains
 UNKNOWN, #7764 stays open and #7757 remains on HOLD. No extra campaign or matched
 full-shard execution is authorized by delivery.
+
+## Existing-PR actual-main replay, 2026-10-05
+
+Source `9a1195ea055aeb6e61784125b4b82a8c2c9ebd99` was source-green
+but had no protected or actual merge receipt. Reconcile this existing PR with
+signed actual main `4e4c8c977d7052edbb6a2b42808ddc6e7b59f3bf`, retaining
+all twelve producer observer/counter/fixture/matrix blobs and the reviewed
+diagnostic action. The canonical conflict preserves every incoming decision
+and restores the complete historical diagnostic clause without new acceptance.
+The combined Check YAML stays at its existing690-line cap; deleting only the
+reviewed optional diagnostic input/job restores the full current-main parsed
+workflow, including permissions, conditions and script scalars.
+
+Fresh exact-head source Actions and the normal automatic protected four-shard
+full Nextest run must pass, together with all unchanged104 instruction cases
+measured three times. The source archive is built before any feature recipe,
+and protected workers consume that bound complete archive with profilefull,
+partitionhash1–4/4, concurrency16 and retries0. Those current ordinary runs
+leave the diagnostic feature disabled; they prove the current default counter
+and budget case executed, not per-allocation ownership or historical replay.
+
+No new64-process or matched full-shard diagnostic campaign is authorized.
+The private full-shard driver preparation remains unpublished and unexecuted.
+Historical `e1c0c860` still failed native78 against ceiling75; all seven inputs
+and ceilings remain unchanged, cause remains UNKNOWN, #7764 stays open and
+#7757 remains Draft/off until a meaningful diagnosed correction is qualified.
+This integration grants no native/default product, performance or fix-history
+completion credit. Source/protected/actual delivery remain pending.

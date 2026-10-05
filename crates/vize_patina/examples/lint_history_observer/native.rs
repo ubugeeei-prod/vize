@@ -8,6 +8,9 @@ use vize_patina::{
 
 use super::current_api::{Application, Case, Observation, configured};
 
+mod refusal;
+use refusal::QueryRefusal;
+
 #[derive(Serialize)]
 #[serde(tag = "state", rename_all = "lowercase")]
 enum Outcome {
@@ -43,11 +46,19 @@ fn query(
     linter: &Linter,
     case: &Case,
     source: &str,
-) -> Result<vize_patina::LintResult, NativeTemplateLintRefusal> {
-    linter.lint_native_template(source, &case.filename)
+) -> Result<vize_patina::LintResult, QueryRefusal> {
+    match case.entry.as_str() {
+        "template" => linter
+            .lint_native_template(source, &case.filename)
+            .map_err(QueryRefusal::Template),
+        "sfc" => linter
+            .lint_native_sfc(source, &case.filename)
+            .map_err(QueryRefusal::Sfc),
+        _ => unreachable!("unprovided entry refused before original query"),
+    }
 }
 
-fn observe(linter: &Linter, case: &Case) -> Result<Observation, NativeTemplateLintRefusal> {
+fn observe(linter: &Linter, case: &Case) -> Result<Observation, QueryRefusal> {
     let initial = query(linter, case, &case.source)?;
     assert_eq!(initial.diagnostics.len(), case.diagnostics, "{}", case.id);
     let mut applications = Vec::new();
@@ -79,7 +90,7 @@ fn observe(linter: &Linter, case: &Case) -> Result<Observation, NativeTemplateLi
 fn current(api: &str, input: &str) -> Result<Outcome, serde_json::Error> {
     let case: Case = serde_json::from_str(input)?;
     assert_eq!(case.history.len(), 40, "full historical commit identity");
-    if case.entry != "template" {
+    if !matches!(case.entry.as_str(), "template" | "sfc") {
         return Ok(reason(
             api,
             Some(&case.entry),
@@ -92,12 +103,7 @@ fn current(api: &str, input: &str) -> Result<Outcome, serde_json::Error> {
         Ok(observation) => Outcome::Handled {
             observation: format!("{case:#?}\n{observation:#?}\n").into(),
         },
-        Err(refusal) => reason(
-            api,
-            Some(&case.entry),
-            kind(&refusal),
-            format!("{refusal:?}"),
-        ),
+        Err(refusal) => reason(api, Some(&case.entry), refusal.kind(), refusal.detail()),
     })
 }
 

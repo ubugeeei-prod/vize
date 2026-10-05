@@ -131,3 +131,13 @@ JSX attributes, apostrophe fallback and equal-count entity escaping, while
 ordinary template HTML retains its existing bytes. Actual source-built CLI must
 match all eleven references over three passes. All previous ten cases, historical
 captures/plans and native-provider credit boundaries remain unchanged.
+
+## Configured three-space indentation (#7793)
+
+The twelfth case preserves the original 34-byte template input and independently
+authored 39-byte reference for `tabWidth: 3`. Public Rust controls cover every
+shared valid width from 0 through 24, tabs, layout newlines, raw bodies, immutable
+inputs/options and three passes. All previous eleven cases, historical captures,
+300 API plans and original native nine plans/25 calls remain unchanged.
+Actual source-built CLI execution is required; this authored reference is not an
+observed pre-fix output or native migration credit.

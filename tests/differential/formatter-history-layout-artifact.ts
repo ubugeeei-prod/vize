@@ -9,7 +9,7 @@ import { sha256 } from "./manifest.mjs";
 const OWNERS: Record<string, { originalSha: string; currentSha: string; asset: string }> = {
   "crates/vize_glyph/src/style.rs": {
     originalSha: "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61",
-    currentSha: "3e78de603e74c971baa4e1619d010d45f5aae1424909495122a1bfd5f776ea54",
+    currentSha: "3867c75b9dfab9a133f5c0605352df3ffd857ac117d9b6bf554f0d4d1b5fbb68",
     asset: "tests/_fixtures/differential/formatter-history/source-witnesses/style.cc87.txt",
   },
   "crates/vize_glyph/src/formatter/block_indent.rs": {

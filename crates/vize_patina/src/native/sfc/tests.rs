@@ -1,4 +1,5 @@
 //! Provider laws use actual configured test instances, never builtin credit.
+mod builtin;
 mod configuration;
 mod custody;
 mod envelope;

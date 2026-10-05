@@ -70,6 +70,7 @@ pub(crate) use mapping::MaterializedSourceMappingKind;
 mod materialize;
 mod materialize_delta;
 mod materialize_links;
+mod workspace_aliases;
 pub(crate) use materialize_delta::{
     IncrementalMaterialization, MaterializedFileDelta, MaterializedFileSnapshot,
 };
@@ -97,6 +98,7 @@ pub(in crate::batch) use paths::script_virtual_path;
 mod project;
 mod setup_props;
 mod topology;
+mod typed_router;
 pub use topology::BatchTopologyMetrics;
 mod included_sources;
 mod tsconfig_gen;
@@ -199,7 +201,7 @@ pub struct VirtualProject {
 
     /// Internal check generation settings applied to every Vue file.
     virtual_ts_check_options: VirtualTsCheckOptions,
-
+    typed_router: typed_router::Context,
     /// Importer-local package identities retained until native package
     /// topology is materialized. This must never collapse to a specifier map.
     package_routes: FxHashMap<crate::package_route::PackageRouteKey, crate::PackageRouteBinding>,
@@ -234,8 +236,8 @@ pub struct VirtualProject {
 
     /// Shadow package.json -> original package.json. Manifests are copied raw.
     package_shadow_manifests: FxHashMap<PathBuf, PathBuf>,
-    package_shadow_artifacts:
-        FxHashMap<crate::package_route::PackageRouteKey, package_shadow::PackageShadowTopology>,
+    package_shadow_artifacts: package_shadow_owners::PackageShadowArtifacts,
+    retired_package_shadow_paths: FxHashSet<PathBuf>,
     package_shadow_file_owners: FxHashMap<PathBuf, PackageShadowOwners>,
     package_shadow_manifest_owners: FxHashMap<PathBuf, PackageShadowOwners>,
     package_shadow_source_paths: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
@@ -261,7 +263,7 @@ pub struct VirtualProject {
     materialized_package_links: FxHashMap<PathBuf, PathBuf>,
     materialized_package_link_scopes: FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
     materialized_package_link_owners: FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
-    package_link_scope_files: FxHashMap<PathBuf, FxHashSet<PathBuf>>,
+    package_link_scope_files: FxHashMap<PathBuf, FxHashMap<PathBuf, usize>>,
     package_link_scope_targets: FxHashMap<PathBuf, FxHashMap<PathBuf, usize>>,
     package_shadow_link_scopes:
         FxHashMap<crate::package_route::PackageRouteKey, Vec<(PathBuf, PathBuf)>>,
@@ -305,7 +307,7 @@ pub struct VirtualProject {
 
     /// Virtual files keyed by materialized path.
     virtual_files: FxHashMap<PathBuf, VirtualFile>,
-
+    shared_helper_source_count: usize,
     /// Exact materialized artifacts owned by each authored source. Persistent
     /// refreshes replace this set atomically so an SFC changing TS/TSX shape
     /// cannot leave an old companion or passthrough file in the program.

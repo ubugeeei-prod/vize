@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  getDetectedNuxtMajor,
   getNuxtBuilderKind,
   hasNuxtViteCompilerSupport,
   isViteNuxtBuilder,
@@ -42,4 +43,19 @@ void test("Nuxt 2 webpack does not enable Nitro-only compiler setup from a vite 
     hasNuxtViteCompilerSupport({ options: { builder: "@nuxt/vite-builder", vite: {} } }),
     true,
   );
+});
+
+void test("the public Nuxt 2 constructor version is detected without private instance fields", () => {
+  class Nuxt2 {
+    static get version() {
+      return "v2.17.3";
+    }
+  }
+  assert.equal(getDetectedNuxtMajor(new Nuxt2()), 2);
+  assert.equal(getDetectedNuxtMajor({ constructor: { version: "v2.17.3-development" } }), 2);
+  assert.equal(getDetectedNuxtMajor({ _version: "3.19.3", constructor: Nuxt2 }), 3);
+  assert.equal(getDetectedNuxtMajor({ version: "4.1.0" }), 4);
+  assert.equal(getDetectedNuxtMajor({ options: { _nuxtVersion: "2.17.3" } }), 2);
+  assert.equal(getDetectedNuxtMajor({ constructor: { version: "unknown" } }), null);
+  assert.equal(getDetectedNuxtMajor(undefined), null);
 });

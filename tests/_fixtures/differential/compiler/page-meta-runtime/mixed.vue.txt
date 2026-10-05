@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import { definePageMeta, useRoute } from "#imports";
+const route = useRoute();
+definePageMeta({ layout: "plain", middleware: () => "guard:" + route.path });
+</script>
+<template><div>page</div></template>

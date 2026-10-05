@@ -129,10 +129,17 @@ pub(crate) async fn open_canonical_virtual_workspace_document(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,
 ) -> Option<CanonicalVirtualDocument> {
-    open_canonical_virtual_project_document_with_scope(ctx, bridge, true)
+    open_canonical_virtual_workspace_document_strict(ctx, bridge)
         .await
         .ok()
         .flatten()
+}
+
+pub(crate) async fn open_canonical_virtual_workspace_document_strict(
+    ctx: &IdeContext<'_>,
+    bridge: &CorsaBridge,
+) -> Result<Option<CanonicalVirtualDocument>, CanonicalProjectOpenError> {
+    open_canonical_virtual_project_document_with_scope(ctx, bridge, true).await
 }
 
 /// Open a project-wide canonical document while retaining the bridge error

@@ -1,6 +1,6 @@
 //! Opt-in original-SFC custody for whole primitive-only TypeScript setup rules.
 //! This grants no native template File, DOM/ref association or default route.
-//! Actual builtin capabilities remain unprovided in this provider parent.
+//! Offered builtin capabilities remain bounded to this whole setup proof.
 
 use vize_l0::{SourceFrameError, Span, String, config::VueVersion};
 use vize_l1::{

@@ -107,6 +107,7 @@ typechecker	Typechecker	source	crates/vize/src/commands/check/runner/text_style.
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs.rs	14	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs.rs	158	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/ambient.rs	8	l0	L0	stage	vize_l0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/ambient/path_manifest_tests.rs	30	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/collect.rs	6	l0	L0	stage	vize_l0	preferred	3
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/default_exclude_tests.rs	17	l0	L0	stage	vize_l0	preferred	2
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/glob.rs	94	l0	L0	stage	vize_l0	preferred	1

@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { compareBytes } from "./compare.mjs";
 import { sha256 } from "./harness.mjs";
+import { collectLinterAttempts } from "./linter-process.ts";
+import { expectedSfcReason } from "./linter-sfc-contract.ts";
 
 export const NATIVE_APIS = ["--native-current-api", "--native-report", "--native-static-class"];
 
@@ -20,12 +21,12 @@ export function validateNativeContract(receipt: any) {
   assert.equal(probe.exitStatus, 0);
   assert.deepEqual(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)), {
     schema: "vize.linter-history-observer",
-    version: 2,
+    version: 3,
     apis: ["--current-api", "--report", "--static-class"],
     preset: "Incremental",
     locale: "En",
     help: "Full",
-    native: "configured-bare-template",
+    native: "configured-template-and-sfc",
     nativeApis: NATIVE_APIS,
   });
   const nativeProbe = receipt.probes[1];
@@ -35,10 +36,10 @@ export function validateNativeContract(receipt: any) {
   assert.equal(nativeProbe.sha256, sha256(nativeBytes));
   assert.deepEqual(JSON.parse(nativeBytes.toString()), {
     schema: "vize.linter-native-observer",
-    version: 1,
+    version: 2,
     apis: NATIVE_APIS,
-    owner: "NativeLintComponent",
-    entry: "template",
+    owners: { template: "NativeLintComponent", sfc: "NativeSfcLintOwner" },
+    entries: ["template", "sfc"],
     wholeOutput: "Case+Observation",
     fallback: false,
   });
@@ -58,7 +59,7 @@ export function expectedNativeReason(fixture: any) {
       detail: "native whole report API is not provided",
     };
   const entry = input.entry;
-  if (entry !== "template")
+  if (entry !== "template" && !(api === "--native-current-api" && entry === "sfc"))
     return {
       api,
       entry,
@@ -79,6 +80,7 @@ export function expectedNativeReason(fixture: any) {
       kind: "UnsupportedVaporMode",
       detail: "UnsupportedVaporMode { requested: true }",
     };
+  if (entry === "sfc") return expectedSfcReason(input, api);
   const rule = api === "--native-static-class" ? "vapor/prefer-static-class" : input.rule;
   if (rule !== "vue/component-definition-name-casing")
     return { api, entry, kind: "UnprovidedRule", detail: `UnprovidedRule { rule: "${rule}" }` };
@@ -102,7 +104,7 @@ export function decodeNativeOutcome(bytes: Buffer, fixture: any) {
   }
   assert.deepEqual(Object.keys(outcome).sort(), ["reason", "state"]);
   const expected = expectedNativeReason(fixture);
-  assert(expected, "the eight pinned admissible originals require whole output, not refusal");
+  assert(expected, "the ten pinned admissible originals require whole output, not refusal");
   assert.deepEqual(
     outcome.reason,
     expected,
@@ -125,7 +127,12 @@ function provenance(receipt: any) {
   };
 }
 
-export function runNative(binaryPath: string, fixture: any, receipt: any) {
+export function runNative(
+  binaryPath: string,
+  fixture: any,
+  receipt: any,
+  invoke?: Parameters<typeof collectLinterAttempts>[3],
+) {
   const native: any = {
     state: "failed",
     argv: nativeArgv(fixture),
@@ -135,25 +142,7 @@ export function runNative(binaryPath: string, fixture: any, receipt: any) {
   try {
     let previous: Buffer | undefined;
     let outcome: any;
-    for (let pass = 0; pass < 2; pass++) {
-      const result = spawnSync(binaryPath, native.argv, {
-        input: fixture.input,
-        timeout: 30_000,
-        maxBuffer: 8 * 1024 * 1024,
-      });
-      const stdout = result.stdout ?? Buffer.alloc(0);
-      const stderr = result.stderr ?? Buffer.alloc(0);
-      const attempt: any = {
-        stdoutBase64: stdout.toString("base64"),
-        stdoutSha256: sha256(stdout),
-        stderrBase64: stderr.toString("base64"),
-        stderrSha256: sha256(stderr),
-        exitStatus: result.status,
-        signal: result.signal,
-        processError: result.error?.message ?? null,
-      };
-      native.attempts.push(attempt);
-    }
+    native.attempts = collectLinterAttempts(binaryPath, native.argv, fixture.input, invoke);
     for (const attempt of native.attempts) {
       const stdout = Buffer.from(attempt.stdoutBase64, "base64");
       const stderr = Buffer.from(attempt.stderrBase64, "base64");

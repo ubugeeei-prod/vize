@@ -268,6 +268,10 @@ test("opaque native Program regressions seed all eight profiles with exact sourc
         "type-argument-computed-key.ts.input",
         "795604dd30265beeeec984c6c5500943dd5c8cf1b2bad9aed4b55ceb9d3ca04a",
       ],
+      [
+        "issue-7805-nested-array.tsx.input",
+        "e61f8019a498f6ba594723d56b4c7209e8310f602a3fcf9acd9051854232c6e0",
+      ],
     ] as const;
     const inputs = witnesses.map(([name, digest]) => {
       const bytes = fs.readFileSync(path.join(repoRoot, "tests/fuzz/regressions/l1_program", name));
@@ -275,15 +279,22 @@ test("opaque native Program regressions seed all eight profiles with exact sourc
       fs.writeFileSync(path.join(directory, name), bytes);
       return bytes;
     });
+    // Artifact 11300504142 carried selector 3; stripping only that byte is reversible.
+    const original = Buffer.concat([Buffer.from([3]), inputs.at(-1)!]);
+    assert.equal(original.length, 6876);
+    assert.equal(
+      createHash("sha256").update(original).digest("hex"),
+      "bd961cb21aa8b9541f088cb3ae29cbbab15700b2c5f3734adafbb07c37340c8d",
+    );
     const result = spawnSync(
       "rust-script",
       [path.join(repoRoot, "tools/commands/ci/fuzz/seed_corpus.rs")],
       { encoding: "utf8", env: { ...process.env, VIZE_REPO_ROOT: root } },
     );
     assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
-    assert.match(result.stdout, /8 native Program sources in eight explicit profiles/);
+    assert.match(result.stdout, /9 native Program sources in eight explicit profiles/);
     const corpus = path.join(root, "tests/fuzz/corpus/l1_program");
-    assert.equal(fs.readdirSync(corpus).length, 64);
+    assert.equal(fs.readdirSync(corpus).length, 72);
     for (const source of inputs) {
       for (let profile = 0; profile < 8; profile++) {
         const bytes = Buffer.concat([Buffer.from([profile]), source]);

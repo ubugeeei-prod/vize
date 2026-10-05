@@ -152,6 +152,8 @@ pub fn parse_component_block<'a>(
     allocator: &'a Allocator,
     block: SourceBlock<'a>,
 ) -> ComponentParse<'a> {
+    #[cfg(test)]
+    crate::container::vue::vue1_entry_hooks::component_entry();
     projection(allocator, block, false)
 }
 
