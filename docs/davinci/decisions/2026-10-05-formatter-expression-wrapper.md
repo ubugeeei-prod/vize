@@ -52,3 +52,5 @@ all original historical pins/laws and instruction/source caps. The first source
 executed the original sixteen actual CLI/runtime rows successfully; it does not
 qualify the additional inverse boundary or the successor source. Fresh full
 source execution and protected delivery remain required.
+
+The actual-main replay on `8f667ea070bb90d57ac7125db35d791025f746e2` preserves the complete incoming protected prefix and every owned production/runtime/corpus/witness byte from `a9dcf69fe5252cb9395c3522b9e216edc5e61c62`. Original authors, reports and ceilings remain intact. Earlier qualified heads remain historical receipts; this replay needs its own exact-head source and protected reports before actual merge/release.
