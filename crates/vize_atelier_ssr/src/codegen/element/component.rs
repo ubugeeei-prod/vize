@@ -124,12 +124,8 @@ impl<'a> SsrCodegenContext<'a> {
             return;
         }
 
-        // Dynamically-named (`#[name]`) or conditional/looped (`v-if`/`v-for`)
-        // slot templates cannot be expressed as a static slots object. Vue's SSR
-        // compiler wraps them in `createSlots(staticBase, [dynamicEntries])`, so
-        // detect them up front and switch to that form to avoid collapsing them
-        // into the `default` slot (which drops the component reference and yields
-        // an undefined vnode `.type` at render time).
+        // Dynamic, conditional and looped template slots need `createSlots`,
+        // preserving component references rather than becoming default content.
         if children
             .iter()
             .any(|child| self.is_dynamic_slot_source(child))
@@ -141,7 +137,6 @@ impl<'a> SsrCodegenContext<'a> {
         let mut default_children: std::vec::Vec<&'node TemplateChildNode<'a>> =
             std::vec::Vec::new();
         let mut named_slots: std::vec::Vec<ComponentTemplateSlot<'node, 'a>> = std::vec::Vec::new();
-
         for child in children {
             if let Some(slot) = self.component_template_slot(child) {
                 named_slots.push(slot);
@@ -304,7 +299,7 @@ impl<'a> SsrCodegenContext<'a> {
             return;
         };
 
-        self.use_ssr_helper(RuntimeHelper::SsrRenderList);
+        self.use_core_helper(RuntimeHelper::RenderList);
         self.push("_renderList(");
         self.push_expression(&for_node.source);
         self.push(", (");

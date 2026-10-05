@@ -61,7 +61,7 @@ function reference(source, serverTarget = ssr) {
     const errors = [];
     const result = officialCompilerVapor.compile(template, {
       mode: "module",
-      comments: true,
+      comments: false,
       onError: (error) => errors.push(error),
     });
     assert.deepEqual(errors, []);
@@ -170,7 +170,7 @@ try {
       if (ssr) {
         assert.equal(actual.html.includes("<!-- note -->"), !fixture.drop, fixture.name);
       } else {
-        assert.deepEqual(actual.comments, fixture.drop ? [] : [" note "], fixture.name);
+        assert.deepEqual(actual.comments, vapor || fixture.drop ? [] : [" note "], fixture.name);
       }
       if (mode === "slot-probe") {
         const absent = fixture.name === "comment-only";
@@ -193,7 +193,9 @@ try {
       observations,
     });
   }
-  process.stdout.write(JSON.stringify({ target: input.target, version: vue.version, cases }));
+  process.stdout.write(
+    JSON.stringify({ target: input.target, comments: !vapor, version: vue.version, cases }),
+  );
 } finally {
   delete globalThis.__slotCommentRuntime;
   await window.happyDOM.close();

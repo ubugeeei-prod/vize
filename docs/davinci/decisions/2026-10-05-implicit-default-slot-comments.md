@@ -11,10 +11,12 @@ The exact Vapor runtime/compiler 3.6.0-rc.9 applies the same rule in
 `transformComponentSlot`; its beta version does not establish rc.9 evidence.
 
 Apply this rule to the existing static and dynamic DOM slot collectors,
-the selected L2 emitter, both SSR push/vnode collectors, and Vapor's borrowed
-implicit child runs. Keep nested comments, explicit default templates, and
-ordinary defaults. Comment-only filler beside named templates creates no
-default slot. Do not add stages, parser passes, or serialized level transfers.
+the selected L2 emitter, and both SSR push/vnode collectors. Keep nested
+comments, explicit default templates, and ordinary defaults. Comment-only
+filler beside named templates creates no default slot. The looped-slot control
+also exposed an SSR helper mismatch: register core `renderList` for the array
+of slot descriptors, matching the emitted call and Vue's runtime contract.
+Do not add stages, parser passes, or serialized level transfers.
 
 Eight retained inputs exercise the original, conditional/looped/dynamic names,
 comment-only filler, and three comment-preservation controls. Rust compares
@@ -25,6 +27,10 @@ the metamorphic comparison. Independent official compilers then execute whole
 modules on real pinned Vue: DOM mounts and cleanup, SSR push and vnode fallback
 slots, and Vapor mounts and cleanup. Whole observations include slot keys and
 counts where VNodes exist, tree/HTML, authored comments, and diagnostics.
+DOM and SSR use `comments: true`. The public Vapor backend has no comments
+option and omits authored comments everywhere; its oracle explicitly uses
+`comments: false`, and all eight complete results match comment-free inputs.
+This is existing Vapor behavior, not comment-preservation or native coverage.
 
 The public `vapor: true` plus `ssr: true` request still emits
 `VAPOR_SSR_FALLBACK` and uses standard SSR. Qualifying it does not implement
