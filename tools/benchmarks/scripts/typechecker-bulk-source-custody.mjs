@@ -9,6 +9,16 @@ const injected = "apps/web-antd/src/__vize_batch_incremental_oracle__.vue";
 
 // This observer runs outside the unchanged integration test's timing windows.
 export function prepareSourceCustody({ fixture, capture, output, driver, authority }) {
+  const git = (...args) =>
+    execFileSync("git", ["-C", fixture, ...args], { maxBuffer: 64 * 1024 * 1024 });
+  const fixtureState = () => ({
+    head: git("rev-parse", "HEAD").toString().trim(),
+    porcelainBase64: git("status", "--porcelain=v1", "-z", "--untracked-files=all").toString(
+      "base64",
+    ),
+  });
+  const originalState = fixtureState();
+  assert.equal(originalState.head, authority.revision);
   const generations = ["cold", "brokenWarm", "repairedWarm"].map((phase) => {
     const bytes = readFileSync(join(capture, phase + ".json"));
     const packet = JSON.parse(bytes);
@@ -49,7 +59,8 @@ export function prepareSourceCustody({ fixture, capture, output, driver, authori
   assert.equal(generations[1].injectedSource, broken.toString());
   assert.equal(generations[2].injectedSource, clean.toString());
   const tree = new Map(
-    execFileSync("git", ["-C", fixture, "ls-tree", "-r", "-z", "HEAD"], { encoding: "utf8" })
+    git("ls-tree", "-r", "-z", "HEAD")
+      .toString()
       .split("\0")
       .filter(Boolean)
       .map((row) => {
@@ -92,6 +103,9 @@ export function prepareSourceCustody({ fixture, capture, output, driver, authori
     };
   });
   const catalog = {
+    fixtureState: originalState,
+    stateScope:
+      "Git porcelain detects tracked/untracked membership changes; ignored paths are not enumerated. No full ignored-directory selection census.",
     selectedSources: selected,
     originals,
     generations,
@@ -129,7 +143,8 @@ export function prepareSourceCustody({ fixture, capture, output, driver, authori
         }
       });
       const injectedAbsent = !existsSync(join(fixture, injected));
-      const observation = { phase, rows, injectedAbsent };
+      const state = fixtureState();
+      const observation = { phase, rows, injectedAbsent, fixtureState: state };
       if (!injectedAbsent)
         observation.unrestoredInjectedBase64 = readFileSync(join(fixture, injected)).toString(
           "base64",
@@ -143,6 +158,11 @@ export function prepareSourceCustody({ fixture, capture, output, driver, authori
       assert(
         rows.every((row) => row.matches),
         phase + ": original source/config bodies changed",
+      );
+      assert.deepEqual(
+        state,
+        originalState,
+        phase + ": fixture revision or visible membership changed",
       );
     },
   };

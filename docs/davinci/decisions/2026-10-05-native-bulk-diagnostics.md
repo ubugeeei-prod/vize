@@ -261,7 +261,10 @@ configuration and budgets. Bind the preceding strict whole-681 captures' exact
 500 Vue/181 TS original-path catalog and generated configurations. Preserve all
 680 Git-pinned physical bodies plus authored config/manifest bytes, exact
 CLEAN/BROKEN patch bytes and the integration's restored-absence exception.
-Authenticate complete bodies before and after every arm outside timing windows;
+Authenticate complete bodies and exact fixture HEAD/zero-delimited Git status
+before and after every arm outside timing windows. Record actual state bytes
+before comparison; Git does not enumerate ignored paths, so this supplies no
+full ignored-directory selection census for the controlled single fixture;
 require no exact-native process before an arm and an unchanged native binary
 before and after it. Three pairs alternate arm order on one runner and
 retain every whole metric packet, build/test log, source/driver/binary hash and
