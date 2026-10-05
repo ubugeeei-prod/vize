@@ -95,3 +95,15 @@ by real artifact insert/remove operations; atomic re-registration compares
 before/after eligibility and enqueues the helper only on a transition. The
 strict warm limit remains 8, and unchanged Vue re-registration considers one
 source without any helper work.
+
+Independent review of source `654f3f0419` authenticates artifact `11320428232`
+from successful native run `37249866357`, including the API archive digest,
+all member CRCs and all 14 projects / 28 complete native and CLI captures.
+The original inputs, options, session custody and full diagnostic vectors
+match. Captured executable hashes are retained provenance; the archive has
+no executable bytes or test-binary hash, so no independent executable rehash
+is claimed. Native File coverage and #6879 remain unfinished.
+The literal-main replay onto `d1a25ec1da` preserves all 25 non-canonical owned
+blobs and 11 original authors/messages/reporter trailers. It retains every
+incoming canonical clause at 350 lines. Fresh exact-head Actions, protected
+acceptance, signed merge and release remain separate requirements.
