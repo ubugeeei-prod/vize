@@ -111,3 +111,23 @@ Actions; this supersedes the initial private-review-pending checkpoint above.
 No Rust/native runtime or diagnostic-vector acceptance follows from this review.
 Fresh whole original/control artifacts, protected suites and actual delivery
 remain required. Ready/queue admission remains subject to the first-release hold.
+
+## First hosted runtime and complete progress contract
+
+Draft #8056 source `1924cb19702dff96209cf580aa4f8f25caba5a83` reached the new
+native CLI test in run `37339177996`, then failed its incorrect empty-stderr
+expectation. Public `check/runner/execution.rs` emits two complete progress lines
+for the two original files and the exact program root. Compare those entire
+source-defined bytes, including both newlines; do not suppress or filter output.
+
+Official artifact `11356809677` has SHA256
+`2604168d106471e7394b18b17793ec6c990f2201d3d02a3c4d7c94b9685b51fe`;
+all 645 members passed CRC and safe unique-path checks in memory. Retained original
+input/config bytes, native version/status/full three-row oracle and complete
+public JSON independently match the authored original obligation. The failed
+test had not reached its whole JSON assertion, remaining six settings or editor
+vectors. This separate artifact comparison does not turn the failed gate green.
+Only the stderr test contract changes; all production, original inputs, full
+diagnostic expectations and budgets remain unchanged. Fresh exact-head native
+and ordinary Actions must qualify the complete seven-case CLI and fourteen
+direct-service vectors before protected delivery.

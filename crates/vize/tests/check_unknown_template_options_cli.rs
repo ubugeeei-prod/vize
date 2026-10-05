@@ -55,7 +55,15 @@ fn original_unknown_template_options_have_complete_true_false_and_absent_vectors
             Some(i32::from(!expected.is_empty())),
             "{name}: {output:?}"
         );
-        assert_eq!(output.stderr, Vec::<u8>::new(), "{name}: complete stderr");
+        assert_eq!(
+            output.stderr,
+            vize_l0::cstr!(
+                "Building Corsa virtual project for 2 files under {}...\nRunning Corsa diagnostics for 2 files...\n",
+                root.display()
+            )
+            .as_bytes(),
+            "{name}: complete source-defined progress stderr"
+        );
         let actual: Value = serde_json::from_slice(&output.stdout).unwrap();
         assert_eq!(
             actual,
