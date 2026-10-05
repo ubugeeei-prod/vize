@@ -222,3 +222,61 @@ The authentic whole681 refusal retains its complete original vectors. A small sn
 The private consumer preparation retains Complete/Refused/RetireOwner and every real request/release cause: typed unsupported/malformed/foreign source text refuses the entire category result, actual SDK error attempts release while the owner lives and retires it before the entire original LSP retry. Keep all complete category ordering, duplicate requests, empty rows, UTF-16 coordinates, message chains, style severity and related information. Two independent whole-row controls cover repeated unicode/CRLF related sources, fetch-once behavior, successful empties/duplicates and whole refusal/error after a prior row has already converted. Every old unit/native/reader-recovery fixture remains unchanged.
 
 Test-only custody retains each actual related source's complete opaque bytes, complete text, URI/fileName/path and same snapshot/project before any final comparisons, including bounded refusal. The original full681 law additionally requires the two authentic stdlib witnesses and exact owner/source-name identity; its mandatory NativeBulk/full-vector assertions and original three full generations remain intact. Provider native proof passed at exact0f743481/run37330415540 with the authenticated full artifact, seven pure/three lifetime/one actual Linux native laws and full pre-snapshot stdlib/overlay equality. The private consumer connection remains uncompiled/unexecuted; matched original500 warm gain, CLI/LSP/cross-config/delta/declaration qualification, full source/protected suites and actual signed delivery are still mandatory. No 10x or default/Davinci completion claim follows from the private connection.
+
+## Current consumer execution and matched source control
+
+Consumer `8462785b` passed source Check `37335566177` and native
+qualification `37335565381`. Four authenticated JUnit archives contain 16,192
+passing cases with zero failures or skips. Native artifact `11356941286` has
+ZIP SHA-256 `efadd5147d2456b8fce72feea541018ed29707b115e8e588dfd3ec48526ee216`;
+all CRCs passed. Its 24 profile packets retain 72 complete row pairs and 78
+acknowledged category calls. The real reader recursion refusal attempts release,
+retires the closed owner, preserves all three original LSP rows on a different
+attachment, and acknowledges a later bulk generation on that healthy successor.
+
+Full Vue parity job `111857944595` in `37338107606` passed the mandatory
+three-generation NativeBulk law. Artifact `11357433348` has ZIP SHA-256
+`fae96e90e89281b310f3d0517087042c135f78fbb39501a395436fe6bb869786`;
+all CRCs passed. Each of the 681 complete rows and public preprojection batches
+matches the original LSP in cold, broken and repaired generations. Diagnostic
+counts are 2793/2794/2793. Both complete stdlib texts match the independently
+retained pinned provider bytes under the actual same snapshot/project/name.
+The unchanged integration test passed 14160/7242/8583 ms at scale 1 and the
+original 15000/10000 ms ceilings; these unpaired samples establish no gain.
+
+The existing full Vue parity action therefore gains a separate matched source
+control on the owned bulk branch's full qualification dispatch. Regular main,
+release and other branch runs retain their existing gates. Authenticate ancestry
+through the primary GitHub compare response and fetch only the immutable baseline
+tree even on a shallow checkout. Compile the original route at actual parent-only
+main `58e6a0272b4044e3aaa8b7a9cb3ac62100ccec7c` and the consumer source using the
+same locked CI profile and six byte-identical qualified Tier-L driver files.
+This keeps incoming projection and fingerprint corrections on both sides;
+the first-v0.433 tree would confound those corrections with the bulk delta.
+The baseline's only working-tree overlay is those explicit hashed test files;
+its production remains the immutable baseline. Both arms use the same absolute
+original fixture, native binary, runtime dependency root, authored patches,
+configuration and budgets. Three pairs alternate arm order on one runner and
+retain every whole metric packet, build/test log, source/driver/binary hash and
+post-exit native-process census before assertions, including failure receipts.
+The existing whole-681 archive retains the comparison. This measurement avoids
+the lib test's full custody serialization inside timed production calls.
+Its raw distributions and median ratios are observations, with no invented
+performance budget or 10x/default claim. Execution, gain, protected acceptance
+and actual ordered delivery remain pending; #7698 stays open.
+
+The snapshot-text prerequisite #8049 actually signed-merged as
+`a30fd64d5ea88b3fe11ec92251a8ddef78deabd1` at 2026-10-05T16:38:49Z.
+Protected Check `37338366674`, Musea and Nuxt 3/4 checks passed.
+Four authenticated JUnit archives reconcile all 16,210 nonignored cases against
+the complete 16,247-case workspace census; the 37 default ignored cases are
+separate from the already captured explicit provider native/lifetime execution.
+All 100+4 instruction rows have three identical samples below the unchanged
+actual-parent ceilings. Eleven of twelve owned files remain byte-exact at the
+actual merge; only canonical incoming documentation composition differs.
+The verified signed message retains the literal reporter Co-author trailer.
+The delivered additive `snapshot_source` owner/project/text/outcome/refusal API
+does not establish whole AST decoding, Windows native execution, default
+migration, history closure, bulk delivery or matched gains. The remaining
+consumer is genuinely replayed onto that actual parent composition in Stack
+#8051 and stays Draft until its own fresh qualification.

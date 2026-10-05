@@ -197,6 +197,18 @@ runs:
         VIZE_RUNTIME_NODE_MODULES: node_modules
       run: cargo test --locked --profile ci -p vize_canon --lib native_bulk_original_500_sfc_whole_generations_match_original_lsp -- --ignored --nocapture
 
+    - name: Compare original Tier-L warm timings on the same runner
+      if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/perf/bulk-native-diagnostics-20261005' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VIZE_TIER_L_FIXTURE: tests/_fixtures/_git/vue-vben-admin
+        VIZE_TIER_L_CORSA_BIN: node_modules/@typescript/typescript-linux-x64/lib/tsc
+        VIZE_TIER_L_BULK_CAPTURE_DIR: target/vize-tests/metrics/vben-bulk-native-whole
+        VIZE_TIER_L_BUDGET_SCALE: ${{ env.VIZE_TIER_L_BUDGET_SCALE }}
+        VIZE_RUNTIME_NODE_MODULES: node_modules
+      run: node tools/benchmarks/scripts/typechecker-bulk-matched-warm.mjs
+
     - name: Check Vue 2 build snapshots
       shell: bash
       env:
