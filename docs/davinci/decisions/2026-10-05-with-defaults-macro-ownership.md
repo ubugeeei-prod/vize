@@ -71,6 +71,18 @@ remain unchanged; `nativeHandled` remains zero.
 
 ## Delivery
 
+The first Draft #8046 head `bd2aca7c` reached hosted compilation in
+unused-bindings run37320718513/job111798771532, then failed with two E0308
+errors in the existing unit's new setup helper: actual SFC content is
+`Cow<str>`, while Parser and rule APIs need `&str`. The complete original
+112756-byte raw failure has SHA256
+`75cf3bb31c81b82428f334a7d7a44672bd7f18954fb365328a3b55fe93dfde76`.
+[The ordinary correction](https://github.com/ubugeeei-prod/vize/issues/7962#issuecomment-5996028321)
+borrows the original content with `Cow::as_ref()` in exactly two test
+arguments, without copying, changing production or weakening any law.
+All original unit/corpus/golden bytes and expected fields remain intact;
+no new Rust-law execution is credited to the failed head.
+
 Authored laws and source review do not establish execution. Fresh exact
 head automatic Actions must execute the complete Rust and public CLI
 contracts. The finite release hold keeps this independent PR Draft and off

@@ -148,12 +148,12 @@ mod tests {
         let setup = descriptor.script_setup.as_ref().unwrap();
         assert_eq!(setup.content, source);
         let allocator = Allocator::default();
-        let parsed = Parser::new(&allocator, setup.content, script_source_type()).parse();
+        let parsed = Parser::new(&allocator, setup.content.as_ref(), script_source_type()).parse();
         assert!(!parsed.panicked && parsed.diagnostics.is_empty());
         let mut result = ScriptLintResult::default();
         NoWithDefaults.check_program_with_sfc(
             &parsed.program,
-            setup.content,
+            setup.content.as_ref(),
             // Preserve this existing unit oracle's script-local byte frame.
             0,
             SfcScriptContext {
