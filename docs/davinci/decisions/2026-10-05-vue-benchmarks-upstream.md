@@ -189,3 +189,16 @@ JavaScript outputs do not prove current Rust outcomes. Fresh source,
 whole147/Pug, protected checks and all three signed merges remain pending;
 finite release admission is held. Ranking, fixed154 campaign and the cold500
 42.55 ms/10x target remain unfinished.
+
+### Extracted Rust action custody
+
+Fresh bottom source `480626106e` preserves the complete original Matrix job,
+but generated Zizmor check `111680122522` rejects the inherited Rust-action
+commit at the new reusable path: `6bed0761…` has no history in the referenced
+repository. Pin only that action to the actual official `stable` commit
+[`89b12181…`](https://github.com/dtolnay/rust-toolchain/commit/89b12181fb390509a0842a86cc55eeb8eb928c1d).
+The full corpus inputs, Rust stable role, steps, outcomes, budgets and artifact
+contract stay unchanged. Two earlier child executions were cancelled during
+the atomic parent/base update; strict aggregation correctly rejected their
+missing plan. Those cancellations and the original security alert remain
+historical, with fresh complete source/147/Pug checks required for every layer.
