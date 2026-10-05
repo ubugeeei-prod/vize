@@ -181,3 +181,24 @@ refusal, recovery and timeout gate. No retry, profile/ceiling change, extra
 job or baseline source patch is added. Fresh actual compilation plus the
 whole same-worker execution remain required; the thread/I/O observation is
 source-only pending, and the finite first-v0.433 admission hold remains.
+
+## Current native-baseline replay
+
+Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5995975121).
+
+Genuinely replay the nine existing commits onto actually merged main
+92e036de6f8dc651440e7c9a2f415a3c7fa69890, including #7857. All source
+authors/email/dates/full bodies and reporter footers remain exact. No incoming
+main change touches an owned Canon production file. The replay preserves all
+27 noncanonical blobs other than the shared inventory; that inventory retains
+both the complete incoming row delta and the exact owned moved-source/offset
+delta. Preserve every incoming canonical byte at 350 lines and append this
+narrow history in a separate meaningful docs-only commit.
+
+The next same-worker comparison builds this current common native baseline
+and its successor, including identical merged configuration/publication
+behavior. Strong Cargo fresh-artifact and launch-hash proof must precede
+the unchanged complete original400 oracle. Earlier equal-binary observations
+and source JUnit outcomes remain historical, with no execution or performance
+credit transferred. Existing #8035 stays Draft/offqueue under the finite cut
+hold; current source peer and automatic Actions remain mandatory.
