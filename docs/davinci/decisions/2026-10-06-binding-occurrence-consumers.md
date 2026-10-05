@@ -4,7 +4,7 @@ Paired issue: [#7992](https://github.com/ubugeeei-prod/vize/issues/7992).
 This consumer depends on the
 [existing-walk producer](./2026-10-06-binding-occurrence-producer.md).
 It is a dependent source slice, not a second analysis engine or a history gate.
-Its genuine provider is #8067, source-corrected `eaaec84e` on signed actual main
+Its genuine provider is #8067, source-corrected `c33b544f` on signed actual main
 `2902dc98`. Initial private `f5149595` and bounded domain/protocol successor
 `4f894889` remain immutable; this union preserves every final source-peer-qualified
 consumer/helper/control blob.
@@ -140,3 +140,13 @@ its entire ordinary/demanded virtual-document comparison. The existing fifteen
 crate parser-site ceiling and zero request sites stay fixed. All historical and
 authored RPC/oracle inputs, legacy algorithms, producer laws and instruction
 budgets remain unchanged; fresh exact-head runtime acceptance is still pending.
+
+The six-path configured-source successor `3f3757cf` has independent bounded
+SOURCE_ONLY_CLEAR (`ccec60a1`): its preferred storage import is the identical
+L0 reexport, its resident conservation law retains the whole output and fixed
+parser ceiling, and its inventories are source metadata. This genuine replay
+incorporates provider `c33b544f` including the separately recorded default CI
+test-build type corrections, while every reviewed consumer source/control and
+whole original/authored oracle byte remains fixed. The peer executed no Rust or
+RPC. The new literal child requires fresh Actions; prior failed source runs and
+all broader unfinished domains remain historical, without acceptance transfer.
