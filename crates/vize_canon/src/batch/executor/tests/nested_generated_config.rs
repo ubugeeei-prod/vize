@@ -134,10 +134,11 @@ fn verify_originals() {
         ("playground.tsconfig.json.txt", CONFIG),
     ] {
         assert_eq!(case["originals"][name]["bytes"], bytes.len());
-        assert_eq!(
-            case["originals"][name]["sha256"],
-            vize_l0::cstr!("{:x}", Sha256::digest(bytes.as_bytes())).as_str()
-        );
+        let digest = Sha256::digest(bytes.as_bytes())
+            .iter()
+            .map(|byte| vize_l0::cstr!("{byte:02x}"))
+            .collect::<vize_l0::String>();
+        assert_eq!(case["originals"][name]["sha256"], digest.as_str());
     }
 }
 
