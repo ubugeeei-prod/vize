@@ -62,3 +62,15 @@ Keep all published ranks, old 150-case typecheck replay, legacy fix-history,
 native migration credit and instruction budgets unchanged. Composition API
 computed side-effect coverage is a separate narrow correctness slice; a
 parser mismatch alone cannot prove missing rules or justify changing output.
+
+The first source execution at `16b36435` failed instrumentation: the unchanged
+parser's authored graphical example captures `╭─[nested/...`, and the first
+CLI call creates `node_modules/.vize/vize.config.schema.json`. All eleven
+inputs and four configs retained their original bytes. Keep that failed run
+as historical evidence. Correct the example from the fixed regex contract;
+compare the generated schema with the source file included by
+`crates/vize/src/config.rs`, never with captured output. Retain every complete
+before/after inventory, require that one exact generated file after each
+call, retain its complete actual bytes separately for every call and reject
+all other additions or changes. Repaired-head runtime is
+pending; neither this repair nor JSON grants rank or native migration credit.

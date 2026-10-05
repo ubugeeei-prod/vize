@@ -19,6 +19,7 @@ import {
   sha256,
   verifyConfigs,
   verifyUpstream,
+  verifyWorkInventory,
 } from "./vue-benchmarks-current-lint-contract.mjs";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
@@ -44,6 +45,14 @@ export async function probeCurrentLint(repoRoot = root) {
     const receipt = JSON.parse(fs.readFileSync(`${binary}.differential-build.json`, "utf8"));
     validateBuildReceipt(receipt, expected);
     observation.build = receipt;
+    const schemaSource = "npm/cli/schemas/vize.config.schema.json";
+    const schemaBytes = fs.readFileSync(path.join(repoRoot, schemaSource));
+    const bundledSchema = {
+      file: "node_modules/.vize/vize.config.schema.json",
+      bytes: schemaBytes.length,
+      sha256: sha256(schemaBytes),
+    };
+    observation.generatedSchema = { source: schemaSource, ...bundledSchema };
     const version = execute(binary, ["--version"], repoRoot, process.env);
     retainRun("version", version);
     assert.equal(version.error, null);
@@ -99,16 +108,37 @@ export async function probeCurrentLint(repoRoot = root) {
         );
         verifyConfigs(cwd);
         for (const reporter of ["human", "machine"]) {
+          const beforeRun = inventory(cwd);
+          verifyWorkInventory(beforeRun, before, bundledSchema, reporter === "machine");
           const args = [...command.args, ...(reporter === "machine" ? ["--format", "json"] : [])];
           const run = execute(binary, args, cwd, env);
           const name = `${profile}-${polarity}-${reporter}`;
           const retained = retainRun(name, run);
-          Object.assign(retained, { name, reporter, polarity, args, cwd, inventory: before });
+          Object.assign(retained, {
+            name,
+            reporter,
+            polarity,
+            args,
+            cwd,
+            inventory: before,
+            beforeInventory: beforeRun,
+            afterInventory: inventory(cwd),
+          });
           result.runs.push(retained);
+          if (fs.existsSync(path.join(cwd, bundledSchema.file))) {
+            const generatedBytes = fs.readFileSync(path.join(cwd, bundledSchema.file));
+            const generatedFile = `${name}.schema.json`;
+            fs.writeFileSync(path.join(destination, generatedFile), generatedBytes);
+            retained.generatedSchema = {
+              file: generatedFile,
+              bytes: generatedBytes.length,
+              sha256: sha256(generatedBytes),
+            };
+          }
           assert.equal(run.error, null, `${name}: ${run.error}`);
           assert.equal(run.signal, null, name);
           assert.ok([0, 1].includes(run.exitStatus), `${name}: exit ${run.exitStatus}`);
-          assert.deepEqual(inventory(cwd), before, `${name}: command mutated inputs/configs`);
+          verifyWorkInventory(retained.afterInventory, before, bundledSchema, true);
           assert.deepEqual(fs.readdirSync(path.join(cwd, ".git")), [], "repository marker changed");
           verifyConfigs(cwd);
           for (const stream of [run.stdout, run.stderr]) {
@@ -200,13 +230,16 @@ function execute(binary, args, cwd, env) {
   };
 }
 
-function inventory(cwd, directory = "") {
+export function inventory(cwd, directory = "") {
   return fs
     .readdirSync(path.join(cwd, directory), { withFileTypes: true })
     .flatMap((entry) => {
-      if (entry.name === ".git") return [];
+      if (entry.name === ".git" && directory === "") return [];
       const file = path.posix.join(directory, entry.name);
-      if (entry.isDirectory()) return inventory(cwd, file);
+      if (entry.isDirectory()) {
+        const children = inventory(cwd, file);
+        return children.length ? children : [{ file, kind: "directory" }];
+      }
       assert.ok(entry.isFile(), `unexpected input kind: ${file}`);
       const bytes = fs.readFileSync(path.join(cwd, file));
       return [{ file, bytes: bytes.length, sha256: sha256(bytes) }];

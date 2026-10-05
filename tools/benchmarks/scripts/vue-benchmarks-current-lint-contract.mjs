@@ -155,6 +155,13 @@ export function verifyConfigs(cwd) {
   });
 }
 
+export function verifyWorkInventory(actual, original, bundledSchema, schemaPresent) {
+  const expected = [...original, ...(schemaPresent ? [bundledSchema] : [])].sort((a, b) =>
+    a.file < b.file ? -1 : a.file > b.file ? 1 : 0,
+  );
+  assert.deepEqual(actual, expected, "command mutated original inputs/configs or unexpected files");
+}
+
 export function machineDiagnostics(rows) {
   assert.ok(Array.isArray(rows));
   const seen = new Set();

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
@@ -16,8 +17,12 @@ import {
   machineDiagnostics,
   relativeFiles,
   sha256,
+  verifyWorkInventory,
 } from "../../tools/benchmarks/scripts/vue-benchmarks-current-lint-contract.mjs";
-import { probeCurrentLint } from "../../tools/benchmarks/scripts/vue-benchmarks-current-lint.mjs";
+import {
+  inventory,
+  probeCurrentLint,
+} from "../../tools/benchmarks/scripts/vue-benchmarks-current-lint.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 
@@ -65,10 +70,51 @@ test("pinned original eleven-plant judge retains all attribution and clean-twin 
   const graphical = ` × [vize:vue/no-v-html] 'v-html' can lead to XSS attack.\n ╭─[${files[0]}:6:8]\n`;
   const parsed = upstream.cliDiagnostics(graphical);
   assert.equal(parsed.length, 1);
-  assert.equal(parsed[0].file, `[${files[0]}`);
+  assert.equal(parsed[0].file, `╭─[${files[0]}`);
   assert.equal(upstream.judgeLintPair(plants[0], parsed, [], files[0]).ok, false);
   assert.deepEqual(CONFIG_NAMES.slice().sort(), Object.keys(CONFIG_BYTES).sort());
   for (const file of CONFIG_NAMES) assert.equal(sha256(CONFIG_BYTES[file]), CONFIG_PINS[file]);
+});
+
+test("work custody admits only the source-bundled generated schema", () => {
+  const original = [{ file: "Plant.vue", bytes: 5, sha256: sha256("input") }];
+  const schema = {
+    file: "node_modules/.vize/vize.config.schema.json",
+    bytes: 2,
+    sha256: sha256("{}"),
+  };
+  const generated = [...original, schema];
+  verifyWorkInventory(original, original, schema, false);
+  verifyWorkInventory(generated, original, schema, true);
+  assert.throws(() => verifyWorkInventory(original, original, schema, true));
+  assert.throws(() => verifyWorkInventory(generated, original, schema, false));
+  assert.throws(() =>
+    verifyWorkInventory([...generated, { ...schema, file: "extra" }], original, schema, true),
+  );
+  assert.throws(() =>
+    verifyWorkInventory([{ ...original[0], bytes: 6 }, schema], original, schema, true),
+  );
+  assert.throws(() =>
+    verifyWorkInventory([original[0], { ...schema, sha256: sha256("[]") }], original, schema, true),
+  );
+});
+
+test("work inventory excludes only the root marker and retains nested or empty additions", () => {
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-lint-inventory-"));
+  try {
+    for (const directory of [".git", "nested/.git", "empty"])
+      fs.mkdirSync(path.join(workspace, directory), { recursive: true });
+    fs.writeFileSync(path.join(workspace, "Plant.vue"), "input");
+    fs.writeFileSync(path.join(workspace, "nested/.git", "unexpected"), "extra");
+    const rows = inventory(workspace);
+    assert.deepEqual(
+      rows.map((row) => row.file),
+      ["Plant.vue", "empty", "nested/.git/unexpected"],
+    );
+    assert.equal(rows.find((row) => row.file === "empty").kind, "directory");
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
 });
 
 test("supplemental machine decoding preserves strict counts, complete ranges and identities", () => {
@@ -150,6 +196,14 @@ test("current receipted CLI records both untouched eleven-pair judges for both t
         (run) => run.polarity === polarity && run.reporter === "machine",
       );
       assert.deepEqual(machine.inventory, human.inventory);
+      assert.deepEqual(machine.beforeInventory, human.afterInventory);
+      assert.deepEqual(machine.afterInventory, human.afterInventory);
+      for (const run of [human, machine]) {
+        const schema = fs.readFileSync(path.join(destination, run.generatedSchema.file));
+        assert.equal(schema.length, run.generatedSchema.bytes);
+        assert.equal(sha256(schema), run.generatedSchema.sha256);
+        assert.equal(run.generatedSchema.sha256, observed.generatedSchema.sha256);
+      }
       assert.equal(machine.cwd, human.cwd);
       assert.deepEqual(human.args, ["lint", "."]);
       assert.deepEqual(machine.args, ["lint", ".", "--format", "json"]);
