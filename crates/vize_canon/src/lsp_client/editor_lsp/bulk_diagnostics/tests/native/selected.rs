@@ -51,9 +51,16 @@ fn selected_native_semantics_preserves_dependency_related_rows_and_unrequested_s
     editor
         .mirror(&empty_uri, &std::fs::read_to_string(&empty).unwrap())
         .unwrap();
+    let original_files = [
+        "tsconfig.json",
+        "requested.ts",
+        "empty.ts",
+        "dependency.ts",
+        "unrequested.ts",
+    ]
+    .map(|name| json!({"name":name,"bytes":std::fs::read(originals.join(name)).unwrap()}));
     let mut packet = json!({"documents":editor.documents,"nativeBinary":executable,
-        "originalResults":[],
-        "originalFiles":["tsconfig.json","requested.ts","empty.ts","dependency.ts","unrequested.ts"].map(|name| json!({"name":name,"bytes":std::fs::read(originals.join(name)).unwrap()}))});
+        "originalResults":[],"originalFiles":original_files});
     let persist = |packet: &serde_json::Value| {
         if let Some(dir) = std::env::var_os("VIZE_NATIVE_BULK_CAPTURE_DIR") {
             let dir = Path::new(&dir).join("selected-semantics");

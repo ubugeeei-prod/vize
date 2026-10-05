@@ -137,3 +137,13 @@ Construct the selected request object directly with the same snapshot/project/
 file values; leave global objects, wire grammar, category order and all laws
 unchanged. No lint waiver or execution credit: fresh source/native16 remain
 mandatory before the single observer-disabled matched comparison.
+
+Actual b392 job111952810290 passed the repaired production Clippy probe, then
+failed lib-test compilation at selected.rs56: the JSON macro could not consume
+an array literal followed by map. Build that identical five-file witness array
+before the macro; preserve all bytes/fields/order and failure-first comparisons.
+Raw291218bytes/SHA256
+01e19aca9ed9600890ed884749a217c33fb89d4722ed52f0f3c20dbdfb71d981
+also retains the separate artifact-service HTML failure after five retries;
+no archive/native16 or matched proof is inferred. Fresh compilation/execution
+is still mandatory, with the same Draft/gain-failed scope.
