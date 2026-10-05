@@ -162,3 +162,19 @@ returned order in the full-vector comparison, without sorting or filtering the
 response. This successor changes the authored service expectation, not production
 ordering or mapping. Its old failed run remains failed; all fourteen service
 vectors, seven CLI cases and complete compatibility corpus require fresh proof.
+
+## Bounded correction review and actual-main replay
+
+Private `4996a202051600a3c18de9a7038938cd094763e2` received independent bounded
+source-only CLEAR for both known-key producers, unchanged default branches and
+the documented mapping limitation. No runtime acceptance transfers from `f4d`.
+The five owned commits were genuinely replayed onto actual signed main
+`9fe172ced209720642d7051c8a94229042cffa4c`, producing source `f6ec46c3` and tree
+`03304604cdd08f4b18c6730291f61ae213dd2f37`, identical to the independent merge
+projection. All 28 noncomposition owned blobs and all five full author/date/body/
+footer records remain exact; the four composition files retain the incoming
+diagnostic modules, complete canonical clauses and genuine census unions.
+Both pure inventories pass and the canonical record remains 350 lines. Publish
+this reviewed correction to the same Draft #8056 with fresh exact-head ordinary/
+native Actions. Fourteen whole service vectors, seven CLI cases, unchanged full
+compatibility corpora, protected suites and actual delivery remain pending.
