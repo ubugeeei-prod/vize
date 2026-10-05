@@ -5,7 +5,7 @@ use std::sync::atomic::Ordering;
 
 use super::ServerState;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) struct CorsaRequestStamp {
     documents: Option<u64>,
     environment: u64,
