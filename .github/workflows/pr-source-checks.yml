@@ -177,7 +177,7 @@ jobs:
           node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json"
       - name: Install fixture and JS dependencies
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select && vp install --frozen-lockfile --prefer-offline
+        run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline
       - name: Prepare checksum-pinned Pkl schema dependencies
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         env:
@@ -190,7 +190,7 @@ jobs:
         uses: ./.github/actions/test-native-ssr
       - name: Build and install vize CLI
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json && sudo install -m 0755 target/ci/vize /usr/local/bin/vize
+        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json && sudo install -m 0755 target/ci/vize /usr/local/bin/vize && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
       - name: Verify current-source native scoped CSS and real Vue DOM
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
         uses: ./.github/actions/test-native-scoped-css

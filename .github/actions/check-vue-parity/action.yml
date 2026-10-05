@@ -102,6 +102,11 @@ runs:
           cargo_args+=(--jobs 2)
         fi
         cargo "${cargo_args[@]}"
+        oracle_args=(build --profile ci -p vize_atelier_sfc --features legacy --example cli_build_result_oracle)
+        if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then
+          oracle_args+=(--jobs 2)
+        fi
+        cargo "${oracle_args[@]}"
 
     - name: Settle hosted runner task budget
       if: ${{ runner.environment == 'github-hosted' }}
