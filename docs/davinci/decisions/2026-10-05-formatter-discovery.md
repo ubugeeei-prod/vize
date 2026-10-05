@@ -42,3 +42,10 @@ the original red run and require new exact-head acceptance.
 The actual-main replay on `a2712e78968e9112c89cbc2111b108bd0e51959c` preserves every incoming decision, every original author/trailer and all owned production, corpus, runtime/helper and strict witness bytes. The earlier source failure/success receipts remain retained; fresh exact-head Actions and protected delivery are required before requeue.
 
 The next actual-main replay on `8f667ea070bb90d57ac7125db35d791025f746e2` preserves the complete incoming protected prefix and every owned source/runtime/corpus/witness byte from `66c4362cb0cebd09882822ad1b19171305229ea1`. Original authors, reports and ceilings remain intact. Earlier qualified heads are retained as historical receipts; this replay requires its own exact-head source and protected reports before actual merge/release.
+
+The genuine bf91 protected-tail composition conflicts only in the shared
+canonical footer. The actual736 main replay retains every incoming decision
+and all owned source/corpus bytes; this clause now occupies its relevant
+distinct canonical location at350 lines. Fresh exact source and protected
+delivery remain required; no earlier acceptance or publication is transferred.
+Paired [placement decision](https://github.com/ubugeeei-prod/vize/issues/7869#issuecomment-5988293198).
