@@ -33,6 +33,10 @@ capability evidence unchanged. Keep the 144 registered DOM-output comparisons,
 ceilings unchanged. A new input that changes an outcome fails the existing
 gate; do not relabel it as the old 146-source success.
 
+The explicit unknown-fixture count becomes 132, while all 15 partial
+classifications and their evidence remain unchanged. The first source's
+tooling lane exposed its stale 131-count assertion; retain that failed run.
+
 The historical 146-source DOM runs, file/template counts and Phase 2 records
 remain historical. Only the current executable inventory summaries change.
 The registration establishes no native migration, default-routing,
