@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { buildFormatterObserver } from "../differential/formatter-api-build.mjs";
 import { runFormatterApiPack } from "../differential/formatter-api.mjs";
 import { runSortingConfigPack } from "../differential/formatter-sorting-config.mjs";
+import { runCssGroupingRegressions } from "../differential/formatter-css-grouping.ts";
 import { validateFormatterHistoryExecution } from "../differential/formatter-history-audit.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -152,4 +153,5 @@ void test("shared formatter API history observes complete source-built output an
     },
     JSON.stringify(malformed.rows, null, 2),
   );
+  runCssGroupingRegressions({ repoRoot: root, ...built, evidenceDir });
 });
