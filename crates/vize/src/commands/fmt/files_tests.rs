@@ -118,6 +118,31 @@ fn relative_recursive_globs_include_dot_directories() {
 }
 
 #[test]
+fn discovery_prunes_root_and_nested_installed_dependencies() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path();
+    let source = root.join("src/main.ts");
+    let dependencies = [
+        root.join("node_modules/dep/index.ts"),
+        root.join("apps/web/node_modules/dep/index.ts"),
+        root.join("node_modules/.vize/corsa-overlay/index.ts"),
+    ];
+    for file in std::iter::once(&source).chain(&dependencies) {
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(file, "const   a=1\n").unwrap();
+    }
+    for pattern in [root.to_path_buf(), root.join("**/*.ts")] {
+        assert_eq!(
+            collect_files(&[pattern.to_string_lossy()], None),
+            vec![source.clone()]
+        );
+    }
+    for dependency in dependencies {
+        assert!(collect_files(&[dependency.to_string_lossy()], None).is_empty());
+    }
+}
+
+#[test]
 fn collect_files_includes_existing_bracket_paths() {
     let root = unique_case_dir("bracket-pages");
     let dynamic = root.join("pages/[id].vue");

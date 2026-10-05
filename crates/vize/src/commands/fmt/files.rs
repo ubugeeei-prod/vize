@@ -6,7 +6,6 @@ use super::ignores::FmtIgnoreSet;
 use super::patterns::is_format_extension;
 
 const NODE_MODULES_DIR: &str = "node_modules";
-const VIZE_CACHE_DIR: &str = ".vize";
 
 #[cfg(test)]
 #[path = "files_tests.rs"]
@@ -77,7 +76,10 @@ fn collect_walked_files(
         .git_ignore(respect_ignores)
         .git_global(respect_ignores)
         .git_exclude(respect_ignores)
-        .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
+        .require_git(false)
+        .filter_entry(|entry| {
+            !vize_l0::path::is_git_metadata_path(entry.path()) && !is_dependency_path(entry.path())
+        })
         .build();
 
     for entry in walker.filter_map(Result::ok) {
@@ -92,7 +94,7 @@ fn should_include_format_file(path: &Path, ignore_set: Option<&FmtIgnoreSet>) ->
     !vize_l0::path::is_git_metadata_path(path)
         && path.is_file()
         && is_format_target(path)
-        && !is_generated_path(path)
+        && !is_dependency_path(path)
         && !ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(path))
 }
 
@@ -180,19 +182,9 @@ fn contains_glob_char(pattern: &str) -> bool {
     pattern.contains(['*', '?', '['])
 }
 
-fn is_generated_path(path: &Path) -> bool {
-    let mut previous = None;
-    for component in path.components() {
-        let Some(name) = component.as_os_str().to_str() else {
-            previous = None;
-            continue;
-        };
-        if previous == Some(NODE_MODULES_DIR) && name == VIZE_CACHE_DIR {
-            return true;
-        }
-        previous = Some(name);
-    }
-    false
+fn is_dependency_path(path: &Path) -> bool {
+    path.components()
+        .any(|component| component.as_os_str() == NODE_MODULES_DIR)
 }
 
 #[inline]
