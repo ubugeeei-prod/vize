@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import os
+import runpy
 import tempfile
 import unittest
 from pathlib import Path
@@ -60,6 +61,34 @@ class EvidenceValidator(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "overlay changed"):
                     experiment(actual_root, root)
             self.assertFalse((root / "identity.json").exists())
+            # Exercise the literal CLI, including repository discovery and its
+            # fatal receipt. Refusal retains preparation and cannot claim data.
+            output = root / "cli-output"
+            output.mkdir()
+            identity = {"GITHUB_SHA": "frozen-head", "GITHUB_RUN_ID": "run-id",
+                        "GITHUB_RUN_ATTEMPT": "1"}
+            preparation = {"status": "preparation-only", "matrix_execution_credit": False,
+                           "matrix_attempts": 0, "head_sha": identity["GITHUB_SHA"],
+                           "run_id": identity["GITHUB_RUN_ID"],
+                           "run_attempt": identity["GITHUB_RUN_ATTEMPT"]}
+            raw = json.dumps(preparation)
+            (output / "preparation.json").write_text(raw)
+            script = Path(__file__).with_name("run.py")
+            with mock.patch("sys.platform", "linux"), \
+                 mock.patch.dict(os.environ, {**env, **identity}, clear=True), \
+                 mock.patch("sys.argv", [str(script), str(output)]), \
+                 mock.patch("common.command", side_effect=AssertionError("no tool or git process")), \
+                 mock.patch("subprocess.run", side_effect=AssertionError("no external process")):
+                with self.assertRaisesRegex(RuntimeError, "overlay changed"):
+                    runpy.run_path(str(script), run_name="__main__")
+            self.assertEqual((output / "preparation.json").read_text(), raw)
+            self.assertEqual(len(list(output.iterdir())), 2)
+            fatal, = output.glob("fatal-*.json")
+            failure = json.loads(fatal.read_text())
+            self.assertFalse(failure["complete"])
+            self.assertEqual(failure["cause"], "still-unknown")
+            self.assertTrue(failure["original_failure_preserved"])
+            self.assertIn("overlay changed", failure["error"])
 
     def test_fresh_preparation_admitted_and_prior_matrix_or_wrong_identity_refused(self):
         env = {"GITHUB_SHA": "frozen-head", "GITHUB_RUN_ID": "run-id", "GITHUB_RUN_ATTEMPT": "1"}

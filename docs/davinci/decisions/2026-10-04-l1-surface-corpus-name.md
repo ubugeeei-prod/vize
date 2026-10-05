@@ -115,10 +115,13 @@ budget source into frozen b9/E1 libtest manifests; a standalone `main` would
 instead build a zero-case libtest target. The launcher therefore requires the
 exact historical libtest budget bytes (SHA256
 `c7dd7a9bbff3ddb3067ca13d6c5d4964103d49eb94798f18c069cded63e732dd`)
-before tool queries, archive fetches, worktree creation or process execution.
+before tool queries, archive fetches, worktree creation or process execution;
+the CLI finds its repository from its own file without invoking Git first.
 The changed current source is explicitly refused. A pure guard law exercises
 accepted authored bytes, a changed overlay and actual current-source refusal,
-with every external-work boundary trapped; ordinary hosted tooling also runs
+with every external-work boundary trapped. The literal CLI refusal preserves
+preparation, records one unknown-cause fatal receipt and starts no tool or Git
+process. Ordinary hosted tooling also runs
 the retained diagnostic validator laws. Unsupported libtest thread arguments
 are refused by the standalone CLI rather than accepted as a false contrast.
 These controls grant no historical reconstruction or campaign execution credit.

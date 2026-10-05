@@ -221,7 +221,8 @@ def experiment(root, output):
 
 
 if __name__ == "__main__":
-    root = Path(command(["git", "rev-parse", "--show-toplevel"]))
+    # Repository discovery must not start a Git process before overlay refusal.
+    root = Path(__file__).resolve().parents[5]
     output = Path(sys.argv[1]).resolve()
     try:
         prepare_output(output, os.environ)
