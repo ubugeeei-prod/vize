@@ -115,3 +115,12 @@ it is reconstructed from the exact incoming parent plus the owned typecheck
 clause, preserving all lint schema-custody corrections. Prior source failures
 stay historical; fresh source Actions and actual protected prefix delivery
 are required before the sole main execution.
+
+At replay `9c5ef0213c`, Zizmor workflow `37258442713` succeeded but its
+generated code-scanning check `111600426573` failed: the inherited Rust
+action pin has no current referenced-repository history. This successor uses
+the [official stable commit](https://github.com/dtolnay/rust-toolchain/commit/89b12181fb390509a0842a86cc55eeb8eb928c1d),
+also used by the existing native-phase workflow. Only the dedicated action
+pin changes; source guards, original judge, providers and six/two runtime
+conditions are identical. The original alert and annotation bytes are retained,
+and fresh workflow plus generated-check success remain required.
