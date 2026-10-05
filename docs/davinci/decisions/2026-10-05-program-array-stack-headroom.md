@@ -32,16 +32,16 @@ to array parsing. Other recursion paths require their own evidence.
 
 The existing pinned `stacker = "=0.1.25"` becomes a direct vendor-parser
 dependency. The lock adds only that existing dependency edge. The complete
-original array body executes in
-`stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, ...)`, before token/span work,
-except exact adjacent `[]`, which cannot recurse and executes that same body
-without a stack query. Its private helper is force-inlined to address measured
-outline cost; successful code generation is verified by fresh raw measurements.
-Flat scalar elements do not each gain a separate headroom check. The complete
-tuple body always retains its guard. The same parser, arena, context,
-trailing-comma bookkeeping, grammar and ordinary diagnostics remain in use.
-No Vize dependency, depth limit, synthetic diagnostic, parse retry, panic
-suppression, input skip or extra pipeline stage is added.
+original array-entry body remains unchanged. Its original delimited list
+calls a guarded element callback before any nested element, spread or
+assignment descent. That complete original callback executes in
+`stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, ...)`. Empty arrays leave the
+list before reaching the callback. Nonempty arrays check each element,
+including flat scalars and elisions; their cost needs fresh measurement.
+The complete tuple body always retains its headroom guard. The same parser,
+arena, context, trailing-comma bookkeeping, grammar and ordinary diagnostics
+remain in use. No Vize dependency, depth limit, synthetic diagnostic, parse
+retry, panic suppression, input skip or extra pipeline stage is added.
 
 These constants reuse L0's stack-headroom configuration; that does not prove
 parser frame sizes or ASan safety. Stack growth can allocate, and unsupported
@@ -221,3 +221,40 @@ No unrelated CFG saving or acceptance is predicted: full fresh 100+4 raw
 measurements, automatic source laws, all-nine-target replay and protected
 actual delivery remain necessary. Every genuine failed source remains archived
 with its immutable bytes, raw artifacts and conclusion.
+
+## Preserved failures and genuine empty-region work
+
+Force-inline source `fba852c32e17f4ef26e2b5aacc2f766a8d0ef322` passed ordinary
+Check 37252846857 and all-nine replay 37252858588, but instruction run
+37252856436/job 111583868139 has two genuine repeated violations:
+complexity 5,788 > 5,781 and script 929,115 > 929,044. First raw log SHA256 is
+`ad188eb4fd7590bbd56e239c93a463a168330b2025eb835d94ccae9a626a781d`.
+Artifacts 11322270166 and 11322120817 preserve all 312 original windows.
+Both array wrapper and body are already inlined; the missing helper's -274
+is offset by advance +204, primary +56, AST constructor +46 and expect +16,
+giving a real +48 against earlier c7. Another wrapper inline hint has no
+observed outlined wrapper to target. The CFG caller +27 remains unexplained.
+
+The maintainer adopts the already formatter-green bc parser callback with
+unchanged complete laws, tuple guard, original bytes and per-element query
+tradeoff. A separate small private CFG change avoids visiting a genuinely
+empty nested region: the original empty loop minted and scored nothing and
+already skipped its max-nesting update. Return before that otherwise-useless
+guarded visit. For nonempty regions, the original max-nesting update and
+shared PageWalk visitor remain unchanged. The actual dashboard has an empty
+self-closing Pagination region; no fixture, stage or measurement window changes.
+This removes real empty traversal rather than explaining the previous +27.
+
+A complete-facts control retains the empty-root result and checks an authored
+mixed template with empty children before, inside and after real decisions.
+It pins every fact field, all contribution spans/kinds/ids/nesting/increments,
+six minted page ids and decision rows at ids 1 and 4; the pass's shared
+accounting assertion remains active. Existing full dashboard/constructs folio
+and breakdown snapshots stay unchanged. No new source storage container or
+legacy output expectation is introduced.
+
+Both necessary performance changes stay within critical #7837; optional
+next-cut work remains excluded. Historical failed heads and receipts are
+preserved. Fresh automatic source tests, original 100+4 raw measurements,
+all-nine-target replay, protected full delivery and supported release refresh
+remain required. No instruction saving or successful candidate is predicted.
