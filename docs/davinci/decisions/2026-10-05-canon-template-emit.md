@@ -183,3 +183,18 @@ thread the same declared/model typed initializer through its existing call and
 third context member, retaining emission order and attrs/refs inputs. No extra
 pipeline or serialization stage. Original source/config/whole vectors remain
 unchanged; genuine inventories and fresh strict/native gates are required.
+
+Actualc4 strict Rust build and native37274087511 succeed. Artifact11329813665
+retains132 authenticated raw hashes, all ten complete CLI/native controls, both
+whole original editor diagnostics/hovers and three whole real-Vue native hovers.
+Source runtime workers expose six full generated-text snapshots and two TS-40
+projection records changed by the intended typed initializer. Author only the
+initializer replacements in the six texts; keep every original fixture and
+diagnostic expectation exact. Freeze the two incoming complete projection
+records separately, retain current raw text/maps/probes/links/hits, and require
+reconstruction of the prior initializer and generated offsets against every
+original fingerprint before accepting the candidate current snapshots. This
+test-only law changes no production, diagnosis, normalization or cap. Existing
+required native Actions execute the full projection matrix and fail on absent
+capture or any additional byte/map change. Fresh exact-head source/native and
+raw packet audit remain required, and finite release admission is on hold.

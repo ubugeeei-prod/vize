@@ -86,6 +86,18 @@ pub(super) fn capture_canon(fixture: &Fixture, source: &str, mapper: &LaneRecord
             } else {
                 (mapper.diagnostic_count, mapper.diagnostics_sha256.clone())
             };
+            super::capture::retain(
+                fixture,
+                "canon",
+                &[
+                    ("text.ts", &document.code),
+                    ("pre-rewrite-text.ts", &document.pre_rewrite_code),
+                    ("mappings.txt", &mappings),
+                    ("semantic-links.txt", &links),
+                    ("import-map.txt", &import_map.raw_map),
+                    ("import-probes.txt", &import_map.raw_probes),
+                ],
+            );
             LaneRecord {
                 status: if fixture.legacy_vue2 {
                     "ok:legacy-feature-projection".into()
@@ -161,6 +173,17 @@ pub(super) fn capture_content_mapper(fixture: &Fixture, source: &str) -> LaneRec
             let expected_anchors = fixture.content_mapper_expected_anchors();
             let authored_hits =
                 content_mapper_anchor_hits(source, &transform.mappings, &expected_anchors);
+            super::capture::retain(
+                fixture,
+                "content-mapper",
+                &[
+                    ("text.ts", &transform.text),
+                    ("mappings.txt", &mappings),
+                    ("semantic-links.txt", &links),
+                    ("diagnostics.txt", &diagnostics),
+                    ("authored-hits.txt", &authored_hits.details),
+                ],
+            );
             LaneRecord {
                 status: if fixture.legacy_vue2 {
                     "ok:vue3-fixed-production".into()
@@ -240,6 +263,8 @@ struct ImportSourceMapFacts {
     map_sha256: String,
     probe_count: usize,
     probes_sha256: String,
+    raw_map: String,
+    raw_probes: String,
 }
 
 fn import_source_map_facts(
@@ -265,5 +290,7 @@ fn import_source_map_facts(
         map_sha256: sha256(&debug),
         probe_count: pre_rewrite_bytes + rewritten_bytes + 2,
         probes_sha256: sha256(&probes),
+        raw_map: debug,
+        raw_probes: probes,
     }
 }
