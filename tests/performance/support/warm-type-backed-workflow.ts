@@ -3,7 +3,6 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
-import { writeBuildReceipt } from "../../differential/build-receipt.mjs";
 import {
   driverRoot,
   git,
@@ -33,6 +32,7 @@ if (process.argv[2] === "prepare") {
     "crates",
     "davinci",
     "vendor",
+    "npm",
     "Cargo.toml",
     "Cargo.lock",
     ".cargo",
@@ -103,13 +103,6 @@ if (process.argv[2] === "prepare") {
     ) + "\n",
   );
   assert.deepEqual(sourceIdentity(before).locks, sourceIdentity(driverRoot).locks);
-} else if (process.argv[2] === "freeze-before") {
-  const recorded = JSON.parse(fs.readFileSync(path.join(output, "workflow-source.json"), "utf8"));
-  assert.equal(git(before, ["rev-parse", "HEAD"]), recorded.baseline);
-  fs.mkdirSync(path.join(before, "target/ci"), { recursive: true });
-  fs.copyFileSync(path.join(driverRoot, "target/ci/vize"), path.join(before, "target/ci/vize"));
-  const receipt = writeBuildReceipt(before);
-  fs.copyFileSync(receipt, path.join(output, "before-build.json"));
 } else {
-  throw new Error("usage: warm-type-backed-workflow.ts prepare|freeze-before");
+  throw new Error("usage: warm-type-backed-workflow.ts prepare");
 }

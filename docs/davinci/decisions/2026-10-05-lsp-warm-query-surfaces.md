@@ -147,3 +147,37 @@ observations localize thread work, not source statements or Program counts.
 Linux field authority is the [kernel proc documentation](https://www.kernel.org/doc/html/v6.7/filesystems/proc.html).
 Fresh whole execution remains required; #8035 stays Draft and offqueue under
 the finite first v0.433 publication hold.
+
+## Equal-binary source-build custody correction
+
+Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5995685205).
+
+The preceding compiled-successor attribution is superseded by the actual
+build and launch evidence. First run37311997959 compiled Canon, Maestro and
+the CLI from the baseline worktree in a 52.64-second build. The successor
+command took 0.13 seconds without a compilation line. Both source receipts
+and actual launch captures contain identical binary SHA256
+41a78da3c12da5c189a26a0fcaf28442287fb70a3d0e1f2e321a7ea7e9952041.
+The shared target is concrete; the exact fingerprint cause remains unknown.
+The original 74 envelopes, null, timeouts and CPU/wall observations remain
+historical actual execution, but cannot establish a new-cache effect or its
+compiled-successor performance. Ordinary Check source execution is separate.
+
+Repair only the two existing automatic pair build steps. Identical package
+clean under the existing CI profile removes Canon/Maestro/CLI artifacts on
+each side while retaining other unchanged dependencies. Capture complete
+Cargo output and process outcomes. Require all four library/binary artifacts
+to show executed rustc (`fresh=false`), actual-side manifest/root source paths,
+exact native/default features, identical profiles and successful build-finished.
+Bind frozen and successor launch files to the captured CLI filename/hash and
+successful unchanged receipt. The input allowlist also rejects npm drift,
+including the CLI's embedded schema; reused dependency artifacts receive no
+fresh-compilation claim. The [Cargo artifact contract](https://doc.rust-lang.org/cargo/reference/external-tools.html#artifact-messages)
+and [package clean scope](https://doc.rust-lang.org/cargo/commands/cargo-clean.html)
+define those checks.
+
+Preserve the original generator and every complete packet, inverse, cancellation,
+refusal, recovery and timeout gate. No retry, profile/ceiling change, extra
+job or baseline source patch is added. Fresh actual compilation plus the
+whole same-worker execution remain required; the thread/I/O observation is
+source-only pending, and the finite first-v0.433 admission hold remains.

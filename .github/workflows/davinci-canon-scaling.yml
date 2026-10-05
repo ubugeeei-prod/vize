@@ -129,19 +129,10 @@ jobs:
         run: vp exec node tests/performance/support/warm-type-backed-workflow.ts prepare
       - name: Build the original baseline with the identical CI recipe
         if: ${{ github.event_name == 'pull_request' }}
-        working-directory: ${{ runner.temp }}/warm-before
-        env:
-          CARGO_TARGET_DIR: ${{ github.workspace }}/target
-        run: cargo build --profile ci -p vize
-      - name: Freeze the successful baseline binary before building the successor
-        if: ${{ github.event_name == 'pull_request' }}
-        run: vp exec node tests/performance/support/warm-type-backed-workflow.ts freeze-before
+        run: vp exec node tests/performance/support/warm-type-backed-build.ts before
       - name: Build the original warm-request successor with the identical CI recipe
         if: ${{ github.event_name == 'pull_request' }}
-        run: cargo build --profile ci -p vize
-      - name: Record the successful successor source build
-        if: ${{ github.event_name == 'pull_request' }}
-        run: vp exec node tests/differential/build-receipt.mjs
+        run: vp exec node tests/performance/support/warm-type-backed-build.ts after
       - name: Compare every original400 warm packet and invalidation control on this worker
         if: ${{ github.event_name == 'pull_request' }}
         run: >-

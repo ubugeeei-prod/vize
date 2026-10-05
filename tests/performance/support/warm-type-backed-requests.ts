@@ -23,6 +23,7 @@ import {
   generateWorkspace,
   inputAuthority,
   runtimeIdentity,
+  sha256,
   sourceIdentity,
 } from "./warm-type-backed-source.ts";
 
@@ -211,10 +212,21 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   );
   assert.equal(sourceIdentity(beforeRoot).revision, sourceBinding.baseline);
   assert.equal(sourceIdentity(driverRoot).revision, sourceBinding.head);
-  fs.copyFileSync(
-    path.join(driverRoot, "target/ci/vize.differential-build.json"),
-    path.join(outputRoot, "after-build.json"),
-  );
+  const buildCustody = [beforeRoot, driverRoot].map((root, index) => {
+    const side = index === 0 ? "before" : "after";
+    const custody = JSON.parse(
+      fs.readFileSync(path.join(outputRoot, `${side}-cargo-custody.json`), "utf8"),
+    );
+    const binary = path.join(root, "target/ci/vize");
+    assert.equal(custody.side, side);
+    assert.equal(custody.launchBinary, binary);
+    assert.deepEqual(custody.source, sourceIdentity(root));
+    assert.equal(custody.binarySha256, sha256(fs.readFileSync(binary)));
+    const receipt = JSON.parse(fs.readFileSync(`${binary}.differential-build.json`, "utf8"));
+    assert.equal(receipt.binarySha256, custody.binarySha256);
+    assert.equal(receipt.sourceRevision, custody.source.revision);
+    return custody;
+  });
   const runtime = runtimeIdentity();
   const originals = inputAuthority();
   const workspace = path.join(outputRoot, "workspace");
@@ -224,6 +236,7 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   const after = await runSide(driverRoot, workspace, runtime, path.join(outputRoot, "after"));
   fs.writeFileSync(path.join(outputRoot, "after.json"), `${JSON.stringify(after, null, 2)}\n`);
   const packet = {
+    buildCustody,
     originals,
     runtime,
     before,
@@ -244,6 +257,17 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   assert.deepEqual(before.initialization, after.initialization);
   assert.equal(before.source.dirty, "");
   assert.equal(after.source.dirty, "");
+  for (const [index, side] of [before, after].entries()) {
+    const observed = (
+      side.wire as { observation: { binary: { binarySha256: string; sourceRevision: string } } }
+    ).observation.binary;
+    assert.equal(observed.binarySha256, buildCustody[index].binarySha256);
+    assert.equal(observed.sourceRevision, buildCustody[index].source.revision);
+    assert.equal(
+      buildCustody[index].binarySha256,
+      sha256(fs.readFileSync(buildCustody[index].launchBinary)),
+    );
+  }
   const publicPackets = (side: typeof before) =>
     side.rows.map((row) => ({
       stage: row.stage,
