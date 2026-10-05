@@ -91,6 +91,9 @@ impl ResolvedLinterRuleGroups {
                     .with_restricted_globals(restricted_globals)
                     .with_restricted_members(restricted_members)
                     .with_musea_design_tokens(musea_design_tokens);
+                if let Some(names) = rule_options.palpable_content_directives() {
+                    linter = linter.with_palpable_content_directives(names.to_vec());
+                }
                 if let Some(options) = rule_options.strict_boolean_expressions() {
                     linter = linter.with_strict_boolean_expressions_options(options);
                 }

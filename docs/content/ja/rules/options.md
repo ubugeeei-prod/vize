@@ -42,6 +42,7 @@ title: ルール オプション
 
 | ルール | Option shape | 既定値と挙動 |
 | --- | --- | --- |
+| `html/no-empty-palpable-content` | `{ contentDirectives?: string[] }` | 既定は空 list です。可視 content を供給する directive の bare name を完全一致で指定します。rule は別途有効にしてください。 |
 | `script/no-restricted-globals` | `{ globals?: Array<{ name: string; message?: string }> }` | option なしでは組み込み deny list の `process`、`localStorage`、`sessionStorage` を使います。空でない `globals` は組み込み list を置き換えます。 |
 | `script/no-restricted-members` | `{ members?: Array<{ object: string; property: string; message?: string }> }` | `members` が設定され、かつ rule が有効なときだけ発火します。`message` がない場合は汎用の help を使います。 |
 | `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case" }` | 既定は `PascalCase` です。 |
@@ -53,6 +54,29 @@ title: ルール オプション
 | `vue/attribute-hyphenation` | `"always" \| "never"` | template 内の component prop attribute を hyphenation するかを設定します。 |
 | `musea/prefer-design-tokens` | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }` | token data が設定され、rule が有効か、空でない token list で暗黙に選択されたときだけ発火します。`tier` の既定は `primitive` です。 |
 | `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`、`allowNumber`、`allowNullableObject` の既定は `true`、その他は `false` です。rule を明示的に有効にする必要があります。 |
+
+## `html/no-empty-palpable-content`
+
+custom directive は focus、style、content の供給などを行えます。可視 content を供給すると
+project が保証できる directive だけを指定してください。`v-` を除いた template の名前に
+完全一致します。argument と modifier はその名前を変えません。空 list は既定動作に戻し、
+scoped entry は option object 全体を置き換えます。sanitization の保証や rule の有効化は行いません。
+
+```json
+{"linter":{"rules":{"html/no-empty-palpable-content":"error"},"ruleOptions":{"html/no-empty-palpable-content":{"contentDirectives":["safe-html"]}}}}
+```
+
+悪い（未登録の content source）:
+
+```vue
+<p v-sanitize="message" />
+```
+
+良い（設定した provider）:
+
+```vue
+<p v-safe-html="message" />
+```
 
 ## Scoped Entries
 

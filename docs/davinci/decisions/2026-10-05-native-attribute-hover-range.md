@@ -123,3 +123,17 @@ the accepted doc-only main `58e6a027`, preserving its full delivery ledger and
 canonical clauses. Fresh successor Actions, complete typed sessions and
 protected unchanged104/actual delivery remain required; no lint allowance,
 rerun waiver or previous green transfer follows.
+
+## Current accepted-main composition
+
+The genuine signed main `6b5d6a77` contains the accepted SSR builtin writer,
+declared event completion precedence and two linter corrections. Integrate
+that actual main in the same PR, retain all foreign production, fixtures,
+providers, instruction budgets and canonical clauses, and preserve every
+reviewed hover scanner/projection/input/whole-response object from `8cd025f9`.
+Resolve only the central-record append conflict. The prior synthetic source
+checkout `ecc66f34` has a distinct tree containing the accepted SSR changes;
+its twelve typed replies are source-bound observations, not whole-tree
+equality or acceptance for this successor. Fresh exact-source Actions and
+protected typed twelve-response/full-corpus/full-Rust/unchanged104 evidence
+remain required before actual delivery.

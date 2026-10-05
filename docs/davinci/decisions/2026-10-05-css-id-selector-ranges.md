@@ -1,0 +1,90 @@
+# CSS ID selector diagnostic ranges — 2026-10-05
+
+Issue: [#7981](https://github.com/ubugeeei-prod/vize/issues/7981).
+Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5993981503).
+Byte custody: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994107580).
+CI repair: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994214970).
+Help authority: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994391973).
+Accepted compound scope: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994624115).
+API/CLI ordering: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994988278).
+Prior reports: [#7055](https://github.com/ubugeeei-prod/vize/issues/7055)
+and [#7171](https://github.com/ubugeeei-prod/vize/issues/7171).
+
+The accepted ID components currently receive the style block's content start
+and decoded ID length. Different selectors collapse onto that same position;
+escaped identifiers also lose their authored width.
+
+Keep the existing Lightning CSS parse and its accepted AST rule/selector walk.
+Use each style rule's existing location, whose columns are UTF-16 units, to
+locate its original UTF-8 bytes. The already pinned cssparser tokenizer queries
+only that rule's prelude. Match its decoded ID tokens within each comma entry
+to existing ID components, consuming distinct occurrences in matching order.
+Report the complete original token range, including escape terminators.
+This adds no stylesheet/selector parse or pipeline stage.
+
+Token blocks skip attributes and functional/deep arguments. Consume a skipped
+block immediately so the following token's start is measured after its closing
+boundary. Comments, strings, colors, URLs and escaped class hashes do not
+become ID findings. Existing functional-pseudo finding scope, nested traversal,
+severity/help and config policies remain intact. Existing suppression now uses
+the true selector line through the unchanged diagnostic filter.
+
+The corpus preserves all 248 bytes of the original #7981 SFC and every byte of
+its JSON config. Its whole findings select `#main-banner` at `12:1–12:13` and
+`#banner-text` at `17:3–17:15`. Original #7055 flat/nested files and #7171's file
+also remain whole and unchanged. Authored controls are explicitly labeled.
+Seventeen SFCs cover LF/CRLF, astral text, multiple inline styles, escaped IDs and
+escaped CRLF, repeated IDs and comma lists, nested media/supports/layer rules,
+comment/string/attribute boundaries, functional/deep scope and disable comments.
+The corpus's scoped Git attributes preserve complete `.txt` input bytes across
+platform checkouts, including the two authored raw CRLF controls.
+
+The public Rust API test compares every diagnostic field, complete selected
+source bytes and complete JSON/plain reports. The existing source-built CLI
+tooling suite validates its current build receipt, writes the original config
+unchanged, and retains all 35 actual attempts for complete JSON/plain output
+plus the original JSON repeat. No missing binary, failed case or partial
+observation can qualify. These are legacy CSS product observations; no new
+native-stage eligibility or historical corpus rebaseline is inferred.
+
+The first current Check found an unawaited Node test registration. Await that
+promise while preserving every complete attempt and assertions. Retain the
+same complete API rows in the existing nextest pr/full result envelope as well
+as `target/differential/`, because Rust workers upload that envelope. This adds
+no workflow or execution stage; production and all vectors stay unchanged.
+Fresh successor execution remains required.
+
+The first original CLI wire receipt also caught an incorrect new expectation:
+the existing CSS rule help survives `--help-level none` through the unchanged
+direct diagnostic adapter and JSON/plain formatters. Official artifact
+11343864947 retains the full original command/output at compiled source
+`b87a30c35e6d74cf9acc079bf65874d3854bd8f8`; both corrected selector ranges are
+exact. Restore the established help in all complete API/JSON/plain vectors.
+Every source/config byte, range, count/order and strict whole assertion remains
+exact. This failed first-case receipt does not qualify the complete API or
+CLI inventory; the successor must execute them all.
+
+The current authored descendant-repeat vector also exceeded existing scope.
+The pinned selector iterator stops at the first combinator, and the unchanged
+rule never calls `next_sequence()`. Qualify that complete vector to the three
+accepted findings at columns 7, 14 and 27, as retained in official artifact 11345443174. Preserve all 16 prior sources byte-exact. Add a separate whole
+same-compound repeated-ID SFC requiring four distinct original ranges. Both
+existing suites must execute the full 17-case/35-attempt inventory; production
+traversal and strict whole assertions stay exact. The earlier partial capture
+through the failed authored expectation does not qualify the complete inventory.
+
+Current source-built observations establish another consumer distinction:
+all 17 complete API rows pass, and all prior 16 CLI cases/33 attempts pass.
+The new compound has four correct spans but API formatter iterator order and
+CLI source-position order differ. The unchanged CLI accumulator sorts start/end
+before rendering. Require an explicit `cliExpected` path for every case; prior
+16 complete shared vectors remain exact, while the new compound has its own
+complete JSON/plain CLI vector. API expectations and all source/config bytes
+stay exact. Tests compare each full ordered output without normalization or an
+optional-path fallback. Fresh successor execution remains mandatory.
+
+TODO: frozen independent source review, fresh exact-source ordinary Actions,
+all 17 API and 35 CLI observations, protected full Rust/all104, actual signed
+reporter-credited merge and the next supported release remain required.
+No local native build or large install is used. The separate Zed #8028 source
+and receipts are retained, and rejected logo #7850 remains closed and untouched.

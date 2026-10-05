@@ -158,7 +158,7 @@ impl<'a> SsrCodegenContext<'a> {
                 &branch.children,
                 needs_fragment,
                 disable_nested_fragments,
-                disable_comment,
+                false,
                 inherit_attrs,
                 RootCssVars {
                     enabled: css_vars.enabled,
@@ -170,7 +170,7 @@ impl<'a> SsrCodegenContext<'a> {
         }
 
         // If no else branch, emit empty comment
-        if if_node.branches.iter().all(|b| b.condition.is_some()) {
+        if !disable_comment && if_node.branches.iter().all(|b| b.condition.is_some()) {
             self.push_indent();
             self.push("} else {\n");
             self.indent_level += 1;

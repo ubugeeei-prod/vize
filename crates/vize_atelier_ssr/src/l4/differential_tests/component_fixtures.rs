@@ -3,6 +3,14 @@
 
 /// Templates the string plan must own.
 pub(super) const ADMITTED: &[(&str, &str)] = &[
+    (
+        "group-valueless-directive",
+        r#"<TransitionGroup tag="ul" v-example><li /></TransitionGroup>"#,
+    ),
+    (
+        "group-valued-directive",
+        r#"<transition-group tag="ul" v-example:[name].active="value"><li /></transition-group>"#,
+    ),
     ("component-bare", "<Foo />"),
     (
         "component-root-props",

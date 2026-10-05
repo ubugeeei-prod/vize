@@ -108,7 +108,28 @@ impl<'a> SsrCodegenContext<'a> {
         inherit_attrs: bool,
         css_vars: bool,
     ) -> Option<MergedAttrs> {
-        let mut args = self.merged_props_args(el, inherit_attrs, css_vars);
+        self.merged_element_attrs_filtered::<false>(el, inherit_attrs, css_vars, None)
+    }
+
+    /// The authored TransitionGroup `tag` selects its wrapper, not an HTML attr.
+    pub(super) fn transition_group_attrs(
+        &mut self,
+        el: &ElementNode<'a>,
+        inherit_attrs: bool,
+        css_vars: bool,
+        tag_index: Option<usize>,
+    ) -> Option<MergedAttrs> {
+        self.merged_element_attrs_filtered::<true>(el, inherit_attrs, css_vars, tag_index)
+    }
+
+    fn merged_element_attrs_filtered<const SKIP_TAG: bool>(
+        &mut self,
+        el: &ElementNode<'a>,
+        inherit_attrs: bool,
+        css_vars: bool,
+        tag_index: Option<usize>,
+    ) -> Option<MergedAttrs> {
+        let mut args = self.merged_props_args::<SKIP_TAG>(el, inherit_attrs, css_vars, tag_index);
         let has_directives = custom_directives(el).next().is_some();
         for dir in custom_directives(el) {
             let props = self.directive_props(dir);
@@ -146,7 +167,7 @@ impl<'a> SsrCodegenContext<'a> {
             ));
         }
         self.use_ssr_helper(RuntimeHelper::SsrRenderAttrs);
-        let tag_arg = if el.tag == "textarea" || el.tag.contains('-') {
+        let tag_arg = if !SKIP_TAG && (el.tag == "textarea" || el.tag.contains('-')) {
             cstr!(", \"{}\"", el.tag)
         } else {
             String::default()
@@ -162,18 +183,22 @@ impl<'a> SsrCodegenContext<'a> {
     /// fallthrough `_attrs`, then the moved `v-show` style, then the
     /// dynamic-model props of a modelled input whose type is only known at
     /// runtime.
-    fn merged_props_args(
+    fn merged_props_args<const SKIP_TAG: bool>(
         &mut self,
         el: &ElementNode,
         inherit_attrs: bool,
         css_vars: bool,
+        tag_index: Option<usize>,
     ) -> std::vec::Vec<EmitDocument> {
         let mut args = std::vec::Vec::new();
         let mut entries: std::vec::Vec<VNodePropEntry> = std::vec::Vec::new();
         let mut show = None;
         let mut dynamic_model = None;
         let has_spread = needs_dynamic_type(el);
-        for prop in &el.props {
+        for (index, prop) in el.props.iter().enumerate() {
+            if SKIP_TAG && tag_index == Some(index) {
+                continue;
+            }
             match prop {
                 PropNode::Attribute(attr) => {
                     let value = attr

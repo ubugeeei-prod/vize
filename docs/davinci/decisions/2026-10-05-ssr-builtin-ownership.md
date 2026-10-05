@@ -1,0 +1,175 @@
+# Existing SSR builtin ownership (#7891)
+
+Paired decision: [#7891 comment](https://github.com/ubugeeei-prod/vize/issues/7891#issuecomment-5995871251).
+Source preparation base: `d8cd6a208b9aea02150b140a4b81b87222128a51`.
+Reporter: `ubugeeei`, public GitHub identity `71201308`.
+
+The original complete App.vue renders an async Suspense default and a tagged
+TransitionGroup. Existing SSR appended the `fallback` text after the resolved
+content, then resolved TransitionGroup as an authored component. The intended
+whole result is `<!--[--><p>done</p><ul><li>1</li></ul><!--]-->` without warnings.
+
+Keep direct Suspense slot payloads in distinct writer functions, preserving
+original expression/name locations and existing root CSS-variable handling.
+The official server helper invokes only `default`; a missing default renders
+`<!---->`. Non-slot children form the implicit default after the existing
+slot-child normalization. No-slot and default-only inputs retain the original
+emission path and its code/map bytes. Conditional and looped slot-definition
+structures remain outside this bounded repair and require a separate history
+slice; no broader slot-readiness claim follows.
+
+TransitionGroup owns its authored wrapper. Select the original static `tag`
+attribute or statically named `:tag` binding, map the wrapper to that original
+value/expression, and exclude only that selected property from the existing
+source-ordered merged HTML-props path. Other attrs, spreads, class/style binds,
+fallthrough and scope handling keep their existing ownership. Its children use
+the existing traversal with nested list/conditional markers disabled and
+comment children filtered. A missing tag emits the outer fragment. Ordinary
+components, Transition, Teleport and current native L4 routing are unchanged.
+
+The exact reported App.vue, Async.vue and issue body are immutable corpus inputs
+under `tests/_fixtures/differential/compiler/ssr-builtins-7891/`. A separate
+manifest registers this whole-SFC runtime pack without inflating the existing
+single-row CLI adapter's acceptance count. Nine newly authored controls cover
+explicit/default-only/missing-default/other/dynamic slots, static/dynamic/no-tag
+groups, list and false-conditional ranges, comments and merged attributes. The
+attribute control uses a bound style object; static-style normalization is not
+part of this repair. Every input and the independently authored full-HTML
+reference has a SHA-256 pin checked by the executed helper.
+
+The ordinary Rust tests compile all eleven complete sources through the existing
+SFC SSR API. Mapped/plain complete results must differ only in the requested
+map field; module code stays equal. The runtime test retains every full current
+result, original source, official complete module/helper/map and available
+decoded map coordinate graphs. The existing current SFC API returns no map for
+the three scriptless sources and only script-provenance maps for the other
+eight; neither is evidence of template mappings. Map validation checks complete
+canonical mappings and valid
+source/generated positions; it does not claim original-segment semantic
+identity beyond those structural checks. Both real default-component graphs
+render all ten cases to twenty strict whole-HTML references with no runtime
+warnings/errors. Transport rewrites only parsed import declarations to the
+actual Vue/server/Async/helper bindings, never compiler text or expected HTML.
+The packet remains in the existing automatic nextest worker artifact directory.
+Independent source review found two concrete blockers before publication: the
+lowercase builtin name incorrectly selected the custom-element attrs namespace,
+and assertions could discard failing runtime evidence. The group-only const
+path now omits the tag argument like the official transform, preserving the
+ordinary path. An appended lowercase camelCase-spread SFC adds two full strict
+observations; the earlier ten source payloads and eighteen expectations remain
+unchanged. Rust retains the complete input/results, raw stdout/stderr, original
+exit and literal Git source/tree/parents after the existing compilation
+assertions and before runtime process or semantic assertions. A stdin-write
+failure still reaps the child and retains its original outcome/streams before
+asserting the transport failure.
+Node records diagnostics before awaiting rendering and emits partial
+modules/maps and the failing HTML/diagnostics on errors,
+flushes both streams and exits nonzero. No failed comparison becomes success.
+
+Official primary transforms were inspected at reported Vue `3.6.0-rc.10`:
+
+- [Suspense transform](https://raw.githubusercontent.com/vuejs/core/v3.6.0-rc.10/packages/compiler-ssr/src/transforms/ssrTransformSuspense.ts).
+- [TransitionGroup transform](https://raw.githubusercontent.com/vuejs/core/v3.6.0-rc.10/packages/compiler-ssr/src/transforms/ssrTransformTransitionGroup.ts).
+- [Default-only server helper](https://raw.githubusercontent.com/vuejs/core/v3.5.35/packages/server-renderer/src/helpers/ssrRenderSuspense.ts).
+
+Hosted execution uses the repository's existing pinned Vue `3.6.0-rc.9` and
+plugin-vue `6.0.7`; the helper asserts and retains their exact identities. This
+is Node SSR evidence. It grants no browser/hydration, client-backend, native
+L4/default, compiler-history closure or performance credit. #6880 and broader
+native replacement/legacy deletion remain unfinished. All old corpus pins,
+level dependencies/defaults and protected 100+4 instruction ceilings remain.
+
+At source preparation, Rust/native execution is unqualified. Independent source
+review, fresh exact-source automatic Actions, all original differential/runtime
+suites and protected full suites/ceilings are still required. The first v0.433
+finite release admission hold remains: prepare source/Draft off queue, keep
+#7891 open until both original failures actually merge, and hand the signed
+terminal delivery to the release owner for the next frequent release.
+
+First source Check `37323222769`, Rust build job `111807581667`, stopped before
+execution on two unchanged strict Clippy policies: UTF-8 string indexing in the
+quoted slot-key writer and collection indexing in the selected group property.
+The causal successor strips the known outer quotes and uses checked original
+property access, preserving emitted bytes, locations, all eleven inputs,
+references and comparisons. This failed source supplies no execution credit;
+fresh successor Actions remain required.
+
+Successor Check `37324046914` builds the Rust archive and passes workers 1/2/3,
+but worker 4 job `111814772169` rejects the new observer's incorrect demand for
+a scriptless SFC map before any SSR render. The retained whole current results
+and partial official graphs remain failure evidence, not twenty observations.
+At actual unchanged main `8a8521d6897bbe3fd0af0cbfaebd83f4fc933933`,
+[`compile.rs`](https://github.com/ubugeeei-prod/vize/blob/8a8521d6897bbe3fd0af0cbfaebd83f4fc933933/crates/vize_atelier_sfc/src/compile.rs#L153)
+selects the descriptor-bound scriptless path;
+[`template_only.rs`](https://github.com/ubugeeei-prod/vize/blob/8a8521d6897bbe3fd0af0cbfaebd83f4fc933933/crates/vize_atelier_sfc/src/compile/template_only.rs#L154)
+returns `map: None`. The SSR template result has no map field and the existing
+module-map assembly carries script provenance, not template anchors.
+The corrected observer requires exactly `FallbackOnly`, `OtherSlot` and
+`DefaultOnly` to have `map: null`, joins that list to each complete original
+parsed descriptor, and still requires all eight scripted maps. It retains the
+full public map fields, all eleven official maps, available decoded graphs and
+their explicit dispositions. All original inputs, generated code paths and
+twenty independent full-HTML references remain unchanged. No comparison failure
+or unavailable map is credited as template-map readiness; fresh source Actions
+and protected acceptance remain required.
+
+The same source run's canonical job `111811412002` compares all 42,625 complete
+SFCs and finds 151 selected-versus-walker divergences. Its retained selected
+output still resolves TransitionGroup as an authored component. Repair the
+existing legacy product's selected L2/string-plan emitter as well: read the
+original group attachment/tag and direct Suspense carrier ranges from the
+same plan, preserve ordered props and scoped anchors, and keep the original
+no-slot/default-only writer. This does not extend the separate native L4 SSR
+target. A move-only commit isolates the unchanged private Suspense writer
+before its behavioral repair. No AST reread, fabricated lower fact, fallback
+shortcut, comparison exception or extra level stage is introduced.
+The official rc.10
+[conditional writer](https://raw.githubusercontent.com/vuejs/core/v3.6.0-rc.10/packages/compiler-ssr/src/transforms/ssrVIf.ts)
+suppresses the missing-else comment only at the direct group-child boundary;
+conditional branch and loop bodies start their own child context. Both current
+writers retain that boundary instead of propagating comment suppression into
+nested bodies. Ordinary controls keep their original false flag and bytes.
+All eleven original full SFC inputs join the existing strict emitter and whole
+SFC differential battery, plus an exact selected-plan ownership law. Every
+existing canonical input/full-field comparison and all twenty independent HTML
+references stay mandatory. The failed 151/42,625 sweep remains failed; fresh
+Actions must prove zero divergence and actual SSR rendering before readiness.
+
+The independent selected-emitter review found one fact-custody gap: generic
+components ignore custom directives, while the new group attrs path renders
+their operands. Only that group dispatch now applies the existing attribute
+admission guard to each original custom-directive segment, requiring its dynamic
+partition even when valueless and validating optional value/argument operands.
+A genuine original-parser/L2/L3/plan law joins the original component binding
+pointer and whole directive span, then deliberately changes only the copied
+partition to require an exact invariant rejection. Two additional compiler
+fixtures require selected/legacy full code, maps and diagnostics parity under
+all four existing option sets. No blanket group refusal or generic component
+behavior change is introduced. These new laws remain unexecuted until Actions.
+
+Check `37332106544` at source `37d51b2f` builds and passes all four Rust workers,
+including the genuine directive-partition, four-option emitter parity, complete
+public map and whole-SFC runtime laws. Authenticated worker artifact
+`11355836418` retains all eleven original current/official modules, eight current
+script maps, three required null maps, eleven official graphs, and twenty exact
+Node SSR HTML observations with empty diagnostics at literal producer
+`8bea7549138e0532310e626dc940224df2eb6bb7` / tree
+`fb4988d83b8cd47de201e8dcbc8dd7bffdb46a5c`. This bounded runtime proof does not
+make the whole source run green: its canonical production sweep still finds one
+of 42,625 full-SFC comparisons different, and tooling shard 2 fails with EISDIR.
+
+The sole canonical difference uses the unchanged 546-byte
+[original upstream SFC](https://github.com/vuejs/core/blob/3adb225775c9b28223a56e07f7a2f874b6fbb138/packages-private/vapor-e2e-test/transition-group/cases/vapor-transition-group/dynamic-slot-with-v-if.vue)
+(SHA-256 `0489bb663e6ccea0d50fb659ff301eea9f33840c4e1f47615d7024e8eb949172`).
+An authored `<template v-if #default>` under the group transparently contains a
+list. The selected template passthrough discarded the inherited nested-fragment
+flag and added list markers; the existing walker preserves that flag. Forward
+it only into the existing template passthrough, leaving ordinary physical
+element child contexts unchanged. Copy the complete pinned source byte-for-byte
+into the mandatory whole-SFC battery and require genuine selected ownership
+with strict full-field parity; no original comparison or HTML reference changes.
+The AST-custody law uses its existing recursive Rust-file walker to include the
+new nested test module without reading directories as files. Its three pure
+source laws pass locally; new Rust/canonical/runtime execution remains pending.
+The failed one-difference sweep remains failed, and the old twenty observations
+do not transfer to the source successor. Draft and release admission hold stay.

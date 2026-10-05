@@ -145,6 +145,9 @@ pub(super) fn apply_rule_options(
     mut linter: vize_patina::Linter,
     options: &vize_l0::config::ConfigLintRuleOptions,
 ) -> vize_patina::Linter {
+    if let Some(names) = options.palpable_content_directives() {
+        linter = linter.with_palpable_content_directives(names.to_vec());
+    }
     if let Some(options) = options.strict_boolean_expressions() {
         linter = linter.with_strict_boolean_expressions_options(options);
     }

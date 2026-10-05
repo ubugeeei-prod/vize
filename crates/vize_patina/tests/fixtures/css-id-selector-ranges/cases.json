@@ -1,0 +1,186 @@
+{
+  "issue": 7981,
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308,
+    "coauthor": "ubugeeei <ubuge1122@gmail.com>"
+  },
+  "config": {
+    "file": "vize.config.json.txt",
+    "bytes": 86,
+    "sha256": "f1a8cf75d0f3d89ba119c17d5959e1b8e45429c22f87c9d44c449e904d393a49",
+    "authority": "Original complete JSON block from #7981, byte-exact"
+  },
+  "cases": [
+    {
+      "id": "original-7981",
+      "source": "original-7981.vue.txt",
+      "filename": "MyBanner.vue",
+      "authority": "Original complete Vue block from issue #7981, byte-exact",
+      "bytes": 248,
+      "sha256": "dbe853181da4aeefb362da8b209c015b2b6db75c28f8d9a32e4b65aa420b5d98",
+      "expected": "original-7981.expected.json",
+      "cliExpected": "original-7981.expected.json"
+    },
+    {
+      "id": "original-7981-crlf",
+      "source": "original-7981-crlf.vue.txt",
+      "filename": "Original7981Crlf.vue",
+      "authority": "Authored CRLF variant of the complete original #7981",
+      "bytes": 269,
+      "sha256": "4afe4b658d073056120de69f591c15c8d45086156247c11f50735fdbc1dec044",
+      "expected": "original-7981-crlf.expected.json",
+      "cliExpected": "original-7981-crlf.expected.json"
+    },
+    {
+      "id": "original-7055-flat",
+      "source": "original-7055-flat.vue.txt",
+      "filename": "Original7055Flat.vue",
+      "authority": "Original complete FlatCard.vue from #7055, byte-exact",
+      "bytes": 211,
+      "sha256": "1b12c3afd564a4f6e862c2b9c9864d3be42453e8d5aa1cd74fe2c32ce04d9e1c",
+      "expected": "original-7055-flat.expected.json",
+      "cliExpected": "original-7055-flat.expected.json"
+    },
+    {
+      "id": "original-7055-nested",
+      "source": "original-7055-nested.vue.txt",
+      "filename": "Original7055Nested.vue",
+      "authority": "Original complete NestedCard.vue from #7055, byte-exact",
+      "bytes": 224,
+      "sha256": "db7df00da7aec6ac86a6e591edf7b1e0e91f344253421a928ed0528074d26a22",
+      "expected": "original-7055-nested.expected.json",
+      "cliExpected": "original-7055-nested.expected.json"
+    },
+    {
+      "id": "original-7171",
+      "source": "original-7171.vue.txt",
+      "filename": "Original7171.vue",
+      "authority": "Original complete Note.vue from #7171, byte-exact; no ID selector",
+      "bytes": 187,
+      "sha256": "6bee64c8eee76426aee0e3184003e98e1543b2ab5d4e48743afeceb1b1c8bd1e",
+      "expected": "original-7171.expected.json",
+      "cliExpected": "original-7171.expected.json"
+    },
+    {
+      "id": "astral-same-line",
+      "source": "astral-same-line.vue.txt",
+      "filename": "AstralSameLine.vue",
+      "authority": "Authored UTF-16 rule-location and UTF-8 token-width control",
+      "bytes": 89,
+      "sha256": "4bcfab99bf33644a6e17586cf9ed802d39f642ceedbddcbdc2c5a5c23f96269b",
+      "expected": "astral-same-line.expected.json",
+      "cliExpected": "astral-same-line.expected.json"
+    },
+    {
+      "id": "multiple-style-blocks",
+      "source": "multiple-style-blocks.vue.txt",
+      "filename": "MultipleStyleBlocks.vue",
+      "authority": "Authored whole SFC with two independently offset inline style blocks",
+      "bytes": 118,
+      "sha256": "d9e1c09fc9fd864c4ab0ffb336dd47a15d422a2bbe5ed54e48d3f7b1c5452841",
+      "expected": "multiple-style-blocks.expected.json",
+      "cliExpected": "multiple-style-blocks.expected.json"
+    },
+    {
+      "id": "comments-strings-attributes",
+      "source": "comments-strings-attributes.vue.txt",
+      "filename": "CommentsStringsAttributes.vue",
+      "authority": "Authored parser-token boundary control; comments, strings, colors, escaped class and attribute hashes are not IDs",
+      "bytes": 163,
+      "sha256": "e4b15470c4ce52aff1f92a85ac081a0aca410a025f1d6e2c333c41fe6a7bf6c6",
+      "expected": "comments-strings-attributes.expected.json",
+      "cliExpected": "comments-strings-attributes.expected.json"
+    },
+    {
+      "id": "escaped-hex-id",
+      "source": "escaped-hex-id.vue.txt",
+      "filename": "EscapedHexId.vue",
+      "authority": "Authored decoded ID with full original hex escape and terminator width",
+      "bytes": 78,
+      "sha256": "28b28860b1c009ac69f9fa05f068ab767413bc2f188d2b76feb40f3150309458",
+      "expected": "escaped-hex-id.expected.json",
+      "cliExpected": "escaped-hex-id.expected.json"
+    },
+    {
+      "id": "escaped-punctuation-id",
+      "source": "escaped-punctuation-id.vue.txt",
+      "filename": "EscapedPunctuationId.vue",
+      "authority": "Authored punctuation escape, original source span retained",
+      "bytes": 76,
+      "sha256": "fe8db80189eb7daffc183727919cb956723a0f41451671114afbba66dc59636a",
+      "expected": "escaped-punctuation-id.expected.json",
+      "cliExpected": "escaped-punctuation-id.expected.json"
+    },
+    {
+      "id": "repeated-selector-list",
+      "source": "repeated-selector-list.vue.txt",
+      "filename": "RepeatedSelectorList.vue",
+      "authority": "Authored matching-order IDs with distinct repeated occurrences and comma entries",
+      "bytes": 95,
+      "sha256": "4a44c7e9625397f071235eefd4609790e5b52e40e67060e59c2e290b8b528cc5",
+      "expected": "repeated-selector-list.expected.json",
+      "cliExpected": "repeated-selector-list.expected.json"
+    },
+    {
+      "id": "nested-group-rules",
+      "source": "nested-group-rules.vue.txt",
+      "filename": "NestedGroupRules.vue",
+      "authority": "Authored existing Media/Supports/Style/Layer recursion control",
+      "bytes": 184,
+      "sha256": "7128389583e6146418f8549055a1516c125ef9a3a22d49bf99b803bea775e605",
+      "expected": "nested-group-rules.expected.json",
+      "cliExpected": "nested-group-rules.expected.json"
+    },
+    {
+      "id": "functional-and-deep",
+      "source": "functional-and-deep.vue.txt",
+      "filename": "FunctionalAndDeep.vue",
+      "authority": "Authored unchanged functional/deep ID scope; outer IDs immediately after blocks remain located",
+      "bytes": 118,
+      "sha256": "a58cdd18f7a18b23449c8c72b1cd2f61a28b97fb102bd736a85aeca855c501c3",
+      "expected": "functional-and-deep.expected.json",
+      "cliExpected": "functional-and-deep.expected.json"
+    },
+    {
+      "id": "disable-next-line",
+      "source": "disable-next-line.vue.txt",
+      "filename": "DisableNextLine.vue",
+      "authority": "Authored existing rule suppression control at the actual selector line",
+      "bytes": 143,
+      "sha256": "83c6321ea84730587358c44d771dc2fd17d05ab96e7858bfa8ce4fe0d579b9ae",
+      "expected": "disable-next-line.expected.json",
+      "cliExpected": "disable-next-line.expected.json"
+    },
+    {
+      "id": "no-id-values",
+      "source": "no-id-values.vue.txt",
+      "filename": "NoIdValues.vue",
+      "authority": "Authored no-ID control with declaration hash values",
+      "bytes": 113,
+      "sha256": "e57cfd34c2f6f9edfc48d8c9a46296ead786cf2aa7731663d577ec59a0bcba84",
+      "expected": "no-id-values.expected.json",
+      "cliExpected": "no-id-values.expected.json"
+    },
+    {
+      "id": "escaped-crlf-id",
+      "source": "escaped-crlf-id.vue.txt",
+      "filename": "EscapedCrlfId.vue",
+      "authority": "Authored escaped CRLF terminator spanning lines, decoded ID and full authored token retained",
+      "bytes": 76,
+      "sha256": "4ae9ac7b538e2633ce234baf62284184eaaf10e4c8f67f5c37618938017dddb8",
+      "expected": "escaped-crlf-id.expected.json",
+      "cliExpected": "escaped-crlf-id.expected.json"
+    },
+    {
+      "id": "repeated-compound-ids",
+      "source": "repeated-compound-ids.vue.txt",
+      "filename": "RepeatedCompoundIds.vue",
+      "authority": "Authored repeated IDs within the same accepted compound; every occurrence and comma entry keeps a distinct full range",
+      "bytes": 94,
+      "sha256": "5c664786f0473e87f8ebcc0af9317447eb010fe385599c9e022b624f02449f11",
+      "expected": "repeated-compound-ids.expected.json",
+      "cliExpected": "repeated-compound-ids.cli.expected.json"
+    }
+  ]
+}

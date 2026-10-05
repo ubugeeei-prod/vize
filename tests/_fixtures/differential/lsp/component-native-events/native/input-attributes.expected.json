@@ -1,0 +1,189 @@
+[
+  {
+    "label": "id",
+    "kind": 10,
+    "detail": "HTML id",
+    "insertText": "id=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**id**\n\n_Template attribute_\n\nHTML id\n\n**Example**\n\n```vue\n<template>\n  <div id=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "class",
+    "kind": 10,
+    "detail": "CSS class",
+    "insertText": "class=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**class**\n\n_Template attribute_\n\nCSS class\n\n**Example**\n\n```vue\n<template>\n  <div class=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "style",
+    "kind": 10,
+    "detail": "Inline style",
+    "insertText": "style=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**style**\n\n_Template attribute_\n\nInline style\n\n**Example**\n\n```vue\n<template>\n  <div style=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "title",
+    "kind": 10,
+    "detail": "Tooltip title",
+    "insertText": "title=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**title**\n\n_Template attribute_\n\nTooltip title\n\n**Example**\n\n```vue\n<template>\n  <div title=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "role",
+    "kind": 10,
+    "detail": "ARIA role",
+    "insertText": "role=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**role**\n\n_Template attribute_\n\nARIA role\n\n**Example**\n\n```vue\n<template>\n  <div role=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "tabindex",
+    "kind": 10,
+    "detail": "Tab order",
+    "insertText": "tabindex=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**tabindex**\n\n_Template attribute_\n\nTab order\n\n**Example**\n\n```vue\n<template>\n  <div tabindex=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "aria-label",
+    "kind": 10,
+    "detail": "Accessible label",
+    "insertText": "aria-label=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**aria-label**\n\n_Template attribute_\n\nAccessible label\n\n**Example**\n\n```vue\n<template>\n  <div aria-label=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "ref",
+    "kind": 10,
+    "detail": "Template ref",
+    "insertText": "ref=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**ref**\n\n_Template attribute_\n\nTemplate ref\n\n**Example**\n\n```vue\n<template>\n  <div ref=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "key",
+    "kind": 10,
+    "detail": "VNode key",
+    "insertText": ":key=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**key**\n\n_Template attribute_\n\nVNode key\n\n**Example**\n\n```vue\n<template>\n  <div :key=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "type",
+    "kind": 10,
+    "detail": "Input type",
+    "insertText": "type=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**type**\n\n_Template attribute_\n\nInput type\n\n**Example**\n\n```vue\n<template>\n  <div type=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "value",
+    "kind": 10,
+    "detail": "Input value",
+    "insertText": "value=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**value**\n\n_Template attribute_\n\nInput value\n\n**Example**\n\n```vue\n<template>\n  <div value=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "placeholder",
+    "kind": 10,
+    "detail": "Placeholder text",
+    "insertText": "placeholder=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**placeholder**\n\n_Template attribute_\n\nPlaceholder text\n\n**Example**\n\n```vue\n<template>\n  <div placeholder=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "name",
+    "kind": 10,
+    "detail": "Form control name",
+    "insertText": "name=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**name**\n\n_Template attribute_\n\nForm control name\n\n**Example**\n\n```vue\n<template>\n  <div name=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "disabled",
+    "kind": 10,
+    "detail": "Disabled state",
+    "insertText": "disabled",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**disabled**\n\n_Template attribute_\n\nDisabled state\n\n**Example**\n\n```vue\n<template>\n  <div disabled></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "checked",
+    "kind": 10,
+    "detail": "Checked state",
+    "insertText": "checked",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**checked**\n\n_Template attribute_\n\nChecked state\n\n**Example**\n\n```vue\n<template>\n  <div checked></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "required",
+    "kind": 10,
+    "detail": "Required input",
+    "insertText": "required",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**required**\n\n_Template attribute_\n\nRequired input\n\n**Example**\n\n```vue\n<template>\n  <div required></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  },
+  {
+    "label": "autocomplete",
+    "kind": 10,
+    "detail": "Autocomplete hint",
+    "insertText": "autocomplete=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**autocomplete**\n\n_Template attribute_\n\nAutocomplete hint\n\n**Example**\n\n```vue\n<template>\n  <div autocomplete=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue template syntax](https://vuejs.org/guide/essentials/template-syntax.html)"
+    }
+  }
+]
