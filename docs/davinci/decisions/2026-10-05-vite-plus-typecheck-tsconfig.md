@@ -3,9 +3,10 @@
 Issue: [#8017](https://github.com/ubugeeei-prod/vize/issues/8017).
 Paired source decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8017#issuecomment-5988901037).
 
-Status: Draft source qualification. The latest automatic source Check captures
-39 actual CLI processes but fails one debug-stream expectation. No complete
-Actions acceptance, queue admission, merge or release is claimed.
+Status: Source qualification passes all 39 complete CLI processes. The first
+protected candidate fails the full L1 corpus's original Counter inventory and
+one independently derived remark registration; it is no longer queued. Fresh
+full corpus qualification, protected checks, merge and release remain required.
 The initial private source was reviewed at
 `63a4d2801f8c5d68563508af9952eb7d292fa718`; one necessary P0 Draft is
 authorized to establish the actual whole-process evidence.
@@ -123,3 +124,32 @@ needed. TODO: fresh actual Actions must establish all runtime vectors; then the
 protected full suites, unchanged instruction ceilings, actual signed merge and
 an approved release remain required. No typechecker speed or native-stage
 adoption credit is claimed.
+
+The paired [L1 Counter registration](https://github.com/ubugeeei-prod/vize/issues/8017#issuecomment-5990869755)
+retains successful source [Check37278230013](https://github.com/ubugeeei-prod/vize/actions/runs/37278230013)
+at `3f33cffb993dde08342e878576d09e666de5bf5c`: all 39 complete process
+observations pass with default-build checkout
+`2f3cf5e2f532f2e7d267d91ba4646270d30f6a7b`, the same source tree, and binary
+SHA-256 `e3dcd3c0591adf674073d7f00b180c92d5acd907704fd007f6f13254959d85c9`.
+Its protected candidate `4d1dce911c1dcc7dfae836f04d678fd61b7832bb` fails
+[Check37279798431](https://github.com/ubugeeei-prod/vize/actions/runs/37279798431):
+the actual full L1 corpus reports 450 files, 1,033 remarks, 159 applied,
+874 missed and one change. Its first inventory assertion stops later remark
+and backlog comparisons. The candidate was removed; its separate unchanged
+100+4 instruction passes establish no full-suite or merge acceptance.
+
+Add only the original Counter file and the independently authored
+`s2.hoist-static missed static-subtree @87:105 tag="p" blocker="child" op="ui.interpolation"`.
+The entire 118-byte input contains one such element, whose sole interpolation
+is dynamic text; empty attributes and bindings produce no additional prop
+remark. Independent source review confirms the exact span and frozen rule.
+All original 449 file rows and 1,032 remark rows remain byte-exact, including
+the final blank line. The existing backlog reason changes only from 185 to
+186 hits and 81 to 82 files, with its first example and all 24 groups preserved.
+The existing automatic native workflow runs plain complete lowering, DOM and
+remarks legacy-differential suites at the exact source root for this PR before
+readmission. Collapsing only three existing shell command continuations keeps
+their argv/captures exact and the prospective workflow composition below
+350 lines. No production, original input or 39-process expectation changes.
+TODO: these full corpus/output/span and canonical backlog comparisons must
+pass in fresh source Actions, followed by new protected gates and actual delivery.
