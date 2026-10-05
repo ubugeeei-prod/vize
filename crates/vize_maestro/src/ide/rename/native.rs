@@ -14,10 +14,16 @@ impl RenameService {
         new_name: &str,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<WorkspaceEdit> {
-        if let canonical::Answer::Available(edit) =
-            canonical::rename(ctx, new_name, corsa_bridge.as_deref()).await
-        {
-            return corsa::merge_missing_authored_rename(ctx, edit, Self::rename(ctx, new_name));
+        match canonical::rename(ctx, new_name, corsa_bridge.as_deref()).await {
+            canonical::Answer::Available(None) => return None,
+            canonical::Answer::Available(Some(edit)) => {
+                return corsa::merge_missing_authored_rename(
+                    ctx,
+                    Some(edit),
+                    Self::rename(ctx, new_name),
+                );
+            }
+            canonical::Answer::Unavailable => {}
         }
         let corsa_result = match ctx.block_type? {
             BlockType::Template => {

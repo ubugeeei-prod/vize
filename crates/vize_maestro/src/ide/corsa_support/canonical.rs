@@ -5,6 +5,7 @@ use vize_l0::{String, cstr};
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
 
+mod attribute_query;
 mod catalog;
 mod component_completion;
 mod component_project;
@@ -15,6 +16,7 @@ mod project;
 pub(super) mod rename;
 mod script;
 mod semantic_links;
+pub(crate) use attribute_query::component_attribute_position;
 pub(crate) use script::open_canonical_script_document;
 
 pub(crate) use component_completion::canonical_component_prop_position;

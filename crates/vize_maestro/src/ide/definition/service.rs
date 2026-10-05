@@ -197,7 +197,9 @@ impl super::DefinitionService {
         if let Some(definition) =
             Self::definition_via_canonical_corsa(ctx, corsa_bridge.as_ref()).await
         {
-            return import_target::normalize_bound_name_definition(ctx, definition);
+            return definition.and_then(|definition| {
+                import_target::normalize_bound_name_definition(ctx, definition)
+            });
         }
 
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
@@ -290,15 +292,19 @@ impl super::DefinitionService {
     async fn definition_via_canonical_corsa(
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<&Arc<CorsaBridge>>,
-    ) -> Option<GotoDefinitionResponse> {
+    ) -> Option<Option<GotoDefinitionResponse>> {
         let bridge = corsa_bridge?;
         if !bridge.is_initialized() {
             return None;
         }
 
         let doc = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
-        let (line, character) =
-            corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)?;
+        let attribute = corsa_support::component_attribute_position(ctx, &doc);
+        let (line, character) = match attribute {
+            Some(Some(position)) => position,
+            Some(None) => return Some(None),
+            None => corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)?,
+        };
         let locations = bridge
             .definition(&doc.request_uri, line, character)
             .await
@@ -309,7 +315,12 @@ impl super::DefinitionService {
 
         let locations = template_props::declarations(bridge, &doc, locations).await?;
         let locations = corsa_support::map_canonical_corsa_locations(ctx, &doc, locations);
-        Self::convert_locations(locations)
+        let mapped = Self::convert_locations(locations);
+        if attribute.is_some() {
+            Some(mapped)
+        } else {
+            mapped.map(Some)
+        }
     }
 
     /// Convert a Corsa location to tower-lsp Location.
