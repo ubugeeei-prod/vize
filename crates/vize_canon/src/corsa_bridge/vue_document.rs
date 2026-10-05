@@ -97,9 +97,7 @@ impl CorsaBridge {
     }
 
     /// Generate and sync a Vue document without copying unchanged overlay text.
-    ///
-    /// Reachable dependencies and previously registered live sources share one
-    /// revision. Callers with shared buffer snapshots can lend their text.
+    /// Reachable and registered sources share a revision with borrowed text.
     pub async fn open_vue_virtual_document_with_borrowed_overlays_and_options(
         &self,
         source_path: &Path,
@@ -148,10 +146,16 @@ impl CorsaBridge {
             host,
             documents,
             session_project_root,
+            session_config_path,
             materialized_changes,
         } = project;
-        self.open_canon_project_documents(&documents, session_project_root, materialized_changes)
-            .await?;
+        self.open_canon_project_documents(
+            &documents,
+            session_project_root,
+            session_config_path,
+            materialized_changes,
+        )
+        .await?;
         Ok(host)
     }
 
@@ -159,13 +163,18 @@ impl CorsaBridge {
         &self,
         documents: &[(String, String)],
         session_project_root: Option<PathBuf>,
+        session_config_path: Option<PathBuf>,
         materialized_changes: crate::batch::virtual_project::MaterializedFileDelta,
     ) -> Result<(), CorsaBridgeError> {
         let timer = self.profiler().timer("corsa_project_synchronize");
         if let Some(project_root) = session_project_root {
             self.with_client(move |client| {
                 client
-                    .synchronize_materialized_project(&project_root, &materialized_changes)
+                    .synchronize_materialized_project(
+                        &project_root,
+                        session_config_path.as_deref(),
+                        &materialized_changes,
+                    )
                     .map_err(CorsaBridgeError::CommunicationError)
             })
             .await?;
@@ -314,12 +323,11 @@ fn build_vue_virtual_workspace_project(
         },
         documents,
         session_project_root,
+        session_config_path: alias_context.mirror_project_config_path(),
         materialized_changes,
     })
 }
-/// Generate a Vue document with alias-aware import rewriting: non-relative
-/// specifiers the context resolves are pointed at the synced overlay
-/// identities through the offset-preserving rewriter (#3900).
+/// Generate Vue output with offset-preserving Canon alias identities (#3900).
 pub(super) fn generate_vue_document_with_alias(
     source_path: &Path,
     content: &str,

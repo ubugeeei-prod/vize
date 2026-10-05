@@ -54,3 +54,15 @@ diagnostic vectors. The CLI's established convention renders files outside the
 governing app root as absolute paths, so assert the exact authored sibling path
 from the isolated case root. Native stdout remains config-relative. No runtime
 source, input, diagnostic or output convention is changed by this test repair.
+
+At 3a114 the three required CLI/native vectors pass, but current strict Rust
+CI exposes an existing editor test reading the old mirror-root config path.
+Use its actual nested `packages/web/tsconfig.json` and assert the internal
+project carries that precise path. The native Vue/script/check-server session
+previously reconstructed a root config path too; pass the already-generated
+config explicitly while preserving the common mirror root and public URI
+ownership. No public document layout changes. Required Actions now execute
+the exact five-file original through the native script editor with one fully
+authored TS2322 response, and require an entirely clean native monorepo alias
+control. Capture full editor output, all original bytes and the same official
+binary identity; fresh source and runtime gates replace the red 3a head.

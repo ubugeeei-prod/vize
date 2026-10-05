@@ -161,6 +161,16 @@ jobs:
             --config 'profile.ci-opt.lto="thin"' \
             --config 'profile.ci-opt.codegen-units=16' \
             --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
+          export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync} from "node:fs"; process.stdout.write(JSON.parse(readFileSync(process.env.VIZE_TYPECHECK_REGRESSION_CAPTURE + "/outside_import_preserves_original_type_libraries_and_real_cli_diagnostics/oracle.json", "utf8")).nativeBinary)')"
+          export CORSA_PATH="$VIZE_TEST_TSGO_PATH"
+          cargo test --locked --profile ci-opt -p vize_canon original_outside_import_preserves_types_in_native_editor \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+          cargo test --locked --profile ci-opt -p vize_canon native_editor_resolves_package_alias_from_monorepo_root \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' -- --nocapture
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import { createHash } from 'node:crypto';
@@ -168,8 +178,8 @@ jobs:
           import { dirname, join } from 'node:path';
           import { spawnSync } from 'node:child_process';
           const root = process.env.VIZE_TYPECHECK_REGRESSION_CAPTURE;
-          const cases = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name).sort();
-          assert.equal(cases.length, 3);
+          const cases = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory() && e.name !== 'editor-original-script').map(e => e.name).sort();
+          assert.deepEqual(cases, ['outside_import_keeps_direct_scoped_type_packages_at_the_config_anchor', 'outside_import_preserves_original_type_libraries_and_real_cli_diagnostics', 'type_config_anchor_does_not_expose_app_modules_to_sibling_sources']);
           const sha256 = file => createHash('sha256').update(readFileSync(file)).digest('hex');
           const files = dir => readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]);
           const receipts = cases.map(name => {
@@ -189,7 +199,10 @@ jobs:
             assert.equal(version.stderr, '');
             return { name, sourceSha: process.env.SOURCE_SHA, cliBinary: realpathSync(cli.cliBinary), cliSha256: sha256(cli.cliBinary), nativeBinary, nativeSha256: sha256(nativeBinary), nativePackageSha256: sha256(packagePath), nativePackage: { name: nativePackage.name, version: nativePackage.version }, nativeVersion: version.stdout.trim(), completeOutputsAndInputs: files(dir).map(path => ({ path: path.slice(root.length + 1), sha256: sha256(path) })) };
           });
-          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, fixtureSha256: sha256('tests/_fixtures/differential/typechecker/outside-import-types/input.json'), matchedCompleteExpectations: true, cases: receipts }, null, 2) + '\n');
+          const editor = JSON.parse(readFileSync(join(root, 'editor-original-script/runtime.json'), 'utf8'));
+          assert.equal(realpathSync(editor.nativeBinary), receipts[0].nativeBinary);
+          const editorFiles = files(join(root, 'editor-original-script')).map(path => ({ path: path.slice(root.length + 1), sha256: sha256(path) }));
+          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, fixtureSha256: sha256('tests/_fixtures/differential/typechecker/outside-import-types/input.json'), matchedCompleteExpectations: true, cases: receipts, editor: { nativeBinary: realpathSync(editor.nativeBinary), nativeSha256: sha256(editor.nativeBinary), completeOutputsAndInputs: editorFiles } }, null, 2) + '\n');
           JS
       - name: Upload raw native phases, memberships, full reports and generated sources
         if: always()
@@ -209,3 +222,4 @@ jobs:
             ${{ runner.temp }}/outside-import-types/
           if-no-files-found: error
           retention-days: 30
+          include-hidden-files: true

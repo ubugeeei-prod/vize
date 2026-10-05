@@ -52,7 +52,12 @@ fn editor_uses_nearest_package_tsconfig_beneath_a_monorepo_workspace() {
         )
         .unwrap();
         let mirror_root = project.session_project_root.unwrap();
-        let mirror_config = std::fs::read_to_string(mirror_root.join("tsconfig.json")).unwrap();
+        let config_path = mirror_root.join("packages/web/tsconfig.json");
+        assert_eq!(
+            project.session_config_path.as_deref(),
+            Some(config_path.as_path())
+        );
+        let mirror_config = std::fs::read_to_string(config_path).unwrap();
         assert!(mirror_config.contains("#lib/*"), "{mirror_config}");
         assert!(dependency.is_file());
     }
@@ -101,12 +106,7 @@ fn native_editor_resolves_package_alias_from_monorepo_root() {
             .await
             .unwrap();
         let diagnostics = bridge.get_diagnostics(&document.request_uri).await.unwrap();
-        assert!(
-            diagnostics
-                .iter()
-                .all(|diagnostic| diagnostic.code.as_ref().is_none_or(|code| code != 2307)),
-            "package alias was not resolved: {diagnostics:#?}"
-        );
+        assert!(diagnostics.is_empty(), "{diagnostics:#?}");
         bridge.shutdown().await.unwrap();
     });
 }

@@ -15,13 +15,14 @@ impl CorsaProjectClient {
     pub(crate) fn synchronize_materialized_project(
         &mut self,
         project_root: &Path,
+        config_path: Option<&Path>,
         changes: &crate::batch::virtual_project::MaterializedFileDelta,
     ) -> Result<(), String> {
         if changes.has_topology_changes() {
-            self.reload_workspace_project(project_root)?;
+            self.activate_workspace_project_with_reload(project_root, config_path, true)?;
             self.refresh_materialized_files(&changes.changed, &changes.created, &changes.deleted)?;
         } else {
-            self.activate_workspace_project(project_root)?;
+            self.activate_workspace_project_with_reload(project_root, config_path, false)?;
             if !changes.is_empty() {
                 self.refresh_materialized_files(
                     &changes.changed,
@@ -37,21 +38,14 @@ impl CorsaProjectClient {
     /// project. The mirror's tsconfig is the authority for native condition
     /// selection; merely opening a file under its `node_modules` tree would
     /// otherwise create an inferred project with default compiler options.
-    pub(crate) fn activate_workspace_project(&mut self, project_root: &Path) -> Result<(), String> {
-        self.activate_workspace_project_with_reload(project_root, false)
-    }
-
     /// Replace only the native project handle when package topology changes.
     /// Standard tsgo retains negative module-resolution state across a file
     /// summary refresh, while a new handle observes the already-materialized
     /// Canon snapshot without restarting the bridge process.
-    pub(crate) fn reload_workspace_project(&mut self, project_root: &Path) -> Result<(), String> {
-        self.activate_workspace_project_with_reload(project_root, true)
-    }
-
     fn activate_workspace_project_with_reload(
         &mut self,
         project_root: &Path,
+        config_path: Option<&Path>,
         reload: bool,
     ) -> Result<(), String> {
         let project_root = project_root
@@ -62,7 +56,9 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
-        let config_path = workspace_config_path(&project_root);
+        let config_path = config_path
+            .map(Path::to_path_buf)
+            .unwrap_or_else(|| workspace_config_path(&project_root));
         let (session, capabilities) =
             match spawn_project_session(self.executable.as_str(), &project_root, &config_path) {
                 Ok((session, capabilities)) => (Some(session), capabilities),

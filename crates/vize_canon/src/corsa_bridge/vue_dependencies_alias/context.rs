@@ -183,6 +183,10 @@ impl AliasContext {
         Some(mirror.virtual_root().to_path_buf())
     }
 
+    pub(in crate::corsa_bridge) fn mirror_project_config_path(&self) -> Option<PathBuf> {
+        Some(self.mirror.as_ref()?.generated_tsconfig_path())
+    }
+
     pub(in crate::corsa_bridge) fn materialized_sources(
         &self,
     ) -> Vec<super::super::vue_document::CorsaMaterializedSource> {
