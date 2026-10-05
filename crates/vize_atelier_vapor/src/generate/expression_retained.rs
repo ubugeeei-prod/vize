@@ -151,9 +151,10 @@ fn assert_resolve_agrees(ctx: &GenerateContext<'_>, expr: &str, retained: &str, 
     let source_type = SourceType::default()
         .with_module(true)
         .with_typescript(true);
-    let mut wrapped = String::with_capacity(expr.len() + 2);
+    let mut wrapped = String::with_capacity(expr.len() + 3);
     wrapped.push('(');
     wrapped.push_str(expr);
+    wrapped.push('\n');
     wrapped.push(')');
     // A legacy parse failure is a divergence too: the dialect gate admitted
     // an expression the legacy vapor parse rejects.

@@ -275,3 +275,23 @@ producer metadata cannot establish the CI producer's source correspondence. The
 [paired #7698 decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-5979648443)
 retains this review; no profile/container or cold whole-CLI gain follows from
 synthetic decoder controls. The unchanged generated500 425.5→42.55 ms goal remains open.
+
+## Current-main integration of the independent dependency-link repair
+
+The existing [#7810](https://github.com/ubugeeei-prod/vize/pull/7810) integrates
+actual main `40e80dede2cce89afad475c713e521428dd1b333`, preserving its two original
+authored commits and verified reporter trailers. All four dependency-link,
+source-custody, custody-test and phase-driver code/test blobs remain byte-exact
+at reviewed source `8778f93ea9fd4ae7d54cfee68fa328272ecdc9a2`; every incoming
+production, workflow, fixture and instruction-budget change is retained.
+
+The historical exact-source Check `37200665418` and native phase run
+`37200665090` remain evidence for `8778f93`, not the new integrated head.
+Require fresh exact-head Actions, all 134 native controls and complete ordered
+CLI/code/map/diagnostic/freshness observations, then protected full Rust and
+100+4 instruction gates and actual signed merge. The repurposed #7857 no longer
+requires this runtime parent; detach its old native Stack relation and verify
+#7810 has no Stack before independent auto-merge. This integration authorizes
+no manual profile campaign or ranking claim. The original failed pilot,
+offline synthetic decoder and unmeasured allocation/CPU/attribution/10x limits
+above remain unchanged; recursive installed-dependency immutability is unclaimed.

@@ -84,7 +84,23 @@ impl crate::linter::config::Linter {
 
 use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
 use vize_croquis::Croquis;
+use vize_l0::dialect::VueDialect;
 use vize_relief::RootNode;
+
+/// Document-level inputs shared by the template-rule passes.
+///
+/// Bundles the optional SFC descriptor with the resolved [`VueDialect`] so the
+/// rule context can gate dialect-specific rules (e.g. petite-vue keyless
+/// `v-for`) without growing the already-wide pass signatures.
+#[derive(Clone, Copy)]
+pub(crate) struct TemplateRuleEnv<'a> {
+    pub sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
+    pub art_script_analysis: Option<&'a Croquis>,
+    pub dialect: VueDialect,
+    /// Markup rules `lint_sfc` runs on the L2 facade instead of the visitor.
+    /// Empty on the raw-template and standalone-HTML lanes.
+    pub facade_rules: &'static [&'static str],
+}
 
 pub(crate) fn analyze_descriptor_for_lint(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,

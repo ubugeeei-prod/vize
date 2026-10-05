@@ -12,6 +12,7 @@ pub(in crate::source_project::navigation) fn refused(
             break;
         }
         match command {
+            Command::ModuleLinks(request) => request.refuse(refusal.clone()),
             Command::LinkedEditing(request) => request.refuse(refusal.clone()),
             Command::Highlights(request) => {
                 if !request.reply.is_canceled() {

@@ -1,0 +1,4293 @@
+{
+  "schema": "vize.native-vue2-scriptless-sfc-reference",
+  "version": 1,
+  "vueVersion": "2.7.16",
+  "nativeCapture": null,
+  "cases": [
+    {
+      "id": "binary-whole-flat",
+      "source": "<template><div>{{a+b}}</div></template>",
+      "expected": "<template><div>{{a + b}}</div></template>",
+      "width": 41,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "9",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a+b}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a+b}}</div>",
+            "start": 10,
+            "end": 28,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 28
+        },
+        "byteLength": 39
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a + b}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a + b}}</div>",
+            "start": 10,
+            "end": 30,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 30
+        },
+        "byteLength": 41
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a+b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a + b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "9",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "binary-whole-break",
+      "source": "<template><div>{{a+b}}</div></template>",
+      "expected": "<template><div>{{a +\n    b}}</div></template>",
+      "width": 40,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "9",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a+b}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a+b}}</div>",
+            "start": 10,
+            "end": 28,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 28
+        },
+        "byteLength": 39
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a +\n    b}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a +\n    b}}</div>",
+            "start": 10,
+            "end": 34,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 34
+        },
+        "byteLength": 45
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a+b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a +\n    b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "9",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "suffix-flat",
+      "source": "<template><div>{{a+b}}</div></template><!--尾-->",
+      "expected": "<template><div>{{a + b}}</div></template><!--尾-->",
+      "width": 49,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "9",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a+b}}</div></template><!--尾-->",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a+b}}</div>",
+            "start": 10,
+            "end": 28,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 28
+        },
+        "byteLength": 49
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a + b}}</div></template><!--尾-->",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a + b}}</div>",
+            "start": 10,
+            "end": 30,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 30
+        },
+        "byteLength": 51
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a+b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a + b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "9",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "suffix-break",
+      "source": "<template><div>{{a+b}}</div></template><!--尾-->",
+      "expected": "<template><div>{{a +\n    b}}</div></template><!--尾-->",
+      "width": 48,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "9",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a+b}}</div></template><!--尾-->",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a+b}}</div>",
+            "start": 10,
+            "end": 28,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 28
+        },
+        "byteLength": 49
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a +\n    b}}</div></template><!--尾-->",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a +\n    b}}</div>",
+            "start": 10,
+            "end": 34,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 34
+        },
+        "byteLength": 55
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a+b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a +\n    b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "9",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "unicode-prefix-flat",
+      "source": "<!--🙂--><template><div>{{a+b}}</div></template>",
+      "expected": "<!--🙂--><template><div>{{a + b}}</div></template>",
+      "width": 49,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "9",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<!--🙂--><template><div>{{a+b}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a+b}}</div>",
+            "start": 19,
+            "end": 37,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 21,
+          "end": 39
+        },
+        "byteLength": 50
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<!--🙂--><template><div>{{a + b}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a + b}}</div>",
+            "start": 19,
+            "end": 39,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 21,
+          "end": 41
+        },
+        "byteLength": 52
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a+b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a + b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "9",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "unicode-prefix-break",
+      "source": "<!--🙂--><template><div>{{a+b}}</div></template>",
+      "expected": "<!--🙂--><template><div>{{a +\n    b}}</div></template>",
+      "width": 48,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "9",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<!--🙂--><template><div>{{a+b}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a+b}}</div>",
+            "start": 19,
+            "end": 37,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 21,
+          "end": 39
+        },
+        "byteLength": 50
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<!--🙂--><template><div>{{a +\n    b}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a +\n    b}}</div>",
+            "start": 19,
+            "end": 43,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 21,
+          "end": 45
+        },
+        "byteLength": 56
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a+b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a +\n    b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "9",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "body-newline-flat",
+      "source": "<template>\n<div>{{a+b}}</div>\n</template>",
+      "expected": "<template>\n<div>{{a + b}}</div>\n</template>",
+      "width": 20,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "9",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template>\n<div>{{a+b}}</div>\n</template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "\n<div>{{a+b}}</div>\n",
+            "start": 10,
+            "end": 30,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 30
+        },
+        "byteLength": 41
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template>\n<div>{{a + b}}</div>\n</template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "\n<div>{{a + b}}</div>\n",
+            "start": 10,
+            "end": 32,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 32
+        },
+        "byteLength": 43
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a+b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a + b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "9",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "body-newline-break",
+      "source": "<template>\n<div>{{a+b}}</div>\n</template>",
+      "expected": "<template>\n<div>{{a +\n    b}}</div>\n</template>",
+      "width": 19,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "9",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template>\n<div>{{a+b}}</div>\n</template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "\n<div>{{a+b}}</div>\n",
+            "start": 10,
+            "end": 30,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 30
+        },
+        "byteLength": 41
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template>\n<div>{{a +\n    b}}</div>\n</template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "\n<div>{{a +\n    b}}</div>\n",
+            "start": 10,
+            "end": 36,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 36
+        },
+        "byteLength": 47
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a+b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a +\n    b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "9",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "nested-division-Lf",
+      "source": "<template><div>{{ (a/2)/(b/3) }}</div></template>",
+      "expected": "<template><div>{{ (a /\n    2) /\n    (b /\n      3) }}</div></template>",
+      "width": 0,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "3",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{ (a/2)/(b/3) }}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{ (a/2)/(b/3) }}</div>",
+            "start": 10,
+            "end": 38,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 38
+        },
+        "byteLength": 49
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{ (a /\n    2) /\n    (b /\n      3) }}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{ (a /\n    2) /\n    (b /\n      3) }}</div>",
+            "start": 10,
+            "end": 58,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 58
+        },
+        "byteLength": 69
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s((a/2)/(b/3)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s((a /\n    2) /\n    (b /\n      3)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "3",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "nested-division-CrLf",
+      "source": "<template><div>{{ (a/2)/(b/3) }}</div></template>",
+      "expected": "<template><div>{{ (a /\r\n    2) /\r\n    (b /\r\n      3) }}</div></template>",
+      "width": 0,
+      "indent": 2,
+      "lineEnding": "CrLf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "3",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{ (a/2)/(b/3) }}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{ (a/2)/(b/3) }}</div>",
+            "start": 10,
+            "end": 38,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 38
+        },
+        "byteLength": 49
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{ (a /\r\n    2) /\r\n    (b /\r\n      3) }}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{ (a /\r\n    2) /\r\n    (b /\r\n      3) }}</div>",
+            "start": 10,
+            "end": 61,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 61
+        },
+        "byteLength": 72
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s((a/2)/(b/3)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s((a /\r\n    2) /\r\n    (b /\r\n      3)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "3",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "nested-filter-chain-wide",
+      "source": "<template><section>{{a+b|add(2+3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+      "expected": "<template><section>{{a + b|add(2 + 3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "section",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "SP:14",
+            "children": null
+          },
+          {
+            "tag": "span",
+            "data": null,
+            "text": null,
+            "children": [
+              {
+                "tag": null,
+                "data": null,
+                "text": "4",
+                "children": null
+              }
+            ]
+          }
+        ]
+      },
+      "events": [
+        "lookup:upper ",
+        "lookup:add",
+        "read:a",
+        "read:b",
+        "call:add",
+        "call:upper ",
+        "read:日本"
+      ],
+      "calls": [
+        {
+          "name": "add",
+          "args": [9, 5]
+        },
+        {
+          "name": "upper ",
+          "args": [14]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><section>{{a+b|add(2+3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section>{{a+b|add(2+3,)|upper ()}}<span>{{ 日本 }}</span></section>",
+            "start": 10,
+            "end": 76,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 80
+        },
+        "byteLength": 91
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><section>{{a + b|add(2 + 3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section>{{a + b|add(2 + 3,)|upper ()}}<span>{{ 日本 }}</span></section>",
+            "start": 10,
+            "end": 80,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 84
+        },
+        "byteLength": 95
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('section',[_v(_s(_f(\"upper \")(_f(\"add\")(a+b,2+3,)))),_c('span',[_v(_s(日本))])])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('section',[_v(_s(_f(\"upper \")(_f(\"add\")(a + b,2 + 3,)))),_c('span',[_v(_s(日本))])])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "section",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "SP:14",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            },
+            {
+              "tag": "span",
+              "data": null,
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": [
+                {
+                  "tag": null,
+                  "data": null,
+                  "text": "4",
+                  "key": null,
+                  "ns": null,
+                  "raw": false,
+                  "isStatic": false,
+                  "isRootInsert": true,
+                  "isComment": false,
+                  "isCloned": false,
+                  "isOnce": false,
+                  "children": null
+                }
+              ]
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "add",
+            "args": [9, 5]
+          },
+          {
+            "name": "upper ",
+            "args": [14]
+          }
+        ],
+        "events": [
+          "lookup:upper ",
+          "lookup:add",
+          "read:a",
+          "read:b",
+          "call:add",
+          "call:upper ",
+          "read:日本"
+        ]
+      }
+    },
+    {
+      "id": "nested-filter-chain-Lf",
+      "source": "<template><section>{{a+b|add(2+3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+      "expected": "<template><section>{{a +\n    b|add(2 +\n    3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+      "width": 0,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "section",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "SP:14",
+            "children": null
+          },
+          {
+            "tag": "span",
+            "data": null,
+            "text": null,
+            "children": [
+              {
+                "tag": null,
+                "data": null,
+                "text": "4",
+                "children": null
+              }
+            ]
+          }
+        ]
+      },
+      "events": [
+        "lookup:upper ",
+        "lookup:add",
+        "read:a",
+        "read:b",
+        "call:add",
+        "call:upper ",
+        "read:日本"
+      ],
+      "calls": [
+        {
+          "name": "add",
+          "args": [9, 5]
+        },
+        {
+          "name": "upper ",
+          "args": [14]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><section>{{a+b|add(2+3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section>{{a+b|add(2+3,)|upper ()}}<span>{{ 日本 }}</span></section>",
+            "start": 10,
+            "end": 76,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 80
+        },
+        "byteLength": 91
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><section>{{a +\n    b|add(2 +\n    3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section>{{a +\n    b|add(2 +\n    3,)|upper ()}}<span>{{ 日本 }}</span></section>",
+            "start": 10,
+            "end": 88,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 92
+        },
+        "byteLength": 103
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('section',[_v(_s(_f(\"upper \")(_f(\"add\")(a+b,2+3,)))),_c('span',[_v(_s(日本))])])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('section',[_v(_s(_f(\"upper \")(_f(\"add\")(a +\n    b,2 +\n    3,)))),_c('span',[_v(_s(日本))])])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "section",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "SP:14",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            },
+            {
+              "tag": "span",
+              "data": null,
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": [
+                {
+                  "tag": null,
+                  "data": null,
+                  "text": "4",
+                  "key": null,
+                  "ns": null,
+                  "raw": false,
+                  "isStatic": false,
+                  "isRootInsert": true,
+                  "isComment": false,
+                  "isCloned": false,
+                  "isOnce": false,
+                  "children": null
+                }
+              ]
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "add",
+            "args": [9, 5]
+          },
+          {
+            "name": "upper ",
+            "args": [14]
+          }
+        ],
+        "events": [
+          "lookup:upper ",
+          "lookup:add",
+          "read:a",
+          "read:b",
+          "call:add",
+          "call:upper ",
+          "read:日本"
+        ]
+      }
+    },
+    {
+      "id": "nested-filter-chain-CrLf",
+      "source": "<template><section>{{a+b|add(2+3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+      "expected": "<template><section>{{a +\r\n    b|add(2 +\r\n    3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+      "width": 0,
+      "indent": 2,
+      "lineEnding": "CrLf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "section",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "SP:14",
+            "children": null
+          },
+          {
+            "tag": "span",
+            "data": null,
+            "text": null,
+            "children": [
+              {
+                "tag": null,
+                "data": null,
+                "text": "4",
+                "children": null
+              }
+            ]
+          }
+        ]
+      },
+      "events": [
+        "lookup:upper ",
+        "lookup:add",
+        "read:a",
+        "read:b",
+        "call:add",
+        "call:upper ",
+        "read:日本"
+      ],
+      "calls": [
+        {
+          "name": "add",
+          "args": [9, 5]
+        },
+        {
+          "name": "upper ",
+          "args": [14]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><section>{{a+b|add(2+3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section>{{a+b|add(2+3,)|upper ()}}<span>{{ 日本 }}</span></section>",
+            "start": 10,
+            "end": 76,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 80
+        },
+        "byteLength": 91
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><section>{{a +\r\n    b|add(2 +\r\n    3,)|upper ()}}<span>{{ 日本 }}</span></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section>{{a +\r\n    b|add(2 +\r\n    3,)|upper ()}}<span>{{ 日本 }}</span></section>",
+            "start": 10,
+            "end": 90,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 94
+        },
+        "byteLength": 105
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('section',[_v(_s(_f(\"upper \")(_f(\"add\")(a+b,2+3,)))),_c('span',[_v(_s(日本))])])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('section',[_v(_s(_f(\"upper \")(_f(\"add\")(a +\r\n    b,2 +\r\n    3,)))),_c('span',[_v(_s(日本))])])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "section",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "SP:14",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            },
+            {
+              "tag": "span",
+              "data": null,
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": [
+                {
+                  "tag": null,
+                  "data": null,
+                  "text": "4",
+                  "key": null,
+                  "ns": null,
+                  "raw": false,
+                  "isStatic": false,
+                  "isRootInsert": true,
+                  "isComment": false,
+                  "isCloned": false,
+                  "isOnce": false,
+                  "children": null
+                }
+              ]
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "add",
+            "args": [9, 5]
+          },
+          {
+            "name": "upper ",
+            "args": [14]
+          }
+        ],
+        "events": [
+          "lookup:upper ",
+          "lookup:add",
+          "read:a",
+          "read:b",
+          "call:add",
+          "call:upper ",
+          "read:日本"
+        ]
+      }
+    },
+    {
+      "id": "opaque-static-header",
+      "source": "<template><div  id = '雪' disabled title=raw>{{a+b}}</div></template>",
+      "expected": "<template><div id='雪' disabled title=raw>{{a + b}}</div></template>",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": {
+          "attrs": {
+            "id": "雪",
+            "disabled": "",
+            "title": "raw"
+          }
+        },
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "9",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div  id = '雪' disabled title=raw>{{a+b}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div  id = '雪' disabled title=raw>{{a+b}}</div>",
+            "start": 10,
+            "end": 57,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 59
+        },
+        "byteLength": 70
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div id='雪' disabled title=raw>{{a + b}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div id='雪' disabled title=raw>{{a + b}}</div>",
+            "start": 10,
+            "end": 56,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 58
+        },
+        "byteLength": 69
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',{attrs:{\"id\":\"雪\",\"disabled\":\"\",\"title\":\"raw\"}},[_v(_s(a+b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',{attrs:{\"id\":\"雪\",\"disabled\":\"\",\"title\":\"raw\"}},[_v(_s(a + b))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": {
+            "attrs": {
+              "id": "雪",
+              "disabled": "",
+              "title": "raw"
+            }
+          },
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "9",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "original-slash-header-Lf-indent2",
+      "source": "<template><section><input  disabled id = 'x' /></section></template>",
+      "expected": "<template><section><input\n    disabled\n    id='x'\n  /></section></template>",
+      "width": 0,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "section",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": "input",
+            "data": {
+              "attrs": {
+                "disabled": "",
+                "id": "x"
+              }
+            },
+            "text": null,
+            "children": null
+          }
+        ]
+      },
+      "events": [],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><section><input  disabled id = 'x' /></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section><input  disabled id = 'x' /></section>",
+            "start": 10,
+            "end": 57,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 57
+        },
+        "byteLength": 68
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><section><input\n    disabled\n    id='x'\n  /></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section><input\n    disabled\n    id='x'\n  /></section>",
+            "start": 10,
+            "end": 64,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 64
+        },
+        "byteLength": 75
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _m(0)}",
+        "staticRenderFns": [
+          "with(this){return _c('section',[_c('input',{attrs:{\"disabled\":\"\",\"id\":\"x\"}})])}"
+        ],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _m(0)}",
+        "staticRenderFns": [
+          "with(this){return _c('section',[_c('input',{attrs:{\"disabled\":\"\",\"id\":\"x\"}})])}"
+        ],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "section",
+          "data": null,
+          "text": null,
+          "key": "__static__0",
+          "ns": null,
+          "raw": false,
+          "isStatic": true,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": "input",
+              "data": {
+                "attrs": {
+                  "disabled": "",
+                  "id": "x"
+                }
+              },
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": []
+      }
+    },
+    {
+      "id": "original-slash-header-CrLf-indent1",
+      "source": "<template><section><input  disabled id = 'x' /></section></template>",
+      "expected": "<template><section><input\r\n  disabled\r\n  id='x'\r\n /></section></template>",
+      "width": 0,
+      "indent": 1,
+      "lineEnding": "CrLf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "section",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": "input",
+            "data": {
+              "attrs": {
+                "disabled": "",
+                "id": "x"
+              }
+            },
+            "text": null,
+            "children": null
+          }
+        ]
+      },
+      "events": [],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><section><input  disabled id = 'x' /></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section><input  disabled id = 'x' /></section>",
+            "start": 10,
+            "end": 57,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 57
+        },
+        "byteLength": 68
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><section><input\r\n  disabled\r\n  id='x'\r\n /></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section><input\r\n  disabled\r\n  id='x'\r\n /></section>",
+            "start": 10,
+            "end": 62,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 62
+        },
+        "byteLength": 73
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _m(0)}",
+        "staticRenderFns": [
+          "with(this){return _c('section',[_c('input',{attrs:{\"disabled\":\"\",\"id\":\"x\"}})])}"
+        ],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _m(0)}",
+        "staticRenderFns": [
+          "with(this){return _c('section',[_c('input',{attrs:{\"disabled\":\"\",\"id\":\"x\"}})])}"
+        ],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "section",
+          "data": null,
+          "text": null,
+          "key": "__static__0",
+          "ns": null,
+          "raw": false,
+          "isStatic": true,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": "input",
+              "data": {
+                "attrs": {
+                  "disabled": "",
+                  "id": "x"
+                }
+              },
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": []
+      }
+    },
+    {
+      "id": "original-slash-header-Lf-indent0",
+      "source": "<template><section><input  disabled id = 'x' /></section></template>",
+      "expected": "<template><section><input\ndisabled\nid='x'\n/></section></template>",
+      "width": 0,
+      "indent": 0,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "section",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": "input",
+            "data": {
+              "attrs": {
+                "disabled": "",
+                "id": "x"
+              }
+            },
+            "text": null,
+            "children": null
+          }
+        ]
+      },
+      "events": [],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><section><input  disabled id = 'x' /></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section><input  disabled id = 'x' /></section>",
+            "start": 10,
+            "end": 57,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 57
+        },
+        "byteLength": 68
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><section><input\ndisabled\nid='x'\n/></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section><input\ndisabled\nid='x'\n/></section>",
+            "start": 10,
+            "end": 54,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 54
+        },
+        "byteLength": 65
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _m(0)}",
+        "staticRenderFns": [
+          "with(this){return _c('section',[_c('input',{attrs:{\"disabled\":\"\",\"id\":\"x\"}})])}"
+        ],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _m(0)}",
+        "staticRenderFns": [
+          "with(this){return _c('section',[_c('input',{attrs:{\"disabled\":\"\",\"id\":\"x\"}})])}"
+        ],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "section",
+          "data": null,
+          "text": null,
+          "key": "__static__0",
+          "ns": null,
+          "raw": false,
+          "isStatic": true,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": "input",
+              "data": {
+                "attrs": {
+                  "disabled": "",
+                  "id": "x"
+                }
+              },
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": []
+      }
+    },
+    {
+      "id": "original-slash-header-Lf-indent4",
+      "source": "<template><section><input  disabled id = 'x' /></section></template>",
+      "expected": "<template><section><input\n        disabled\n        id='x'\n    /></section></template>",
+      "width": 0,
+      "indent": 4,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "section",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": "input",
+            "data": {
+              "attrs": {
+                "disabled": "",
+                "id": "x"
+              }
+            },
+            "text": null,
+            "children": null
+          }
+        ]
+      },
+      "events": [],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><section><input  disabled id = 'x' /></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section><input  disabled id = 'x' /></section>",
+            "start": 10,
+            "end": 57,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 57
+        },
+        "byteLength": 68
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><section><input\n        disabled\n        id='x'\n    /></section></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<section><input\n        disabled\n        id='x'\n    /></section>",
+            "start": 10,
+            "end": 74,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 74
+        },
+        "byteLength": 85
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _m(0)}",
+        "staticRenderFns": [
+          "with(this){return _c('section',[_c('input',{attrs:{\"disabled\":\"\",\"id\":\"x\"}})])}"
+        ],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _m(0)}",
+        "staticRenderFns": [
+          "with(this){return _c('section',[_c('input',{attrs:{\"disabled\":\"\",\"id\":\"x\"}})])}"
+        ],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "section",
+          "data": null,
+          "text": null,
+          "key": "__static__0",
+          "ns": null,
+          "raw": false,
+          "isStatic": true,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": "input",
+              "data": {
+                "attrs": {
+                  "disabled": "",
+                  "id": "x"
+                }
+              },
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": []
+      }
+    },
+    {
+      "id": "entity-unicode-registry-blank",
+      "source": "<template><p>{{ &#26085;&#26412; | upper( ) }}</p></template>",
+      "expected": "<template><p>{{ &#26085;&#26412; | upper( ) }}</p></template>",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "p",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "U:4",
+            "children": null
+          }
+        ]
+      },
+      "events": ["lookup:upper", "read:日本", "call:upper"],
+      "calls": [
+        {
+          "name": "upper",
+          "args": [4]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><p>{{ &#26085;&#26412; | upper( ) }}</p></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<p>{{ &#26085;&#26412; | upper( ) }}</p>",
+            "start": 10,
+            "end": 50,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 50
+        },
+        "byteLength": 61
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><p>{{ &#26085;&#26412; | upper( ) }}</p></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<p>{{ &#26085;&#26412; | upper( ) }}</p>",
+            "start": 10,
+            "end": 50,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 50
+        },
+        "byteLength": 61
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('p',[_v(_s(_f(\"upper\")(日本, )))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('p',[_v(_s(_f(\"upper\")(日本, )))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "p",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "U:4",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "upper",
+            "args": [4]
+          }
+        ],
+        "events": ["lookup:upper", "read:日本", "call:upper"]
+      }
+    },
+    {
+      "id": "all-seven-ordinary-tags",
+      "source": "<template><div><span>雪</span><p>p</p><section>s</section><a href='&amp;'>a</a><br><input disabled></div></template>",
+      "expected": "<template><div><span>雪</span><p>p</p><section>s</section><a href='&amp;'>a</a><br><input disabled></div></template>",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": "span",
+            "data": null,
+            "text": null,
+            "children": [
+              {
+                "tag": null,
+                "data": null,
+                "text": "雪",
+                "children": null
+              }
+            ]
+          },
+          {
+            "tag": "p",
+            "data": null,
+            "text": null,
+            "children": [
+              {
+                "tag": null,
+                "data": null,
+                "text": "p",
+                "children": null
+              }
+            ]
+          },
+          {
+            "tag": "section",
+            "data": null,
+            "text": null,
+            "children": [
+              {
+                "tag": null,
+                "data": null,
+                "text": "s",
+                "children": null
+              }
+            ]
+          },
+          {
+            "tag": "a",
+            "data": {
+              "attrs": {
+                "href": "&"
+              }
+            },
+            "text": null,
+            "children": [
+              {
+                "tag": null,
+                "data": null,
+                "text": "a",
+                "children": null
+              }
+            ]
+          },
+          {
+            "tag": "br",
+            "data": null,
+            "text": null,
+            "children": null
+          },
+          {
+            "tag": "input",
+            "data": {
+              "attrs": {
+                "disabled": ""
+              }
+            },
+            "text": null,
+            "children": null
+          }
+        ]
+      },
+      "events": [],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div><span>雪</span><p>p</p><section>s</section><a href='&amp;'>a</a><br><input disabled></div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div><span>雪</span><p>p</p><section>s</section><a href='&amp;'>a</a><br><input disabled></div>",
+            "start": 10,
+            "end": 104,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": ["tag <input> has no matching end tag.", "tag <br> has no matching end tag."],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 106
+        },
+        "byteLength": 117
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div><span>雪</span><p>p</p><section>s</section><a href='&amp;'>a</a><br><input disabled></div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div><span>雪</span><p>p</p><section>s</section><a href='&amp;'>a</a><br><input disabled></div>",
+            "start": 10,
+            "end": 104,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": ["tag <input> has no matching end tag.", "tag <br> has no matching end tag."],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 106
+        },
+        "byteLength": 117
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _m(0)}",
+        "staticRenderFns": [
+          "with(this){return _c('div',[_c('span',[_v(\"雪\")]),_c('p',[_v(\"p\")]),_c('section',[_v(\"s\")]),_c('a',{attrs:{\"href\":\"&\"}},[_v(\"a\")]),_c('br'),_c('input',{attrs:{\"disabled\":\"\"}})])}"
+        ],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _m(0)}",
+        "staticRenderFns": [
+          "with(this){return _c('div',[_c('span',[_v(\"雪\")]),_c('p',[_v(\"p\")]),_c('section',[_v(\"s\")]),_c('a',{attrs:{\"href\":\"&\"}},[_v(\"a\")]),_c('br'),_c('input',{attrs:{\"disabled\":\"\"}})])}"
+        ],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": "__static__0",
+          "ns": null,
+          "raw": false,
+          "isStatic": true,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": "span",
+              "data": null,
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": [
+                {
+                  "tag": null,
+                  "data": null,
+                  "text": "雪",
+                  "key": null,
+                  "ns": null,
+                  "raw": false,
+                  "isStatic": false,
+                  "isRootInsert": true,
+                  "isComment": false,
+                  "isCloned": false,
+                  "isOnce": false,
+                  "children": null
+                }
+              ]
+            },
+            {
+              "tag": "p",
+              "data": null,
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": [
+                {
+                  "tag": null,
+                  "data": null,
+                  "text": "p",
+                  "key": null,
+                  "ns": null,
+                  "raw": false,
+                  "isStatic": false,
+                  "isRootInsert": true,
+                  "isComment": false,
+                  "isCloned": false,
+                  "isOnce": false,
+                  "children": null
+                }
+              ]
+            },
+            {
+              "tag": "section",
+              "data": null,
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": [
+                {
+                  "tag": null,
+                  "data": null,
+                  "text": "s",
+                  "key": null,
+                  "ns": null,
+                  "raw": false,
+                  "isStatic": false,
+                  "isRootInsert": true,
+                  "isComment": false,
+                  "isCloned": false,
+                  "isOnce": false,
+                  "children": null
+                }
+              ]
+            },
+            {
+              "tag": "a",
+              "data": {
+                "attrs": {
+                  "href": "&"
+                }
+              },
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": [
+                {
+                  "tag": null,
+                  "data": null,
+                  "text": "a",
+                  "key": null,
+                  "ns": null,
+                  "raw": false,
+                  "isStatic": false,
+                  "isRootInsert": true,
+                  "isComment": false,
+                  "isCloned": false,
+                  "isOnce": false,
+                  "children": null
+                }
+              ]
+            },
+            {
+              "tag": "br",
+              "data": null,
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            },
+            {
+              "tag": "input",
+              "data": {
+                "attrs": {
+                  "disabled": ""
+                }
+              },
+              "text": null,
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": []
+      }
+    },
+    {
+      "id": "bom-full-original-frame",
+      "source": "﻿<!--前🙂-->\r\n<template lang='html'><div>甲{{ a+b }}乙</div></template><!--尾-->\r\n",
+      "expected": "﻿<!--前🙂-->\r\n<template lang='html'><div>甲{{ a + b }}乙</div></template><!--尾-->\r\n",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "甲9乙",
+            "children": null
+          }
+        ]
+      },
+      "events": ["read:a", "read:b"],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "﻿<!--前🙂-->\r\n<template lang='html'><div>甲{{ a+b }}乙</div></template><!--尾-->\r\n",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>甲{{ a+b }}乙</div>",
+            "start": 35,
+            "end": 57,
+            "attrs": {
+              "lang": "html"
+            },
+            "lang": "html"
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 41,
+          "end": 67
+        },
+        "byteLength": 90
+      },
+      "afterFrame": {
+        "original": {
+          "source": "﻿<!--前🙂-->\r\n<template lang='html'><div>甲{{ a + b }}乙</div></template><!--尾-->\r\n",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>甲{{ a + b }}乙</div>",
+            "start": 35,
+            "end": 59,
+            "attrs": {
+              "lang": "html"
+            },
+            "lang": "html"
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 41,
+          "end": 69
+        },
+        "byteLength": 92
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(\"甲\"+_s(a+b)+\"乙\")])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(\"甲\"+_s(a + b)+\"乙\")])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "甲9乙",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [],
+        "events": ["read:a", "read:b"]
+      }
+    },
+    {
+      "id": "bare-width200",
+      "source": "<template><div>{{a|upper}}</div></template>",
+      "expected": "<template><div>{{a|upper}}</div></template>",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "U:6",
+            "children": null
+          }
+        ]
+      },
+      "events": ["lookup:upper", "read:a", "call:upper"],
+      "calls": [
+        {
+          "name": "upper",
+          "args": [6]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper}}</div>",
+            "start": 10,
+            "end": 32,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 32
+        },
+        "byteLength": 43
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper}}</div>",
+            "start": 10,
+            "end": 32,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 32
+        },
+        "byteLength": 43
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "U:6",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "upper",
+            "args": [6]
+          }
+        ],
+        "events": ["lookup:upper", "read:a", "call:upper"]
+      }
+    },
+    {
+      "id": "bare-width0",
+      "source": "<template><div>{{a|upper}}</div></template>",
+      "expected": "<template><div>{{a|upper}}</div></template>",
+      "width": 0,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "U:6",
+            "children": null
+          }
+        ]
+      },
+      "events": ["lookup:upper", "read:a", "call:upper"],
+      "calls": [
+        {
+          "name": "upper",
+          "args": [6]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper}}</div>",
+            "start": 10,
+            "end": 32,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 32
+        },
+        "byteLength": 43
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper}}</div>",
+            "start": 10,
+            "end": 32,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 32
+        },
+        "byteLength": 43
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "U:6",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "upper",
+            "args": [6]
+          }
+        ],
+        "events": ["lookup:upper", "read:a", "call:upper"]
+      }
+    },
+    {
+      "id": "zero-width200",
+      "source": "<template><div>{{a|upper()}}</div></template>",
+      "expected": "<template><div>{{a|upper()}}</div></template>",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "U:6",
+            "children": null
+          }
+        ]
+      },
+      "events": ["lookup:upper", "read:a", "call:upper"],
+      "calls": [
+        {
+          "name": "upper",
+          "args": [6]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper()}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper()}}</div>",
+            "start": 10,
+            "end": 34,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 34
+        },
+        "byteLength": 45
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper()}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper()}}</div>",
+            "start": 10,
+            "end": 34,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 34
+        },
+        "byteLength": 45
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "U:6",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "upper",
+            "args": [6]
+          }
+        ],
+        "events": ["lookup:upper", "read:a", "call:upper"]
+      }
+    },
+    {
+      "id": "zero-width0",
+      "source": "<template><div>{{a|upper()}}</div></template>",
+      "expected": "<template><div>{{a|upper()}}</div></template>",
+      "width": 0,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "U:6",
+            "children": null
+          }
+        ]
+      },
+      "events": ["lookup:upper", "read:a", "call:upper"],
+      "calls": [
+        {
+          "name": "upper",
+          "args": [6]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper()}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper()}}</div>",
+            "start": 10,
+            "end": 34,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 34
+        },
+        "byteLength": 45
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper()}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper()}}</div>",
+            "start": 10,
+            "end": 34,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 34
+        },
+        "byteLength": 45
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "U:6",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "upper",
+            "args": [6]
+          }
+        ],
+        "events": ["lookup:upper", "read:a", "call:upper"]
+      }
+    },
+    {
+      "id": "blank-width200",
+      "source": "<template><div>{{a|upper( )}}</div></template>",
+      "expected": "<template><div>{{a|upper( )}}</div></template>",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "U:6",
+            "children": null
+          }
+        ]
+      },
+      "events": ["lookup:upper", "read:a", "call:upper"],
+      "calls": [
+        {
+          "name": "upper",
+          "args": [6]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper( )}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper( )}}</div>",
+            "start": 10,
+            "end": 35,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 35
+        },
+        "byteLength": 46
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper( )}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper( )}}</div>",
+            "start": 10,
+            "end": 35,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 35
+        },
+        "byteLength": 46
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a, )))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a, )))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "U:6",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "upper",
+            "args": [6]
+          }
+        ],
+        "events": ["lookup:upper", "read:a", "call:upper"]
+      }
+    },
+    {
+      "id": "blank-width0",
+      "source": "<template><div>{{a|upper( )}}</div></template>",
+      "expected": "<template><div>{{a|upper( )}}</div></template>",
+      "width": 0,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "U:6",
+            "children": null
+          }
+        ]
+      },
+      "events": ["lookup:upper", "read:a", "call:upper"],
+      "calls": [
+        {
+          "name": "upper",
+          "args": [6]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper( )}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper( )}}</div>",
+            "start": 10,
+            "end": 35,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 35
+        },
+        "byteLength": 46
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper( )}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper( )}}</div>",
+            "start": 10,
+            "end": 35,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 35
+        },
+        "byteLength": 46
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a, )))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper\")(a, )))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "U:6",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "upper",
+            "args": [6]
+          }
+        ],
+        "events": ["lookup:upper", "read:a", "call:upper"]
+      }
+    },
+    {
+      "id": "upper-space-key-width200",
+      "source": "<template><div>{{a|upper ()}}</div></template>",
+      "expected": "<template><div>{{a|upper ()}}</div></template>",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "SP:6",
+            "children": null
+          }
+        ]
+      },
+      "events": ["lookup:upper ", "read:a", "call:upper "],
+      "calls": [
+        {
+          "name": "upper ",
+          "args": [6]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper ()}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper ()}}</div>",
+            "start": 10,
+            "end": 35,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 35
+        },
+        "byteLength": 46
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper ()}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper ()}}</div>",
+            "start": 10,
+            "end": 35,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 35
+        },
+        "byteLength": 46
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper \")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper \")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "SP:6",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "upper ",
+            "args": [6]
+          }
+        ],
+        "events": ["lookup:upper ", "read:a", "call:upper "]
+      }
+    },
+    {
+      "id": "upper-space-key-width0",
+      "source": "<template><div>{{a|upper ()}}</div></template>",
+      "expected": "<template><div>{{a|upper ()}}</div></template>",
+      "width": 0,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": true,
+      "semantic": {
+        "tag": "div",
+        "data": null,
+        "text": null,
+        "children": [
+          {
+            "tag": null,
+            "data": null,
+            "text": "SP:6",
+            "children": null
+          }
+        ]
+      },
+      "events": ["lookup:upper ", "read:a", "call:upper "],
+      "calls": [
+        {
+          "name": "upper ",
+          "args": [6]
+        }
+      ],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper ()}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper ()}}</div>",
+            "start": 10,
+            "end": 35,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 35
+        },
+        "byteLength": 46
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a|upper ()}}</div></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a|upper ()}}</div>",
+            "start": 10,
+            "end": 35,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 35
+        },
+        "byteLength": 46
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper \")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(_f(\"upper \")(a)))])}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": {
+        "vnode": {
+          "tag": "div",
+          "data": null,
+          "text": null,
+          "key": null,
+          "ns": null,
+          "raw": false,
+          "isStatic": false,
+          "isRootInsert": true,
+          "isComment": false,
+          "isCloned": false,
+          "isOnce": false,
+          "children": [
+            {
+              "tag": null,
+              "data": null,
+              "text": "SP:6",
+              "key": null,
+              "ns": null,
+              "raw": false,
+              "isStatic": false,
+              "isRootInsert": true,
+              "isComment": false,
+              "isCloned": false,
+              "isOnce": false,
+              "children": null
+            }
+          ]
+        },
+        "calls": [
+          {
+            "name": "upper ",
+            "args": [6]
+          }
+        ],
+        "events": ["lookup:upper ", "read:a", "call:upper "]
+      }
+    },
+    {
+      "id": "empty-primary-control",
+      "source": "<template></template>",
+      "expected": "<template></template>",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": false,
+      "semantic": null,
+      "events": [],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "",
+            "start": 10,
+            "end": 10,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 10
+        },
+        "byteLength": 21
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "",
+            "start": 10,
+            "end": 10,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 10
+        },
+        "byteLength": 21
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c(\"div\")}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c(\"div\")}",
+        "staticRenderFns": [],
+        "errors": [],
+        "tips": []
+      },
+      "runtime": null
+    },
+    {
+      "id": "multiple-root-primary-control",
+      "source": "<template><div>{{a+b}}</div><p>{{b}}</p></template>",
+      "expected": "<template><div>{{a + b}}</div><p>{{b}}</p></template>",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": false,
+      "semantic": null,
+      "events": [],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><div>{{a+b}}</div><p>{{b}}</p></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a+b}}</div><p>{{b}}</p>",
+            "start": 10,
+            "end": 40,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 40
+        },
+        "byteLength": 51
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><div>{{a + b}}</div><p>{{b}}</p></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<div>{{a + b}}</div><p>{{b}}</p>",
+            "start": 10,
+            "end": 42,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 42
+        },
+        "byteLength": 53
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a+b))])}",
+        "staticRenderFns": [],
+        "errors": [
+          "Component template should contain exactly one root element. If you are using v-if on multiple elements, use v-else-if to chain them instead."
+        ],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('div',[_v(_s(a + b))])}",
+        "staticRenderFns": [],
+        "errors": [
+          "Component template should contain exactly one root element. If you are using v-if on multiple elements, use v-else-if to chain them instead."
+        ],
+        "tips": []
+      },
+      "runtime": null
+    },
+    {
+      "id": "attribute-interpolation-primary-control",
+      "source": "<template><input  title = '{{a}}' value='&amp;'/></template>",
+      "expected": "<template><input title='{{a}}' value='&amp;' /></template>",
+      "width": 200,
+      "indent": 2,
+      "lineEnding": "Lf",
+      "runtimeCredit": false,
+      "semantic": null,
+      "events": [],
+      "calls": [],
+      "beforeFrame": {
+        "original": {
+          "source": "<template><input  title = '{{a}}' value='&amp;'/></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<input  title = '{{a}}' value='&amp;'/>",
+            "start": 10,
+            "end": 49,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 49
+        },
+        "byteLength": 60
+      },
+      "afterFrame": {
+        "original": {
+          "source": "<template><input title='{{a}}' value='&amp;' /></template>",
+          "filename": "anonymous.vue",
+          "template": {
+            "type": "template",
+            "content": "<input title='{{a}}' value='&amp;' />",
+            "start": 10,
+            "end": 47,
+            "attrs": {}
+          },
+          "script": null,
+          "scriptSetup": null,
+          "styles": [],
+          "customBlocks": [],
+          "cssVars": [],
+          "errors": [],
+          "shouldForceReload": null
+        },
+        "utf8": {
+          "start": 10,
+          "end": 47
+        },
+        "byteLength": 58
+      },
+      "beforeCompiler": {
+        "render": "with(this){return _c('input',{attrs:{\"title\":\"{{a}}\",\"value\":\"&\"}})}",
+        "staticRenderFns": [],
+        "errors": [
+          "title=\"{{a}}\": Interpolation inside attributes has been removed. Use v-bind or the colon shorthand instead. For example, instead of <div id=\"{{ val }}\">, use <div :id=\"val\">."
+        ],
+        "tips": []
+      },
+      "afterCompiler": {
+        "render": "with(this){return _c('input',{attrs:{\"title\":\"{{a}}\",\"value\":\"&\"}})}",
+        "staticRenderFns": [],
+        "errors": [
+          "title=\"{{a}}\": Interpolation inside attributes has been removed. Use v-bind or the colon shorthand instead. For example, instead of <div id=\"{{ val }}\">, use <div :id=\"val\">."
+        ],
+        "tips": []
+      },
+      "runtime": null
+    }
+  ],
+  "authoredPrintSha256": "4a32485f52077b8b31297f8a277561a9fd024766e594d4d94e1685f498af71f6"
+}

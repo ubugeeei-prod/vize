@@ -131,6 +131,7 @@ fn document_json(document: &VueDocumentVirtualTs) -> Value {
                 VizeSemanticLinkKind::VueOptionsApiBinding => "VueOptionsApiBinding",
                 VizeSemanticLinkKind::VueComponentPropNavigation => "VueComponentPropNavigation",
                 VizeSemanticLinkKind::VueComponentPropCompletion => "VueComponentPropCompletion",
+                VizeSemanticLinkKind::VueTemplatePropBinding => "VueTemplatePropBinding",
                 VizeSemanticLinkKind::VueSetupImportSpecialization => {
                     "VueSetupImportSpecialization"
                 }

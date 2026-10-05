@@ -47,6 +47,8 @@ const assertionOnlyCheckTests = {
     'module-augmentation oracle asserts exact vue-tsc agreement on generated, project, and package `declare module "vue"` globals',
   "pinia-generic-store-oracle":
     "library patch oracle asserts generic store inference and dependency refresh behavior",
+  "pnpm-workspace-route-oracle":
+    "real workspace links assert complete ordered CLI vectors, typed events, source identities and repaired virtual TS",
   "template-ref-unwrap-oracle":
     "ref-unwrap oracle builds throwaway workspaces and asserts exact vue-tsc parity plus identical diagnostics for imported and auto-imported composables",
   "typescript-go-module-resolution-determinism":
@@ -59,6 +61,8 @@ const assertionOnlyCheckTests = {
     "LSP probe asserts exact backend-liveness diagnostics and rejects heuristic hover answers",
   "vue-benchmarks-scaled-corpus-plants":
     "scaled corpus plants assert every planted diagnostic survives full-corpus re-validation",
+  "vue-router-page-route-oracle":
+    "source-bound Router oracle asserts complete ordered CLI/editor diagnostics and authored ranges against the original generated map",
   "vue-router-patch-oracle":
     "library patch oracle asserts exact package-resolution behavior across document versions",
   "vue-router-dmts-oracle":

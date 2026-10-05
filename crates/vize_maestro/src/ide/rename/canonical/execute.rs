@@ -92,9 +92,10 @@ async fn rename_strict_inner(
     let Some(bridge) = initialized_bridge(bridge) else {
         return Ok(Answer::Unavailable);
     };
-    let Some(document) = corsa_support::open_canonical_virtual_project_document_strict(ctx, bridge)
-        .await
-        .map_err(CanonicalFailure::from_project_open)?
+    let Some(document) =
+        corsa_support::open_canonical_virtual_navigation_project_document_strict(ctx, bridge)
+            .await
+            .map_err(CanonicalFailure::from_project_open)?
     else {
         return Ok(Answer::Unavailable);
     };
@@ -112,9 +113,15 @@ async fn rename_strict_inner(
         character,
     )
     .await;
+    let definition_positions = if component_props.positions.is_empty() {
+        Vec::new()
+    } else {
+        component_props.authored_definition_positions(ctx, &document)
+    };
     let component_prop_positions = component_props
         .positions
         .iter()
+        .chain(&definition_positions)
         .cloned()
         .collect::<FxHashSet<_>>();
     record(&mut trace, || CanonicalRenameStage::PrimaryQuery {
@@ -147,6 +154,7 @@ async fn rename_strict_inner(
     linked.extend(corsa_support::materialized_semantic_positions(
         &document, ctx.uri, ctx.offset,
     ));
+    linked.extend(definition_positions);
     linked.extend(component_props.positions);
     if matches!(rename_kind, Some(event_rename::RenameKind::Model))
         && let Some(response) = response.as_ref()

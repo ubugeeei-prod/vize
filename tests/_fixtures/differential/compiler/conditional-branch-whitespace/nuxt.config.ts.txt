@@ -1,0 +1,5 @@
+export default defineNuxtConfig({
+  ssr: false,
+  vue: { compilerOptions: { whitespace: "preserve" } },
+  modules: process.env.VIZE ? ["@vizejs/nuxt"] : []
+});

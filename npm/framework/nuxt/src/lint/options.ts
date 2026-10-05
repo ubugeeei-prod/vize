@@ -20,7 +20,9 @@ export interface VizeNuxtLintOptions extends NuxtLintFeatures {
 
   /**
    * Create a root `oxlint.config.mts` loading the generated config when no
-   * supported oxlint config exists in the project or an ancestor.
+   * supported oxlint or Vite config exists in the project or an ancestor.
+   * Existing Vite configs are preserved without evaluating their lint block;
+   * compose the generated Nuxt plan in that toolchain explicitly.
    * @default true
    */
   autoInit?: boolean;

@@ -8,6 +8,7 @@ use vize_croquis::macros::macro_artifact_kind;
 pub(super) fn collect_static_imports<'a>(
     statements: impl Iterator<Item = &'a Statement<'a>>,
     content: &str,
+    nuxt_page_meta: bool,
 ) -> String {
     let mut imports = String::default();
 
@@ -15,7 +16,7 @@ pub(super) fn collect_static_imports<'a>(
         if !matches!(stmt, Statement::ImportDeclaration(_)) {
             continue;
         }
-        if is_artifact_macro_only_import(stmt) {
+        if is_artifact_macro_only_import(stmt, nuxt_page_meta) {
             continue;
         }
 
@@ -26,7 +27,7 @@ pub(super) fn collect_static_imports<'a>(
             continue;
         };
 
-        let removals = artifact_macro_import_removal_spans(stmt, content);
+        let removals = artifact_macro_import_removal_spans(stmt, content, nuxt_page_meta);
         if !removals.is_empty() {
             let mut cleaned = String::default();
             let mut cursor = start;
@@ -47,6 +48,7 @@ pub(super) fn collect_static_imports<'a>(
 
 pub(super) fn collect_artifact_macro_import_bindings<'a>(
     statements: impl Iterator<Item = &'a Statement<'a>>,
+    nuxt_page_meta: bool,
 ) -> FxHashSet<String> {
     let mut bindings = FxHashSet::default();
 
@@ -63,9 +65,11 @@ pub(super) fn collect_artifact_macro_import_bindings<'a>(
             continue;
         };
         for specifier in specifiers {
-            if let Some(local) =
-                artifact_macro_import_local_name(specifier, import_decl.source.value.as_str())
-            {
+            if let Some(local) = artifact_macro_import_local_name(
+                specifier,
+                import_decl.source.value.as_str(),
+                nuxt_page_meta,
+            ) {
                 bindings.insert(local.into());
             }
         }
@@ -74,7 +78,7 @@ pub(super) fn collect_artifact_macro_import_bindings<'a>(
     bindings
 }
 
-pub(super) fn is_artifact_macro_only_import(stmt: &Statement<'_>) -> bool {
+pub(super) fn is_artifact_macro_only_import(stmt: &Statement<'_>, nuxt_page_meta: bool) -> bool {
     let Statement::ImportDeclaration(import_decl) = stmt else {
         return false;
     };
@@ -88,7 +92,12 @@ pub(super) fn is_artifact_macro_only_import(stmt: &Statement<'_>) -> bool {
     };
     !specifiers.is_empty()
         && specifiers.iter().all(|specifier| {
-            artifact_macro_import_local_name(specifier, import_decl.source.value.as_str()).is_some()
+            artifact_macro_import_local_name(
+                specifier,
+                import_decl.source.value.as_str(),
+                nuxt_page_meta,
+            )
+            .is_some()
         })
 }
 
@@ -97,6 +106,7 @@ pub(super) fn is_artifact_macro_only_import(stmt: &Statement<'_>) -> bool {
 pub(super) fn artifact_macro_import_removal_spans(
     stmt: &Statement<'_>,
     content: &str,
+    nuxt_page_meta: bool,
 ) -> Vec<(usize, usize)> {
     let Statement::ImportDeclaration(import_decl) = stmt else {
         return Vec::new();
@@ -117,8 +127,12 @@ pub(super) fn artifact_macro_import_removal_spans(
         .filter_map(|specifier| {
             matches!(specifier, ImportDeclarationSpecifier::ImportSpecifier(_)).then_some((
                 specifier.span(),
-                artifact_macro_import_local_name(specifier, import_decl.source.value.as_str())
-                    .is_some(),
+                artifact_macro_import_local_name(
+                    specifier,
+                    import_decl.source.value.as_str(),
+                    nuxt_page_meta,
+                )
+                .is_some(),
             ))
         })
         .collect();
@@ -183,6 +197,7 @@ pub(super) fn artifact_macro_import_removal_spans(
 fn artifact_macro_import_local_name<'a>(
     specifier: &'a ImportDeclarationSpecifier<'a>,
     source: &str,
+    nuxt_page_meta: bool,
 ) -> Option<&'a str> {
     let ImportDeclarationSpecifier::ImportSpecifier(spec) = specifier else {
         return None;
@@ -194,7 +209,7 @@ fn artifact_macro_import_local_name<'a>(
     let local = spec.local.name.as_str();
     if imported != local
         || macro_artifact_kind(imported).is_none()
-        || (source == "#imports" && imported != "definePageMeta")
+        || (source == "#imports" && (imported != "definePageMeta" || !nuxt_page_meta))
     {
         return None;
     }

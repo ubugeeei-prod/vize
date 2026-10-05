@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const count = ref(1);
+</script>
+
+<template>
+  <h1>Hello {{ count }}</h1>
+</template>

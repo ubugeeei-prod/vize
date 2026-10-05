@@ -161,17 +161,12 @@ fn equal_source_and_numeric_positions_never_authorize_a_foreign_decision_query()
 
 #[test]
 fn unsupported_module_semantics_are_whole_typed_refusals() -> Result<(), &'static str> {
-    let arena = Allocator::default();
-    assert!(
-        lower(
-            &arena,
+    for (source, profile, expected) in [
+        (
             "export function render(message: string) { return <div>{message}</div>; }",
             SourceType::tsx().with_module(true),
-        )
-        .is_err(),
-        "unsupported TS syntax cannot mint a lower completed owner"
-    );
-    for (source, profile, expected) in [
+            Error::Typescript,
+        ),
         (
             "export function render(message) { return <div>{message}</div>; }",
             SourceType::tsx().with_module(true),
@@ -260,7 +255,7 @@ fn unsupported_module_semantics_are_whole_typed_refusals() -> Result<(), &'stati
                 .is_some()
         );
         assert_eq!(analysis.owner().file().artifact().source(), source);
-        assert!(emit_js_module::<NoLinks>(&analysis).is_err());
+        assert_eq!(emit_js_module::<NoLinks>(&analysis).unwrap_err(), error);
     }
     Ok(())
 }

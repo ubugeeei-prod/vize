@@ -1,0 +1,152 @@
+{
+  "checker": {
+    "name": "typescript",
+    "version": "6.0.3",
+    "packageSha256": "9332e97c30d3e53ed54910b89207ed657fb444066484df6e5b6965bf130865e9",
+    "compilerSha256": "569177652966bd528c319171c7dd22860dbf72bde116cbc4f644f1d02bb12e39"
+  },
+  "options": {
+    "noEmit": true,
+    "strict": true,
+    "types": [],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "Force",
+    "skipLibCheck": true,
+    "jsx": "Preserve"
+  },
+  "primaryContract": {
+    "filename": "original-array-${id}.${extension}",
+    "ordering": "getPreEmitDiagnostics returned order",
+    "positions": "UTF16 start and length with both endpoints",
+    "related": "complete recursively retained same-file diagnostics",
+    "missingFields": "No end/related/optional diagnostic field is filled when absent; raw original field presence is retained in the independent observation receipt."
+  },
+  "cases": [
+    {
+      "id": "return-valid",
+      "binding": "value",
+      "source": "/* original 😀 */ function echo(value:number):number{return value;}const result=echo(1);result;",
+      "tsxSource": "/* original 😀 */ function echo(value:number):number{return value;}const result=echo(1);result;const view=<></>;view;",
+      "sourceSha256": "3e0c07763276e0107f8ac91eab33c7ee6a638c584e3c4cb420d576b17d165da9",
+      "tsxSourceSha256": "c901975156a25ccbb470859865b4ce356072e3f2dc420bfd2bf53e379d191269",
+      "diagnostics": []
+    },
+    {
+      "id": "return-mismatch",
+      "binding": "value",
+      "source": "/* original 😀 */ function echo(value:string):number{return value;}const result=echo(\"ok\");result;",
+      "tsxSource": "/* original 😀 */ function echo(value:string):number{return value;}const result=echo(\"ok\");result;const view=<></>;view;",
+      "sourceSha256": "27185be4c4edba5538e02405b05ce60f0ec1bdc09552d58c79b4f5f7ac9f6825",
+      "tsxSourceSha256": "1de74cc199b1edd0b31f524a96ccbc1ae7626fd66d3a531cc03e7f80cf442459",
+      "diagnostics": [
+        {
+          "code": 2322,
+          "category": 1,
+          "message": "Type 'string' is not assignable to type 'number'.",
+          "start": 53,
+          "length": 6,
+          "authored": "return"
+        }
+      ]
+    },
+    {
+      "id": "return-result-member",
+      "binding": "value",
+      "source": "/* original 😀 */ function echo(value:number):number{return value;}const result=echo(1);result.missing;",
+      "tsxSource": "/* original 😀 */ function echo(value:number):number{return value;}const result=echo(1);result.missing;const view=<></>;view;",
+      "sourceSha256": "373719d945e37da73a09846d48077e994e57fc2aa51098a1dabf15f026bf913f",
+      "tsxSourceSha256": "9b38f9a5eb742156938de1451b756fe0be1d1e470222273cd71205ebde9500a6",
+      "diagnostics": [
+        {
+          "code": 2339,
+          "category": 1,
+          "message": "Property 'missing' does not exist on type 'number'.",
+          "start": 95,
+          "length": 7,
+          "authored": "missing"
+        }
+      ]
+    },
+    {
+      "id": "return-unicode-order",
+      "binding": "値",
+      "source": "/* original 😀 */ function 表示(値:string):number{return 値;}\r\n表示(1).missing;表示(false);",
+      "tsxSource": "/* original 😀 */ function 表示(値:string):number{return 値;}\r\n表示(1).missing;表示(false);const view=<></>;view;",
+      "sourceSha256": "7a3429a790567880c46afbb2f225a6f8c6576622baed43f7d6f68188ca41afc3",
+      "tsxSourceSha256": "e95206d4e8f44084032fe2cc479bf12c35b1e12758658829967c4d5b72a71401",
+      "diagnostics": [
+        {
+          "code": 2322,
+          "category": 1,
+          "message": "Type 'string' is not assignable to type 'number'.",
+          "start": 47,
+          "length": 6,
+          "authored": "return"
+        },
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'.",
+          "start": 62,
+          "length": 1,
+          "authored": "1"
+        },
+        {
+          "code": 2339,
+          "category": 1,
+          "message": "Property 'missing' does not exist on type 'number'.",
+          "start": 65,
+          "length": 7,
+          "authored": "missing"
+        },
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'boolean' is not assignable to parameter of type 'string'.",
+          "start": 76,
+          "length": 5,
+          "authored": "false"
+        }
+      ]
+    },
+    {
+      "id": "return-missing-argument",
+      "binding": "value",
+      "source": "/* original 😀 */ function echo(value:number):number{return value;}const result=echo();result;",
+      "tsxSource": "/* original 😀 */ function echo(value:number):number{return value;}const result=echo();result;const view=<></>;view;",
+      "sourceSha256": "2918fd482763cba8e9edebe048f202234860a711f46f93ba2307b7b937f9bfbd",
+      "tsxSourceSha256": "9bd84683c9bfe80fa36d7e888c9840ee0113883d37e7f8bfca0b0a4b36cc5847",
+      "diagnostics": [
+        {
+          "code": 2554,
+          "category": 1,
+          "message": "Expected 1 arguments, but got 0.",
+          "start": 80,
+          "length": 4,
+          "authored": "echo",
+          "related": [
+            {
+              "code": 6210,
+              "category": 3,
+              "message": "An argument for 'value' was not provided.",
+              "start": 32,
+              "length": 12,
+              "authored": "value:number"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "return-seven-keywords",
+      "binding": "value",
+      "source": "/* original 😀 */ function big(value:bigint):bigint{return value;}function bool(value:boolean):boolean{return value;}function nul(value:null):null{return value;}function num(value:number):number{return value;}function text(value:string):string{return value;}function sym(value:symbol):symbol{return value;}function undef(value:undefined):undefined{return value;}big;bool;nul;num;text;sym;undef;",
+      "tsxSource": "/* original 😀 */ function big(value:bigint):bigint{return value;}function bool(value:boolean):boolean{return value;}function nul(value:null):null{return value;}function num(value:number):number{return value;}function text(value:string):string{return value;}function sym(value:symbol):symbol{return value;}function undef(value:undefined):undefined{return value;}big;bool;nul;num;text;sym;undef;const view=<></>;view;",
+      "sourceSha256": "490005b5b2ba41957649ab6e8aaa3065020c2361d92a91746df4323dfbafffe4",
+      "tsxSourceSha256": "83a5d6c1c5fde53d61aed3f2dbe840631027a78e042b4f1b453aa15d9a7323e4",
+      "diagnostics": []
+    }
+  ]
+}

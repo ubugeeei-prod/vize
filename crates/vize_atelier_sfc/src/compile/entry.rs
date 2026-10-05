@@ -37,6 +37,7 @@ pub fn compile_sfc(
         CodegenOptions::default(),
         SfcScriptOutputMode::InlineTemplate,
         SfcCompileExperimentalOptions::default(),
+        false,
         None,
     )
 }
@@ -55,6 +56,7 @@ pub fn compile_sfc_with_vue_parser_quirks(
         CodegenOptions::default(),
         SfcScriptOutputMode::InlineTemplate,
         SfcCompileExperimentalOptions::default(),
+        false,
         None,
     )
 }
@@ -74,6 +76,7 @@ pub fn compile_sfc_with_template_syntax(
         CodegenOptions::default(),
         SfcScriptOutputMode::InlineTemplate,
         SfcCompileExperimentalOptions::default(),
+        false,
         None,
     )
 }
@@ -133,6 +136,7 @@ pub fn compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental
         codegen_options,
         SfcScriptOutputMode::InlineTemplate,
         experimental_options,
+        false,
         None,
     )
 }
@@ -178,6 +182,7 @@ pub fn compile_sfc_for_adapter_with_experimental_options(
         codegen_options,
         script_output,
         experimental_options,
+        false,
         None,
     )
 }
@@ -203,7 +208,33 @@ pub fn compile_sfc_for_adapter_with_stage_capture(
         codegen_options,
         script_output,
         experimental_options,
+        false,
         Some(&mut capture),
     )?;
     Ok((result, capture))
+}
+
+/// Compile with Nuxt's page-meta extraction enabled by its integration.
+/// Ordinary SFC entry points preserve these runtime calls and imports.
+#[doc(hidden)]
+pub fn compile_sfc_for_adapter_with_nuxt_page_meta(
+    descriptor: &SfcDescriptor,
+    options: SfcCompileOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    codegen_options: CodegenOptions,
+    script_output: SfcScriptOutputMode,
+    experimental_options: SfcCompileExperimentalOptions,
+) -> Result<SfcCompileResult, SfcError> {
+    compile_sfc_inner(
+        descriptor,
+        options,
+        template_syntax,
+        custom_elements,
+        codegen_options,
+        script_output,
+        experimental_options,
+        true,
+        None,
+    )
 }

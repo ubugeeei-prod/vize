@@ -19,6 +19,7 @@ use vize_l2::{
 
 mod highlights;
 pub(super) mod linked;
+pub(super) mod module_links;
 pub(super) mod selected;
 pub(super) mod vue;
 
@@ -90,27 +91,38 @@ pub(super) fn run(
     let lines = vize_l0::line_index::LineBreaks::Lsp
         .line_starts(snapshot.source())
         .collect::<Vec<_>>();
-    let query = RetainedNavigation {
-        snapshot: &snapshot,
-        file: &file,
-        lines: &lines,
-        native: None,
-        #[cfg(test)]
-        original,
-    };
-    serve(&query, receiver, &control);
+    {
+        let module_sources = module_links::admit(&syntax, block, &file);
+        let query = RetainedNavigation {
+            snapshot: &snapshot,
+            file: &file,
+            lines: &lines,
+            native: None,
+            #[cfg(test)]
+            original,
+        };
+        serve(&query, Some(&module_sources), receiver, &control);
+    }
     // Explicit order: borrowed response work, then File, original syntax, arena.
     drop(file);
     drop(syntax);
 }
 
-fn serve(query: &RetainedNavigation<'_, '_>, receiver: Receiver<Command>, control: &Control) {
+fn serve(
+    query: &RetainedNavigation<'_, '_>,
+    module_sources: Option<&module_links::Admission<'_, '_, '_>>,
+    receiver: Receiver<Command>,
+    control: &Control,
+) {
     while !control.retired() {
         let Ok(command) = receiver.recv() else { break };
         if control.retired() {
             break;
         }
         match command {
+            Command::ModuleLinks(request) => {
+                module_links::answer(query, module_sources, request, control);
+            }
             Command::LinkedEditing(request) => request.refuse(NavigationRefusal::Language),
             Command::Highlights(request) => {
                 if !request.reply.is_canceled() {

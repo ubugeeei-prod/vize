@@ -74,7 +74,10 @@ pub(super) fn compile_styles(
                 id.push_str(scope_id);
                 id
             },
-            scoped: style.scoped || base_opts.scoped,
+            // Full-SFC callers pass the component's aggregate scoped flag.
+            // Scope belongs to each original block, so an ordinary sibling
+            // must stay global even when another block is scoped.
+            scoped: style.scoped,
             ..base_opts.clone()
         };
         match profile!(

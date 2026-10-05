@@ -27,7 +27,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | item                                      | files | sites |
 | ----------------------------------------- | ----: | ----: |
-| `BindingType`                             |    17 |   131 |
+| `BindingType`                             |    17 |   133 |
 | `BlockLocation`                           |     5 |     7 |
 | `DEFINE_EMITS`                            |     1 |     2 |
 | `DEFINE_EXPOSE`                           |     1 |     1 |
@@ -43,8 +43,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScriptParseResult`                       |     1 |     1 |
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcCustomBlock`                          |     2 |     2 |
-| `SfcDescriptor`                           |    18 |    45 |
-| `SfcError`                                |    22 |    64 |
+| `SfcDescriptor`                           |    18 |    46 |
+| `SfcError`                                |    22 |    65 |
 | `SfcParseOptions`                         |    22 |   126 |
 | `SfcScriptBlock`                          |     2 |     2 |
 | `SfcStyleBlock`                           |     5 |     8 |
@@ -74,5 +74,5 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `parse_script_with_options_and_jsx`       |     1 |     1 |
 | `parse_sfc`                               |     1 |     1 |
 | `prod_scoped_v_bind_name`                 |     1 |     1 |
-| `runtime_erased_macro_names`              |     3 |     5 |
+| `runtime_erased_macro_names`              |     1 |     1 |
 | `scoped_v_bind_name`                      |     1 |     1 |

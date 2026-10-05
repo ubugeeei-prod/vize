@@ -1,8 +1,6 @@
 //! SFC compilation implementation.
 //!
-//! This is the main entry point for compiling Vue Single File Components.
-//! Following the Vue.js core structure, template/script/style compilation
-//! is delegated to specialized modules.
+//! SFC assembly delegates template, script and style compilation to their compiler lanes.
 
 mod bindings;
 mod diagnostics;
@@ -64,13 +62,14 @@ fn compile_sfc_inner(
     codegen_options: CodegenOptions,
     script_output: SfcScriptOutputMode,
     experimental_options: SfcCompileExperimentalOptions,
+    nuxt_page_meta: bool,
     mut capture: Option<&mut StageCapture>,
 ) -> Result<SfcCompileResult, SfcError> {
     let mut errors = Vec::new();
     let mut warnings = Vec::new();
     let mut code = String::default();
     let mut css = None;
-    let macro_artifacts = extract_descriptor_macro_artifacts(descriptor);
+    let macro_artifacts = extract_descriptor_macro_artifacts(descriptor, nuxt_page_meta);
     let filename = if options.parse.filename.is_empty() {
         options.script.id.as_deref().unwrap_or("anonymous.vue")
     } else {
@@ -183,7 +182,7 @@ fn compile_sfc_inner(
     // Case 2: Script (non-setup) + Template - rewrite default and compile template
     if !has_script_setup && let Some(script) = descriptor.script.as_ref() {
         let (lazy_hydration_transform, script_content, script_runs) =
-            module_trace::prepared_script(script, codegen_options.source_map);
+            module_trace::prepared_script(script, codegen_options.source_map, nuxt_page_meta);
 
         // Check if source script is TypeScript
         let source_is_ts = is_ts_lang(script.lang.as_deref());
@@ -404,7 +403,7 @@ fn compile_sfc_inner(
     let (normal_script_content, normal_runs) =
         normal_script::extract_for_setup(descriptor, is_ts, codegen_options.source_map);
     let (lazy_hydration_transform, script_setup_content, mut setup_runs) =
-        module_trace::prepared_script(script_setup, codegen_options.source_map);
+        module_trace::prepared_script(script_setup, codegen_options.source_map, nuxt_page_meta);
 
     // Parse the script setup once. Croquis binding analysis, the macro
     // context analysis, and (unless v-model demotion rewrites the content
@@ -461,10 +460,7 @@ fn compile_sfc_inner(
     }
     profile!(
         "atelier.sfc.script_context.analyze",
-        match setup_program.as_ref() {
-            Some(program) => ctx.analyze_program(program, &script_setup_content),
-            None => ctx.analyze(),
-        }
+        ctx.analyze_for_target(setup_program.as_ref(), &script_setup_content, is_vapor)
     );
     validate_macro_scope_for_descriptor(&ctx, setup_program.as_ref(), descriptor)?;
 

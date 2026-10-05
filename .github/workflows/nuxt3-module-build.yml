@@ -8,6 +8,18 @@ on:
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.mjs
+      - tools/support/compat/nuxt/source-binding*
+      - tools/support/compat/nuxt/prefetch-manifest-*
+      - tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**
+      - tests/_fixtures/differential/compiler/nuxt-prefetch-manifest/**
+      - tests/tooling/nuxt-prefetch-manifest.test.mjs
+      - tests/tooling/nuxt-source-binding.test.mjs
+      - npm/native/**
+      - crates/**
+      - davinci/**
+      - Cargo.toml
+      - Cargo.lock
+      - .cargo/**
   push:
     branches: [main]
     paths:
@@ -16,6 +28,21 @@ on:
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.mjs
+      - tools/support/compat/nuxt/source-binding*
+      - tools/support/compat/nuxt/prefetch-manifest-*
+      - tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**
+      - tests/_fixtures/differential/compiler/nuxt-prefetch-manifest/**
+      - tests/tooling/nuxt-prefetch-manifest.test.mjs
+      - tests/tooling/nuxt-source-binding.test.mjs
+      - npm/native/**
+      - crates/**
+      - davinci/**
+      - Cargo.toml
+      - Cargo.lock
+      - .cargo/**
+  merge_group:
+    types: [checks_requested]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -42,6 +69,20 @@ jobs:
           run-install: false
       - name: Install workspace tooling
         run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/setup-moonbit
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
+        with:
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: nuxt3-source-native
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Build and capture the actual source native compiler
+        run: vp run --no-cache --filter './npm/native' build:debug
       - name: Build the candidate Vite adapter
         working-directory: npm/builder/vite
         run: vp pack
@@ -57,10 +98,17 @@ jobs:
         run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
       - name: Verify candidate build and SSR routes
         run: vp env exec node tools/support/compat/nuxt/nuxt3-module-build.mjs "$RUNNER_TEMP/nuxt3-module-proof"
+      - name: Install the unchanged pinned Nuxt 4 dependency cohort
+        working-directory: tests/_fixtures/_projects/nuxt-critical-css-build
+        run: npm ci --no-audit --no-fund
+      - name: Verify original SPA manifest and physical prefetch with the source compiler
+        run: vp env exec node tools/support/compat/nuxt/prefetch-manifest-build.mjs "$RUNNER_TEMP/nuxt-prefetch-proof"
       - name: Upload Nuxt 3 build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nuxt3-module-proof-${{ github.sha }}
-          path: ${{ runner.temp }}/nuxt3-module-proof
+          path: |
+            ${{ runner.temp }}/nuxt3-module-proof
+            ${{ runner.temp }}/nuxt-prefetch-proof
           if-no-files-found: ignore

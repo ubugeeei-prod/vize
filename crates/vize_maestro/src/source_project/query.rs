@@ -95,6 +95,13 @@ pub struct SourceQueryResult<T> {
 }
 
 impl<T> SourceQueryResult<T> {
+    /// Borrow only this query's prepared data. This grants no freshness or
+    /// publication; the original snapshot/cancellation and final guards remain.
+    #[cfg(feature = "experimental-source-navigation")]
+    pub(in crate::source_project) fn prepared(&self) -> &T {
+        &self.value
+    }
+
     #[cfg(feature = "experimental-source-navigation")]
     pub(in crate::source_project) fn snapshot(&self) -> &Arc<SourceSnapshot> {
         &self.snapshot

@@ -141,6 +141,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         mut mappings,
         mut semantic_links,
         diagnostics,
+        ..
     } = generate_vue_virtual_ts(
         path,
         content,
@@ -148,6 +149,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         &VirtualTsOptions::default(),
         VueCodegenOptions {
             check_options: VirtualTsCheckOptions::default(),
+            typed_router_root: None,
             preserve_unused_diagnostics: transform_options.preserve_unused_diagnostics,
             options_api: transform_options.options_api(),
             preserve_authored_component: true,

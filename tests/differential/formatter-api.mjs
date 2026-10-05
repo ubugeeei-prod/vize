@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { compareBytes } from "./compare.mjs";
+import {
+  currentFormatterReference,
+  currentFormatterReferenceSummary,
+  formatterReferenceComparisons,
+  validateFormatterReferencePass,
+} from "./formatter-current-reference.ts";
 import { normalizeFormatterHistoryManifest } from "./formatter-api-provenance.ts";
 import {
   loadFormatterCaptureReceipt,
@@ -125,6 +130,7 @@ export function loadFormatterApiManifest(manifestPath, repoRoot) {
       ...fixture,
       input,
       expected,
+      ...currentFormatterReference(repoRoot, fixture, input, expected),
       argv: [APIS[fixture.api], ...options.flags, ...(error ? ["--expect-error"] : [])],
       optionsArgv: [
         fixture.importSorting ? "--sort-options-json" : "--options-json",
@@ -156,6 +162,7 @@ function summary(rows) {
     legacyByteMatches: rows.filter(
       (row) =>
         row.contract === "full-output-bytes-and-fixed-point" &&
+        !row.currentReference &&
         row.legacy.state === "matched-reference",
     ).length,
     legacyInternalObservations: rows.filter(
@@ -166,6 +173,7 @@ function summary(rows) {
       (row) => row.contract === "typed-error-bytes" && row.legacy.state === "matched-reference",
     ).length,
     legacyFailures: rows.filter((row) => row.legacy.state === "failed").length,
+    ...currentFormatterReferenceSummary(rows),
     nativeUnsupported: rows.length,
     nativeHandled: 0,
     nativeEquivalent: 0,
@@ -216,12 +224,11 @@ export function validateFormatterApiReport(loaded, report, receipt) {
       assert(input.equals(previous));
       assert.equal(pass.inputSha256, sha256(input));
       assert.equal(pass.outputSha256, sha256(output));
-      assert.deepEqual(pass.referenceComparison, compareBytes(fixture.expected, output));
+      validateFormatterReferencePass(fixture, row, pass, output);
       if (row.legacy.state === "matched-reference") {
         assert.equal(pass.exitStatus, fixture.outcome === "error" ? 1 : 0);
         assert.equal(pass.signal, null);
         assert.equal(pass.processError, null);
-        assert.equal(pass.referenceComparison.state, "equal");
         assert(
           stderr.equals(expectedStderr(fixture, input, output)),
           "unexpected API observation stream",
@@ -255,6 +262,7 @@ export function runFormatterApiPack({ manifestPath, repoRoot, binaryPath, receip
       id: fixture.id,
       argv: fixture.argv,
       contract: fixture.contract,
+      ...(fixture.currentReference ? { currentReference: fixture.currentReference } : {}),
       options: {
         argv: fixture.optionsArgv,
         exitStatus: probe.status,
@@ -287,7 +295,7 @@ export function runFormatterApiPack({ manifestPath, repoRoot, binaryPath, receip
         });
         const output = result.stdout ?? Buffer.alloc(0);
         const stderr = result.stderr ?? Buffer.alloc(0);
-        const comparison = compareBytes(fixture.expected, output);
+        const comparisons = formatterReferenceComparisons(fixture, output);
         row.legacy.passes.push({
           pass,
           inputBase64: input.toString("base64"),
@@ -298,12 +306,16 @@ export function runFormatterApiPack({ manifestPath, repoRoot, binaryPath, receip
           exitStatus: result.status,
           signal: result.signal,
           processError: result.error?.message ?? null,
-          referenceComparison: comparison,
+          ...comparisons,
         });
         assert.equal(result.error, undefined, result.error?.message);
         assert.equal(result.signal, null);
         assert.equal(result.status, fixture.outcome === "error" ? 1 : 0, stderr.toString());
-        assert.equal(comparison.state, "equal", "complete output baseline drift");
+        assert.equal(
+          (comparisons.currentReferenceComparison ?? comparisons.referenceComparison).state,
+          "equal",
+          "complete output baseline drift",
+        );
         assert(
           stderr.equals(expectedStderr(fixture, input, output)),
           "unexpected API observation stream",

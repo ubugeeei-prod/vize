@@ -33,6 +33,16 @@ runs:
         vp node --test tests/tooling/native-sfc-scoped-class-list-reference.test.ts
         vp node --test tests/tooling/native-sfc-scoped-empty-reference.test.ts
         vp node --test tests/tooling/native-sfc-scoped-ssr-reference.test.ts
+    - name: Verify original fragment CSS variables with exact production Vue
+      shell: bash
+      env:
+        NODE_ENV: production
+        VIZE_FRAGMENT_CSS_CAPTURE: ${{ runner.temp }}/fragment-css-modules.json
+        VIZE_FRAGMENT_CSS_RUNTIME_CAPTURE: ${{ runner.temp }}/fragment-css-runtime.json
+      run: |
+        cargo test --locked --profile ci -p vize_atelier_sfc --test ssr_fragment_css_vars -- --nocapture
+        cargo test --locked --profile ci -p vize_atelier_ssr --features legacy-differential --test ssr_fragment_css_vars -- --nocapture
+        vp node --test tests/tooling/ssr-fragment-css-vars.test.mjs
     - name: Upload current-source scoped CSS modules and runtime captures
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -48,5 +58,7 @@ runs:
           ${{ runner.temp }}/native-scoped-ssr-capture.json
           ${{ runner.temp }}/native-scoped-ssr-runtime.json
           ${{ runner.temp }}/native-scoped-css-source.txt
+          ${{ runner.temp }}/fragment-css-modules.json
+          ${{ runner.temp }}/fragment-css-runtime.json
         if-no-files-found: error
         retention-days: 7

@@ -20,10 +20,19 @@ const OWNERS: Record<
   string,
   { originalSha256: string; actualMainSha256: string; functions: Record<string, string> }
 > = {
+  // #7826 shares the existing lexer helpers; the original escape law is unchanged.
+  "crates/vize_glyph/src/style/comment_scan.rs": {
+    originalSha256: "1b1dc3ae107887fb740a4139778a38852be910e4299f530269a337ddaf832cb6",
+    actualMainSha256: "ada9e0e8ec0f25f7a3e20cb0e50200054932aac32bb85ced7906f63f19f79102",
+    functions: {
+      css_escapes_do_not_affect_comment_depth:
+        "74fd329fbcaa5a624c497e676c21072aff763aaa477339cc87c2708bd61e8ac0",
+    },
+  },
   // #7704 changes production line endings; complete original law bodies are retained.
   "crates/vize_glyph/src/style.rs": {
     originalSha256: "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61",
-    actualMainSha256: "3e78de603e74c971baa4e1619d010d45f5aae1424909495122a1bfd5f776ea54",
+    actualMainSha256: "3867c75b9dfab9a133f5c0605352df3ffd857ac117d9b6bf554f0d4d1b5fbb68",
     functions: {
       test_style_numbers_match_standalone_css_leading_zeroes:
         "768c1b2fee61409a7034b99c2a7a277d7ac19699302a94b36d58dd54912937cb",
@@ -88,7 +97,7 @@ const OWNERS: Record<
   },
   "crates/vize_glyph/src/script.rs": {
     originalSha256: "a205174795bb6d993e84b0cc29dfc5d10c36602dfb6216f1db2278a982b2e0ab",
-    actualMainSha256: "37c77bddfc1984fee12fc856a9db63c51a88e9e23c50df5670399f53fb894a7f",
+    actualMainSha256: "aa042ff4ecf046b11ffb80dea3569e36ff940993cb81b6caf52d42424e0eb703",
     functions: {
       test_format_tsx_component_script:
         "d108e897e74d4289b8fdf44555eed4b7ad551aff2ac7673b5a80ca8601220d9b",

@@ -97,6 +97,14 @@ fn bound_key(name: &str, modifiers: &[&str]) -> String {
 impl Emitter<'_, '_, '_, '_, '_, '_> {
     /// The component's prop bag, or `null` when it has no prop segments.
     pub(super) fn component_props(&mut self, attached: &Attached<'_, '_>) -> Result<String> {
+        self.component_props_with_css_vars(attached, false)
+    }
+
+    pub(super) fn component_props_with_css_vars(
+        &mut self,
+        attached: &Attached<'_, '_>,
+        css_vars: bool,
+    ) -> Result<String> {
         let mut segments = std::vec::Vec::new();
         let mut entries = std::vec::Vec::new();
         for segment in attached {
@@ -123,6 +131,9 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             }
         }
         flush(&mut segments, &mut entries);
+        if css_vars {
+            segments.push(Segment::Spread("_cssVars".into()));
+        }
         let rendered: std::vec::Vec<String> = segments
             .into_iter()
             .map(|segment| self.segment_expression(segment))

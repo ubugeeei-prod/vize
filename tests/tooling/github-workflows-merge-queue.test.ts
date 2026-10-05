@@ -43,6 +43,7 @@ const lanes = [
   "pr-playground-test",
 ];
 const tailCommands = [
+  "cargo test -p vize_l1 --features legacy-differential --test surface_corpus -- --nocapture",
   "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_lowering_corpus -- --nocapture",
   "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_dom_corpus -- --nocapture",
   "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_remarks_corpus -- --nocapture",
@@ -162,8 +163,9 @@ test("the shared bash recipe stops at a failed feature command (simulated cargo)
       { mode: 0o755 },
     );
     for (const [failure, count, status] of [
-      ["davinci_remarks_corpus", 3, 42],
-      ["no-such-command", 11, 0],
+      ["surface_corpus", 1, 42],
+      ["davinci_remarks_corpus", 4, 42],
+      ["no-such-command", 12, 0],
     ] as const) {
       writeFileSync(log, "");
       writeFileSync(argvLog, "");
@@ -195,8 +197,8 @@ test("the shared bash recipe stops at a failed feature command (simulated cargo)
       assert.deepEqual(actualArguments, expectedArguments);
       assert.ok(lines.every((line) => line.includes("|1|")));
       if (status === 0) {
-        assert.ok(lines[5].endsWith(`|${root}`));
-        assert.ok(lines[10].endsWith(`|${root}`));
+        assert.ok(lines[6].endsWith(`|${root}`));
+        assert.ok(lines[11].endsWith(`|${root}`));
       }
     }
   } finally {

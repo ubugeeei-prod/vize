@@ -19,14 +19,14 @@ use super::super::define_props_destructure::process_props_destructure;
 use super::ScriptCompileContext;
 use super::helpers::{
     extract_args_from_call, extract_macro_from_expr, extract_type_args_from_call,
-    infer_binding_type, is_call_of, is_import_type_only, macro_binding_name,
+    infer_binding_type, is_call_of, is_import_type_only, macro_binding_name, named_import_binding,
     register_binding_pattern, span_text,
 };
 use crate::script::{build_interface_type_source, register_enum};
 
 impl ScriptCompileContext {
     /// Parse the source with OXC and extract information
-    pub(super) fn parse_with_oxc(&mut self, source: &str) {
+    pub(super) fn parse_with_oxc(&mut self, source: &str, vapor: bool) {
         let allocator = Allocator::default();
         let source_type = SourceType::from_path("script.ts").unwrap_or_default();
 
@@ -39,15 +39,10 @@ impl ScriptCompileContext {
             return;
         }
 
-        self.process_program(&ret.program, source);
+        self.process_program(&ret.program, source, vapor);
     }
 
-    /// Extract information from an already-parsed program.
-    ///
-    /// Parse-free core of [`Self::parse_with_oxc`] for callers that already
-    /// hold an oxc `Program` for `source` (the SFC compiler's parse-once
-    /// pipeline). `source` must be the exact text the program was parsed from.
-    pub(super) fn process_program(&mut self, program: &Program<'_>, source: &str) {
+    pub(super) fn process_program(&mut self, program: &Program<'_>, source: &str, vapor: bool) {
         // First pass: collect all TypeScript interfaces and type aliases
         // This ensures they're available when resolving type references in macros
         for stmt in program.body.iter() {
@@ -101,7 +96,7 @@ impl ScriptCompileContext {
         // Second pass: process all statements (macros, bindings, etc.)
         profile!("atelier.script.context.process_statements", {
             for stmt in program.body.iter() {
-                self.process_statement(stmt, source);
+                self.process_statement(stmt, source, vapor);
             }
         });
 
@@ -176,7 +171,7 @@ impl ScriptCompileContext {
     }
 
     /// Process a statement
-    fn process_statement(&mut self, stmt: &Statement<'_>, source: &str) {
+    fn process_statement(&mut self, stmt: &Statement<'_>, source: &str, vapor: bool) {
         match stmt {
             Statement::ImportDeclaration(import_decl) => {
                 // Skip type-only import declarations: import type { ... } from '...'
@@ -193,10 +188,13 @@ impl ScriptCompileContext {
                                 // Skip type-only imports: import { type Foo } from 'bar'
                                 if !spec.import_kind.is_type() {
                                     let name = spec.local.name.to_compact_string();
-                                    // Imports are treated as setup-maybe-ref since we don't know their type
-                                    self.bindings
-                                        .bindings
-                                        .insert(name, BindingType::SetupMaybeRef);
+                                    self.bindings.bindings.insert(
+                                        name,
+                                        named_import_binding(
+                                            import_decl.source.value.as_str(),
+                                            vapor,
+                                        ),
+                                    );
                                 }
                             }
                             oxc_ast::ast::ImportDeclarationSpecifier::ImportDefaultSpecifier(

@@ -1,0 +1,21 @@
+<script setup lang="ts">
+const props = defineProps<{ modelValue: string }>();
+const emit = defineEmits<{ "update:modelValue": [value: string] }>();
+
+// The last value this component emitted, used to skip duplicate emits.
+let lastEmitted = props.modelValue;
+
+function commit(nextValue: string): void {
+  if (nextValue === lastEmitted) return;
+  lastEmitted = nextValue;
+  emit("update:modelValue", nextValue);
+}
+</script>
+
+<template>
+  <input
+    aria-label="Name"
+    :value="modelValue"
+    @change="(event) => commit((event.target as HTMLInputElement).value)"
+  />
+</template>

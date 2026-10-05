@@ -5,6 +5,10 @@ import { setupLintInspector, setupNuxtLintConfigGeneration } from "./lint/genera
 import { appendMuseaArtComponentIgnore } from "./musea-components";
 import { registerNuxtMuseaStaticPublicAsset } from "./musea-static";
 import { patchNuxtClientManifestCloseBundlePlugin } from "./client-manifest-bridge";
+import {
+  restoreNuxtClientManifestSourceIds,
+  type NuxtClientManifestEntry,
+} from "./client-manifest";
 import { patchNuxtHostVuePluginForCompilerExcludes } from "./host-vue-bridge";
 import { patchNuxtKeyedFunctionsPlugin, type ViteTransformResult } from "./keyed-functions-bridge";
 import "./schema";
@@ -20,6 +24,7 @@ import {
   unsupportedNuxtVueCompilerOptions,
 } from "./options";
 import { createNuxtModuleResolver } from "./resolver";
+import { mergePlainRecords } from "./module-records";
 import { setupVizeLibraries } from "./libraries";
 import {
   buildNuxtDevAssetBase,
@@ -94,31 +99,6 @@ async function addNuxtServerPlugin(plugin: string): Promise<void> {
 
 async function addNuxtVitePlugin(plugin: unknown): Promise<void> {
   (await loadNuxtKit()).addVitePlugin(plugin as never);
-}
-
-function isPlainRecord(value: unknown): value is Record<string, unknown> {
-  return value != null && typeof value === "object" && !Array.isArray(value);
-}
-
-function mergePlainRecords(
-  ...values: Array<Record<string, unknown> | undefined>
-): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-
-  for (const value of values) {
-    if (!value) {
-      continue;
-    }
-    for (const [key, nextValue] of Object.entries(value)) {
-      const currentValue = result[key];
-      result[key] =
-        isPlainRecord(currentValue) && isPlainRecord(nextValue)
-          ? mergePlainRecords(currentValue, nextValue)
-          : nextValue;
-    }
-  }
-
-  return result;
 }
 
 function resolveModuleOptions(
@@ -302,13 +282,18 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
     nuxt.options.vite ||= {};
     nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
     nuxt.options.vite.plugins.push(
-      vize({ ...compilerOptions, ssrModuleIdRoot: nuxt.options.srcDir }),
+      vize({ ...compilerOptions, nuxtPageMeta: true, ssrModuleIdRoot: nuxt.options.srcDir }),
     );
   }
 
   let isNuxtBuild = false;
   let isViteBuild = false;
   if (usesVizeCompiler) {
+    // User modules register before Nuxt's core pages/components modules. Their
+    // build:manifest hooks must see original source IDs before precomputation.
+    nuxt.hook("build:manifest", (manifest: Record<string, NuxtClientManifestEntry>) => {
+      if (nuxt.options.dev === false) restoreNuxtClientManifestSourceIds(manifest);
+    });
     nuxt.hook("build:before", () => {
       if (nuxt.options.dev !== false) {
         return;

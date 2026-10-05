@@ -12,6 +12,7 @@ pub(super) fn run(query: &TemplateNames<'_, '_>, receiver: Receiver<Command>, co
             break;
         }
         match command {
+            Command::ModuleLinks(request) => request.refuse(NavigationRefusal::Language),
             Command::LinkedEditing(Request::Ranges(position, reply)) => {
                 if !reply.is_canceled() {
                     #[cfg(test)]

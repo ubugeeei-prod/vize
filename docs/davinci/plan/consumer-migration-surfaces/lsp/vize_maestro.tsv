@@ -83,9 +83,11 @@ lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/tests.rs	8	old_ast	old A
 lsp	LSP	source	crates/vize_maestro/src/ide/context.rs	165	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/context.rs	165	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/context.rs	165	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support.rs	62	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support.rs	63	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical.rs	3	l0	L0	stage	vize_l0	preferred	5
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/canonical/catalog/tests.rs	26	carton	Carton host/compatibility	old	vize_carton	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/component_project.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/component_project.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/mapping.rs	4	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/open.rs	137	l0	L0	stage	vize_l0	preferred	3
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/project.rs	5	l0	L0	stage	vize_l0	preferred	3
@@ -152,6 +154,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/document_link/imports.rs	3	raw_oxc	ra
 lsp	LSP	source	crates/vize_maestro/src/ide/document_link/imports.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/i18n.rs	12	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/ecosystem/router_extension_tests.rs	2	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/ecosystem/router_param_parser_tests.rs	18	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/router_project.rs	12	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/router_project.rs	12	croquis	Croquis analysis	old	vize_croquis_cf	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/router.rs	8	l0	L0	stage	vize_l0	preferred	1
@@ -318,6 +321,9 @@ lsp	LSP	test/dev	crates/vize_maestro/src/server/module_target/tests/transport/io
 lsp	LSP	source	crates/vize_maestro/src/server/module_target/unix.rs	77	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/native_navigation/tests/capacity.rs	7	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/native_navigation/tests/linked/configuration.rs	7	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/native_navigation/tests/module_links/jsx.rs	81	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/native_navigation/tests/module_links/refusals.rs	96	l0	L0	stage	vize_l0	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/server/native_navigation/tests/module_links/transport/io.rs	67	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/state.rs	49	l0	L0	stage	vize_l0	preferred	7
 lsp	LSP	source	crates/vize_maestro/src/server/state/batch_cache.rs	83	carton	Carton host/compatibility	old	vize_carton	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/state/config_tests.rs	1	l0	L0	stage	vize_l0	preferred	6
@@ -362,20 +368,22 @@ lsp	LSP	test/dev	crates/vize_maestro/src/source_project/edit_tests.rs	2	l0	L0	st
 lsp	LSP	test/dev	crates/vize_maestro/src/source_project/edit_tests.rs	2	l1	L1	stage	vize_l1	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/source_project/edit.rs	3	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/edit.rs	3	l1	L1	stage	vize_l1	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation.rs	23	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation.rs	23	l1	L1	stage	vize_l1	preferred	3
-lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation.rs	23	l2	L2	stage	vize_l2	preferred	2
-lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation.rs	23	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	3
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation.rs	24	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation.rs	24	l1	L1	stage	vize_l1	preferred	3
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation.rs	24	l2	L2	stage	vize_l2	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation.rs	24	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	3
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/coordinates.rs	4	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/highlights.rs	5	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/highlights.rs	5	l2	L2	stage	vize_l2	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/module_links/tests/publication.rs	93	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/module_links/tests/publication.rs	93	l2	L2	stage	vize_l2	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/profile.rs	2	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/profile.rs	2	l1	L1	stage	vize_l1	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained.rs	10	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained.rs	10	l1	L1	stage	vize_l1	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained.rs	10	l2	L2	stage	vize_l2	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained.rs	90	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained.rs	90	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained.rs	91	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained.rs	91	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/linked.rs	12	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/linked.rs	12	l1	L1	stage	vize_l1	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/linked.rs	65	l0	L0	stage	vize_l0	preferred	1
@@ -383,11 +391,22 @@ lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/linked
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/linked/query.rs	4	l1	L1	stage	vize_l1	preferred	2
 lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/linked/query/tests.rs	6	l0	L0	stage	vize_l0	preferred	3
 lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/linked/query/tests.rs	6	l1	L1	stage	vize_l1	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/module_links.rs	6	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/module_links.rs	6	l1	L1	stage	vize_l1	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/module_links.rs	6	l2	L2	stage	vize_l2	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/module_links/tests.rs	19	l0	L0	stage	vize_l0	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/module_links/tests.rs	19	l1	L1	stage	vize_l1	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/module_links/tests.rs	19	l2	L2	stage	vize_l2	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/module_links/tests/capacity.rs	14	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/module_links/tests/ownership.rs	24	l0	L0	stage	vize_l0	preferred	3
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/module_links/tests/ownership.rs	24	l2	L2	stage	vize_l2	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/module_links/tests/refusals.rs	8	l0	L0	stage	vize_l0	preferred	5
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/module_links/tests/sources.rs	20	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/selected.rs	9	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/selected.rs	9	l2	L2	stage	vize_l2	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/selected.rs	9	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/selected.rs	55	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/selected/serve.rs	57	l2	L2	stage	vize_l2	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/selected/serve.rs	58	l2	L2	stage	vize_l2	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/vue.rs	8	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_project/navigation/retained/vue.rs	8	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/retained/vue.rs	50	l0	L0	stage	vize_l0	preferred	1
@@ -412,7 +431,7 @@ lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/tests/retenti
 lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/tests/selected/capacity.rs	12	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/tests/selected/lifecycle.rs	52	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/tests/vue/lifecycle.rs	59	l0	L0	stage	vize_l0	preferred	2
-lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/worker.rs	66	l0	L0	stage	vize_l0	preferred	3
+lsp	LSP	test/dev	crates/vize_maestro/src/source_project/navigation/worker.rs	68	l0	L0	stage	vize_l0	preferred	3
 lsp	LSP	test/dev	crates/vize_maestro/src/source_project/program_tests.rs	9	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/source_project/program_tests.rs	9	l1	L1	stage	vize_l1	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/source_sfc_folding.rs	4	l0	L0	stage	vize_l0	preferred	1

@@ -16,6 +16,8 @@ use tower_lsp::lsp_types::GotoDefinitionResponse;
 use vize_canon::CorsaBridge;
 
 mod import_target;
+#[cfg(feature = "native")]
+mod template_props;
 
 use super::{IdeContext, component_event, module_specifier, script};
 #[cfg(feature = "native")]
@@ -299,6 +301,7 @@ impl super::DefinitionService {
             return None;
         }
 
+        let locations = template_props::declarations(bridge, &doc, locations).await?;
         let locations = corsa_support::map_canonical_corsa_locations(ctx, &doc, locations);
         Self::convert_locations(locations)
     }

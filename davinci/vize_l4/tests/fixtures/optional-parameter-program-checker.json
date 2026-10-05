@@ -1,0 +1,144 @@
+{
+  "checker": {
+    "name": "typescript",
+    "version": "6.0.3",
+    "packageSha256": "9332e97c30d3e53ed54910b89207ed657fb444066484df6e5b6965bf130865e9",
+    "compilerSha256": "569177652966bd528c319171c7dd22860dbf72bde116cbc4f644f1d02bb12e39"
+  },
+  "options": {
+    "noEmit": true,
+    "strict": true,
+    "types": [],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "Force",
+    "skipLibCheck": true,
+    "jsx": "Preserve"
+  },
+  "primaryContract": {
+    "filename": "original-array-${id}.${extension}",
+    "ordering": "getPreEmitDiagnostics returned order",
+    "positions": "UTF16 start and length with both endpoints",
+    "related": "complete recursively retained same-file diagnostics",
+    "missingFields": "No end/related/optional diagnostic field is filled when absent; raw original field presence is retained in the independent observation receipt."
+  },
+  "cases": [
+    {
+      "id": "optional-valid",
+      "binding": "value",
+      "source": "/* original 😀 */ function echo(value?:number){return value;}echo();echo(1);",
+      "tsxSource": "/* original 😀 */ function echo(value?:number){return value;}echo();echo(1);const view=<></>;view;",
+      "sourceSha256": "862fc0241b3f9f89d2b5eeb0201f8baf960f64d3ed96a0be56719550fb67329f",
+      "tsxSourceSha256": "d8dcde0320bc7532f898118010976c40db5760dd1862a8ae4ba9cf9fe2bf6963",
+      "diagnostics": []
+    },
+    {
+      "id": "optional-seven-keywords",
+      "binding": "g",
+      "source": "/* original 😀 */ function first(a?:bigint){return a;}function second(b?:boolean){return b;}function third(c?:null){return c;}function fourth(d?:number){return d;}function fifth(e?:string){return e;}function sixth(f?:symbol){return f;}function last(g?:undefined){return g;}first();second();third();fourth();fifth();sixth();last();",
+      "tsxSource": "/* original 😀 */ function first(a?:bigint){return a;}function second(b?:boolean){return b;}function third(c?:null){return c;}function fourth(d?:number){return d;}function fifth(e?:string){return e;}function sixth(f?:symbol){return f;}function last(g?:undefined){return g;}first();second();third();fourth();fifth();sixth();last();const view=<></>;view;",
+      "sourceSha256": "7d91ec872ad6eea1ad266b4786a6a226018fbf88ffcd6743f5808ce55571ee57",
+      "tsxSourceSha256": "101b34d8654f1e4a146d97b1840712cb01c2c616d1447a199e49c9b493003e2a",
+      "diagnostics": []
+    },
+    {
+      "id": "optional-argument",
+      "binding": "value",
+      "source": "/* original 😀 */ function echo(value?:number){return value;}echo(\"bad\");",
+      "tsxSource": "/* original 😀 */ function echo(value?:number){return value;}echo(\"bad\");const view=<></>;view;",
+      "sourceSha256": "e8f6e70e49d251b166a43b0b79fa885957a3034902d753a6e7646edbb5e4a752",
+      "tsxSourceSha256": "d08f74726f781203d3a24d9a125129bec4d09079138915cdbd194943446f7114",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'string' is not assignable to parameter of type 'number'.",
+          "start": 66,
+          "length": 5,
+          "authored": "\"bad\""
+        }
+      ]
+    },
+    {
+      "id": "optional-unicode-nullable",
+      "binding": "値",
+      "source": "/* original 😀 */ function 表示(値?:string){return 値.length;}\r\n表示(\"é\");表示(false);",
+      "tsxSource": "/* original 😀 */ function 表示(値?:string){return 値.length;}\r\n表示(\"é\");表示(false);const view=<></>;view;",
+      "sourceSha256": "bcfc8138f9f04d63d375f7a94dd6b27f510c50d4800f55e3cf0e83965f7396ad",
+      "tsxSourceSha256": "07fad189e723526e8111b805fe29c680994b536721d673d5dfeaf6b111876c56",
+      "diagnostics": [
+        {
+          "code": 18048,
+          "category": 1,
+          "message": "'値' is possibly 'undefined'.",
+          "start": 48,
+          "length": 1,
+          "authored": "値"
+        },
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'boolean' is not assignable to parameter of type 'string'.",
+          "start": 71,
+          "length": 5,
+          "authored": "false"
+        }
+      ]
+    },
+    {
+      "id": "optional-arity",
+      "binding": "value",
+      "source": "/* original 😀 */ function labelValue(label?:string){return label;}function echo(value:number,label?:string){labelValue(label);return value;}echo();echo(1,\"ok\",true);",
+      "tsxSource": "/* original 😀 */ function labelValue(label?:string){return label;}function echo(value:number,label?:string){labelValue(label);return value;}echo();echo(1,\"ok\",true);const view=<></>;view;",
+      "sourceSha256": "2e5fe1f6e98bd0d043c4575e2c67338f114b0679505aacfc4930bb7479d38fb5",
+      "tsxSourceSha256": "7decea3ec5c78d490dc160d07e25229ca1bcd3d0ddc9fc53009c31777e244474",
+      "diagnostics": [
+        {
+          "code": 2554,
+          "category": 1,
+          "message": "Expected 1-2 arguments, but got 0.",
+          "start": 141,
+          "length": 4,
+          "authored": "echo",
+          "related": [
+            {
+              "code": 6210,
+              "category": 3,
+              "message": "An argument for 'value' was not provided.",
+              "start": 81,
+              "length": 12,
+              "authored": "value:number"
+            }
+          ]
+        },
+        {
+          "code": 2554,
+          "category": 1,
+          "message": "Expected 1-2 arguments, but got 3.",
+          "start": 160,
+          "length": 4,
+          "authored": "true"
+        }
+      ]
+    },
+    {
+      "id": "optional-return",
+      "binding": "value",
+      "source": "/* original 😀 */ function echo(value?:number):number{return value;}echo();",
+      "tsxSource": "/* original 😀 */ function echo(value?:number):number{return value;}echo();const view=<></>;view;",
+      "sourceSha256": "68f3d0bc88e11b244e6972b737fc4290ef9949f8b5332889b9b56b5fd3f914de",
+      "tsxSourceSha256": "dcd6a163b555d72c19e88baa6f20b1732e5879bb785061580a1648d28a6afe47",
+      "diagnostics": [
+        {
+          "code": 2322,
+          "category": 1,
+          "message": "Type 'number | undefined' is not assignable to type 'number'.\n  Type 'undefined' is not assignable to type 'number'.",
+          "start": 54,
+          "length": 6,
+          "authored": "return"
+        }
+      ]
+    }
+  ]
+}

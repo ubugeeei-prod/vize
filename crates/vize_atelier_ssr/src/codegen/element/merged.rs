@@ -106,8 +106,9 @@ impl<'a> SsrCodegenContext<'a> {
         &mut self,
         el: &ElementNode<'a>,
         inherit_attrs: bool,
+        css_vars: bool,
     ) -> Option<MergedAttrs> {
-        let mut args = self.merged_props_args(el, inherit_attrs);
+        let mut args = self.merged_props_args(el, inherit_attrs, css_vars);
         let has_directives = custom_directives(el).next().is_some();
         for dir in custom_directives(el) {
             let props = self.directive_props(dir);
@@ -165,6 +166,7 @@ impl<'a> SsrCodegenContext<'a> {
         &mut self,
         el: &ElementNode,
         inherit_attrs: bool,
+        css_vars: bool,
     ) -> std::vec::Vec<EmitDocument> {
         let mut args = std::vec::Vec::new();
         let mut entries: std::vec::Vec<VNodePropEntry> = std::vec::Vec::new();
@@ -236,6 +238,8 @@ impl<'a> SsrCodegenContext<'a> {
         self.flush_entries(&mut entries, &mut args);
         if inherit_attrs {
             args.push(EmitDocument::plain("_attrs"));
+        } else if css_vars {
+            args.push(EmitDocument::plain("_cssVars"));
         }
         if let Some(exp) = show {
             let style = cstr!("(({exp}) ? null : {{ display: \"none\" }})");

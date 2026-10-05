@@ -39,6 +39,14 @@ pub(super) fn collect_pieces(
     }
     for op in children.ops.iter() {
         match op {
+            Op::Comment(_)
+                if facts
+                    .groups
+                    .iter()
+                    .any(|group| matches!(group.carrier, SlotCarrier::Template(_))) =>
+            {
+                let _id = cx.walk.mint();
+            }
             Op::Element(element) if is_slot_template(element) => {
                 let id = cx.walk.mint();
                 cx.walk.skip(element.bindings.len());

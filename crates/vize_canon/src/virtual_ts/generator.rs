@@ -59,13 +59,12 @@ use self::options_api_support::find_options_api_props;
 use self::script_blocks::ScriptBlockScopes;
 use self::setup_helpers::{SetupHelperComponentContext, emit_setup_helpers};
 use self::setup_imports::SetupImportPlan;
-use self::setup_props::{generate_setup_props, prop_source};
+use self::setup_props::{emit_template_context, generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
 use self::spans::{DEFINE_COMPONENT_REF, rewrite_export_default_for_module_scope, template_usage};
 use self::type_only_imports::syntactic_type_only_imported_names;
 use self::unresolved_components::emit_unresolved_components;
 use super::{
-    helpers::generate_template_context,
     macro_type_mappings::MacroTypeMappings,
     scope::{ScopeGenerationOptions, generate_scope_closures},
     template_binding_access::TemplateBindingAccess,
@@ -639,25 +638,23 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
             // Vue template context (available in template expressions)
             setup_imports.emit_template_slots(&mut ts, &mut mappings, source_offset);
-            let template_context = profile!(
-                "canon.virtual_ts.generate_template_context",
-                generate_template_context(
-                    options,
-                    dialect,
-                    legacy_vue2,
-                    setup_imports.has_own_slots(),
-                    (
-                        setup_imports.attrs_type(),
-                        template_record.template_refs_type()
-                    ),
-                )
+            emit_template_context(
+                &mut ts,
+                options,
+                dialect,
+                legacy_vue2,
+                &setup_imports,
+                &template_record,
             );
-            ts.push_str(&template_context);
-            ts.push('\n');
             let maps = &mut mappings;
             let src = prop_source(maps, summary, script_content, &script_source_offset);
             profile!("canon.virtual_ts.generate_props_variables", {
-                setup_props_plan.generate_props_variables(&mut ts, src, check_props && !legacy_vue2)
+                setup_props_plan.generate_props_variables(
+                    &mut ts,
+                    src,
+                    check_props && !legacy_vue2,
+                    &mut semantic_links,
+                )
             });
             if options_api {
                 profile!(

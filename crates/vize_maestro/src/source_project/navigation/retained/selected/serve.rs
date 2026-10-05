@@ -14,6 +14,7 @@ pub(super) fn run(
             break;
         }
         match command {
+            Command::ModuleLinks(request) => request.refuse(NavigationRefusal::Language),
             Command::LinkedEditing(request) => request.refuse(NavigationRefusal::Language),
             Command::Highlights(request) => {
                 if !request.reply.is_canceled() {

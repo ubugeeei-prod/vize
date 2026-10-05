@@ -92,6 +92,14 @@ fn merge_imported_runtime_props_into_croquis(
         return;
     }
 
+    croquis.macros.set_resolved_prop_defaults(
+        props
+            .iter()
+            .filter(|prop| prop.default_value.is_some())
+            .map(|prop| prop.name.clone())
+            .collect(),
+    );
+
     let mut known: FxHashSet<_> = croquis
         .macros
         .props()

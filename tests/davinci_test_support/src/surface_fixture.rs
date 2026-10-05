@@ -1,6 +1,6 @@
 //! The committed TS-19 fixture battery, shared by the plain suite
 //! (`surface_fidelity.rs`) and the corpus-runnable lane
-//! (`davinci_surface_corpus.rs`).
+//! (`surface_corpus.rs`).
 //!
 //! Every fixture pins its typed-hole census exactly — the structural
 //! half of TS-19, so a recovery-path change moves a pinned number

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "nuxt-root",
+    "templateFile": "nuxt-root.template.txt",
+    "states": [
+      { "data": { "abortRender": true }, "html": "<div></div>" },
+      { "data": { "error": "reported" }, "html": "<section data-branch=\"error\">error</section>" },
+      {
+        "data": { "islandContext": {} },
+        "html": "<section data-branch=\"island\">island</section>"
+      },
+      {
+        "data": { "singleRenderer": true },
+        "html": "<section data-branch=\"single\">single</section>"
+      },
+      { "data": {}, "html": "<div id=\"layout\"><h1>Hello 1</h1></div>" }
+    ]
+  },
+  {
+    "name": "minimal-suspense",
+    "templateFile": "minimal-suspense.template.txt",
+    "states": [
+      { "data": { "a": true }, "html": "<div></div>" },
+      { "data": { "b": true }, "html": "<b>B</b>" },
+      { "data": {}, "html": "<u>C</u>" }
+    ]
+  },
+  {
+    "name": "inline",
+    "templateFile": "inline.template.txt",
+    "states": [
+      { "data": { "a": true }, "html": "<p>x<i>1</i>y</p>" },
+      { "data": { "b": true }, "html": "<p>x<b>2</b>y</p>" },
+      { "data": {}, "html": "<p>x<u>3</u>y</p>" }
+    ]
+  },
+  {
+    "name": "surrounding-whitespace",
+    "template": "<p>x <i v-if=\"a\">1</i> <b v-else-if=\"b\">2</b> <u v-else>3</u> y</p>",
+    "states": [
+      { "data": { "a": true }, "html": "<p>x <i>1</i> y</p>" },
+      { "data": { "b": true }, "html": "<p>x <b>2</b> y</p>" },
+      { "data": {}, "html": "<p>x <u>3</u> y</p>" }
+    ]
+  },
+  {
+    "name": "multiple-chains-and-later-sibling",
+    "template": "<p><i v-if=\"a\">1</i> <b v-else>2</b> / <u v-if=\"b\">3</u> <s v-else>4</s> <em>{{ end }}</em></p>",
+    "states": [
+      {
+        "data": { "a": true, "b": true, "end": "end" },
+        "html": "<p><i>1</i> / <u>3</u> <em>end</em></p>"
+      },
+      {
+        "data": { "a": false, "b": false, "end": "end" },
+        "html": "<p><b>2</b> / <s>4</s> <em>end</em></p>"
+      }
+    ]
+  },
+  {
+    "name": "nested-chain-and-outer-chain",
+    "template": "<div><p v-if=\"a\"><i v-if=\"b\">1</i> <b v-else>2</b></p> <p v-else><u v-if=\"b\">3</u> <s v-else>4</s></p><em>{{ end }}</em></div>",
+    "states": [
+      {
+        "data": { "a": true, "b": false, "end": "end" },
+        "html": "<div><p><b>2</b></p><em>end</em></div>"
+      },
+      {
+        "data": { "a": false, "b": true, "end": "end" },
+        "html": "<div><p><u>3</u></p><em>end</em></div>"
+      }
+    ]
+  }
+]

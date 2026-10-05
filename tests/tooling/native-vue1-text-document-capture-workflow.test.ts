@@ -9,6 +9,7 @@ import { parse } from "yaml";
 const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const action = parse(read(".github/actions/test-native-vue1-text-document/action.yml"));
 const combined = parse(read(".github/actions/test-native-historical-text-documents/action.yml"));
+const outer = parse(read(".github/actions/test-native-historical-sfc-documents/action.yml"));
 const workflow = parse(read(".github/workflows/pr-source-checks.yml"));
 const select = action.runs.steps.find((step: { id?: string }) => step.id === "select");
 
@@ -64,9 +65,19 @@ test("actual historical capture composition preserves original Vue2 order and th
   );
   for (const step of combined.runs.steps)
     assert.deepEqual(step.with, { "comparison-base": "${{ inputs.comparison-base }}" });
+  assert.deepEqual(
+    outer.runs.steps.map((step: { uses: string }) => step.uses),
+    [
+      "./.github/actions/test-native-historical-text-documents",
+      "./.github/actions/test-native-vue2-scriptless-sfc",
+    ],
+  );
+  assert.equal(outer.runs.steps[1].if, "${{ always() }}");
+  for (const step of outer.runs.steps)
+    assert.deepEqual(step.with, { "comparison-base": "${{ inputs.comparison-base }}" });
   const steps = Object.values(workflow.jobs).flatMap((job: any) => job.steps ?? []);
   const hooks = steps.filter(
-    (step: any) => step.uses === "./.github/actions/test-native-historical-text-documents",
+    (step: any) => step.uses === "./.github/actions/test-native-historical-sfc-documents",
   );
   assert.equal(hooks.length, 1);
   assert.equal(

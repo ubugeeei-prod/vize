@@ -16,10 +16,15 @@ impl<'a> LintContext<'a> {
     /// Attach an SFC descriptor to a template context and prepare its absolute
     /// source position. Full-document directives remain lazy until needed.
     pub fn set_sfc_template_descriptor(&mut self, descriptor: &'a SfcDescriptor<'a>) {
-        self.source_offset = descriptor
-            .template
-            .as_ref()
-            .map_or(0, |template| template.loc.start as u32);
+        self.source_offset = vize_l0::SourceRoot::new(descriptor.source.as_ref())
+            .ok()
+            .and_then(|root| root.whole_block().offset_of(self.source))
+            .unwrap_or_else(|| {
+                descriptor
+                    .template
+                    .as_ref()
+                    .map_or(0, |template| template.loc.start as u32)
+            });
         self.sfc_directives = None;
         self.sfc_directives_scanned = false;
         self.set_sfc_descriptor(descriptor);

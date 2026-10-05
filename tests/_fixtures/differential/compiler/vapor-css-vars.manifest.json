@@ -1,0 +1,78 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "ef506012169d228982ded40d893ac2115a3e58a7",
+  "product": "compiler",
+  "cases": [
+    {
+      "id": "compiler/sfc/vapor-css-vars",
+      "state": "active",
+      "targets": ["dom", "ssr", "vapor"],
+      "inputs": {
+        "root": "vapor-css-vars",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "e34934a3bfc2518422e5c8e2ab6ee375a6fc65b89af10a457b2ade47becccfd7",
+            "role": "reporter-reproduction"
+          },
+          {
+            "path": "flag.vue.txt",
+            "sha256": "86d46762e9965a6490df295690e91369856ce8654234797ae649aca2abfb7d77",
+            "role": "control"
+          },
+          {
+            "path": "issue-body.md",
+            "sha256": "bd8e8b76e6778abf50d5a279d614538e3bb67a8767caa9412c1a32863ee88c3f",
+            "role": "reporter-reproduction"
+          },
+          {
+            "path": "typed.vue.txt",
+            "sha256": "09bfbda4ded62712a7330216a35d5698139086299df26592bf1fe4bddbc024f2",
+            "role": "control"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-css-vars/runtime.expected.json",
+        "sha256": "c87f2f84ed49d2f43af29a3a3a46d29238f68e36cccb1b3e7d28f7a19a382729",
+        "source": "crates/vize_atelier_sfc/tests/vapor_css_vars.rs:vapor_css_variables_mount_update_and_preserve_vdom_ssr"
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/7887",
+        "reporter": "ubugeeei",
+        "reporterId": 71201308,
+        "versions": {
+          "vizeReported": "0.432.0",
+          "vueReported": "3.6.0-rc.10",
+          "vueRuntime": "3.6.0-rc.9",
+          "ssrRuntime": "3.5.35"
+        },
+        "upstream": {
+          "compilerCssVarsBlob": "d7be1b149b1e7a4df90166e3e7a902a90d0702b8",
+          "runtimeVaporCssVarsBlob": "be32fa9d46cede3caaed346c04287f5a7ee59b55"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-sfc-mounted-css-vars-v1",
+        "native": null,
+        "reasons": {
+          "native": "Existing SFC compiler correction; no native-stage, direct Vapor SSR or hydration acceptance."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-mounted-css-vars-runtime-v1",
+        "requiredFacets": [
+          "complete-dom-tree",
+          "root-css-properties",
+          "click-update",
+          "identity",
+          "unmount",
+          "diagnostics",
+          "ssr-fallback-html",
+          "source-map-code-equality"
+        ]
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-//! Formatting for non-SFC files: JSON, JSONC, YAML, and Markdown.
+//! Formatting for non-SFC files: JSON/JSONC configs, YAML, and Markdown.
 
 use std::path::Path;
 use vize_glyph::{FormatOptions, FormatResult};
@@ -9,10 +9,10 @@ mod plain;
 /// Format `source` based on `path`'s extension.
 ///
 /// `.yaml`/`.yml` and `.md`/`.markdown` get conservative, lossless
-/// normalization (see [`plain`]). `.jsonc` and comment-bearing config files
-/// (`tsconfig*.json`, `jsconfig*.json`, `.vscode/*.json`, `*.code-workspace`)
-/// are formatted as JSONC so their comments and trailing commas survive; every
-/// other `.json` file uses strict JSON. Returns `None` for any other extension,
+/// normalization (see [`plain`]). Every `.json` and `.jsonc` file uses JSONC
+/// formatting so authored comments survive and trailing commas are accepted
+/// on input. The public strict JSON formatter API retains its syntax policy.
+/// Returns `None` for any other extension,
 /// letting the caller fall through to the SFC formatter.
 pub(super) fn format_data_file(
     path: &Path,
@@ -25,84 +25,59 @@ pub(super) fn format_data_file(
         "md" | "markdown" => return Some(Ok(plain::format_markdown(source))),
         _ => {}
     }
-    let jsonc = match extension {
-        "jsonc" => true,
-        "json" => is_jsonc_config_file(path),
-        _ => return None,
-    };
-    let code = if jsonc {
-        profile!(
-            "cli.fmt.file.format_jsonc",
-            vize_glyph::format_jsonc(source, options)
-        )
-    } else {
-        profile!(
-            "cli.fmt.file.format_json",
-            vize_glyph::format_json(source, options)
-        )
-    };
+    if !matches!(extension, "json" | "jsonc") {
+        return None;
+    }
+    let code = profile!(
+        "cli.fmt.file.format_jsonc",
+        vize_glyph::format_jsonc(source, options)
+    );
     Some(code.map(|code| FormatResult {
         changed: code.as_str() != source,
         code,
     }))
 }
 
-/// Whether a `.json` file conventionally allows comments and trailing commas
-/// and should be formatted as JSONC, matching Prettier's `jsonc` parser
-/// defaults for TypeScript and editor config files.
-fn is_jsonc_config_file(path: &Path) -> bool {
-    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
-        return false;
-    };
-    if name.ends_with(".code-workspace") {
-        return true;
-    }
-    if (name.starts_with("tsconfig.") || name.starts_with("jsconfig.")) && name.ends_with(".json") {
-        return true;
-    }
-    path.parent()
-        .and_then(Path::file_name)
-        .and_then(|parent| parent.to_str())
-        == Some(".vscode")
-}
-
 #[cfg(test)]
 mod tests {
-    use super::is_jsonc_config_file;
+    use super::format_data_file;
     use std::path::Path;
+    use vize_glyph::FormatOptions;
 
     #[test]
-    fn treats_typescript_and_editor_config_json_as_jsonc() {
-        for path in [
-            "tsconfig.json",
-            "tsconfig.app.json",
-            "packages/ui/tsconfig.build.json",
-            "jsconfig.json",
-            "jsconfig.node.json",
-            "acme.code-workspace",
-            ".vscode/settings.json",
-            "repo/.vscode/launch.json",
-        ] {
-            assert!(
-                is_jsonc_config_file(Path::new(path)),
-                "expected JSONC: {path}"
-            );
+    fn every_json_config_uses_the_complete_reported_jsonc_corpus() {
+        let corpus: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../../tests/_fixtures/differential/formatter-regressions/json-comments-7865/cases.json"
+        )).unwrap();
+        let cases = corpus["cases"].as_array().unwrap();
+        assert_eq!(cases.len(), 16);
+        let options = FormatOptions::default();
+        for case in cases {
+            let path = Path::new(case["file"].as_str().unwrap());
+            let source = case["source"].as_str().unwrap();
+            let format = |source| format_data_file(path, source, &options).unwrap();
+            if case["outcome"] == "error" {
+                assert!(format(source).is_err(), "{path:?}");
+                continue;
+            }
+            let expected = case["expected"].as_str().unwrap();
+            let first = format(source).unwrap();
+            assert_eq!(first.code.as_str(), expected, "{path:?}");
+            assert_eq!(first.changed, source != expected, "{path:?}");
+            for _ in 0..2 {
+                let next = format(expected).unwrap();
+                assert_eq!(next.code.as_str(), expected, "{path:?}");
+                assert!(!next.changed, "{path:?}");
+            }
+            if case["strictRejected"] == true {
+                assert!(
+                    vize_glyph::format_json(source, &options).is_err(),
+                    "strict API {path:?}"
+                );
+            }
         }
-    }
-
-    #[test]
-    fn keeps_plain_json_strict() {
-        for path in [
-            "package.json",
-            "tsconfig.json.bak",
-            "src/data/tsconfig.json/oops",
-            "settings.json",
-            "config/eslintrc.json",
-        ] {
-            assert!(
-                !is_jsonc_config_file(Path::new(path)),
-                "expected strict JSON: {path}"
-            );
+        for path in ["tsconfig.json.bak", "src/data/tsconfig.json/oops"] {
+            assert!(format_data_file(Path::new(path), "{}", &options).is_none());
         }
     }
 }

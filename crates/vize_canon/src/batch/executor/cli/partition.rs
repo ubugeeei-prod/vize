@@ -49,7 +49,9 @@ fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> Sh
         shards: Vec::new(),
         owners: FxHashMap::default(),
     };
-    if servers <= 1 {
+    // A configured page's generated import can introduce globals to unrelated
+    // components too. Authored-edge partitioning cannot prove that visibility.
+    if servers <= 1 || project.has_typed_router_imports() {
         return no_sharding;
     }
 

@@ -68,6 +68,7 @@ export const checkFixturePhases: readonly CheckFixturePhase[] = [
   "snapshots/check/vue-router-formatter-oracle.ts",
   "snapshots/check/pinia-generic-store-oracle.ts",
   "snapshots/check/typescript-project-references-oracle.ts",
+  "snapshots/check/pnpm-workspace-route-oracle.ts",
   "snapshots/check/vue-router-dmts-oracle.ts",
   "snapshots/check/element-plus-slot-oracle.ts",
   "snapshots/check/nuxt-ui-ambient-oracle.ts",

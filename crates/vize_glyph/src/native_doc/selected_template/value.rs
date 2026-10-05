@@ -15,6 +15,9 @@ pub enum NativeTemplateValuePolicy {
     /// Observe quoted original conditional expressions at the same header event.
     /// All other valued directives still refuse; this grants no L2 semantics.
     FormatConditionals,
+    /// Observe original conditionals and complete static binding expressions.
+    /// This is explicit; default refusal and opaque policies remain unchanged.
+    FormatConditionalsAndStaticBindings,
 }
 
 pub(super) struct ValuePolicy<'a> {
@@ -27,7 +30,14 @@ impl<'a> ValuePolicy<'a> {
         Self { block, policy }
     }
     pub(super) fn formats_conditionals(&self) -> bool {
-        self.policy == NativeTemplateValuePolicy::FormatConditionals
+        matches!(
+            self.policy,
+            NativeTemplateValuePolicy::FormatConditionals
+                | NativeTemplateValuePolicy::FormatConditionalsAndStaticBindings
+        )
+    }
+    pub(super) fn formats_bindings(&self) -> bool {
+        self.policy == NativeTemplateValuePolicy::FormatConditionalsAndStaticBindings
     }
 }
 

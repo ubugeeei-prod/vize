@@ -151,13 +151,23 @@ export const hashes = {
     ],
   ],
   companion: "fbe7a328369e33946c0393c9e017551b33abbd84112d8ffe38950ecfae292e09",
+  snapshotCompanion: "109d5bce0860c6d2007e00593d8eba756ee5d1b4bd7cb4e251cf89a4635d425d",
+  snapshotCaller: [
+    "crates/vize_curator/src/inspector/stages/profile.rs",
+    "7e1ad6a552d23ff11d409b32c135047857bbff88b35bfe058345af34aa5cd533",
+  ],
   provider: "0c8f8755bf717dee0f3dbfd1ca61d40d64b14857ea62304bb9217bbfa69933d8",
   exporter: [
     "628bf5dac6d579a99e4ff76a14b04147df0028fdf921fd358a6660023115416a",
     [
       "338ff8f6ddd6fe54ff6610c47c7d97eec0c223642b5dbdedccca8b9f153f4ffb",
+      "3d1747c3dcfcf4ec8bc80ec722a6bd58d488cfdef2c7de84374a526417ebc9f9",
       "338ff8f6ddd6fe54ff6610c47c7d97eec0c223642b5dbdedccca8b9f153f4ffb",
     ],
+  ],
+  assembly: [
+    "crates/vize_carton/src/profile_export/assemble.rs",
+    "9f9c430af4303fe7fc5dabf12d1a2f7ec9c2794bab3541e64b3d5fe7d8c780ab",
   ],
   tests: [
     "a9d51cf548f238050ba4c8a59f107b00ffcc088b446152966a5381baa1c2ac25",

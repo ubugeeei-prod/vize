@@ -8,6 +8,7 @@ fn protocol_v1_omits_internal_navigation_links() {
         VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
         VizeSemanticLinkKind::VueComponentPropNavigation,
         VizeSemanticLinkKind::VueComponentPropCompletion,
+        VizeSemanticLinkKind::VueTemplatePropBinding,
         VizeSemanticLinkKind::VuePlainScriptExport,
         VizeSemanticLinkKind::VueOptionsApiBinding,
         VizeSemanticLinkKind::VueSetupImportSpecialization,

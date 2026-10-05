@@ -6,6 +6,9 @@
 //! retained lane's calls print beside them; interleaved timings live in the
 //! P3-6 evidence record. Improvements ratchet a ceiling down; nothing raises
 //! one.
+//!
+//! This standalone nextest-discoverable test runs the unchanged measured body
+//! on process main so libtest reporting cannot overlap its global counters.
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 #![expect(
@@ -13,7 +16,7 @@
     reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
-use davinci_harness::alloc::{CountingAllocator, mark_installed, measure};
+use davinci_harness::alloc::{CountingAllocator, diagnostics, mark_installed, measure};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
@@ -80,17 +83,55 @@ fn calls(source: &str, davinci_retained_lane: bool) -> u64 {
     .calls
 }
 
-#[test]
+const CASE: &str = "native_lane_stays_within_its_allocation_ceilings";
+
+fn main() -> Result<(), &'static str> {
+    let mut args = std::env::args().skip(1);
+    let (mut list, mut ignored, mut exact) = (false, false, false);
+    let mut filter = None;
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--list" => list = true,
+            "--ignored" => ignored = true,
+            "--exact" => exact = true,
+            "--nocapture" => {}
+            "--format" if args.next().as_deref() == Some("terse") => {}
+            value if !value.starts_with('-') && filter.is_none() => filter = Some(arg),
+            _ => return Err("unsupported harness argument"),
+        }
+    }
+    let selected = filter.as_ref().is_none_or(|filter| {
+        if exact {
+            filter == CASE
+        } else {
+            CASE.contains(filter)
+        }
+    });
+    if ignored || !selected {
+        return Ok(());
+    }
+    if list {
+        println!("{CASE}: test");
+        return Ok(());
+    }
+    native_lane_stays_within_its_allocation_ceilings();
+    Ok(())
+}
+
 fn native_lane_stays_within_its_allocation_ceilings() {
     mark_installed();
+    diagnostics::begin_session();
     let mut failures = Vec::new();
-    for (name, source, ceiling) in FIXTURES {
+    for (index, (name, source, ceiling)) in FIXTURES.into_iter().enumerate() {
+        diagnostics::set_context((index * 2) as u64);
         let native = calls(source, false);
+        diagnostics::set_context((index * 2 + 1) as u64);
         let retained = calls(source, true);
         println!("measured {name}: native {native} retained {retained}");
         if native > ceiling {
             failures.push(format!("{name}: {native} > ceiling {ceiling}"));
         }
     }
+    diagnostics::finish_session();
     assert!(failures.is_empty(), "{}", failures.join("; "));
 }

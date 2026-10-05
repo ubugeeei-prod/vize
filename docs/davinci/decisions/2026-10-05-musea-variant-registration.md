@@ -1,0 +1,113 @@
+# Original Art variant registration context
+
+Paired decisions: [#7897](https://github.com/ubugeeei-prod/vize/issues/7897#issuecomment-5987633855)
+and the registration part of [#7900](https://github.com/ubugeeei-prod/vize/issues/7900#issuecomment-5987634064).
+
+The actual Art consumer passed a template-only context for each variant.
+Retain the original physical filename, descriptor and fragment root. Reuse
+an existing shared descriptor, parse each genuine variant exactly once,
+and analyze original descriptor scripts once when semantic rules demand
+it. A private borrowed script-analysis slot supplies the actual registration
+callback; each original fragment retains its existing independent template
+Drawer/facts. Do not manufacture an SFC/template, rename the file or expose
+another variant's template scopes. Genuine script scopes provide imports; retained binding metadata and original
+setup definition spans provide named values without per-variant script parsing. This is not a
+general joined analysis provider: other callbacks keep their existing
+fragment-only semantics.
+
+The original summary's defineArt macro supplies its actual target. An
+actual component attribute belongs only to the descriptor custom block
+containing that original fragment. Art file stems cannot grant implicit
+self registration; ordinary Vue recursive references remain unchanged.
+The existing Croquis literal-path naming helper handles these authored
+ASCII paths. General JavaScript runtime normalization/module resolution
+is not claimed.
+
+A genuine SourceRoot slice supplies template diagnostics' physical offset.
+Ordinary owned template content retains the existing descriptor offset
+fallback; script/SFC reports use their existing absolute domains. Keep
+per-variant diagnostics, parse errors, directive/severity handling and the
+configured callback route; no broad rule skip or missing-component warning
+filter is used.
+
+## Original corpus and acceptance
+
+Retain all six original files from the issues in
+`crates/vize_patina/tests/fixtures/musea-variant-bindings/`, with exact lengths,
+SHA-256 hashes and URLs. Eleven complete result laws cover original imports,
+macro/attribute targets with unrelated physical filenames, missing imports,
+false Art self references, distinct UTF-8/CRLF variant positions, independent
+Art blocks, real local/type-only bindings, ordinary Vue registration and
+independent fragment facts with original imported registration, and a
+complete original/foreign-buffer admission result, named values across both
+script frames, and five nested/erased-name negatives.
+The owned Patina consumer ledger is scanner-generated; no foreign rows,
+ceilings or fixture captures are changed.
+
+Exact-source hosted validation, protected acceptance, actual signed merge
+and reporter/footer readback are pending. Original-source real mounts
+remain a separate unfinished qualification. This first slice fixes the
+registration report; #7900's setup-unused conclusion still needs all actual
+variant reads and one physical script report. Its dependent child must use
+a genuine native Stack if delivered before this parent actually merges.
+No default/native/SDK/fix-history closure, compiler behavior change or
+performance improvement follows from this source preparation.
+
+## Rejected-source ownership correction
+
+[Paired #7897 receipt](https://github.com/ubugeeei-prod/vize/issues/7897#issuecomment-5987783863)
+and [#7900 receipt](https://github.com/ubugeeei-prod/vize/issues/7900#issuecomment-5987784057)
+retain the exact `9b599f03` rejection: Check 37260081441, seeded recall
+37260080820 and Nuxt3 37260080864 all fail the same E0308. `Croquis` does
+not implement Clone; cloning its reference cannot seed an owned Drawer.
+The original seven laws did not execute in that rejected source. The
+private borrowed context correction avoids a public clone or repeated
+script analysis. The new eighth law observes each genuine variant's
+independent template facts alongside a complete empty registration result.
+All original inputs, prior laws and ceilings stay intact; fresh hosted
+execution is required. New dependent publication is paused until this
+existing parent actually merges under the PR-backlog priority.
+
+The first ownership correction `402d3c5f` compiles the library, but its new
+integration witness rejects a private `opinionated::vue` constructor with
+E0603 in seeded recall 37261177514/job111608548566. [Paired #7897 correction](https://github.com/ubugeeei-prod/vize/issues/7897#issuecomment-5987826468)
+and [#7900 correction](https://github.com/ubugeeei-prod/vize/issues/7900#issuecomment-5987826640)
+use the existing public complete registry and a uniquely named audit rule,
+with only the actual registration and audit instances enabled. The full
+empty result and exact `MyIcon`/VFor1 then 0 callback expectations remain
+unchanged. Production, original files, all eight laws and ceilings remain
+intact; the rejected integration law grants no execution credit.
+
+The actual core `79ec736079` source rejection is preserved by [#7897](https://github.com/ubugeeei-prod/vize/issues/7897#issuecomment-5988098230)
+and [#7900](https://github.com/ubugeeei-prod/vize/issues/7900#issuecomment-5988098442):
+Check37261484923 Clippy denies panic-based offset admission; the genuine
+Croquis scanner detects Patina13/26 to15/30 drift; the old over-limit engine
+cannot grow. The unchanged private environment declaration is relocated
+in a move-only commit to the existing short rule-analysis module, with its
+parent-owned constructors retained. Engine547 shrinks below its baseline;
+context347/rule123/Art224/registration348 retain all caps. Both existing
+Node scanner providers regenerate only owned Patina shards; their Rust
+commands wrap these same generators. No corpus/census expectation is
+handwritten or weakened. Original admission handles the existing SourceRoot
+representable-span/pointer refusal before parse and returns one complete
+parser/sfc error at0/0. A ninth complete-result law checks genuine original
+markup and equal-text foreign custody. Seeded79 compiles but filters all
+eight previous registration laws, so it grants no execution credit. Fresh
+source and protected actual delivery remain required.
+
+The exact35c5fdbb source reaches genuine Nextest execution after its earlier
+gate repairs. [Paired #7897](https://github.com/ubugeeei-prod/vize/issues/7897#issuecomment-5988327204)
+and [#7900](https://github.com/ubugeeei-prod/vize/issues/7900#issuecomment-5988327384)
+retain Check37263643950: four authenticated JUnit ZIPs contain15,912 unique
+actual cases,15,911 pass, one LocalPanel false warning; eight of nine new
+laws pass. No result is recaptured to change the failed expectation.
+Top-level named values are retained in binding metadata, not ScriptSetup's
+scope binding map. Read the actual metadata only when its existing binding
+definition span belongs to the retained ScriptSetup frame. The provider
+shifts both domains together for split scripts; plain-script merged values
+remain outside that frame. Two additional complete laws retain const/let/
+function/class values across both frames and five nested/type-only/erased
+negatives. This does not claim full destructure provenance or a generic
+joined provider. Original nine laws, six source files, parsers and budgets
+remain unchanged. Real peer review, exact fresh Actions and protected
+actual delivery are still required; the draft stays unqueued.

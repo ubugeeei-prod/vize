@@ -179,6 +179,9 @@ jobs:
       - name: Native L1 markup parity
         if: ${{ contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') || contains(fromJSON(inputs.rust-plan).packages, 'vize_armature') }}
         run: cargo test -p vize_armature --features native-lex-parity,legacy --lib --test markup_lex_parity
+      - name: Test L1 feature-enabled surface corpus
+        if: ${{ contains(fromJSON(inputs.rust-plan).packages, 'vize_l1') }}
+        run: cargo test -p vize_l1 --features legacy-differential --test surface_corpus -- --nocapture
       - name: Test affected native Program and Vue navigation
         if: ${{ contains(fromJSON(inputs.rust-plan).packages, 'vize_maestro') }}
         uses: ./.github/actions/test-native-navigation

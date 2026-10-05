@@ -78,7 +78,17 @@ impl SsrCodegenContext<'_> {
         use_attrs_fallback: bool,
         skip_is_prop: bool,
     ) -> String {
-        if el.props.is_empty() {
+        self.build_component_props_with_css_vars(el, use_attrs_fallback, skip_is_prop, false)
+    }
+
+    pub(super) fn build_component_props_with_css_vars(
+        &mut self,
+        el: &ElementNode,
+        use_attrs_fallback: bool,
+        skip_is_prop: bool,
+        css_vars: bool,
+    ) -> String {
+        if el.props.is_empty() && !css_vars {
             return if use_attrs_fallback {
                 "_attrs".to_compact_string()
             } else {
@@ -115,6 +125,9 @@ impl SsrCodegenContext<'_> {
             }
         }
         flush_entries(&mut segments, &mut entries);
+        if css_vars {
+            segments.push(ComponentPropSegment::Spread("_cssVars".to_compact_string()));
+        }
 
         if segments.is_empty() {
             return "null".to_compact_string();

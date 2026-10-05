@@ -13,6 +13,11 @@ Following commits normalize standalone manifest dependencies and apply the
 reviewed PURE recovery correction. Supporting OXC crates stay at the original
 official pinned revision and share one AST/allocator/span identity.
 
+Recursive array expressions and TypeScript tuple types preserve their entire
+original parser bodies while using the existing pinned stacker stack-headroom
+guard. The tuple guard also covers nested tuple descent reached by expression
+type-argument speculation. No grammar, diagnostics or depth refusal is added.
+
 The shared expression type-argument parser also memoizes failed speculative
 probes by source position and grammar context across rewinds. This bounds the
 nested malformed-generic allocation reported in Vize
@@ -49,3 +54,14 @@ both lexer checkpoint/rewind paths and is exposed only from the immutable
 original admitted Program observation. Ordinary ASTs, diagnostics and syntax
 admission remain unchanged; the receipt does not certify general semantics.
 Native setup eligibility consumes it without another source scan or AST walk.
+
+The complete original array-element callback now uses direct pinned
+`stacker = "=0.1.25"` with 512 KiB headroom and 4 MiB growth segments for the
+authenticated Vize #7805 Program reproducer. Empty arrays leave the original
+delimited list before that callback; nonempty arrays check each element,
+including flat scalars and elisions. Token, grammar, recovery and diagnostic
+work stay on the same parser. The complete original tuple body retains the
+same guard. These guards cover array and tuple descent only;
+other recursive grammar paths, unsupported stacker targets and hostile-input
+quotas remain separate. The original source is retained in the Program fuzz
+regressions and seeded in all eight explicit source profiles.
