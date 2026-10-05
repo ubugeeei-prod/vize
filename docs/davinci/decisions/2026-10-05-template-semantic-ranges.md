@@ -66,5 +66,14 @@ adjust only collected template tokens on that first physical line. Script/style
 and subsequent lines retain their original coordinates; immediate LF/CRLF bodies
 skip rebasing. Add entire inline LF/CRLF/astral corpus and full/range vectors;
 retain all original-three/36 expectations and require fresh source execution.
+The following 2a63 source Check37303784792 builds and passes Clippy, then
+fails only two retained Art unit assertions that still expect delimiters:
+art length4 versus actual3 and variant length8 versus actual7. Preserve their
+complete inputs and two-token counts; strengthen opening/closing assertions to
+original name starts and lengths (1,3)/(2,3) and (1,7)/(2,7), with no file growth.
+This corrects the directly affected contract rather than changing the untouched
+original-three/36 wire oracle. Its stdio inline origin failure remains historical;
+all successor source execution and protected delivery remain required.
+
 No performance budget or frozen history expectation is changed. #6883 remains
 open; this fixture is an additive legacy correction rather than native completion.
