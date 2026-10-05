@@ -35,7 +35,7 @@ pub(super) fn capture(
         "authoredConfigBytes": fs::read_to_string(project.project_root().join("playground/tsconfig.json")).unwrap(),
         "rawDiagnosticResponse": cstr!("{raw:#?}"),
         "generatedFiles": project.virtual_files_sorted().into_iter().map(|file| serde_json::json!({
-            "original": file.original_path, "virtual": file.virtual_path, "code": file.content.as_str(),
+            "original": file.original_path, "virtual": file.virtual_path, "code": file.content.as_str(), "sourceMap": cstr!("{:#?}", file.source_map),
         })).collect::<Vec<_>>(),
     });
     fs::create_dir_all(&dir).unwrap();
