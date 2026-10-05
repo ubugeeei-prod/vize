@@ -3,10 +3,13 @@ import process from "node:process";
 import { transformSync } from "@babel/core";
 import { Window } from "happy-dom";
 import { traceMountedBackend } from "./davinci-mounted-trace.mjs";
+import { runtimeProcessEvidence } from "./mounted-runtime-devtools.ts";
 
+const evidence = runtimeProcessEvidence();
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
 const { backend, code, cases } = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+evidence.phase("parsed input", { backend });
 assert.ok(["vdom", "vapor", "ssr"].includes(backend));
 
 // Resolve real SSR runtime imports without modifying any generated expressions.
@@ -28,12 +31,14 @@ if (backend === "ssr") {
       }),
     ],
   }).code;
+  evidence.phase("import SSR runtime");
   ({ ssrRender } = await import(
     `data:text/javascript;base64,${Buffer.from(`${compiled}\nexport { ssrRender };`).toString("base64")}`
   ));
 }
 
-for (const fixture of cases) {
+for (const [fixtureIndex, fixture] of cases.entries()) {
+  evidence.phase("prepare fixture", { fixtureIndex, scenario: fixture.scenario ?? null });
   let reads = 0;
   const context = { ...fixture.context };
   switch (fixture.scenario) {
@@ -187,20 +192,30 @@ for (const fixture of cases) {
         trees.push(observe(window.document.body));
       }
     } finally {
+      evidence.phase("close SSR DOM");
       await window.happyDOM.close();
     }
   } else {
-    const trace = await traceMountedBackend({ backend, code, context, steps });
+    const trace = await traceMountedBackend({
+      backend,
+      code,
+      context,
+      steps,
+      onPhase: (phase) => evidence.phase(phase),
+      onFailure: evidence.failure,
+    });
     assert.deepEqual(trace.at(-1), { tree: [], events: [] });
     trees = trace.slice(0, -1).map(({ tree, events }) => {
       assert.deepEqual(events, []);
       return tree;
     });
   }
+  evidence.phase("assert fixture observations");
   assert.deepEqual(trees, fixture.trees, `${backend}: ${JSON.stringify(fixture)}`);
   assert.equal(reads, fixture.reads ?? 0, "unexpected property reads");
 }
 process.stdout.write(JSON.stringify({ passed: cases.length }));
+evidence.complete();
 
 function installRestMemory(context) {
   let remembered;

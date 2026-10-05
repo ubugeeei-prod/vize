@@ -104,7 +104,7 @@ fn lower_children_guarded<'a>(
             }
             SurfaceChild::Text(_) | SurfaceChild::Interpolation(_) => {
                 i = if cx.v_pre_suppressed() {
-                    text::lower_v_pre_text_run(cx, children, i, &mut out)
+                    text::lower_v_pre_text_run(cx, children, &plan, i, &mut out)
                 } else {
                     text::lower_text_run(cx, children, &plan, i, &mut out)
                 };

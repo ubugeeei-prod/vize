@@ -307,7 +307,7 @@ pub struct VirtualProject {
 
     /// Virtual files keyed by materialized path.
     virtual_files: FxHashMap<PathBuf, VirtualFile>,
-
+    shared_helper_source_count: usize,
     /// Exact materialized artifacts owned by each authored source. Persistent
     /// refreshes replace this set atomically so an SFC changing TS/TSX shape
     /// cannot leave an old companion or passthrough file in the program.

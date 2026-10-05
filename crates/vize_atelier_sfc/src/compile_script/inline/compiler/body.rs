@@ -171,6 +171,7 @@ pub(super) fn compile_script_setup_inline_body(
         &setup_body_lines,
         source_is_ts,
         is_ts,
+        is_vapor,
         is_async,
         css_vars,
         scope_id,

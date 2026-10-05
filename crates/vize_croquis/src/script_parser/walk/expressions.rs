@@ -225,27 +225,35 @@ pub(in crate::script_parser) fn walk_expression(
             );
 
             // Check for reactive variable reassignment: state = newValue
-            if let AssignmentTarget::AssignmentTargetIdentifier(id) = &assign.left {
-                let var_name = CompactString::new(id.name.as_str());
-                if result.reactivity.is_reactive(var_name.as_str()) {
-                    // Use id.span for the variable name, assign.span for the full expression
-                    result
-                        .reactivity
-                        .record_reassign(var_name, id.span.start, assign.span.end);
+            let plain_target =
+                if let AssignmentTarget::AssignmentTargetIdentifier(id) = &assign.left {
+                    let var_name = CompactString::new(id.name.as_str());
+                    if result.reactivity.is_reactive(var_name.as_str()) {
+                        // Use id.span for the variable name, assign.span for the full expression
+                        result
+                            .reactivity
+                            .record_reassign(var_name, id.span.start, assign.span.end);
+                        None
+                    } else {
+                        Some(id.name.as_str())
+                    }
                 } else {
-                    super::super::extract::check_reactive_plain_assignment_alias(
-                        result,
-                        id.name.as_str(),
-                        &assign.right,
-                    );
-                }
-            }
+                    None
+                };
             if let Some(root) = super::super::extract::member_assignment_root(&assign.left) {
                 let previous = result.reactive_assignment_root.replace(root);
                 walk_expression(result, &assign.right, source);
                 result.reactive_assignment_root = previous;
             } else {
                 walk_expression(result, &assign.right, source);
+            }
+            // JavaScript evaluates the RHS with the previous binding value.
+            if let Some(target) = plain_target {
+                super::super::extract::check_reactive_plain_assignment_alias(
+                    result,
+                    target,
+                    &assign.right,
+                );
             }
         }
 

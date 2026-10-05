@@ -104,7 +104,9 @@ impl<'a> FileArtifact<'a> {
             return Err(reject(ModuleSourceErrorKind::Source));
         }
         let profile = input.source_type();
-        if !profile.is_module() || profile.is_jsx() || profile.is_typescript_definition() {
+        // JSX completeness comes from the same sole resolver walk. The exact
+        // original JS/TS/JSX/TSX unit profile remains checked below.
+        if !profile.is_module() || profile.is_typescript_definition() {
             return Err(reject(ModuleSourceErrorKind::Profile));
         }
         let Some(unit) = self

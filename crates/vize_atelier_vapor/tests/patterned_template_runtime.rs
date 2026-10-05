@@ -17,7 +17,7 @@ use serde_json::{Value, json};
 use std::{
     io::Write,
     path::Path,
-    process::{Command, Stdio},
+    process::{Command, Output, Stdio},
 };
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
@@ -101,14 +101,122 @@ fn check(source: &str, cases: Value) {
             )
             .unwrap();
         let output = child.wait_with_output().unwrap();
-        assert!(
-            output.status.success(),
-            "{backend}: {}\ncode:\n{code}",
-            String::from_utf8_lossy(&output.stderr)
-        );
+        if let Err(evidence) = validate_runtime_output(backend, source, &cases, &code, &output) {
+            panic!("{evidence}");
+        }
+    }
+}
+
+fn validate_runtime_output(
+    backend: &str,
+    source: &str,
+    cases: &Value,
+    code: &str,
+    output: &Output,
+) -> Result<(), String> {
+    #[cfg(unix)]
+    let signal = {
+        use std::os::unix::process::ExitStatusExt;
+        output.status.signal()
+    };
+    #[cfg(not(unix))]
+    let signal: Option<i32> = None;
+    let evidence = |reason: &str| {
+        format!(
+            "{backend}: {reason}\nstatus: {}\nexit_code: {:?}\nsignal: {signal:?}\nstdout:\n{}\nstderr:\n{}\nsource:\n{source}\ncases:\n{cases}\ncode:\n{code}",
+            output.status,
+            output.status.code(),
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr),
+        )
+    };
+    if !output.status.success() {
+        return Err(evidence("runtime child failed"));
+    }
+    let actual = serde_json::from_slice::<Value>(&output.stdout)
+        .map_err(|error| evidence(&format!("invalid runtime JSON: {error}")))?;
+    let expected = json!({"passed": cases.as_array().unwrap().len()});
+    if actual != expected {
+        return Err(evidence(&format!(
+            "runtime result mismatch: expected {expected}, received {actual}"
+        )));
+    }
+    Ok(())
+}
+
+#[test]
+fn runtime_failure_preserves_silent_child_status_and_original_case() {
+    let output = Command::new("node")
+        .args([
+            "-e",
+            "require('node:fs').writeSync(1, 'partial stdout'); process.exit(13)",
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(13));
+    assert!(output.stderr.is_empty());
+    let cases = json!([{"context": {"items": ["original"]}}]);
+    let report = validate_runtime_output("vdom", "authored source", &cases, "render code", &output)
+        .unwrap_err();
+    assert_eq!(
+        report,
+        format!(
+            "vdom: runtime child failed\nstatus: {}\nexit_code: Some(13)\nsignal: None\nstdout:\npartial stdout\nstderr:\n\nsource:\nauthored source\ncases:\n[{{\"context\":{{\"items\":[\"original\"]}}}}]\ncode:\nrender code",
+            output.status,
+        )
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn runtime_failure_preserves_real_child_signal_and_both_streams() {
+    use std::os::unix::process::ExitStatusExt;
+
+    let output = Command::new("node")
+        .args([
+            "-e",
+            "require('node:fs').writeSync(1, 'before signal'); require('node:fs').writeSync(2, 'signal stderr'); process.kill(process.pid, 'SIGTERM')",
+        ])
+        .output()
+        .unwrap();
+    let report =
+        validate_runtime_output("vapor", "source", &json!([{}]), "code", &output).unwrap_err();
+    assert_eq!(output.status.code(), None);
+    assert_eq!(output.status.signal(), Some(15));
+    assert_eq!(
+        report,
+        format!(
+            "vapor: runtime child failed\nstatus: {}\nexit_code: None\nsignal: Some(15)\nstdout:\nbefore signal\nstderr:\nsignal stderr\nsource:\nsource\ncases:\n[{{}}]\ncode:\ncode",
+            output.status,
+        )
+    );
+}
+
+#[test]
+fn runtime_protocol_failures_preserve_complete_successful_child_output() {
+    for (stdout, reason) in [
+        (
+            "not JSON",
+            "invalid runtime JSON: expected ident at line 1 column 2",
+        ),
+        (
+            "{\"passed\":0}",
+            "runtime result mismatch: expected {\"passed\":1}, received {\"passed\":0}",
+        ),
+    ] {
+        let output = Command::new("node")
+            .args(["-e", "process.stdout.write(process.argv[1])", stdout])
+            .output()
+            .unwrap();
+        assert!(output.status.success());
+        let report =
+            validate_runtime_output("ssr", "source", &json!([{}]), "code", &output).unwrap_err();
         assert_eq!(
-            serde_json::from_slice::<Value>(&output.stdout).unwrap(),
-            json!({"passed": cases.as_array().unwrap().len()})
+            report,
+            format!(
+                "ssr: {reason}\nstatus: {}\nexit_code: Some(0)\nsignal: None\nstdout:\n{stdout}\nstderr:\n\nsource:\nsource\ncases:\n[{{}}]\ncode:\ncode",
+                output.status,
+            )
         );
     }
 }
