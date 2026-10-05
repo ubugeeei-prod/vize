@@ -242,7 +242,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_suspense_pari
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_teardown_without_stack_guard.rs	68	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_transition_parity/main.rs	18	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_vapor_artifact.rs	13	carton	Carton host/compatibility	old	vize_carton	legacy	7
-compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_vapor_native_budget.rs	18	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_vapor_native_budget.rs	21	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/component_names.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/dynamic_content.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/dynamic_models.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	1

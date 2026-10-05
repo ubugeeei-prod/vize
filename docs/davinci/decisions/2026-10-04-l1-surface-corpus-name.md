@@ -129,7 +129,27 @@ TODO: independently review any recovery of the historical overlay/protocol;
 the old diagnostic recipe is currently unusable on this standalone source,
 and no trial or expired-archive retrieval is authorized.
 
-Preparation has not compiled or executed the Rust controls locally, started a
-campaign, pushed this source or queued #7757. Root source review and fresh complete Actions are
+At the private preparation checkpoint, no Rust controls were compiled or
+executed locally, no campaign was started and #7757 was unpublished/unqueued. Root source review and fresh complete Actions are
 required. Oldfailed candidate acceptance is not rewritten; this correction
 provides no historical-cause,10x/native/default product or full-history credit.
+
+## Current-source qualification
+
+The same existing PR publishes `acc8312968df6ee1efa1f71efe96727206377b7a`
+over genuine signed main d8c3, preserving original move-only history and the
+complete reviewed callback/counters/caps. Independent source review caught
+an initial Git repository-discovery call before the refusal; filesystem-root
+discovery and the literal CLI refusal law now close that boundary, with exact
+preparation and one fatal still-unknown receipt retained. Four pure Python
+laws and two selected Node custody/refusal laws passed locally; real Rust
+controls and measurements remain hosted-only.
+
+Fresh Check37278661095 rejects the generated consumer inventory coordinate:
+the new three documentation lines move the unchanged `vize_carton` import
+from line18 to21. The exact log retains the same266 split lines (including
+the trailing empty line) and reports only that coordinate delta. Update that
+field to the actual source line, preserving all classifications/counts and
+refusing a stale generated packet. This failed head is not accepted; fresh
+exact-successor Actions/full protected acceptance remain required. No new
+trial, retrospective explanation of78 or product/history completion follows.
