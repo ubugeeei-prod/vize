@@ -131,3 +131,25 @@ Fresh exact-head Actions, compatible current-prefix admission, protected
 unchanged104/full Rust/native original suites and actual signed merge remain
 required; old source passes provide no replay acceptance. Publication remains
 the release owner's separate responsibility.
+
+## Scoped attribute union
+
+Qualified source `b5ea638a` passes Check37348267730 on execution888bd86:
+16,221 affected-source Rust cases, all five new and three original tests
+exactly once, seventeen complete CLI inputs twice, the whole original command
+and the hydrated corpus. Its raw receipts and archive ref remain historical.
+
+After #8053 actually merged as `45e06131`, the
+[attribute-union replay](https://github.com/ubugeeei-prod/vize/issues/7962#issuecomment-6000200598)
+uses the freshly fetched literal main. Both scoped corpus attribute rules,
+all 350 incoming canonical lines and every owned decision clause survive.
+Every other owned source/law/golden/input/harness blob remains byte-exact;
+the combined inventory retains all incoming rows and both official checks
+pass. All twenty-one original corpus files stay exact under Git's
+`core.autocrlf=true` filter. The five meaningful source commits and verified
+reporter trailers remain intact.
+
+This same PR requires fresh source Actions and a clean immediate actual-prefix
+projection before protected unchanged104/full Rust/native-original checks.
+Old source receipts grant no replay or protected acceptance; actual signed
+merge and the release owner's publication remain separate.
