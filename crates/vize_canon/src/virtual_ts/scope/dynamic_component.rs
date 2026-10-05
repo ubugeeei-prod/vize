@@ -12,6 +12,28 @@ use vize_carton::{String, append};
 use vize_croquis::{Croquis, drawer::is_dynamic_component_alias};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
+/// A named value of the built-in `component`, not an authored registry tag.
+/// Match the existing Croquis retained-AST authority without reparsing.
+pub(crate) fn is_owned_named_dynamic_component(
+    template_ast: Option<&RootNode<'_>>,
+    usage: &vize_croquis::croquis::ComponentUsage,
+) -> bool {
+    template_ast.is_some_and(|root| {
+        let Some(ExpressionNode::Simple(expression)) = is_expression_node(root, usage.start) else {
+            return false;
+        };
+        expression.js_ast.is_some_and(|js| {
+            js.raw == expression.content
+                && usage.name == expression.content.trim()
+                && matches!(
+                    js.ast,
+                    oxc_ast::ast::Expression::Identifier(_)
+                        | oxc_ast::ast::Expression::StaticMemberExpression(_)
+                )
+        })
+    })
+}
+
 /// Prove the usage is the generated alias of its authored `<component :is>`.
 /// Reserved-looking authored static tags must still receive registry checks.
 pub(crate) fn is_owned_dynamic_component_alias(
@@ -51,9 +73,16 @@ pub(super) fn emit_dynamic_component_aliases(
 
 /// The `:is` expression of the `<component>` element starting at `start`.
 fn is_expression<'a>(root: &'a RootNode<'a>, start: u32) -> Option<&'a str> {
+    match is_expression_node(root, start)? {
+        ExpressionNode::Simple(simple) => Some(simple.content),
+        ExpressionNode::Compound(compound) => Some(compound.loc.span.slice(root.source)),
+    }
+}
+
+fn is_expression_node<'a>(root: &'a RootNode<'a>, start: u32) -> Option<&'a ExpressionNode<'a>> {
     let mut found = None;
     for child in root.children.iter() {
-        visit(child, start, root.source, &mut found);
+        visit(child, start, &mut found);
         if found.is_some() {
             break;
         }
@@ -64,19 +93,18 @@ fn is_expression<'a>(root: &'a RootNode<'a>, start: u32) -> Option<&'a str> {
 fn visit<'a>(
     node: &'a TemplateChildNode<'a>,
     start: u32,
-    source: &'a str,
-    found: &mut Option<&'a str>,
+    found: &mut Option<&'a ExpressionNode<'a>>,
 ) {
     match node {
         TemplateChildNode::Element(element) => {
             if element.loc.span.start == start {
                 *found = (element.tag == "component")
-                    .then(|| is_directive_expression(element, source))
+                    .then(|| is_directive_expression(element))
                     .flatten();
                 return;
             }
             for child in element.children.iter() {
-                visit(child, start, source, found);
+                visit(child, start, found);
                 if found.is_some() {
                     return;
                 }
@@ -85,7 +113,7 @@ fn visit<'a>(
         TemplateChildNode::If(node) => {
             for branch in node.branches.iter() {
                 for child in branch.children.iter() {
-                    visit(child, start, source, found);
+                    visit(child, start, found);
                     if found.is_some() {
                         return;
                     }
@@ -94,7 +122,7 @@ fn visit<'a>(
         }
         TemplateChildNode::For(node) => {
             for child in node.children.iter() {
-                visit(child, start, source, found);
+                visit(child, start, found);
                 if found.is_some() {
                     return;
                 }
@@ -104,7 +132,7 @@ fn visit<'a>(
     }
 }
 
-fn is_directive_expression<'a>(element: &'a ElementNode<'a>, source: &'a str) -> Option<&'a str> {
+fn is_directive_expression<'a>(element: &'a ElementNode<'a>) -> Option<&'a ExpressionNode<'a>> {
     element.props.iter().find_map(|prop| {
         let PropNode::Directive(directive) = prop else {
             return None;
@@ -117,9 +145,6 @@ fn is_directive_expression<'a>(element: &'a ElementNode<'a>, source: &'a str) ->
         {
             return None;
         }
-        match directive.exp.as_ref()? {
-            ExpressionNode::Simple(simple) => Some(simple.content),
-            ExpressionNode::Compound(compound) => Some(compound.loc.span.slice(source)),
-        }
+        directive.exp.as_ref()
     })
 }

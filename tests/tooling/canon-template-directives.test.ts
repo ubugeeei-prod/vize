@@ -257,6 +257,21 @@ const open = true;
 <template><component :is="open ? Choice : Choice" count="wrong" /></template>`;
         await compare(wrongProp, [{ code: 2322, token: 'count="wrong"' }]);
         await compare(original, []);
+        const named = original
+          .replace("'button'", "registry.button")
+          .replace("</script>", "const registry = { button: 'button' };\n</script>");
+        await compare(named, []);
+        await compare(named.replace("registry.button", "registry.missing"), [
+          { code: 2339, token: "missing" },
+        ]);
+        const badValue = named
+          .replace("button: 'button'", "button: 1")
+          .replace("registry.button", "registry.button.toUpperCase()");
+        await compare(badValue, [{ code: 2339, token: "toUpperCase" }]);
+        const namedProp = wrongProp
+          .replace("</script>", "const registry = { Choice };\n</script>")
+          .replace("open ? Choice : Choice", "registry.Choice");
+        await compare(namedProp, [{ code: 2322, token: 'count="wrong"' }]);
       } finally {
         await session.shutdown();
         fs.rmSync(directory, { recursive: true, force: true });

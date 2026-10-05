@@ -168,7 +168,13 @@ impl<'a> GlobalComponentPlan<'a> {
                 } else {
                     to_safe_identifier(name)
                 };
-            if let Some(diagnostics) = diagnostics.as_mut().filter(|_| !is_self) {
+            if let Some(diagnostics) = diagnostics.as_mut().filter(|_| {
+                !is_self
+                    && !crate::virtual_ts::scope::is_owned_named_dynamic_component(
+                        self.template_ast,
+                        usage,
+                    )
+            }) {
                 append!(*ts, "const {{ ");
                 let start = ts.len();
                 crate::virtual_ts::helpers::push_ts_string_literal(ts, name);

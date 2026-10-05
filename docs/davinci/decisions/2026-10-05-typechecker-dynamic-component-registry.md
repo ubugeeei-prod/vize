@@ -125,3 +125,52 @@ has no hosted result for the correction. The computed-only successor may be
 published as Draft source preparation, with the named-member gap stated in
 the PR and its automatic #8003 closing reference removed. It grants no Ready,
 queue, P0 closure or runtime credit; the complete AST-owned repair remains open.
+
+The next private source slice adds only named-value registry eligibility. The
+existing offset locator returns the original bound-is expression node; a named
+owner requires its retained AST to be an Identifier or StaticMemberExpression,
+its retained raw bytes to equal current node content, and its trimmed name to
+match the actual Croquis usage. An authored ordinary tag, offset/name mismatch,
+stale parse or missing AST does not qualify. No dot/prefix exemption or new
+parse, pipeline stage, global, `any` fallback or diagnostic filtering is added.
+Only registry diagnostic destructuring and its associated mapping are omitted;
+all original named declarations, value checks, bindings and prop paths remain.
+A complete module-byte/map law checks that exact boundary against declined AST
+ownership, alongside fresh/stale/no-AST/ordinary-tag refusals.
+
+The original 21 CLI/editor states remain intact. Four additional states per
+option preserve the exact named-member input, wrong member, invalid numeric
+member method and bad known namespace prop, giving 33 prepared complete native
+states. Raw observations are written before strict assertions; no failure may
+be normalized or downgraded. Namespace props may expose the pre-existing
+sanitized binding gap: only authentic failed control evidence can justify a
+separately reviewed typed-path follow-on. Until every real error and complete
+runtime gate passes, #8003 remains open and PR8040 remains Draft/unqueued.
+No local native execution, actual merge, performance or release credit is
+claimed. Fresh peer/source Actions and repaired actual-main full execution are
+required; the finite first433 publication hold also blocks queue admission.
+
+Published grammar source `3c78cc2bc5e49be24a399f9e486338e2c7f3f74f` has terminal
+PR Check `37316229933` success at actual virtual checkout
+`d71e2cda250dc90aa281886db621c5ec35ac725c`. Its four affected workers ran
+16,161 tests successfully, including all five original generator laws; this
+is affected-source evidence, not the full protected or 33-state native gate.
+NativePhase `37316225942` failed before compilation: its newer merged workflow
+requested `check_vue_helper_scope_cli`, absent in the original source head.
+The complete 219,173-byte failed log has SHA256
+`b9113b67cde64a0048164674fdd44df85935bc2972cc1c41a1dd435ed605a4d3`;
+official artifact `11347453747` retains only source custody, 2,674 bytes with
+SHA256 `5d383e5857edbd43a1be784bceac3912a46903edb1673540539f5fc1e56e0398`.
+The observed workflow SHA is `d71e2cda250dc90aa281886db621c5ec35ac725c`,
+source/driver remains `3c78`, baseline `7c591c8e8f0af608e67746c592e40af3d1b6031f`,
+and fetched main was `d8cd6a208b9aea02150b140a4b81b87222128a51`. No native
+component state or phase was executed; no missing test is waived or removed.
+
+After actual signed #7857 merge, the existing three commits and private named
+owner slice are genuinely replayed onto `92e036de6f8dc651440e7c9a2f415a3c7fa69890`.
+All incoming helper/session/publication/workflow and other decision clauses are
+preserved; the same original three fixture bytes and source-only 33 states
+remain mandatory. The source/workflow mismatch requires this fresh-main
+composition, a new independent exact-source review, source/native Actions and
+full native runtime execution. Prior passed affected laws and failed native
+receipts stay historical; the first433 hold, open Issue and Draft status remain.

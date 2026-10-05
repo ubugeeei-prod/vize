@@ -42,6 +42,7 @@ pub(crate) use component_prop_checker::is_inline_callback_prop;
 pub(crate) use component_ref_props::is_inline_ref_callback_prop;
 pub(crate) use context::{ComponentBindingCheck, GlobalComponentCheck, ScopeGenerationOptions};
 pub(crate) use dynamic_component::is_owned_dynamic_component_alias;
+pub(crate) use dynamic_component::is_owned_named_dynamic_component;
 pub(crate) use forwarded_roots::{FORWARDED_RETURN_KEY, FORWARDED_ROOT_HELPERS, SLOTS_RETURN_KEY};
 pub(crate) use inline_callback_classifier::is_direct_inline_function_prop_value;
 pub(crate) use ref_instances::{REF_INSTANCE_HELPERS, REFS_RETURN_KEY, instantiated_ref_starts};

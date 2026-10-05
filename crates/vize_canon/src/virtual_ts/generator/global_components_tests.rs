@@ -157,3 +157,144 @@ fn authored_alias_spelling_never_proves_dynamic_component_ownership() {
         assert_eq!(checked.mapping, default.mapping);
     }
 }
+
+#[test]
+fn named_dynamic_values_require_their_fresh_ast_and_matching_usage() {
+    for template in [
+        "<component :is=\"selected\" />",
+        "<component :is=\"registry.button\" />",
+    ] {
+        let allocator = vize_carton::Allocator::new();
+        let (mut root, errors) = vize_armature::parse_with_options(
+            &allocator,
+            template,
+            vize_relief::options::ParserOptions {
+                is_native_tag: Some(vize_carton::is_native_tag),
+                ..Default::default()
+            },
+        );
+        assert!(errors.is_empty(), "{errors:?}");
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(
+            "const selected = 'button'; const registry = { button: selected };",
+        );
+        analyzer.analyze_template(&root);
+        let summary = analyzer.finish();
+        let usage = vize_croquis::facts::component_usage_list(&summary)
+            .first()
+            .expect("actual named dynamic value")
+            .clone();
+        let owned = crate::virtual_ts::scope::is_owned_named_dynamic_component;
+        assert!(owned(Some(&root), &usage));
+        assert!(!owned(None, &usage));
+        let mut mismatched = usage.clone();
+        mismatched.start += 1;
+        assert!(!owned(Some(&root), &mismatched));
+        mismatched = usage.clone();
+        mismatched.name = "other.button".into();
+        assert!(!owned(Some(&root), &mismatched));
+        {
+            let Some(vize_relief::TemplateChildNode::Element(element)) = root.children.first_mut()
+            else {
+                panic!("actual component element");
+            };
+            let expression = element
+                .props
+                .iter_mut()
+                .find_map(|prop| match prop {
+                    vize_relief::PropNode::Directive(directive) => directive.exp.as_mut(),
+                    _ => None,
+                })
+                .expect("actual bound is");
+            let vize_relief::ExpressionNode::Simple(expression) = expression else {
+                panic!("actual parsed simple expression");
+            };
+            assert!(expression.js_ast.is_some());
+            expression.content = "other.button";
+        }
+        assert!(!owned(Some(&root), &mismatched));
+        {
+            let Some(vize_relief::TemplateChildNode::Element(element)) = root.children.first_mut()
+            else {
+                panic!("actual component element");
+            };
+            let expression = element
+                .props
+                .iter_mut()
+                .find_map(|prop| match prop {
+                    vize_relief::PropNode::Directive(directive) => directive.exp.as_mut(),
+                    _ => None,
+                })
+                .expect("actual bound is");
+            let vize_relief::ExpressionNode::Simple(expression) = expression else {
+                panic!("actual parsed simple expression");
+            };
+            expression.js_ast = None;
+        }
+        assert!(!owned(Some(&root), &mismatched));
+    }
+
+    let ordinary = generate(
+        "const registry = { button: 'button' };",
+        "<Unknown :is=\"registry.button\" />",
+        true,
+    );
+    assert!(ordinary.code.contains("__vize_global_component_"));
+}
+
+#[test]
+fn named_member_exclusion_removes_only_the_exact_registry_check_and_mapping() {
+    let allocator = vize_carton::Allocator::new();
+    let template = "<component :is=\"registry.button\" />";
+    let (root, errors) = vize_armature::parse_with_options(
+        &allocator,
+        template,
+        vize_relief::options::ParserOptions {
+            is_native_tag: Some(vize_carton::is_native_tag),
+            ..Default::default()
+        },
+    );
+    assert!(errors.is_empty(), "{errors:?}");
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup("const registry = { button: 'button' };");
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let emit = |ast| {
+        let mut code = vize_carton::String::default();
+        let mut mappings = Vec::new();
+        let options = VirtualTsOptions::default();
+        let plan = super::GlobalComponentPlan::new((&summary, ast), false, true, None);
+        plan.emit(
+            &mut code,
+            &summary,
+            &options,
+            &vize_carton::FxHashSet::default(),
+            &vize_carton::FxHashSet::default(),
+            Some(super::GlobalComponentDiagnostics {
+                mappings: &mut mappings,
+                template_offset: 100,
+            }),
+        );
+        (code, mappings)
+    };
+    let (owned, owned_maps) = emit(Some(&root));
+    let (unowned, unowned_maps) = emit(None);
+    const REGISTRY_CHECK: &str = concat!(
+        "const { \"registry.button\": __vize_global_component_0 } = {} as (",
+        "\"Registry.button\" extends keyof import('vue').GlobalComponents ? { \"registry.button\": unknown } : ",
+        "\"registry.button\" extends keyof import('vue').GlobalComponents ? { \"registry.button\": unknown } : ",
+        "\"registry.button\" extends keyof import('vue').GlobalComponents ? { \"registry.button\": unknown } : {});\n",
+        "void __vize_global_component_0;\n",
+    );
+    assert_eq!(unowned, vize_carton::cstr!("{REGISTRY_CHECK}{owned}"));
+    assert!(owned.contains("declare const registry_button:"));
+    assert!(owned_maps.is_empty());
+    assert_eq!(
+        unowned_maps,
+        vec![crate::virtual_ts::VizeMapping {
+            gen_range: 8..25,
+            src_range: 101..116,
+            sub_spans: Vec::new(),
+        }]
+    );
+}

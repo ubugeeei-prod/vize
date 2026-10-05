@@ -10,9 +10,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | product                        | kind  | module              | files | sites |
 | ------------------------------ | ----- | ------------------- | ----: | ----: |
-| `Analyzer`                     | type  | `analyzer`          |    45 |   165 |
-| `AnalyzerOptions`              | type  | `analyzer`          |    45 |   161 |
-| `ComponentUsage`               | type  | `croquis::template` |    21 |    45 |
+| `Analyzer`                     | type  | `analyzer`          |    45 |   167 |
+| `AnalyzerOptions`              | type  | `analyzer`          |    45 |   163 |
+| `ComponentUsage`               | type  | `croquis::template` |    21 |    46 |
 | `Croquis`                      | type  | `croquis`           |    92 |   218 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |
@@ -80,7 +80,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ViolationSeverity`            |     1 |     3 |
 | `WITH_DEFAULTS`                |     1 |     1 |
 | `classify_event_handler`       |     2 |     3 |
-| `component_usage_list`         |    17 |    22 |
+| `component_usage_list`         |    17 |    23 |
 | `dynamic_component_alias`      |     2 |     2 |
 | `extract_identifier_refs_oxc`  |     2 |     3 |
 | `extract_identifiers_oxc`      |     5 |     6 |

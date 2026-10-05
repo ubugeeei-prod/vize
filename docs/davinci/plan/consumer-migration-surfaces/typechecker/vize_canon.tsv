@@ -643,10 +643,10 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/file_d
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/generics.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/generics.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/generics.rs	303	carton	Carton host/compatibility	old	vize_carton	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/global_components_tests.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	5
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/global_components_tests.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/global_components_tests.rs	7	old_ast	old AST/parser	old	vize_armature	legacy	3
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/global_components_tests.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	4
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/global_components_tests.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	13
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/global_components_tests.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	9
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/global_components_tests.rs	7	old_ast	old AST/parser	old	vize_armature	legacy	5
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/global_components_tests.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	5
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/global_components.rs	1	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/global_components.rs	1	old_ast	old AST/parser	old	vize_relief	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/global_components.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	3
@@ -898,7 +898,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/context.rs
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/context.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	4
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/dynamic_component.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/dynamic_component.rs	11	old_ast	old AST/parser	old	vize_relief	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/dynamic_component.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	4
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/dynamic_component.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	5
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/dynamic_component.rs	11	raw_oxc	raw OXC	raw	oxc_ast	raw	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/emit.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	3
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/emit.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/scope/emit.rs	4	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
