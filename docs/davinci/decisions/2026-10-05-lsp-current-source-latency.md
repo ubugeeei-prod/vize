@@ -111,3 +111,13 @@ retains all fifteen noncanonical source blobs from `34a6f19e8f` exactly and adds
 only its existing decision clause to the complete `d1a25ec1da` record. Fresh
 head Actions and protected merging precede one dispatch on the resulting
 literal main SHA; historical source checks do not qualify that execution.
+
+The PR-drain replay uses actually merged Router main `8f667ea070` and preserves
+all fifteen reviewed noncanonical blobs from `73dc76d209` exactly before this
+dated qualification. It moves only the complete owned canonical clause into
+the existing performance record; removing that clause restores every incoming
+canonical byte and keeps all 350 lines. The 24 existing pure custody laws pass.
+Fresh exact-head Actions, protected actual merge and one main-only campaign
+remain required; no hosted latency, RSS or 10x result is credited by replay.
+The paired [issue decision](https://github.com/ubugeeei-prod/vize/issues/3952#issuecomment-5988097909)
+records the replay and the already authorized single finite campaign.
