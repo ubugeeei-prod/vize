@@ -511,6 +511,17 @@ impl<'a, C: Config> ParserImpl<'a, C> {
     ///     [ `ElementList`[?Yield, ?Await] ]
     ///     [ `ElementList`[?Yield, ?Await] , Elisionopt ]
     pub(crate) fn parse_array_expression(&mut self) -> Expression<'a> {
+        // Adjacent [] cannot descend into an element. Keep its complete original
+        // parser body without querying thread stack space or advancing the lexer.
+        if self.source_text.as_bytes().get(self.cur_token().span().end as usize) == Some(&b']') {
+            return self.parse_array_expression_body();
+        }
+        // Grow only across array descent; grammar and recovery stay on the same parser.
+        stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, || self.parse_array_expression_body())
+    }
+
+    #[inline(always)]
+    fn parse_array_expression_body(&mut self) -> Expression<'a> {
         let span = self.start_span();
         let opening_span = self.cur_token().span();
         self.expect(Kind::LBrack);
@@ -530,13 +541,11 @@ impl<'a, C: Config> ParserImpl<'a, C> {
     }
 
     fn parse_array_expression_element(&mut self) -> ArrayExpressionElement<'a> {
-        // Grow before recursive element/spread/assignment descent. Empty arrays
-        // leave the original delimited list before reaching this callback.
-        stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, || match self.cur_kind() {
+        match self.cur_kind() {
             Kind::Comma => self.parse_elision(),
             Kind::Dot3 => ArrayExpressionElement::SpreadElement(self.parse_spread_element()),
             _ => ArrayExpressionElement::from(self.parse_assignment_expression_or_higher()),
-        })
+        }
     }
 
     /// Elision :

@@ -32,16 +32,16 @@ to array parsing. Other recursion paths require their own evidence.
 
 The existing pinned `stacker = "=0.1.25"` becomes a direct vendor-parser
 dependency. The lock adds only that existing dependency edge. The complete
-original array-entry body remains unchanged. Its original delimited list
-calls a guarded element callback before any nested element, spread or
-assignment descent. That complete original callback executes in
-`stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, ...)`. Empty arrays leave the
-list before reaching the callback. Nonempty arrays check each element,
-including flat scalars and elisions; their cost needs fresh measurement.
-The complete tuple body always retains its headroom guard. The same parser,
-arena, context, trailing-comma bookkeeping, grammar and ordinary diagnostics
-remain in use. No Vize dependency, depth limit, synthetic diagnostic, parse
-retry, panic suppression, input skip or extra pipeline stage is added.
+original array body executes in
+`stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, ...)`, before token/span work,
+except exact adjacent `[]`, which cannot recurse and executes that same body
+without a stack query. Its private helper is force-inlined to address measured
+outline cost; successful code generation is verified by fresh raw measurements.
+Flat scalar elements do not each gain a separate headroom check. The complete
+tuple body always retains its guard. The same parser, arena, context,
+trailing-comma bookkeeping, grammar and ordinary diagnostics remain in use.
+No Vize dependency, depth limit, synthetic diagnostic, parse retry, panic
+suppression, input skip or extra pipeline stage is added.
 
 These constants reuse L0's stack-headroom configuration; that does not prove
 parser frame sizes or ASan safety. Stack growth can allocate, and unsupported
@@ -188,3 +188,36 @@ Stack delivery `d1a25ec1da2efca98534520ff8ebe84d34708e3d`; incoming canonical
 clauses stay intact. Fresh automatic source Actions, all-nine-target sanitizer
 replay, unchanged instruction measurements and protected actual delivery are
 pending. Only their accepted literal main can refresh supported release #7811.
+
+## Callback result and minimal outline policy
+
+Callback source `bc556b630ada845e77ad6d0f361d95e475a88e71` passed full ordinary
+Check 37251404450 and all-nine-target replay 37251421579. Its instruction run
+37251419061/job 111579653977 genuinely failed the original stage probe
+`s1_to_s2_pass_template_complexity`: 5,788 against the unchanged 5,781 ceiling.
+All three raw formatter runs now pass their caps at 291,931 / 273,087 /
+928,951 / 242,988, although official formatter enforcement was skipped after
+the preceding stage failure. Both artifacts 11320789510 and 11320448797
+remain authenticated. First raw job SHA256 is
+`0be093af325528d453d981e473ccdb701c81ae395da6751038937f837621aca5`.
+No admission or unchanged-source retry follows this failed gate.
+
+The actual accepted d1 stage baseline is 5,761. Independent raw comparison
+attributes the +27 solely to `owner_bindings` self +19, a guarded-region
+instantiation +9 and another guarded region -1. All their call counts stay
+unchanged. The original measured window runs only the CFG pass; source parsing
+and lowering occur outside it. Parser calls are absent from the window and
+existing L0 stacker/TLS/stack-pointer costs and counts are identical to d1.
+The precise mechanism behind those higher caller costs remains unknown; this
+is not evidence that new array queries or TLS initialization ran in the pass.
+
+The next smallest correction restores the already source/sanitizer-qualified
+c7 array wrapper and original helper, changing only its soft inline hint to
+`#[inline(always)]`. That addresses the independently measured 116-instruction
+array-body outlining; it introduces no per-element guard or new semantics.
+The complete original helper remains byte-exact, the adjacent-literal proof
+and all six complete laws stay intact, and the tuple guard stays unchanged.
+No unrelated CFG saving or acceptance is predicted: full fresh 100+4 raw
+measurements, automatic source laws, all-nine-target replay and protected
+actual delivery remain necessary. Every genuine failed source remains archived
+with its immutable bytes, raw artifacts and conclusion.
