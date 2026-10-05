@@ -17,12 +17,14 @@ use corsa::{
     runtime::block_on,
 };
 use std::{
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::atomic::{AtomicUsize, Ordering},
 };
 use vize_l0::{String, cstr};
 
 use crate::file_uri::path_to_file_uri;
+
+mod workspace;
 
 impl CorsaProjectClient {
     /// Start a Corsa project session rooted at an isolated scratch workspace.
@@ -57,25 +59,6 @@ impl CorsaProjectClient {
             temp_dir_path,
             temp_root,
             Some(temp_dir_base.join(&*cstr!("{}-{}", std::process::id(), client_id))),
-        )
-    }
-
-    /// Start a Corsa project session rooted at an on-disk workspace.
-    pub fn new_for_workspace(
-        corsa_path: Option<&str>,
-        workspace_root: &Path,
-    ) -> Result<Self, String> {
-        let workspace_root = workspace_root
-            .canonicalize()
-            .unwrap_or_else(|_| workspace_root.to_path_buf());
-        let working_dir = workspace_root.to_string_lossy();
-        let executable = resolve_corsa_executable(corsa_path, Some(working_dir.as_ref()))?;
-
-        Self::spawn_initialized_client(
-            executable.as_str(),
-            workspace_root.clone(),
-            Some(workspace_root),
-            None,
         )
     }
 
