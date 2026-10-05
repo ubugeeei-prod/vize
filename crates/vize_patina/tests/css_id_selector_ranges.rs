@@ -13,7 +13,7 @@ fn complete_sfc_id_selector_ranges_and_public_reports() {
     )
     .expect("valid range manifest");
     let cases = manifest["cases"].as_array().expect("all range cases");
-    assert_eq!(cases.len(), 16, "every original and authored control");
+    assert_eq!(cases.len(), 17, "every original and authored control");
     let linter = Linter::with_preset(LintPreset::Incremental)
         .with_enabled_rules(Some(vec!["css/no-id-selectors".into()]))
         .with_locale(Locale::En)

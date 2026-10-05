@@ -16,8 +16,8 @@ await test("source-built CLI locates every original and authored CSS ID selector
   const manifest = JSON.parse(fs.readFileSync(path.join(fixture, "cases.json"), "utf8"));
   assert.equal(manifest.issue, 7981);
   assert.equal(manifest.reporter.id, 71201308);
-  assert.equal(manifest.cases.length, 16);
-  assert.equal(new Set(manifest.cases.map((entry) => entry.id)).size, 16);
+  assert.equal(manifest.cases.length, 17);
+  assert.equal(new Set(manifest.cases.map((entry) => entry.id)).size, 17);
   const config = fs.readFileSync(path.join(fixture, manifest.config.file));
   assert.equal(config.length, manifest.config.bytes);
   assert.equal(sha256(config), manifest.config.sha256);
@@ -87,7 +87,7 @@ await test("source-built CLI locates every original and authored CSS ID selector
       }
       fs.unlinkSync(path.join(directory, entry.filename));
     }
-    assert.equal(evidence.runs.length, 33);
+    assert.equal(evidence.runs.length, 35);
     assert.equal(evidence.runs[0].stdout, evidence.runs[2].stdout, "whole original JSON repeat");
   } finally {
     persist();

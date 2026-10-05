@@ -155,6 +155,15 @@
       "bytes": 76,
       "sha256": "4ae9ac7b538e2633ce234baf62284184eaaf10e4c8f67f5c37618938017dddb8",
       "expected": "escaped-crlf-id.expected.json"
+    },
+    {
+      "id": "repeated-compound-ids",
+      "source": "repeated-compound-ids.vue.txt",
+      "filename": "RepeatedCompoundIds.vue",
+      "authority": "Authored repeated IDs within the same accepted compound; every occurrence and comma entry keeps a distinct full range",
+      "bytes": 94,
+      "sha256": "5c664786f0473e87f8ebcc0af9317447eb010fe385599c9e022b624f02449f11",
+      "expected": "repeated-compound-ids.expected.json"
     }
   ]
 }
