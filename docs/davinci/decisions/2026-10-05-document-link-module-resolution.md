@@ -60,6 +60,26 @@ consumer-surface generator also updates the three raw-OXC import line numbers
 from 3 to 1. First raw logs remain preserved; the correction needs its own fresh
 source execution and does not inherit any runtime result from that attempt.
 
+## Source-qualified actual-hover integration
+
+The corrected source `51614f12` passed Check `37303353675` and its four
+API-digest/CRC-authenticated Rust workers: 16,133 distinct PR-selected cases,
+including both complete stdio laws and the Windows/UNC encoding unit. The PR
+profile excludes 18 existing full-tier laws. Native phases, tooling/browser and
+canonical DOM/SSR/Pug/production reach also passed; these remain historical
+source results and are not transferred to a replayed head.
+
+The first queue attempt generated no candidate: its shared registry/canonical
+append conflicted with the pending hover fix. After #8027 actually merged as
+signed `4e818a4e`, this branch genuinely replayed on that literal main. All 13
+incoming corpus sessions and 21 complete responses remain unchanged; the
+independent document-link case yields 14 sessions and 22 responses. All four
+resolver/link source files and the complete stdio/original/control oracles remain
+byte-exact to `51614f12`. Only shared registry counts, truthful provenance and
+this record changed. Every incoming canonical clause is preserved. This replay
+still requires its own fresh source Actions and protected full suite/100+4
+ceilings before actual merge; public installed replay remains unexecuted.
+
 ## TODO
 
 - Finish independent source review and exact-head Actions, then supervise the

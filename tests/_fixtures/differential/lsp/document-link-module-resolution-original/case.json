@@ -2,7 +2,7 @@
   "version": 1,
   "id": "lsp/fix-history/document-link-module-resolution-original",
   "provenance": {
-    "fixCommit": "8098a5f44e3ddf3006302a74d6472dedde108b9c",
+    "fixCommit": "2f1f69043a7376440e2baec17319e80d94fea022",
     "witnessPath": "crates/vize/tests/lsp_document_links_cli.rs",
     "witnessTest": "document_links_replay_original_directory_alias_and_encoded_uri",
     "issue": "https://github.com/ubugeeei-prod/vize/issues/8016",
