@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
+import { serialize } from "node:v8";
 import { transformSync } from "@babel/core";
 import { parse } from "@babel/parser";
 import { mappingFacts } from "./setup-scope-await-maps.mjs";
@@ -65,6 +66,17 @@ function save() {
 }
 save();
 let sequence = 0;
+
+function compilerGraph(value) {
+  const bytes = serialize(value);
+  return {
+    encoding: "node:v8/base64",
+    node: process.version,
+    v8: process.versions.v8,
+    sha256: sha(bytes),
+    data: bytes.toString("base64"),
+  };
+}
 
 function astFacts(code) {
   const ast = parse(code, { sourceType: "module", plugins: ["typescript"] });
@@ -245,12 +257,12 @@ for (const row of input.cases) {
     source: row.source,
     current,
     referenceSource,
-    official: JSON.parse(JSON.stringify(official)),
+    official: compilerGraph(official),
     sourceSha256: sha(row.source),
     referenceSourceSha256: sha(referenceSource),
     stockBareEvidence: officialBare
       ? {
-          complete: JSON.parse(JSON.stringify(officialBare)),
+          complete: compilerGraph(officialBare),
           facts: null,
           mappings: null,
           runtimeAcceptance: false,
