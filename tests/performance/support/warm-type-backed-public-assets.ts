@@ -10,6 +10,16 @@ import { sha256 } from "./warm-type-backed-source.ts";
 import { unpackPublicArchive } from "./warm-type-backed-public-archives.ts";
 
 const apiRoot = "https://api.github.com/repos/ubugeeei-prod/vize";
+const transport = (requestUrl: string, response: Response) => {
+  const final = new URL(response.url);
+  return {
+    requestUrl,
+    status: response.status,
+    finalOrigin: final.origin,
+    finalPath: final.pathname,
+    finalQuerySha256: sha256(final.search),
+  };
+};
 const headers = () => ({
   Accept: "application/vnd.github+json",
   Authorization: `Bearer ${process.env.GH_TOKEN!}`,
@@ -23,8 +33,7 @@ export async function officialJson(endpoint: string, destination: string) {
   fs.writeFileSync(
     `${destination}.http.json`,
     JSON.stringify({
-      url: response.url,
-      status: response.status,
+      ...transport(`${apiRoot}/${endpoint}`, response),
       bytes: bytes.length,
       sha256: sha256(bytes),
     }),
@@ -46,10 +55,7 @@ async function download(
     url,
     authenticated ? { headers: { ...headers(), Accept: "application/vnd.github+json" } } : {},
   );
-  fs.writeFileSync(
-    `${destination}.http.json`,
-    JSON.stringify({ url: response.url, status: response.status }),
-  );
+  fs.writeFileSync(`${destination}.http.json`, JSON.stringify(transport(url, response)));
   assert.equal(response.status, 200);
   assert.ok(response.body);
   const file = fs.openSync(destination, "wx");
@@ -132,6 +138,7 @@ export async function loadSourceReference(authority: PublishedAuthority, output:
     path.join(output, "source-artifact.json"),
   );
   assert.equal(official.expired, false);
+  assert.equal(official.name, "canon-distinct-host-paired-original-400");
   assert.equal(official.size_in_bytes, reference.size);
   assert.equal(official.digest, `sha256:${reference.sha256}`);
   assert.equal(official.workflow_run.id, reference.run);
@@ -141,6 +148,8 @@ export async function loadSourceReference(authority: PublishedAuthority, output:
     path.join(output, "source-run.json"),
   );
   assert.equal(run.conclusion, "success");
+  assert.equal(run.run_attempt, reference.attempt);
+  assert.equal(run.path, ".github/workflows/davinci-canon-scaling.yml");
   assert.equal(run.name, "Davinci Canon distinct-host scaling");
   assert.equal(run.head_sha, reference.driverRevision);
   assert.equal(run.event, "workflow_dispatch");

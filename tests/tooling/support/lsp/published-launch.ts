@@ -11,7 +11,14 @@ export type PublishedAuthority = {
   releaseVersion: string;
   cut: { sha: string; tree: string; manifestSha256: string };
   asset: { id: number; size: number; sha256: string };
-  sourceArtifact: { id: number; run: number; size: number; sha256: string; driverRevision: string };
+  sourceArtifact: {
+    id: number;
+    run: number;
+    attempt: number;
+    size: number;
+    sha256: string;
+    driverRevision: string;
+  };
 };
 export type PublishedReceipt = {
   schema: "vize.original400.published.installation";

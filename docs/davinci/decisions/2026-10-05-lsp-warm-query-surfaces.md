@@ -304,3 +304,11 @@ CI-profile source pair. This standalone distribution replay is separate from
 npm's Node-wrapper/NAPI consumer proof. Source review, Actions, the one literal
 cut comparison and installed-public execution remain pending; historical59x,
 RSS/startup/config, native diagnostics and nonrunning/zombie limits remain.
+
+The [public source-attempt custody correction](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-6000080526)
+binds the exact artifact name, workflow path, literal current attempt and saved
+run/attempt/workflow identities before public replay. Intended finite attempt1
+has no inferred retry or older-green fallback. HTTP records retain immutable
+request URLs, sanitized redirect origin/path and query digests, rather than
+uploading short-lived signed queries. Original workload, production, launch and
+bounds are unchanged; fresh source and public execution remain pending.

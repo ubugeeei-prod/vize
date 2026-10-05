@@ -57,6 +57,10 @@ async function prepare() {
     assert.ok(
       Number.isSafeInteger(authority.sourceArtifact.run) && authority.sourceArtifact.run > 0,
     );
+    assert.ok(
+      Number.isSafeInteger(authority.sourceArtifact.attempt) &&
+        authority.sourceArtifact.attempt > 0,
+    );
     const driver = sourceIdentity(driverRoot);
     assert.equal(driver.dirty, "");
     assert.equal(driver.revision, process.env.GITHUB_SHA);
@@ -73,6 +77,13 @@ async function prepare() {
     );
     assert.equal(reference.sourceBinding.authority, "root-frozen-release-cut");
     assert.deepEqual(reference.sourceBinding.driverSource, driver);
+    const savedBinding = JSON.parse(
+      fs.readFileSync(path.join(referenceRoot, "workflow-source.json"), "utf8"),
+    );
+    assert.deepEqual(savedBinding, reference.sourceBinding);
+    assert.equal(savedBinding.runner.run, String(authority.sourceArtifact.run));
+    assert.equal(savedBinding.runner.attempt, String(authority.sourceArtifact.attempt));
+    assert.equal(savedBinding.runner.workflow, authority.sourceArtifact.driverRevision);
     assert.equal(reference.sourceBinding.finiteCut.control, cut.control);
     assert.equal(reference.sourceBinding.finiteCut.after, cut.after);
     assert.equal(reference.sourceBinding.finiteCut.tree, cut.tree);
