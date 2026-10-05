@@ -118,3 +118,36 @@ fn fused_resolution_public_mark_used_preserves_missing_and_shadowed_bindings() {
         }
     }
 }
+
+#[test]
+fn fused_resolution_uses_physical_slot_when_public_scope_id_changes() {
+    let mut original = graph(true);
+    let mut fused = graph(true);
+    let physical = original.current;
+    original.current_scope_mut().id = ScopeId::ROOT;
+    fused.current_scope_mut().id = ScopeId::ROOT;
+    for name in ["shared", "local", "Math", "$event", "missing", "shared"] {
+        let found = original.is_defined(name);
+        if found {
+            original_mark_used(&mut original, name);
+        }
+        assert_eq!(fused.mark_used_if_defined(name), found);
+        assert_whole_chain(&original, &fused);
+    }
+    assert!(
+        fused
+            .get_scope(physical)
+            .unwrap()
+            .get_binding("shared")
+            .unwrap()
+            .is_used()
+    );
+    assert!(
+        !fused
+            .get_scope(ScopeId::ROOT)
+            .unwrap()
+            .get_binding("shared")
+            .unwrap()
+            .is_used()
+    );
+}

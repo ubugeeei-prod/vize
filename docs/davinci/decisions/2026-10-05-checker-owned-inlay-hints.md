@@ -150,3 +150,18 @@ two-traversal contract independently, including repeated reads, additional
 parents and valid cycles. The required native helper selects both new laws;
 all original whole editor/native controls and 100+4 ceilings remain unchanged.
 Fresh source, native and instruction execution precedes renewed admission.
+
+Exact `622d979` kept the full-large case at 2,728,599 in all three runs, but the
+compile stress-wide case measured 510,503 against the unchanged 510,102 ceiling.
+The actual prior composition measured 509,687. Its complete profile has 50
+reference-check calls to immutable lookup (12,379 instructions), while the repair
+has 50 mutable-resolution calls (13,597). There is no public mark-used call in
+that case, so its wrapper is not an established cause. Preserve cheap immutable
+misses: carry the physical queued scope slot out of the original immutable walk,
+then update only that resolved binding with checked access, without another
+parent traversal. Public `Scope.id` is writable and cannot substitute for its
+physical slot; a complete old-state control deliberately changes it. Restore the
+public checked mark-used body exactly. Retain the existing public lookup inline
+attribute and add no private annotation or unsafe operation. All original inputs,
+whole vectors and ceilings remain intact; fresh source/native/100+4 qualification
+and protected acceptance are still required.

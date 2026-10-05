@@ -10,6 +10,12 @@ impl ScopeChain {
     /// Uses BFS to search all accessible scopes (lexical parents + additional parents like Vue globals)
     #[inline]
     pub fn lookup(&self, name: &str) -> Option<(&Scope, &ScopeBinding)> {
+        self.lookup_location(name)
+            .map(|(_, scope, binding)| (scope, binding))
+    }
+
+    /// Carry the physical slot chosen by the original immutable lookup.
+    fn lookup_location(&self, name: &str) -> Option<(ScopeId, &Scope, &ScopeBinding)> {
         let mut visited: SmallVec<[ScopeId; 8]> = SmallVec::new();
         let mut queue: SmallVec<[ScopeId; 8]> = smallvec![self.current];
 
@@ -26,7 +32,7 @@ impl ScopeChain {
             // compiler's busiest semantic-analysis loop.
             let scope = unsafe { self.scopes.raw.get_unchecked(id.as_u32() as usize) };
             if let Some(binding) = scope.get_binding(name) {
-                return Some((scope, binding));
+                return Some((id, scope, binding));
             }
 
             // Add all parents to queue
@@ -54,11 +60,6 @@ impl ScopeChain {
 
     /// Mark a binding as used (searches through all parent scopes)
     pub fn mark_used(&mut self, name: &str) {
-        self.mark_used_if_defined(name);
-    }
-
-    /// Resolve and mark the same binding without a second scope traversal.
-    pub(crate) fn mark_used_if_defined(&mut self, name: &str) -> bool {
         let mut visited: SmallVec<[ScopeId; 8]> = SmallVec::new();
         let mut queue: SmallVec<[ScopeId; 8]> = smallvec![self.current];
 
@@ -73,7 +74,7 @@ impl ScopeChain {
             };
             if let Some(binding) = scope.get_binding_mut(name) {
                 binding.mark_used();
-                return true;
+                return;
             }
 
             for parent_id in &scope.parents {
@@ -82,7 +83,21 @@ impl ScopeChain {
                 }
             }
         }
-        false
+    }
+
+    /// Resolve once, preserving cheap immutable misses and the physical slot.
+    pub(crate) fn mark_used_if_defined(&mut self, name: &str) -> bool {
+        let Some((id, _, _)) = self.lookup_location(name) else {
+            return false;
+        };
+        if let Some(binding) = self
+            .scopes
+            .get_mut(id)
+            .and_then(|scope| scope.get_binding_mut(name))
+        {
+            binding.mark_used();
+        }
+        true
     }
 
     /// Check if a binding has been marked as used (searches through all scopes)
