@@ -172,7 +172,18 @@ runs:
         NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
         VIZE_SERVER_PATH: ${{ github.workspace }}/target/ci/vize
         VIZE_TEST_VSCODE_VERSION: "1.107.1"
+        VIZE_LSP_TRACE_NATIVE_SCOPE: "1"
       run: xvfb-run -a vp run --workspace-root test:vscode-extension:host-real
+
+    - name: Retain the real host failure before fixture cleanup
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: vscode-real-host-failure
+        path: editors/vscode/.vscode-test/host-smoke-real/failure/
+        include-hidden-files: true
+        if-no-files-found: ignore
+        retention-days: 7
 
     - name: Run the packaged Neovim unit spec
       shell: bash

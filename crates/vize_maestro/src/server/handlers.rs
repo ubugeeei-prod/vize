@@ -117,7 +117,7 @@ impl LanguageServer for MaestroServer {
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
         let uri = params.text_document.uri;
-        self.publish_diagnostics(&uri).await;
+        self.publish_saved_diagnostics(&uri).await;
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {

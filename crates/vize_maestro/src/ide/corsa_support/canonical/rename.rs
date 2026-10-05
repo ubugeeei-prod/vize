@@ -11,6 +11,8 @@ use super::{CanonicalVirtualDocument, is_canonical_vue_virtual_uri};
 use crate::ide::IdeContext;
 
 mod merge;
+#[cfg(test)]
+mod merged_class_tests;
 pub(crate) use merge::merge_canonical_workspace_edits;
 
 pub(crate) fn map_canonical_prepare_rename(
@@ -21,8 +23,11 @@ pub(crate) fn map_canonical_prepare_rename(
     match response {
         PrepareRenameResponse::Range(range)
         | PrepareRenameResponse::RangeWithPlaceholder { range, .. } => {
-            super::map_canonical_lsp_range(ctx, document, &to_canonical_range(range))
-                .map(PrepareRenameResponse::Range)
+            let range = super::map_canonical_lsp_range(ctx, document, &to_canonical_range(range))?;
+            let cursor = crate::ide::offset_to_position(&ctx.content, ctx.offset);
+            let cursor = tower_lsp::lsp_types::Position::new(cursor.0, cursor.1);
+            (range.start <= cursor && cursor < range.end)
+                .then_some(PrepareRenameResponse::Range(range))
         }
         PrepareRenameResponse::DefaultBehavior { default_behavior } => {
             Some(PrepareRenameResponse::DefaultBehavior { default_behavior })

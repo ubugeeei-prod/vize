@@ -15,7 +15,11 @@ pub(crate) fn map_canonical_exact_edit_range(
     map_exact_range(&ctx.content, &document.virtual_result, range)
 }
 
-fn map_exact_range(source: &str, document: &VirtualTsResult, range: Range) -> Option<Range> {
+pub(super) fn map_exact_range(
+    source: &str,
+    document: &VirtualTsResult,
+    range: Range,
+) -> Option<Range> {
     let start = position_to_offset(&document.code, range.start.line, range.start.character)?;
     let end = position_to_offset(&document.code, range.end.line, range.end.character)?;
     if start > end {

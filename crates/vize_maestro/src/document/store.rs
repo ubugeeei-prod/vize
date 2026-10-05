@@ -268,6 +268,7 @@ impl DocumentStore {
 
     /// Capture only between complete foreground source-set mutations. A stamp
     /// read during an insert/change/close cannot bind the partially updated set.
+    #[cfg(feature = "native")]
     pub(crate) fn stable_revision(&self) -> Option<u64> {
         if self.mutations.load(Ordering::Acquire) != 0 {
             return None;

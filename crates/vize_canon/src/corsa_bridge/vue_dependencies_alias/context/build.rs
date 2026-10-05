@@ -235,6 +235,7 @@ pub(super) fn build(
         route_inputs,
         mirror,
         virtual_ts_options: environment.virtual_ts_options.clone(),
+        query_surface: Default::default(),
     })
 }
 

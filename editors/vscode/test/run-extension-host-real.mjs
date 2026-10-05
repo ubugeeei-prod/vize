@@ -17,6 +17,8 @@ import { withPinnedFixtureWorkspace } from "../../../tests/_helpers/realworld-pa
 import { createRealHostEnvironment, runPackagedExtensionHost } from "./packaged-host-contract.mjs";
 import { readPinnedCreateVueHostResult } from "./pinned-create-vue-host-result.mjs";
 import { runTsxHostScenarios } from "./run-tsx-host-scenarios.mjs";
+import { retainRealHostFailure } from "./real-host-failure.mjs";
+import { prepareScenarioContracts } from "./prepare-scenario-contracts.mjs";
 
 const sourceExtensionPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const testDataPath = path.join(sourceExtensionPath, ".vscode-test", "host-smoke-real");
@@ -49,6 +51,7 @@ await withPinnedFixtureWorkspace(
   async (fixture) => {
     materializeCreateVueTypecheckSource(fixture);
     prepareRealVueWorkspace(fixture.workspaceDir, { preserveExisting: true });
+    prepareScenarioContracts(fixture.workspaceDir);
     fixture.write(
       "tsconfig.json",
       `${JSON.stringify(
@@ -98,6 +101,13 @@ await withPinnedFixtureWorkspace(
         workspacePath: fixture.workspaceDir,
       });
       readPinnedCreateVueHostResult(resultPath, serverPath);
+    } catch (error) {
+      try {
+        retainRealHostFailure(fixture.workspaceDir, path.join(testDataPath, "failure"), error);
+      } catch (retentionError) {
+        console.error("Could not retain the real host failure:", retentionError);
+      }
+      throw error;
     } finally {
       fs.rmSync(profilePath, { force: true, recursive: true });
     }

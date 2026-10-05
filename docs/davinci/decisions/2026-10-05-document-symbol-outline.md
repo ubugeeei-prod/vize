@@ -112,5 +112,32 @@ sessions: 16 sessions and 24 responses. All five outline Rust files and both
 whole expected arrays remain exact corrected-source bytes. Restore the exact
 reviewed hierarchy-capability helper when uniting the shared manifest; old
 capability objects remain untouched. Fresh source Actions qualify this union.
-The full RPC corpus runs only in the protected tier, and admission remains off
-during the finite v0.433 release hold until the maintainer explicitly thaws it.
+The full RPC corpus runs only in the protected tier. The prior finite v0.433
+publication hold was explicitly thawed; current source qualification remains required.
+
+## Actual-main refresh after publication
+
+The earlier genuine union `bc77650a917f049d4ba5ac7da053b3bdd131a3c2`
+passed source Check 37316200242 with twenty-five successful jobs and sixteen
+intentional policy skips. Its authenticated four source Rust packets contained
+16,168 passing cases and all twelve outline laws. The sixteen-session,
+twenty-four-response CLI corpus is merge-only, so those source results never
+certified its real RPC execution. Preserve both earlier source failures and
+source-qualified successes as historical receipts.
+
+This successor genuinely merges signed actual main
+`58e6a0272b4044e3aaa8b7a9cb3ac62100ccec7c` after accepted #8047 component
+attribute authority, #8035 warm-query inputs, #8043 diagnostic-identity actions
+and #8045 delivery ledger. It retains all five corrected outline Rust blobs,
+all nine original artifacts and the complete sixteen-session/twenty-four-reply
+contract. Incoming fourteen cases, capability objects, methods and complete
+response vectors remain unchanged. Only the canonical append conflicts; keep
+every incoming substantive clause, then append this exact source decision.
+Consumer inventory rows are genuinely united and checked without waivers.
+
+The prior `bc776`/`c7f811` greens do not transfer. Fresh exact-source Actions,
+all twelve Rust laws and current protected real CLI sixteen-session/twenty-four
+whole replies, complete raw framing/source/build/PID/exit custody, full Rust
+and unchanged 104 instruction ceilings are required before actual merge.
+Actual signed delivery and supported publication remain pending. Native,
+default, Pug element and full #6883 history completion remain unclaimed.

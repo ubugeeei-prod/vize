@@ -1,0 +1,1 @@
+{"name":"vize-nuxt-compiler-defaults-7959","private":true,"type":"module"}

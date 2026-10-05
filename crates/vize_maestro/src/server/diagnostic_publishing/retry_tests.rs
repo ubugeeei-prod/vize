@@ -20,6 +20,8 @@ use tower_lsp::{
 
 use super::{CollectedDiagnostics, MaestroServer};
 
+mod publication_tests;
+
 const APP: &str =
     include_str!("../../../../../tests/_fixtures/lsp-corsa-responsiveness-8012/App.vue.txt");
 const TOAST: &str =
@@ -121,7 +123,7 @@ fn current(fixture: &Fixture) -> CollectedDiagnostics {
     futures::executor::block_on(async {
         let _guard = lock.lock().await;
         server
-            .collect_diagnostics_unlocked(&fixture.app)
+            .collect_diagnostics_unlocked(&fixture.app, None)
             .await
             .unwrap()
     })

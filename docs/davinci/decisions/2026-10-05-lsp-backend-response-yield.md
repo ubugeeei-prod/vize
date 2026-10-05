@@ -123,3 +123,72 @@ four outstanding typed RPCs is not fixed by worker yielding. Scoped wait itself
 is cancellable but adds no new whole-RPC deadline; the configured bound remains
 per worker job. An entered IPC is drained rather than CPU-force-cancelled.
 No 10x, RSS, editor-speed, release inclusion or completed-issue claim is made.
+
+The later full-release Check at b899eaf9, run [37292039582](https://github.com/ubugeeei-prod/vize/actions/runs/37292039582), exposed a genuine diagnostic publication regression: Misskey's unchanged whole churn oracle saw three complete empty version-87 publications after rapid root edits 84–87, with the dependency still at 81. All 249 normalized PublishRecord rows and original budgets are retained in the added corpus. The source proof identifies an old caller adopting the latest root version after waiting for the native scope; the retained normalized stream has no actor IDs or stamps, so it cannot attribute individual duplicate rows to edit versus retry owners. The aggregate remained failed despite the original 500-file cold/warm controls passing at 5,484/3,300/3,283 ms. No oracle, cap, expected vector or performance threshold is relaxed.
+
+Bind the scheduled root version after acquiring that scope, then give the complete publication one per-document owner identified by the full source/environment stamp, root version and diagnostic vector. The existing lock entry retains one complete payload, released on document close/rename, and holds no document/native/map guard across transport waits. A changed dependency/configuration/source world can publish again at the unchanged root version; a changed full vector also remains eligible. Equivalent already-taken retry/foreground results coalesce, while stale or cancelled undispatched work keeps the existing bounded/coalesced retry law.
+
+The pinned tower-lsp 0.20 / futures-channel 0.3 transport matters: Client clones a sender per notification, whose first poll uses its reserved slot to enqueue. Its send future can then remain Pending while flushing that already-owned message. Commit the publication at the first actual notification poll, not at flush completion: cancelling a flush cannot retract its queued message and must not requeue a second copy. The pending claim rolls back by Arc identity before dispatch; an older rollback cannot remove a newer claim. Validate source/version inside the short publication mutex before comparison or replacement, then validate again for both new and duplicate outcomes; an old caller cannot overwrite or retire newer-world ownership. Explicit didSave keeps each legacy complete notification through a saved cause, without fabricated environment invalidation. A whole-envelope control fills the original channel, verifies the diagnostic lock is free during backpressure, drops the publisher and checks exactly one complete App notification alongside the original filler and unchanged one-shot unavailable warning. A coalesced current result still completes queued initial work and publishes that notice, because cancelling the original flush may have prevented its post-send notice path. A dependency-source control requires a new complete publication at the same root version even when the deliberately missing backend leaves the fallback vector unchanged; actual changed-native-vector proof remains the unchanged Misskey/full Vue gate. All four existing complete original notification/convergence controls and the held worker controls stay intact.
+
+The added six controls and retained original source/stream are unbuilt and unexecuted locally. Fresh current-head Actions, the unchanged full churn/native/RPC/configuration suites and original 500-file controls, protected merge, and external release evidence remain mandatory. No elapsed-time, 10x, RSS, release inclusion or completed runtime claim is derived from this source-only correction.
+
+### Packaged editor rename refusal evidence
+
+The actual `bc81bf4ec3c27716b9cd56afe01338cc77a2ffc1` full Check run
+`37300057411`, editor job `111730397813`, rejected the unchanged scorecard
+rename with `Content modified` after the complete hover, quick fix,
+format-on-save and semantic-token assertions passed. Its raw log records a
+209 ms rename attempt but no source/environment stamp or watched-file
+payload. The fixture/profile cleanup removed the existing server log; the
+cause is therefore unqualified. The genuine original 500-file and complete
+Misskey controls passed at this head independently of the failed editor gate.
+
+The same existing PR adds opt-in `VIZE_LSP_TRACE_NATIVE_SCOPE=1` evidence to
+the real editor-host step: complete incoming watched-file events,
+environment-change caller provenance, and captured/current stamps only when
+a native result is already refused. Successful native requests perform no
+additional trace lookup, source scan, backend query, epoch update, or await.
+Failure-only retention copies the server's existing `lsp.log` and an explicit
+allowlist of whole controlled fixture files before cleanup, with SHA-256 and
+missing-file custody. These are disk bytes; unsaved editor buffers are not
+misrepresented as disk content. A bounded artifact retains those files,
+including the hidden log directory. Retention errors preserve the original
+test failure.
+
+No actor is presumed, no rename retry or wait is introduced, and every
+original assertion, stale-result refusal, cancellation/lifecycle law and cap
+remains mandatory. A fresh whole editor-host/full/native run must establish
+the actual cause before a production behavior correction is selected.
+
+### Deterministic contract-hover fixture topology
+
+The genuine `44030abdb59f42bfb4a310d36a106f48cf9cf4a4` full Check
+`37305562676`, editor job `111748289882`, retained artifact `11343840939`
+shows the recorded invalidation path: at 11:53:58.304272 UTC the client sent
+a batch containing two Created events each for ContractChild.vue and
+ContractHost.vue; `mark_corsa_disk_state_dirty` moved environment 16 to 18.
+The refused result at 11:53:58.333057 retained document stamp 108 unchanged
+and observed the newer environment. This records the actual invalidating
+notification, without claiming that disk content or topology was equivalent
+at every earlier backend observation. The conservative whole-result refusal
+is preserved. All original 500-file and complete Misskey controls passed at
+this head; the packaged editor gate failed.
+
+Contract hover exercises an existing imported component, so the same two
+complete authored files are now copied from the retained immutable corpus
+before the packaged client starts. The hover step verifies both entire disk
+inputs against the unchanged original expected-source constants instead of
+creating new project members while the scorecard is running. All three
+complete hover responses, child definition, typed-ref broken-to-unsaved-repair
+sequence, quick fix, format-on-save, semantic tokens and one-shot rename
+assertions remain. A focused preparation/launcher control checks full bytes
+and SHA-256 at client launch while preserving the unrelated scorecard input.
+Its recorded launcher proves preparation order, not native/editor behavior.
+
+No watcher events are filtered, delayed or reclassified, no source/environment
+stamp or backend lifecycle changes, and no retry, sleep or budget waiver is
+added. Existing create/delete/closed-Vue/declaration/configuration invalidation
+controls and all six original native stale-result/cancellation laws remain
+byte-exact and mandatory. Fresh whole source/native/editor/full Actions and
+actual protected parent delivery remain required; this source correction alone
+does not qualify a release or performance improvement.

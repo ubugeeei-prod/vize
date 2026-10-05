@@ -50,7 +50,7 @@ impl MaestroServer {
         #[cfg(feature = "native")]
         let diagnostic_guard = diagnostic_lock.lock().await;
 
-        let diagnostics = self.collect_diagnostics_unlocked(uri).await;
+        let diagnostics = self.collect_diagnostics_unlocked(uri, Some(version)).await;
 
         #[cfg(feature = "native")]
         drop(diagnostic_guard);
@@ -130,6 +130,16 @@ impl MaestroServer {
 
     /// Publish diagnostics for a document.
     pub(crate) async fn publish_diagnostics(&self, uri: &Url) {
+        self.publish_diagnostics_with_cause(uri, false).await;
+    }
+
+    /// Each explicit save retains its legacy complete notification even when
+    /// neither the root version nor the source/environment changed.
+    pub(crate) async fn publish_saved_diagnostics(&self, uri: &Url) {
+        self.publish_diagnostics_with_cause(uri, true).await;
+    }
+
+    async fn publish_diagnostics_with_cause(&self, uri: &Url, explicit_save: bool) {
         #[cfg(feature = "native")]
         let retained = super::initial_diagnostics::RetainedDiagnostics::new(self, uri);
         // tower-lsp polls notifications concurrently. A watched declaration
@@ -141,13 +151,14 @@ impl MaestroServer {
         #[cfg(feature = "native")]
         let diagnostic_guard = diagnostic_lock.lock().await;
 
-        let diagnostics = self.collect_diagnostics_unlocked(uri).await;
+        let diagnostics = self.collect_diagnostics_unlocked(uri, None).await;
 
         #[cfg(feature = "native")]
         drop(diagnostic_guard);
 
         if let Some(diagnostics) = diagnostics {
-            self.publish_collected_diagnostics(uri, diagnostics).await;
+            self.publish_collected_diagnostics_with_cause(uri, diagnostics, explicit_save)
+                .await;
         }
         #[cfg(feature = "native")]
         retained.finish();
@@ -163,13 +174,7 @@ impl MaestroServer {
         #[cfg(feature = "native")]
         let diagnostic_guard = diagnostic_lock.lock().await;
 
-        let diagnostics = if self.state.documents.version(uri) == Some(expected) {
-            self.collect_diagnostics_unlocked(uri).await
-        } else {
-            #[cfg(feature = "native")]
-            self.retry_current_diagnostics(uri);
-            None
-        };
+        let diagnostics = self.collect_diagnostics_unlocked(uri, Some(expected)).await;
 
         #[cfg(feature = "native")]
         drop(diagnostic_guard);

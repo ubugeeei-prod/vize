@@ -37,12 +37,16 @@ export class LspSession {
   }> = [];
   /** Passive notification observers that do not consume waiter/backlog entries. */
   readonly notificationObservers: Array<(method: string, params: unknown) => void> = [];
+  /** Passive complete-response observers; existing dispatch and payloads stay unchanged. */
+  readonly responseObservers: Array<(message: JsonRpcMessage) => void> = [];
   private buffer = Buffer.alloc(0);
   private nextId = 0;
   private stderr = "";
 
-  constructor() {
-    this.process = spawnLspSessionProcess();
+  constructor(sourceBinding?: { repoRoot: string; binary: string }) {
+    this.process = sourceBinding
+      ? spawnLspSessionProcess(sourceBinding.repoRoot, true, sourceBinding.binary)
+      : spawnLspSessionProcess();
 
     this.process.stdout.on("data", (chunk: Buffer) => {
       this.buffer = Buffer.concat([this.buffer, chunk]);
@@ -281,6 +285,7 @@ export class LspSession {
 
   private dispatch(message: JsonRpcMessage): void {
     if (typeof message.id === "number" && message.method == null) {
+      for (const observer of this.responseObservers) observer(message);
       const pending = this.pending.get(message.id);
       if (!pending) {
         return;

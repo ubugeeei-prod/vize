@@ -1,0 +1,46 @@
+{
+  "issue": 8012,
+  "repository": "https://github.com/ubugeeei-prod/vize",
+  "sourceRevision": "44030abdb59f42bfb4a310d36a106f48cf9cf4a4",
+  "workflowRun": 37305562676,
+  "editorJob": 111748289882,
+  "artifact": 11343840939,
+  "artifactZipSha256": "8ccf9c09f5cbbce67c437af410c2253f6346a54fa2e111a86bdf3940999ec8ee",
+  "retainedLog": {
+    "bytes": 160714,
+    "sha256": "05bb80d6e2d17d5af4bba09fc8fd3e69329b3dc500fe959f6e1265961ec7b3d3"
+  },
+  "recordedRefusal": {
+    "timeUTC": "2026-10-05T11:53:58.333057Z",
+    "capturedDocuments": 108,
+    "currentDocuments": 108,
+    "capturedEnvironment": 16,
+    "currentEnvironment": 18,
+    "activeChanges": 0,
+    "watchNotificationUTC": "2026-10-05T11:53:58.304272Z",
+    "events": [
+      "Created src/ContractChild.vue",
+      "Created src/ContractHost.vue",
+      "Created src/ContractChild.vue",
+      "Created src/ContractHost.vue"
+    ],
+    "invalidatingPath": "state/corsa.rs mark_corsa_disk_state_dirty at line157"
+  },
+  "decision": "Keep complete native source/environment refusal. Prepare these exact full contract-hover input files before client startup; do not treat delayed create events as byte-authority no-ops, weaken topology invalidation, add retries, or change expected provider results.",
+  "cases": [
+    {
+      "file": "src/ContractChild.vue",
+      "fixture": "ContractChild.vue.txt",
+      "bytes": 255,
+      "sha256": "5354caa1e3246829abe37d935f4518dd1612f710fb7c700d989c25507c8b77f5",
+      "authority": "Unchanged full componentContractChildSource in real-scenario-expected.cjs"
+    },
+    {
+      "file": "src/ContractHost.vue",
+      "fixture": "ContractHost.vue.txt",
+      "bytes": 156,
+      "sha256": "bf6c3145492979e025f6252ac64287ba9a5fd849baf0345c86f679b760d7939e",
+      "authority": "Unchanged full componentContractHostSource in real-scenario-expected.cjs"
+    }
+  ]
+}

@@ -41,6 +41,7 @@ mod line_index;
 mod linter_options;
 #[cfg(feature = "native")]
 mod native;
+pub(in crate::ide) mod patina;
 mod service;
 mod severity;
 #[expect(

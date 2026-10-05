@@ -25,9 +25,13 @@ pub(crate) mod paths;
 mod queries;
 mod session;
 mod session_paths;
+pub use editor_lsp::snapshot_source;
 mod utils;
 mod virtual_overlay;
 mod workspace_project;
+
+pub(crate) const EXPLICIT_CONFIG_ATTACHMENT_UNSUPPORTED: &str =
+    "Explicit editor configuration attachment is unsupported on this platform";
 
 #[cfg(test)]
 mod tests;
@@ -43,6 +47,8 @@ pub struct CorsaProjectClient {
     overlay_api_disabled: bool,
     materialized_project_session: bool,
     project_root: PathBuf,
+    /// Explicit Batch configuration, retained across editor fallback/retries.
+    explicit_project_config: Option<PathBuf>,
     /// Cached diagnostics keyed by document URI.
     pub(crate) diagnostics: FxHashMap<String, Vec<Diagnostic>>,
     /// Per-document overlay versions so Corsa can keep snapshots ordered.
@@ -78,6 +84,7 @@ impl CorsaProjectClient {
             overlay_api_disabled: false,
             materialized_project_session: false,
             project_root,
+            explicit_project_config: None,
             diagnostics: Default::default(),
             overlay_versions: Default::default(),
             document_texts: Default::default(),

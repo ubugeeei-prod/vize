@@ -1,0 +1,135 @@
+# Batch sessions retain the generated configuration
+
+Decision for [#7698](https://github.com/ubugeeei-prod/vize/issues/7698), delivered in existing [#7857](https://github.com/ubugeeei-prod/vize/pull/7857).
+
+The failed release candidate `42a091c3cfd3bdf836a8b10ac1b80c863057a901` took 27,374 ms in the existing pinned Tier-L cold lane, exceeding its unchanged 15,000 ms ceiling at scale 1. Run 37276704937, job 111655211011, failed before either warm lane executed. Its original raw log SHA256 is `dd7701a5e2f118b47413cf0735519fe6ccc246065cdfeb750ab1a3b0e409df25`. The historical candidate256 receipt recorded 5,399 ms cold, 3,259 ms broken warm and 3,212 ms repaired warm on the same fixture revision and original 500 Vue + 181 TypeScript membership. Those observations have unmatched hosts and no matched CPU profile; they do not establish a regression mechanism or a measured improvement.
+
+The materialized config now follows its authored directory, so this workload owns `playground/tsconfig.json` below its virtual workspace. Both Batch session constructors previously selected only root `tsconfig.json` or `jsconfig.json`. Pass the exact existing `generated_tsconfig_path()` to a crate-private constructor at both the nonincremental fallback and persistent cold start. Preserve the complete workspace root, working directory, URIs, generated includes/aliases/types, public root-only constructor, editor activation, fallback classification and warm delta/session ownership. Add no root config shim, source subset, new pipeline stage or package/lock change.
+
+The pinned SDK already converts its public singular `open_project` parameter into private plural `openProjects` on the wire. An initial public-struct-only inspection incorrectly suggested an ABI mismatch; direct transport inspection and authenticated archive comparison withdrew that hypothesis before any adapter implementation. No raw endpoint adapter, dependency upgrade or wire change is adopted. A successfully constructed outer client and `sessionStarts = 1` do not prove a configured native Program: unavailable API and unsupported diagnostic endpoints can still return through the editor transport.
+
+## Original native corpus and actual process evidence
+
+The committed `tests/_fixtures/differential/typechecker/nested-batch-config/` case retains complete authored SFC, imported TypeScript and nested config bytes with independent SHA256/length identities. It copies `.vue.txt` byte-for-byte into a real `.vue` temporary program. It is explicitly required by ordinary source Actions rather than silently excluded from regression coverage; no new tracked `.vue` joins the existing automatic Remarks corpus.
+
+Two whole programs cover absent and conflicting weak root configs. The nested config owns strict nullability, a relative alias crossing its directory and the complete Vue/TypeScript include set. The original assignment has exactly the independently authored TS2322 descriptor; repair is wholly clean and rebreak restores the full ordered original vector. Run the actual nonincremental session method itself, then persistent cold/repair/rebreak with exact one-session, zero-fallback, one-file delta and zero warm tree-scan gates. Direct stock native CLI strict/weak controls retain original generated inputs and compare complete stdout/stderr/status, not an observed fingerprint update. Existing configuration HMR, lifecycle and error recovery laws remain unchanged and required; this new case does not claim to exercise process crash recovery itself.
+
+Opt-in, `cfg(test)` receipts are taken after raw diagnostic responses from the same client. They retain full raw responses, requested URI order, generated source/map bytes and generated/authored config bytes. If the diagnosing transport is API, preserve its complete project/options/root files and snapshot project list; if editor fallback actually exists, inspect its actual `custom/projectInfo` configured path and leave unavailable options/group counts null. A surviving unused API handle is not credited as the diagnosing process, and a separate editor process is never spawned just to produce evidence. Reject an unknown or differently selected config before qualification. Production and the Tier-L timing binary omit this observer entirely; its RPCs have no cold speed credit.
+
+Source Actions also run the complete existing lowering, DOM, Remarks and typechecker projection differential commands without record/update mode. Native/source/protected execution of this new case, actual native grouping and the unchanged Tier-L timing acceptance are pending at this decision. They must be qualified on the final source and merge candidate; old green or historical timings cannot substitute.
+
+## Failure-only partial metrics
+
+Move the seven original budget helpers without changing their function bodies before the repair. Numeric range validation is then moved back intact to its original classified module: all predicates remain byte-exact and the existing assertion allowlist is unchanged. The six remaining extracted helpers make space for the guard. A stack guard arms outside the original cold stopwatch and stores completed checkpoints only after each original elapsed capture and before assertions. On assertion unwind alone, best-effort `failure.json` preserves every one of the 19 incremental metric fields, fixture/budget/scale, completed durations and explicitly `NOT_EXECUTED` or `IN_PROGRESS` warm states. Unknown native Program count and startup CPU remain null. Preserve the original panic even if artifact or stderr writes fail. Successful execution still performs the original single final metrics/summary write, with the existing schema and all timers, stages, inputs and budgets unchanged.
+
+Controls cover the original cold budget panic and complete counters, warm-in-progress versus unexecuted repair, I/O failure retaining the original panic, and successful/disarmed drop performing no write. Do not enable process-global profiling in parallel tests. Optional inclusive phase/CPU measurement remains a separately reviewed future experiment; no wall subtraction, summed phase wall, CPU/GC/RSS attribution or 10x claim is made here.
+
+## Delivery and unresolved work
+
+Repurpose existing Draft #7857 around this concrete release blocker. Preserve the old pilot head `648826ed5e047e095c3a08e5bff4ca5c807c02b8`, its authentic finite campaign and raw profiles as immutable historical receipts; they are not current-source cold evidence. The separate #7810 benchmark dependency-link repair retains its own ownership and eligibility. This Batch fix has no runtime dependence on that manual profiling repair and targets current main.
+
+Require fresh exact-source Actions, the complete protected suites/all 104 unchanged instruction ceilings, actual reporter-credited signed merge and a fresh supported release candidate with the existing full Tier-L lane. Source review alone does not unblock publication. The separate whole fresh CLI 500-SFC target remains 42.55 ms and unfinished; the Tier-L 681-source gate is a distinct fixture, not a redefinition of that 10x population.
+
+The first published source ba2190 on actual main47d failed before native execution: Check37288223034 build111692369299 and native37288222202 job111692158499 reported five String-type mismatches because the extracted workspace module omitted its original vize_l0::String import; fmt111692162283 reported only test-module ordering. Restore that exact original type import and configured ordering without changing constructor bodies, native flags, corpus/oracles, timers or budgets. Original raw build/native/fmt streams are retained with SHA2568579a2aeebec622f0e6c39c1b070b7d486c422a5b99c683d646956867c5447db / aab53f81c1f3aaaa54974151ff93f5dfeab6923a84a600fb6254ec0b425b8a33 / 1acaa5513f65c3c41b92a3bc7b319b17c32391d441b4716b52fbae147854fbad. Actual fallback authority and original500/15s remain unexecuted, with no failed-source acceptance.
+
+Actual successor210a3e2ab72702ba7dfa4314cbf041dfe18d43d3 restores the original error type and passes production compilation, but native37288776660 job111693977193 and Check37288777500 affected test build fail E0277 in the new fixture hash assertion: pinned sha2 digest Array does not implement LowerHex. Use the existing repository per-byte 02x iteration into vize_l0::String, preserving all fixed source SHA256 values and assertions. Raw native stream SHA256db8d051d8b9ca9241344b05738ae5e4980739be40116fb08932fed51399e8108 is retained. Native semantics/config authority and original500/15s remain UNEXECUTED; no failed-source or speed acceptance.
+
+Actual 01e110 current-source full Check37289314060 executes the unchanged ignored original Tier-L test: cold28,365ms exceeds15,000ms/scale1 on500Vue+181TS/681requests, with both warm lanes NOT_EXECUTED. The unwind-only guard authentically uploads failure.json in artifact11335633637 (721B/SHA2568f91d001192675d62c43fc1b698e09a80c77c90558c14977e60c9817c84ec320), retaining all19 counters, sessionStarts1/fallback0/scanned766 and unknown native Program/CPU. Raw Vue job111695720690 SHA256d3465d0f3be7aae5f65c34c17ab73327202c234492f11c3d14051ba03528f966 is retained. API config plumbing alone does not unblock the cold gate and no timing mechanism is proven.
+
+Actual native37289319234/job111695725790 reaches the committed whole case after stock strict/weak CLI whole output passes. The diagnosing route is editor-lsp, custom/projectInfo reports inferred/unconfigured selectedConfig null, and raw generated-file diagnostics include2304/2307/2552 missing helpers/alias; stock explicit-config CLI reports only the independent2322/status1. Artifact11335898493 (194326B/SHA256a01e0e6efc377f05f83547bbbc417d2db503ab38e65066f8ccff559a0c0fd3ae) retains complete source/config/maps/raw original responses, and raw job SHA2563fd340d75c69cab2e1e39e72233d2935bf46fb14f7c90116cc754652e2d5884c. This proves a concrete fallback authority gap for this authored program, not its share of the500 cold wall.
+
+The narrow successor retains an explicit Batch config separately from default constructor discovery. Only that domain attaches to the same initialized LSP process before its first didOpen, using existing typed custom/initializeAPISession, connect_pipe and update_snapshot open_project serialization. The attached SDK client is stored before any fallible project open; the startup snapshot is released while the owner lives, and the API session's config reference remains until owner shutdown/discard/Drop, then its full-duplex reader closes. No raw adapter, dependency change, unsupported --lsp --project flag, root shim or per-file API setup is added. Default None editor startup remains unchanged. Existing watched-file notifications/readiness advance the same shared native project on warm content/topology revisions; changed explicit config identity is compared before same-root reuse and retires the old editor binding. Materialized overlay transitions retain the exact newly generated config, rather than the old anchor.
+
+The pinned SDK's real pipe attachment is Unix-only. On other platforms an explicit-config editor fallback returns one exact internal unsupported reason, which the existing nonincremental whole-config CLI route and incremental check_with_servers degradation handle; they retain honest fallback counters and whole selected-config diagnostics. Invalid/missing/relative config errors are distinct and are not disguised as that capability fallback. No unsupported platform gets fake native-session credit or a waived native law. Same-client test-only receipts additionally retain complete actual default-project/options/root-files and snapshot project descriptors, plus independently normalized options from that diagnosing API; unknown metadata or unequal options fail after the whole pre-projection Batch diagnostic response is saved. This typed Batch response is already flattened by the existing transport; native syntactic/semantic group separation and native Program counts are unknown/null, and no original wire-stream capture is claimed. Fresh full native law and original500/15s remain required.
+
+The first full check-js job111695720313 also detects exactly one honest source-inventory occurrence drift (new digest helper5→6) after the prior hash fix. Regenerate its original shard together with this meaningful successor; do not change policy, expected diagnostics, fixture bytes, numeric budgets or acceptance commands.
+
+Exact source `b899eaf99343c3a8b67ecce6d2d0b4afb4520d4c` first passed the complete nested native law in [native run 37292045826](https://github.com/ubugeeei-prod/vize/actions/runs/37292045826). All eight actual diagnosing LSP receipts selected the exact nested generated config, retained four root files and complete compiler options equal to the independently normalized config, and passed the original full mapped diagnostic vectors across direct, cold, repair and rebreak checks. Each snapshot reports one project descriptor; native Program count, separated diagnostic groups and startup CPU remain unknown/null. Artifact `11337158324` is 77,989,823 bytes, SHA256 `abd2806ea77402b99813fe7450871474670eb211c7b44499d90bf05dc49c92e0`; its twelve original nested-case members are retained without changing any raw fields. The same job passed all original 449 Remarks files/1,032 remarks with zero baseline changes, plus lowering, DOM and projection differential laws.
+
+The same source's [full Check 37292039582](https://github.com/ubugeeei-prod/vize/actions/runs/37292039582) executed the original ignored 500 Vue/181 TypeScript/681-request Tier-L law: cold 5,484 ms, broken warm 3,300 ms and repaired warm 3,283 ms, within the unchanged 15,000/10,000 ms ceilings at scale 1. It retained one session start, two reuses/refreshes, one changed warm source and zero CLI fallbacks. Artifact `11336877532` is 929 bytes, SHA256 `b3237f25cc2e08930c4cd141cb2449048c4ec8e4163238ec31817ee60f6ffeff`. These scoped positive observations do not qualify the failed whole run or establish matched-host speed attribution, native phase costs or the outstanding 10x target.
+
+The current whole source runs also exposed three separate failures. The existing static Tier-L tooling law read only the original main/artifact files after the faithful budget helper extraction, so its unchanged fallback/delta/budget assertions could no longer see the moved functions. Include that exact helper in its source read and preserve every original assertion. Full release Clippy additionally exposed #8012's feature boundary: `DocumentStore::stable_revision` has consumers only in the `native`-gated request module. Gate the helper with the identical `native` condition, preserving its mutation/ABA law, body, signature and normal native behavior; add no lint allowance or dependency change. The later Misskey churn oracle separately rejected a repeated version-87 publication. Preserve its whole log/wire artifact and investigate that behavior without changing the oracle or attributing it to Batch configuration. Fresh complete source/native/full Check, protected suites and actual merge remain required for delivery.
+
+Genuine current-main integration added declared-template-emit qualification to the native workflow, leaving that shared file at its 350-line ceiling. Move this slice's six exact native/failure/differential commands into the eight-line `check-batch-generated-config/run.sh` helper, and invoke it only after the existing PR reference-path statuses all succeed. The helper retains strict first-failure exit behavior and required TSGO; its nested-case raw captures reside below the already uploaded outside-import artifact subtree, after the original outside-import receipt enumeration. Conservatively trigger on the helper and all typechecker corpus paths. Only a top-level separator blank outside the manual authority body is removed; the default manual guard, build, capture, flags, corpus and pins remain unchanged by this extraction. Ten pure shell controls confirmed whole-success, failure at each command, and rejection of each failed preceding reference lane; these are plumbing observations, not native or timing evidence. Require fresh exact-source Actions after this workflow composition.
+
+The same existing PR also repairs the separate complete Misskey publication failure preserved in the [native-response companion](./2026-10-05-lsp-backend-response-yield.md). The v3 source peer authenticates the exact 13-file patch `679a5c147cfe1a40542ab4d59337fc58649661f2ddc5ee17a892363679c83970` and rejects its v2 predecessor: current-world validation must occur inside the publication mutex before comparison/replacement, and explicit saves must preserve every legacy notification. Six complete ClientSocket controls retain all original inputs and 249 normalized records. These source checks provide no runtime or speed credit; fresh combined full Check, actual native config vectors, unchanged original 500/181 cold and warm gates, whole Misskey churn, protected suites and actual merge/release remain required.
+
+The combined `cb8eb12a68` full Check37298562681 failed Vue parity111725566240 before original500/Misskey execution: two stale incoming #7909 snapshots still used untyped `$emit`. Authenticated complete artifact11339224701 (SHA256 c86c601b1482259c3f5e0a4f5f65cb729f5b9df69980b4f679dd2e4c9dbad92d) changes only five emitted initializers across all31 records, preserving every diagnostic, total and other byte. The original7909 owner independently authored each full initializer from the original five macro inputs and current generator/model rules, including optional string/number payload unions in declaration order, then reconstructed both whole files; peer SHA2560336c03eca5338f6f1c4563ac10edc105d77aec8630a5297d6ca6a27d74d9572. The successor applies only those references, preserving production/all assertions and retaining the failed capture. Separately cb8 affected Rust Actions executed all16138 tests including the original25 and six new whole ClientSocket laws successfully. These scoped observations do not qualify current-source native8/original500/Misskey, protected acceptance or speed; fresh combined Actions remain mandatory.
+
+### Current execution and packaged-editor evidence
+
+At exact `bc81bf4ec3c27716b9cd56afe01338cc77a2ffc1`, source Check
+`37300043727` passed and native `37300042987` passed all eight unchanged
+nested-config controls. The actual diagnosing editor-LSP process selected
+the exact generated config in each case, with the full requested compiler
+options and four root-file identities, complete maps and existing flattened
+diagnostic responses. Both mapped diagnostic generations and the stock strict
+and weak CLI stdout/status oracles matched. The project descriptor count is
+not a native Program count, and root files are not a transitive-graph census;
+diagnostic-group separation, startup CPU and native Program count remain null.
+Artifact `11341602935` SHA256 is
+`1d3203ac546af1222e6e351ae1180b97ffab36ade5769c9313fd6d80a3d21014`.
+
+Full Check `37300057411` passed the complete Vue parity job `111730397861`,
+including all 31 snapshot records and the original pinned 500 Vue + 181 TS /
+681-request Tier-L workload at scale 1: cold 5,563 ms, broken warm 3,262 ms,
+repaired warm 3,417 ms, within the unchanged 15,000/10,000 ms ceilings. It
+retained one session start, two reuses and refreshes, one exact warm delta,
+and zero CLI fallbacks. Artifact `11340992170` SHA256 is
+`8aae9b65bf05d8c629b345a523c0cd22fbb3a95b04df4e08e191b9ba0cab2494`.
+The original Tier-L semantic oracle is scoped to its injected error; these
+metrics do not claim complete native diagnostics for all 681 requests.
+Complete Misskey churn artifact `11341017189`, SHA256
+`c994e1f0da1adae4529c6f408924f36dca247dcc8edb93d869995121657e418a`,
+retains all 287 normalized publications and exactly one rapid version-87
+empty publication. All original churn, incremental, process and RSS caps
+passed; no matched-host speed or CPU attribution follows.
+
+The full run remains failed solely at packaged VS Code rename with
+`Content modified`; its watcher actor and refusal stamp were not retained.
+The [native-response companion](./2026-10-05-lsp-backend-response-yield.md)
+records an opt-in evidence successor which retains complete incoming events,
+refusal stamps and controlled disk/log bytes before fixture cleanup, while
+preserving every behavior, assertion and cap. Compose that successor with
+signed main `66a9b15639c828b17d5f655b3dd58f697799b3fa`; all observations above
+remain bc81-specific. Fresh source/native/full editor and original Tier-L
+execution, protected full suites and actual merge are still required. The
+whole cold 10x target remains unfinished.
+
+The exact `44030abdb59f42bfb4a310d36a106f48cf9cf4a4` successor passed native
+`37305540577` and complete Vue parity in full `37305562676`: original Tier-L
+cold/warm phases were 5,399/3,305/3,351 ms, with unchanged scale-1 membership,
+ceilings and 1/2/2/1/0 start/reuse/refresh/delta/fallback counters. Native
+artifact `11344410402` SHA256 is
+`2cb715aa3ac4688683bb5a681cc12b6e0a771b8ad80a8ea01bf132aad30fd6e1`;
+Tier-L artifact `11343119796` is
+`17ea192613323ce0c09b84ae67f1f47cee23b63a3322fd7a6f8896abc716742f`.
+The whole 287-row Misskey churn again passed with one rapid-87 publication;
+artifact `11343746851` SHA256 is
+`9220cd685adfc73f3afd102b06532fe7b4303092e2f48ac4040e7712bf1fec23`.
+Native receipt `rootConfigExists` describes the generated virtual root's
+top-level config, which is absent in both authored cases; the second case's
+weak conflicting config belongs to the authored root. It does not claim a
+conflicting generated/native root config. Full same-process chosen-config,
+options/root-file identities, maps and mapped/stock-CLI vectors passed.
+
+The source tooling run nevertheless correctly rejected workspace_files.rs
+growing from 348 to 352 lines. Move the intact trace to the small native
+request module with its original logger target, restoring 350 without
+packing lines or changing the cap. The packaged editor again refused rename;
+its retained full event/stamp evidence identifies delayed contract-file
+creation during the request. Prepare those same complete contract inputs
+before client startup, retain all provider results and real topology/stale
+controls, and add complete-input launch-order coverage. These bounded source
+corrections were independently reviewed; the old failed source/full runs stay
+failed, and fresh exact-head whole gates remain required before protected
+parent merge and release. No matched speed or 10x credit follows.
+
+The `85a4388afe` source check-js job `111762655723` correctly rejected only
+the new contract-file read's CJS formatting. Apply the configured formatter's
+expression layout and optional trailing-comma removal; the complete call
+arguments, input constants, assertions, startup order, guards and caps stay
+unchanged. Retain failed run `37309958168` and log SHA256
+`11678a0ae7414dd46b63a20b1cd5457a6c5b39e7d3b40f0c70758eeb4c358751`;
+concurrently running full/native observations remain source-scoped. Fresh
+successor source/native/full gates are required before delivery.

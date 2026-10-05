@@ -1,0 +1,1 @@
+export const maybeNumber: number | undefined = undefined;
