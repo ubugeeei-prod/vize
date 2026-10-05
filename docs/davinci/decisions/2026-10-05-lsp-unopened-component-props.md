@@ -13,6 +13,10 @@ the same prop route. Existing TypeScript definition identity checks continue to
 exclude unrelated same-spelling component props and governing tsconfig ownership
 continues to exclude outside-project importers. Native HTML attributes stay local.
 
+Parent-origin rename also queries the mapped public declaration identity, as
+references already does, so the Child template binding participates. Both paths
+share the existing authored-definition seed and keep TS identity/name filters.
+
 Discovery happens on explicit references/rename requests. No workspace rescan
 is added to document edits, diagnostics, hover, completion or prepareRename.
 This correction does not claim an instant response or a measured 10x gain;

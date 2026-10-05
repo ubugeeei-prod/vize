@@ -4,6 +4,9 @@ use vize_canon::CorsaBridge;
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
+use super::semantic_links::{
+    CanonicalSemanticPosition, ComponentPropNavigationMatches, materialized_semantic_positions,
+};
 use super::{CanonicalProjectOpenError, CanonicalVirtualDocument};
 use crate::ide::IdeContext;
 
@@ -55,6 +58,50 @@ fn may_query_component_prop(ctx: &IdeContext<'_>) -> bool {
         return false;
     }
     croquis.get_props().any(|(prop, _)| prop == name)
+}
+
+impl ComponentPropNavigationMatches {
+    /// Attribute queries resolve the public prop declaration, while the local
+    /// template binding can have a separate generated TypeScript identity.
+    pub(crate) fn authored_definition_positions(
+        &self,
+        ctx: &crate::ide::IdeContext<'_>,
+        document: &CanonicalVirtualDocument,
+    ) -> Vec<CanonicalSemanticPosition> {
+        let mut positions = Vec::new();
+        for definition in &self.authored_definitions {
+            let source = if definition.uri == *ctx.uri {
+                Some(ctx.content.clone())
+            } else {
+                document
+                    .authored_source(&definition.uri)
+                    .map(str::to_owned)
+                    .or_else(|| ctx.state.documents.text(&definition.uri))
+                    .or_else(|| {
+                        definition
+                            .uri
+                            .to_file_path()
+                            .ok()
+                            .and_then(|path| std::fs::read_to_string(path).ok())
+                    })
+            };
+            let Some(offset) = source.as_deref().and_then(|source| {
+                crate::ide::position_to_offset(
+                    source,
+                    definition.range.start.line,
+                    definition.range.start.character,
+                )
+            }) else {
+                continue;
+            };
+            positions.extend(materialized_semantic_positions(
+                document,
+                &definition.uri,
+                offset,
+            ));
+        }
+        positions
+    }
 }
 
 #[cfg(test)]
