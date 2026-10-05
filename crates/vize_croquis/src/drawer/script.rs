@@ -55,9 +55,12 @@ impl Drawer {
                 jsx,
                 self.track_unused_bindings,
                 !self.options.detect_undefined,
+                self.occurrence_capture.is_some(),
             )
         );
 
+        let mut result = result;
+        self.take_script_occurrences(&mut result, source);
         result.apply_to_croquis(&mut self.croquis);
 
         self
@@ -82,11 +85,12 @@ impl Drawer {
 
         let result = profile!(
             "croquis.drawer.script_setup_program",
-            crate::script_parser::analyze_script_setup_program_skipping(
+            crate::script_parser::analyze_script_setup_program_demand(
                 program,
                 source,
                 generic,
                 !self.options.detect_undefined,
+                self.occurrence_capture.is_some(),
             )
         );
 
@@ -94,6 +98,7 @@ impl Drawer {
         if self.track_unused_bindings {
             result.unused_bindings = crate::script_parser::unused_setup_bindings(program, &result);
         }
+        self.take_script_occurrences(&mut result, source);
         result.apply_to_croquis(&mut self.croquis);
 
         self
@@ -124,9 +129,12 @@ impl Drawer {
                 },
                 jsx,
                 !self.options.detect_undefined,
+                self.occurrence_capture.is_some(),
             )
         );
 
+        let mut result = result;
+        self.take_script_occurrences(&mut result, source);
         result.apply_to_croquis(&mut self.croquis);
 
         self

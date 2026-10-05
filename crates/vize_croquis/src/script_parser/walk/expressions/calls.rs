@@ -1,8 +1,8 @@
 use super::{
     Argument, CallExpression, ClientOnlyScopeData, ClosureScopeData, CompactString, Expression,
     ScriptParseResult, Statement, detect_call_argument_reactivity_loss, detect_provide_inject_call,
-    detect_race_condition_call, extract_function_params, is_client_only_hook, walk_expression,
-    walk_statement,
+    detect_race_condition_call, extract_function_params_with_occurrences, is_client_only_hook,
+    walk_expression, walk_statement,
 };
 
 /// Walk call expression arguments to find callbacks
@@ -67,7 +67,8 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                 );
 
                                 // Now create the closure scope inside the client-only scope
-                                let params = extract_function_params(&arrow.params);
+                                let params =
+                                    extract_function_params_with_occurrences(result, &arrow.params);
                                 result.scopes.enter_closure_scope(
                                     ClosureScopeData {
                                         name: None,
@@ -79,6 +80,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                     arrow.span.start,
                                     arrow.span.end,
                                 );
+                                result.install_parameter_occurrences();
 
                                 // Walk the body
                                 if arrow.expression {
@@ -107,7 +109,8 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                 );
 
                                 // Create closure scope inside client-only scope
-                                let params = extract_function_params(&func.params);
+                                let params =
+                                    extract_function_params_with_occurrences(result, &func.params);
                                 let fn_name = func
                                     .id
                                     .as_ref()
@@ -124,6 +127,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                     func.span.start,
                                     func.span.end,
                                 );
+                                result.install_parameter_occurrences();
 
                                 if let Some(body) = &func.body {
                                     for stmt in body.statements.iter() {

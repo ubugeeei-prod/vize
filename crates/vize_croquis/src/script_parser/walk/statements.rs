@@ -7,8 +7,8 @@ use oxc_ast::ast::Statement;
 
 use super::{
     BindingType, BlockKind, BlockScopeData, ClosureScopeData, CompactString, GetSpan, ScopeBinding,
-    ScriptParseResult, add_binding_pattern_to_scope, extract_function_params, extract_param_names,
-    walk_expression,
+    ScriptParseResult, add_binding_pattern_to_scope, extract_function_params_with_occurrences,
+    extract_param_names, walk_expression,
 };
 
 mod with_statement;
@@ -63,7 +63,7 @@ pub(in crate::script_parser) fn walk_statement(
             }
 
             // Create closure scope
-            let params = extract_function_params(&func.params);
+            let params = extract_function_params_with_occurrences(result, &func.params);
             let name = func
                 .id
                 .as_ref()
@@ -80,6 +80,7 @@ pub(in crate::script_parser) fn walk_statement(
                 func.span.start,
                 func.span.end,
             );
+            result.install_parameter_occurrences();
 
             if let Some(body) = &func.body {
                 for stmt in body.statements.iter() {
@@ -103,7 +104,8 @@ pub(in crate::script_parser) fn walk_statement(
                 if let oxc_ast::ast::ClassElement::MethodDefinition(method) = element
                     && let Some(body) = &method.value.body
                 {
-                    let params = extract_function_params(&method.value.params);
+                    let params =
+                        extract_function_params_with_occurrences(result, &method.value.params);
                     result.scopes.enter_closure_scope(
                         ClosureScopeData {
                             name: None,
@@ -115,6 +117,7 @@ pub(in crate::script_parser) fn walk_statement(
                         method.span.start,
                         method.span.end,
                     );
+                    result.install_parameter_occurrences();
                     for stmt in body.statements.iter() {
                         walk_statement(result, stmt, source);
                     }

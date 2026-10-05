@@ -4,6 +4,8 @@
 //! [`ScriptParserOptions`], and the small metadata enums/structs that back
 //! plain-value and runtime-object tracking.
 
+mod debug;
+
 use crate::croquis::{BindingMetadata, ComponentRegistration, ComponentShape, Croquis};
 use crate::croquis::{
     ImportStatementInfo, InvalidExport, OptionsDescriptor, ReExportInfo, TypeExport,
@@ -58,9 +60,11 @@ pub(crate) struct RuntimeObjectLiteral {
 }
 
 /// Result of parsing a script setup block
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct ScriptParseResult {
     pub bindings: BindingMetadata,
+    /// Private demand-only facts, never serialized in Croquis.
+    pub(crate) occurrence_capture: Option<super::occurrences::ScriptOccurrenceCapture>,
     /// Setup declarations with no resolved script read, when demanded.
     pub unused_bindings: Vec<CompactString>,
     pub macros: MacroTracker,

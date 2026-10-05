@@ -7,10 +7,21 @@ use std::borrow::Cow;
 /// after the first line/block comment is actually found; until then the scanner
 /// just walks bytes and keeps string/template literals intact.
 pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
+    strip_comments(expr, false).0
+}
+
+/// The same legacy comment transform, with an opt-in authored-byte witness.
+/// `None` is the identity map; synthetic replacement spaces use `u32::MAX`.
+pub(super) fn strip_comments_with_offsets(expr: &str) -> (Cow<'_, str>, Option<Vec<u32>>) {
+    strip_comments(expr, true)
+}
+
+fn strip_comments(expr: &str, offsets: bool) -> (Cow<'_, str>, Option<Vec<u32>>) {
     let bytes = expr.as_bytes();
     let len = bytes.len();
     let mut i = 0;
     let mut changed = false;
+    let mut mapping = None;
     #[expect(clippy::disallowed_types, reason = "Cow<str> owns a std String")]
     let mut out = std::string::String::new();
 
@@ -35,6 +46,9 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
 
             if changed {
                 out.push_str(expr.get(literal_start..i).unwrap_or_default());
+                if let Some(mapping) = mapping.as_mut() {
+                    mapping.extend((literal_start..i).map(|at| at as u32));
+                }
             }
             continue;
         }
@@ -47,6 +61,9 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
                 if !changed {
                     out.reserve(expr.len());
                     out.push_str(expr.get(..i).unwrap_or_default());
+                    if offsets {
+                        mapping = Some((0..i).map(|at| at as u32).collect::<Vec<_>>());
+                    }
                     changed = true;
                 }
 
@@ -56,6 +73,9 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
                 }
                 if i < len && bytes.get(i) == Some(&b'\n') {
                     out.push('\n');
+                    if let Some(mapping) = mapping.as_mut() {
+                        mapping.push(i as u32);
+                    }
                     i += 1;
                 }
                 continue;
@@ -65,6 +85,9 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
                 if !changed {
                     out.reserve(expr.len());
                     out.push_str(expr.get(..i).unwrap_or_default());
+                    if offsets {
+                        mapping = Some((0..i).map(|at| at as u32).collect::<Vec<_>>());
+                    }
                     changed = true;
                 }
 
@@ -74,6 +97,9 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
                 {
                     if bytes.get(i) == Some(&b'\n') {
                         out.push('\n');
+                        if let Some(mapping) = mapping.as_mut() {
+                            mapping.push(i as u32);
+                        }
                     }
                     i += 1;
                 }
@@ -83,6 +109,9 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
                     i = len;
                 }
                 out.push(' ');
+                if let Some(mapping) = mapping.as_mut() {
+                    mapping.push(u32::MAX);
+                }
                 continue;
             }
         }
@@ -92,6 +121,9 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
                 break;
             };
             out.push(ch);
+            if let Some(mapping) = mapping.as_mut() {
+                mapping.extend((i..i + ch.len_utf8()).map(|at| at as u32));
+            }
             i += ch.len_utf8();
         } else {
             i += 1;
@@ -99,9 +131,9 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
     }
 
     if changed {
-        Cow::Owned(out)
+        (Cow::Owned(out), mapping)
     } else {
-        Cow::Borrowed(expr)
+        (Cow::Borrowed(expr), None)
     }
 }
 

@@ -31,7 +31,7 @@ pub fn parse_script_setup_with_generic_and_jsx(
     generic: Option<&str>,
     jsx: bool,
 ) -> ScriptParseResult {
-    parse_script_setup_for_unused(source, generic, jsx, false, false)
+    parse_script_setup_for_unused(source, generic, jsx, false, false, false)
 }
 
 pub(crate) fn parse_script_setup_for_unused(
@@ -40,6 +40,7 @@ pub(crate) fn parse_script_setup_for_unused(
     jsx: bool,
     unused: bool,
     skip_diagnostics: bool,
+    occurrences: bool,
 ) -> ScriptParseResult {
     let allocator = Allocator::default();
     let path = if jsx { "script.tsx" } else { "script.ts" };
@@ -54,8 +55,16 @@ pub(crate) fn parse_script_setup_for_unused(
         return ScriptParseResult::default();
     }
 
-    let mut result =
-        analyze_script_setup_program_skipping(&ret.program, source, generic, skip_diagnostics);
+    let mut result = analyze_script_setup_program_demand(
+        &ret.program,
+        source,
+        generic,
+        skip_diagnostics,
+        occurrences,
+    );
+    if !ret.diagnostics.is_empty() {
+        result.occurrence_capture = None;
+    }
     if unused && ret.diagnostics.is_empty() {
         result.unused_bindings = super::unused_setup_bindings(&ret.program, &result);
     }
@@ -83,9 +92,20 @@ pub(crate) fn analyze_script_setup_program_skipping(
     generic: Option<&str>,
     skip_diagnostics: bool,
 ) -> ScriptParseResult {
+    analyze_script_setup_program_demand(program, source, generic, skip_diagnostics, false)
+}
+
+pub(crate) fn analyze_script_setup_program_demand(
+    program: &Program<'_>,
+    source: &str,
+    generic: Option<&str>,
+    skip_diagnostics: bool,
+    occurrences: bool,
+) -> ScriptParseResult {
     let source_len = source.len() as u32;
 
     let mut result = ScriptParseResult {
+        occurrence_capture: occurrences.then(Default::default),
         bindings: BindingMetadata::script_setup(),
         scopes: ScopeChain::with_capacity(16),
         skip_diagnostics,
@@ -196,6 +216,7 @@ pub fn parse_script_with_options(source: &str, options: ScriptParserOptions) -> 
         options,
         SourceType::from_path("script.ts").unwrap_or_default(),
         false,
+        false,
     )
 }
 
@@ -205,7 +226,7 @@ pub fn parse_script_with_options_and_jsx(
     options: ScriptParserOptions,
     jsx: bool,
 ) -> ScriptParseResult {
-    parse_script_plain(source, options, jsx, false)
+    parse_script_plain(source, options, jsx, false, false)
 }
 
 pub(crate) fn parse_script_plain(
@@ -213,6 +234,7 @@ pub(crate) fn parse_script_plain(
     options: ScriptParserOptions,
     jsx: bool,
     skip_diagnostics: bool,
+    occurrences: bool,
 ) -> ScriptParseResult {
     let path = if jsx { "script.tsx" } else { "script.ts" };
     parse_script_with_options_source_type(
@@ -220,6 +242,7 @@ pub(crate) fn parse_script_plain(
         options,
         SourceType::from_path(path).unwrap_or_default(),
         skip_diagnostics,
+        occurrences,
     )
 }
 
@@ -228,6 +251,7 @@ pub(crate) fn parse_script_with_options_source_type(
     options: ScriptParserOptions,
     source_type: SourceType,
     skip_diagnostics: bool,
+    occurrences: bool,
 ) -> ScriptParseResult {
     let allocator = Allocator::default();
 
@@ -243,6 +267,7 @@ pub(crate) fn parse_script_with_options_source_type(
     let source_len = source.len() as u32;
 
     let mut result = ScriptParseResult {
+        occurrence_capture: occurrences.then(Default::default),
         bindings: BindingMetadata::new(), // Not script setup
         scopes: ScopeChain::with_capacity(16),
         is_non_setup_script: true, // Mark as non-setup script for violation detection
@@ -288,6 +313,9 @@ pub(crate) fn parse_script_with_options_source_type(
         result.resolve_type_export_hoisting()
     );
 
+    if !ret.diagnostics.is_empty() {
+        result.occurrence_capture = None;
+    }
     result.macros.invalidate_default_objects();
     result
 }

@@ -21,7 +21,9 @@ use super::super::extract::{
     detect_setup_context_violation, process_call_expression, process_invalid_export,
     process_type_export,
 };
-use super::super::walk::{extract_function_params, walk_expression, walk_statement};
+use super::super::walk::{
+    extract_function_params_with_occurrences, walk_expression, walk_statement,
+};
 use super::enums::process_enum_declaration;
 use super::macros;
 
@@ -174,6 +176,7 @@ fn process_variable_declaration(
     source: &str,
 ) {
     for declarator in decl.declarations.iter() {
+        result.note_lens_pattern(&declarator.id);
         super::super::extract::invalidate_default_expression(result, declarator.init.as_ref());
         macros::process_variable_declarator(result, declarator, decl.kind, source);
     }
@@ -182,6 +185,9 @@ fn process_variable_declaration(
 fn process_function_declaration(result: &mut ScriptParseResult, func: &Function<'_>, source: &str) {
     if let Some(id) = &func.id {
         let name = id.name.as_str();
+        if let Some(capture) = result.occurrence_capture.as_mut() {
+            capture.lens_spans.insert((id.span.start, id.span.end));
+        }
         result.bindings.add(name, BindingType::SetupConst);
         result
             .binding_spans
@@ -189,7 +195,7 @@ fn process_function_declaration(result: &mut ScriptParseResult, func: &Function<
     }
 
     // Create closure scope and walk body
-    let params = extract_function_params(&func.params);
+    let params = extract_function_params_with_occurrences(result, &func.params);
     let name = func
         .id
         .as_ref()
@@ -206,6 +212,7 @@ fn process_function_declaration(result: &mut ScriptParseResult, func: &Function<
         func.span.start,
         func.span.end,
     );
+    result.install_parameter_occurrences();
 
     if let Some(body) = &func.body {
         for stmt in body.statements.iter() {

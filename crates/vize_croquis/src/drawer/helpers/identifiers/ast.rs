@@ -31,15 +31,21 @@ pub(super) fn extract_identifiers_oxc_ast(expr: &str) -> Vec<CompactString> {
 pub(super) fn extract_identifiers_retained_ast(
     ast: &oxc_ast::ast::Expression<'_>,
 ) -> Vec<CompactString> {
+    extract_identifier_refs_retained_ast(ast)
+        .into_iter()
+        .map(|identifier| identifier.name)
+        .collect()
+}
+
+pub(super) fn extract_identifier_refs_retained_ast(
+    ast: &oxc_ast::ast::Expression<'_>,
+) -> Vec<IdentifierRef> {
     let mut identifiers = Vec::with_capacity(4);
     profile!(
         "croquis.helpers.identifiers.walk_expr",
         walk::walk_expr(ast, &mut identifiers)
     );
     identifiers
-        .into_iter()
-        .map(|identifier| identifier.name)
-        .collect()
 }
 
 #[inline]

@@ -6,12 +6,14 @@
 
 mod analysis;
 mod drawer;
+mod occurrences;
 mod resolved;
 mod source_offsets;
 mod unused;
 
 use self::analysis::{DescriptorAnalysisMode, analyze_sfc_descriptor_resolved_impl};
 use crate::types::SfcDescriptor;
+pub use occurrences::analyze_sfc_descriptor_with_occurrences;
 pub use resolved::{
     merge_resolved_props_into_croquis, merge_resolved_props_into_croquis_with_sources,
 };
@@ -186,6 +188,7 @@ fn analyze_sfc_descriptor_with_context_impl(
         },
         None,
         None,
+        None,
     )
 }
 
@@ -217,6 +220,7 @@ pub fn analyze_sfc_descriptor_resolved(
         },
         Some(filename),
         None,
+        None,
     )
 }
 
@@ -242,6 +246,7 @@ pub fn analyze_sfc_descriptor_resolved_with_sources(
         },
         Some(filename),
         Some(sources),
+        None,
     )
 }
 

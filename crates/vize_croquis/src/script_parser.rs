@@ -21,6 +21,7 @@ mod define_art;
 mod expose;
 mod extract;
 mod globals;
+mod occurrences;
 mod parse;
 mod process;
 mod recovery;
@@ -37,7 +38,8 @@ pub use parse::{
     parse_script_with_options, parse_script_with_options_and_jsx,
 };
 pub(crate) use parse::{
-    analyze_script_setup_program_skipping, parse_script_plain, parse_script_setup_for_unused,
+    analyze_script_setup_program_demand, analyze_script_setup_program_skipping, parse_script_plain,
+    parse_script_setup_for_unused,
 };
 pub use process::{collect_options_descriptor, collect_options_object, process_statement};
 pub use recovery::parse_program_for_analysis;

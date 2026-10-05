@@ -12,7 +12,7 @@ use oxc_ast::ast::{Argument, AssignmentTarget, CallExpression, ObjectPropertyKin
 use super::{
     ClientOnlyScopeData, ClosureScopeData, CompactString, Expression, ScriptParseResult,
     detect_call_argument_reactivity_loss, detect_provide_inject_call, detect_race_condition_call,
-    extract_function_params, is_client_only_hook, walk_statement,
+    extract_function_params_with_occurrences, is_client_only_hook, walk_statement,
 };
 
 /// Walk an expression to find nested scopes (arrow functions, callbacks, etc.)
@@ -28,7 +28,7 @@ pub(in crate::script_parser) fn walk_expression(
     match expr {
         // Arrow functions create closure scopes (no `arguments`, no `this` binding)
         Expression::ArrowFunctionExpression(arrow) => {
-            let params = extract_function_params(&arrow.params);
+            let params = extract_function_params_with_occurrences(result, &arrow.params);
 
             result.scopes.enter_closure_scope(
                 ClosureScopeData {
@@ -41,6 +41,7 @@ pub(in crate::script_parser) fn walk_expression(
                 arrow.span.start,
                 arrow.span.end,
             );
+            result.install_parameter_occurrences();
 
             // Walk the body for nested scopes
             // Arrow function body is always a FunctionBody (not a variant)
@@ -65,7 +66,7 @@ pub(in crate::script_parser) fn walk_expression(
 
         // Function expressions create closure scopes
         Expression::FunctionExpression(func) => {
-            let params = extract_function_params(&func.params);
+            let params = extract_function_params_with_occurrences(result, &func.params);
             let name = func
                 .id
                 .as_ref()
@@ -82,6 +83,7 @@ pub(in crate::script_parser) fn walk_expression(
                 func.span.start,
                 func.span.end,
             );
+            result.install_parameter_occurrences();
 
             // Walk the body for nested scopes
             if let Some(body) = &func.body {
@@ -99,6 +101,7 @@ pub(in crate::script_parser) fn walk_expression(
         }
 
         Expression::Identifier(id) => {
+            result.note_identifier_occurrence(id.name.as_str(), id.span);
             if !result.skip_diagnostics && identifier_might_be_browser_global(id.name.as_str()) {
                 note_script_browser_global(result, id.name.as_str(), id.span.start);
             }
@@ -178,7 +181,17 @@ pub(in crate::script_parser) fn walk_expression(
                 match prop {
                     ObjectPropertyKind::ObjectProperty(p) => {
                         if let Some(key) = p.key.as_expression() {
+                            // Static property names are not authored binding reads.
+                            // Preserve their existing diagnostic walk unchanged.
+                            let capture = if p.computed {
+                                None
+                            } else {
+                                result.occurrence_capture.take()
+                            };
                             walk_expression(result, key, source);
+                            if let Some(capture) = capture {
+                                result.occurrence_capture = Some(capture);
+                            }
                         }
                         walk_expression(result, &p.value, source);
                     }
@@ -218,6 +231,25 @@ pub(in crate::script_parser) fn walk_expression(
 
         // Assignment
         Expression::AssignmentExpression(assign) => {
+            if result.occurrence_capture.is_some() {
+                match &assign.left {
+                    AssignmentTarget::AssignmentTargetIdentifier(id) => {
+                        result.note_identifier_occurrence(id.name.as_str(), id.span)
+                    }
+                    AssignmentTarget::StaticMemberExpression(member) => {
+                        super::super::occurrences::note_expression_only(result, &member.object)
+                    }
+                    AssignmentTarget::ComputedMemberExpression(member) => {
+                        super::super::occurrences::note_expression_only(result, &member.object);
+                        super::super::occurrences::note_expression_only(result, &member.expression);
+                    }
+                    _ => {
+                        if let Some(capture) = result.occurrence_capture.as_mut() {
+                            capture.refuse();
+                        }
+                    }
+                }
+            }
             super::super::extract::check_reactive_plain_assignment_mutation(
                 result,
                 &assign.left,
@@ -258,6 +290,25 @@ pub(in crate::script_parser) fn walk_expression(
         }
 
         Expression::UpdateExpression(update) => {
+            if result.occurrence_capture.is_some() {
+                match &update.argument {
+                    oxc_ast::ast::SimpleAssignmentTarget::AssignmentTargetIdentifier(id) => {
+                        result.note_identifier_occurrence(id.name.as_str(), id.span)
+                    }
+                    oxc_ast::ast::SimpleAssignmentTarget::StaticMemberExpression(member) => {
+                        super::super::occurrences::note_expression_only(result, &member.object)
+                    }
+                    oxc_ast::ast::SimpleAssignmentTarget::ComputedMemberExpression(member) => {
+                        super::super::occurrences::note_expression_only(result, &member.object);
+                        super::super::occurrences::note_expression_only(result, &member.expression);
+                    }
+                    _ => {
+                        if let Some(capture) = result.occurrence_capture.as_mut() {
+                            capture.refuse();
+                        }
+                    }
+                }
+            }
             super::super::extract::check_reactive_plain_update_mutation(
                 result,
                 &update.argument,
@@ -276,7 +327,16 @@ pub(in crate::script_parser) fn walk_expression(
             walk_expression(result, &ts_non_null.expression, source);
         }
 
-        // Other expressions don't need walking for scopes
+        // Template literals own only their interpolated expression references.
+        Expression::TemplateLiteral(template) if result.occurrence_capture.is_some() => {
+            for expression in &template.expressions {
+                super::super::occurrences::note_expression_only(result, expression);
+            }
+        }
+        // Retain only facts for forms the existing scope walk does not visit.
+        _ if result.occurrence_capture.is_some() => {
+            super::super::occurrences::note_expression_only(result, expr)
+        }
         _ => {}
     }
 }
