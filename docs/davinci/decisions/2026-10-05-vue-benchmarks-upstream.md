@@ -138,3 +138,54 @@ the complete native Stack remain required. Keep #7856 and current ranking
 unfinished; the fixed154 manual workflow may run only after actual
 registration on literal main and publication coordination. Whole cold500
 42.55 ms/10x remains unfinished.
+
+## First automatic execution and Pug registration
+
+The genuine automatic full147 runs on source `67f62a587d`
+([37273858282](https://github.com/ubugeeei-prod/vize/actions/runs/37273858282)),
+`7c70a816b6` ([37273856590](https://github.com/ubugeeei-prod/vize/actions/runs/37273856590))
+and `edc88d82d4` ([37273855936](https://github.com/ubugeeei-prod/vize/actions/runs/37273855936))
+all pass whole DOM and SSR: 42,998 files, 42,625 templates, 42,609 DOM
+comparisons/16 original error skips, 42,625 SSR production comparisons and
+42,606 SSR oracle comparisons/19 original legacy-error skips, with zero
+refusals/rejections/divergences. All three fail the first actual chained Pug
+execution because the benchmark's original Pug key lacks a baseline row;
+production reach is skipped. Finalization and artifact upload still run.
+These positive DOM/SSR results do not make the overall source gate pass.
+
+The fixed revision's complete 330 SFCs contain exactly one inline Pug
+template: [the unchanged 182-byte original](https://github.com/pikax/vue-benchmarks/blob/5489aee433cd1054b9d72973457498544da7c467/tests/confirm/fixtures/format/format-pug-template.vue),
+Git blob `32527f29d4c219d9a22438cc1225258e0d005086`, SHA-256
+`60a8a8cf7ee56f861a60adc95101f6d05faa69a49b2aee6f3f390360d3cd84f9`.
+The existing pinned `pug@3.0.4` independently renders the original extracted
+template with unchanged options:
+
+```html
+<div class="wrapper"><h1 class="title">CONFIRM_PUG_TITLE</h1><ul><li v-for="item in items" :key="item">{{ item }}</li></ul></div>
+```
+
+Its SHA-256 is `124e9a0eb552a1a1656ec89cac9ee20aa9b44c4f3a05f880de7c490c87d5eb81`.
+Add only this revision/path/digest row; retain every old 498 row byte and
+pin the exact 499-row census. The existing reference oracle separately
+includes this read-only gitlink, checking complete 330-SFC/one-Pug scope and
+exact original source bytes without adding ecosystem/App/capability
+membership. No observed Vize digest or record mode chooses the baseline.
+The independent reference test passes 2/2 using existing cached pinned
+packages, with no installation; an initial missing compiler search path is
+retained as a failed local receipt. Current Rust new-row outcome remains
+unmeasured: fresh hosted fidelity/soundness/lowering and complete
+DOM/SSR/Vapor result equality against the HTML twin are required, including
+all old Pug cases. No normalizer, skip, provider option or budget changes.
+
+Raw original job streams and complete reference template/HTML/official Vue
+3.5.35 JavaScript DOM/SSR outputs remain under
+`/tmp/vize-stack7919-current-main-review/pug-registration` and its parent.
+`pinned-oracle.json` SHA-256 is
+`9b08eb7510e72ac3fb5380c95e1f736e11c5416f0c1dbf244eebbc817aa4b619`.
+The pinned archive is 5,997,798 bytes, SHA-256
+`45c2db7e46640641f62b021cd0acced8feac468d681b7036f373987d78ed1793`;
+GitHub's decoded original blob equals its whole archive source. These
+JavaScript outputs do not prove current Rust outcomes. Fresh source,
+whole147/Pug, protected checks and all three signed merges remain pending;
+finite release admission is held. Ranking, fixed154 campaign and the cold500
+42.55 ms/10x target remain unfinished.

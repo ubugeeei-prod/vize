@@ -158,7 +158,7 @@ fn pug_corpus_matches_the_pinned_pug_and_compiles_like_it() {
         (26, 14)
     );
     let rows = baseline();
-    assert_eq!(rows.len(), 498, "the corpus baseline scope is pinned");
+    assert_eq!(rows.len(), 499, "the corpus baseline scope is pinned");
     let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {
         eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed fixtures only");
         return;

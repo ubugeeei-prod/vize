@@ -90,9 +90,18 @@ function serialize(rows: Row[]): string {
 }
 
 test("pug corpus baseline: every hydrated project's pug SFCs match the pinned pug exactly", () => {
-  const projects = (loadGlyphCorpusProjects() as Project[]).sort((a, b) =>
-    a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
-  );
+  // The read-only benchmark gitlink is deliberately outside the ecosystem
+  // registry. Its one inline Pug source still belongs to the canonical sweep.
+  const benchmarkFixture = "tests/_fixtures/_git/vue-benchmarks";
+  const projects = [
+    ...(loadGlyphCorpusProjects() as Project[]),
+    {
+      id: "vue-benchmarks",
+      fixturePath: benchmarkFixture,
+      fixtureDir: path.resolve(benchmarkFixture),
+      revision: "5489aee433cd1054b9d72973457498544da7c467",
+    },
+  ].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const baseline = readBaseline();
   const known = new Map(projects.map((project) => [project.id, project]));
   for (const row of baseline) {
@@ -109,6 +118,17 @@ test("pug corpus baseline: every hydrated project's pug SFCs match the pinned pu
       continue;
     }
     const rows = computeRows(project);
+    if (project.id === "vue-benchmarks") {
+      assert.equal(vueFiles(projectDir(project)).length, 330, "complete benchmark SFC inventory");
+      assert.equal(rows.length, 1, "complete pinned inline Pug inventory");
+      const original = fs.readFileSync(path.join(projectDir(project), rows[0].file));
+      assert.equal(original.length, 182, "whole original Pug source length");
+      assert.equal(
+        sha256(original),
+        "60a8a8cf7ee56f861a60adc95101f6d05faa69a49b2aee6f3f390360d3cd84f9",
+        "whole original Pug source bytes",
+      );
+    }
     proved.push(`${project.id}:${rows.length}`);
     next.push(...rows);
     if (process.env.VIZE_PUG_ORACLE_WRITE !== "1") {
