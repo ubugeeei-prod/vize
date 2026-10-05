@@ -45,3 +45,7 @@ strict identifier paths exclude declared template context names), verified by
 running the original full error vector through the strict CLI case. A generic
 setup control checks the local type parameter. These fresh executions, together
 with the original and actual editor vectors, are required before readiness.
+
+The same source CLI deliberately writes two progress lines to stderr. Assert the
+complete authored one-input count/root progress response, retaining raw stderr
+and complete stdout vectors; no output filtering or runtime change is added.

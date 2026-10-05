@@ -58,7 +58,13 @@ fn check(root: &Path, corsa: &Path, expected: &[&str]) -> Value {
         expected.is_empty(),
         "{stdout}\n{stderr}"
     );
-    assert_eq!(stderr, "");
+    assert_eq!(
+        stderr,
+        format!(
+            "Building Corsa virtual project for 1 files under {}...\nRunning Corsa diagnostics for 1 files...\n",
+            root.display()
+        )
+    );
     let json: Value = serde_json::from_str(&stdout).unwrap();
     assert_eq!(json["errorCount"], expected.len());
     assert_eq!(json["warningCount"], 0);
