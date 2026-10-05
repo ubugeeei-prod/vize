@@ -40,19 +40,20 @@ pub fn format_script_content(
 pub(crate) fn format_script_content_stable(
     source: &str,
     options: &FormatOptions,
-    allocator: &Allocator,
+    _allocator: &Allocator,
     source_type: SourceType,
     sort_imports: Option<&crate::ImportSortOptions>,
 ) -> Result<String, FormatError> {
     if options.end_of_line == crate::EndOfLine::Auto {
         return options.format_with_source_line_ending(source, |options| {
-            format_script_content_stable(source, options, allocator, source_type, sort_imports)
+            format_script_content_stable(source, options, _allocator, source_type, sort_imports)
         });
     }
+    let mut script_allocator = OxcAllocator::default();
     let mut current = format::format_script_content_with_sort_imports(
         source,
         options,
-        allocator,
+        &script_allocator,
         source_type,
         sort_imports,
     )?;
@@ -64,10 +65,13 @@ pub(crate) fn format_script_content_stable(
     }
 
     for _ in 1..MAX_SCRIPT_STABILIZATION_PASSES {
+        // The previous pass returned an owned string; its parsed/printed AST
+        // no longer escapes, so recycle the arena before parsing that string.
+        script_allocator.reset();
         let next = match format::format_script_content_with_sort_imports(
             current.as_str(),
             options,
-            allocator,
+            &script_allocator,
             source_type,
             sort_imports,
         ) {
