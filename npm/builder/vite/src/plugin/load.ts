@@ -420,19 +420,7 @@ export function transformJsxRequest(
     state.logger.warn(`Warning in ${realPath}: ${warning}`);
   }
 
-  // HMR (deferred, #1533): unlike `.vue` SFCs — whose compiled module exposes a
-  // `_sfc_main` component object that the injected `import.meta.hot.accept`
-  // boundary attaches an `__hmrId`/HMR record to (see
-  // `vize_atelier_sfc::vite_plugin::generate_hmr_code`) — the JSX compiler emits
-  // a render-function-only module (`export function render(…)`) with no
-  // component object to register against. A state-preserving Vue HMR boundary
-  // (`__VUE_HMR_RUNTIME__.rerender`/`reload`) therefore needs the upcoming
-  // JSX component-wrapper output before it can hook up; until then `.jsx`/`.tsx`
-  // edits fall back to Vite's default module reload. Source map + preamble
-  // plumbing (this function's `map`/preamble) land now.
-  //
-  // Vite's `TransformResult.map` is the object form, so parse the native v3 JSON
-  // map before handing it back (#1533).
+  // JSX lacks SFC-style HMR records (#1533); keep module reload and parse its v3 map for Vite.
   return { code: compiled, map: map ? JSON.parse(map) : null };
 }
 
