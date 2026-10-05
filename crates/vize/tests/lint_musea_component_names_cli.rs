@@ -42,6 +42,9 @@ fn original_art_sources_have_complete_empty_default_and_explicit_cli_results() {
             .output()
             .unwrap();
         assert!(output.status.success(), "{output:?}");
-        assert!(output.stdout.is_empty(), "{output:?}");
+        assert_eq!(
+            output.stdout, b"Patina lint report: No problems found in 1 file(s)\n",
+            "{output:?}"
+        );
     }
 }

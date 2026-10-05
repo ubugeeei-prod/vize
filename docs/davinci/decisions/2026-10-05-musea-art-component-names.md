@@ -49,3 +49,13 @@ Use the existing public `vize_patina::RuleRegistry` re-export, keeping all
 source inputs, seven test functions, expectations, production and budgets
 unchanged. The raw build job 111601472556 remains the failure receipt.
 The failed Draft was never queued; fresh exact-source Actions are required.
+
+## Complete plain CLI contract correction
+
+At 2bf829a166, Check 37259012361 builds and all six API/native laws pass.
+Shard 1 job 111604344613 rejects only the plain CLI assertion: the actual
+successful formatter emits `Patina lint report: No problems found in 1
+file(s)` and a newline. Require that complete stdout instead of assuming
+it is empty. Complete default/explicit JSON results, source bytes, all
+seven functions, production guards and budgets are preserved. Retain the
+raw rejection; the Draft remains unadmitted until fresh source acceptance.
