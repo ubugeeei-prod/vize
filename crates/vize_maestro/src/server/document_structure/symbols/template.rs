@@ -23,38 +23,49 @@ pub(super) fn children(
     if !errors.is_empty() {
         return None;
     }
-    let symbols = elements(&root.children, index, block.loc.start);
+    let symbols = elements(&root.children, &block.content, index, block.loc.start);
     (!symbols.is_empty()).then_some(symbols)
 }
 
 fn elements(
     nodes: &[TemplateChildNode<'_>],
+    source: &str,
     index: &LineIndex<'_>,
     base: usize,
 ) -> Vec<DocumentSymbol> {
-    nodes
-        .iter()
-        .filter_map(|node| {
-            let TemplateChildNode::Element(element) = node else {
-                return None;
-            };
-            let span = oxc_span::Span::new(element.loc.span.start, element.loc.span.end);
-            let selection =
-                oxc_span::Span::new(span.start + 1, span.start + 1 + element.tag.len() as u32);
-            let kind = if element.tag_type == ElementType::Component {
-                SymbolKind::CLASS
-            } else {
-                SymbolKind::OBJECT
-            };
-            Some(super::symbol(
-                element.tag,
-                kind,
-                index,
-                base,
-                span,
-                selection,
-                elements(&element.children, index, base),
-            ))
-        })
-        .collect()
+    let mut symbols = Vec::new();
+    for node in nodes {
+        let TemplateChildNode::Element(element) = node else {
+            continue;
+        };
+        let children = elements(&element.children, source, index, base);
+        let span = oxc_span::Span::new(element.loc.span.start, element.loc.span.end);
+        let selection =
+            oxc_span::Span::new(span.start + 1, span.start + 1 + element.tag.len() as u32);
+        // HTML tree repair can insert an implicit tbody/tr. It is not an
+        // authored symbol: retain its real descendants without a fake tag span.
+        if span.end as usize > source.len()
+            || selection.end > span.end
+            || source.as_bytes().get(span.start as usize) != Some(&b'<')
+            || source.get(selection.start as usize..selection.end as usize) != Some(element.tag)
+        {
+            symbols.extend(children);
+            continue;
+        }
+        let kind = if element.tag_type == ElementType::Component {
+            SymbolKind::CLASS
+        } else {
+            SymbolKind::OBJECT
+        };
+        symbols.push(super::symbol(
+            element.tag,
+            kind,
+            index,
+            base,
+            span,
+            selection,
+            children,
+        ));
+    }
+    symbols
 }

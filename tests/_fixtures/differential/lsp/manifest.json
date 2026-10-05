@@ -7,9 +7,7 @@
     {
       "id": "lsp/fix-history/inactive-imports",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "inactive-imports",
         "files": [
@@ -45,9 +43,7 @@
     {
       "id": "lsp/fix-history/on-type-crlf",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "on-type-crlf",
         "files": [
@@ -72,9 +68,7 @@
     {
       "id": "lsp/fix-history/folding-four-divs",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-four-divs",
         "files": [
@@ -98,9 +92,7 @@
     {
       "id": "lsp/fix-history/folding-multi-block",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-multi-block",
         "files": [
@@ -124,9 +116,7 @@
     {
       "id": "lsp/fix-history/folding-comment",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-comment",
         "files": [
@@ -150,9 +140,7 @@
     {
       "id": "lsp/fix-history/folding-one-line",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-one-line",
         "files": [
@@ -176,9 +164,7 @@
     {
       "id": "lsp/fix-history/folding-empty-blocks",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "folding-empty-blocks",
         "files": [
@@ -202,9 +188,7 @@
     {
       "id": "lsp/fix-history/highlight-original-rw",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "highlight-original-rw",
         "files": [
@@ -228,9 +212,7 @@
     {
       "id": "lsp/fix-history/highlight-original-pair",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "highlight-original-pair",
         "files": [
@@ -254,9 +236,7 @@
     {
       "id": "lsp/fix-history/highlight-original-tag",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "highlight-original-tag",
         "files": [
@@ -280,9 +260,7 @@
     {
       "id": "lsp/fix-history/highlight-original-crlf",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "highlight-original-crlf",
         "files": [
@@ -306,9 +284,7 @@
     {
       "id": "lsp/fix-history/highlight-original-empty",
       "state": "active",
-      "targets": [
-        "stdio"
-      ],
+      "targets": ["stdio"],
       "inputs": {
         "root": "highlight-original-empty",
         "files": [

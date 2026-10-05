@@ -22,6 +22,8 @@ Template children follow the original untransformed element AST. Elements
 carry their descendants, full source ranges and tag-name selection ranges;
 components use Class and ordinary elements use Object. Directives stay on their
 original elements; interpolation expressions, text and comments are not symbols.
+Only an exact original `<tag` name span is selectable. Parser-inserted implicit
+tbody/tr nodes are omitted while their authored descendants remain visible.
 All positions use one original-document UTF-16 line index, including CRLF and
 astral characters. Rejected child parses keep the existing block without
 inventing a partial tree. Unknown template languages keep the block.

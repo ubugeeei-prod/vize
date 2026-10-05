@@ -127,6 +127,18 @@ fn untransformed_template_elements_keep_nested_directives_and_components() {
 }
 
 #[test]
+fn implicit_html_table_repairs_never_invent_an_authored_selection() {
+    let symbols = outline("<template><table><tr><td>value</td></tr></table></template>");
+    let table = &symbols[0].children.as_ref().unwrap()[0];
+    assert_eq!(table.name, "table");
+    let row = &table.children.as_ref().unwrap()[0];
+    assert_eq!(row.name, "tr");
+    assert_eq!(row.children.as_ref().unwrap()[0].name, "td");
+    assert_eq!(row.selection_range.start, Position::new(0, 18));
+    assert_eq!(row.selection_range.end, Position::new(0, 20));
+}
+
+#[test]
 fn utf16_and_crlf_positions_retain_original_document_coordinates() {
     let symbols = outline(
         "<script setup>const emoji = '😀'; const 名 = 1;</script>\r\n<template>😀<Comp>é<span></span></Comp></template>",
