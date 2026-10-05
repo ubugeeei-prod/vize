@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const title = document.title;
+</script>
+<template><p>{{document.title}}</p></template>
+<script lang="ts">
+export const name = "Both";
+</script>

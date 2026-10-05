@@ -66,7 +66,9 @@ pub(crate) mod rules;
 
 // Re-exports
 pub use analyzer::{CrossFileAnalyzer, CrossFileOptions, CrossFileResult, CrossFileStats};
-pub use diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
+pub use diagnostics::{
+    CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity, DiagnosticSource,
+};
 pub use graph::{DependencyEdge, DependencyGraph, ModuleNode};
 pub use registry::{FileId, ModuleEntry, ModuleRegistry};
 pub use suppression::{SuppressionDirective, SuppressionError, SuppressionMap};

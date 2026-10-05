@@ -1,0 +1,26 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/7874",
+  "issueAuthor": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "reportedVersion": "0.432.0",
+  "sourceAuthority": "Complete issue code blocks; no capture-derived replacements",
+  "files": [
+    {
+      "path": "src/Child.vue",
+      "bytes": 120,
+      "sha256": "32fa2cf70a75ee2b7d7c5ddecb8df37ef60c8de103217dacf2a2386579cd3ed8"
+    },
+    {
+      "path": "src/Parent.vue",
+      "bytes": 227,
+      "sha256": "c2ff284ede74ed6c7007f1890003ab04930c1b4822cb2212701afc0b075b7c1e"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 299,
+      "sha256": "43b2d2a49191b2addeebf1a9bba969874453b50858a6c3a28fb57150fabbbd21"
+    }
+  ]
+}
