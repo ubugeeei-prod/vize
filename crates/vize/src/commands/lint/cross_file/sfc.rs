@@ -23,9 +23,22 @@ pub(super) enum FallthroughRoot {
 #[derive(Clone, Copy, Debug, Default)]
 pub(super) struct CrossFileSourceOffsets {
     pub(super) script: u32,
+    setup: Option<(u32, u32)>,
     pub(super) template: u32,
     pub(super) fallthrough_root: Option<FallthroughRoot>,
     pub(super) script_uses_attrs: bool,
+}
+
+impl CrossFileSourceOffsets {
+    pub(super) fn map_script(self, position: u32) -> u32 {
+        if let Some((virtual_start, authored_start)) = self.setup
+            && position >= virtual_start
+        {
+            authored_start + (position - virtual_start)
+        } else {
+            self.script + position
+        }
+    }
 }
 
 pub(super) fn analyze_sfc_for_cross_file(
@@ -43,6 +56,9 @@ pub(super) fn analyze_sfc_for_cross_file(
     .ok()?;
 
     let mut offsets = CrossFileSourceOffsets::default();
+    if let (Some(script), Some(setup)) = (&descriptor.script, &descriptor.script_setup) {
+        offsets.setup = Some((script.content.len() as u32 + 1, setup.loc.start as u32));
+    }
 
     if let Some(script_setup) = descriptor.script_setup.as_ref() {
         offsets.script = if descriptor.script.is_some() {
