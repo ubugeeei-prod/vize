@@ -241,11 +241,11 @@ function choose() { return selected; }
         await compare(unknown, option === true ? [{ code: 2339, token: "MissingWidget" }] : []);
         const reserved = original.replace(
           "</template>",
-          "  <__vize_dynamic_is_777 />\n</template>",
+          "  <Unknown__vize_dynamic_is_777 />\n</template>",
         );
         await compare(
           reserved,
-          option === true ? [{ code: 2339, token: "__vize_dynamic_is_777" }] : [],
+          option === true ? [{ code: 2339, token: "Unknown__vize_dynamic_is_777" }] : [],
         );
         const missing = original.replace("'button'", "missing ? 'div' : 'button'");
         await compare(missing, [{ code: 2339, token: "missing" }]);

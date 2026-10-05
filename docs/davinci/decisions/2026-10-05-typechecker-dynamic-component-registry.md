@@ -18,9 +18,10 @@ Vue's global registry and emits a second module-scope fallback declaration.
 The repair excludes only an alias proved to belong to its actual authored
 `<component>` element with a bound `is` expression. Proof combines the exact
 Croquis alias derived from the usage offset and the existing AST locator;
-matching a name prefix alone is insufficient. Authored internal-looking tags,
-including an exact alias/offset collision, remain registry checked. The AST
-locator also declines `:is` on an ordinary authored component tag.
+matching a name prefix alone is insufficient. Valid authored unknown component
+tags retain registry checks. A parsed ordinary element with an adversarial
+exact-alias/offset fact cannot prove generated ownership; the AST locator also
+declines `:is` on an ordinary authored component tag.
 The private plan constructor receives the matched facts and AST together;
 the existing generator layout and oversized-file line count stay unchanged.
 
@@ -31,7 +32,8 @@ mapping stay in their existing paths. Complete generated code and projection
 mapping are compared with the default option for literals, conditionals,
 lookups, calls, refs/spreads, independent same-element loops, unknown expression
 reads and constructor-union props. Static unknown tags keep authored registry
-mappings across Unicode/CRLF and synthetic-looking names remain real checks.
+mappings across Unicode/CRLF; a valid unknown tag containing a reserved-looking
+name remains a real check.
 
 The legacy fixture retains the original App.vue, tsconfig and editor config.
 The existing runtime tooling suite exercises the real CLI and stdio LSP with
@@ -52,8 +54,9 @@ provider installation or old-binary outcome qualifies this change. Fresh
 exact-source Actions must prove generator laws and the real native 7.0.2
 CLI/editor runtime cases. Ordinary, full-source and protected queue results are
 reported separately; a failing candidate is removed. Actual signed merge and
-published product release are still pending and #8003 stays open until the
-fix actually merges. Every instruction ceiling remains unchanged.
+published product release are still pending. #8003 stays open until the named
+member control below is also covered and the complete fix actually merges.
+Every instruction ceiling remains unchanged.
 
 The same decision is recorded on #8003 and in the canonical record in this
 slice. Include the verified reporter as a Co-authored-by trailer. Independent
@@ -70,3 +73,55 @@ and all 21 assertions remain unchanged. The raw logs and failed source identity
 are retained; they prove no native/unit result. Full-source dispatch waits for
 the separate #7857 `stable_revision` native-feature repair to actually merge,
 then requires a fresh actual-main rebase and all hosted runtime checks.
+
+Hosted `fed0c4880f5d217a839cb4e964004efe920a2caa` fixed those initial
+compile/format failures, but ordinary Check37308329258 still failed. All five
+new generator laws failed: four reached the bare parser helper's non-void HTML
+self-closing recovery, and one incorrectly expected an underscore-start tag to
+be a component. Worker2 alone did not qualify the other three laws; subsequent
+worker3/4 logs establish their failures too. The existing tokenizer accepts
+only ASCII letters at a tag start and retains those underscore strings as
+opaque text with no component usage. NativePhase37308327991 separately passed
+its default suite, without executing the new 21-state CLI/editor control.
+
+The narrow successor uses the production DOM native-tag callback in the mapped
+unit helper, so actual component tags use the same classification as production.
+The runtime reserved-looking positive is `Unknown__vize_dynamic_is_777`, keeping
+all 21 states, complete diagnostic vectors and original three fixture bytes.
+An actually parsed `Unknown` with and without bound `is` supplies an explicit
+low-level exact-alias(0) fact-mismatch ownership refusal. The three original
+underscore-tag strings remain honest no-usage, complete code/map controls;
+no false TS2339 expectation is replaced with an empty positive. Croquis's
+existing generator also refreshes its stale observational 20-file inventory,
+which caused the two tooling1 failures. Production alias eligibility, options,
+offsets and bound-is behavior remain unchanged. Raw failed logs are retained;
+new source peer and hosted execution are required, with no inherited pass,
+performance or release credit and the separate actual-main full-check hold.
+
+Before publishing that grammar successor, static review found a second test
+assumption hidden by the earlier parser failure: `registry.button` is a known
+static-member target under Croquis's existing authority, not a generated alias.
+Its unconditional alias-presence assertion was unjustified. The bounded alias
+law uses `registry['button']`, the computed-member form that Croquis actually
+aliases, retaining complete code/map equality and the same authored object.
+No named-target binding policy or production eligibility is broadened. The
+possible separate static-member registry behavior remains unmeasured and is
+not claimed fixed by this synthetic-alias repair. The uncommitted 0eddf9 review
+is retained only as a historical grammar/hash audit; its generator-law source
+clearance is withdrawn and a new exact-source peer/hosted result is required.
+
+The original named-member input remains an explicit pending native control:
+
+```json
+{
+  "script": "const registry = { button: 'button' };",
+  "template": "<component :is=\"registry.button\" />"
+}
+```
+
+It must be clean with explicit true/false/absent unknown-component options;
+wrong-member/value/known-prop errors must still be retained. This exact case
+has no hosted result for the correction. The computed-only successor may be
+published as Draft source preparation, with the named-member gap stated in
+the PR and its automatic #8003 closing reference removed. It grants no Ready,
+queue, P0 closure or runtime credit; the complete AST-owned repair remains open.
