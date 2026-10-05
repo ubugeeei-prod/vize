@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const id = 1;
+const name = "a";
+</script>
+
+<template>
+  <p>{{ id }} {{ id + 1 }} {{ name }}</p>
+</template>

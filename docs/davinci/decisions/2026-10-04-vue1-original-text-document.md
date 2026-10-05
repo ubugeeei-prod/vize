@@ -106,10 +106,10 @@ only to the owned formatter/vize_glyph.tsv shard; its complete nineteen-file
 check passes, with all foreign shards unchanged. These are lexical surface
 rows, not type-resolved imports or execution proof.
 
-No local Cargo build, runtime campaign, dependency installation, publication or
-native acceptance has occurred for this private source. Exact-head Actions,
-full protected 104 instruction gates, complete new/old captures and actual
-merge remain required. The old five whole pinned Vue 1 oracles are preserved;
+At private-source authorization, no local Cargo build, runtime campaign,
+dependency installation, publication or native acceptance had occurred.
+Exact-head Actions, full protected 104 instruction gates, complete new/old
+captures and actual merge were still required. The old five whole pinned Vue 1 oracles are preserved;
 they do not establish mounted updates, hydration or a classic runtime factory.
 Actual #6882 closure provides no whole historical product/default completion.
 
@@ -124,3 +124,38 @@ expected outputs, getter controls, capture hooks and all gates remain exact.
 The complete first source's raw packets are retained; its failed aggregate
 does not grant whole-source acceptance. A corrected exact source requires
 fresh complete Actions and protected proof before queue admission.
+
+## Actual bounded acceptance
+
+The paired [#6882 receipt](https://github.com/ubugeeei-prod/vize/issues/6882#issuecomment-5979049138)
+records the same acceptance and remaining boundaries.
+
+Unchanged source `f3bb6ac4d08b773311194175b124bb8575c72357` passed
+[source Check 37187380046](https://github.com/ubugeeei-prod/vize/actions/runs/37187380046).
+#7777 actually merged signed `bcf3e024bde363a4d9e3cc2e7745af771cd5b51f`
+at 2026-10-04T10:27:55Z after
+[protected Check 37194533569](https://github.com/ubugeeei-prod/vize/actions/runs/37194533569)
+passed on that exact candidate. Four digest-authenticated JUnit artifacts
+record 15,673 Rust executions with zero errors, failures or skips; all twelve
+new laws and all twenty-one prior conditional-formatting laws occur once.
+The full build also passes all nine Vue 1 compile-fail examples and the
+positive lifetime example. Fresh source-built captures preserve all 64 whole
+LF/idempotence goldens, 610 complete official getter observations, sixteen
+test/production hazard observations without semantic credit, and all 48
+original Vue 2 controls. The original current-API linter corpus passes all 44
+legacy cases with eight native equivalents and 36 typed unsupported cases.
+All 104 instruction probes pass three runs with unchanged methods, fixture
+hashes and ceilings; the four formatter counts are 292232, 273388, 928903 and 242934. The merged tree retains every private production/law/oracle/input
+blob from that source and composes the genuinely merged #7774 and clean #7780.
+
+Rejected candidate `659a88d41d31837f295cdc4aa12d9d7b0f68890e` remains failed
+historical evidence: an inherited linter assertion rejected the original
+`vapor=false` input's typed refusal. Removing that independent failed layer,
+then proving the clean composition, required no Vue 1 source or golden edits.
+Acceptance covers only the original callback Doc, LF printing and pinned
+getter/L1-prepared comparisons. Browser decoding, mounted runtime, historical
+File/whole grammar, product/default routing and printed-output maps remain
+unfinished. Both linked reporters are the same primary author, ubugeeei;
+the actual squash body has no literal `Co-authored-by` trailer. This meaningful
+acceptance-record change credits that verified identity explicitly without
+rewriting either merged history or the earlier failed evidence.

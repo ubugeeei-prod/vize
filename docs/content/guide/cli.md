@@ -315,8 +315,8 @@ vize ready src
 vize ready --output dist src
 ```
 
-`vize ready` runs `fmt --write`, `lint`, `check`, and `build` in order, stopping at the first failing
-step.
+`vize ready` runs `fmt --write`, `lint`, `check`, and `build` in order, stopping at the first failing step.
+Interactive stderr shows numbered stages and elapsed completion times; CI and redirected stderr keep plain stage logs. Progress honors the terminal's color and Unicode profile.
 
 Key options:
 

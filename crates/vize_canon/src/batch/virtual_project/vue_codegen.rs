@@ -67,6 +67,7 @@ pub(super) fn generate_vue_virtual_ts(
         Ok(view) => view,
         Err(error) => {
             return Ok(GeneratedVueFile {
+                typed_router_import: false,
                 code: invalid_sfc_fallback_virtual_ts(),
                 mappings: Vec::new(),
                 semantic_links: Vec::new(),
@@ -166,6 +167,7 @@ pub(super) fn generate_vue_virtual_ts(
     // diagnostics, which is what `vize check` and the linter now agree on.
     if template_hard_error {
         return Ok(GeneratedVueFile {
+            typed_router_import: false,
             code: invalid_sfc_fallback_virtual_ts(),
             mappings: Vec::new(),
             semantic_links: Vec::new(),
@@ -218,6 +220,18 @@ pub(super) fn generate_vue_virtual_ts(
         diagnostic.severity = if pattern.warning { 2 } else { 1 };
         diagnostics.push(diagnostic);
     }
+    let typed_router = super::typed_router::Generation::new(
+        codegen_options.typed_router_root,
+        path,
+        options,
+        codegen_options.typed_router_root.is_some()
+            && template_ast.as_ref().is_some_and(|root| {
+                vize_atelier_sfc::script::resolve_template_used_identifiers(root)
+                    .used_ids
+                    .contains("$route")
+            }),
+    );
+    let options = typed_router.options(options);
     let script_content = analysis.script_content;
     let script_offset = analysis.script_offset;
     let local_runtime_prop_resolve_cache;
@@ -252,7 +266,7 @@ pub(super) fn generate_vue_virtual_ts(
     });
 
     let hoist_shared_preamble = codegen_options.hoist_shared_preamble && !vue2_compat;
-    let output = profile!(
+    let mut output = profile!(
         "canon.virtual_ts.generate",
         generate_virtual_ts_with_offsets_and_checks(
             &croquis,
@@ -287,6 +301,14 @@ pub(super) fn generate_vue_virtual_ts(
         )
     );
 
+    let typed_router_import = typed_router.apply(
+        &mut output,
+        descriptor,
+        script_content.as_deref(),
+        script_offset,
+        split_script_setup_offsets,
+    );
+
     // Surface Vue-specific semantic errors (e.g. DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE)
     // that the SFC compiler catches but TypeScript itself does not. Without this,
     // `vize check` would silently accept SFCs that `vize build` rejects.
@@ -299,7 +321,12 @@ pub(super) fn generate_vue_virtual_ts(
 
     let mut code = output.code;
     let (mut mappings, semantic_links) = output.mapping.into_parts();
-    append_style_scoped_classes(&mut code, source, descriptor, codegen_options.check_options);
+    style_modules::append_style_scoped_classes(
+        &mut code,
+        source,
+        descriptor,
+        codegen_options.check_options,
+    );
     style_modules::append_duplicate_style_modules(
         &mut code,
         &mut mappings,
@@ -313,35 +340,6 @@ pub(super) fn generate_vue_virtual_ts(
         mappings,
         semantic_links,
         diagnostics,
+        typed_router_import,
     })
-}
-
-/// Vue Language Tools' `__VLS_StyleScopedClasses`: the class names the SFC's
-/// styles declare, as `boolean` members, for a template that checks `:class`
-/// bindings against them. It is a module-level alias appended after every
-/// mapped byte, so it shifts no mapping and is visible from the template
-/// scope like any other module type. It only exists for a file that names it,
-/// so no other file pays for it, and one object literal keeps the type
-/// identical to the literal an author compares it with.
-fn append_style_scoped_classes(
-    code: &mut vize_carton::String,
-    source: &str,
-    descriptor: &SfcDescriptor,
-    check_options: crate::virtual_ts::VirtualTsCheckOptions,
-) {
-    if !source.contains("__VLS_StyleScopedClasses") {
-        return;
-    }
-    let names =
-        super::build::style_scoped_class_names(descriptor, check_options.resolve_style_class_names);
-    if names.is_empty() {
-        return;
-    }
-    code.push_str("\ntype __VLS_StyleScopedClasses = {");
-    for name in &names {
-        code.push(' ');
-        crate::virtual_ts::push_ts_string_literal(code, name.as_str());
-        code.push_str(": boolean;");
-    }
-    code.push_str(" };\nvoid ({} as __VLS_StyleScopedClasses);\n");
 }

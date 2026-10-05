@@ -68,5 +68,6 @@ pub(in crate::batch::virtual_project) fn build_script_registered_file(
         ),
         diagnostics: Vec::new(),
         unchecked_javascript: false,
+        typed_router_import: false,
     })
 }

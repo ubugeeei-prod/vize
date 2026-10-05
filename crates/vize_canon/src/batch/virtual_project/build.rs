@@ -50,6 +50,7 @@ pub(super) struct RegisteredFile {
     /// SFC whose script block is JavaScript: TypeScript diagnostics on it are
     /// reportable only under `checkJs` (see `javascript_sfc`, #3322).
     pub(super) unchecked_javascript: bool,
+    pub(super) typed_router_import: bool,
 }
 
 pub(super) fn build_registered_file(
@@ -119,6 +120,7 @@ pub(super) fn build_vue_registered_file(
             context.virtual_ts_options,
             VueCodegenOptions {
                 check_options: context.virtual_ts_check_options,
+                typed_router_root: context.typed_router_root,
                 preserve_unused_diagnostics: context.preserve_unused_diagnostics,
                 options_api: context.options_api,
                 // Batch check/declaration codegen must keep the authored
@@ -146,6 +148,7 @@ pub(super) fn build_vue_registered_file(
         mut mappings,
         mut semantic_links,
         diagnostics,
+        typed_router_import,
     } = generated;
     if use_tsx_virtual {
         prepend_vue_jsx_reference(&mut code, &mut mappings, &mut semantic_links);
@@ -211,6 +214,7 @@ pub(super) fn build_vue_registered_file(
         ),
         diagnostics,
         unchecked_javascript: descriptor_is_unchecked_javascript(&descriptor),
+        typed_router_import,
     })
 }
 

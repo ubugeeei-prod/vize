@@ -140,7 +140,7 @@ pub(super) fn split_top_level_comments(source: &str) -> Vec<CssSegment<'_>> {
     segments
 }
 
-fn consume_css_escape(bytes: &[u8], from: usize) -> Option<usize> {
+pub(super) fn consume_css_escape(bytes: &[u8], from: usize) -> Option<usize> {
     if bytes.get(from) != Some(&b'\\') {
         return None;
     }
@@ -226,7 +226,7 @@ fn is_css_whitespace(byte: u8) -> bool {
     matches!(byte, b'\t' | b'\n' | b'\r' | b'\x0c' | b' ')
 }
 
-fn find_comment_end(bytes: &[u8], from: usize) -> usize {
+pub(super) fn find_comment_end(bytes: &[u8], from: usize) -> usize {
     let mut j = from;
     while j + 1 < bytes.len() {
         if bytes.get(j..j + 2) == Some(b"*/".as_slice()) {

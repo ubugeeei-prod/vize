@@ -2,8 +2,8 @@
 
 use vize_l1::container::vue::DescriptorObservation;
 use vize_l1::markup::{
-    NativeAttributeExpression, NativeAttributeExpressionFailure, NativeInterpolationFailure,
-    NativeInterpolationOperand, NativeTemplateComponent,
+    NativeAttributeBindingExpression, NativeAttributeExpression, NativeAttributeExpressionFailure,
+    NativeInterpolationFailure, NativeInterpolationOperand, NativeTemplateComponent,
 };
 
 use super::super::{Doc, print};
@@ -32,6 +32,8 @@ pub struct NativeSfcObservation<'a> {
     pub(super) interpolation_failure: Option<NativeInterpolationFailure<'a>>,
     pub(super) attributes: std::vec::Vec<NativeAttributeExpression<'a>>,
     pub(super) attribute_failure: Option<NativeAttributeExpressionFailure<'a>>,
+    pub(super) bindings: std::vec::Vec<NativeAttributeBindingExpression<'a>>,
+    pub(super) binding_failure: Option<NativeAttributeExpressionFailure<'a>>,
     pub(super) options: NativeSfcOptions,
     pub(super) outcome: Outcome<'a>,
 }
@@ -46,6 +48,8 @@ impl core::fmt::Debug for NativeSfcObservation<'_> {
             .field("operand_count", &self.operands.len())
             .field("attribute_count", &self.attributes.len())
             .field("has_attribute_failure", &self.attribute_failure.is_some())
+            .field("binding_count", &self.bindings.len())
+            .field("has_binding_failure", &self.binding_failure.is_some())
             .field("refusal", &self.refusal())
             .field(
                 "has_interpolation_failure",
@@ -76,6 +80,12 @@ impl<'a> NativeSfcObservation<'a> {
     }
     pub fn attribute_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
         self.attribute_failure.as_ref()
+    }
+    pub fn binding_operands(&self) -> &[NativeAttributeBindingExpression<'a>] {
+        &self.bindings
+    }
+    pub fn binding_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
+        self.binding_failure.as_ref()
     }
     pub fn interpolation_failure(&self) -> Option<&NativeInterpolationFailure<'a>> {
         self.interpolation_failure.as_ref()

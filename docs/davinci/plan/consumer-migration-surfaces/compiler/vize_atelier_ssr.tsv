@@ -50,9 +50,9 @@ compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/component.rs	7	l1_t
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/control.rs	5	l0	L0	stage	vize_l0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/control.rs	5	l2	L2	stage	vize_l2	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/control.rs	5	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	11	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	11	l2	L2	stage	vize_l2	preferred	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	11	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	3
+compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	10	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	10	l2	L2	stage	vize_l2	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	10	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	3
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/directive_props.rs	5	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/directive_props.rs	5	l2	L2	stage	vize_l2	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/directive_props.rs	5	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	3
@@ -120,7 +120,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/component_spread_props.
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_expr_reparse_floor.rs	20	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_corpus.rs	119	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_corpus/production.rs	53	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_production_cases.rs	22	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_production_cases.rs	22	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_walk_baseline.rs	29	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/event_props.rs	4	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/fallthrough_roots.rs	13	l0	L0	stage	vize_l0	preferred	2

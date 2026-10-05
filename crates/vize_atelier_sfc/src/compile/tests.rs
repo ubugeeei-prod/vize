@@ -731,7 +731,7 @@ const msg = 'ready'
 
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
     let opts = SfcCompileOptions::default();
-    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+    let result = page_meta::compile_nuxt(&descriptor, opts).expect("Failed to compile SFC");
 
     assert!(
         !result.code.contains("definePageMeta"),

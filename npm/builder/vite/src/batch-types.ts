@@ -45,6 +45,8 @@ export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
   mode?: "module" | "function";
   ssr?: boolean;
   vapor?: boolean;
+  /** Extract Nuxt page metadata; enabled by the Nuxt integration only. */
+  nuxtPageMeta?: boolean;
   customRenderer?: boolean;
   customElements?: string[];
   templateSyntax?: "standard" | "strict" | "quirks";

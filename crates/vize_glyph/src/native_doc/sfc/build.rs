@@ -20,10 +20,12 @@ use super::{
 /// the same observed-template child traversal and complete root framing.
 /// Every refusal retains the actual descriptor/options, selected owner when
 /// created, and every successfully made observation including the rejected one.
-/// Actual interpolation/conditional observation failures are retained separately.
+/// Actual interpolation/conditional/binding observer failures remain separate.
 /// Default strict directive refusal remains unchanged; the explicit conditional
 /// option formats only quoted original v-if/v-else-if values through the same
 /// original-child traversal and genuine L1 head/expression provider.
+/// The combined option additionally formats original quoted static bindings,
+/// keeping their distinct original owners without changing conditional indices.
 ///
 /// Prefix/opening-tag and closing-tag/suffix bytes remain authored. One full
 /// Doc includes them in layout lookahead; no template-only print is spliced
@@ -41,6 +43,8 @@ pub fn observe_native_sfc_in<'a>(
         interpolation_failure: None,
         attributes: std::vec::Vec::new(),
         attribute_failure: None,
+        bindings: std::vec::Vec::new(),
+        binding_failure: None,
         options,
         outcome: Outcome::Refused(NativeSfcRefusal::Descriptor),
     };
@@ -79,12 +83,16 @@ fn build<'a>(
             NativeSfcDirectivePolicy::FormatConditionals => {
                 NativeTemplateValuePolicy::FormatConditionals
             }
+            NativeSfcDirectivePolicy::FormatConditionalsAndStaticBindings => {
+                NativeTemplateValuePolicy::FormatConditionalsAndStaticBindings
+            }
         },
     ) {
         Ok(document) => {
             let (original, document) = document.into_observations();
             observation.operands = original.operands;
             observation.attributes = original.attributes;
+            observation.bindings = original.bindings;
             document
         }
         Err(failure) => {
@@ -94,6 +102,8 @@ fn build<'a>(
             observation.attributes = original.attributes;
             observation.attribute_failure =
                 original.attribute_failure.map(|(_, _, failure)| failure);
+            observation.bindings = original.bindings;
+            observation.binding_failure = original.binding_failure.map(|(_, _, failure)| failure);
             return Err(NativeSfcRefusal::Template(refusal));
         }
     };

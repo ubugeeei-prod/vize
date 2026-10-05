@@ -356,14 +356,8 @@ pub(super) fn reactive_plain_value_from_assignment_target(
     source: &str,
 ) -> Option<ReactivePlainValue> {
     match target {
-        AssignmentTarget::AssignmentTargetIdentifier(id) => {
-            reactive_plain_mutation_identifier_value(
-                result,
-                id.name.as_str(),
-                id.span.start,
-                id.span.end,
-            )
-        }
+        // Replacing the local binding never writes through its previous value.
+        AssignmentTarget::AssignmentTargetIdentifier(_) => None,
         AssignmentTarget::StaticMemberExpression(member) => {
             reactive_plain_value_from_mutated_member(
                 result,

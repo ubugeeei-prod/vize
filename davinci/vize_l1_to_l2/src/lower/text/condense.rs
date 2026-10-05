@@ -7,7 +7,7 @@
 
 use alloc::vec::Vec as StdVec;
 
-use vize_l0::{String, StringBuilder};
+use vize_l0::{Allocator, String, StringBuilder};
 use vize_l1::SurfaceChild;
 
 use super::super::cx::Cx;
@@ -59,7 +59,7 @@ fn text_like(child: &SurfaceChild<'_>) -> bool {
 /// space; `None` when the text already satisfies the strategy
 /// (`whitespace.rs:22-61` — the untouched node keeps borrowing the
 /// source).
-fn condense_internal<'a>(cx: &Cx<'a>, text: &str) -> Option<&'a str> {
+pub(super) fn condense_internal<'a>(allocator: &'a Allocator, text: &str) -> Option<&'a str> {
     let needs = {
         let mut prev_ws = false;
         let mut any = false;
@@ -78,7 +78,7 @@ fn condense_internal<'a>(cx: &Cx<'a>, text: &str) -> Option<&'a str> {
     if !needs {
         return None;
     }
-    let mut out = StringBuilder::with_capacity_in(text.len(), cx.allocator);
+    let mut out = StringBuilder::with_capacity_in(text.len(), allocator);
     let mut prev_ws = false;
     for c in text.chars() {
         if is_vue_ws(c) {
@@ -305,7 +305,7 @@ pub(crate) fn plan_whitespace<'a>(
             if group.texts == 1
                 && let Some(SurfaceChild::Text(token)) = children.get(group.first_text)
                 && !token.text.chars().all(is_vue_ws)
-                && let Some(condensed) = condense_internal(cx, token.text)
+                && let Some(condensed) = condense_internal(cx.allocator, token.text)
                 && let Some(slot) = plan.get_mut(group.first_text)
             {
                 *slot = TextAction::Content(condensed);

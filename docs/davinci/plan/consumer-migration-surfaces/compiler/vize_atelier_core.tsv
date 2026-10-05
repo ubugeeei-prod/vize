@@ -141,7 +141,8 @@ compiler	Compiler	source	crates/vize_atelier_core/src/lane/structural.rs	3	old_a
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/lane/structural/tests.rs	6	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lane/structural/v_for.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/lane/tests.rs	7	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_core/src/lane/traverse.rs	7	l0	L0	stage	vize_l0	preferred	3
+compiler	Compiler	source	crates/vize_atelier_core/src/lane/traverse.rs	9	l0	L0	stage	vize_l0	preferred	3
+compiler	Compiler	source	crates/vize_atelier_core/src/lane/traverse/removal.rs	4	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lib.rs	33	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/lib.rs	33	old_ast	old AST/parser	old	vize_relief	legacy	4
 compiler	Compiler	source	crates/vize_atelier_core/src/lib.rs	33	old_ast	old AST/parser	old	vize_armature	legacy	3

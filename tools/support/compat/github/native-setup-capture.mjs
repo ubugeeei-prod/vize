@@ -6,7 +6,7 @@ export function nativeSetupCaptureRequired(paths) {
   const localHandlerInput =
     /^(?:davinci\/vize_l3\/src\/decision\/dom\/build\/handler(?:\.rs$|\/)|crates\/vize_atelier_sfc\/tests\/fixtures\/native_handler_local_sfc_click_vue_3_5_35\.json$|tests\/tooling\/native-handler-local-sfc-dom-(?:reference|capture-workflow)\.test\.ts$|tests\/tooling\/support\/native-handler-local-sfc-dom-runtime\.ts$|\.github\/actions\/test-native-handler-local-sfc-dom\/action\.yml$)/;
   const selectedSetupInput =
-    /^(?:crates\/vize_atelier_sfc\/src\/native_selected_setup(?:\.rs$|\/)|crates\/vize_atelier_sfc\/tests\/fixtures\/(?:native_selected_setup_sfc|native_original_for(?:_value)?_sfc)_vue_3_5_35\.json$|tests\/tooling\/native-(?:selected-setup|original-for(?:-value)?)-sfc-dom-(?:reference|capture-workflow)\.test\.ts$|tests\/tooling\/support\/native-selected-setup-sfc-dom-runtime\.ts$|davinci\/vize_l3\/src\/decision\/native\/setup(?:\.rs$|\/))/;
+    /^(?:crates\/vize_atelier_sfc\/src\/native_selected_setup(?:\.rs$|\/)|crates\/vize_atelier_sfc\/tests\/fixtures\/(?:native_selected_setup_sfc|native_original_for(?:_(?:value|constant(?:_inherited)?))?_sfc)_vue_3_5_35\.json$|tests\/tooling\/native-(?:selected-setup|original-for(?:-(?:value|constant))?)-sfc-dom-(?:reference|capture-workflow)\.test\.ts$|tests\/tooling\/support\/(?:native-selected-setup-sfc-dom-runtime|native-original-for-constant-sfc-dom-(?:runtime|processes|observation))\.ts$|davinci\/vize_l3\/src\/decision\/native\/setup(?:\.rs$|\/))/;
   const nativeDomInput =
     /^davinci\/(?:vize_l2\/src\/resolution(?:\.rs$|\/)|vize_l3\/src\/decision\/dom(?:\.rs$|\/)|vize_l4\/src\/(?:targets\/dom(?:\.rs$|\/)|expr(?:\.rs$|\/)))/;
   return paths.some(

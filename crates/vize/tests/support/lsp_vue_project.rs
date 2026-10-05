@@ -49,6 +49,32 @@ impl Fixture {
         real_vue: bool,
         options_api: bool,
     ) -> Self {
+        Self::new_with_options_and_files(
+            source,
+            enabled,
+            cross_file,
+            real_vue,
+            options_api,
+            ("App.vue", &[]),
+        )
+    }
+
+    pub fn new_with_vue_component_project(
+        source: &str,
+        name: &str,
+        files: &[(&str, &str)],
+    ) -> Self {
+        Self::new_with_options_and_files(source, false, false, true, false, (name, files))
+    }
+
+    fn new_with_options_and_files(
+        source: &str,
+        enabled: bool,
+        cross_file: bool,
+        real_vue: bool,
+        options_api: bool,
+        files: (&str, &[(&str, &str)]),
+    ) -> Self {
         let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .unwrap()
@@ -88,8 +114,14 @@ impl Fixture {
             .unwrap(),
         )
         .unwrap();
-        let path = project.path().join("App.vue");
+        let path = project.path().join(files.0);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
         std::fs::write(&path, source).unwrap();
+        for (name, content) in files.1 {
+            let path = project.path().join(name);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, content).unwrap();
+        }
         let uri = file_uri(&path).to_string();
         let mut lsp = LspProcess::spawn(project.path());
         lsp.send(
@@ -113,6 +145,24 @@ impl Fixture {
             "textDocument": { "uri": self.uri, "languageId": "vue", "version": 1, "text": source }
         }}));
         self.diagnostics(1)
+    }
+
+    pub fn open_file(&mut self, uri: &str, source: &str) -> Value {
+        self.lsp.send(
+            json!({ "jsonrpc": "2.0", "method": "textDocument/didOpen", "params": {
+                "textDocument": { "uri": uri, "languageId": "vue", "version": 1, "text": source }
+            }}),
+        );
+        self.lsp.recv_matching(|message| {
+            message["method"] == "textDocument/publishDiagnostics"
+                && message["params"]["uri"] == uri
+                && message["params"]["version"] == 1
+        })["params"]["diagnostics"]
+            .clone()
+    }
+
+    pub fn read_file(&self, name: &str) -> String {
+        std::fs::read_to_string(self._project.path().join(name)).unwrap()
     }
 
     pub fn write_file(&self, name: &str, source: &str) -> String {
@@ -149,11 +199,22 @@ impl Fixture {
         method: &str,
         source: &str,
         needle: &str,
+        params: Value,
+    ) -> Value {
+        self.request_file_with(method, &self.uri.clone(), source, needle, params)
+    }
+
+    pub fn request_file_with(
+        &mut self,
+        method: &str,
+        uri: &str,
+        source: &str,
+        needle: &str,
         mut params: Value,
     ) -> Value {
         let id = self.next_id;
         self.next_id += 1;
-        params["textDocument"] = json!({ "uri": self.uri });
+        params["textDocument"] = json!({ "uri": uri });
         params["position"] = position(source, needle);
         self.lsp
             .send(json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params }));

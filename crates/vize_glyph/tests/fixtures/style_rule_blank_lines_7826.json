@@ -1,0 +1,232 @@
+{
+  "schema": "vize.formatter-css-grouping-regressions",
+  "version": 1,
+  "issue": 7826,
+  "expectedProvenance": "repository-authored complete bytes; actual source-built execution required",
+  "cases": [
+    {
+      "id": "original-flat",
+      "api": "sfc",
+      "input": "<style>\n.a {\n  color: red;\n\n  margin: 0;\n}\n</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n\n  margin: 0;\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "original-nested-animation",
+      "api": "sfc",
+      "input": "<style>\n.a {\n  color: red;\n\n  & .b {\n    animation: spin 1s linear infinite;\n  }\n}\n</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n\n  & .b {\n    animation: spin 1s linear infinite;\n  }\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "original-nested-plain",
+      "api": "sfc",
+      "input": "<style>\n.a {\n  color: red;\n\n  & .b {\n    color: blue;\n  }\n}\n</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n\n  & .b {\n    color: blue;\n  }\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "scoped-flat",
+      "api": "sfc",
+      "input": "<style scoped>\n.a {\n  color: red;\n\n  margin: 0;\n}\n</style>\n",
+      "expected": "<style scoped>\n.a {\n  color: red;\n\n  margin: 0;\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "module-animation",
+      "api": "sfc",
+      "input": "<style module>\n.a {\n  color: red;\n\n  & .b {\n    animation: spin 1s linear infinite;\n  }\n}\n</style>\n",
+      "expected": "<style module>\n.a {\n  color: red;\n\n  & .b {\n    animation: spin 1s linear infinite;\n  }\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "compact-css-is-formatted",
+      "api": "sfc",
+      "input": "<style>.a{color:red;margin:0}</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n  margin: 0;\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "direct-flat",
+      "api": "style",
+      "input": ".a {\n  color: red;\n\n  margin: 0;\n}\n",
+      "expected": ".a {\n  color: red;\n\n  margin: 0;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "nested-opacity-authored",
+      "api": "style",
+      "input": ".a {\n  color: red;\n\n  & .b {\n    opacity: .5;\n  }\n}\n",
+      "expected": ".a {\n  color: red;\n\n  & .b {\n    opacity: .5;\n  }\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "collapse-three-blank-lines",
+      "api": "style",
+      "input": ".a {\n  color: red;\n\n\n\n  margin: 0;\n}\n",
+      "expected": ".a {\n  color: red;\n\n  margin: 0;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "after-nested-rule",
+      "api": "style",
+      "input": ".a {\n  & .b {\n    color: red;\n  }\n\n  color: blue;\n}\n",
+      "expected": ".a {\n  & .b {\n    color: red;\n  }\n\n  color: blue;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "nested-media",
+      "api": "style",
+      "input": "@media screen and (max-width: 600px) {\n  .a {\n    color: red;\n\n    margin: 0;\n  }\n}\n",
+      "expected": "@media screen and (max-width: 600px) {\n  .a {\n    color: red;\n\n    margin: 0;\n  }\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "quoted-structural-bytes",
+      "api": "style",
+      "input": ".a {\n  content: \"}; /* quoted */ {;\";\n\n  color: red;\n}\n",
+      "expected": ".a {\n  content: \"}; /* quoted */ {;\";\n\n  color: red;\n}",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "escaped-quote",
+      "api": "style",
+      "input": ".a {\n  content: \"a\\\";{b}\";\n\n  color: red;\n}\n",
+      "expected": ".a {\n  content: \"a\\\";{b}\";\n\n  color: red;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "unquoted-url-comment-bytes",
+      "api": "style",
+      "input": ".a {\n  background-image: url(https://example.test/a/*/icon.svg);\n\n  color: red;\n}\n",
+      "expected": ".a {\n  background-image: url(https://example.test/a/*/icon.svg);\n\n  color: red;\n}",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "escaped-unicode-selector",
+      "api": "style",
+      "input": ".\\雪 {\n  color: red;\n\n  margin: 0;\n}\n",
+      "expected": ".\\雪 {\n  color: red;\n\n  margin: 0;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "hex-escaped-selector",
+      "api": "style",
+      "input": ".escaped\\00007b name {\n  color: red;\n\n  margin: 0;\n}\n",
+      "expected": ".escaped\\00007b name {\n  color: red;\n\n  margin: 0;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "existing-nested-comment-custody",
+      "api": "style",
+      "input": ".a {\n  color: red;\n\n  /* declaration group */\n  margin: 0;\n}",
+      "expected": ".a {\n  color: red;\n\n  /* declaration group */\n  margin: 0;\n}",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "top-comment-and-rule-group",
+      "api": "style",
+      "input": "/* first */\n.a {\n  color: red;\n\n  margin: 0;\n}\n\n/* second */\n.b {\n  color: blue;\n}",
+      "expected": "/* first */\n.a {\n  color: red;\n\n  margin: 0;\n}\n\n/* second */\n.b {\n  color: blue;\n}",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "no-invented-group",
+      "api": "style",
+      "input": ".a {\n  color: red;\n  margin: 0;\n}\n",
+      "expected": ".a {\n  color: red;\n  margin: 0;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "blank-before-close-is-not-a-group",
+      "api": "style",
+      "input": ".a {\n  color: red;\n\n}\n",
+      "expected": ".a {\n  color: red;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "crlf-style",
+      "api": "style",
+      "input": ".a {\r\n  color: red;\r\n\r\n  margin: 0;\r\n}\r\n",
+      "expected": ".a {\r\n  color: red;\r\n\r\n  margin: 0;\r\n}",
+      "options": {
+        "endOfLine": "crlf"
+      },
+      "cli": false
+    },
+    {
+      "id": "auto-crlf-sfc",
+      "api": "sfc",
+      "input": "<style>\r\n.a {\r\n  color: red;\r\n\r\n  margin: 0;\r\n}\r\n</style>\r\n",
+      "expected": "<style>\r\n.a {\r\n  color: red;\r\n\r\n  margin: 0;\r\n}\r\n</style>\r\n",
+      "options": {
+        "endOfLine": "auto"
+      },
+      "cli": false
+    },
+    {
+      "id": "tabs-nested",
+      "api": "style",
+      "input": ".a {\n\tcolor: red;\n\n\t& .b {\n\t\tanimation: spin 1s linear infinite;\n\t}\n}\n",
+      "expected": ".a {\n\tcolor: red;\n\n\t& .b {\n\t\tanimation: spin 1s linear infinite;\n\t}\n}\n",
+      "options": {
+        "useTabs": true
+      },
+      "cli": false
+    },
+    {
+      "id": "four-spaces",
+      "api": "style",
+      "input": ".a {\n    color: red;\n\n    margin: 0;\n}\n",
+      "expected": ".a {\n    color: red;\n\n    margin: 0;\n}",
+      "options": {
+        "tabWidth": 4
+      },
+      "cli": false
+    },
+    {
+      "id": "existing-scss-custody",
+      "api": "sfc",
+      "input": "<style lang=\"scss\">\n.a {\n  color: red;\n\n  & .b { color: blue; }\n}\n</style>\n",
+      "expected": "<style lang=\"scss\">\n.a {\n  color: red;\n\n  & .b { color: blue; }\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "in-rule-comment-parenthesis",
+      "api": "sfc",
+      "input": "<style>\n.a {\n  color: red;\n  /* ( */\n\n  margin: 0;\n}\n</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n  /* ( */\n\n  margin: 0;\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "in-rule-comment-structural-bytes",
+      "api": "sfc",
+      "input": "<style>\n.a {\n  color: red;\n\n  /* } ; \" { [ */\n\n  margin: 0;\n}\n</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n\n  /* } ; \" { [ */\n\n  margin: 0;\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    }
+  ]
+}

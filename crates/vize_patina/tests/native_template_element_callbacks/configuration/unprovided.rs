@@ -1,12 +1,9 @@
 use super::*;
-use vize_patina::rules::a11y::{NoAccessKey, NoAutofocus};
+use vize_patina::rules::a11y::NoDistractingElements;
 
 #[test]
-fn genuine_focus_builtins_still_have_no_bare_element_capability_or_capture_admission() {
-    for rule in [
-        Box::new(NoAutofocus) as Box<dyn Rule>,
-        Box::new(NoAccessKey) as Box<dyn Rule>,
-    ] {
+fn genuine_other_builtin_still_has_no_bare_element_capability_or_capture_admission() {
+    for rule in [Box::new(NoDistractingElements) as Box<dyn Rule>] {
         let name = rule.meta().name;
         assert!(rule.as_native_template_rule().is_none());
         let log = events();

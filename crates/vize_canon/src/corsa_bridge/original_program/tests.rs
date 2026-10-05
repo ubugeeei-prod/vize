@@ -75,3 +75,6 @@ fn authored_lsp_ranges_preserve_newlines_and_refuse_bad_or_generated_positions()
         );
     }
 }
+
+#[path = "../../../tests/original_program_check/reference_paths.rs"]
+mod reference_paths;

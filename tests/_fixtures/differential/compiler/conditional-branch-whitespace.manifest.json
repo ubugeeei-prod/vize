@@ -1,0 +1,79 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "61c975f8889a002a1b53265d86d0985447ffab63",
+  "product": "compiler",
+  "cases": [
+    {
+      "id": "compiler/dom/conditional-branch-whitespace",
+      "state": "active",
+      "targets": ["dom", "ssr"],
+      "inputs": {
+        "root": "conditional-branch-whitespace",
+        "files": [
+          {
+            "path": "nuxt-root.template.txt",
+            "sha256": "726c145e36e441ac3faa7948bb357903f127d1453e3d86a5365e3a16e824826b",
+            "role": "entry"
+          },
+          {
+            "path": "minimal-suspense.template.txt",
+            "sha256": "a1d1018aa679c7c5b4664c4a668248f7989880d62efe3bf54f6031c34ba1c01d",
+            "role": "entry"
+          },
+          {
+            "path": "inline.template.txt",
+            "sha256": "a7fe561b649aac2f64c82e7a416f69caf76d998a9154ee94a009f55658f1d2bc",
+            "role": "entry"
+          },
+          {
+            "path": "nuxt.config.ts.txt",
+            "sha256": "6ee80eebf702a93c12b6fccbc8803c21edbb160551a5d41e1ab2c60ecacd4536",
+            "role": "reporter-reproduction"
+          },
+          {
+            "path": "app.vue.txt",
+            "sha256": "38e305f7fde11a0af04de43ca57354f8cda17440d7fe36e158620a6efcd57794",
+            "role": "reporter-reproduction"
+          },
+          {
+            "path": "index.vue.txt",
+            "sha256": "672c5deac3c9c5a7f773caf79e9cdcc6d565d16bcf602f2f9f77f7e8d0b36f2d",
+            "role": "reporter-reproduction"
+          }
+        ]
+      },
+      "reference": {
+        "path": "conditional-branch-whitespace/runtime.expected.json",
+        "sha256": "9946ac0ffce5daed8c091f43941d3a4b7e927a797df8076f2da4cf229b3cce6e",
+        "source": "crates/vize_atelier_sfc/tests/conditional_branch_whitespace.rs:reporter_and_controls_mount_and_ssr_like_vue_in_production"
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/7831",
+        "reporter": "ubugeeei",
+        "versions": {
+          "nuxt": "4.5.2",
+          "vue": "3.5.43",
+          "vize": "0.432.0"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-public-conditional-runtime-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whitespace preserve selects the existing compiler; this correction makes no native-stage completion claim."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-dom-and-ssr-runtime-v1",
+        "requiredFacets": [
+          "complete-production-dom",
+          "complete-ssr-html",
+          "all-branch-states",
+          "surrounding-whitespace",
+          "unchanged-adjacency-diagnostic"
+        ]
+      }
+    }
+  ]
+}

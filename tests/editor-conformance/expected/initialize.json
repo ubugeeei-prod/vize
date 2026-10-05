@@ -48,6 +48,11 @@
     },
     "documentRangeFormattingProvider": true,
     "documentSymbolProvider": true,
+    "experimental": {
+      "vize": {
+        "jsxTypecheck": false
+      }
+    },
     "foldingRangeProvider": true,
     "hoverProvider": true,
     "implementationProvider": true,

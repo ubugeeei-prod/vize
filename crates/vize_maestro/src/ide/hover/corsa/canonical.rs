@@ -14,7 +14,7 @@ pub(super) async fn component_hover(
     use super::super::component_prop;
     let mut result =
         component_prop::hover_attribute(ctx).or_else(|| component_prop::hover_event(ctx))?;
-    if let Some(native) = hover(ctx, bridge, true).await {
+    if let Some(Answer::Hover(native)) = hover(ctx, bridge, true).await {
         result = component_prop::hover_attribute_documented(ctx, Some(&native))
             .or_else(|| component_prop::hover_event_documented(ctx, Some(&native)))
             .unwrap_or_else(|| native.clone());
@@ -26,19 +26,28 @@ pub(super) async fn component_hover(
     Some(result)
 }
 
+/// A native empty quick-info result is an answer, not backend unavailability.
+pub(super) enum Answer {
+    Empty,
+    Hover(Hover),
+}
+
 pub(super) async fn hover(
     ctx: &IdeContext<'_>,
     bridge: Option<&Arc<CorsaBridge>>,
     follow_declaration: bool,
-) -> Option<Hover> {
+) -> Option<Answer> {
     let bridge = bridge.filter(|bridge| bridge.is_initialized())?;
     let document = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
     let (line, character) =
         corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
-    let mut hover = bridge
+    let Some(mut hover) = bridge
         .hover(&document.request_uri, line, character)
         .await
-        .ok()??;
+        .ok()?
+    else {
+        return Some(Answer::Empty);
+    };
     // Native quick info can omit JSDoc after a mapped type. Follow the
     // checker's declaration identities for documentation while retaining the
     // instantiated signature and the authored hover range from this use.
@@ -74,7 +83,7 @@ pub(super) async fn hover(
         .and_then(|range| corsa_support::map_canonical_lsp_range(ctx, &document, range));
     let mut converted = HoverService::convert_lsp_hover(hover);
     converted.range = mapped_range.or_else(|| authored_hover_token_range(ctx));
-    Some(converted)
+    Some(Answer::Hover(converted))
 }
 
 fn documentation(hover: &LspHover) -> Option<&str> {

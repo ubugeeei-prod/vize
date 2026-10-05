@@ -53,6 +53,9 @@ use super::capture::BuildCapture;
 use super::profile_facts::{self, FileProfileFacts, StatsCacheStatus};
 use super::settings::CompileFileSettings;
 
+mod errors;
+pub(super) use errors::check_compile_result;
+
 /// The ICE-guarded per-file compile (P2-13, charter #30): an injected panic
 /// or a panic caught around the real compile fails **this file** - with a
 /// written `repro.folio` and an `internal compiler error` report - while the
@@ -289,6 +292,7 @@ fn compile_file_inner(
             .map(|result| (result, None))
         }
     })
+    .and_then(|(result, capture)| check_compile_result(result).map(|result| (result, capture)))
     .map_err(|e| CompileError {
         path: path.clone(),
         error: e.message,

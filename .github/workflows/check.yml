@@ -17,17 +17,15 @@ concurrency:
   cancel-in-progress: true
 permissions:
   contents: read
-
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   pr-source-checks:
     name: PR source checks
+    permissions: { contents: read, actions: read }
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: ./.github/workflows/pr-source-checks.yml
-
   instruction-counts:
     name: Instruction ceilings
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
@@ -278,6 +276,8 @@ jobs:
         run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json
       - name: Install vize CLI
         run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
+      - name: Check configured Router page CLI and editor types
+        uses: ./.github/actions/check-router-page-types
       - name: Prepare plugin runtime and test native JS setup
         uses: ./.github/actions/test-native-js-setup
       - name: Capture original native attribute values and fixed fresh mounts

@@ -4,6 +4,7 @@
 //! in Vue SFC `<style>` blocks using lightningcss for parsing and printing.
 
 mod authored;
+mod blank_lines;
 #[path = "style_chunk.rs"]
 mod chunk;
 mod color;

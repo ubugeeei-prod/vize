@@ -58,10 +58,20 @@ pub(super) fn emit_preamble(
         }
     }
 
-    // useCssVars import if style has v-bind()
+    // CSS variables need the helper for the component's effective renderer.
     if has_css_vars {
         let include_define_component = is_ts && !is_async && !is_vapor;
-        if import_block_has_local_from(template.imports, "vue", "_unref") {
+        if is_vapor {
+            if import_block_has_local_from(template.imports, "vue", "_unref") {
+                output.extend_from_slice(
+                    b"import { useVaporCssVars as _useVaporCssVars } from 'vue'\n",
+                );
+            } else {
+                output.extend_from_slice(
+                    b"import { useVaporCssVars as _useVaporCssVars, unref as _unref } from 'vue'\n",
+                );
+            }
+        } else if import_block_has_local_from(template.imports, "vue", "_unref") {
             if include_define_component {
                 output.extend_from_slice(
                     b"import { useCssVars as _useCssVars, defineComponent as _defineComponent } from 'vue'\n",

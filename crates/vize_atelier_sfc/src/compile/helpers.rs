@@ -47,16 +47,22 @@ pub(super) fn template_is_ts(descriptor: &SfcDescriptor, options: &SfcCompileOpt
 
 pub(super) fn extract_descriptor_macro_artifacts(
     descriptor: &SfcDescriptor,
+    nuxt_page_meta: bool,
 ) -> Vec<SfcMacroArtifact> {
     let mut artifacts = Vec::new();
 
     if let Some(script) = descriptor.script.as_ref() {
-        artifacts.extend(extract_macro_artifacts(&script.content, script.loc.start));
+        artifacts.extend(extract_macro_artifacts(
+            &script.content,
+            script.loc.start,
+            nuxt_page_meta,
+        ));
     }
     if let Some(script_setup) = descriptor.script_setup.as_ref() {
         artifacts.extend(extract_macro_artifacts(
             &script_setup.content,
             script_setup.loc.start,
+            nuxt_page_meta,
         ));
     }
 

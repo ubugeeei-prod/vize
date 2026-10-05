@@ -1,0 +1,148 @@
+# Original Vue 2 whole scriptless SFC document: paired private decision
+
+Published paired source decision [#6842](https://github.com/ubugeeei-prod/vize/issues/6842#issuecomment-5979139120)/[#6882](https://github.com/ubugeeei-prod/vize/issues/6882#issuecomment-5979139276). Initial671f audit and actual912d private
+preparation retain their source qualifiers. Root/peer clear ca5 design and final
+f3d9 whole source; genuine #7777 actually merged as signed-valid
+`bcf3e024bde363a4d9e3cc2e7745af771cd5b51f` at 2026-10-04T10:27:55Z.
+Equivalent fresh-main replay containing bcf3 and independent Draft/automatic Actions are authorized;
+fresh native/CF/runtime/protected104 and actual signed delivery remain pending.
+
+The [complete plan](./2026-10-04-vue2-scriptless-sfc-document-plan.md) uses the
+actually merged #7762 original Vue2Descriptor (`54b475fb`) and #7761 original
+TextView Doc (`6f82160d`). No new L1/modern/File provider is missing. Their
+applicable signed/source/protected receipts are preserved as provider facts,
+not whole-consumer acceptance.
+
+Implement one explicit normally owning NativeVue2SfcObservation/options entry.
+Its original descriptor owns every once-created Component/FilterChain/stock
+AST/diagnostic; private complete Doc/refusal and source/options stay alongside
+it. One authentic children/attribute/text Doc traversal retains sealed
+membership and physical source/map/profile authority, preserving authored
+outer frame/body bytes. It adds no parse/decode/header preflight/body/AST pass,
+legacy fallback, copied authority or public raw-Doc escape.
+
+Only two small Glyph-only seams are needed: a trusted private consuming
+TextDocument handoff, and independent plain-Vue2 header layout because the
+current shared implementation hardcodes Vue3 directive decomposition and its
+conditional successor remains private. Conservative tags/directives/pre/
+reserved-attribute/node/recovery refusals and exact original expression limits
+are explicit. Source cursor plus genuine slot/name/root/open/content/close
+joins complete one full Doc before printing, so outer continuation affects
+lookahead. There is no self-referential stored child wrapper.
+
+Whole Doc/print/changed/error/fixed-point, full slot/root/AST/map/diagnostic/
+foreign/move/drop/unwind/lifetime laws and independent complete pinned2.7.16
+compiler/devprod recursive VNode/filter-event goldens are mandatory before
+publication. Actual capture provenance stays separate from expected primary
+packets; all old48 text outputs, seven Vue2/five Vue1 whole packets, current
+workflow350, foreign census shards and protected104 caps/ratchets stay intact.
+Primary UTF16 indices convert independently to original UTF8 spans; warning/
+error/fallback controls grant no native or mounted runtime credit. Foreign
+controls use real crossed owners at private joins, and cfg(test)-only lower
+count proof stays separate from whole-client execution. No local builds/
+manual campaign or acceptance is granted by this design.
+
+The genuine future source change must pair this issue decision with the
+central record, preserve original incoming clauses and acquire root/retained
+peer frozen review before automatic Actions/publication. Both syntax/text
+providers and genuine #7777 are delivered; literal bcf3 now supplies the original
+orchestration APIs/actions. The historical native-Stack plan was superseded by
+independent parent admission. Lossless actual-main replay preserves incoming
+exports/docs/canonical/wiring and all reviewed whole blobs; retained peer verifies
+that union before independent Draft publication and fresh automatic Actions.
+Historical full grammar/SFC/options, File/L2/native classic runtime/maps and
+default completion remain unfinished.
+
+Private authored coverage is three full Doc/crossed-owner units, 17 whole
+integration laws, one isolated normally owned diagnostic heap drop/unwind,
+ten real CF (original nine plus short-root drop) and positive; execution is pending. Independent32
+whole print/meaning rows are fixed before capture and hash-joined separately.
+Pure pinned primary Node verification passes29 complete dev/prod recursive
+VNode/event references; three full warning/fallback controls have no runtime
+credit. Native capture is absent and its required join remains pending.
+Only the owned canonical Glyph TSV regenerates:23 genuine additions and no
+removals,18 foreign artifacts and generator/policy bytes unchanged; pure actual
+19-file canonical check passes. Distinct whole capture source is prepared; guarded350
+wiring now uses a root-authorized genuine f3 ancestor union with the exact
+unchanged neutral composite. No unmerged source receives literal delivery credit.
+
+Full frozen fb040abd source review clears production/custody and holds only
+three authored preparation boundaries. The narrow successor restores the
+intended quoted header literals, writes all32 actual attempts/refusals/panic
+partials before golden assertions and extends the action's genuine provider/
+shared-dependency selection. Capture version2 includes actual repeated/fixed-
+point results; Rust failures still allow the complete primary join, with both
+raw logs/statuses retained and an absent-capture oracle explicitly unexecuted.
+All independent32 rows/helper and existing48/7V2/5V1 bytes remain unchanged.
+Pure primary-only verification passes while its native join remains skipped;
+canonical19 is unchanged. The all-seven-tag row's retained SFC-parser end-tag
+errors coexist with successful bounded compiler/devprod reference, so29 runtime
+rows are not29 parser-clean SFCs. Native execution and final genuine parent-union
+review remain pending; full successor source review precedes publication.
+
+Root/peer clear f2 source, then root finds that runtime assertions suppress
+production after dev mismatch and fail to persist full actual packets. The
+private successor collects actual dev AND production attempts/errors for all
+reference and genuinely printed native rows before comparisons. A source/run-
+bound always-uploaded sidecar stores full recursive packets, status/error or
+explicit unexecuted controls and hashes both reference and actual native input.
+No desired/native fallback, retry, expected mutation or new local execution.
+
+A NEW wt genuinely branches from verified current #7777
+`f3bb6ac4d08b773311194175b124bb8575c72357`; all parent production/runtime APIs/actions/laws/64+old48
+fixtures are exact. Additive exports and own canonical rows retain both lanes.
+One new outer action invokes unchanged neutral Vue2→Vue1 then wholeV2 with
+always(), replacing only the existing workflow uses line; same guard/base/
+order350. Full root/retained-peer corrected union review still precedes child
+publication. #7777's independent actual merge now supplies the real parent;
+no membership change or native Stack is needed for this independent successor.
+
+Root authorizes the sole necessary parent workflow-law representation change:
+prove outer [unchanged neutral text, wholeV2], second always(), equal base and
+exact neutral [Vue2text,Vue1text], same sole first-shard guard/base350. All its
+other selectors/process-status/upload laws and every runtime fixture stay exact.
+
+Full immutable d3 review conserves the genuine f3 union and clears collection/
+order/upload/wiring, but rejects two Node source mistakes: authored hash-key
+rename and host-only Error branding. Restore runtimeCredit solely in authored
+projection and retain genuine VM name/message/stack via isNativeError; no fixed
+hash/fixture/helper/production/action/law expectation changes or new execution.
+Historical d3 supplies no acceptance; exact successor frozen review is required.
+
+Initial public head1e9 exact Check37196463177 rejects the unused Span import in
+whole build.rs at affected Rust Clippy; that Rust tier skips its tests. The tiny
+successor removes only the unused import. All fixed32/CF/helpers/oracles/
+collector/actions/ceilings and original law assertions remain preserved; fresh automatic Actions must qualify
+the new head, with no failed-source or prior partial execution transfer.
+
+The same initial head's actual tooling-four assertion-lint also rejects the
+lifecycle law's substring-derived refusal expectation. Pair the unchanged two
+authored bodies with literal expected false/true and compare directly. Every
+original custody/unwind/map/owner/full-print assertion remains; no allowlist,
+policy or independent expected-output waiver is introduced.
+
+Initial tooling-one compiling the whole capture target also reports genuine
+E0597/E0505: lifecycle laws incorrectly retain a short NativeSyntax AST borrow
+after owner drop/move. Keep original AST inspection within the live owner,
+retain only authentic Copy EmbedSource/maps/scalar spans, then inspect the real
+next owner's root under its own live borrow. Same original inputs/parse count/
+source/maps/ownership/unwind/full-print assertions remain; add a root-after-drop
+compile-fail control alongside all original nine (ten total), with no API
+lifetime promotion, AST clone/unsafe or synthetic authority. Whole capture was
+absent and the oracle explicitly unexecuted/null; no partial32 credit exists.
+
+Fresh8073 Check37198253980 affected-test build reaches two actual E0277 errors
+in owned crossed-TextDoc unit Vec::new_in calls. GetAllocator is implemented
+for &Allocator, so pass &&arena at both sites, retaining the exact original
+arena, Doc buffer and every foreign/original assertion. Production/fixtures/
+CF/collector/actions/caps stay exact. The rejected build supplies no fresh
+whole-suite acceptance; the exact successor requires fresh automatic Actions.
+
+Fresh5328 Check37198664184 executes all whole32 print/compiler/devprod packets
+and all tenCF/positive successfully, but shard3 rejects one authored refusal
+position: for nested tag template, the test first-match helper finds the outer
+SFC envelope0..9 while the genuine original nested token is28..37. Pin the same
+fixed28-byte prefix and tag length for all unchanged eleven tag inputs. Every
+refusal category/owner/custody/full-output assertion and production/32 fixture/
+CF/helper/collector/action/cap remains unchanged; rejected source supplies no
+overall acceptance, and the exact successor needs fresh automatic proof.

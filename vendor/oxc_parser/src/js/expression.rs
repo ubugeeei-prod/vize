@@ -530,11 +530,13 @@ impl<'a, C: Config> ParserImpl<'a, C> {
     }
 
     fn parse_array_expression_element(&mut self) -> ArrayExpressionElement<'a> {
-        match self.cur_kind() {
+        // Grow before recursive element/spread/assignment descent. Empty arrays
+        // leave the original delimited list before reaching this callback.
+        stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, || match self.cur_kind() {
             Kind::Comma => self.parse_elision(),
             Kind::Dot3 => ArrayExpressionElement::SpreadElement(self.parse_spread_element()),
             _ => ArrayExpressionElement::from(self.parse_assignment_expression_or_higher()),
-        }
+        })
     }
 
     /// Elision :

@@ -71,7 +71,7 @@ impl VirtualProject {
         }
     }
 
-    pub(crate) fn insert_package_route_binding(&mut self, binding: crate::PackageRouteBinding) {
+    pub(crate) fn insert_route_binding_inner(&mut self, binding: crate::PackageRouteBinding) {
         let key = binding.key();
         self.remove_package_route_binding(&key);
         for path in &binding.invalidation_paths {
@@ -110,7 +110,7 @@ impl VirtualProject {
         self.package_routes.insert(key, binding);
     }
 
-    pub(crate) fn remove_package_route_binding(
+    pub(crate) fn remove_route_binding_inner(
         &mut self,
         key: &crate::package_route::PackageRouteKey,
     ) -> Option<crate::PackageRouteBinding> {

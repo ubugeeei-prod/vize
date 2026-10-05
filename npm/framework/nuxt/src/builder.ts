@@ -6,11 +6,17 @@ export function getDetectedNuxtMajor(nuxt: unknown): 2 | 3 | 4 | null {
         _version?: string;
         version?: string;
         options?: { _nuxtVersion?: string };
+        constructor?: { version?: string };
       }
     | undefined;
-  const version = nuxtLike?._version ?? nuxtLike?.version ?? nuxtLike?.options?._nuxtVersion;
+  const version =
+    nuxtLike?._version ??
+    nuxtLike?.version ??
+    nuxtLike?.options?._nuxtVersion ??
+    nuxtLike?.constructor?.version;
   if (!version) return null;
-  const major = Number.parseInt(version.split(".")[0] ?? "", 10);
+  // Nuxt 2 exposes its public version as Nuxt.version, including a leading v.
+  const major = Number.parseInt(version.replace(/^v/, "").split(".")[0] ?? "", 10);
   return major === 2 || major === 3 || major === 4 ? major : null;
 }
 

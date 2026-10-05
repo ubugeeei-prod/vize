@@ -7,6 +7,7 @@ use crate::ide::diagnostics::VirtualTsResult;
 
 mod catalog;
 mod component_completion;
+mod component_project;
 mod exact_edits;
 mod mapping;
 mod open;
@@ -17,6 +18,7 @@ mod semantic_links;
 pub(crate) use script::open_canonical_script_document;
 
 pub(crate) use component_completion::canonical_component_prop_position;
+pub(crate) use component_project::open_canonical_virtual_navigation_project_document_strict;
 pub(crate) use exact_edits::map_canonical_exact_edit_range;
 use mapping::source_offset_to_virtual_generated_offset;
 pub(crate) use mapping::{canonical_source_offset_to_position, map_canonical_lsp_range};
@@ -24,7 +26,7 @@ pub(super) use mapping::{map_lsp_range_to_source, map_virtual_result_lsp_range_t
 pub(crate) use open::{open_canonical_virtual_document, open_canonical_virtual_document_strict};
 pub(crate) use project::{
     CanonicalProjectOpenError, open_canonical_virtual_project_document,
-    open_canonical_virtual_project_document_strict, open_canonical_virtual_workspace_document,
+    open_canonical_virtual_workspace_document,
 };
 pub(crate) use rename::{
     map_canonical_corsa_workspace_edit, map_canonical_prepare_rename,

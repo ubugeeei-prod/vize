@@ -12,6 +12,7 @@ type Step = {
   with?: Record<string, string | boolean>;
 };
 type Job = {
+  permissions?: Record<string, string>;
   if?: string;
   needs?: string[] | string;
   steps?: Step[];
@@ -187,13 +188,39 @@ test("the Rust report waits for the builder and all four independently executing
   assert.equal(rust.jobs["rust-source-report"].if, "${{ always() }}");
   const reportSteps = rust.jobs["rust-source-report"].steps ?? [];
   const gate = reportSteps.findIndex((step) => step.name === "Require the complete Rust tier");
+  const select = reportSteps.findIndex(
+    (step) => step.name === "Select latest source-bound Rust workers",
+  );
   const download = reportSteps.findIndex(
     (step) => step.name === "Download the four current full Rust workers",
   );
   const reconcile = reportSteps.findIndex(
     (step) => step.name === "Require all registered typechecker observations",
   );
-  assert.ok(gate >= 0 && gate < download && download < reconcile);
+  assert.ok(gate >= 0 && gate < select && select < download && download < reconcile);
+  assert.equal(reportSteps[select].if, reportSteps[download].if);
+  assert.equal(reportSteps[reconcile].if, reportSteps[download].if);
+  assert.equal(
+    reportSteps[download].with?.["artifact-ids"],
+    "${{ steps.rust-workers.outputs.artifact-ids }}",
+  );
+  assert.equal(reportSteps[download].with?.pattern, undefined);
+  assert.equal(reportSteps[download].with?.["github-token"], "${{ github.token }}");
+  assert.equal(reportSteps[download].with?.["run-id"], "${{ github.run_id }}");
+  assert.equal(reportSteps[download].with?.["merge-multiple"], false);
+  assert.equal(reportSteps[download].with?.["digest-mismatch"], "error");
+  assert.match(reportSteps[select].run ?? "", /select-rust-workers\.mjs select/);
+  assert.match(
+    reportSteps[reconcile].run ?? "",
+    /select-rust-workers\.mjs verify .*\n.*typechecker-shards\.ts aggregate/,
+  );
+  const check = parse(readRepoFile(".github", "workflows", "check.yml"));
+  for (const job of [
+    check.jobs["pr-source-checks"],
+    source.jobs["pr-rust-source"],
+    rust.jobs["rust-source-report"],
+  ])
+    assert.deepEqual(job.permissions, { contents: "read", actions: "read" });
   assert.equal(reportSteps[gate].if, undefined);
   assert.equal(reportSteps[gate].run, "node tools/support/compat/github/require-rust-tier.mjs");
   assert.deepEqual(reportSteps[gate].env, {

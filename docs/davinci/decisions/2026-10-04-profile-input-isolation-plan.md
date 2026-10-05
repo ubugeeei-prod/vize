@@ -148,3 +148,30 @@ and all original malformed caller/dependency/lock/golden controls still fail.
 Production exporter/assembly/Curator/native state, schemas, clocks and all104
 caps remain exact. Fresh exact-source Actions are required; the coordinated
 v0.433 admission hold, protected proof and actual merge remain pending.
+
+## Provider delivery on current main (2026-10-05)
+
+Resume the existing provider #7812 in native Stack #7814 after the coordinated
+publication fence was lifted. The current-main replay uses literal signed
+`4e4c8c977d7052edbb6a2b42808ddc6e7b59f3bf`, retaining the five original
+provider commits and their authors. Its reviewed facade, assembly, four whole
+snapshot laws and exact replay/negative guards remain byte-identical to
+`92225b3798afd3e3d97925c1279a0599d2c735e6`; all incoming main decisions remain
+present and the canonical record stays at 350 lines.
+
+Historical [Check 37201980329](https://github.com/ubugeeei-prod/vize/actions/runs/37201980329)
+qualified that original source. It does not qualify this delivery successor.
+Require fresh exact-head source Actions and owning Rust laws before making the
+existing layer Ready. The dependent Curator #7813 must retain this actual
+provider as its ancestor and genuine Stack #7814 position 2. Admit only the
+highest fully qualified contiguous prefix with native `gh stack merge`, then
+verify each protected candidate's full Rust/differential suites, all 104 probes
+measured three times, unchanged actual-parent ratchets and signed actual merge.
+
+The issue reporter is the publicly verified `ubugeeei` account, user ID
+71201308. This meaningful current-main delivery record carries its explicit
+coauthor trailer without rewriting the original implementation history. Pair
+this decision with #6834. Unavailable observations remain null, native exporter
+read/assembly ordering and supplied telemetry stay exact; no CPU result or 10x
+claim follows. Native clocks, TLS/locks, arena/recursion, IO and full platform
+isolation remain unfinished, so #6834 remains open.

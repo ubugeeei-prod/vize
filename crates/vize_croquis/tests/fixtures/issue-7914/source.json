@@ -1,0 +1,16 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/7914",
+  "author": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "body_sha256": "edede70ef312ec3ee476dd8beeef3c73045411b49281e8562bc18c667739a794",
+  "inputs": [
+    {
+      "path": "LazyInput.vue",
+      "file": "LazyInput.vue.fixture",
+      "sha256": "c36f5adf472905e9ffc8987ddfd3b9b97e0a563d5dbd1760aecf470a387ab27c",
+      "bytes": 579
+    }
+  ]
+}

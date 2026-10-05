@@ -76,7 +76,7 @@
   },
   "peerDependencies": {
     "@pkl-community/pkl": "catalog:repo-tooling",
-    "vue": ">=2.6.0"
+    "vue": ">=2.6.0 || >=3.6.0-0"
   },
   "peerDependenciesMeta": {
     "@pkl-community/pkl": {

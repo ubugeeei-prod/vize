@@ -1,0 +1,19 @@
+{
+  "issue": 7824,
+  "originalSources": [
+    {
+      "path": "Child.vue.txt",
+      "sha256": "1c1a2c29c3a0685e4ea25e2daf5dc003e73045759d77b64198d342cd8edec956"
+    },
+    {
+      "path": "Parent.vue.txt",
+      "sha256": "e4996fba7e5f35956cab580cf0780cd78604dfffa94444167ba902d4b48cd0be"
+    }
+  ],
+  "projectConfig": {
+    "path": "tsconfig.json",
+    "sha256": "ca39c3ffcd60245fbbeb4433b76726ca66e2c65b5d84bd8a4170840690093755"
+  },
+  "test": "crates/vize/tests/lsp_unopened_component_props_cli.rs",
+  "contract": "complete typed stdio references and ordered WorkspaceEdit objects, actual all-edit application compared with whole authored source bytes; no golden-output capture from the implementation"
+}
