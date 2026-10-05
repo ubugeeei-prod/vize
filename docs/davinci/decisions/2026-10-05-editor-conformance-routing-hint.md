@@ -58,3 +58,15 @@ history, default replacement and native admission remain unfinished in #6883.
 The issue originator is the maintainer `ubugeeei`; source attribution supplies
 their verified public GitHub identity without claiming a distinct external
 reporter or a final squash-normalization cause.
+
+The original source `300e187c` passed its source Check and the authorized
+four-client Editor Conformance run `37244529904`; all64 complete steps and
+64 negative controls were independently authenticated, with Zed explicitly
+replayed rather than a real GUI session. At admission, actual main had
+advanced and the old canonical record conflicted. A genuine replay onto
+`ef506012169d228982ded40d893ac2115a3e58a7` preserves every golden/test
+byte and original author/message/footer, resolving only the canonical
+record while retaining every incoming clause at350 lines. The earlier64
+receipt stays historical for its own source: fresh exact-head source
+Actions and current-source four-client execution qualify this replay
+before protected full/all104 and actual signed delivery.
