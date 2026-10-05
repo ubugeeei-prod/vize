@@ -128,3 +128,12 @@ The genuine signed-main `2902dc98` incorporation preserves every qualified
 producer source/test/original blob and all incoming source/decision bytes.
 Earlier `bfd4e902` compile success is retained at its own scope; fresh successor
 Actions and protected whole qualification remain required after this union.
+
+The later literal `bfd4e902` source Check 37369419439 genuinely failed before
+archive execution: configured Clippy requires the exact equivalent `?` return
+in `note_style_read`, and tooling found stale source-generated import/census
+coordinates after the existing SFC orchestration move. The successor changes
+only that Option spelling and regenerates the two affected SFC inventory shards
+with the unchanged generators. It changes no ownership, original inputs,
+producer laws, public output or budget. Preserve the failed raw jobs; current
+exact-head Actions and actual runtime are still required.
