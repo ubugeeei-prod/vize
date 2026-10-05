@@ -213,3 +213,24 @@ The workflow remains321 lines, or350 with the existing typed-emits qualifier,
 without dropping commands or raising a cap. Thirteen pure controls pass;
 the new complete native vectors and fresh source/protected suites, actual
 signed merge and release remain required. No Windows-native or speed credit.
+
+The paired [consumer-coordinate correction](https://github.com/ubugeeei-prod/vize/issues/8017#issuecomment-5992385443)
+retains source66aa's actual 53 complete CLI observations. Official artifact
+11337059320 (141,428 bytes, SHA-256
+`d7fbee07b68c0b3287871666b2393de09ca6b91aab90291ee25fcf4151fa2f63`)
+has17 safe CRC-verified members and seven original/supplemental/provider packets.
+Independent replay checks every ordered report, UTF-8 byte array, status,
+compiler option and input hash. Default-build3a3d has parents actual mainbab
+and source66aa, tree040f, binary SHA-256
+`87068d509529ac514c98a579f6644e00441f529e486978ceb3da81062bf2db0b`.
+Native37292892024 succeeds: the required unchanged three-mode Rust law and
+plain full L1 suites pass (450/1033/159/874/zerochanges). All four ordinary
+Rust workers pass, while source Check37292892521 fails only the generated
+consumer inventory's obsolete runner signature position146. The source now
+places the same `vize_l0::String` carrier at148. Independently derive and change
+only that row; inverse replacement recovers the entire old file, all other
+fields and the trailing newline (122 physical lines/123 newline segments).
+Production, all53 expectations, original inputs, L1 rows and caps stay exact.
+TODO: fresh automatic source Actions must verify the complete generator and
+all required native vectors; the preceding runtime does not qualify a new
+head, protected suites, actual merge or release.
