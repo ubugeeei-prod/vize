@@ -84,7 +84,12 @@ successor conserves the old algorithms in private modules, selects the explicit
 legacy domain during the existing revision update, and returns script-only setup
 facts from the already-required extraction walk. Four prepared whole laws and
 six extra stdio control projects qualify the positive/domain boundary; actual
-Rust/CLI execution remains required.
+Rust/CLI execution remains required. The `dc5cb03c` follow-through found four
+newly authored empty-lens controls using `[]`, while the unchanged annotations
+handler returns protocol `null` for an empty service Vec. Only those four new
+control cells are corrected; every production/helper/original/old control and
+whole comparator remains fixed. This was source authoring rejection, not a
+runtime observation or an oracle rewrite after a failed execution.
 
 ## Required execution
 

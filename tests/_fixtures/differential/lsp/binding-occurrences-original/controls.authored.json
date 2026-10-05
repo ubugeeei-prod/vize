@@ -611,7 +611,7 @@
               "character": 0
             }
           },
-          "result": []
+          "result": null
         }
       ],
       "sourceSha256": "28a763b1a1dff451fd050622437e0dacdabe4bf1c5a9ad45f209b121b7b669f4"
@@ -665,7 +665,7 @@
               "character": 0
             }
           },
-          "result": []
+          "result": null
         }
       ],
       "sourceSha256": "4a1acfaa5e2488ec6e5cafcadfb342bd3b47acc0374d3fa310fe201e5fb1a906"
@@ -719,7 +719,7 @@
               "character": 0
             }
           },
-          "result": []
+          "result": null
         }
       ],
       "sourceSha256": "4a1acfaa5e2488ec6e5cafcadfb342bd3b47acc0374d3fa310fe201e5fb1a906"
@@ -915,7 +915,7 @@
               "character": 0
             }
           },
-          "result": []
+          "result": null
         }
       ],
       "sourceSha256": "151a004144f70718bfe1c5dd49ff70c669edbe0df4d33ac2467792f2a9375091"
