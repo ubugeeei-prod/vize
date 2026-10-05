@@ -671,8 +671,7 @@ fn test_vue2_migration_line_break_after_interpolation() {
 #[test]
 fn test_vue2_migration_line_break_inside_static_text_before_element() {
     // #7046. The break before an element is inside the static text node, so
-    // the whitespace-only migration pass never sees it. `<pre>` keeps its
-    // remaining bytes after HTML's first-newline rule.
+    // the whitespace-only migration pass never sees it. `<pre>` keeps remaining bytes.
     let sources = [
         "<p>\n  Label\n  <i />\n</p>",
         "<button>\n  Label\n</button>",

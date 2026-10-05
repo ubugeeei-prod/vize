@@ -31,11 +31,11 @@ fn normalize_encoded_crlf(text: &str) -> Option<String> {
     let mut copied = 0;
     let mut cursor = 0;
     while cursor < text.len() {
-        let tail = &text[cursor..];
+        let tail = text.get(cursor..)?;
         if let Some(('\r', first)) = leading_line_break(tail)
-            && let Some(('\n', second)) = leading_line_break(&tail[first..])
+            && let Some(('\n', second)) = tail.get(first..).and_then(leading_line_break)
         {
-            output.push_str(&text[copied..cursor]);
+            output.push_str(text.get(copied..cursor)?);
             output.push('\n');
             cursor += first + second;
             copied = cursor;
@@ -46,7 +46,7 @@ fn normalize_encoded_crlf(text: &str) -> Option<String> {
     if copied == 0 {
         return None;
     }
-    output.push_str(&text[copied..]);
+    output.push_str(text.get(copied..)?);
     Some(output)
 }
 

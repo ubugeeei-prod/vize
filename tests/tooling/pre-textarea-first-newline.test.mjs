@@ -10,16 +10,24 @@ import { pathToFileURL } from "node:url";
 
 const root = new URL("../../", import.meta.url);
 const corpus = new URL("_fixtures/differential/compiler/", new URL("../", import.meta.url));
-const manifest = JSON.parse(readFileSync(new URL("manifest.json", corpus)));
+const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const registry = JSON.parse(readFileSync(new URL("manifest.json", corpus)));
+const registration = registry.runtimePacks.find(
+  (pack) => pack.path === "first-newline-runtime.manifest.json",
+);
+assert(registration, "the compiler corpus must register the runtime pack");
+const manifestBytes = readFileSync(new URL(registration.path, corpus));
+assert.equal(hash(manifestBytes), registration.sha256);
+const manifest = JSON.parse(manifestBytes);
 const row = manifest.cases.find((entry) => entry.id === "compiler/sfc/pre-textarea-first-newline");
 const fixtureRoot = new URL(`${row.inputs.root}/`, corpus);
-const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+assert.equal(hash(readFileSync(new URL(row.reference.path, corpus))), row.reference.sha256);
 for (const input of row.inputs.files)
   assert.equal(hash(readFileSync(new URL(input.path, fixtureRoot))), input.sha256);
 const cases = JSON.parse(readFileSync(new URL("runtime.expected.json", fixtureRoot)));
 const original = readFileSync(new URL("App.vue.txt", fixtureRoot), "utf8");
 
-test("the entire reporter SFC stays pinned independently of the controls", () => {
+void test("the entire reporter SFC stays pinned independently of the controls", () => {
   assert.equal(
     original,
     '<script setup>\nconst a = "A"\n</script>\n\n<template>\n  <pre>\nline {{ a }}</pre>\n  <textarea>\nvalue</textarea>\n</template>\n',
@@ -27,7 +35,7 @@ test("the entire reporter SFC stays pinned independently of the controls", () =>
   assert.equal(cases[0].sourceFile, "App.vue.txt");
 });
 
-test(
+void test(
   "source-built CLI whole SFCs mount and hydrate in Chromium like pinned Vue",
   { skip: !process.env.VIZE_FIRST_NEWLINE_BIN, timeout: 180_000 },
   async () => {
@@ -157,11 +165,11 @@ test(
           const input = join(directory, "App.vue");
           writeFileSync(input, source);
           const modules = {};
-          for (const [mode, flags] of [
-            ["dom", []],
-            ["ssr", ["--ssr"]],
-            ["vapor", ["--vapor"]],
-            ["vaporSsr", ["--vapor", "--ssr"]],
+          for (const { mode, flags } of [
+            { mode: "dom", flags: [] },
+            { mode: "ssr", flags: ["--ssr"] },
+            { mode: "vapor", flags: ["--vapor"] },
+            { mode: "vaporSsr", flags: ["--vapor", "--ssr"] },
           ]) {
             const output = join(directory, mode);
             execFileSync(
@@ -207,10 +215,11 @@ test(
             expectedHydrated,
             `${fixture.id}: actual HTML-parser hydration`,
           );
+          let vaporHydrated = null;
           if (fixture.id === "reporter") {
             assert.deepEqual(hydrated.diagnostics, []);
             assert(hydrated.retained);
-            const vaporHydrated = await observe(modules.vapor, true, vaporSsr);
+            vaporHydrated = await observe(modules.vapor, true, vaporSsr);
             assert.deepEqual(vaporHydrated.diagnostics, []);
             assert(vaporHydrated.retained);
             assert.deepEqual(vaporHydrated.pre, fixture.pre);
@@ -226,6 +235,7 @@ test(
             ssr,
             vaporSsr,
             hydrated,
+            vaporHydrated,
           });
         } catch (error) {
           failures.push({ id: fixture.id, message: error.message, stack: error.stack });

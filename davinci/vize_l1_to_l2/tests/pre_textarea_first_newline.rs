@@ -13,6 +13,7 @@ fn native_first_newline_rule_keeps_second_newline_and_source_spans() {
         ("<textarea>\n\ntwo</textarea>", "\ntwo"),
         ("<pre>\r\nline\r\nend</pre>", "line\nend"),
         ("<pre>\nline&#13;&#10;end</pre>", "line\nend"),
+        ("<pre>\n雪🦀&#13;&#10;end</pre>", "雪🦀\nend"),
         ("<pre>\nline\r&NewLine;end</pre>", "line\nend"),
         (
             "<pre>\nline&amp;#13;&#10;end</pre>",
@@ -77,8 +78,8 @@ fn native_comment_option_controls_first_visible_text_without_changing_spans() {
         };
         assert_eq!(text.content, if comments { "\nline" } else { "line" });
         assert_eq!(
-            &source[text.span.start as usize..text.span.end as usize],
-            "\nline"
+            source.get(text.span.start as usize..text.span.end as usize),
+            Some("\nline")
         );
         assert_eq!(
             matches!(element.children.first(), Some(Op::Comment(_))),

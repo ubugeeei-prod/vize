@@ -34,59 +34,14 @@
         "contract": "compiler-ssr-module-bytes-v1",
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       }
-    },
+    }
+  ],
+  "runtimePacks": [
     {
-      "id": "compiler/sfc/pre-textarea-first-newline",
-      "state": "active",
-      "targets": ["dom", "ssr", "vapor"],
-      "inputs": {
-        "root": "pre-textarea-first-newline",
-        "files": [
-          {
-            "path": "App.vue.txt",
-            "sha256": "b39a96754c9712ef89fb9759ee72a8eb7b72eee6250a12455b87905a0a59e6c4",
-            "role": "entry"
-          },
-          {
-            "path": "runtime.expected.json",
-            "sha256": "49cb5ffdba4de252bbe01191b941e15709539c89ad1e9400897c2c0afd1addb7",
-            "role": "runtime-controls"
-          }
-        ]
-      },
-      "reference": {
-        "path": "pre-textarea-first-newline/runtime.expected.json",
-        "sha256": "e78f16d28f96dd1ce1ae5e3e7f537faca060493a030f140c66ac7adccef3298b",
-        "source": "tests/tooling/pre-textarea-first-newline.test.mjs"
-      },
-      "provenance": {
-        "issue": "https://github.com/ubugeeei-prod/vize/issues/7889",
-        "reporter": "ubugeeei",
-        "versions": {
-          "vize": "0.432.0",
-          "reportedVue": "3.6.0-rc.10",
-          "runtimeOracle": "3.6.0-rc.9"
-        }
-      },
-      "adapters": {
-        "legacy": "compiler-cli-whole-sfc-runtime-v1",
-        "native": null,
-        "reasons": {
-          "native": "The native L1 to L2 text rule has direct source tests; whole native/default SFC and Vapor SSR acceptance are not granted by these public CLI observations."
-        }
-      },
-      "comparison": {
-        "contract": "compiler-pre-textarea-runtime-v1",
-        "requiredFacets": [
-          "whole-original-sfc",
-          "mounted-pre-text",
-          "live-textarea-value",
-          "complete-ssr-html",
-          "reporter-hydration",
-          "first-newline-only",
-          "authored-spans"
-        ]
-      }
+      "path": "first-newline-runtime.manifest.json",
+      "sha256": "4c31958bf9611922290cad5e6ffc45e988f9d5c771abe0aefb035ed5d0ca087f",
+      "adapter": "compiler-cli-whole-sfc-runtime-v1",
+      "workflow": ".github/workflows/pre-textarea-first-newline.yml"
     }
   ]
 }

@@ -9,6 +9,7 @@ on:
       - tests/tooling/pre-textarea-first-newline.test.mjs
       - tests/tooling/support/first-newline-vapor-oracle.mjs
       - tests/_fixtures/differential/compiler/pre-textarea-first-newline/**
+      - tests/_fixtures/differential/compiler/first-newline-runtime.manifest.json
       - .github/workflows/pre-textarea-first-newline.yml
   workflow_dispatch:
 permissions:

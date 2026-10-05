@@ -39,7 +39,18 @@ The Vapor target uses an owned descriptor copy, preserving all stock blocks
 and source without mutating the official ordinary-target parse cache.
 Each whole-corpus run records every control and fails if any control fails;
 an early failure cannot hide the remaining runtime observations.
-whole original SFC and controls also run through a source-built CLI in DOM,
+The scanner uses checked UTF-8 slices; the hosted source lint enforces this
+boundary independently of the runtime controls.
+Its reviewed storage inventory has one L0 String import and four bound uses,
+with no alloc String/Vec, arena Vec or SmallVec storage.
+The existing compiler byte adapter intentionally accepts only its SSR module
+contract. Register this whole-SFC runtime pack separately in the compiler
+manifest, pin that pack's digest, and qualify it in the mandatory focused job.
+The existing SSR byte comparisons and native acceptance accounting stay strict.
+Source checks also require explicit Node test promise handling, uniform CLI
+mode descriptors and the retained parser test file's existing line ceiling.
+The original Vapor hydration observation is retained in the hosted artifact.
+The whole original SFC and controls also run through a source-built CLI in DOM,
 SSR, Vapor and Vapor-requested SSR modes. Chromium compares actual mounted
 pre text, live textarea values, complete SSR HTML and hydration with the
 repository-pinned Vue 3.6.0-rc.9 compiler/runtime. The report used rc.10;

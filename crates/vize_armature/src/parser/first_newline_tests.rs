@@ -20,7 +20,7 @@ fn first_visible_child_respects_comments_in_both_whitespace_modes() {
                 },
             );
             assert!(errors.is_empty());
-            let TemplateChildNode::Element(pre) = &root.children[0] else {
+            let Some(TemplateChildNode::Element(pre)) = root.children.first() else {
                 panic!("expected pre");
             };
             let Some(TemplateChildNode::Text(text)) = pre.children.last() else {
@@ -28,8 +28,8 @@ fn first_visible_child_respects_comments_in_both_whitespace_modes() {
             };
             assert_eq!(text.content, if comments { "\nline" } else { "line" });
             assert_eq!(
-                &source[text.loc.span.start as usize..text.loc.span.end as usize],
-                "\nline"
+                source.get(text.loc.span.start as usize..text.loc.span.end as usize),
+                Some("\nline")
             );
             assert_eq!(
                 matches!(pre.children.first(), Some(TemplateChildNode::Comment(_))),
