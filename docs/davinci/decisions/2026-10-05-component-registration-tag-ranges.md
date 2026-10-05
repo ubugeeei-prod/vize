@@ -42,6 +42,16 @@ Its qualification count advances only after each whole result passes.
 `nativeHandled` remains zero: this legacy range repair grants no native
 replacement or fix-history completion credit.
 
+First source head `e91af795` compiled successfully in Check37317455277,
+but tooling job111787976540 rejected the new ANSI assertion: the genuine
+raw report already had `my-panel.vue:3:6` and its eight-character name
+underline, with VT color bytes between the filename and coordinates.
+The original complete JSON passed; the remaining three CLI rows were not
+executed before that failure. Preserve the entire raw report and compare
+its visible text with the standard Node VT-strip utility. Production,
+inputs, expected coordinates and all diagnostic contracts stay unchanged;
+fresh exact-source Actions are required for the corrected harness.
+
 ## Delivery and remaining work
 
 Source review and authored expectations do not establish execution.

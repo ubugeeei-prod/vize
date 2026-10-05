@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { stripVTControlCharacters } from "node:util";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -150,9 +151,10 @@ await test("original component-registration CLI findings point to whole physical
         assert.equal(ansi.signal, null, JSON.stringify(ansi));
         assert.equal(ansi.status, 0, JSON.stringify(ansi));
         assert.equal(ansi.stderr, "");
-        assert.match(ansi.stdout, /my-panel\.vue:3:6/);
-        assert.match(ansi.stdout, /MyButton>OK<\/MyButton>/);
-        assert.match(ansi.stdout, /────────/);
+        const visible = stripVTControlCharacters(ansi.stdout);
+        assert.match(visible, /my-panel\.vue:3:6/);
+        assert.match(visible, /MyButton>OK<\/MyButton>/);
+        assert.match(visible, /────────/);
       }
     }
     assert.equal(evidence.cliQualified, 4);
