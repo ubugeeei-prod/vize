@@ -230,12 +230,13 @@ void test(
             assert.deepEqual(hydrated.diagnostics, []);
             assert(hydrated.retained);
             vaporHydrated = await observe(modules.vapor, true, vaporSsr);
-            reference.vapor.hydrated = await observe(
-              reference.vapor.code,
+            referenceVapor.hydrated = await observe(
+              referenceVapor.code,
               true,
-              reference.vapor.serverHtml,
+              referenceVapor.serverHtml,
+              referenceVapor.helperCode,
             );
-            assert.deepEqual(vaporHydrated, reference.vapor.hydrated);
+            assert.deepEqual(vaporHydrated, referenceVapor.hydrated);
             assert.deepEqual(vaporHydrated.diagnostics, []);
             assert(vaporHydrated.retained);
             assert.deepEqual(vaporHydrated.pre, fixture.pre);

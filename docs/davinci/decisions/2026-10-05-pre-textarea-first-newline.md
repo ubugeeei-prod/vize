@@ -69,6 +69,10 @@ textarea whitespace through actual DOM/SSR/Vapor mounting and hydration.
 Both that control and the reporter also compare actual Vapor hydration with
 the genuine stock Vapor component/server output, requiring zero diagnostics
 and retention of the original elements and live textarea values.
+The stock hydration comparison uses the same owned Vapor reference and export
+helper as its mount comparison. A hosted ReferenceError exposed an incorrect
+variable name in the added comparison; fix the harness and rerun every case,
+without changing production behavior or weakening its assertions.
 The original reporter SFC remains an independent unchanged input.
 Replay on fresh main retains all incoming text-run gap/drop laws. Move the
 unchanged single-text helper into its own module, with only module visibility
