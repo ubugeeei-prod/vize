@@ -141,6 +141,7 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           VIZE_TEST_REQUIRE_TSGO: "1"
+          VIZE_REFERENCE_PATH_CAPTURE_DIR: ${{ runner.temp }}/reference-path-module
         run: |
           cargo test --locked --profile ci-opt -p vize_canon --test original_program_check reference_paths::
           cargo test --locked --profile ci-opt -p vize --test check_reference_path_cli
@@ -159,6 +160,7 @@ jobs:
           name: typechecker-native-phases
           path: |
             ${{ runner.temp }}/typechecker-native-source-custody.json
+            ${{ runner.temp }}/reference-path-module/
             ${{ runner.temp }}/typechecker-native-phases.json
             ${{ runner.temp }}/typechecker-native-phases.json.samples/provenance.json
             ${{ runner.temp }}/typechecker-native-phases.json.samples/failure.json

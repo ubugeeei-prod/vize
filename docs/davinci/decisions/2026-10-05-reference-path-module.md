@@ -32,5 +32,11 @@ Actions run these native, batch and actual CLI checks with required TSGO in
 the existing native-phase workflow. Ordinary Rust checks retain the graph
 laws; protected full suites retain the CLI regression. Hosted exact-head
 success, protected queue acceptance, actual merge and release remain pending
-until their external results exist. No fixture or native comparison closes
+until their external results exist. The first source `183afea69a` failed the
+repository formatter on the original one-line tsconfig; an unchanged `.txt`
+carrier preserves the report bytes while obeying formatting policy. The same
+first source also rejected unsupported `LowerHex` formatting of the pinned
+SHA-256 array; explicit byte-to-hex encoding corrects the witness. Native
+reports, full configuration snapshots, exact input bytes and CLI raw process
+outputs are retained in the source-bound native-phase artifact. No fixture or native comparison closes
 the legacy replacement gate #6879.

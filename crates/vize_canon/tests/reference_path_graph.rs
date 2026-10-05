@@ -7,6 +7,22 @@ use vize_canon::BatchTypeChecker;
 mod project;
 
 #[test]
+fn reported_project_matches_the_pinned_corpus_bytes() {
+    let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/fixtures/typechecker/reference-path-module");
+    let manifest: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(fixture.join("manifest.json")).unwrap()).unwrap();
+    for name in manifest["inputs"].as_array().unwrap() {
+        let name = name.as_str().unwrap();
+        let bytes = std::fs::read(fixture.join(name)).unwrap();
+        assert_eq!(
+            project::digest(&bytes).as_str(),
+            manifest["sha256"][name].as_str().unwrap()
+        );
+    }
+}
+
+#[test]
 fn unprefixed_references_keep_the_complete_declaration_graph() {
     for case in project::CASES {
         let directory = tempfile::tempdir().unwrap();

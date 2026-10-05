@@ -1,7 +1,6 @@
 //! The unchanged reported program agrees with the native and batch checkers.
 use super::{Allocator, Lang, assert_diagnosing_options, block_on, file, real_bridge};
 use lsp_types::{DocumentDiagnosticReport, DocumentDiagnosticReportResult};
-use sha2::{Digest, Sha256};
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
 
 #[path = "../support/reference_path_project.rs"]
@@ -31,7 +30,7 @@ fn path_references_retain_original_sources_native_reports_and_configuration() {
             assert_eq!(result.source_path(), source_path);
             assert_eq!(
                 result.source_digest(),
-                vize_l0::cstr!("{:x}", Sha256::digest(source.as_bytes())).as_str()
+                project::digest(source.as_bytes()).as_str()
             );
             assert_eq!(
                 result.diagnostic_configuration_path(),
@@ -88,6 +87,42 @@ fn path_references_retain_original_sources_native_reports_and_configuration() {
                 }
             );
             assert_eq!(checked.success, !invalid);
+            if let Some(output) = std::env::var_os("VIZE_REFERENCE_PATH_CAPTURE_DIR") {
+                let output = std::path::PathBuf::from(output);
+                std::fs::create_dir_all(&output).unwrap();
+                let custody = result.diagnosing_configuration();
+                let observation = |snapshot: &vize_canon::DiagnosingSnapshot| {
+                    serde_json::json!({"handle":snapshot.handle(),"projects":snapshot.projects(),
+                        "changes":snapshot.changes(),"project":snapshot.project()})
+                };
+                let inputs = paths
+                    .iter()
+                    .zip(&originals)
+                    .map(|(path, bytes)| {
+                        serde_json::json!({"file":path.strip_prefix(&root).unwrap(),
+                        "source":std::str::from_utf8(bytes).unwrap(),
+                        "sha256":project::digest(bytes).as_str()})
+                    })
+                    .collect::<Vec<_>>();
+                let record = serde_json::json!({
+                    "sourceSha":std::env::var("SOURCE_SHA").unwrap(),
+                    "testBinary":std::env::current_exe().unwrap(),
+                    "case":case.0,"invalid":invalid,"inputs":inputs,
+                    "native":{"sourcePath":result.source_path(),"sourceUri":result.source_uri(),
+                        "sourceDigest":result.source_digest(),"report":result.report(),
+                        "configuration":result.configuration(),
+                        "configurationPath":result.diagnostic_configuration_path(),
+                        "session":custody.session(),"before":observation(custody.before()),
+                        "after":observation(custody.after())},
+                    "batch":{"diagnostics":diagnostics,"success":checked.success,
+                        "exitCode":checked.exit_code}
+                });
+                std::fs::write(
+                    output.join(vize_l0::cstr!("{}-{invalid}-native.json", case.0).as_str()),
+                    serde_json::to_vec_pretty(&record).unwrap(),
+                )
+                .unwrap();
+            }
             for (path, original) in paths.iter().zip(originals) {
                 assert_eq!(std::fs::read(path).unwrap(), original);
             }

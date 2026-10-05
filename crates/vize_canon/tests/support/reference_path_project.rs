@@ -1,7 +1,17 @@
 //! Exact #7832 inputs with explicit, independent reference-path variants.
 #![expect(clippy::unwrap_used, reason = "fixture assertions panic")]
 
+use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
+
+pub(crate) fn digest(bytes: &[u8]) -> vize_l0::String {
+    let mut hex = vize_l0::String::with_capacity(64);
+    for byte in Sha256::digest(bytes) {
+        hex.push(char::from(b"0123456789abcdef"[usize::from(byte >> 4)]));
+        hex.push(char::from(b"0123456789abcdef"[usize::from(byte & 15)]));
+    }
+    hex
+}
 
 pub(crate) const CASES: &[(&str, bool, bool, bool, bool)] = &[
     ("original", false, false, false, false),
@@ -42,8 +52,9 @@ pub(crate) fn prepare(
             "../../../../tests/fixtures/typechecker/reference-path-module/types/builder-env.d.ts"
         )
     };
-    let original_config =
-        include_str!("../../../../tests/fixtures/typechecker/reference-path-module/tsconfig.json");
+    let original_config = include_str!(
+        "../../../../tests/fixtures/typechecker/reference-path-module/tsconfig.json.txt"
+    );
     let mut config: serde_json::Value = serde_json::from_str(original_config).unwrap();
     config["include"][0] = environment.into();
     if alias {

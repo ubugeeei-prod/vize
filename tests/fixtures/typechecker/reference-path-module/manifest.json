@@ -8,7 +8,7 @@
     "source": "https://github.com/ubugeeei-prod/vize/issues/7832"
   },
   "inputs": [
-    "tsconfig.json",
+    "tsconfig.json.txt",
     "env.d.ts",
     "types/builder-env.d.ts",
     "vendor/client/index.d.ts",
@@ -28,10 +28,13 @@
   ],
   "normalization": "All native report fields and returned diagnostic order; only absolute project identity is dynamic. Authored bytes and configuration are retained.",
   "sha256": {
-    "tsconfig.json": "0db9b511fa1cb1be0cf6e40401210996375c00e2807d73bdd6e70dd58165bd0f",
     "env.d.ts": "171c22153ee5b44807b5ee4ae3b6bd1fce0bfe4342a580fd94a5ee0b1f6c3d20",
     "types/builder-env.d.ts": "235dcf89ac6bf68e1b93212823c4438e25ef1b0a64e6cc39066f736a8c2d7719",
     "vendor/client/index.d.ts": "b1468a5fdf42fb384f243ff5cdf6d69c69f132952643781515222610ecd3a867",
-    "src/a.ts": "94fc5ae95511a78fe08c8963a47a33f3d5243709c1a4d992bddbc99ed1e3ec55"
+    "src/a.ts": "94fc5ae95511a78fe08c8963a47a33f3d5243709c1a4d992bddbc99ed1e3ec55",
+    "tsconfig.json.txt": "0db9b511fa1cb1be0cf6e40401210996375c00e2807d73bdd6e70dd58165bd0f"
+  },
+  "runtimeFileNames": {
+    "tsconfig.json.txt": "tsconfig.json"
   }
 }

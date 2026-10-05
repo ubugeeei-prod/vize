@@ -17,6 +17,8 @@ fn reference_path_modules_keep_complete_cli_diagnostics() {
     let Some(backend) = corsa_requirement::required_or_skip(corsa_path::resolve(&workspace)) else {
         return;
     };
+    let cli_digest = std::env::var_os("VIZE_REFERENCE_PATH_CAPTURE_DIR")
+        .map(|_| project::digest(&std::fs::read(env!("CARGO_BIN_EXE_vize")).unwrap()));
     for case in project::CASES {
         for invalid in [false, true] {
             let directory = tempfile::tempdir().unwrap();
@@ -69,6 +71,22 @@ fn reference_path_modules_keep_complete_cli_diagnostics() {
             assert_eq!(programs[0]["root"], ".");
             assert_eq!(programs[0]["tsconfig"], "tsconfig.json");
             assert_eq!(programs[0]["compilerOptions"]["strict"], true);
+            if let Some(output_dir) = std::env::var_os("VIZE_REFERENCE_PATH_CAPTURE_DIR") {
+                let output_dir = std::path::PathBuf::from(output_dir);
+                std::fs::create_dir_all(&output_dir).unwrap();
+                let record = serde_json::json!({
+                    "sourceSha":std::env::var("SOURCE_SHA").unwrap(),
+                    "cli":env!("CARGO_BIN_EXE_vize"),"cliSha256":cli_digest,"backend":backend,
+                    "case":case.0,"invalid":invalid,"argv":["check","--format","json"],
+                    "exitCode":output.status.code(),"stdout":output.stdout,"stderr":output.stderr,
+                    "report":report
+                });
+                std::fs::write(
+                    output_dir.join(vize_l0::cstr!("{}-{invalid}-cli.json", case.0).as_str()),
+                    serde_json::to_vec_pretty(&record).unwrap(),
+                )
+                .unwrap();
+            }
             for (path, original) in paths.iter().zip(originals) {
                 assert_eq!(std::fs::read(path).unwrap(), original);
             }
