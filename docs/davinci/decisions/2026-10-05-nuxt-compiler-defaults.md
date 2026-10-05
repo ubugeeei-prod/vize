@@ -59,3 +59,17 @@ Nuxt 3/4 execution remains unknown until exact-head automatic Actions. Protected
 104 gates, actual signed merge, final reporter attribution and publication remain
 pending. First-v0.433 admission HOLD remains active: this source PR has no auto
 merge or queue request, and neither #7959 nor any fix-history issue is closed.
+
+## First source qualification correction
+
+Source `5bb75baf` is not accepted: [the paired failure decision](https://github.com/ubugeeei-prod/vize/issues/7959#issuecomment-5997032650)
+retains Nuxt3 run 37327024046 and Check run 37327025125. The native compiler,
+option controls and all existing Nuxt3/4 builds/SPA/source-lint proofs passed,
+but the new probe stopped before Vite compilation on an authored trailing-separator
+assumption about Nuxt3's `srcDir`. The original report specifies no such policy.
+Compare the resolved owned directory while retaining the unaltered full actual
+Nuxt options; remove the independently rejected unused import. Production bytes,
+all original inputs, frozen matrix, whole compilation/render references and caps
+remain unchanged. Exact successor Actions must qualify them afresh; the first
+failed logs and small selected artifact members remain historical evidence, with
+no full-archive digest, current compiled acceptance or queue/release claim.

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
-import { pathToFileURL, fileURLToPath } from "node:url";
+import { pathToFileURL } from "node:url";
 import { verifyNuxtSourceBindingEvents } from "./source-binding.mjs";
 
 const [project, artifacts, inputs, version, scenarioId] = process.argv.slice(2);
@@ -144,7 +144,7 @@ for (const scenario of selected) {
       },
     });
     assert.equal(nuxt.options.rootDir, project);
-    assert.equal(nuxt.options.srcDir, sourceRoot + path.sep);
+    assert.equal(path.resolve(nuxt.options.srcDir), sourceRoot);
     const plugins = nuxt.options.vite.plugins.flat(Infinity);
     assert.equal(plugins.filter((plugin) => plugin.name === "vite-plugin-vize").length, 1);
     json(directory, "nuxt-options.json", {
