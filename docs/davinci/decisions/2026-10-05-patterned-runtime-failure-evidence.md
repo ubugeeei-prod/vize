@@ -40,14 +40,20 @@ nonzero exits, malformed JSON and mismatched successful protocol results.
 The runner records its backend, fixture index and last awaited phase. On an
 unfinished process exit it writes that evidence synchronously to stderr. Mounted
 runtime build/import, reactive mount/update/unmount ticks and DOM cleanup have
-separate phase names. Completed successful runs retain exactly the existing
+separate phase names. A controlled rejection followed by an unsettled cleanup confirms another
+diagnostic gap: the original error can remain captured inside the cleanup
+wrapper without reaching stderr before exit. Preserve that primary error in
+failure-only evidence before cleanup; a reporter failure cannot replace it.
+This controlled reproduction does not establish the historical coverage cause.
+Completed successful runs retain exactly the existing
 `{passed:N}` stdout and emit no new exit evidence. No compiler, runtime package,
 coverage threshold, corpus or instruction ceiling changes are part of this
 change.
 
 Deterministic genuine child-process laws cover silent exit 13, Unix signal
 termination, malformed/mismatched successful stdout, an unsettled top-level
-await and exact completed success output. A controlled unresolved promise's
+await, a rejection followed by pending cleanup, a failing reporter and exact
+completed success output. A controlled unresolved promise's
 exit 13 validates the diagnostic; it does not establish the historical failure's
 cause. Controlled failure streams are written synchronously before forced exit, so
 these laws do not depend on pending stdout flushes. Existing cleanup and

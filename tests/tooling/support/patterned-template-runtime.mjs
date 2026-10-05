@@ -202,6 +202,7 @@ for (const [fixtureIndex, fixture] of cases.entries()) {
       context,
       steps,
       onPhase: (phase) => evidence.phase(phase),
+      onFailure: evidence.failure,
     });
     assert.deepEqual(trace.at(-1), { tree: [], events: [] });
     trees = trace.slice(0, -1).map(({ tree, events }) => {

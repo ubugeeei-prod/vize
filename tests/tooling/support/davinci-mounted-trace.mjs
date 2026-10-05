@@ -22,6 +22,7 @@ export async function traceMountedBackend({
   externalTargets = [],
   production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
   onPhase = (_phase) => {},
+  onFailure = (_error) => {},
 }) {
   assert.ok(backend === "vdom" || backend === "vapor", `unknown backend: ${backend}`);
   if (slots !== null) validateSuppliedSlots(slots);
@@ -215,6 +216,7 @@ export async function traceMountedBackend({
         scope.dispose();
       }
     },
+    { onFailure },
   );
 }
 

@@ -21,6 +21,19 @@ export function runtimeProcessEvidence() {
       phase = next;
       details = { ...details, ...context };
     },
+    failure(error: unknown) {
+      try {
+        details = {
+          ...details,
+          primaryError:
+            error instanceof Error
+              ? { name: error.name, message: error.message, stack: error.stack }
+              : { thrown: String(error) },
+        };
+      } catch {
+        details = { ...details, primaryError: { thrown: "unprintable rejection" } };
+      }
+    },
     complete() {
       process.removeListener("exit", onExit);
     },
@@ -32,7 +45,9 @@ export async function withMountedRuntimeDevtools<T>(
   production: boolean,
   close: () => Promise<unknown>,
   run: (observer: ReturnType<typeof mountedRuntimeDevtools>) => Promise<T>,
-  options: Parameters<typeof mountedRuntimeDevtools>[1] = {},
+  options: NonNullable<Parameters<typeof mountedRuntimeDevtools>[1]> & {
+    onFailure?: (error: unknown) => void;
+  } = {},
 ) {
   const observer = mountedRuntimeDevtools(production, options);
   let result!: T;
@@ -43,6 +58,11 @@ export async function withMountedRuntimeDevtools<T>(
   } catch (error) {
     failed = true;
     failure = error;
+    try {
+      options.onFailure?.(error);
+    } catch {
+      // Failure reporting must not replace the original trace rejection.
+    }
   }
   for (const cleanup of [close, async () => observer.dispose()]) {
     try {
