@@ -177,6 +177,19 @@ for (const fixture of fixtures) {
   );
   const actual = await observe(fixture.code, fixture);
   const extracted = fixture.nuxt && ["Page", "global", "mixed"].includes(fixture.name);
+  if (extracted && fixture.name !== "mixed") {
+    assert.equal(typeof fixture.artifact, "string");
+    const metadata = await evaluate(fixture.artifact, stable);
+    assert.deepEqual(Object.keys(metadata).sort(), Object.keys(call).sort());
+    assert.deepEqual(
+      {
+        layout: metadata.layout,
+        ...(metadata.middleware ? { middleware: metadata.middleware() } : {}),
+      },
+      call,
+      "the complete Nuxt artifact retains the authored metadata and middleware",
+    );
+  } else if (!extracted) assert.equal(fixture.artifact, null);
   assert.deepEqual(
     actual,
     { html: expected.html, calls: extracted ? expected.nuxtCalls : [call] },

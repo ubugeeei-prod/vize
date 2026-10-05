@@ -46,3 +46,33 @@ release owner after actual delivery; no execution or publication is credited
 by this preparatory decision.
 
 Paired issue decision: [#7821 comment](https://github.com/ubugeeei-prod/vize/issues/7821#issuecomment-5987072004).
+
+## First source qualification and correction
+
+The first Draft cut `bfd29bc949` was compiled by Actions at actual hosted
+merge `66d6416253` above main `d1a25ec1da`. Check
+[37255851280](https://github.com/ubugeeei-prod/vize/actions/runs/37255851280)
+and genuine Nuxt [37255850985](https://github.com/ubugeeei-prod/vize/actions/runs/37255850985)
+failed on fixture formatting, an older Vite Nuxt control lacking explicit
+opt-in, an SSR assertion missing literal Vue slot markers, stale generated
+inventories, four partial Rust assertions, and a map expectation for a fully
+erased script. Both new runtime laws stopped before their runtime oracle.
+Original failed outcomes and authenticated logs are retained; no runtime
+acceptance transfers from that run.
+
+Correct those verification defects without changing production policy. Map
+presence follows retained authored script bytes; maps must change no code for
+either policy. Use complete runtime observations instead of partial Rust text
+checks. Add public Vite single/batch controls for all original sources and
+evaluate the complete emitted Page/global Nuxt metadata modules. Refresh only
+the affected inventories with the existing authoritative generators.
+
+Independent review records separate inherited TODOs: combined ordinary
+`<script>` plus `<script setup>` currently prepares only setup for erasure,
+although artifact extraction visits both; artifact modules hoist imports but
+not setup-local dependencies. This slice qualifies actual Nuxt erasure for
+the reported setup layout macros. The complete mixed middleware closure is
+qualified as ordinary runtime behavior and receives no Nuxt dependency-hoisting
+acceptance. No injected locals or fallback conceal those limits.
+
+Paired correction and TODOs: [#7821 comment](https://github.com/ubugeeei-prod/vize/issues/7821#issuecomment-5987203997).

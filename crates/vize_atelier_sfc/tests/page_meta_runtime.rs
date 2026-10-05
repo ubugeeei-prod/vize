@@ -93,11 +93,14 @@ fn compile(source: &str, shape: &str, nuxt: bool, map: bool) -> SfcCompileResult
         "{:?}",
         result.warnings
     );
-    if map {
-        assert!(
-            result.map.is_some(),
-            "authored script must retain its module map"
-        );
+    let script_erased = nuxt && (source == source!("Page") || source == source!("global"));
+    assert_eq!(
+        result.map.is_some(),
+        map && !script_erased,
+        "{shape}/nuxt={nuxt}"
+    );
+    if let Some(map) = &result.map {
+        assert_eq!(map["sources"], json!(["Page.vue"]));
     }
     result
 }
@@ -116,16 +119,8 @@ fn ordinary_and_nuxt_page_meta_keep_distinct_complete_outputs() {
                 plain.macro_artifacts.is_empty(),
                 "ordinary calls are not Nuxt artifacts"
             );
-            assert!(
-                plain.code.contains(if name == "alias" {
-                    "pageMeta("
-                } else {
-                    "definePageMeta("
-                }),
-                "{}",
-                plain.code
-            );
             let nuxt = compile(source, shape, true, true);
+            assert_eq!(nuxt.code, compile(source, shape, true, false).code);
             let extracted = matches!(name, "Page" | "global" | "mixed");
             assert_eq!(
                 nuxt.macro_artifacts.len(),
@@ -133,24 +128,15 @@ fn ordinary_and_nuxt_page_meta_keep_distinct_complete_outputs() {
                 "{shape}/{name}"
             );
             if extracted {
-                assert!(!nuxt.code.contains("definePageMeta"), "{}", nuxt.code);
                 let artifact = nuxt.macro_artifacts.first().expect("actual Nuxt artifact");
                 assert_eq!(artifact.kind, "nuxt.definePageMeta");
+                assert_eq!(artifact.name, "definePageMeta");
                 assert_eq!(
                     source
                         .get(artifact.start..artifact.end)
                         .expect("original artifact span"),
                     artifact.source.as_str()
                 );
-                assert!(
-                    artifact
-                        .module_code
-                        .as_ref()
-                        .is_some_and(|code| code.contains("export default __nuxt_page_meta"))
-                );
-                if name == "mixed" {
-                    assert!(nuxt.code.contains("useRoute"));
-                }
             } else {
                 assert_eq!(
                     plain.code, nuxt.code,
@@ -167,8 +153,10 @@ fn original_page_meta_calls_mount_and_ssr_like_the_official_compiler() {
     for shape in ["module", "inline", "ssr", "vapor", "vapor-ssr"] {
         for &(name, source) in CASES {
             for nuxt in [false, true] {
+                let result = compile(source, shape, nuxt, true);
                 cases.push(json!({ "name": name, "source": source, "shape": shape,
-                    "nuxt": nuxt, "code": compile(source, shape, nuxt, true).code }));
+                    "nuxt": nuxt, "code": result.code,
+                    "artifact": result.macro_artifacts.first().and_then(|artifact| artifact.module_code.as_ref()) }));
             }
         }
     }

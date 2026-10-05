@@ -158,7 +158,9 @@ try {
       fs.writeFileSync(path.join(artifacts, `${marker}.html`), html);
       assert.match(
         html,
-        new RegExp(`<main[^>]*id="bare-layout"[^>]*><p[^>]*id="${marker}"[^>]*>page</p></main>`),
+        new RegExp(
+          `<main[^>]*id="bare-layout"[^>]*><!--\\[--><p[^>]*id="${marker}"[^>]*>page</p><!--\\]--></main>`,
+        ),
       );
       assert.ok(
         !html.includes("DEFAULT LAYOUT"),

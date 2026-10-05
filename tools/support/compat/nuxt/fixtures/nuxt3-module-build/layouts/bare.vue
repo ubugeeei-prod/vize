@@ -1,1 +1,3 @@
-<template><main id="bare-layout"><slot /></main></template>
+<template>
+  <main id="bare-layout"><slot /></main>
+</template>
