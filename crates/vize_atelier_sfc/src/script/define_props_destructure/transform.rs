@@ -60,7 +60,11 @@ pub(crate) fn transform_destructured_props_with_edits(
 
     // AST-based transformation.
     let allocator = Allocator::default();
-    let source_type = SourceType::from_path("script.ts").unwrap_or_default();
+    // Setup sections have already lost their imports; their known module goal
+    // still admits await operands that are ambiguous in an ordinary script.
+    let source_type = SourceType::from_path("script.ts")
+        .unwrap_or_default()
+        .with_module(true);
     let ret = profile!(
         "atelier.props_destructure.parse",
         Parser::new(&allocator, source, source_type).parse()
