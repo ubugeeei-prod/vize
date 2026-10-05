@@ -5,6 +5,10 @@ import { setupLintInspector, setupNuxtLintConfigGeneration } from "./lint/genera
 import { appendMuseaArtComponentIgnore } from "./musea-components";
 import { registerNuxtMuseaStaticPublicAsset } from "./musea-static";
 import { patchNuxtClientManifestCloseBundlePlugin } from "./client-manifest-bridge";
+import {
+  restoreNuxtClientManifestSourceIds,
+  type NuxtClientManifestEntry,
+} from "./client-manifest";
 import { patchNuxtHostVuePluginForCompilerExcludes } from "./host-vue-bridge";
 import { patchNuxtKeyedFunctionsPlugin, type ViteTransformResult } from "./keyed-functions-bridge";
 import "./schema";
@@ -309,6 +313,11 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
   let isNuxtBuild = false;
   let isViteBuild = false;
   if (usesVizeCompiler) {
+    // User modules register before Nuxt's core pages/components modules. Their
+    // build:manifest hooks must see original source IDs before precomputation.
+    nuxt.hook("build:manifest", (manifest: Record<string, NuxtClientManifestEntry>) => {
+      if (nuxt.options.dev === false) restoreNuxtClientManifestSourceIds(manifest);
+    });
     nuxt.hook("build:before", () => {
       if (nuxt.options.dev !== false) {
         return;

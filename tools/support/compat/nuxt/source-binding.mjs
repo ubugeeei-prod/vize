@@ -14,7 +14,7 @@ import {
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const preload = fileURLToPath(new URL("./source-binding-preload.cjs", import.meta.url));
 
-export function prepareNuxtSourceBinding(root, artifacts) {
+export function prepareNuxtSourceBinding(root, artifacts, options = {}) {
   for (const key of [
     "NAPI_RS_NATIVE_LIBRARY_PATH",
     "NAPI_RS_FORCE_WASI",
@@ -45,9 +45,15 @@ export function prepareNuxtSourceBinding(root, artifacts) {
     features: receipt.emitted.cargo.features,
     binary: { path: fs.realpathSync(binary), sha256: receipt.frozen.sha256 },
     calls: path.join(directory, "native-calls.jsonl"),
+    backends: options.backends ?? ["client", "ssr"],
     fixtures: execFileSync(
       "git",
-      ["ls-files", "-z", "--", "tools/support/compat/nuxt/fixtures/nuxt3-module-build"],
+      [
+        "ls-files",
+        "-z",
+        "--",
+        options.fixtureDirectory ?? "tools/support/compat/nuxt/fixtures/nuxt3-module-build",
+      ],
       { cwd: root },
     )
       .toString()
@@ -88,6 +94,10 @@ export function verifyNuxtSourceBindingEvents(custody, events) {
   assert.ok(events.length > 0, "no physical source-addon load was recorded");
   const loaded = new Set();
   const compiled = new Set();
+  const backends = custody.backends ?? ["client", "ssr"];
+  assert.ok(Array.isArray(backends) && backends.length > 0);
+  assert.equal(new Set(backends).size, backends.length);
+  for (const backend of backends) assert.ok(["client", "ssr"].includes(backend));
   assert.ok(custody.fixtures.length > 0, "no original fixture SFCs were retained");
   let calls = 0;
   for (const event of events) {
@@ -141,7 +151,7 @@ export function verifyNuxtSourceBindingEvents(custody, events) {
   }
   assert.ok(calls > 0, "fixture build never called the source SFC compiler");
   for (const fixture of custody.fixtures)
-    for (const backend of ["client", "ssr"])
+    for (const backend of backends)
       assert.ok(
         compiled.has(`${backend}:${fixture.filename}`),
         `source compiler missed ${backend} original fixture ${fixture.filename}`,
@@ -150,6 +160,7 @@ export function verifyNuxtSourceBindingEvents(custody, events) {
     source: custody.source,
     binary: custody.binary,
     profile: custody.profile,
+    backends,
     calls,
     processes: loaded.size,
     fixtureTargets: [...compiled].sort((left, right) => (left < right ? -1 : Number(left > right))),
