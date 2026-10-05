@@ -31,7 +31,7 @@ mod tests {
             let allocator = Allocator::new();
             let expression = ExpressionNode::Simple(Box::new_in(
                 SimpleExpressionNode::new(source, false, SourceLocation::STUB),
-                &allocator,
+                &&allocator,
             ));
             for mapped in [false, true] {
                 let mut ctx = CodegenContext::new(CodegenOptions {
@@ -51,7 +51,7 @@ mod tests {
         location.span = Span::new(3, 12);
         let expression = ExpressionNode::Simple(Box::new_in(
             SimpleExpressionNode::new("handler00", false, location),
-            &allocator,
+            &&allocator,
         ));
         let mut ctx = CodegenContext::new(CodegenOptions {
             source_map: true,

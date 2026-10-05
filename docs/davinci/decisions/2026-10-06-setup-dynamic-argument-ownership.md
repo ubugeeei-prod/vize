@@ -307,3 +307,35 @@ without conflict. All reviewed production/test objects, original fixtures,
 goldens and strict oracles stay unchanged; all incoming non-owned source and
 canonical whole-line clauses are retained. Fresh automatic source Actions
 own execution of this successor; no old source/protected acceptance transfers.
+
+## Two additional authenticated source and protected failures
+
+Source9b7 Check37381825689 Build112005583932 fails E0277 at the two new
+detached handler-test Box calls: GetAllocator is implemented for &Allocator,
+so this API requires &&allocator. Fix only those references; the production
+identifier gate, all actual input/output vectors and underlying allocator stay
+exact. No Rust test execution is credited for this failed build.
+
+The earlier protected641 also fails Clippy job111993650555 at unchanged SFC
+coverage165<167: the separate aggregate patches snapshot still has the same
+two old unknown-$ref assignment/postfix outputs. All other56/58 patch blocks
+pass. Its complete report/raw590025B log is retained under the scoped aggregate
+authority. Refine only those two entire output blocks with the independently
+reviewed IsRef import and conditional operators; keep their original inputs,
+first-three helper order, all other56 blocks and existing comparator exact.
+Archive both old complete blocks and pin old/current entire aggregate plus all
+unchanged blocks. The original165/167 failure stays failed; no reference is
+regenerated from its current output. A genuine ordinary-source integration law
+requires all58 ordered identities, complete module comparisons and no error
+exemptions. Original coverage floors167/743 and instruction ceilings stay
+unchanged. Actual original32/132+26 runtime, whole Rust, full coverage and
+protected100+4/signed merge remain required; finite publisher cut is independent.
+
+Source9b7 also fails tooling3 job112005583643: the new retained test adds a
+second preferred L0 import site where the existing law requires one. Merge
+cstr into the original Allocator import and regenerate the actual inventory;
+no import quota changes. Independent review catches two unexecuted custody
+premises: input hashes now cover only exact UTF-8 INPUT/OUTPUT delimiter
+contents (including LF), and the 58-case law follows original PKL order,
+while separately requiring 58 unique one-to-one reference identities and
+no error exemptions. Snapshot order and all source/output bytes stay exact.

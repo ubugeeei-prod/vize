@@ -17,12 +17,11 @@ use crate::lane::transform;
 use crate::options::{CodegenOptions, TransformOptions};
 use crate::parser::Parser;
 use crate::retained::differential;
-use vize_l0::Allocator;
+use vize_l0::{Allocator, cstr};
 
 #[test]
 fn whole_retained_identifier_gate_keeps_dialect_and_original_byte_boundaries() {
     use crate::{ExpressionNode, PropNode, TemplateChildNode};
-    use vize_l0::cstr;
 
     let cases = [
         ("handler00", true),
