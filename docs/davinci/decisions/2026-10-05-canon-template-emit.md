@@ -175,3 +175,11 @@ panic on any helper error. Checked JSON fields retain the same pinned package
 version assertion. Every original/source/config and whole diagnostic/hover
 expectation stays unchanged, with no lint exception or warning/cap waiver.
 Fresh strict/native Actions remain required.
+
+Replay the corrected existing PR onto actual signed-main5fb, which contains the
+completed outside-import fix. Main extracted template-context emission into
+setup_props::emit_template_context. Preserve that incoming helper/profiling and
+thread the same declared/model typed initializer through its existing call and
+third context member, retaining emission order and attrs/refs inputs. No extra
+pipeline or serialization stage. Original source/config/whole vectors remain
+unchanged; genuine inventories and fresh strict/native gates are required.
