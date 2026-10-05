@@ -6,7 +6,7 @@
     reason = "whole public regression results cross an independent runtime oracle"
 )]
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::{
     io::Write,
     path::Path,
@@ -14,8 +14,8 @@ use std::{
 };
 use vize_atelier_core::CodegenOptions;
 use vize_atelier_sfc::{
-    compile_sfc_for_adapter, parse_sfc, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
-    TemplateCompileOptions,
+    SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode, TemplateCompileOptions,
+    compile_sfc_for_adapter, parse_sfc,
 };
 use vize_carton::String;
 

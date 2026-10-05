@@ -1,5 +1,11 @@
 # Vapor expression line-comment boundary (#7894)
 
+Initial source `ca740`/Check37260156198 failed before runtime: the shared
+converter was exported through a private module, and bare rustfmt used the
+wrong edition for the new test imports. Expose only the helper through the
+existing public codegen facade and format with edition 2024; unchanged original
+inputs, oracle, counts and ceilings require fresh exact-head Actions.
+
 The reported original App.vue is retained exactly: 138 bytes,
 SHA-256 b7f2f1bea9c5157e0473ea690adf6a9572c6ba86536d177cac50936b4f41408f.
 Its reporter is GitHub ubugeeei, verified public ID 71201308.

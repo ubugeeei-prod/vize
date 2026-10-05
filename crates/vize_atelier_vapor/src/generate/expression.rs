@@ -96,7 +96,7 @@ pub(super) fn apply_rewrites(
 // regex literals and authored template literals retain their exact bytes.
 fn terminate_line_comments(resolved: String) -> String {
     if resolved.contains("//") {
-        vize_atelier_core::codegen::expression::convert_line_comments_to_block(&resolved)
+        vize_atelier_core::codegen::convert_line_comments_to_block(&resolved)
     } else {
         resolved
     }
