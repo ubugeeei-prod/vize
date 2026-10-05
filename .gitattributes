@@ -15,6 +15,7 @@ crates/vize/tests/fixtures/dump_cli/help*.stdout -text
 tests/_fixtures/_git/** linguist-vendored=true
 
 # Preserve the pinned upstream source bytes, including existing trailing spaces.
+tests/_fixtures/differential/compiler/cli-whitespace-7880/** -text
 tests/_fixtures/pattern-reference/upstream/** linguist-vendored whitespace=-blank-at-eol
 tests/_fixtures/vue-language-tools/upstream/** linguist-vendored whitespace=-blank-at-eol
 
@@ -30,3 +31,12 @@ tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/** -text
 
 # Immutable formatter regressions include literal CRLF/CRCRLF output bytes.
 tests/_fixtures/differential/formatter/sfc-vue*/** -text whitespace=-blank-at-eol
+
+# Original linter report fixtures retain authored LF/CRLF bytes on every checkout.
+crates/vize_patina/tests/fixtures/issue-7977/** -text whitespace=cr-at-eol
+
+# Macro ownership laws retain pinned LF, Unicode and authored CRLF bytes.
+tests/_fixtures/differential/lint-with-defaults/** -text whitespace=cr-at-eol
+
+# Original linter report fixtures retain authored LF/CRLF bytes on every checkout.
+crates/vize_patina/tests/fixtures/issue-7979/** -text whitespace=cr-at-eol

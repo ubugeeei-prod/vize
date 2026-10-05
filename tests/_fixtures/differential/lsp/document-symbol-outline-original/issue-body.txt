@@ -1,0 +1,80 @@
+## Version
+
+- `vize` 0.432.0 (npm, `node_modules/.bin/vize lsp --stdio`), serverInfo `vize-maestro 0.432.0`
+- `vue` 3.5.41, Node 26.6.0, macOS (arm64)
+
+## Minimal reproduction
+
+`tsconfig.json`: `moduleResolution: "Bundler"`, `strict: true`, `include: ["src/**/*.ts", "src/**/*.vue"]`.
+
+`vize.config.json`:
+
+```json
+{ "languageServer": { "lint": true, "typecheck": true, "editor": true } }
+```
+
+`src/MySwitch.vue`:
+
+```vue
+<script setup lang="ts">
+const { items, checked } = defineProps<{
+  items: readonly string[];
+  checked: boolean;
+}>();
+</script>
+
+<template>
+  <span>{{ checked ? items[1] : items[0] }}</span>
+</template>
+```
+
+`src/Parent.vue`:
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import MySwitch from "./MySwitch.vue";
+
+const store = {
+  get: (): string => "a",
+  set: (title: string): void => {
+    void title;
+  }
+};
+const on = ref(false);
+function toggle(name: "a" | "b"): void {
+  void name;
+}
+store.set("x");
+</script>
+
+<template>
+  <MySwitch :checked="on" :items="['a', 'b']" @click="toggle('a')" />
+  <p :title="store.get()">{{ on }}</p>
+</template>
+```
+
+## Steps
+
+`initialize` (client capability `textDocument.documentSymbol.hierarchicalDocumentSymbolSupport: true`), `initialized`, `didOpen` both files, then `textDocument/documentSymbol` for `src/Parent.vue`, and `workspace/symbol` with `query: "toggle"`.
+
+## Actual
+
+```
+documentSymbol Parent.vue -> [{"name":"template","kind":2},{"name":"script setup","kind":2}]
+workspace/symbol 'toggle' -> [{"name":"toggle","kind":12,"containerName":"script setup","location":{"uri":"file:///tmp/repro/src/Parent.vue","range":{"start":{"line":11,"character":0},"end":{"line":11,"character":0}}}}]
+```
+
+The outline has two module nodes and no children. For a 1,000-line page component in a larger app the result is the same three nodes (`template`, `script setup`, `style[0]`), so the outline / breadcrumbs / "Go to Symbol in Editor" (`Cmd+Shift+O`) are empty in practice. The server does know the script symbols — `workspace/symbol` finds `toggle` — but they are not attached to the document tree.
+
+## Expected
+
+Children under the block nodes, as Vue - Official provides:
+
+- `script setup`: top-level declarations (`store` with its `get` / `set` members, `on`, `toggle`, imports optional), with `selectionRange` on the name;
+- `template`: the element tree (`MySwitch`, `p`, …), at least down to components and elements with `v-if` / `v-for` / `ref`;
+- `style`: selectors (optional).
+
+## Why
+
+`documentSymbol` drives the editor outline, breadcrumbs and symbol search inside a file; with only block nodes these features are unusable on `.vue` files when Vize is the only Vue language server (`editor: true` is the setting that would replace Vue - Official). The capability is advertised (`documentSymbolProvider: true`), so clients do not fall back to anything else.

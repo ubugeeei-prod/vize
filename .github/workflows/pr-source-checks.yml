@@ -12,7 +12,7 @@ jobs:
   pr-source-plan:
     name: Plan PR source checks
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     outputs:
       comparison-base: ${{ steps.comparison.outputs.base }}
@@ -341,7 +341,7 @@ jobs:
       - pr-playground-test
       - wit-contracts
       - canonical-corpus
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

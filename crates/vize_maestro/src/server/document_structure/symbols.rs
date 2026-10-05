@@ -1,4 +1,4 @@
-//! `textDocument/documentSymbol`: the SFC block outline.
+//! `textDocument/documentSymbol`: blocks and their authored structural outline.
 //!
 //! Moved out of `handlers.rs` (over the per-file length budget) into the
 //! document-structure group: the outline is the same block layout that folding
@@ -18,6 +18,12 @@ use vize_atelier_sfc::BlockLocation;
 use vize_l0::line_index::LineIndex;
 
 use crate::server::ServerState;
+
+mod script;
+mod template;
+
+#[cfg(test)]
+mod tests;
 
 fn block_ranges(index: &LineIndex<'_>, loc: &BlockLocation, tag_name: &str) -> (Range, Range) {
     let position = |offset| {
@@ -68,7 +74,7 @@ pub(crate) fn document_symbols(
             range,
             selection_range,
             detail: template.lang.as_ref().map(|l| l.to_string()),
-            children: None,
+            children: template::children(template, &line_index),
         });
     }
 
@@ -82,7 +88,7 @@ pub(crate) fn document_symbols(
             range,
             selection_range,
             detail: script.lang.as_ref().map(|l| l.to_string()),
-            children: None,
+            children: script::children(script, &line_index),
         });
     }
 
@@ -96,7 +102,7 @@ pub(crate) fn document_symbols(
             range,
             selection_range,
             detail: script_setup.lang.as_ref().map(|l| l.to_string()),
-            children: None,
+            children: script::children(script_setup, &line_index),
         });
     }
 
@@ -127,4 +133,34 @@ pub(crate) fn document_symbols(
     }
 
     Some(DocumentSymbolResponse::Nested(symbols))
+}
+
+fn symbol(
+    name: &str,
+    kind: SymbolKind,
+    index: &LineIndex<'_>,
+    base: usize,
+    span: oxc_span::Span,
+    selection: oxc_span::Span,
+    children: Vec<DocumentSymbol>,
+) -> DocumentSymbol {
+    let range = |span: oxc_span::Span| {
+        let (line, character) = index.line_col(base + span.start as usize);
+        let start = Position { line, character };
+        let (line, character) = index.line_col(base + span.end as usize);
+        Range {
+            start,
+            end: Position { line, character },
+        }
+    };
+    DocumentSymbol {
+        name: name.to_string(),
+        kind,
+        tags: None,
+        deprecated: None,
+        range: range(span),
+        selection_range: range(selection),
+        detail: None,
+        children: (!children.is_empty()).then_some(children),
+    }
 }

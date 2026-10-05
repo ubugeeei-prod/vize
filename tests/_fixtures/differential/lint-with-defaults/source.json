@@ -1,0 +1,99 @@
+{
+  "schema": "vize.lint.with-defaults-corpus",
+  "version": 1,
+  "issue": 7962,
+  "author": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "files": {
+    "ClassicScript.vue.txt": {
+      "bytes": 137,
+      "sha256": "b2a7d5cedf43baf1b037e0dbf97a04241f3f7d2e20c205a9fcd483659b29c946"
+    },
+    "DualScript.vue.txt": {
+      "bytes": 277,
+      "sha256": "c21cd4e5c77ada01136d256bc819a8476db4d48df9cf0fc88f7adce21b84e712"
+    },
+    "Escaped.vue.txt": {
+      "bytes": 148,
+      "sha256": "f6d436ab8b6e0cc89f9bc512d9995ae27346ba60847da5e36201535a9482b554"
+    },
+    "Expression.vue.txt": {
+      "bytes": 129,
+      "sha256": "a1df4c88ce74fdc03fb67cb48e17ad3213d5b3f74054160102c47529c3a5f7b8"
+    },
+    "Inline.html.txt": {
+      "bytes": 136,
+      "sha256": "18da59e25d5d1872671e0c2218c7488d48c660807fd4b5ae9f9c5716e317e033"
+    },
+    "MissingDefaults.vue.txt": {
+      "bytes": 128,
+      "sha256": "fa705a7bcfc5e20d0a263bb6f66412383f8484f5d6d4b23e1d74bf6f27f0064d"
+    },
+    "Multiple.vue.txt": {
+      "bytes": 172,
+      "sha256": "614c7163102d0042edc16524fbae1be97577deb338514d72312fa1788045dbd6"
+    },
+    "NestedShadow.vue.txt": {
+      "bytes": 216,
+      "sha256": "09f1e8a1ed94bc12aaf6086891492d5502c1e9bca859968b685811086ca77d46"
+    },
+    "OrdinaryExpressions.vue.txt": {
+      "bytes": 883,
+      "sha256": "f6a5006a4728227ac907f15578ca265e1efe31e5f01ddf05626537f7ab3f78e7"
+    },
+    "Parenthesized.vue.txt": {
+      "bytes": 148,
+      "sha256": "c46faf64161a0a03b28472afbd71617cf4d3b031f1f46610dbcc1b5daaf196e2"
+    },
+    "RuntimeProps.vue.txt": {
+      "bytes": 132,
+      "sha256": "8e19c358f0a641f19b2ea770422520ca38a3d48dc4fc7dc4f70eef488b752263"
+    },
+    "SizeLabel.vue.txt": {
+      "bytes": 218,
+      "sha256": "b0399fefbad925a5f373e8b95afc7fc81826ffa043f6cb127a53bda96e7efde5"
+    },
+    "TypedSpaced.vue.txt": {
+      "bytes": 160,
+      "sha256": "4266e49912beef9e9e575d393e8bd61e52c5cb66a5fa5af3e344c69e9c107e59"
+    },
+    "TypedWrapped.vue.txt": {
+      "bytes": 174,
+      "sha256": "a886feb44947d2017bb5dfd46ab5aca32a4bac8fe4d47f5a136accf23edf7f60"
+    },
+    "cases.json": {
+      "bytes": 2965,
+      "sha256": "09ac760c8de287c16defa56ce11e4dec992dbf57446705577c9e02b78a72a0b0"
+    },
+    "comment-only.ts.txt": {
+      "bytes": 104,
+      "sha256": "c6790fd626b615e78c958ed25c1c5b5dfe1ccc6766b344d925076b65013a5937"
+    },
+    "original-issue.md": {
+      "bytes": 2308,
+      "sha256": "78a66bb66fdc5e916518a6881de008582b1bcfdf2e2dda1bd25626ebca694fc4"
+    },
+    "plain-call.ts.txt": {
+      "bytes": 77,
+      "sha256": "4383c4f4c56db8d30e2d8b4bc359d061650dbe833b0db5d6ff1592489ef4f70d"
+    },
+    "source-check.ts.txt": {
+      "bytes": 145,
+      "sha256": "6d03e0fa627c53f31c06049c7577c5b291492327bcad8bbc5b6525958868d1fc"
+    },
+    "vize.config.json": {
+      "bytes": 91,
+      "sha256": "ec8949fda324330914ab61920ac02dd31aa95e28701dd692b176e82f3d6283f3"
+    }
+  },
+  "originals": [
+    "SizeLabel.vue.txt",
+    "comment-only.ts.txt",
+    "source-check.ts.txt",
+    "vize.config.json"
+  ],
+  "authority": "Complete original issue fences plus authored native-AST macro ownership controls; expected spans from exact source bytes, not recaptured output.",
+  "nativeHandled": 0
+}

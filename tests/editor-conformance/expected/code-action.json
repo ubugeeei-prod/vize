@@ -1,5 +1,26 @@
 [
   {
+    "diagnostics": [
+      {
+        "code": "vue/no-multi-spaces",
+        "codeDescription": {
+          "href": "https://eslint.vuejs.org/rules/no-multi-spaces.html"
+        },
+        "message": "Multiple consecutive spaces",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 7
+          },
+          "start": {
+            "character": 6,
+            "line": 7
+          }
+        },
+        "severity": 2,
+        "source": "vize/lint"
+      }
+    ],
     "edit": {
       "changes": {
         "${workspace}/src/Scenario.vue": [
@@ -24,6 +45,27 @@
     "title": "Fix: Replace multiple spaces with single space"
   },
   {
+    "diagnostics": [
+      {
+        "code": "vue/no-multi-spaces",
+        "codeDescription": {
+          "href": "https://eslint.vuejs.org/rules/no-multi-spaces.html"
+        },
+        "message": "Multiple consecutive spaces",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 7
+          },
+          "start": {
+            "character": 6,
+            "line": 7
+          }
+        },
+        "severity": 2,
+        "source": "vize/lint"
+      }
+    ],
     "edit": {
       "changes": {
         "${workspace}/src/Scenario.vue": [

@@ -147,3 +147,30 @@ Raw291218bytes/SHA256
 also retains the separate artifact-service HTML failure after five retries;
 no archive/native16 or matched proof is inferred. Fresh compilation/execution
 is still mandatory, with the same Draft/gain-failed scope.
+
+Current selected source db5b completed native37368001274 and ordinary
+Check37368002235 successfully. Authentic native artifact11369925095
+(82276677bytes, SHA256
+f7dd087d8833362f80a654177004039f93e000bd727f55f0d2f0e945a9f52570)
+retains all16 laws,72 old whole profile row pairs and102 actual acknowledged
+requests, plus the new exact four-request/related/duplicate/empty fixture.
+Real reader failure still preserves Protocol/Closed causes, retires the owner,
+and returns the entire original LSP vector. Four source Rust JUnits report
+16259 passed cases,0 skipped entries and0 failures; excluded source-filter
+tests are not claimed as executed. Source/native quality is not optimization
+acceptance or the fresh consumer681 campaign.
+
+Both required fixes actually merged at2026-10-05T22:15:36Z: signed8059
+8e6dabfb665a8d53b8379aba0edfb0cc37bfb883 and signed8064
+d43e764ad9233ea40a162a7a49d1a84db54ac591. Their protected Checks
+37379053538/37379056892 passed. Incorporate that literal actual main into
+this existing consumer without replacing any owned production or original
+fixture/law body, and pin it as the immutable original-route control.
+Preserve all incoming owner/docs clauses. The ONE corrected observer0 same-host
+comparison uses three alternating pairs, full500 selected Vue/181 TS sources,
+all original cold/broken/repaired23-error/project/PID/SDK/body/physical source
+laws and distinct freshly rebuilt binaries. Whole three-generation681 vectors
+and native laws remain separate mandatory quality gates. Root's finite0.434
+cut/publication does not wait for this Draft optimization. No admission during
+its publication freeze and no genuine gain, default, CLI/LSP or10x credit until
+current source execution independently proves it.

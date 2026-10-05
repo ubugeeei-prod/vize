@@ -1,0 +1,8 @@
+package.json
+vite.config.ts            # root = project dir
+vite.src-root.config.ts   # root = src/
+index.html
+src/index.html
+src/main.ts
+src/pages/demo/Plain.vue
+fixtures/Alpha.vue

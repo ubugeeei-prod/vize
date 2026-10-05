@@ -86,6 +86,12 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = (expected as { position: unknown; result: unknown }[]).map(
         ({ position, result }) => ({ params: { position }, result }),
       );
+    } else if (data.method === "textDocument/documentSymbol") {
+      assert.equal(data.hierarchicalDocumentSymbols, true);
+      assert(Array.isArray(expected) && expected.length === 2);
+      assert(data.provenance.witness, "original issue custody is required");
+      readPinnedArtifact(packRoot, data.provenance.witness);
+      requests = [{ params: {}, result: expected }];
     } else {
       assert.equal(data.method, "textDocument/onTypeFormatting", "unregistered LSP method");
       assert.deepEqual(data.options, { tabSize: 2, insertSpaces: true });
@@ -119,3 +125,14 @@ export const INITIALIZE_CAPABILITIES = {
     completion: { completionItem: { documentationFormat: ["markdown", "plaintext"] } },
   },
 };
+
+export function initializeCapabilities(fixture: LspFixture) {
+  if (fixture.data.method !== "textDocument/documentSymbol") return INITIALIZE_CAPABILITIES;
+  assert.equal(fixture.data.hierarchicalDocumentSymbols, true);
+  return {
+    textDocument: {
+      ...INITIALIZE_CAPABILITIES.textDocument,
+      documentSymbol: { hierarchicalDocumentSymbolSupport: true },
+    },
+  };
+}

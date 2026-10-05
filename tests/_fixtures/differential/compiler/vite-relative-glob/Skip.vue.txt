@@ -1,0 +1,3 @@
+<template>
+  <p>skip</p>
+</template>
