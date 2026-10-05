@@ -96,3 +96,19 @@ physically checked private-root bijection. This correction does not add any
 production/native protocol or response filtering. Fresh exact-source paired
 execution remains required; neither source review nor an earlier unit-test
 pass grants original400 timing, CPU, recovery or release credit.
+
+## Actual-main source replay
+
+Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5994672343).
+
+Genuinely replay the six owned source commits onto actual main
+`a6dfe45aeb9bd4281168b52e94391da59a3ac7ad`, retaining every source
+author/email/date/full body and reporter footer and all 26 owned noncanonical
+blobs. Removing only the owned clause reproduces the complete incoming
+350-line canonical record. The first newly configured pair must build this
+actual common source baseline, including incoming backend changes, rather
+than borrow original400 evidence from 66a9. Earlier source Check37305000331
+and its authenticated four JUnit artifacts prove 16,131 unique passing tests
+at historical hosted source5630f3ec, including the four whole source laws;
+they do not qualify this new head or any original400 native/wire/CPU outcome.
+Fresh exact source Actions and the first paired execution remain required.
