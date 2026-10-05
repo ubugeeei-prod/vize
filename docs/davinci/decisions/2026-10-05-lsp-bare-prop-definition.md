@@ -26,5 +26,10 @@ script parameters, v-for shadows, LF/CRLF, astral source/target positions and
 complete versioned unsaved diagnostic publications. A generator law checks the
 real emitted endpoints after import rewriting and UTF-16 round trips.
 
+The first hosted compile caught the new edge in exhaustive protocol and native
+inspection matches. Keep this Vize-only navigation edge out of upstream protocol
+v1, retain its inspection name, and extend the complete existing protocol law;
+native definition expectations and all instruction ceilings remain unchanged.
+
 Fresh exact-source Actions, unchanged protected instruction ceilings, actual
 merge, release and installed editor proof remain required.
