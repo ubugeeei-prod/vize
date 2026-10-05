@@ -61,6 +61,7 @@ function reference(source, serverTarget = ssr) {
     const errors = [];
     const result = officialCompilerVapor.compile(template, {
       mode: "module",
+      prefixIdentifiers: true,
       comments: false,
       onError: (error) => errors.push(error),
     });

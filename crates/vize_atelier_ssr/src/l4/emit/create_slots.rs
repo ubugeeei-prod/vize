@@ -2,10 +2,9 @@
 //! dynamically named `<template #[name]>` carriers, emitted as
 //! `_createSlots(base, [entries])` in the push form and the VNode fallback.
 //!
-//! The legacy lane keeps two quirks this port reproduces byte-for-byte: the
-//! push form spells `_renderList` while registering `ssrRenderList`, and the
-//! base object always carries `_: 2 /* DYNAMIC */`. The VNode fallback's
-//! expression form lives in `vnode_create_slots`.
+//! Looped slot descriptors use core `renderList` to return an array; both
+//! lanes register that helper and carry `_: 2 /* DYNAMIC */` on the base
+//! object. The VNode expression form lives in `vnode_create_slots`.
 
 use vize_atelier_core::RuntimeHelper;
 use vize_l0::{FxHashSet, String, ToCompactString, cstr};
@@ -252,7 +251,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             .ok_or(AdmissionFailure::Invalid(
                 "createSlots loop lost its slot template",
             ))?;
-        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderList);
+        self.ctx.use_core_helper(RuntimeHelper::RenderList);
         let (source, aliases, mark) = self.enter_loop(at)?;
         let span = match self.segment(at)?.source {
             Source::For(for_op) => expression_span(&for_op.binding.source),
