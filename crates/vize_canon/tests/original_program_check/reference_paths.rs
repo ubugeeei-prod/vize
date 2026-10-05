@@ -126,23 +126,14 @@ fn path_references_retain_original_sources_native_reports_and_configuration() {
             );
             block_on(bridge.shutdown()).unwrap();
             let mut checker = BatchTypeChecker::new(&root).unwrap();
-            checker.scan_project().unwrap();
+            checker
+                .scan_paths(&[paths[1].clone(), paths[4].clone()])
+                .unwrap();
             let checked = checker.check_project().unwrap();
             let diagnostics = checked.diagnostics.iter().map(|diagnostic| serde_json::json!({
                 "file":diagnostic.file.strip_prefix(&root).unwrap(),"line":diagnostic.line,"column":diagnostic.column,
                 "severity":diagnostic.severity,"code":diagnostic.code,"message":diagnostic.message.as_str()
             })).collect::<Vec<_>>();
-            assert_eq!(
-                serde_json::json!(diagnostics),
-                if invalid {
-                    serde_json::json!([{
-                        "file":"src/a.ts","line":1,"column":13,"severity":1,"code":2322,"message":"Type 'string' is not assignable to type 'number'."
-                    }])
-                } else {
-                    serde_json::json!([])
-                }
-            );
-            assert_eq!(checked.success, !invalid);
             if let Some(output) = std::env::var_os("VIZE_REFERENCE_PATH_CAPTURE_DIR") {
                 let output = std::path::PathBuf::from(output);
                 std::fs::create_dir_all(&output).unwrap();
@@ -161,7 +152,8 @@ fn path_references_retain_original_sources_native_reports_and_configuration() {
                     "authoredTsgo":{"sourcePath":source_path,"sourceUri":source_uri,"sourceDigest":project::digest(source.as_bytes()).as_str(),
                         "report":report,"configuration":configuration,"configurationPath":configuration_path,
                         "session":custody.session(),"before":observation(custody.before()),"after":observation(custody.after())},
-                    "batch":{"diagnostics":diagnostics,"success":checked.success,"exitCode":checked.exit_code}
+                    "batch":{"diagnostics":diagnostics,"success":checked.success,"exitCode":checked.exit_code,
+                        "virtualFiles":checker.virtual_files().iter().map(|file| serde_json::json!({"originalPath":file.original_path,"virtualPath":file.virtual_path,"source":file.content.as_str()})).collect::<Vec<_>>()}
                 });
                 std::fs::write(
                     output.join(vize_l0::cstr!("{}-{invalid}-native.json", case.0).as_str()),
@@ -169,6 +161,17 @@ fn path_references_retain_original_sources_native_reports_and_configuration() {
                 )
                 .unwrap();
             }
+            assert_eq!(
+                serde_json::json!(diagnostics),
+                if invalid {
+                    serde_json::json!([{
+                        "file":"src/a.ts","line":1,"column":13,"severity":1,"code":2322,"message":"Type 'string' is not assignable to type 'number'."
+                    }])
+                } else {
+                    serde_json::json!([])
+                }
+            );
+            assert_eq!(checked.success, !invalid);
             for (path, original) in paths.iter().zip(originals) {
                 assert_eq!(std::fs::read(path).unwrap(), original);
             }

@@ -49,3 +49,14 @@ SHA-256 array; explicit byte-to-hex encoding corrects the witness. Native
 reports, full configuration snapshots, exact input bytes and CLI raw process
 outputs are retained in the source-bound native-phase artifact. No fixture or native comparison closes
 the legacy replacement gate #6879.
+
+Source `5351efbeda` passed the exact configured authored TSGO report and
+explicit native File refusal, then an unscoped `scan_project` witness
+reported `TS2300 Duplicate identifier 'source'`. That API scans every source
+on disk, whereas the reported CLI project selects `env.d.ts` and `src/a.ts`
+from its original tsconfig. The batch witness now uses those exact selected
+roots and retains its complete transitive declaration graph. The unscoped
+observation is preserved separately; configured-root and actual CLI results
+remain required. Failure captures retain actual virtual source identities.
+The consumer migration inventory must also be regenerated for the newly
+observed native test imports; no production native migration is claimed.
