@@ -17,7 +17,7 @@ fn config_scoped_vue_helpers_preserve_whole_original_and_positive_editor_vectors
     for root_vue in [false, true] {
         let directory = tempfile::tempdir().unwrap();
         let root = directory.path().canonicalize().unwrap();
-        let vue = fixture::fixture(&root, root_vue);
+        let vue = fixture::fixture(&root, root_vue).unwrap();
         let app = root.join("apps/web");
         write_corsa_config(&app, &corsa);
         let case = if root_vue {
@@ -25,7 +25,7 @@ fn config_scoped_vue_helpers_preserve_whole_original_and_positive_editor_vectors
         } else {
             "editor-root-vue-absent"
         };
-        let capture = fixture::capture(&root, &vue, &corsa, case);
+        let capture = fixture::capture(&root, &vue, &corsa, case).unwrap();
         for (name, source, expected) in [
             ("App", fixture::APP, Vec::new()),
             ("Counter", fixture::COUNTER, Vec::new()),
@@ -57,7 +57,7 @@ fn config_scoped_vue_helpers_preserve_whole_original_and_positive_editor_vectors
             assert_eq!(diagnostics, expected);
         }
         let source = fixture::TOGGLE.replace("\"42\"", "\"true\"");
-        fixture::write(&root, "apps/web/Toggle.vue", &source);
+        fixture::write(&root, "apps/web/Toggle.vue", &source).unwrap();
         let uri = Url::from_file_path(app.join("Toggle.vue")).unwrap();
         let state = state_for_fixture(&app, &uri, &source);
         state.load_workspace_config(&app);

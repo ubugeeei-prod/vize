@@ -52,7 +52,7 @@ fn check(
         command.args(["--servers", "2"]);
     }
     let output = command.output().unwrap();
-    if let Some(target) = fixture::capture(root, vue, corsa, case) {
+    if let Some(target) = fixture::capture(root, vue, corsa, case).unwrap() {
         std::fs::write(target.join(format!("{mode}.stdout.txt")), &output.stdout).unwrap();
         std::fs::write(target.join(format!("{mode}.stderr.txt")), &output.stderr).unwrap();
         std::fs::write(target.join(format!("{mode}.runtime.json")), json!({"cliBinary":env!("CARGO_BIN_EXE_vize"),"exitCode":output.status.code(),"arguments":command.get_args().map(|arg|arg.to_string_lossy()).collect::<Vec<_>>()}).to_string()).unwrap();
@@ -114,18 +114,18 @@ fn native_oracle(
     let source = format!(
         "import {{ defineModel }} from 'vue';\nconst count = defineModel<number>({{ required: true }});\n{model}\nconst button: import('vue').NativeElements['button'] = {{ disabled: {disabled} }};\n"
     );
-    fixture::write(root, "apps/web/oracle.ts", &source);
+    fixture::write(root, "apps/web/oracle.ts", &source).unwrap();
     fixture::write(
         root,
         "apps/web/oracle.tsconfig.json",
         "{\"compilerOptions\":{\"strict\":true,\"target\":\"ESNext\",\"module\":\"ESNext\",\"moduleResolution\":\"Bundler\",\"noEmit\":true,\"skipLibCheck\":true},\"files\":[\"oracle.ts\"]}\n",
-    );
+    ).unwrap();
     let output = Command::new(corsa)
         .current_dir(&app)
         .args(["-p", "oracle.tsconfig.json", "--pretty", "false"])
         .output()
         .unwrap();
-    if let Some(target) = fixture::capture(root, vue, corsa, case) {
+    if let Some(target) = fixture::capture(root, vue, corsa, case).unwrap() {
         std::fs::write(target.join("native.stdout.txt"), &output.stdout).unwrap();
         std::fs::write(target.join("native.stderr.txt"), &output.stderr).unwrap();
         std::fs::copy(app.join("oracle.ts"), target.join("oracle.ts")).unwrap();
@@ -173,7 +173,7 @@ fn original_outside_alias_sfc_keeps_models_callable_and_native_attributes_checke
     for root_vue in [false, true] {
         let directory = tempfile::tempdir().unwrap();
         let root = directory.path().canonicalize().unwrap();
-        let vue = fixture::fixture(&root, root_vue);
+        let vue = fixture::fixture(&root, root_vue).unwrap();
         let case = if root_vue {
             "original-root-vue-present"
         } else {
@@ -194,7 +194,7 @@ fn outside_alias_keeps_valid_attributes_and_invalid_model_assignments_typed() {
     for invalid_model in [false, true] {
         let directory = tempfile::tempdir().unwrap();
         let root = directory.path().canonicalize().unwrap();
-        let vue = fixture::fixture(&root, false);
+        let vue = fixture::fixture(&root, false).unwrap();
         let case = if invalid_model {
             "invalid-model"
         } else {
@@ -204,13 +204,15 @@ fn outside_alias_keeps_valid_attributes_and_invalid_model_assignments_typed() {
             &root,
             "apps/web/Toggle.vue",
             &fixture::TOGGLE.replace("\"42\"", "\"true\""),
-        );
+        )
+        .unwrap();
         if invalid_model {
             fixture::write(
                 &root,
                 "apps/web/Counter.vue",
                 &fixture::COUNTER.replace("count++", "count = 'x'"),
-            );
+            )
+            .unwrap();
         }
         native_oracle(&root, &corsa, &vue, case, invalid_model, false);
         for mode in ["explicit", "default"] {

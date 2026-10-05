@@ -77,6 +77,15 @@ test/dev inventory rows (nested Carton aliases and editor L0 aliases), retaining
 every old row. Production, original sources and all runtime vectors remain
 unchanged; no new runtime control executed before the compile failure.
 
+The [paired fixture IO correction](https://github.com/ubugeeei-prod/vize/issues/7949#issuecomment-5993633513) retains current2d10's successful native qualifier
+and its strict Rust rejection of 36 unchecked fixture utility accesses. Shared
+IO/path/package-field operations now return Results with checked parents and
+string fields; existing test callers fail on every Err. Optional capture absence
+keeps its established contract, and the required workflow/receipt still requires
+all cases. Compact runtime JSON, original inputs, genuine declaration sources,
+all whole expected vectors, production and workflow bytes stay unchanged. Fresh
+successor strict/native qualification is separate from the historical packet.
+
 Fresh strict source Actions, authentic whole native/editor execution, independent
 artifact verification, protected full Rust/all 104 instruction gates, actual
 signed merge/issue closure and public release/consumer proof remain required.
