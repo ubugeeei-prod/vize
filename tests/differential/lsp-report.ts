@@ -4,7 +4,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { validateBuildReceipt } from "./build-receipt.mjs";
 import { sha256, validateResultEnvelope } from "./harness.mjs";
-import { INITIALIZE_CAPABILITIES, materializeWorkspace, NATIVE_REASON } from "./lsp-manifest.ts";
+import { initializeCapabilities, materializeWorkspace, NATIVE_REASON } from "./lsp-manifest.ts";
 import { decodeFrames } from "./lsp-wire.ts";
 import {
   hasCapabilities,
@@ -60,7 +60,7 @@ export function inspectLspObservation(
     params: {
       processId: initializeParams.processId,
       rootUri: workspaceUri,
-      capabilities: INITIALIZE_CAPABILITIES,
+      capabilities: initializeCapabilities(fixture),
       initializationOptions: fixture.initializationOptions,
       workspaceFolders: [{ uri: workspaceUri, name: path.basename(workspace) }],
     },

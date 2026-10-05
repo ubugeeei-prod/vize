@@ -4,7 +4,7 @@ import { pathToFileURL } from "node:url";
 import { BUILD_RECIPE } from "../../../differential/build-receipt.mjs";
 import { sha256 } from "../../../differential/harness.mjs";
 import {
-  INITIALIZE_CAPABILITIES,
+  initializeCapabilities,
   materializeWorkspace,
   NATIVE_REASON,
 } from "../../../differential/lsp-manifest.ts";
@@ -31,7 +31,7 @@ export function referenceObservation(fixture: LspFixture): WireObservation {
       params: {
         processId: 123,
         rootUri: workspaceUri,
-        capabilities: INITIALIZE_CAPABILITIES,
+        capabilities: initializeCapabilities(fixture),
         initializationOptions: fixture.initializationOptions,
         workspaceFolders: [{ uri: workspaceUri, name: path.basename(workspace) }],
       },

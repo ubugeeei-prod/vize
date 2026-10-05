@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "id": "lsp/regression/document-symbol-outline-myswitch",
+  "provenance": {
+    "fixCommit": "8fbb007a3d87816f6839d94f836962c369b2a913",
+    "issue": 8006,
+    "reporter": {
+      "login": "ubugeeei",
+      "id": 71201308
+    },
+    "witness": {
+      "path": "document-symbol-outline-original/issue-body.txt",
+      "sha256": "a6dd96bb0e0e10dc45aef1f33938cc0818017685dfcf0b4e8ee1e1f0aef1fba8"
+    },
+    "inputOrigin": "byte-exact complete Vue/config code blocks from public issue; tsconfig authored from complete stated settings",
+    "contractOrigin": "independently authored full hierarchy from original spans and declared UI contract, not an original/raw server capture",
+    "sessionQualification": "entry-only opened; existing editor-on/lint-off/typecheck-off corpus observation profile with explicit hierarchicalDocumentSymbolSupport"
+  },
+  "files": [
+    {
+      "source": "MySwitch.vue.txt",
+      "runtimePath": "src/MySwitch.vue",
+      "sha256": "6d7fa96a27d5338e8c9f9c9f3368c2d5be78576756b70bd53e414f96d662fa66"
+    },
+    {
+      "source": "Parent.vue.txt",
+      "runtimePath": "src/Parent.vue",
+      "sha256": "116cac3641306e4bb0c53fc7ed5fd662b0a3a203868a6c648be24579f0f3c40c"
+    },
+    {
+      "source": "tsconfig.json",
+      "runtimePath": "tsconfig.json",
+      "sha256": "94eb4537e8e6507792ab4505f0f53ba1433301bf7ec0afeea347432f35c5336e"
+    },
+    {
+      "source": "vize.config.json",
+      "runtimePath": "vize.config.json",
+      "sha256": "619a869b6666d8776b542ce9c2be6a067a3b33c604260bec98572c4ce64328c9"
+    }
+  ],
+  "entry": "src/MySwitch.vue",
+  "expected": {
+    "source": "MySwitch.response.expected.json",
+    "sha256": "93823fef8e75aef2f2ba4790e8527df1dc78c76fc7fbdf40964cac550535ffd2"
+  },
+  "method": "textDocument/documentSymbol",
+  "documentVersion": 1,
+  "hierarchicalDocumentSymbols": true,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "default existing provider structural response only; no native or whole fix-history credit"
+}
