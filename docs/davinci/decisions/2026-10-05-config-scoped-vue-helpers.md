@@ -94,6 +94,12 @@ restores the entire prior helper. Production, exact originals, whole oracles,
 capture layout and workflow remain unchanged without lint exceptions. Fresh
 successor source/native acceptance remains separate from that historical packet.
 
+The [paired signed-main7c replay](https://github.com/ubugeeei-prod/vize/issues/7949#issuecomment-5994005204) retains the whole incoming P0 delivery ledger,
+every corresponding canonical line, and all 28 owned noncanonical blobs from
+the source-reviewed1dfd snapshot, including the unchanged349-line workflow.
+The clean replay uses actual main rather than a queue candidate; original sources
+and whole expected vectors remain exact. Fresh successor gates are required.
+
 Fresh strict source Actions, authentic whole native/editor execution, independent
 artifact verification, protected full Rust/all 104 instruction gates, actual
 signed merge/issue closure and public release/consumer proof remain required.
