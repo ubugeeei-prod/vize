@@ -24,7 +24,18 @@ fn linter(locale: Locale, help: HelpLevel) -> Linter {
         .with_help_level(help)
 }
 
-fn expected(source: &str, targets: &[&str], locale: Locale, help: HelpLevel) -> LintResult {
+enum DiagnosticSurface {
+    Template,
+    Jsx,
+}
+
+fn expected(
+    source: &str,
+    targets: &[&str],
+    locale: Locale,
+    help: HelpLevel,
+    surface: DiagnosticSurface,
+) -> LintResult {
     let (message, action, full) = match locale {
         Locale::En => (
             "aria-hidden=\"true\" must not be used on focusable elements",
@@ -46,8 +57,12 @@ fn expected(source: &str, targets: &[&str], locale: Locale, help: HelpLevel) -> 
         .iter()
         .map(|target| {
             let start = source.find(target).unwrap();
+            let length = match surface {
+                DiagnosticSurface::Template => target.find('>').unwrap() + 1,
+                DiagnosticSurface::Jsx => target.len(),
+            };
             let mut diagnostic =
-                LintDiagnostic::error(RULE, message, start as u32, (start + target.len()) as u32);
+                LintDiagnostic::error(RULE, message, start as u32, (start + length) as u32);
             if help != HelpLevel::None {
                 let text = if help == HelpLevel::Full && target.contains("tabindex=\"-1\"") {
                     full
@@ -98,12 +113,12 @@ fn original_lf_crlf_all_locales_and_help_levels_preserve_the_two_genuine_focusab
                 let configured = linter(locale, help);
                 whole(
                     &configured.lint_sfc(source, FILE),
-                    &expected(source, &targets, locale, help),
+                    &expected(source, &targets, locale, help, DiagnosticSurface::Template),
                 );
                 let bare = body(source);
                 whole(
                     &configured.lint_template(bare, FILE),
-                    &expected(bare, &targets, locale, help),
+                    &expected(bare, &targets, locale, help, DiagnosticSurface::Template),
                 );
             }
         }
@@ -124,12 +139,24 @@ fn full_boolean_dynamic_focusable_boundary_and_sibling_controls_match_bare_and_s
     let configured = linter(Locale::En, HelpLevel::Full);
     whole(
         &configured.lint_sfc(CONTROLS, FILE),
-        &expected(CONTROLS, &targets, Locale::En, HelpLevel::Full),
+        &expected(
+            CONTROLS,
+            &targets,
+            Locale::En,
+            HelpLevel::Full,
+            DiagnosticSurface::Template,
+        ),
     );
     let bare = body(CONTROLS);
     whole(
         &configured.lint_template(bare, FILE),
-        &expected(bare, &targets, Locale::En, HelpLevel::Full),
+        &expected(
+            bare,
+            &targets,
+            Locale::En,
+            HelpLevel::Full,
+            DiagnosticSurface::Template,
+        ),
     );
 }
 
@@ -140,7 +167,13 @@ fn genuine_relief_and_l1_l2_facade_ancestor_views_publish_identical_whole_findin
         "<input class=\"sizer\" readonly tabindex=\"-1\" aria-hidden=\"true\" />",
         "<button type=\"button\" aria-hidden=\"true\">y</button>",
     ];
-    let expected = expected(source, &targets, Locale::En, HelpLevel::Full);
+    let expected = expected(
+        source,
+        &targets,
+        Locale::En,
+        HelpLevel::Full,
+        DiagnosticSurface::Template,
+    );
     let allocator = Allocator::default();
     let (root, errors) = vize_armature::Parser::new(&allocator, source).parse();
     assert!(errors.is_empty(), "{errors:?}");
@@ -206,7 +239,13 @@ fn jsx_literal_boolean_and_expression_values_preserve_existing_dynamic_conservat
         let targets = target.into_iter().collect::<Vec<_>>();
         whole(
             &linter(Locale::En, HelpLevel::Full).lint_jsx(source, FILE, JsxLang::Jsx),
-            &expected(source, &targets, Locale::En, HelpLevel::Full),
+            &expected(
+                source,
+                &targets,
+                Locale::En,
+                HelpLevel::Full,
+                DiagnosticSurface::Jsx,
+            ),
         );
     }
 }

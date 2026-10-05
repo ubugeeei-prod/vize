@@ -38,8 +38,8 @@ on an otherwise focusable element. The original whole SFC should have
 two findings, its tabindex=-1 input and final enabled button. That input
 retains the old full help; other findings reuse the existing localized
 actionable sentence through HelpLevel::Short. All three catalogs remain
-byte-exact. Diagnostics retain their original whole-element byte spans,
-severity, message, labels, fixes and ordering.
+byte-exact. Diagnostics retain their original template opening-tag spans
+and complete JSX element spans, severity, message, labels, fixes and ordering.
 
 ## Whole original inputs and execution requirements
 
@@ -85,3 +85,19 @@ uses the unchanged public `docs/content/rules/accessibility.md` namespace
 mapping in its strict whole-result oracle. No original input, production,
 diagnostic field/count, historical expected byte or runtime observation
 changes; the earlier guessed new field is not execution evidence.
+
+The [first hosted endpoint correction](https://github.com/ubugeeei-prod/vize/issues/7977#issuecomment-5997281807)
+retains the authentic e8/Check 37328669898 tooling-4 failure: source-built
+5823 reports exactly the two intended original findings, but the new
+oracle expects the last button through its closing tag (endColumn 56)
+instead of the existing template opening tag (46). Relief element locations
+and L1/L2 open_tag_range establish this unchanged API contract; JSX keeps
+its full op span. Only the new Rust helper's explicit surface selection
+and the template-only CLI endpoint change, preserving all production,
+original/manifest/target/control and historical bytes. Full failed report
+SHA256 is a446dd33e3a4899ae081f471839c4bdb60988b69e0e7fad786fc588d58e5940d;
+CLI qualification remains zero and later inputs are unexecuted. Source
+Clippy/build passed; Rust worker4 then confirms only two new template-law
+endpoint failures, with 4,161 other cases and native refusal passing in
+that shard. Other workers and fresh successor qualification remain
+separate. This corrects source-scope wording, not production spans.

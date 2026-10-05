@@ -24,7 +24,10 @@ function expected(source, filename, targets) {
     assert.ok(start >= 0, target);
     assert.equal(source.slice(start, start + target.length), target);
     const from = position(source, start);
-    const to = position(source, start + target.length);
+    // This fixture calls the template API, whose established span is the opening tag.
+    const openingEnd = target.indexOf(">");
+    assert.ok(openingEnd >= 0, target);
+    const to = position(source, start + openingEnd + 1);
     return {
       ruleId: rule,
       ruleDocsPath: "docs/content/rules/accessibility.md",
