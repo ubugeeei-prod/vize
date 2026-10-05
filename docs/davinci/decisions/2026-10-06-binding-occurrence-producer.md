@@ -137,3 +137,15 @@ only that Option spelling and regenerates the two affected SFC inventory shards
 with the unchanged generators. It changes no ownership, original inputs,
 producer laws, public output or budget. Preserve the failed raw jobs; current
 exact-head Actions and actual runtime are still required.
+
+Literal `eaaec84e` Check 37378073461 then passed configured Clippy but failed
+the default-feature, profile-ci full affected `cargo test --no-run` archive
+build. E0425 is a missing `BindingOccurrence` import in the new producer test;
+E0277 is the existing closing-tag helper's `Option<&[u8]>` comparison against
+`Option<&[u8; 2]>`. The entire helper file before correction is byte-equal to
+signed actual `2902dc98` and later actual `7f1cb15d`; this establishes inherited
+source bytes, not an independently observed failure of a main workflow. The
+successor adds only that test import and explicitly borrows the same static
+`b"</"` as a slice. Bounds, static bytes, no-allocation behavior, all authored
+inputs/laws and ceilings remain unchanged. Retain the genuine failed build and
+require fresh exact-source archive execution; no main/runtime pass is inferred.

@@ -1,5 +1,5 @@
 use super::*;
-use crate::DrawerOptions;
+use crate::{DrawerOptions, binding_occurrences::BindingOccurrence};
 use vize_relief::Allocator;
 
 const SCRIPT: &str =
