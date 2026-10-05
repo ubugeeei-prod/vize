@@ -3,9 +3,17 @@ use vize_l1::{Element, SurfaceChild};
 
 use super::Cx;
 
+/// Classify the owner's rule once; text passes need no ancestor/RCDATA join.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum TextWhitespace {
+    Normal,
+    Pre,
+    Rcdata,
+}
+
 impl<'a> Cx<'a> {
     pub(crate) fn normalize_pre_newlines(&self) -> bool {
-        self.condense_depth > 0 && !self.rcdata_text
+        self.text_whitespace == TextWhitespace::Pre
     }
 
     pub(crate) fn enter_text_parent(
@@ -13,10 +21,17 @@ impl<'a> Cx<'a> {
         element: &Element<'a>,
         tag: &str,
         html: bool,
-    ) -> (bool, Option<u32>) {
-        let previous = (self.rcdata_text, self.ignore_newline_at);
-        self.rcdata_text = html && tag == "textarea";
-        self.ignore_newline_at = if html && matches!(tag, "pre" | "textarea") {
+    ) -> (TextWhitespace, Option<u32>) {
+        let previous = (self.text_whitespace, self.ignore_newline_at);
+        let rcdata = html && tag == "textarea";
+        self.text_whitespace = if rcdata {
+            TextWhitespace::Rcdata
+        } else if self.condense_depth > 0 {
+            TextWhitespace::Pre
+        } else {
+            TextWhitespace::Normal
+        };
+        self.ignore_newline_at = if rcdata || (html && tag == "pre") {
             element
                 .children
                 .iter()

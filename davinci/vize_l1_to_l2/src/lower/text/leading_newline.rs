@@ -7,15 +7,18 @@ use vize_l0::String;
 use crate::lower::cx::Cx;
 
 pub(super) fn normalize_special_text(cx: &Cx<'_>, text: &str, start: u32) -> Option<String> {
-    let skip = if cx.ignore_newline_at == Some(start) {
+    let leading = cx.ignore_newline_at == Some(start);
+    let normalize = cx.normalize_pre_newlines();
+    if !leading && !normalize {
+        return None;
+    }
+    let skip = if leading {
         leading_newline_len(text)
     } else {
         0
     };
     let remaining = text.get(skip..).unwrap_or_default();
-    if cx.normalize_pre_newlines()
-        && let Some(normalized) = normalize_encoded_crlf(remaining)
-    {
+    if normalize && let Some(normalized) = normalize_encoded_crlf(remaining) {
         return Some(normalized);
     }
     (skip > 0).then(|| String::from(remaining))

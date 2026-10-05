@@ -119,3 +119,17 @@ The complete queued tail must merge cleanly without inheriting its unmerged
 PR commits. Preserve all reviewed production and whole-corpus inputs; fresh
 source Actions, 4,296+12 tokenizer records and all 17 runtime controls must
 qualify the composed source before protected admission is retried.
+
+The actual protected union `cd477f1c` measured the original Vapor interpolation
+fixture at 5,346,932 instructions in all three runs, above its unchanged
+5,340,048 ceiling. The preceding `102cb9b3` measured 5,339,463 for the same
+complete input, digest, window and methodology. Only the failed entry is removed.
+The native L1 to L2 walk now classifies Normal, inherited Pre or direct HTML
+RCDATA once per owner and restores that state around child lowering. Its text
+passes no longer recompute the ancestor/RCDATA join, and ordinary text avoids
+unused newline slicing. The existing ancestor counter, comment policy, entity
+decoding, authored ranges and maps remain intact. A nested-owner regression
+checks RCDATA inside pre, restored pre descendants and normal sibling text.
+Keep all original 4,296+12 witnesses, 17 complete runtime controls and 104 fixed
+measurement fixtures, windows and ceilings. Fresh source Actions, independent
+peer review and all 104 measurements must qualify the repair before readmission.

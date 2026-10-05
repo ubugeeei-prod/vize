@@ -87,3 +87,44 @@ fn native_comment_option_controls_first_visible_text_without_changing_spans() {
         );
     }
 }
+
+#[test]
+fn nested_text_owners_restore_pre_rules_and_then_normal_whitespace() {
+    let source = "<pre>\n<textarea>\nfirst\r\nsecond</textarea><span>\r\n  preserved   text</span></pre><p>  ordinary   text  </p>";
+    with_transformed(source, |lowered, folio, _, _| {
+        assert!(lowered.diagnostics.is_empty());
+        let [Op::Element(pre), Op::Element(normal)] = folio.ops.as_slice() else {
+            panic!("expected pre and ordinary siblings: {:?}", folio.ops);
+        };
+        let owners: Vec<_> = pre
+            .children
+            .iter()
+            .filter_map(|op| match op {
+                Op::Element(element) => Some(element),
+                _ => None,
+            })
+            .collect();
+        let [textarea, descendant] = owners.as_slice() else {
+            panic!("expected textarea and inherited pre owners: {owners:?}");
+        };
+        for (owner, content, authored) in [
+            (*textarea, "first\r\nsecond", "\nfirst\r\nsecond"),
+            (
+                *descendant,
+                "\n  preserved   text",
+                "\r\n  preserved   text",
+            ),
+            (normal, " ordinary text ", "  ordinary   text  "),
+        ] {
+            let [Op::Text(text)] = owner.children.as_slice() else {
+                panic!("expected one text: {:?}", owner.children);
+            };
+            assert_eq!(text.content, content);
+            assert_eq!(
+                source.get(text.span.start as usize..text.span.end as usize),
+                Some(authored),
+            );
+        }
+    });
+    assert_transformed_sound(source, "nested-first-newline-owners");
+}
