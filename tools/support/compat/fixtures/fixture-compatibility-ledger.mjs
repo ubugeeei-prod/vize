@@ -303,7 +303,7 @@ function validateUnresolved(unresolved) {
 }
 
 function validateRatchets(oracles, fixtureMap, context) {
-  equal(fixtureMap.size, 146, "gitlink count drifted");
+  equal(fixtureMap.size, 147, "gitlink count drifted");
   equal(countMembership(fixtureMap, "ecosystem"), 142, "ecosystem fixture count drifted");
   equal(countMembership(fixtureMap, "app"), 16, "App fixture count drifted");
   const appOnly = [...fixtureMap.values()].filter(

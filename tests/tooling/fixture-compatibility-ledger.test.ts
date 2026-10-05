@@ -17,7 +17,7 @@ const ledger = readCompatibilityLedger();
 
 test("compatibility ledger joins every fixture inventory exactly once", () => {
   const validated = validateCompatibilityLedger(ledger, context);
-  assert.equal(validated.fixtureMap.size, 146);
+  assert.equal(validated.fixtureMap.size, 147);
   assert.equal(
     [...validated.fixtureMap.values()].filter((fixture) =>
       fixture.memberships.includes("ecosystem"),
@@ -48,7 +48,7 @@ test("compatibility ledger joins every fixture inventory exactly once", () => {
 test("report keeps present, exercised, and runtime evidence separate", () => {
   const report = createCompatibilityReport(ledger, context);
   assert.deepEqual(report.inventories, {
-    gitlinks: 146,
+    gitlinks: 147,
     ecosystem: 142,
     app: 16,
     appOnly: 4,

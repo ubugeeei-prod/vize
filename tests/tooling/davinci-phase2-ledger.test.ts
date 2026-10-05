@@ -315,10 +315,10 @@ test("corpus project counts come from the executable compatibility inventory", (
   const ecosystem = [...validated.fixtureMap.values()].filter((fixture) =>
     fixture.memberships.includes("ecosystem"),
   ).length;
-  assert.equal(validated.fixtureMap.size, 146);
+  assert.equal(validated.fixtureMap.size, 147);
   assert.equal(ecosystem, 142);
   for (const source of [text.roadmap, text.readme, text.phase, text.records]) {
-    assert.match(source, /146 gitlinks/);
+    assert.match(source, /147 gitlinks/);
     assert.match(source, /142 ecosystem\s+projects/);
   }
 });

@@ -1,0 +1,35 @@
+{
+  "schema": "vize.benchmarkFixture",
+  "version": 1,
+  "trackingIssue": 7856,
+  "fixturePath": "tests/_fixtures/_git/vue-benchmarks",
+  "repository": "https://github.com/pikax/vue-benchmarks",
+  "revision": "5489aee433cd1054b9d72973457498544da7c467",
+  "license": {
+    "spdx": "MIT",
+    "files": [
+      {
+        "path": "LICENSE",
+        "gitBlob": "a7017290772b36ce31d5e94645177b289564983e",
+        "bytes": 1084
+      }
+    ]
+  },
+  "purpose": "read-only upstream benchmark inputs; not an ecosystem or App oracle",
+  "publishedSnapshot": {
+    "generatedAt": "2026-09-29T12:56:26.892Z",
+    "sourceRevision": "8a8848276c52956d7e54e262e5846e41fc922288",
+    "workflowRunId": 36570273148,
+    "toolVersions": {
+      "vize": "0.429.1",
+      "@vizejs/native": "0.429.1"
+    },
+    "node": "22.23.2",
+    "fixture": "fixtures/200",
+    "fileCount": 200,
+    "runs": 5,
+    "warmups": 1
+  },
+  "currentSourceValidation": "not-executed",
+  "nativeMigrationCredit": 0
+}

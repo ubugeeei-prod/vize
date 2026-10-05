@@ -709,3 +709,7 @@
 	path = tests/_fixtures/_git/petite-vue
 	url = https://github.com/vuejs/petite-vue
 	shallow = true
+[submodule "tests/_fixtures/_git/vue-benchmarks"]
+	path = tests/_fixtures/_git/vue-benchmarks
+	url = https://github.com/pikax/vue-benchmarks
+	shallow = true

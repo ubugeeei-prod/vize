@@ -53,7 +53,7 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   );
   for (const pattern of [
     /run_git\(&\["ls-files", "--stage", "--", CORPUS_ROOT\]/,
-    /EXPECTED_GITLINKS: usize = 146/,
+    /EXPECTED_GITLINKS: usize = 147/,
     /ARTIFACT_DIR: &str = "real-project-davinci-dom-corpus"/,
     /selected-gitlinks\.txt/,
     /"submodule",\s+"update",\s+"--init",\s+"--checkout",\s+"--depth",\s+"1",\s+"--jobs",\s+"8"/,
@@ -132,7 +132,7 @@ test("L2 DOM corpus workflow helper extracts canonical evidence", () => {
   );
   assert.equal(verdictFor("failure", "record-only"), "success");
   assert.equal(verdictFor("cancelled", "record-only"), "cancelled");
-  assert.equal(expectedGitlinks, 146);
+  assert.equal(expectedGitlinks, 147);
   assert.equal(expectedDomOutputComparisons, 144);
   assert.equal(expectedOldErrorSkips, 16);
   assert.deepEqual(expectedOldErrorReasons, {
@@ -148,7 +148,7 @@ test("L2 DOM corpus workflow helper extracts canonical evidence", () => {
 
 test("L2 DOM corpus workflow extracts old-lane skip reasons from corpus logs", () => {
   const log = [
-    "davinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=146",
+    "davinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=147",
     "davinci DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 patch_fact_entries=1 old_error_skips=2 s2_refusals=0 divergences=0",
     "corpus old-lane error skips (2):",
     '/repo/tests/_fixtures/_git/a.vue: 2 old-lane blocking errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: None }, CompilerError { code: MissingEndTag, message: "Element is missing end tag.", loc: None }]',
@@ -258,14 +258,14 @@ test("L2 DOM corpus workflow validates closure evidence artifacts", () => {
   try {
     writeFileSync(
       join(artifact, "selected-gitlinks.txt"),
-      Array.from({ length: 146 }, (_, index) => `tests/_fixtures/_git/project-${index}`)
+      Array.from({ length: 147 }, (_, index) => `tests/_fixtures/_git/project-${index}`)
         .join("\n")
         .concat("\n"),
     );
     writeFileSync(
       join(artifact, "submodule-status.txt"),
       Array.from(
-        { length: 146 },
+        { length: 147 },
         (_, index) =>
           ` 0123456789abcdef0123456789abcdef01234567 tests/_fixtures/_git/project-${index}`,
       )
@@ -275,7 +275,7 @@ test("L2 DOM corpus workflow validates closure evidence artifacts", () => {
     writeFileSync(
       join(artifact, "dom-corpus.log"),
       [
-        "\u001B[32mdavinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=146\u001B[0m",
+        "\u001B[32mdavinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=147\u001B[0m",
         "davinci DOM corpus sweep: files=37448 unreadable=0 parsed=37448 templates=35000 compared=34984 patch_fact_entries=44912 old_error_skips=16 s2_refusals=0 divergences=0",
         'davinci DOM corpus old-lane error reasons: {"ExtendPoint":1,"InvalidEndTag":20,"MissingEndTag":10,"MissingWhitespaceBetweenAttributes":4,"VElseNoAdjacentIf":1,"VIfSameKey":4,"VSlotDuplicateSlotNames":1}',
       ].join("\n"),
@@ -284,12 +284,12 @@ test("L2 DOM corpus workflow validates closure evidence artifacts", () => {
     const validation = validateCorpusEvidence(artifact);
     assert.deepEqual(validation.failures, []);
     assert.equal(validation.manifestDomOutputComparisons, 144);
-    assert.equal(validation.selectedGitlinks, 146);
-    assert.equal(validation.submoduleStatusRows, 146);
+    assert.equal(validation.selectedGitlinks, 147);
+    assert.equal(validation.submoduleStatusRows, 147);
     assert.deepEqual(parseCorpusEvidence(readFileSync(join(artifact, "dom-corpus.log"), "utf8")), {
       canonicalScope: true,
       closureEvidence: true,
-      submodules: 146,
+      submodules: 147,
       files: 37448,
       unreadable: 0,
       parsed: 37448,
@@ -330,10 +330,10 @@ test("L2 DOM corpus workflow rejects stale or dirty evidence artifacts", () => {
     );
 
     assert.deepEqual(validateCorpusEvidence(artifact).failures, [
-      "selected gitlinks 142 != 146",
-      "submodule status rows 0 != 146",
+      "selected gitlinks 142 != 147",
+      "submodule status rows 0 != 147",
       "corpus log is missing canonical closure evidence",
-      "corpus log submodules 0 != 146",
+      "corpus log submodules 0 != 147",
       "corpus log proves no DOM-output comparisons",
       "corpus log proves no patch-fact materialization",
       "corpus log unreadable inputs: unreadable=3",

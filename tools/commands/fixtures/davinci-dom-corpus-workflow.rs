@@ -27,7 +27,7 @@ use std::{
 
 const ARTIFACT_DIR: &str = "real-project-davinci-dom-corpus";
 const CORPUS_ROOT: &str = "tests/_fixtures/_git";
-const EXPECTED_GITLINKS: usize = 146;
+const EXPECTED_GITLINKS: usize = 147;
 const EXPECTED_DOM_OUTPUT_COMPARISONS: usize = 144;
 const EXPECTED_OLD_ERROR_SKIPS: usize = 16;
 
