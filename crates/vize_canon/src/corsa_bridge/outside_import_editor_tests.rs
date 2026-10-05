@@ -88,3 +88,56 @@ fn original_outside_import_preserves_types_in_native_editor() {
         );
     });
 }
+
+pub(super) fn assert_complete_alias_response(
+    diagnostics: &[super::LspDiagnostic],
+    root: &Path,
+    document: &super::CorsaVueVirtualDocument,
+) {
+    let complete = serde_json::to_value(diagnostics).unwrap();
+    if let Some(capture) = std::env::var_os("VIZE_TYPECHECK_REGRESSION_CAPTURE") {
+        let capture = PathBuf::from(capture).join("editor-monorepo-alias");
+        std::fs::create_dir_all(&capture).unwrap();
+        std::fs::write(
+            capture.join("diagnostics.json"),
+            serde_json::to_vec_pretty(&complete).unwrap(),
+        )
+        .unwrap();
+        std::fs::write(capture.join("generated.vue.ts"), document.code.as_bytes()).unwrap();
+        std::fs::write(capture.join("runtime.json"), serde_json::to_vec_pretty(&json!({"nativeBinary": std::env::var_os("CORSA_PATH").unwrap(), "workingDirectory": root, "timeoutMs": 30_000})).unwrap()).unwrap();
+        let config = document
+            .session_project_root
+            .as_ref()
+            .unwrap()
+            .join("packages/web/tsconfig.json");
+        std::fs::copy(config, capture.join("generated-tsconfig.json")).unwrap();
+        copy_inputs(root, &capture.join("inputs"));
+    }
+    // The raw native protocol retains four unused generated type suggestions.
+    // Assert every field; package-resolution errors or new suggestions must fail.
+    assert_eq!(
+        complete,
+        json!([
+            {"range":{"start":{"line":41,"character":5},"end":{"line":41,"character":10}},"severity":4,"code":6196,"source":"ts","message":"'__Ref' is declared but never used.","relatedInformation":null},
+            {"range":{"start":{"line":49,"character":5},"end":{"line":49,"character":19}},"severity":4,"code":6196,"source":"ts","message":"'__VizePrettify' is declared but never used.","relatedInformation":null},
+            {"range":{"start":{"line":51,"character":5},"end":{"line":51,"character":36}},"severity":4,"code":6196,"source":"ts","message":"'__VizeComponentFallthroughProps' is declared but never used.","relatedInformation":null},
+            {"range":{"start":{"line":58,"character":5},"end":{"line":58,"character":37}},"severity":4,"code":6196,"source":"ts","message":"'__VizeComponentMissingInputGuard' is declared but never used.","relatedInformation":null}
+        ])
+    );
+}
+
+fn copy_inputs(source: &Path, target: &Path) {
+    for entry in std::fs::read_dir(source).unwrap() {
+        let entry = entry.unwrap();
+        if entry.file_name() == ".vize" {
+            continue;
+        }
+        let output = target.join(entry.file_name());
+        if entry.file_type().unwrap().is_dir() {
+            copy_inputs(&entry.path(), &output);
+        } else {
+            std::fs::create_dir_all(output.parent().unwrap()).unwrap();
+            std::fs::copy(entry.path(), output).unwrap();
+        }
+    }
+}

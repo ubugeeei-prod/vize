@@ -106,7 +106,11 @@ fn native_editor_resolves_package_alias_from_monorepo_root() {
             .await
             .unwrap();
         let diagnostics = bridge.get_diagnostics(&document.request_uri).await.unwrap();
-        assert!(diagnostics.is_empty(), "{diagnostics:#?}");
+        super::outside_import_editor_tests::assert_complete_alias_response(
+            &diagnostics,
+            root.path(),
+            &document,
+        );
         bridge.shutdown().await.unwrap();
     });
 }

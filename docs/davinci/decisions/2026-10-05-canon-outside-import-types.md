@@ -66,3 +66,12 @@ the exact five-file original through the native script editor with one fully
 authored TS2322 response, and require an entirely clean native monorepo alias
 control. Capture full editor output, all original bytes and the same official
 binary identity; fresh source and runtime gates replace the red 3a head.
+
+At cfd208 all three full CLI/native cases and the original five-file native
+script-editor single-TS2322 response pass. The raw monorepo alias response
+retains four severity-4 TS6196 suggestions on generated, unused type aliases,
+so the previous wholly empty raw expectation was incorrect. Assert every
+field of the explicit complete four-suggestion response, retaining their
+generated source/config ownership and all original inputs. No diagnostics
+are filtered, and any resolution error or extra suggestion still fails.
+Refresh current-head source/native receipts before readiness.

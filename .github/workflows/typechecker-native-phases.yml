@@ -178,7 +178,7 @@ jobs:
           import { dirname, join } from 'node:path';
           import { spawnSync } from 'node:child_process';
           const root = process.env.VIZE_TYPECHECK_REGRESSION_CAPTURE;
-          const cases = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory() && e.name !== 'editor-original-script').map(e => e.name).sort();
+          const cases = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory() && !['editor-original-script', 'editor-monorepo-alias'].includes(e.name)).map(e => e.name).sort();
           assert.deepEqual(cases, ['outside_import_keeps_direct_scoped_type_packages_at_the_config_anchor', 'outside_import_preserves_original_type_libraries_and_real_cli_diagnostics', 'type_config_anchor_does_not_expose_app_modules_to_sibling_sources']);
           const sha256 = file => createHash('sha256').update(readFileSync(file)).digest('hex');
           const files = dir => readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]);
@@ -201,7 +201,9 @@ jobs:
           });
           const editor = JSON.parse(readFileSync(join(root, 'editor-original-script/runtime.json'), 'utf8'));
           assert.equal(realpathSync(editor.nativeBinary), receipts[0].nativeBinary);
-          const editorFiles = files(join(root, 'editor-original-script')).map(path => ({ path: path.slice(root.length + 1), sha256: sha256(path) }));
+          const aliasRuntime = JSON.parse(readFileSync(join(root, 'editor-monorepo-alias/runtime.json'), 'utf8'));
+          assert.equal(realpathSync(aliasRuntime.nativeBinary), receipts[0].nativeBinary);
+          const editorFiles = ['editor-original-script', 'editor-monorepo-alias'].flatMap(name => files(join(root, name))).map(path => ({ path: path.slice(root.length + 1), sha256: sha256(path) }));
           writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, fixtureSha256: sha256('tests/_fixtures/differential/typechecker/outside-import-types/input.json'), matchedCompleteExpectations: true, cases: receipts, editor: { nativeBinary: realpathSync(editor.nativeBinary), nativeSha256: sha256(editor.nativeBinary), completeOutputsAndInputs: editorFiles } }, null, 2) + '\n');
           JS
       - name: Upload raw native phases, memberships, full reports and generated sources
