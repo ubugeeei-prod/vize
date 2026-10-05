@@ -13,6 +13,9 @@ on:
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
       - tools/support/compat/nuxt/lint-config-*
+      - tools/support/compat/nuxt/compiler-defaults-*
+      - tests/_fixtures/differential/compiler/nuxt-compiler-defaults/**
+      - tests/tooling/nuxt-compiler-defaults.test.mjs
       - tests/_fixtures/differential/linter/nuxt-oxlint-config-root/**
       - tests/tooling/nuxt-oxlint-config-root.test.mjs
       - tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**
@@ -38,6 +41,9 @@ on:
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
       - tools/support/compat/nuxt/lint-config-*
+      - tools/support/compat/nuxt/compiler-defaults-*
+      - tests/_fixtures/differential/compiler/nuxt-compiler-defaults/**
+      - tests/tooling/nuxt-compiler-defaults.test.mjs
       - tests/_fixtures/differential/linter/nuxt-oxlint-config-root/**
       - tests/tooling/nuxt-oxlint-config-root.test.mjs
       - tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**
@@ -105,6 +111,8 @@ jobs:
       - name: Build the candidate Nuxt integration
         working-directory: npm/framework/nuxt
         run: vp pack
+      - name: Verify inherited compiler option precedence
+        run: vp env exec node --test npm/framework/nuxt/src/compiler-defaults.test.ts
       - name: Install the pinned Nuxt 3 reproduction
         working-directory: tools/support/compat/nuxt/fixtures/nuxt3-module-build
         run: npm ci --no-audit --no-fund
@@ -121,6 +129,8 @@ jobs:
         run: vp env exec node tools/support/compat/nuxt/prefetch-manifest-build.mjs "$RUNNER_TEMP/nuxt-prefetch-proof"
       - name: Verify original Nuxt lint configuration with the source linter
         run: vp env exec node tools/support/compat/nuxt/lint-config-build.mjs "$RUNNER_TEMP/nuxt-lint-config-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
+      - name: Verify original Nuxt scoped compiler defaults and whole rendered outputs
+        run: vp env exec node tools/support/compat/nuxt/compiler-defaults-build.mjs "$RUNNER_TEMP/nuxt-compiler-defaults-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Upload Nuxt 3 build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -130,4 +140,5 @@ jobs:
             ${{ runner.temp }}/nuxt3-module-proof
             ${{ runner.temp }}/nuxt-prefetch-proof
             ${{ runner.temp }}/nuxt-lint-config-proof
+            ${{ runner.temp }}/nuxt-compiler-defaults-proof
           if-no-files-found: ignore

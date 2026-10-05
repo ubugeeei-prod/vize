@@ -328,3 +328,8 @@ Use `vite-plugin-vize` when you need:
 ## License
 
 MIT
+
+Framework integrations can pass an inherited whitespace default as the second
+argument to `vize(options, { whitespace: "preserve" })`. Project compiler settings
+and matching `entries[].compiler` override that default; explicit plugin and
+nested template compiler options retain their existing precedence.

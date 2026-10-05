@@ -124,3 +124,57 @@ fn attribute_values_stay_outside_the_name_projection_and_unprovided_spans_drop_v
     );
     assert_eq!(result.range, None);
 }
+
+#[test]
+fn model_exclusion_and_authored_spans_share_the_original_attribute_lexer() {
+    use crate::ide::definition::helpers::{
+        get_attribute_and_component_at_offset, get_attribute_with_source_span_at_offset,
+        get_non_model_attribute_at_offset,
+    };
+
+    for (attribute, expected, is_model) in [
+        ("v-model", Some("modelValue"), true),
+        ("v-model.trim", Some("modelValue"), true),
+        ("v-model:title", Some("title"), true),
+        ("v-model:title.trim", Some("title"), true),
+        (":for", Some("for"), false),
+        ("v-bind:id", Some("id"), false),
+        ("title", Some("title"), false),
+        ("v-model:[key]", None, true),
+        ("v-model:", None, true),
+        ("@input", None, false),
+        ("v-on:input", None, false),
+        ("v-show", None, false),
+    ] {
+        let source = format!("<template><Field {attribute}=\"value\" /></template>");
+        let state = ServerState::new();
+        let uri = Url::parse("file:///tmp/NativeAttribute7993.vue").unwrap();
+        state
+            .documents
+            .open(uri.clone(), source.clone().into(), 1, "vue".into());
+        let ctx = IdeContext::new(&state, &uri, source.find(attribute).unwrap() + 1).unwrap();
+        let tuple = expected.map(|name| (name.to_owned(), "Field".to_owned()));
+        assert_eq!(get_attribute_and_component_at_offset(&ctx), tuple);
+        assert_eq!(
+            get_non_model_attribute_at_offset(&ctx),
+            if is_model { None } else { tuple.clone() }
+        );
+        let authored = get_attribute_with_source_span_at_offset(&ctx);
+        assert_eq!(
+            authored
+                .as_ref()
+                .map(|(name, tag, _)| (name.clone(), tag.clone())),
+            tuple
+        );
+        match (authored, expected, is_model) {
+            (Some((_, _, None)), Some(_), true) | (None, None, _) => {}
+            (Some((_, _, Some((start, end)))), Some(name), false) => {
+                assert_eq!(source.get(start..end), Some(name));
+                assert_eq!(end, source.find(attribute).unwrap() + attribute.len());
+            }
+            unexpected => {
+                panic!("attribute {attribute} has an invalid authored span: {unexpected:?}")
+            }
+        }
+    }
+}

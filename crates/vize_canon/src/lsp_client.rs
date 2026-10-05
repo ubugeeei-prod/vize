@@ -25,6 +25,7 @@ pub(crate) mod paths;
 mod queries;
 mod session;
 mod session_paths;
+pub use editor_lsp::snapshot_source;
 mod utils;
 mod virtual_overlay;
 mod workspace_project;

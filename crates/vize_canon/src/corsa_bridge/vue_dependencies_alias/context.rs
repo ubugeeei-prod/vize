@@ -50,6 +50,8 @@ pub(in crate::corsa_bridge) struct AliasContext {
     route_inputs: Vec<PathBuf>,
     mirror: Option<VirtualProject>,
     virtual_ts_options: crate::virtual_ts::VirtualTsOptions,
+    pub(in crate::corsa_bridge) query_surface:
+        std::sync::OnceLock<crate::corsa_bridge::vue_document::build::QuerySurface>,
 }
 
 impl AliasContext {

@@ -109,7 +109,7 @@ fn append_props_object(
                 continue;
             }
             emitted_merged_class = true;
-            merged_class_binding_value(&class_bindings)
+            merged_class_binding_value(&class_bindings, None)
         } else {
             generated_prop_value(prop, template_binding_access)
         };

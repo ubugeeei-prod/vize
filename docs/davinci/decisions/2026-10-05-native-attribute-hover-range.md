@@ -67,12 +67,45 @@ existing always-upload corpus artifact. No workflow dispatch or local native
 build is needed. The unchanged shared corpus, all full Rust/native suites and
 104 instruction ceilings still require genuine protected execution.
 
-## Qualification and remaining work
+## Source-qualified observation and integration
 
-The local closed-input/comparator controls and configured type-aware lint pass.
-Rust projection tests and all twelve real native replies are unexecuted at
-source preparation; exact-head Actions must establish their results. Queue
-admission is held during the finite first v0.433 publication. After fresh
-source acceptance, protected suites, actual signed merge and supported public
-verification remain required. This correction supplies no new native-level,
-default-migration or whole fix-history completion credit; #6883 stays open.
+Exact source `80f91e240ae6090b95550f25903a35ee0f7d7759` passed ordinary
+Check 37327874770: twenty-five successful jobs and sixteen intentional policy
+skips. Its four current typed sessions produced all twelve complete replies
+and physical LF/CRLF/Unicode ranges, with identical complete contents per role.
+The actual provider was TypeScript 7.0.2 with Vue 3.6.0-beta.10, not the
+reporter's Vue 3.5.43. All 16,176 source JUnit cases and the four projection
+laws passed without failures, errors or skips. This is source acceptance;
+protected 104 ceilings, current integration and actual merge remain separate.
+
+#8047 corrects component-attribute query authority and explicitly excludes
+model attributes from the non-model lookup. Its original
+`de901695cd49591f2a06b5b2054dd43be24507d4` was used only for the private
+source rehearsal. Its signed actual merge is
+`94c13ebf4b83bf7549cfcbacff7513c9c4646f36` at 2026-10-05T16:38:46Z.
+This successor genuinely integrates literal actual main
+`9fe172ced209720642d7051c8a94229042cffa4c`, including that merge and the
+accepted warm-input and diagnostic-action corrections. First move the original attribute lexer
+into `definition/helpers/attributes.rs` in a move-only commit, preserving its
+complete scanner bytes and the existing helper paths. Then combine the same
+scanner's authored spans with #8047's model-exclusion flag. The ordinary tuple
+and authored-span routes include models; the separate non-model route refuses
+them. Accepted transformed models still have no authored span. Static,
+shorthand and longhand names retain their original span; directive, dynamic
+model and value refusals remain intact. No parser, query, pipeline stage,
+backend operation or public clamp is added. Both source modules stay below
+350 lines without weakening a cap.
+
+A fifth independent Rust law covers four accepted model forms, three normal
+name forms, two invalid models and three refused directives. It checks the
+ordinary tuple, non-model exclusion and exact authored bytes together. The
+original four whole projection laws, twelve-response corpus, source pins and
+shared fourteen-session corpus remain unchanged. The integrated scanner and
+five-law source are byte-exact the independently reviewed private rehearsal;
+all other actual-main source and incoming canonical clauses are preserved.
+Fresh exact-source Actions must qualify this genuine composition before queue
+admission. Previous `80f91` results never transfer to the integrated source.
+
+Protected suites, actual signed merge and supported public verification remain
+required. This correction supplies no new native-level, default-migration or
+whole fix-history completion credit; #6883 stays open.

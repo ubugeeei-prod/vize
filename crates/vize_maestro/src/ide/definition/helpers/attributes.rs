@@ -16,8 +16,20 @@ pub(crate) fn get_attribute_and_component_at_offset(
 
 type AuthoredAttribute = (String, String, Option<(usize, usize)>);
 
+/// Model attributes retain their separate model query route.
+pub(crate) fn get_non_model_attribute_at_offset(ctx: &IdeContext<'_>) -> Option<(String, String)> {
+    attribute_with_source_span_at_offset(ctx, false).map(|(name, tag, _)| (name, tag))
+}
+
 pub(crate) fn get_attribute_with_source_span_at_offset(
     ctx: &IdeContext<'_>,
+) -> Option<AuthoredAttribute> {
+    attribute_with_source_span_at_offset(ctx, true)
+}
+
+fn attribute_with_source_span_at_offset(
+    ctx: &IdeContext<'_>,
+    include_model: bool,
 ) -> Option<AuthoredAttribute> {
     let content = &ctx.content;
     let cursor = ctx.offset.min(content.len());
@@ -95,7 +107,7 @@ pub(crate) fn get_attribute_with_source_span_at_offset(
         if let Some(model_prop_name) =
             super::component_model::prop_name_from_v_model_attribute(raw_attr_name)
         {
-            return Some((model_prop_name, tag_name.to_string(), None));
+            return include_model.then(|| (model_prop_name, tag_name.to_string(), None));
         } else if let Some(stripped) = attr_name.strip_prefix(':') {
             attr_name = stripped;
         } else if let Some(stripped) = attr_name.strip_prefix("v-bind:") {

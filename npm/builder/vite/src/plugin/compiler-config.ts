@@ -5,6 +5,7 @@ import { resolveCompatibilityOptions } from "./index-helpers.ts";
 export function mergeCompilerOptions(
   options: VizeOptions,
   sharedConfig: ResolvedVizeConfig | null,
+  defaults: Pick<VizeOptions, "whitespace"> = {},
 ): VizeOptions {
   const viteConfig = sharedConfig?.vite ?? {};
   const compilerConfig = sharedConfig?.compiler ?? {};
@@ -24,7 +25,7 @@ export function mergeCompilerOptions(
     customRenderer: options.customRenderer ?? compilerConfig.customRenderer ?? false,
     customElements: options.customElements ?? compilerConfig.customElements,
     templateSyntax,
-    whitespace: options.whitespace ?? compilerConfig.whitespace,
+    whitespace: options.whitespace ?? compilerConfig.whitespace ?? defaults.whitespace,
     template: {
       ...options.template,
       compilerOptions: {

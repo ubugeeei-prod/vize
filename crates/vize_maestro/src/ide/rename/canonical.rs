@@ -51,10 +51,17 @@ pub(super) async fn prepare_strict(
     else {
         return Ok(Answer::Unavailable);
     };
-    let Some((line, character)) = event_rename::semantic_position(ctx, &document)
-        .or_else(|| corsa_support::canonical_source_offset_to_position(&document, ctx.offset))
-    else {
-        return Ok(Answer::Unavailable);
+    let attribute = corsa_support::component_attribute_position(ctx, &document);
+    let Some((line, character)) = event_rename::semantic_position(ctx, &document).or_else(|| {
+        attribute.unwrap_or_else(|| {
+            corsa_support::canonical_source_offset_to_position(&document, ctx.offset)
+        })
+    }) else {
+        return Ok(if attribute.is_some() {
+            Answer::Available(None)
+        } else {
+            Answer::Unavailable
+        });
     };
     let response = bridge
         .prepare_rename(&document.request_uri, line, character)

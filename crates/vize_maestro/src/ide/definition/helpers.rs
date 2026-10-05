@@ -15,6 +15,7 @@ use super::{IdeContext, component_model};
 mod attributes;
 pub(crate) use attributes::{
     get_attribute_and_component_at_offset, get_attribute_with_source_span_at_offset,
+    get_non_model_attribute_at_offset,
 };
 
 /// Get the word at a given offset.

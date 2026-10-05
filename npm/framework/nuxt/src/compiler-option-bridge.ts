@@ -18,6 +18,29 @@ export function unsupportedNuxtVueCompilerOptions(
     .map(([key]) => key);
 }
 
+/** Separate Nuxt's inherited default from authored module compiler options. */
+export function splitNuxtCompilerDefaults(
+  resolved: VizeNuxtCompilerOptions,
+  compiler: VizeNuxtOptions["compiler"],
+  vueCompilerOptions: Record<string, unknown> | undefined,
+): {
+  options: VizeNuxtCompilerOptions;
+  defaults: Pick<VizeNuxtCompilerOptions, "whitespace">;
+} {
+  const whitespace = vueCompilerOptions?.whitespace;
+  if (whitespace !== "condense" && whitespace !== "preserve") {
+    return { options: resolved, defaults: {} };
+  }
+  return {
+    options: {
+      ...resolved,
+      whitespace:
+        typeof compiler === "object" && compiler != null ? compiler.whitespace : undefined,
+    },
+    defaults: { whitespace },
+  };
+}
+
 function isLegacyVueVersion(version: VizeNuxtVueVersion | undefined): boolean {
   return (
     version === 0.11 || version === 1 || version === 2 || version === "2.7" || version === "legacy"
