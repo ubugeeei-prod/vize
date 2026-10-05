@@ -211,8 +211,8 @@ fn type_config_anchor_does_not_expose_app_modules_to_sibling_sources() {
     );
     let app = case.path().join("app");
     let expected = concat!(
-        "../shared/data.ts(1,16): error TS2307: Cannot find module 'only-in-app' or its corresponding type declarations.\n",
-        "src/b.ts(3,14): error TS2322: Type 'number' is not assignable to type 'string'.\n"
+        "src/b.ts(3,14): error TS2322: Type 'number' is not assignable to type 'string'.\n",
+        "../shared/data.ts(1,16): error TS2307: Cannot find module 'only-in-app' or its corresponding type declarations.\n"
     );
     oracle(&app, &corsa, expected);
     assert_eq!(

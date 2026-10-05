@@ -41,3 +41,10 @@ PR green is insufficient; fresh corrected-head runtime acceptance is required.
 The correction review also moves the new no-probe law inside its existing
 `cfg(test)` module; its complete nested input and no-probe assertion stay
 unchanged. Fresh strict source checks and native capture are still pending.
+
+The first required runtime execution passed the exact original normal/sharded
+and direct-scoped cases. Its sibling control reports both authored errors but
+orders the app diagnostic before the imported source, so the full native stdout
+expectation now follows that ordering without changing any code, input or
+diagnostic. Refresh the generated consumer surface inventory for the added
+source module; require fresh complete three-case execution before acceptance.
