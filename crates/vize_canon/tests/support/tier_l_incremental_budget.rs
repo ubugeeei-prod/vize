@@ -4,16 +4,6 @@ use super::artifact::BatchIncrementalBudget;
 use vize_canon::IncrementalCheckMetrics;
 const BUDGET_SCALE_ENV: &str = "VIZE_TIER_L_BUDGET_SCALE";
 
-pub(super) fn assert_budget(budget: &BatchIncrementalBudget) {
-    assert!((1..=300_000).contains(&budget.cold_ms));
-    assert!((1..=budget.cold_ms).contains(&budget.warm_ms));
-    assert!((1..=10_000).contains(&budget.max_requested_files));
-    assert_eq!(
-        budget.max_changed_files, 1,
-        "one edited SFC must remain the delta budget"
-    );
-}
-
 pub(super) fn budget_scale() -> f64 {
     match std::env::var(BUDGET_SCALE_ENV) {
         Ok(raw) if raw.is_empty() => 1.0,

@@ -19,8 +19,8 @@ mod failure;
 mod fixture;
 use artifact::{Artifact, BatchIncrementalBudget, FixtureEvidence, lane, write_artifact};
 use budget::{
-    assert_budget, assert_cold_metrics, assert_no_injected_diagnostics, assert_warm_metrics,
-    assert_within_budget, budget_scale,
+    assert_cold_metrics, assert_no_injected_diagnostics, assert_warm_metrics, assert_within_budget,
+    budget_scale,
 };
 use fixture::{env_path, git_revision};
 
@@ -256,4 +256,14 @@ fn collect_vue_paths(fixture_root: &Path) -> Vec<PathBuf> {
     paths.truncate(TIER_L_VUE_FILES);
     assert!(paths.iter().any(|path| path.ends_with(INJECTED_FILE)));
     paths
+}
+
+fn assert_budget(budget: &BatchIncrementalBudget) {
+    assert!((1..=300_000).contains(&budget.cold_ms));
+    assert!((1..=budget.cold_ms).contains(&budget.warm_ms));
+    assert!((1..=10_000).contains(&budget.max_requested_files));
+    assert_eq!(
+        budget.max_changed_files, 1,
+        "one edited SFC must remain the delta budget"
+    );
 }
