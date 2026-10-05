@@ -214,7 +214,7 @@ impl CorsaProjectClient {
         )
     }
 
-    fn request_with_editor_lsp_documents_recovery<T>(
+    pub(in crate::lsp_client) fn request_with_editor_lsp_documents_recovery<T>(
         &mut self,
         documents: &FxHashMap<String, String>,
         mut request: impl FnMut(&mut EditorLspSession) -> Result<T, String>,

@@ -13,6 +13,12 @@ impl CorsaProjectClient {
             uris.iter().map(|uri| uri.as_str()),
         )?;
 
+        if let Some(results) = self.request_diagnostics_batch_via_native_bulk(uris)? {
+            #[cfg(test)]
+            super::test_route::record(super::test_route::Route::NativeBulk);
+            return Ok(results);
+        }
+
         if self.has_materialized_documents(uris)
             && let Some(results) = self.request_diagnostics_batch_via_materialized_files(uris)?
         {

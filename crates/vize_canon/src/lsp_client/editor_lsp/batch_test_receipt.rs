@@ -12,11 +12,18 @@ impl CorsaProjectClient {
             "startupCpu": null, "nativeProgramCount": null, "diagnosticGroups": null,
         });
         let route = test_route::take();
-        if route == Some(Route::Editor) {
+        if matches!(route, Some(Route::Editor | Route::NativeBulk)) {
             let Some(editor) = self.editor_lsp.as_mut() else {
                 return receipt;
             };
-            receipt["mode"] = json!("editor-lsp");
+            receipt["mode"] = json!(if route == Some(Route::NativeBulk) {
+                "native-bulk"
+            } else {
+                "editor-lsp"
+            });
+            if route == Some(Route::NativeBulk) {
+                receipt["bulk"] = super::bulk_diagnostics::take_receipt().unwrap_or(Value::Null);
+            }
             let selected = editor.diagnosing_configuration(uri);
             match selected {
                 Ok(path) => receipt["selectedConfig"] = json!(path),

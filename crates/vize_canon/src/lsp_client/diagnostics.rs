@@ -18,6 +18,7 @@ const LSP_DIAGNOSTICS_BATCH_TRANSIENT_RETRIES: usize = 1;
 
 mod batch;
 mod lsp_report;
+mod native_bulk;
 #[cfg(test)]
 pub(super) mod test_route;
 mod virtual_overlay_diagnostics;

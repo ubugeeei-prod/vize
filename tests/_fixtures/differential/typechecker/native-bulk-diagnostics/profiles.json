@@ -1,0 +1,98 @@
+{
+  "authority": {
+    "nativeVersion": "7.0.2",
+    "nativeCommit": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+    "primarySource": "https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/ls/lsconv/converters.go"
+  },
+  "comparison": "complete original per-file LSP response on the same actual native process; no subset filtering or expected-output regeneration",
+  "profiles": [
+    {
+      "id": "strict",
+      "compilerOptions": {
+        "strict": true
+      },
+      "fileName": "a.ts",
+      "source": "export const value: number = 'wrong';\n",
+      "sourceSha256": "3b2597cebf9e11a4a5557fda7c9de18362dbc6dfce0a5217fa5277e2c223863d",
+      "repair": "export const repaired: number = 1;\n",
+      "emptySource": "export const clean = 1;\n"
+    },
+    {
+      "id": "loose",
+      "compilerOptions": {
+        "strict": false
+      },
+      "fileName": "a.ts",
+      "source": "export const value = null; value.toFixed();\n",
+      "sourceSha256": "9f10bc035bb3167e8f70a7682b91a4a7a24aa80ffc9a273f77a668a5a9339420",
+      "repair": "export const repaired: number = 1;\n",
+      "emptySource": "export const clean = 1;\n"
+    },
+    {
+      "id": "style",
+      "compilerOptions": {
+        "noUnusedLocals": true
+      },
+      "fileName": "a.ts",
+      "source": "const unused = 1; export {};\n",
+      "sourceSha256": "ebd5ce3087f042ccf1da415f9b97f058aaa1cacc3ecd91334083e54242583fb9",
+      "repair": "export const repaired: number = 1;\n",
+      "emptySource": "export const clean = 1;\n"
+    },
+    {
+      "id": "syntax",
+      "compilerOptions": {},
+      "fileName": "a.ts",
+      "source": "export const = 1;\n",
+      "sourceSha256": "ab716a22e3e38ad011ffddc9c5215980c4246aa18c3035de951877e75e3c0dfc",
+      "repair": "export const repaired: number = 1;\n",
+      "emptySource": "export const clean = 1;\n"
+    },
+    {
+      "id": "checked-js",
+      "compilerOptions": {
+        "allowJs": true,
+        "checkJs": true
+      },
+      "fileName": "a.js",
+      "source": "export const value = 1; value.missing();\n",
+      "sourceSha256": "0f03b902134f3b65fc77eb02328feb6266a1427d69e3bb366e76d2e7ad9ec8e3",
+      "repair": "export const repaired = 1;\n",
+      "emptySource": "export const clean = 1;\n"
+    },
+    {
+      "id": "declaration",
+      "compilerOptions": {
+        "declaration": true,
+        "isolatedDeclarations": true
+      },
+      "fileName": "a.ts",
+      "source": "export function value() { return 1; }\n",
+      "sourceSha256": "b0174dae45210cfcb815a441b1b3ab0173618416910cdaf86f3aa3125d260ac9",
+      "repair": "export const repaired: number = 1;\n",
+      "emptySource": "export const clean = 1;\n"
+    },
+    {
+      "id": "composite",
+      "compilerOptions": {
+        "composite": true
+      },
+      "fileName": "a.ts",
+      "source": "export const value: number = 'wrong';\n",
+      "sourceSha256": "3b2597cebf9e11a4a5557fda7c9de18362dbc6dfce0a5217fa5277e2c223863d",
+      "repair": "export const repaired: number = 1;\n",
+      "emptySource": "export const clean = 1;\n"
+    },
+    {
+      "id": "unicode-crlf-related",
+      "compilerOptions": {
+        "strict": true
+      },
+      "fileName": "a.ts",
+      "source": "// 😀\r\ninterface Box { value: number }\r\nexport const box: Box = { value: 'wrong' };\r\n",
+      "sourceSha256": "8f0655ee58007b095eb5b96e881acf3008d1be1f8acd6611fa6c06ca4669efd7",
+      "repair": "export const repaired: number = 1;\n",
+      "emptySource": "export const clean = 1;\n"
+    }
+  ]
+}

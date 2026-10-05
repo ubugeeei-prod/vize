@@ -6,6 +6,7 @@ use std::cell::Cell;
 pub(in crate::lsp_client) enum Route {
     Api,
     Editor,
+    NativeBulk,
     Unknown,
 }
 
@@ -51,6 +52,13 @@ fn receipt_routes_do_not_leak_between_requests_or_credit_mixed_responses() {
     begin(true);
     record(Route::Editor);
     assert_eq!(take(), Some(Route::Editor));
+    begin(true);
+    record(Route::NativeBulk);
+    assert_eq!(take(), Some(Route::NativeBulk));
+    begin(true);
+    record(Route::NativeBulk);
+    record(Route::Editor);
+    assert_eq!(take(), Some(Route::Unknown));
     begin(true);
     record(Route::Api);
     record(Route::Editor);
