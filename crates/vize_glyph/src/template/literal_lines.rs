@@ -38,6 +38,7 @@ pub(super) fn encode_reference_data(
 pub(crate) enum Representation {
     #[default]
     JavaScript,
+    JavaScriptInterpolation,
     Html,
 }
 
@@ -83,7 +84,9 @@ impl LiteralLineState {
     }
 
     pub(crate) fn quasi_is_raw(&self) -> bool {
-        self.inherited_template || self.template
+        self.template
+            || (!matches!(self.representation, Representation::JavaScriptInterpolation)
+                && self.inherited_template)
     }
 
     fn advance_inherited(&mut self, bytes: &[u8]) {

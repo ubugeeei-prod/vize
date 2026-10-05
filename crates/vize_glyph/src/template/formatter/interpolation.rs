@@ -274,7 +274,7 @@ pub(super) fn format_interpolation_expression(
             crate::template::directives::reanchor_continuation_lines(
                 &formatted.code,
                 options,
-                crate::template::literal_lines::Representation::JavaScript,
+                crate::template::literal_lines::Representation::JavaScriptInterpolation,
             )
             .0
         }

@@ -119,3 +119,13 @@ Reuse the same complete assignment-pattern shield in both existing interpolation
 loops; true quoted/backtick-pattern consumers retain the literal branch. Record
 legal escaped-quasi LF/CRLF raw starts within the existing quasi byte loop, with a
 whole cooked-value consumer. This remains a bounded grammar, not a complete lexer.
+
+Normal b719 Check37293040757 captures all53 rows and qualifies50, while quoted
+interpolation LF/CRLF gains two value spaces and regexp-backtick interpolation
+still grows six code spaces/pass. Overall remains FAILED. The SFC preflight must
+invoke its existing raw mask for a possible escaped physical terminator even
+without a backtick; use the same SIMD preflight with a bounded pair check, keeping
+the ordinary fast path. Interpolation reanchor explicitly uses its historical
+logical quasi authority rather than the directive-specific inherited backtick
+bit, matching its two writers. All three directive owners retain their exact
+inherited lower bound. No new parser, scanner stage, cap or oracle is introduced.
