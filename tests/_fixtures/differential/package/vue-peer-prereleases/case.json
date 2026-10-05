@@ -1,0 +1,50 @@
+{
+  "issue": 7864,
+  "originalPeerRange": ">=2.6.0",
+  "versions": [
+    "3.6.0-rc.10",
+    "3.6.0-beta.17",
+    "2.6.0",
+    "2.7.16",
+    "3.5.43",
+    "3.6.0",
+    "4.0.0",
+    "2.5.9",
+    "2.6.0-rc.1",
+    "3.5.43-beta.1",
+    "3.7.0-rc.1",
+    "4.0.0-rc.1"
+  ],
+  "accepted": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "originalAccepted": [
+    false,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "originalReport": {
+    "path": "report.md",
+    "sha256": "459efa30bc98d38b4ec1eb30c71d024a45c36fc761276ba98e59adf82f723c33"
+  }
+}
