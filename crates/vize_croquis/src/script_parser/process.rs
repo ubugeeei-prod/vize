@@ -14,6 +14,7 @@
 //! - `bindings`: Binding pattern helpers and expression classification
 
 mod bindings;
+mod builtin_types;
 mod class_component;
 mod class_component_props;
 mod enums;

@@ -33,6 +33,7 @@ on:
       - ".github/actions/check-computed-inlay/**"
       - "crates/vize_maestro/src/ide/inlay_hint/**"
       - "crates/vize_maestro/src/ide/inlay_hint.rs"
+      - "crates/vize_croquis/src/**"
       - "crates/vize/tests/lsp_computed_inlay_cli.rs"
       - "crates/vize/tests/support/**"
       - "tests/_fixtures/differential/lsp/computed-inlay-hints/**"

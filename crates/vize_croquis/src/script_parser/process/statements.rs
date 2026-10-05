@@ -175,6 +175,7 @@ fn process_variable_declaration(
 ) {
     for declarator in decl.declarations.iter() {
         super::super::extract::invalidate_default_expression(result, declarator.init.as_ref());
+        super::builtin_types::record(result, declarator, decl.kind);
         macros::process_variable_declarator(result, declarator, decl.kind, source);
     }
 }

@@ -8,6 +8,7 @@
 //! SFC blocks come from the resident descriptor (P5-6c): one parse per buffer
 //! revision, shared with the other request paths.
 
+mod builtin;
 mod expr_regions;
 #[cfg(feature = "native")]
 mod native;
@@ -34,6 +35,12 @@ use crate::server::ServerState;
 
 /// Inlay hint service.
 pub struct InlayHintService;
+
+enum ReactiveHints {
+    LegacySyntax,
+    BuiltinFacts,
+    None,
+}
 
 impl InlayHintService {
     /// Inlay hints for a document range, from its resident descriptor.
@@ -66,6 +73,7 @@ impl InlayHintService {
         content: &str,
         uri: &Url,
         range: Range,
+        builtin_types: bool,
     ) -> Vec<InlayHint> {
         let Some(descriptor) = state.sfc_descriptor(uri, content) else {
             return Vec::new();
@@ -76,7 +84,11 @@ impl InlayHintService {
             range,
             state.lsp_features().ecosystem,
             &descriptor,
-            false,
+            if builtin_types {
+                ReactiveHints::BuiltinFacts
+            } else {
+                ReactiveHints::None
+            },
         )
     }
 
@@ -87,7 +99,14 @@ impl InlayHintService {
         ecosystem_enabled: bool,
         descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     ) -> Vec<InlayHint> {
-        Self::descriptor_hints(content, uri, range, ecosystem_enabled, descriptor, true)
+        Self::descriptor_hints(
+            content,
+            uri,
+            range,
+            ecosystem_enabled,
+            descriptor,
+            ReactiveHints::LegacySyntax,
+        )
     }
 
     fn descriptor_hints(
@@ -96,7 +115,7 @@ impl InlayHintService {
         range: Range,
         ecosystem_enabled: bool,
         descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
-        syntax_types: bool,
+        reactive_hints: ReactiveHints,
     ) -> Vec<InlayHint> {
         let mut hints = Vec::new();
 
@@ -170,11 +189,19 @@ impl InlayHintService {
         // Reactive-binding inlay hints: show `: Ref<…>` / `: ComputedRef<…>`
         // after `const X = ref(...)` / `const X = computed(() => ...)` so the
         // editor surfaces the inferred wrapper without requiring hover.
-        if syntax_types {
+        if matches!(reactive_hints, ReactiveHints::LegacySyntax) {
             Self::collect_reactive_binding_hints(
                 &script_setup.content,
                 script_setup.loc.start,
                 content,
+                &croquis,
+                range,
+                &mut hints,
+            );
+        } else if matches!(reactive_hints, ReactiveHints::BuiltinFacts) {
+            Self::collect_builtin_hints(
+                content,
+                script_setup.loc.start,
                 &croquis,
                 range,
                 &mut hints,

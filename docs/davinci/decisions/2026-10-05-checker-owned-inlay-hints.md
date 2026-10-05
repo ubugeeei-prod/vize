@@ -32,8 +32,9 @@ scaffolding, unsupported edit spans and out-of-range hints are declined. Optiona
 label locations use the existing canonical dependency projection; unmappable
 private locations are omitted without replacing the native label. Prop and
 translation decorations remain document-only. When native types are unavailable,
-the server emits no guessed reactive type. The existing document-only compatibility
-helper retains known syntax refs but declines unknown placeholders.
+the server retains only proven Vue builtin source facts and declines unknown
+reactive types. The existing document-only compatibility helper keeps its
+retained explicit-generic controls; it is not the server's checker authority.
 
 Whole structured projection controls cover UTF-16/CRLF, alias locations, writable
 edits, commands, tooltip/padding/data retention and generated-span refusal. Actual
@@ -83,3 +84,9 @@ This record makes no measured latency, Program-count or 10x speed claim.
 Native File and the broader LSP/typechecker history gates remain unfinished.
 
 The post-0.433 queue composition relocates only this fix's canonical link to an existing paragraph boundary; every incoming clause, original input, production body and full native oracle is retained. Fresh exact-head Actions and the current admitted-prefix composition are required before protected delivery.
+
+The protected candidate `2ff25f358a001b0074c20fd132a136c6e5b975bc` exposed a source regression in the retained editor-only scorecard. Published v0.433.0 keeps authored inlay assistance enabled with `editor: true` and `typecheck: false`; the latter also disables the native backend. Preserve the complete original scorecard bytes and its positive Ref/ComputedRef assertions. Its captured complete request returned `null`, so removing those positives would accept the regression. The candidate was dequeued.
+
+Record primitive builtin facts inside the existing Croquis declarator AST walk: only top-level constant identifiers calling value imports of Vue `ref`/`shallowRef` with one primitive literal, or a synchronous zero-parameter concise `computed` arrow whose numeric operands are literals or previously proven numeric builtin `.value` reads. Keep exact identifier spans and import ownership, decline generic/cast/type-only/non-Vue/shadowed/nested/unknown-call/bigint sources, and invalidate facts when parsing fails or a later binding replaces them. Store facts privately in the existing type owner without changing compatibility dumps or public constructible layouts. These facts preserve the existing compact source-owned wrappers; they are not native checker results.
+
+Consume these facts in the already-required authored decoration analysis only when the native backend is disabled or cannot initialize. A live native query remains sole type authority, including a successful empty result. Preserve the existing request generation/cancellation guard, source buffer ownership, backend-off behavior, and all native structured-label/edit/range/JS/TS vectors. Add whole original scorecard/disabled/unavailable response vectors, numeric/import/unknown controls, exact UTF-16/CRLF ranges and edit invalidation. Fresh source/native Actions, protected full suites and release inclusion remain pending; no budget or legacy positive oracle is weakened.
