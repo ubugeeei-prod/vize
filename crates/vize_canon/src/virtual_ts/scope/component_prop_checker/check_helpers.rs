@@ -13,6 +13,7 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
     ts: &mut String,
     usages: &[(usize, &ComponentUsage)],
     check_unknown_props: bool,
+    check_unknown_fallthrough_props: bool,
 ) {
     ts.push_str("  type __VizeIsAny<T> = 0 extends (1 & T) ? true : false;\n");
     // Inline parameter shapes keep `TS2345` messages close to `vue-tsc` while
@@ -54,8 +55,12 @@ pub(in crate::virtual_ts::scope) fn append_prop_check_helpers(
         // (`depressed`) stays a strict finding (#4966). Derived from the
         // `__VizeNativeElements` program alias; degrades to `{}` on a `vue`
         // without `NativeElements`, like the native prop checks degrade.
+        ts.push_str(if check_unknown_fallthrough_props {
+            "  type __VizeAllowedFallthroughAttrs<C> = {};\n"
+        } else {
+            "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n"
+        });
         ts.push_str(concat!(
-            "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};\n",
             "  type __VizeAttrCamel<S extends string> = S extends `${infer __H}-${infer __T}` ? `${__H}${Capitalize<__VizeAttrCamel<__T>>}` : S;\n",
             "  type __VizeNativeAttrNames = { [K in keyof __VizeNativeElements & string]: keyof __VizeNativeElements[K] }[keyof __VizeNativeElements & string] & string;\n",
             "  type __VizeGlobalHtmlAttrs = __VizeIsAny<__VizeNativeElements> extends true ? {} : { [K in __VizeNativeAttrNames as K | __VizeAttrCamel<K>]?: unknown } & { [K in `data${string}`]?: unknown };\n",

@@ -46,11 +46,12 @@ pub(super) fn generic_check_props_param(
     generic_names: &str,
     fallthrough_props_ref: Option<&str>,
     props_type: &str,
+    check_unknown_fallthrough_props: bool,
 ) -> String {
     let mut param = cstr!(
         "{props_type}<{generic_names}> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs"
     );
-    if fallthrough_props_ref.is_some() {
+    if fallthrough_props_ref.is_some() && !check_unknown_fallthrough_props {
         param.push_str(" & Record<string, unknown>");
     }
     param
@@ -106,4 +107,33 @@ fn default_start(param: &str) -> Option<usize> {
         i += 1;
     }
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::generic_check_props_param;
+    #[test]
+    fn explicit_strict_generic_contract_closes_only_the_arbitrary_fallthrough_tail() {
+        let closed = "Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs";
+        assert_eq!(
+            generic_check_props_param(
+                "T",
+                Some("Partial<__VizeNativeElement<\"span\">>"),
+                "Props",
+                true
+            ),
+            closed
+        );
+        assert_eq!(
+            generic_check_props_param(
+                "T",
+                Some("Partial<__VizeNativeElement<\"span\">>"),
+                "Props",
+                false
+            ),
+            vize_l0::cstr!("{closed} & Record<string, unknown>")
+        );
+        assert_eq!(generic_check_props_param("T", None, "Props", true), closed);
+        assert_eq!(generic_check_props_param("T", None, "Props", false), closed);
+    }
 }

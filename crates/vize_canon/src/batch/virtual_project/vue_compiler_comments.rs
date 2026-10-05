@@ -109,6 +109,7 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
     }
     if let Some(value) = unknown_props.or(strict) {
         options.check_unknown_props = value;
+        options.check_unknown_fallthrough_props = value;
     }
     if let Some(value) = unknown_components.or(strict) {
         options.check_unknown_components = value;

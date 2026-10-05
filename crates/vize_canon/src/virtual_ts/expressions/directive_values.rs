@@ -12,6 +12,9 @@ use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
 
+mod presence;
+pub(crate) use presence::generate_valueless_directive_presence;
+
 pub(crate) type DirectiveValueBindings = FxHashMap<(u32, u32), DirectiveValueBinding>;
 
 pub(crate) struct DirectiveValueBinding {
@@ -33,20 +36,21 @@ pub(crate) struct DirectiveValueBinding {
     /// A Vapor component calls the directive itself, with a value getter,
     /// instead of a hook that receives a binding object.
     vapor: bool,
+    has_value: bool,
 }
 
 pub(crate) fn collect_directive_value_bindings(
     root: Option<&RootNode<'_>>,
     bindings: ScriptBindings<'_>,
     (has_default_alias, vapor): (bool, bool),
-    enabled: bool,
+    (enabled, include_valueless): (bool, bool),
 ) -> DirectiveValueBindings {
     let mut collected = DirectiveValueBindings::default();
     let Some(root) = root.filter(|_| enabled) else {
         return collected;
     };
     for child in &root.children {
-        collect_child_bindings(child, bindings, &mut collected);
+        collect_child_bindings(child, bindings, &mut collected, include_valueless);
     }
     for binding in collected.values_mut() {
         binding.has_default_alias = has_default_alias;
@@ -59,26 +63,27 @@ fn collect_child_bindings(
     child: &TemplateChildNode<'_>,
     bindings: ScriptBindings<'_>,
     collected: &mut DirectiveValueBindings,
+    include_valueless: bool,
 ) {
     match child {
         TemplateChildNode::Element(element) => {
-            collect_element_bindings(element, bindings, collected)
+            collect_element_bindings(element, bindings, collected, include_valueless)
         }
         TemplateChildNode::If(node) => {
             for branch in &node.branches {
                 for child in &branch.children {
-                    collect_child_bindings(child, bindings, collected);
+                    collect_child_bindings(child, bindings, collected, include_valueless);
                 }
             }
         }
         TemplateChildNode::IfBranch(branch) => {
             for child in &branch.children {
-                collect_child_bindings(child, bindings, collected);
+                collect_child_bindings(child, bindings, collected, include_valueless);
             }
         }
         TemplateChildNode::For(node) => {
             for child in &node.children {
-                collect_child_bindings(child, bindings, collected);
+                collect_child_bindings(child, bindings, collected, include_valueless);
             }
         }
         _ => {}
@@ -89,28 +94,41 @@ fn collect_element_bindings(
     element: &ElementNode<'_>,
     bindings: ScriptBindings<'_>,
     collected: &mut DirectiveValueBindings,
+    include_valueless: bool,
 ) {
     for prop in &element.props {
         let PropNode::Directive(directive) = prop else {
             continue;
         };
-        if let Some((range, binding)) = directive_value_binding(directive, bindings) {
+        if let Some((range, binding)) =
+            directive_value_binding(directive, bindings, include_valueless)
+        {
             collected.insert(range, binding);
         }
     }
     for child in &element.children {
-        collect_child_bindings(child, bindings, collected);
+        collect_child_bindings(child, bindings, collected, include_valueless);
     }
 }
 
 fn directive_value_binding(
     directive: &DirectiveNode<'_>,
     bindings: ScriptBindings<'_>,
+    include_valueless: bool,
 ) -> Option<((u32, u32), DirectiveValueBinding)> {
     if vize_carton::is_builtin_directive(directive.name) {
         return None;
     }
-    let expression = directive.exp.as_ref()?;
+    let expression = directive
+        .exp
+        .as_ref()
+        .filter(|expression| match expression {
+            ExpressionNode::Simple(expression) => !expression.content.trim().is_empty(),
+            _ => true,
+        });
+    if expression.is_none() && !include_valueless {
+        return None;
+    }
     let variable = directive_binding_name(directive.name);
     let in_setup = bindings.contains_binding(variable.as_str());
     let arg = match directive.arg.as_ref() {
@@ -130,7 +148,6 @@ fn directive_value_binding(
             )
         })
         .collect();
-    let location = expression.loc();
     let name_start = directive.loc.span.start;
     let raw_len = directive
         .raw_name
@@ -140,7 +157,10 @@ fn directive_value_binding(
         .saturating_add(u32::try_from(raw_len).unwrap_or(u32::MAX))
         .min(directive.loc.span.end);
     Some((
-        (location.span.start, location.span.end),
+        expression.map_or((name_start, name_end), |expression| {
+            let location = expression.loc();
+            (location.span.start, location.span.end)
+        }),
         DirectiveValueBinding {
             variable,
             in_setup,
@@ -149,6 +169,7 @@ fn directive_value_binding(
             has_default_alias: false,
             vapor: false,
             name_range: (name_start, name_end),
+            has_value: expression.is_some(),
         },
     ))
 }

@@ -1,0 +1,100 @@
+# Explicit unknown template checks
+
+Refs [#7874](https://github.com/ubugeeei-prod/vize/issues/7874), the earlier
+[#7234](https://github.com/ubugeeei-prod/vize/issues/7234) and
+[#7266](https://github.com/ubugeeei-prod/vize/pull/7266). This is a private,
+unexecuted source proposal based on actual main
+`8a8521d6897bbe3fd0af0cbfaebd83f4fc933933`; publication and all runtime acceptance
+remain pending. The finite first-v0.433 admission hold remains in force.
+
+## Original authority
+
+The live #7874 reporter is `ubugeeei` (public account ID `71201308`), the
+maintainer. This is not a third-party report. Preserve all three complete issue
+code blocks in `tests/_fixtures/differential/typechecker/unknown-template-options`:
+
+| Original         | Bytes | SHA256                                                             |
+| ---------------- | ----: | ------------------------------------------------------------------ |
+| `src/Child.vue`  |   120 | `32fa2cf70a75ee2b7d7c5ddecb8df37ef60c8de103217dacf2a2386579cd3ed8` |
+| `src/Parent.vue` |   227 | `c2ff284ede74ed6c7007f1890003ab04930c1b4822cb2212701afc0b075b7c1e` |
+| `tsconfig.json`  |   299 | `43b2d2a49191b2addeebf1a9bba969874453b50858a6c3a28fb57150fabbbd21` |
+
+The reported command is `vize check --no-config` on 0.432.0. The original Vue
+package version is unspecified; the proposed hosted controls use the existing
+genuine locked Vue 3.6.0-rc.10 package and native TypeScript 7.0.2. Those are
+current controls, not an authenticated execution of the historical installation.
+The original vue-tsc prose supplies semantic obligations, not a native message
+or generated output baseline. Live open-PR searches found no duplicate at the
+source-preparation checkpoint; recheck before any publication.
+
+## Causal source findings and bounded correction
+
+The flattened configuration already reads both options. The omission is in
+production TypeScript generation:
+
+- A native-root child's recorded fallthrough marker selects an unconditional
+  `Record<string, unknown>`, so an explicitly strict parent accepts the extra
+  `unknownProp`. Preserve the older no-tsconfig #4461 contract. Carry an internal
+  explicit-strict authority from the existing flattened Vue option and authored
+  per-file comments; close only that arbitrary tail. Keep declared prop values,
+  Vue public props and the existing real global HTML attribute surface. Propagate
+  the same authority to the existing generic export signature.
+- Custom directive collection required an expression. The original valueless
+  `v-not-a-directive` therefore never reached the existing registry-presence
+  emitter. Collect valueless or empty-value names during the existing traversal
+  only when strict directive checking is enabled. Reuse that emitter and its
+  original name mapping in authored order. Setup bindings, local/global
+  registrations and builtin directives keep their existing resolution. No
+  dangling hook/value call is fabricated for an absent expression.
+
+Move the existing naming law into its own test module in a move-only commit.
+The proposal adds no parse, compiler stage, serialized level record, per-hint
+process, production diagnostic filter or weakened comparison. Existing absent
+settings and the original #4461 fallthrough vectors remain unchanged.
+
+## Proposed closed controls and custody
+
+The untouched original project is one of seven complete option cases: original
+true flags, props false, directives false, all false, all absent, strictTemplates
+implicit true, and strictTemplates with explicit false overrides. The two SFC
+inputs are byte-exact in every case; only authored control configurations differ.
+
+A separate authored `Oracle.ts.txt` specifies the label prop, Vue public/native
+attribute types, missing component and missing directive independently of Vize
+output. Its complete direct native CLI stream must contain exactly the authored
+three locations/codes and intact messages. That native compiler-specific type
+display is then compared in full with every public CLI diagnostic message and
+every editor diagnostic; it is never a captured Vize-generated expectation.
+The public CLI law compares the entire JSON report, effective program/options,
+all file vectors, exit status, complete stderr and conserved input bytes.
+The editor law compares the complete `DiagnosticService` vectors for both files
+under all seven configurations, including every range and optional field.
+It is a direct service test, not a stdio-RPC execution claim.
+
+The existing source-native Actions step retains every original cargo command
+and adds a required bounded script for these CLI and editor targets. Runtime
+capture retains original/control inputs, complete native/CLI stdout, stderr,
+status, actual argv/cwd, source SHA, executable/native hashes and actual pinned
+native version output. Original fixture hashes and authored mappings are checked
+without recording new expectations from Vize. Source-only laws also cover
+explicit-vs-absent generation, comments and generic tail contracts.
+
+## Pending gates and TODOs
+
+Only source formatting, shell syntax, the existing pure assertion lint and
+inventory generation have run locally. No Rust build, native probe, LSP session,
+performance experiment or hosted runtime has run for this proposal.
+
+Before delivery: independent technical source review, fresh exact-head ordinary
+and source-native Actions, complete original/control runtime artifact audit,
+protected full Rust/differential suites and all unchanged 104 instruction gates,
+actual signed reporter-credited merge, then a supported public release. A new
+queue admission remains forbidden during the finite first-release hold.
+
+Keep old corpus vectors, all caps and history denominators intact. Full generic
+cross-project option policy, whole type-checker fix history #6879, full LSP
+history #6883, native default replacement, cold/query completion and the global
+10x objective remain unfinished. Do not mark #7874 fixed from source review or
+an old successful run.
+
+Paired private-source decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7874#issuecomment-5997806537).
