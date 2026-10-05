@@ -111,3 +111,13 @@ Nuxt2 run37288936800 passes actual corrected-default generation, full plan/
 Vite+ controls and webpack/SSR; its installed-native envelope is distinct.
 Production/oracle/corpus/caps remain unchanged. New fourteen source-linter CLI
 cases and genuine successor/protected qualification remain pending.
+
+[Modern public Nuxt options](https://github.com/ubugeeei-prod/vize/issues/7983#issuecomment-5991806789)
+record actuala029/merge7386: check-js and old Nuxt2 controls pass, while the
+new Nuxt3 probe reaches public ESM but finds no root artifact before its first
+CLI case. Direct Nuxt3/4 `loadNuxt` uses `cwd`/`overrides`, as pinned primary
+3.19.3/4.5.2 source proves; copied Nuxt2 `configOverrides` leaves the original
+fixture's lint:false in effect. Use real overrides/dev:false and assert the
+actual root, with no fallback artifact or oracle adjustment. Recipe350 retains
+all original/production/native-loader/cap bytes and authentic failed packet
+11335759261; fresh fourteen CLI/native cases and protected delivery are pending.

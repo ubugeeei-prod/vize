@@ -113,14 +113,15 @@ function run(id, file, targets, expectedPaths, { invalid = false, files = target
 let nuxt;
 try {
   nuxt = await loadNuxt({
-    rootDir: project,
-    for: "build",
-    configOverrides: {
+    cwd: project,
+    overrides: {
+      dev: false,
       srcDir: path.join(project, "app"),
       vize: { compiler: false, lint: { autoInit: false }, musea: false },
       hooks: { "vize:lint:config:addons": (items) => items.push(...structuredClone(corpus.items)) },
     },
   });
+  assert.equal(nuxt.options.rootDir, project);
   const generated = path.join(project, ".oxlint.vize.json");
   const defaultBytes = fs.readFileSync(generated, "utf8");
   const artifact = JSON.parse(defaultBytes);
