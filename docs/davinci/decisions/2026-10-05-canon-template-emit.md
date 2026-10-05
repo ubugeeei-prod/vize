@@ -152,4 +152,11 @@ its complete receipt checker from the inline Node block into a directly invoked
 module, retaining all assertions/captures and formatting with the existing tool.
 This keeps composition with the three existing qualifications under the same
 350-line workflow ratchet; literal prospective composition and fresh source/native
-acceptance remain required. The current release-prefix admission hold applies.
+acceptance remain required. Existing qualified admissions have now thawed; this
+head still requires its own genuine complete native controls before admission.
+
+The prospective three-PR composition retains every qualification command but
+exposes independently inserted hidden-artifact flags. Put the shared flag at
+the common trailing location. Adjacent Maestro test registration and generated
+Croquis inventory conflicts require replay on actual earlier merged main and
+regeneration before admission; no expected counter is manually fabricated.
