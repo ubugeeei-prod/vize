@@ -1,0 +1,4 @@
+<script setup>
+const extra = { "data-owner": "authored" };
+</script>
+<template><TransitionGroup tag="ul" class="one" v-bind="extra" :class="{ two: true }" :style="{ color: 'red' }"><li key="1">1</li></TransitionGroup></template>

@@ -1,0 +1,7 @@
+<script setup>
+import Async from "./Async.vue";
+</script>
+
+<template>
+  <Suspense><template #default><Async /></template><template #fallback>loading</template></Suspense>
+</template>
