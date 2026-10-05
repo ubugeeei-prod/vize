@@ -5,9 +5,7 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use serde::Deserialize;
-use vize_canon::{
-    BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait,
-};
+use vize_canon::{BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait};
 use vize_carton::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
 use vize_l0::String;
 
@@ -15,11 +13,16 @@ use vize_l0::String;
 mod artifact;
 #[path = "support/tier_l_incremental_budget.rs"]
 mod budget;
+#[path = "support/tier_l_incremental_failure.rs"]
+mod failure;
 #[path = "support/tier_l_fixture.rs"]
 mod fixture;
 use artifact::{Artifact, BatchIncrementalBudget, FixtureEvidence, lane, write_artifact};
+use budget::{
+    assert_budget, assert_cold_metrics, assert_no_injected_diagnostics, assert_warm_metrics,
+    assert_within_budget, budget_scale,
+};
 use fixture::{env_path, git_revision};
-use budget::{assert_budget, budget_scale, assert_no_injected_diagnostics, assert_cold_metrics, assert_warm_metrics, assert_within_budget};
 
 const FIXTURE_ID: &str = "vue-vben-admin";
 const TIER_L_VUE_FILES: usize = 500;
@@ -122,6 +125,15 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
         BatchTypeChecker::with_options_and_corsa_path(&fixture_root, options, Some(&corsa_path))
             .expect("Tier-L checker should start");
 
+    let mut failure = failure::FailureReceipt::new(
+        artifact::output_dir(&repo_root),
+        FIXTURE_ID,
+        project.revision.clone(),
+        INJECTED_FILE,
+        budget.clone(),
+        budget_scale,
+    );
+    failure.begin(0);
     let cold_started = Instant::now();
     let vue_paths = collect_vue_paths(&fixture_root);
     checker
@@ -154,17 +166,21 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
         .check_incremental(std::slice::from_ref(&injected_path))
         .expect("cold incremental session should complete");
     let cold_ms = cold_started.elapsed().as_millis();
-    assert_no_injected_diagnostics(&cold);
     let cold_metrics = checker.incremental_metrics();
+    failure.complete(0, cold_ms, cold_metrics, checker.file_count());
+    assert_no_injected_diagnostics(&cold);
     assert_cold_metrics(cold_metrics, &budget);
     assert_within_budget("cold", cold_ms, budget.cold_ms, budget_scale);
 
+    failure.begin(1);
     injected.write(BROKEN_SOURCE);
     let broken_started = Instant::now();
     let broken = checker
         .check_incremental(std::slice::from_ref(&injected_path))
         .expect("broken warm check should complete");
     let broken_ms = broken_started.elapsed().as_millis();
+    let broken_metrics = checker.incremental_metrics();
+    failure.complete(1, broken_ms, broken_metrics, checker.file_count());
     let injected_errors = broken
         .diagnostics
         .iter()
@@ -187,18 +203,19 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
         "unexpected injected TS2322: {}",
         injected_errors[0].message
     );
-    let broken_metrics = checker.incremental_metrics();
     assert_warm_metrics(broken_metrics, 2, 1, &budget);
     assert_within_budget("broken warm", broken_ms, budget.warm_ms, budget_scale);
 
+    failure.begin(2);
     injected.write(CLEAN_SOURCE);
     let repaired_started = Instant::now();
     let repaired = checker
         .check_incremental(std::slice::from_ref(&injected_path))
         .expect("repaired warm check should complete");
     let repaired_ms = repaired_started.elapsed().as_millis();
-    assert_no_injected_diagnostics(&repaired);
     let repaired_metrics = checker.incremental_metrics();
+    failure.complete(2, repaired_ms, repaired_metrics, checker.file_count());
+    assert_no_injected_diagnostics(&repaired);
     assert_warm_metrics(repaired_metrics, 3, 2, &budget);
     assert_within_budget("repaired warm", repaired_ms, budget.warm_ms, budget_scale);
 
@@ -219,6 +236,7 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
         ],
     };
     write_artifact(&repo_root, &artifact);
+    failure.disarm();
 }
 
 fn collect_vue_paths(fixture_root: &Path) -> Vec<PathBuf> {
@@ -239,4 +257,3 @@ fn collect_vue_paths(fixture_root: &Path) -> Vec<PathBuf> {
     assert!(paths.iter().any(|path| path.ends_with(INJECTED_FILE)));
     paths
 }
-

@@ -16,16 +16,22 @@ impl CorsaProjectClient {
         if self.has_materialized_documents(uris)
             && let Some(results) = self.request_diagnostics_batch_via_materialized_files(uris)?
         {
+            #[cfg(test)]
+            super::test_route::record(super::test_route::Route::Api);
             return Ok(results);
         }
 
         if self.can_batch_with_project_diagnostics(uris)
             && let Some(results) = self.request_diagnostics_batch_via_project_api(uris)?
         {
+            #[cfg(test)]
+            super::test_route::record(super::test_route::Route::Api);
             return Ok(results);
         }
 
         if let Some(results) = self.request_diagnostics_batch_via_lsp(uris)? {
+            #[cfg(test)]
+            super::test_route::record(super::test_route::Route::Editor);
             return Ok(results);
         }
 
@@ -36,5 +42,4 @@ impl CorsaProjectClient {
             })
             .collect()
     }
-
 }

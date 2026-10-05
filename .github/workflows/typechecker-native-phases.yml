@@ -26,6 +26,7 @@ on:
       - "tools/benchmarks/scripts/benchmark-binary.mjs"
       - "crates/vize/tests/check_outside_import_types_cli.rs"
       - "tests/_fixtures/differential/typechecker/outside-import-types/**"
+      - "tests/_fixtures/differential/typechecker/nested-batch-config/**"
       - "crates/vize_canon/**"
       - "crates/vize/src/**"
       - "crates/vize/tests/check_undefined_default_props_cli.rs"
@@ -243,6 +244,19 @@ jobs:
           cargo test --locked --profile ci-opt -p vize_canon --lib css_side_effect_import::
           assets_exit=$?
           [[ "$cli_exit" == 0 && "$native_exit" == 0 && "$assets_exit" == 0 ]]
+      - name: Verify authoritative nested Batch configuration and complete legacy corpora
+        if: github.event_name == 'pull_request'
+        env:
+          VIZE_TEST_REQUIRE_TSGO: "1"
+          VIZE_NESTED_BATCH_CAPTURE_DIR: ${{ runner.temp }}/nested-batch-config
+        run: |
+          set -euo pipefail
+          cargo test --locked --profile ci-opt -p vize_canon --lib nested_generated_config:: -- --nocapture
+          cargo test --locked --profile ci-opt -p vize_canon --test tier_l_incremental failure::tests:: -- --nocapture
+          cargo test --locked -p vize_l1_to_l2 --features legacy-differential --test davinci_lowering_corpus -- --nocapture
+          cargo test --locked -p vize_l1_to_l2 --features legacy-differential --test davinci_dom_corpus -- --nocapture
+          cargo test --locked -p vize_l1_to_l2 --features legacy-differential --test davinci_remarks_corpus -- --nocapture
+          cargo test --locked -p vize_canon --features legacy-differential --test davinci_projection_differential -- --nocapture
       - name: Capture every actual shard with byte, map, diagnostic and freshness gates
         env:
           RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
@@ -334,6 +348,7 @@ jobs:
             ${{ runner.temp }}/outside-import-types/
             ${{ runner.temp }}/typechecker-native-source-custody.json
             ${{ runner.temp }}/reference-path-module/
+            ${{ runner.temp }}/nested-batch-config/
             ${{ runner.temp }}/typechecker-native-phases.json
             ${{ runner.temp }}/typechecker-native-phases.json.samples/provenance.json
             ${{ runner.temp }}/template-dollar-emit/

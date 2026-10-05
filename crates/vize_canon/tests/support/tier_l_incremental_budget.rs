@@ -44,7 +44,10 @@ pub(super) fn assert_no_injected_diagnostics(result: &vize_canon::BatchTypeCheck
     );
 }
 
-pub(super) fn assert_cold_metrics(metrics: IncrementalCheckMetrics, budget: &BatchIncrementalBudget) {
+pub(super) fn assert_cold_metrics(
+    metrics: IncrementalCheckMetrics,
+    budget: &BatchIncrementalBudget,
+) {
     assert_eq!((metrics.checks, metrics.session_starts), (1, 1));
     assert_eq!((metrics.session_reuses, metrics.session_refreshes), (0, 0));
     assert_eq!(metrics.session_to_cli_fallbacks, 0);
@@ -97,7 +100,12 @@ fn assert_requested_budget(metrics: IncrementalCheckMetrics, budget: &BatchIncre
     );
 }
 
-pub(super) fn assert_within_budget(lane: &str, elapsed_ms: u128, budget_ms: u64, budget_scale: f64) {
+pub(super) fn assert_within_budget(
+    lane: &str,
+    elapsed_ms: u128,
+    budget_ms: u64,
+    budget_scale: f64,
+) {
     let scaled_budget_ms = (budget_ms as f64 * budget_scale).ceil() as u128;
     assert!(
         elapsed_ms < scaled_budget_ms,
