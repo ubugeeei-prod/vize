@@ -81,3 +81,12 @@ lookup, ordinary bindings, Art/events/models/native DOM retain their routes.
 Every original/full wire expectation and probe remains byte-identical. Fresh
 source/native execution must qualify all seven sessions and old positives; no
 Ready, queue, private Event/library/epoch or public-release credit is transferred.
+
+[Paired actual-main replay](https://github.com/ubugeeei-prod/vize/issues/8009#issuecomment-5996628081)
+records the repair genuinely replayed onto actual main
+`8a8521d6897bbe3fd0af0cbfaebd83f4fc933933` after c43aa576ce. Incoming release
+versions and every main decision are retained; the component authority sources,
+complete original corpus and mandatory native vectors retain their owned bytes.
+First-source native phases37321710585 passed, separately from the known failed
+Check37321712456. Fresh ordinary Actions must compile and execute this whole union;
+the first failure is retained without claiming its hidden backend cause is fixed.
