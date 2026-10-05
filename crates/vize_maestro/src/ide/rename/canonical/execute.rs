@@ -92,9 +92,10 @@ async fn rename_strict_inner(
     let Some(bridge) = initialized_bridge(bridge) else {
         return Ok(Answer::Unavailable);
     };
-    let Some(document) = corsa_support::open_canonical_virtual_project_document_strict(ctx, bridge)
-        .await
-        .map_err(CanonicalFailure::from_project_open)?
+    let Some(document) =
+        corsa_support::open_canonical_virtual_navigation_project_document_strict(ctx, bridge)
+            .await
+            .map_err(CanonicalFailure::from_project_open)?
     else {
         return Ok(Answer::Unavailable);
     };

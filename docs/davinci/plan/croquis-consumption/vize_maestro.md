@@ -14,8 +14,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `AnalyzerOptions`              | type  | `analyzer`          |     3 |     3 |
 | `ComponentShape`               | type  | `croquis`           |     1 |     1 |
 | `Croquis`                      | type  | `croquis`           |     6 |    10 |
-| `Drawer`                       | type  | `drawer`            |    19 |    22 |
-| `DrawerOptions`                | type  | `drawer`            |    19 |    22 |
+| `Drawer`                       | type  | `drawer`            |    20 |    23 |
+| `DrawerOptions`                | type  | `drawer`            |    20 |    23 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     4 |
 | `ScopeBinding`                 | type  | `scope`             |     1 |     1 |
 | `ScopeData`                    | type  | `scope`             |     3 |     8 |
@@ -24,7 +24,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis.component_shape`      | field | `croquis`           |     1 |     1 |
 | `Croquis.macros`               | field | `croquis`           |     7 |    14 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     3 |
-| `Croquis.scopes`               | field | `croquis`           |     8 |    15 |
+| `Croquis.scopes`               | field | `croquis`           |     9 |    16 |
 | `Croquis.template_expressions` | field | `croquis`           |     1 |     2 |
 
 ## Non-product `vize_croquis` imports

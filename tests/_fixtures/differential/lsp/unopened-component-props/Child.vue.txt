@@ -1,0 +1,10 @@
+<!-- src/Child.vue -->
+<script setup lang="ts">
+defineProps<{
+  text?: string;
+}>();
+</script>
+
+<template>
+  <button type="button">{{ text }}</button>
+</template>

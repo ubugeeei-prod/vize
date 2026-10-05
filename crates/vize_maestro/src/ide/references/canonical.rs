@@ -57,7 +57,7 @@ pub(super) async fn references(
     // component-library-sized workspace and cannot add hits.
     let document_only = !ctx.state.lsp_features().cross_file;
     let document = if document_only || is_script_setup_local_binding(ctx) {
-        corsa_support::open_canonical_virtual_project_document_strict(ctx, bridge)
+        corsa_support::open_canonical_virtual_navigation_project_document_strict(ctx, bridge)
             .await
             .ok()
             .flatten()?
@@ -104,9 +104,8 @@ pub(super) async fn references(
     }
     let mut mapped = corsa_support::map_canonical_corsa_locations(ctx, &document, locations);
     mapped.extend(style_locations(ctx, &document, &mapped));
-    // The default project surface already contains open reverse importers.
-    // A component prop's navigation identity can therefore reach its parent
-    // attributes without the opt-in workspace-wide Vue scan.
+    // Public component props include unopened configured-project consumers;
+    // ordinary document-only queries retain their original local boundary.
     if document_only && !has_component_prop_navigation {
         mapped.retain(|location| location.uri == *ctx.uri);
     }
