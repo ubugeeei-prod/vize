@@ -178,7 +178,7 @@ fn format_js_expression_with_quote_style(
 
         // The retained AST distinguishes the wrapper from authored call/member
         // parentheses and sequences whose grouping Vue consumers require.
-        let inner = expression_wrapper::unwrap_argument(inner, &parsed.program)?;
+        let inner = expression_wrapper::unwrap_argument(inner, &parsed.program, trimmed)?;
 
         Some(inner.trim().to_compact_string())
     })

@@ -20,7 +20,7 @@ fn reported_expression_groups_remain_whole_and_stable_in_complete_sfcs() {
         "../../../tests/_fixtures/differential/formatter-regressions/template-parens-7923/cases.json"
     ))
     .unwrap();
-    assert_eq!(corpus.cases.len(), 16);
+    assert_eq!(corpus.cases.len(), 22);
     let options = FormatOptions::default();
     for case in corpus.cases {
         let mut current = case.source;

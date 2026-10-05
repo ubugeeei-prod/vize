@@ -22,7 +22,7 @@ void test("template expression grouping preserves complete output and runtime se
   );
   validateBuildReceipt(receipt, identity);
   assert.equal(corpus.issue, 7923);
-  assert.equal(corpus.cases.length, 16);
+  assert.equal(corpus.cases.length, 22);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-format-json-comments-"));
   const report = {
     schema: "vize.formatter-template-parens-observation",

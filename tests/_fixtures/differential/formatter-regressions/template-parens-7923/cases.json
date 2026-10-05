@@ -260,6 +260,82 @@
         }
       ],
       "html": ["<p>true</p>"]
+    },
+    {
+      "id": "plain-consumer-sequence",
+      "file": "plain-consumer-sequence.vue",
+      "source": "<template>\n  <p>{{ a, b }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ a, b }}</p>\n</template>\n",
+      "states": [
+        {
+          "a": 1,
+          "b": 2
+        }
+      ],
+      "html": ["<p>1</p>"]
+    },
+    {
+      "id": "plain-event-sequence",
+      "file": "plain-event-sequence.vue",
+      "source": "<template>\n  <button @click=\"a++, b++\">{{ a }}/{{ b }}</button>\n</template>\n",
+      "expected": "<template>\n  <button @click=\"a++, b++\">{{ a }}/{{ b }}</button>\n</template>\n",
+      "states": [
+        {
+          "a": 1,
+          "b": 2
+        }
+      ],
+      "html": ["<button>1/2</button>"],
+      "eventHtml": ["<button>2/3</button>"]
+    },
+    {
+      "id": "nested-plain-consumer-sequence",
+      "file": "nested-plain-consumer-sequence.vue",
+      "source": "<template>\n  <p>{{ (a, b), count }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ (a, b), count }}</p>\n</template>\n",
+      "states": [
+        {
+          "a": 1,
+          "b": 2,
+          "count": 0
+        }
+      ],
+      "html": ["<p>2</p>"]
+    },
+    {
+      "id": "comment-parenthesis-plain-sequence",
+      "file": "comment-parenthesis-plain-sequence.vue",
+      "source": "<template>\n  <p>{{ /* ( */ a, b /* ) */ }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ /* ( */ a, b /* ) */ }}</p>\n</template>\n",
+      "states": [
+        {
+          "a": 1,
+          "b": 2
+        }
+      ],
+      "html": ["<p>1</p>"]
+    },
+    {
+      "id": "quoted-parenthesis-plain-sequence",
+      "file": "quoted-parenthesis-plain-sequence.vue",
+      "source": "<template>\n  <p>{{ \"(\", \")\" }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ \"(\", \")\" }}</p>\n</template>\n",
+      "states": [{}],
+      "html": ["<p>(</p>"]
+    },
+    {
+      "id": "leading-comment-nested-plain-sequence",
+      "file": "leading-comment-nested-plain-sequence.vue",
+      "source": "<template>\n  <p>{{ /* note */ (a, b), count }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ /* note */ (a, b), count }}</p>\n</template>\n",
+      "states": [
+        {
+          "a": 1,
+          "b": 2,
+          "count": 0
+        }
+      ],
+      "html": ["<p>2</p>"]
     }
   ]
 }

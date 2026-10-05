@@ -16,7 +16,7 @@ retain the grouping required by the consumer. Existing lower-precedence wrapper
 removal remains intact. A wrapped multi-statement input refuses extraction.
 No second parsing pass, textual group scanner or new pipeline stage is added.
 
-The sixteen-row legacy corpus retains the complete original SFC and all named
+The twenty-two-row legacy corpus retains the complete original SFC and all named
 condition/event/as/satisfies/IIFE/sequence reproductions, plus nested sequences,
 non-null/optional/computed members, quoted parentheses, and ordinary binary,
 call, object and regexp controls. Public API and actual source-built CLI compare
@@ -35,3 +35,20 @@ remain required; a stable but semantically invalid output is not acceptance.
 The strict current source-owner witness hash tracks the changed script wrapper
 file. Every original capture SHA, revision, retained Rust function body hash
 and expected byte remains unchanged; the new helper does not waive source custody.
+
+Peer audit found the converse consumer boundary before admission: official Vue
+passes a bare root sequence as an argument list (`a, b` displays `a`), whereas
+an authored enclosing group displays the last sequence value. Keeping every
+synthetic wrapper would change the bare consumer. The successor uses the
+existing Sequence start span and stored comment spans to identify only authored
+outer grouping, following the pinned upstream source-gap invariant. Grouped
+sequences keep the printed enclosing parentheses; bare consumer argument bytes,
+including nested groups, remain verbatim. That cold helper adds no parse,
+whole-expression lexical scan or allocation. Six inverse whole-SFC/runtime
+controls cover plain/nested/quoted/commented consumer sequences and comma events.
+Every original sixteen source/expected/state value remains unchanged, as do
+all original historical pins/laws and instruction/source caps. The first source
+[Check 37260655373](https://github.com/ubugeeei-prod/vize/actions/runs/37260655373)
+executed the original sixteen actual CLI/runtime rows successfully; it does not
+qualify the additional inverse boundary or the successor source. Fresh full
+source execution and protected delivery remain required.
