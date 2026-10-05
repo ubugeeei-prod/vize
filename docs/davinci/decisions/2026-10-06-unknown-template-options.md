@@ -272,3 +272,34 @@ All eleven owned commits were genuinely replayed onto actual signed main `6f1728
 Publish this reviewed correction to the SAME Draft #8056 after a literal remote24e/off-queue fence, then qualify fresh exact-head Actions. The existing native lane must actually execute all six unchanged protected-regression vectors, plus seven complete CLI cases, fourteen direct-service vectors and the original native oracle. Fresh full source/corpus, protected suites/all104, signed reporter-credited actual merge and public release remain required. Failed protectedc48 remains failed; no old-source pass, raw-native-wire, stdio RPC, history/default replacement or global10x credit is transferred.
 
 Source a4347d5 Check 37360344358 has a real early check-js formatter failure in this companion (job 111933083081). The pinned formatter removes only three surplus blank lines; this changes no production, input, vector or qualifier. The failed run remains failed. The formatted same-PR successor requires fresh exact-head Actions before readiness; no pending native result is transferred as current acceptance.
+
+## Hosted report refusal and actual CI repair replay
+
+Source `8d92eb4305a73f8f11775cbb89e5b06d7950c9f4` genuinely passed native run
+`37360870941`: seven whole CLI cases, fourteen direct-service vectors, the
+original native contract and all six required compatibility contracts. Captures
+retain the 21 old CLI cases, five complete Batch results and four entire old
+declaration snapshots. The old CLI tail/quotation normalizer is unchanged; raw
+streams remain intact. Ordinary workers executed 16,249 unique passing cases.
+Executable hashes remain provenance without retained executable-byte rehash.
+
+Check `37360871523` did not obtain aggregate acceptance. One authorized fan-in
+recovery retained all successful suite executions and genuinely passed its Rust
+and PR reports. Its required final test-report was actually cancelled at
+20:49:09 UTC, with no runner or steps and the official hosted non-acquisition
+annotation. No additional retry or admission follows this failed required gate.
+
+The CI runner repair #8066 actually merged at 21:02:06 UTC to
+`2902dc98751b408e803ee663aeee494ffab8413b`. All thirteen owned commits were
+faithfully replayed onto that literal main as `6c1153af2dbda068a2425771eb1b651da78a6dde`,
+with all 39 noncanonical blobs and every author/date/body/footer unchanged.
+The tree `1ab0c8441dc3e3821319256fbe8cc84fdb0ca341` equals the independent
+projection; all 22,051 incoming nonowned entries and whole canonical bytes are
+preserved. Receipt SHA256 `e0313458361be6363b202b834afccde5aacab7f7127a7525b2d2cf042373bd76`.
+
+The same Draft #8056 now requires fresh exact-head ordinary and native Actions;
+8d's execution cannot qualify the new source. Every original input, option,
+whole vector, declaration and timeout stays exact. Current full compatibility,
+protected suites/all 104 three-run ceilings, actual signed reporter-credited
+merge and public release remain required. Direct-service is not stdio RPC;
+fix-history/default replacement and the global 10x goal remain unfinished.
