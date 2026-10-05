@@ -266,3 +266,30 @@ required. Inspect the actual protected squash footer as well as signature,
 full suites and unchanged 104-by-three parent ratchets before accepting merge.
 Large archive/executable bytes were not independently downloaded or rehashed.
 Full platform isolation, CPU/10x results and #6834 closure remain unfinished.
+
+## Genuine consumer qualification and actual squash custody
+
+Exact complete consumer source `75404b9ab0e2df2afe15eedd3734cf7826f98891`
+[Check 37271221546](https://github.com/ubugeeei-prod/vize/actions/runs/37271221546)
+is terminal successful across all required contexts and four Rust workers.
+Authenticated complete JUnit artifacts retain 15,992 executions with zero
+failures, errors or skips. The four whole provider laws each execute once,
+the actual isolated System allocation/counter session law executes once, and
+all 23 preserved timing, wire and page laws execute once. Original full JSON,
+read/aggregation ordering and actual allocation observations remain unchanged.
+
+The first native protected candidates `fccc7736` and `a3134621` omit the
+qualification merge-commit trailers from their actual squash messages.
+Dequeue the full prefix rather than accept an unattributed actual merge.
+The genuine consumer now retains provider regular qualification `9f2cfd04`
+as its ancestor and adds this meaningful regular execution/custody record
+with the verified reporter footer. Keep both prior delivery records, all six
+original implementation commits/authors and all source/law/replay bytes.
+
+Pair this record with #6834 and the central L0 decision. Fresh exact-head
+source qualification precedes highest contiguous native Stack re-entry; actual
+protected footer, signature, full suites and immutable 104-by-three parent
+ratchets remain acceptance conditions. No individual auto-merge, additional
+native/manual CPU campaign, allocation cap change or 10x/platform claim.
+The large archive/executable bytes were not independently downloaded or
+rehashed. Native Timer/TLS/locks and full platform isolation remain unfinished.
