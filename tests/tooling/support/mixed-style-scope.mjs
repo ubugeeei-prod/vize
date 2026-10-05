@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-import { Window } from "happy-dom";
+import { CSSRule, Window } from "happy-dom";
 
 const fixtureRoot = new URL(
   "../../_fixtures/differential/compiler/benchmark-mixed-style-scope/",
@@ -54,12 +54,19 @@ const expectedIdentities = new Set(
 
 function selectors(rules) {
   return Array.from(rules, (rule) => {
-    if (rule.cssRules) {
+    if (rule.type === CSSRule.MEDIA_RULE) {
+      assert.equal(typeof rule.conditionText, "string", "the authored media constraint must parse");
       const condition = rule.conditionText
         .replace(/min-width\s*:\s*1px/g, "width >= 1px")
         .replace(/\s/g, "");
       return [condition, selectors(rule.cssRules)];
     }
+    assert.equal(
+      rule.type,
+      CSSRule.STYLE_RULE,
+      "the original plant contains only style/media rules",
+    );
+    assert.equal(rule.cssRules.length, 0, "the original style rules contain no nested rules");
     return rule.selectorText;
   });
 }

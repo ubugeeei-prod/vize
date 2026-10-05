@@ -107,5 +107,5 @@ fn standalone_style_keeps_its_explicit_scoped_option() {
         },
     )
     .expect("explicit standalone scoped request");
-    assert!(css.contains(".tail[data-v-abc12345]"), "{css}");
+    assert_eq!(css.as_str(), ".tail[data-v-abc12345]{color:green}");
 }

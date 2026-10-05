@@ -47,3 +47,5 @@ file after formatting. Update that exact reference and require the runtime
 child to authenticate every corpus input/reference before observation. The
 original source and production fix remain exact; fresh source Actions are
 required, without acceptance transferred from the superseded head.
+
+Fresh source Check 37255740116 at b33 failed: the CSS oracle treated every truthy cssRules as media, although happy-dom CSSStyleRule inherits an empty cssRules collection; it crashed before comparing CSS. Discriminate actual MEDIA_RULE/STYLE_RULE and refuse other/nested rules. Replace the standalone partial selector check with complete authored CSS equality and regenerate the one added test/dev L0 inventory row. Full original source, production correction, all 24 identities, official expected CSS and all ceilings stay unchanged. The source Nuxt 3 lane 37255739543 succeeded separately, without curing the failed Check. Fresh successor source Actions remain required.
