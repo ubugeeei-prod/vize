@@ -28,3 +28,12 @@ backend, source sweep, pipeline stage or legacy-backed native feature credit.
 No instant or 10x gain is claimed. Fresh exact-source Actions, all unchanged
 protected instruction ceilings, actual merge/release and installed RPC proof
 remain required.
+
+First exact native execution on ecc returns the correct full TS2322 object plus
+existing TS6133 unused-variable suggestions; the initial test vectors omitted
+those native hints. Retain the unchanged authored inputs and pin the complete
+suggestion objects for errors, repairs and JavaScript, with full guard vectors.
+Every whole publication mismatch is collected across all original sessions,
+then a mandatory terminal assertion rejects the test; response, version, timeout
+and shutdown contracts remain exact. Native suggestions are never filtered.
+Fresh current-source execution must authenticate all vectors before acceptance.

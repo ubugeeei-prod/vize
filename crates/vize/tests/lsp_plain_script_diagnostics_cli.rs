@@ -18,6 +18,7 @@ const CONFIG: &str = include_str!(
 
 #[test]
 fn complete_original_default_publications_follow_extensions_despite_language_ids() {
+    let mut mismatches = Vec::new();
     for (extension, language_id) in [
         ("ts", "typescript"),
         ("mts", "typescript"),
@@ -27,7 +28,7 @@ fn complete_original_default_publications_follow_extensions_despite_language_ids
     ] {
         let mut fixture = Fixture::new(extension, SOURCE, false);
         fixture.open(SOURCE, language_id, json!([]));
-        fixture.shutdown();
+        mismatches.extend(fixture.shutdown());
     }
     // The same bytes really remain malformed SFC input on a Vue URI.
     let mut fixture = Fixture::new("vue", SOURCE, false);
@@ -40,11 +41,13 @@ fn complete_original_default_publications_follow_extensions_despite_language_ids
             "message": "Malformed <string> block: the closing tag is missing."
         }]),
     );
-    fixture.shutdown();
+    mismatches.extend(fixture.shutdown());
+    assert!(mismatches.is_empty(), "{mismatches:#?}");
 }
 
 #[test]
 fn native_ts_diagnostics_survive_generics_guards_utf16_unsaved_errors_and_repairs() {
+    let mut mismatches = Vec::new();
     for newline in ["\n", "\r\n"] {
         for extension in ["ts", "mts", "cts"] {
             for language_id in ["typescript", "typescriptreact", "vue"] {
@@ -56,42 +59,58 @@ fn native_ts_diagnostics_survive_generics_guards_utf16_unsaved_errors_and_repair
                 );
                 let start = position(&changed, changed.find("value:").unwrap());
                 let end = json!({ "line": start["line"], "character": start["character"].as_u64().unwrap() + 5 });
+                let hint = unused_hint("value", start.clone(), end.clone());
                 let expected = json!([{
                     "range": { "start": start, "end": end }, "severity": 1,
                     "code": 2322, "source": "vize/types",
                     "message": "Type 'string' is not assignable to type 'number'."
-                }]);
+                }, hint.clone()]);
                 fixture.change(&changed, 2, expected.clone());
                 let repaired = changed.replace("'wrong'", "1");
-                fixture.change(&repaired, 3, json!([]));
+                fixture.change(&repaired, 3, json!([hint]));
                 fixture.change(&changed, 4, expected);
                 let guard = format!(
                     "{original}function isObject(x: unknown): x is Record<string, unknown> {{ return typeof x === 'object' && x !== null; }}{newline}"
                 );
-                fixture.change(&guard, 5, json!([]));
+                let guard_start = position(&guard, guard.find("isObject(").unwrap());
+                let guard_end = json!({ "line": guard_start["line"], "character": guard_start["character"].as_u64().unwrap() + 8 });
+                fixture.change(
+                    &guard,
+                    5,
+                    json!([unused_hint("isObject", guard_start, guard_end)]),
+                );
                 fixture.change(&original, 6, json!([]));
-                fixture.shutdown();
+                mismatches.extend(fixture.shutdown());
             }
         }
     }
+    assert!(mismatches.is_empty(), "{mismatches:#?}");
 }
 
 #[test]
 fn javascript_variants_keep_plain_script_ownership_with_misleading_vue_language_id() {
+    let mut mismatches = Vec::new();
     let source = "export const map = new Map();\nconst text = '<string>';\n";
     for extension in ["js", "mjs", "cjs"] {
         let mut fixture = Fixture::new(extension, source, true);
-        fixture.open(source, "vue", json!([]));
+        let hint = unused_hint(
+            "text",
+            json!({ "line": 1, "character": 6 }),
+            json!({ "line": 1, "character": 10 }),
+        );
+        fixture.open(source, "vue", json!([hint.clone()]));
         fixture.change("export const map = new Map();\n", 2, json!([]));
-        fixture.change(source, 3, json!([]));
-        fixture.shutdown();
+        fixture.change(source, 3, json!([hint]));
+        mismatches.extend(fixture.shutdown());
     }
+    assert!(mismatches.is_empty(), "{mismatches:#?}");
 }
 
 struct Fixture {
     _project: tempfile::TempDir,
     uri: String,
     process: LspProcess,
+    mismatches: Vec<Value>,
 }
 
 impl Fixture {
@@ -138,6 +157,7 @@ impl Fixture {
             _project: project,
             uri,
             process,
+            mismatches: Vec::new(),
         }
     }
 
@@ -161,15 +181,16 @@ impl Fixture {
                 && message["params"]["uri"] == self.uri
                 && message["params"]["version"] == version
         });
-        assert_eq!(
-            message,
-            json!({ "jsonrpc": "2.0", "method": "textDocument/publishDiagnostics", "params": {
-                "uri": self.uri, "version": version, "diagnostics": expected
-            }})
-        );
+        let expected = json!({ "jsonrpc": "2.0", "method": "textDocument/publishDiagnostics", "params": {
+            "uri": self.uri, "version": version, "diagnostics": expected
+        }});
+        if message != expected {
+            self.mismatches
+                .push(json!({ "actual": message, "expected": expected }));
+        }
     }
 
-    fn shutdown(&mut self) {
+    fn shutdown(&mut self) -> Vec<Value> {
         self.process
             .send(json!({ "jsonrpc": "2.0", "id": 2, "method": "shutdown" }));
         assert_eq!(
@@ -179,6 +200,7 @@ impl Fixture {
         self.process
             .send(json!({ "jsonrpc": "2.0", "method": "exit" }));
         assert!(self.process.wait_for_exit().success());
+        std::mem::take(&mut self.mismatches)
     }
 }
 
@@ -187,4 +209,12 @@ fn position(source: &str, offset: usize) -> Value {
     let line = prefix.bytes().filter(|&byte| byte == b'\n').count();
     let start = prefix.rfind('\n').map_or(0, |index| index + 1);
     json!({ "line": line, "character": prefix[start..].encode_utf16().count() })
+}
+
+fn unused_hint(name: &str, start: Value, end: Value) -> Value {
+    json!({
+        "range": { "start": start, "end": end }, "severity": 4,
+        "code": 6133, "source": "vize/types",
+        "message": format!("'{name}' is declared but its value is never read.")
+    })
 }
