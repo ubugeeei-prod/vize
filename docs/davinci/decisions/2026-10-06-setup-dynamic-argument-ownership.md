@@ -67,3 +67,39 @@ Existing Vapor runtime contracts and their original sources are unchanged;
 whole Rust/canonical Actions must qualify them. No new workflow/manual campaign
 or local native build is introduced. All new Rust/runtime laws are uncompiled
 and unexecuted until genuine fresh Actions; pure formatting/lint is distinct.
+
+## Authentic first-source failure and bounded successor
+
+Check37350694819 at source `a0823adbba7e7db5f1af68246cdea63f178a4d72`
+executes producer `446593b01ebccf9d8fe21faf2f713505f3ecea54` with the exact
+reviewed tree. The new mounted law fails on the unchanged original App: current
+initial attributes are empty, while all eight official inline cases preserve
+their independently authored 33 phases. The saved packet retains eighteen
+complete current modules, nine partial official modules/map graphs, original
+exit 1 and raw streams. This run grants no complete runtime acceptance.
+
+The public SFC entry selects the existing L2 DOM emitter. Its independent
+dynamic-key consumer still used the original `_ctx.` heuristic, bypassing the
+repaired compatibility visitor. Extract the unchanged consumer in a move-only
+commit, then use the real retained `JsExpr`, original setup `BindingTable` and
+existing expression rewrite/unref recording in that consumer. Propagate exact
+expression refusals through both key writers. Ordinary non-setup/default key
+spelling remains unchanged; simple local slot/For carriers keep their scope
+before setup-ref rewriting. A nine-original-template matrix requires genuine
+accepted selected emission and entire independent compatibility code/map bytes,
+with both modes and map dispositions. Its explicitly authored metadata equals
+the complete current source binding artifacts; the full SFC/runtime law still
+qualifies actual script analysis independently.
+
+The shared visitor also reached SSR vnode fallback: the same canonical run
+reports eight divergences across all 42,625 original SSR comparisons. Preserve
+this failure and every compared output. The repair is specifically VDOM: guard
+the new arm against existing SSR/Vapor contexts, with full original carrier
+controls, and require a fresh zero-divergence canonical run. No SSR writer or
+Vapor/default/reference inputs are changed. The separate direct HTML parser
+control retains its entire self-closing button and exact recoverable ExtendPoint
+diagnostic; this is valid Vue syntax, not a malformed Vue input. An independently
+authored paired-tag counterpart exercises the static-key invariant without that
+HTML-parser notice. All original nine SFCs, nineteen custody pins and 132 expected
+physical phases remain immutable. Successor Rust/runtime/canonical execution
+and all protected 100+4 measurements remain pending.

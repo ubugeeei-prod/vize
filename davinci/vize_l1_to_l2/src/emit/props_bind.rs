@@ -125,7 +125,7 @@ pub(super) fn emit_dynamic_bind_key(
         cx.buf.push(Buf::camelize_alias());
         cx.buf.push("(");
     }
-    emit_dynamic_key_source(cx, js);
+    emit_dynamic_key_source(cx, js)?;
     cx.buf.push(" || \"\"");
     if mods.camel {
         cx.buf.push(")");
@@ -154,15 +154,15 @@ pub(super) fn emit_dynamic_bind_pair(
     Ok(true)
 }
 
-fn emit_dynamic_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
+fn emit_dynamic_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) -> Result<(), EmitError> {
     if cx.prefixing() {
-        let text = cx.prefixed_dynamic_arg(js);
+        let text = cx.prefixed_dynamic_arg(js)?;
         cx.buf.push(text.as_str());
-        return;
+        return Ok(());
     }
     if matches!(js.ast, Expression::TemplateLiteral(_)) {
         emit_template_literal_key_source(cx, js);
-        return;
+        return Ok(());
     }
     let source = js_expr_source(js);
     let original = js.source;
@@ -170,6 +170,7 @@ fn emit_dynamic_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
         cx.buf.push("_ctx.");
     }
     cx.buf.push(source.as_str());
+    Ok(())
 }
 
 fn emit_template_literal_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {

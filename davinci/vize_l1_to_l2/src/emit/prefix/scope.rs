@@ -68,6 +68,10 @@ impl<'b> PrefixScope<'b> {
         self.inline
     }
 
+    pub(in crate::emit) fn is_script_setup(&self) -> bool {
+        self.bindings.is_some_and(BindingTable::is_script_setup)
+    }
+
     /// The transform's `is_ref_binding`: an inline-mode ref is read
     /// through `.value`. The script's reactivity tracker answers first (a
     /// tracked `computed`/`ref`/`toRef` reads through `.value`, any other

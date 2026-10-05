@@ -7,12 +7,12 @@
 mod original_argument_ownership {
     use super::super::process_directive_expressions;
     use crate::{
-        ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
+        ErrorCode, ExpressionNode, PropNode, RuntimeHelper, TemplateChildNode,
         lane::TransformContext,
         options::{BindingMetadata, BindingType, TransformOptions},
         parser::parse,
     };
-    use vize_l0::{Allocator, FxHashMap};
+    use vize_l0::{Allocator, FxHashMap, Span};
 
     const APP: &str = include_str!(
         "../../../../../../tests/_fixtures/differential/compiler/setup-dynamic-args-7881/App.vue.txt"
@@ -132,12 +132,34 @@ mod original_argument_ownership {
     #[test]
     fn ordinary_argument_namespace_and_static_keys_keep_the_original_carriers() {
         let allocator = Allocator::new();
-        for source in [
-            original_template(),
-            "<button @click=\"n++\" :title=\"'tip'\" />",
+        for (source, expected_errors) in [
+            (original_template(), std::vec::Vec::new()),
+            (
+                "<button @click=\"n++\" :title=\"'tip'\" />",
+                std::vec![(
+                    ErrorCode::ExtendPoint,
+                    "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+                    Some(Span::new(0, 38))
+                )],
+            ),
+            (
+                "<button @click=\"n++\" :title=\"'tip'\"></button>",
+                std::vec::Vec::new(),
+            ),
         ] {
             let (mut root, errors) = parse(&allocator, source);
-            assert!(errors.is_empty(), "{errors:?}");
+            assert_eq!(
+                errors
+                    .iter()
+                    .map(|error| (
+                        error.code,
+                        error.message.as_str(),
+                        error.loc.as_ref().map(|loc| loc.span)
+                    ))
+                    .collect::<std::vec::Vec<_>>(),
+                expected_errors,
+                "direct HTML parser boundary; self-closing is valid Vue syntax"
+            );
             let el = root
                 .children
                 .iter_mut()
@@ -184,6 +206,66 @@ mod original_argument_ownership {
                 .collect();
             assert_eq!(after, original);
             assert_eq!(original.len(), 2);
+        }
+    }
+
+    #[test]
+    fn original_server_and_vapor_argument_carriers_keep_their_existing_processing() {
+        for (ssr, vapor) in [(true, false), (false, true)] {
+            let allocator = Allocator::new();
+            let source = original_template();
+            let (mut root, errors) = parse(&allocator, source);
+            assert!(errors.is_empty(), "{errors:?}");
+            let el = root
+                .children
+                .iter_mut()
+                .find_map(|node| match node {
+                    TemplateChildNode::Element(el) => Some(el),
+                    _ => None,
+                })
+                .expect("original button owner");
+            let arguments = |el: &crate::ElementNode<'_>| {
+                el.props
+                    .iter()
+                    .filter_map(|prop| match prop {
+                        PropNode::Directive(dir) => match &dir.arg {
+                            Some(ExpressionNode::Simple(arg)) => Some((
+                                arg.content.to_owned(),
+                                arg.loc.span,
+                                arg.is_static,
+                                arg.is_ref_transformed,
+                            )),
+                            _ => None,
+                        },
+                        _ => None,
+                    })
+                    .collect::<std::vec::Vec<_>>()
+            };
+            let original = arguments(el);
+            let mut bindings = FxHashMap::default();
+            for name in ["evt", "attr", "n"] {
+                bindings.insert(name.into(), BindingType::SetupRef);
+            }
+            let mut ctx = TransformContext::new(
+                &allocator,
+                source,
+                TransformOptions {
+                    prefix_identifiers: true,
+                    inline: true,
+                    ssr,
+                    vapor,
+                    binding_metadata: Some(BindingMetadata {
+                        bindings,
+                        props_aliases: FxHashMap::default(),
+                        is_script_setup: true,
+                    }),
+                    ..Default::default()
+                },
+            );
+            process_directive_expressions(&mut ctx, el);
+            assert_eq!(arguments(el), original);
+            assert_eq!(original.len(), 2);
+            assert!(ctx.errors.is_empty(), "{:?}", ctx.errors);
         }
     }
 }
