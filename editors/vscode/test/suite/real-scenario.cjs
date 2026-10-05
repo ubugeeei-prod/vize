@@ -141,10 +141,7 @@ async function stepTypedRefHoverSurfaces() {
 /** Step 1c: imported component hover text stays marker-free in the packaged host. */
 async function stepComponentContractHoverSurfaces() {
   assert.equal(
-    fs.readFileSync(
-      path.join(getWorkspaceFolderPath(), "src", "ContractChild.vue"),
-      "utf8",
-    ),
+    fs.readFileSync(path.join(getWorkspaceFolderPath(), "src", "ContractChild.vue"), "utf8"),
     expected.componentContractChildSource,
     "component contract child fixture prepared before client startup",
   );

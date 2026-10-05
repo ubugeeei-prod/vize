@@ -124,3 +124,12 @@ controls, and add complete-input launch-order coverage. These bounded source
 corrections were independently reviewed; the old failed source/full runs stay
 failed, and fresh exact-head whole gates remain required before protected
 parent merge and release. No matched speed or 10x credit follows.
+
+The `85a4388afe` source check-js job `111762655723` correctly rejected only
+the new contract-file read's CJS formatting. Apply the configured formatter's
+expression layout and optional trailing-comma removal; the complete call
+arguments, input constants, assertions, startup order, guards and caps stay
+unchanged. Retain failed run `37309958168` and log SHA256
+`11678a0ae7414dd46b63a20b1cd5457a6c5b39e7d3b40f0c70758eeb4c358751`;
+concurrently running full/native observations remain source-scoped. Fresh
+successor source/native/full gates are required before delivery.
