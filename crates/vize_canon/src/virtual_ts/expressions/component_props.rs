@@ -96,10 +96,18 @@ pub(super) fn collect_generated_class_bindings<'a>(
         .collect()
 }
 
-pub(super) fn merged_class_binding_value(bindings: &[(&PassedProp, String)]) -> Option<String> {
+pub(super) fn merged_class_binding_value(
+    bindings: &[(&PassedProp, String)],
+    mut ranges: Option<&mut Vec<std::ops::Range<usize>>>,
+) -> Option<String> {
     match bindings {
         [] => None,
-        [(_, value)] => Some(value.clone()),
+        [(_, value)] => {
+            if let Some(ranges) = ranges.as_mut() {
+                ranges.push(0..value.len());
+            }
+            Some(value.clone())
+        }
         _ => {
             let mut value = String::default();
             value.push('[');
@@ -107,7 +115,10 @@ pub(super) fn merged_class_binding_value(bindings: &[(&PassedProp, String)]) -> 
                 if index > 0 {
                     value.push_str(", ");
                 }
-                append_prop_value(&mut value, binding_value.as_str());
+                let generated = append_prop_value(&mut value, binding_value.as_str());
+                if let Some(ranges) = ranges.as_mut() {
+                    ranges.push(generated);
+                }
             }
             value.push(']');
             Some(value)

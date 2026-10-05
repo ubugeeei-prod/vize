@@ -95,6 +95,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             let fallback = self.children(Flags {
                 as_fragment: false,
                 disable_nested_fragments: false,
+                disable_comments: false,
                 inherit_attrs: false,
                 css_vars: false,
             });

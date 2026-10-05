@@ -7,7 +7,6 @@
 //! lazily spawned session that mirrors the virtual documents in. Standard tsgo
 //! diagnostics use the same session so semantic requests share one project
 //! identity and one overlay generation.
-//!
 //! The session is lazy on purpose: typecheck-only runs never pay for the extra
 //! process, and a session that has answered one hover is reused later.
 
@@ -48,6 +47,7 @@ mod readiness;
 mod requests;
 mod responder;
 mod retry;
+pub mod snapshot_source;
 mod synchronize;
 #[cfg(test)]
 mod tests;

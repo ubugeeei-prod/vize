@@ -1,0 +1,90 @@
+### Area
+
+`@vizejs/nuxt` + scoped compiler settings (`entries[].compiler`, #7247)
+
+### Version
+
+`vize` / `@vizejs/nuxt` / `@vizejs/vite-plugin` 0.432.0, `nuxt` 4.5.2, `vue` 3.5.43, Node v26.8.1, macOS arm64
+
+### Summary
+
+Since #7003, `@vizejs/nuxt` forwards `vue.compilerOptions.whitespace` from `nuxt.config` to the Vite plugin. It is passed as an explicit plugin option, and explicit plugin options take precedence over the shared configuration (as documented for #7247). So in a Nuxt app that sets `vue.compilerOptions.whitespace` (which it needs whenever Vue's own compiler runs, e.g. in tests or with the module disabled), `entries[].compiler.whitespace` in `vize.config.*` never applies: every file gets the Nuxt value.
+
+Without `vue.compilerOptions.whitespace` in `nuxt.config`, the same `vize.config.json` works as expected. The app cannot have both: a whitespace mode that Vue's compiler sees and a per-directory override that Vize sees.
+
+This also blocks the workaround for #7831 on 0.432.0 (condensing only Nuxt's own SFCs under `node_modules/**` while the app keeps `preserve`).
+
+### Reproduction
+
+`package.json` devDependencies: `nuxt@4.5.2`, `vue@3.5.43`, `vue-router@5.3.1`, `vize@0.432.0`, `@vizejs/nuxt@0.432.0`
+
+`nuxt.config.ts`
+
+```ts
+// FORWARD=1 sets Nuxt's own `vue.compilerOptions.whitespace`
+export default defineNuxtConfig({
+  ssr: false,
+  modules: [["@vizejs/nuxt", { lint: false, checker: false }]],
+  ...(process.env.FORWARD ? { vue: { compilerOptions: { whitespace: "preserve" } } } : {})
+});
+```
+
+`vize.config.json`
+
+```json
+{
+  "compiler": { "whitespace": "preserve" },
+  "entries": [
+    { "files": ["app/components/tight/**", "node_modules/**"], "compiler": { "whitespace": "condense" } }
+  ]
+}
+```
+
+`app/components/tight/TightRow.vue` (and `app/components/loose/LooseRow.vue`, the same with `loose-*` text)
+
+```vue
+<template>
+  <p class="tight-row">
+    <span>tight-alpha</span>
+    <span>tight-beta</span>
+  </p>
+</template>
+```
+
+`app/app.vue`
+
+```vue
+<script setup lang="ts">
+import LooseRow from "./components/loose/LooseRow.vue";
+import TightRow from "./components/tight/TightRow.vue";
+</script>
+
+<template>
+  <main><TightRow /><LooseRow /></main>
+</template>
+```
+
+`check.mjs` prints the compiled children of each row:
+
+```js
+import { readdirSync, readFileSync } from "node:fs";
+const dir = ".output/public/_nuxt";
+const js = readdirSync(dir).filter(f => f.endsWith(".js")).map(f => readFileSync(`${dir}/${f}`, "utf8")).join("\n");
+for (const row of ["tight", "loose"]) console.log(`${row}: ${new RegExp(`.{0,40}${row}-alpha.{0,80}`).exec(js)?.[0]}`);
+```
+
+```console
+$ npx nuxt generate > /dev/null && node check.mjs
+tight: v(),e(`p`,vi,[...n[0]||=[h(`span`,null,`tight-alpha`,-1),h(`span`,null,`tight-beta`,-1)]])}…
+loose: urn v(),e(`p`,hi,[n[0]||=h(`span`,null,`loose-alpha`,-1),m(),n[1]||=h(`span`,null,`loose-beta`,-1)])}…
+
+$ FORWARD=1 npx nuxt generate > /dev/null && node check.mjs
+tight: urn v(),e(`p`,vi,[n[0]||=h(`span`,null,`tight-alpha`,-1),m(),n[1]||=h(`span`,null,`tight-beta`,-1)])}…
+loose: urn v(),e(`p`,hi,[n[0]||=h(`span`,null,`loose-alpha`,-1),m(),n[1]||=h(`span`,null,`loose-beta`,-1)])}…
+```
+
+(`m()` is the `" "` text node that `preserve` keeps between the two spans.)
+
+### Expected
+
+With `FORWARD=1`, `TightRow` is still condensed by its `entries[]` match, as without it. Values that `@vizejs/nuxt` derives from `nuxt.config` (`vue.compilerOptions.*`) should act as top-level defaults that `vize.config` entries can refine, not as explicit plugin options that override them. Options the user passes to the module itself (`modules: [["@vizejs/nuxt", { compiler: … }]]`) can keep the explicit precedence.

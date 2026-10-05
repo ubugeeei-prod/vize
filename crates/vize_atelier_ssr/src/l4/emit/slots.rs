@@ -26,7 +26,7 @@ pub(super) struct SlotSpec {
 pub(super) type SlotAnchor = (Option<u32>, Option<u32>);
 
 /// Start of the static slot name in the `#name` / `v-slot:name` directive.
-fn slot_name_start(file: &str, content: &l2::SlotContentOp<'_>) -> Option<u32> {
+pub(super) fn slot_name_start(file: &str, content: &l2::SlotContentOp<'_>) -> Option<u32> {
     let Some(DynamicName::Static(name)) = content.name else {
         return None;
     };

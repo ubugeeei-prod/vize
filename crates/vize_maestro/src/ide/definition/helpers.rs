@@ -63,6 +63,18 @@ pub(crate) fn get_tag_at_offset(content: &str, offset: usize) -> Option<String> 
 pub(crate) fn get_attribute_and_component_at_offset(
     ctx: &IdeContext<'_>,
 ) -> Option<(String, String)> {
+    attribute_and_component_at_offset(ctx, true)
+}
+
+/// Model attributes retain their separate model query route.
+pub(crate) fn get_non_model_attribute_at_offset(ctx: &IdeContext<'_>) -> Option<(String, String)> {
+    attribute_and_component_at_offset(ctx, false)
+}
+
+fn attribute_and_component_at_offset(
+    ctx: &IdeContext<'_>,
+    include_model: bool,
+) -> Option<(String, String)> {
     let content = &ctx.content;
     let cursor = ctx.offset.min(content.len());
     let (tag_start, tag_end, name_start, name_end) = find_tag_name_span(content, cursor)?;
@@ -139,7 +151,7 @@ pub(crate) fn get_attribute_and_component_at_offset(
         if let Some(model_prop_name) =
             super::component_model::prop_name_from_v_model_attribute(raw_attr_name)
         {
-            return Some((model_prop_name, tag_name.to_string()));
+            return include_model.then(|| (model_prop_name, tag_name.to_string()));
         } else if let Some(stripped) = attr_name.strip_prefix(':') {
             attr_name = stripped;
         } else if let Some(stripped) = attr_name.strip_prefix("v-bind:") {

@@ -1,0 +1,11 @@
+{
+  "authority": "microsoft/typescript-go@2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+  "scope": "independently assembled text-only envelope; not a whole AST oracle",
+  "protocol": 5,
+  "metadataByte": 3,
+  "sourceFileKind": 307,
+  "text": "const emoji = '😀';\r\n// café\r",
+  "fileName": "/workspace/a #.ts",
+  "path": "/workspace/a #.ts",
+  "sha256": "16c2e4e9a050825d6bd7b10d2086bbd38bf39f1145bc2d0f016361ae36ea43a1"
+}

@@ -20,6 +20,7 @@ pub struct CorsaVueVirtualDocumentOptions {
 }
 
 /// A Vue SFC projected into the TypeScript document queried by Corsa.
+#[derive(Clone)]
 pub struct CorsaVueVirtualDocument {
     pub request_uri: String,
     pub code: String,
@@ -40,6 +41,7 @@ pub struct CorsaVueVirtualDocument {
     pub session_project_root: Option<PathBuf>,
 }
 
+#[derive(Clone)]
 pub struct CorsaMaterializedSource {
     pub materialized_path: PathBuf,
     pub source_path: PathBuf,
@@ -66,6 +68,7 @@ impl CorsaMaterializedMappingKind {
     }
 }
 
+#[derive(Clone)]
 pub struct CorsaVueVirtualDependency {
     pub source_path: PathBuf,
     pub source: String,

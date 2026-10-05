@@ -14,7 +14,7 @@ use oxc_allocator::Allocator as OxcAllocator;
 use oxc_parser::Parser as OxcParser;
 use oxc_span::SourceType;
 use vize_atelier_sfc::SfcDescriptor;
-use vize_patina::{HelpRenderTarget, LintPreset, render_help};
+use vize_patina::{HelpRenderTarget, render_help};
 
 use super::{DiagnosticService, LineIndex, linter_options, sources};
 use vize_l0::append;
@@ -423,38 +423,9 @@ impl DiagnosticService {
         ecosystem_enabled: bool,
         line_index: &LineIndex<'_>,
     ) -> Vec<Diagnostic> {
-        let Some((linter_config, rule_options)) = state.linter_settings_for_uri(uri) else {
-            return vec![];
-        };
-        if !linter_config.enabled {
-            return vec![];
-        }
         let is_standalone_html = crate::utils::is_standalone_html_path(uri.path());
-        let preset = linter_config.preset.as_deref();
-        let preset = preset.and_then(LintPreset::parse).unwrap_or_default();
-        let lint_options =
-            linter_options::resolve_patina_options(uri, &linter_config, &rule_options);
-        let mut linter = if ecosystem_enabled && linter_config.preset.is_none() {
-            vize_patina::Linter::with_ecosystem()
-        } else {
-            vize_patina::Linter::with_preset(preset)
-        }
-        .with_additional_rules(lint_options.additional_rules)
-        .with_disabled_rules(lint_options.disabled_rules)
-        .with_category_severity_overrides(lint_options.category_severity_overrides)
-        .with_rule_severity_overrides(lint_options.rule_severity_overrides)
-        .with_restricted_globals(lint_options.restricted_globals)
-        .with_restricted_members(lint_options.restricted_members)
-        .with_musea_design_tokens(lint_options.musea_design_tokens);
-        linter = linter_options::apply_rule_options(linter, &rule_options);
-
-        #[cfg(not(target_arch = "wasm32"))]
-        let linter = if linter_config.strict_reactivity_enabled() {
-            linter.with_rule(Box::new(
-                vize_patina::rules::type_aware::NoReactivityLoss::new(),
-            ))
-        } else {
-            linter
+        let Some(linter) = super::patina::linter_for_uri(state, uri, ecosystem_enabled) else {
+            return vec![];
         };
         let result = if is_standalone_html {
             linter.lint_standalone_html(content, uri.path())

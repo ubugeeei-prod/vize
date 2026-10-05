@@ -29,10 +29,17 @@ use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sf
 use vize_atelier_ssr::differential::{SsrLaneComparison, compare_ssr_lanes};
 use vize_atelier_ssr::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 
+#[path = "davinci_ssr_corpus/group_template.rs"]
+mod group_template;
+
 #[path = "davinci_ssr_corpus/production.rs"]
 mod production;
 
 const BATTERY: &[(&str, &str)] = &[
+    (
+        "TransitionGroupDynamicSlot.vue",
+        include_str!("fixtures/transition-group-dynamic-slot-with-v-if.vue"),
+    ),
     (
         "SelectValueOrder.vue",
         include_str!("fixtures/select-value-order.vue"),
@@ -97,6 +104,53 @@ export default { data: () => ({ open: false, name: "x" }), methods: { toggle() {
         r#"<template><p>{{ show ? ' &lt; ' : '&nbsp;' }}</p><span>{{ ok ? '&check;' : '&#x200E;' }}</span></template>"#,
     ),
 ];
+
+macro_rules! builtin_source {
+    ($name:literal) => {
+        include_str!(concat!(
+            "../../../tests/_fixtures/differential/compiler/ssr-builtins-7891/",
+            $name,
+            ".vue.txt"
+        ))
+    };
+}
+const BUILTINS: &[(&str, &str)] = &[
+    ("Async", builtin_source!("Async")),
+    ("App", builtin_source!("App")),
+    ("Explicit", builtin_source!("Explicit")),
+    ("FallbackOnly", builtin_source!("FallbackOnly")),
+    ("OtherSlot", builtin_source!("OtherSlot")),
+    ("DynamicSlot", builtin_source!("DynamicSlot")),
+    ("NoTag", builtin_source!("NoTag")),
+    ("DynamicTag", builtin_source!("DynamicTag")),
+    ("Attrs", builtin_source!("Attrs")),
+    ("DefaultOnly", builtin_source!("DefaultOnly")),
+    ("Lowercase", builtin_source!("Lowercase")),
+];
+
+#[test]
+fn original_builtin_payloads_require_exact_selected_plan_ownership() {
+    let mut report = Report::default();
+    for (name, source) in BUILTINS {
+        let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("original full SFC");
+        let template = descriptor
+            .template
+            .as_ref()
+            .expect("original template owner");
+        record(
+            name,
+            &compare_ssr_lanes(
+                &template.content,
+                &SsrCompilerOptions::default(),
+                &SsrCompilerExperimentalOptions::default(),
+            ),
+            &mut report,
+        );
+    }
+    assert_eq!(report.compared, BUILTINS.len() as u64);
+    assert_eq!(report.emitted(), BUILTINS.len() as u64);
+    assert_clean("original builtin payloads", &report);
+}
 
 #[derive(Default)]
 struct Report {
@@ -230,17 +284,20 @@ fn ssr_lanes_agree_on_sfc_templates() {
 
 fn ssr_lanes_agree_on_sfc_templates_body() {
     let mut battery = Report::default();
-    for (name, source) in BATTERY {
+    for (name, source) in BATTERY.iter().chain(BUILTINS) {
         compare_sfc(name, source, &mut battery);
     }
-    assert_eq!(battery.templates, BATTERY.len() as u64);
-    assert_eq!(battery.compared, BATTERY.len() as u64);
+    assert_eq!(battery.templates, (BATTERY.len() + BUILTINS.len()) as u64);
+    assert_eq!(battery.compared, (BATTERY.len() + BUILTINS.len()) as u64);
     assert_clean("battery", &battery);
     let mut battery_production = production::ProductionReport::default();
-    for (name, source) in BATTERY {
+    for (name, source) in BATTERY.iter().chain(BUILTINS) {
         production::compare(name, source, &mut battery_production);
     }
-    assert_eq!(battery_production.compared, BATTERY.len() as u64);
+    assert_eq!(
+        battery_production.compared,
+        (BATTERY.len() + BUILTINS.len()) as u64
+    );
     production::assert_clean("battery", &battery_production);
 
     let Some(sweep) = davinci_test_support::corpus::resolve_env_sweep() else {

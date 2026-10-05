@@ -1,0 +1,6 @@
+<template>
+  <p class="loose-row">
+    <span>loose-alpha</span>
+    <span>loose-beta</span>
+  </p>
+</template>
