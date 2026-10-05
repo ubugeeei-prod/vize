@@ -67,7 +67,7 @@ function capture(command, args, directory, env) {
   };
 }
 
-test("source-built lint preserves complete original P0 findings with native TypeScript", () => {
+await test("source-built lint preserves complete original P0 findings with native TypeScript", () => {
   const artifact = path.join(root, "target/differential/lint-p0-originals.json");
   fs.mkdirSync(path.dirname(artifact), { recursive: true });
   const evidence = { schema: "vize.lint.p0-originals", version: 1, runs: [] };

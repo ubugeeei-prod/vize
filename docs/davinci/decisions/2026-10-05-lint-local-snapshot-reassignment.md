@@ -61,3 +61,11 @@ result law and CLI observer are byte-identical after replay onto genuine parent
 Preserve all incoming canonical decisions and regenerate the exact current census.
 Historical run acceptance does not transfer to the replay: require fresh source
 Actions/native Stack membership and actual protected-prefix merges, then release.
+
+Hosted source Check `37262456064` rejects the observer's unawaited Node test
+registration (`typescript/no-floating-promises`), with all 7,590 files correctly
+formatted. Await the registration at the existing module boundary; preserve all
+observed inputs/assertions, source semantics and the repository zero-warning
+budget. Raw job `111612351056` is retained before the correction. This test-only
+successor requires fresh Actions; it grants no native execution or acceptance
+credit from the rejected run.
