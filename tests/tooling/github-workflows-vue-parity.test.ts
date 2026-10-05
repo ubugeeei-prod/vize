@@ -92,8 +92,13 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   );
 
   const parity = steps.find((step) => step.name === "Check Vue compiler and typecheck parity");
-  assert.deepEqual(parity?.env, { VIZE_TEST_BIN: "target/ci/vize" });
-  assert.equal(parity?.run, "vp run --filter './tests' test:check:fixtures");
+  assert.deepEqual(parity?.env, {
+    VIZE_TEST_BIN: "target/ci/vize",
+    VIZE_LSP_BIN: "${{ github.workspace }}/target/ci/vize",
+    VIZE_LSP_REQUIRE_SOURCE_BUILD: "1",
+    VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci -p vize --features legacy",
+  });
+  assert.equal(parity?.run, "vp run --no-cache --filter './tests' test:check:fixtures");
   const phaseFiles = checkFixturePhases.map((phase) => phase.file);
   // The full compatibility ratchet must ride this scheduled and manual lane;
   // the routine check keeps a separate, bounded repository gate.

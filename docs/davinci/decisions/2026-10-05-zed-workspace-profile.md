@@ -5,6 +5,7 @@ Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/80
 Packaging follow-up: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5992554915).
 Current-wire follow-up: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5992831553).
 Legacy LSP custody: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5996545677).
+Existing workflow contract: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5996956563).
 Prior VS Code rule: [#7196](https://github.com/ubugeeei-prod/vize/issues/7196),
 commit `6496dd1ea4134f1a8a36dcef593bcaa7efcf5812`.
 
@@ -85,6 +86,13 @@ coordinates, timeouts, retries, filters, production and ceilings stay exact.
 The observer retains pending raw evidence; it does not prove internal native
 branches or generated mappings, or grant native-equivalence acceptance.
 Focused Node custody laws pass locally. Fresh successor Actions remain required.
+
+Current-main source `63dd041b` exposed one stale existing workflow expectation:
+it still required only the CLI variable and cached fixture command. Align only
+its exact environment and command with the reviewed source binding. Every other
+original structural ratchet, serial phase, upstream project and process-budget
+law remains unchanged. Both existing tests pass locally; fresh Actions remain
+required without previous-head or full-runtime acceptance.
 
 TODO: frozen source peer, current exact-head ordinary Check, existing editor
 packaging/unit and official CLI/real-server Actions, protected full Rust/all104,
