@@ -44,9 +44,10 @@ const doubled = computed(() => count.value * 2)
         labels.iter().any(|s| s.contains("Ref")),
         "expected a Ref<...> inlay hint, got {labels:?}",
     );
-    assert!(
-        labels.iter().any(|s| s.contains("ComputedRef")),
-        "expected a ComputedRef<...> inlay hint, got {labels:?}",
+    assert_eq!(
+        labels,
+        vec![": Ref<number>"],
+        "unknown computed types are not syntax-proven"
     );
 }
 

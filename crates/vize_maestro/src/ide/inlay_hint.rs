@@ -9,6 +9,8 @@
 //! revision, shared with the other request paths.
 
 mod expr_regions;
+#[cfg(feature = "native")]
+mod native;
 mod script;
 mod template;
 
@@ -58,12 +60,43 @@ impl InlayHintService {
         Self::hints_from_descriptor(content, uri, range, ecosystem_enabled, &descriptor)
     }
 
+    /// Authored decorations independent of checker-owned type hints.
+    pub(crate) fn decorations(
+        state: &ServerState,
+        content: &str,
+        uri: &Url,
+        range: Range,
+    ) -> Vec<InlayHint> {
+        let Some(descriptor) = state.sfc_descriptor(uri, content) else {
+            return Vec::new();
+        };
+        Self::descriptor_hints(
+            content,
+            uri,
+            range,
+            state.lsp_features().ecosystem,
+            &descriptor,
+            false,
+        )
+    }
+
     fn hints_from_descriptor(
         content: &str,
         uri: &Url,
         range: Range,
         ecosystem_enabled: bool,
         descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+    ) -> Vec<InlayHint> {
+        Self::descriptor_hints(content, uri, range, ecosystem_enabled, descriptor, true)
+    }
+
+    fn descriptor_hints(
+        content: &str,
+        uri: &Url,
+        range: Range,
+        ecosystem_enabled: bool,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        syntax_types: bool,
     ) -> Vec<InlayHint> {
         let mut hints = Vec::new();
 
@@ -137,14 +170,16 @@ impl InlayHintService {
         // Reactive-binding inlay hints: show `: Ref<…>` / `: ComputedRef<…>`
         // after `const X = ref(...)` / `const X = computed(() => ...)` so the
         // editor surfaces the inferred wrapper without requiring hover.
-        Self::collect_reactive_binding_hints(
-            &script_setup.content,
-            script_setup.loc.start,
-            content,
-            &croquis,
-            range,
-            &mut hints,
-        );
+        if syntax_types {
+            Self::collect_reactive_binding_hints(
+                &script_setup.content,
+                script_setup.loc.start,
+                content,
+                &croquis,
+                range,
+                &mut hints,
+            );
+        }
 
         hints
     }
@@ -169,15 +204,16 @@ impl InlayHintService {
                 ReactiveKind::Computed => "ComputedRef",
                 _ => continue,
             };
-            // Resolve the inner type via the same heuristic that completion
-            // uses for the .value shortcut. Falls back to `_` when the source
-            // is too dynamic to infer (e.g. `ref(props.bar)`).
-            let value_type = crate::ide::completion::infer_reactive_value_type(
+            // This document-only compatibility surface never invents a type
+            // when syntax analysis cannot infer one. The server uses native
+            // checker hints instead of this helper.
+            let Some(value_type) = crate::ide::completion::infer_reactive_value_type(
                 script,
                 source.name.as_str(),
                 source.kind,
-            );
-            let value_type = value_type.as_deref().unwrap_or("_");
+            ) else {
+                continue;
+            };
 
             // Locate `const NAME =` in the script content. Anchoring on the
             // declaration keyword avoids matching usages inside expressions.

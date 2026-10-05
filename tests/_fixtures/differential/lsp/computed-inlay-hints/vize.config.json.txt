@@ -1,0 +1,1 @@
+{ "languageServer": { "typecheck": true, "editor": true } }

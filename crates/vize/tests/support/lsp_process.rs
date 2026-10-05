@@ -2,6 +2,10 @@
 // Process pipes require std's growable UTF-8 buffer and the reader threads
 // require shared ownership; both are intentional at this test boundary.
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#![allow(
+    dead_code,
+    reason = "shared helpers serve different integration targets"
+)]
 
 use std::{
     io::{Read, Write},
@@ -15,13 +19,16 @@ use std::{
 use serde_json::Value;
 use vize_l0::{String as CompactString, cstr, path::canonicalize_non_verbatim};
 
+#[path = "lsp_process/capture.rs"]
+mod capture;
+use capture::Capture;
+
 #[path = "lsp_process/protocol.rs"]
 mod protocol;
 use protocol::read_message;
 
 const MESSAGE_TIMEOUT: Duration = Duration::from_secs(20);
 const PROCESS_EXIT_TIMEOUT: Duration = Duration::from_secs(5);
-
 pub struct LspProcess {
     child: Option<Child>,
     stdin: Option<ChildStdin>,
@@ -30,8 +37,10 @@ pub struct LspProcess {
     stderr_reader: Option<JoinHandle<()>>,
     stderr: Arc<Mutex<Vec<u8>>>,
     status: Option<ExitStatus>,
+    capture: Option<Capture>,
+    stdout_joined: Option<bool>,
+    stderr_joined: Option<bool>,
 }
-
 impl LspProcess {
     pub fn spawn(project_root: &Path) -> Self {
         Self::spawn_with_stderr(project_root, Stdio::piped())
@@ -40,9 +49,19 @@ impl LspProcess {
     /// Spawns with a caller-chosen stderr (e.g. a pipe whose reader an editor
     /// already closed); only a piped stderr is captured for failure reports.
     pub fn spawn_with_stderr(project_root: &Path, stderr_target: Stdio) -> Self {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_vize"))
-            .current_dir(project_root)
-            .arg("lsp")
+        let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
+        command.current_dir(project_root).arg("lsp");
+        Self::spawn_command(command, stderr_target)
+    }
+
+    pub fn spawn_native(project_root: &Path, executable: &Path) -> Self {
+        let mut command = Command::new(executable);
+        command.current_dir(project_root).args(["--lsp", "--stdio"]);
+        Self::spawn_command(command, Stdio::piped())
+    }
+
+    fn spawn_command(mut command: Command, stderr_target: Stdio) -> Self {
+        let mut child = command
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(stderr_target)
@@ -64,18 +83,27 @@ impl LspProcess {
             stderr_reader: None,
             stderr: Arc::clone(&stderr),
             status: None,
+            capture: None,
+            stdout_joined: None,
+            stderr_joined: None,
         };
+        process.capture = Capture::new(process.child.as_ref().unwrap().id(), &command);
 
+        let capture = process.capture.clone();
         let stdout_reader = std::thread::spawn(move || {
             let mut reader = std::io::BufReader::new(stdout);
             loop {
                 match read_message(&mut reader) {
                     Ok(message) => {
-                        if messages_tx.send(Ok(message)).is_err() {
-                            break;
+                        if let Some(capture) = &capture {
+                            capture.record("response", &message);
                         }
+                        let _ = messages_tx.send(Ok(message));
                     }
                     Err(error) => {
+                        if let Some(capture) = &capture {
+                            capture.error("stdoutError", &error);
+                        }
                         let _ = messages_tx.send(Err(cstr!("LSP stdout closed: {error}")));
                         break;
                     }
@@ -86,10 +114,15 @@ impl LspProcess {
 
         if let Some(stderr_pipe) = stderr_pipe {
             let stderr_buffer = Arc::clone(&stderr);
+            let capture = process.capture.clone();
             let stderr_reader = std::thread::spawn(move || {
                 let mut reader = std::io::BufReader::new(stderr_pipe);
                 let mut buffer = Vec::new();
-                let _ = reader.read_to_end(&mut buffer);
+                if let Err(error) = reader.read_to_end(&mut buffer) {
+                    if let Some(capture) = &capture {
+                        capture.error("stderrError", &error);
+                    }
+                }
                 *stderr_buffer
                     .lock()
                     .unwrap_or_else(std::sync::PoisonError::into_inner) = buffer;
@@ -101,6 +134,7 @@ impl LspProcess {
     }
 
     pub fn send(&mut self, message: Value) {
+        self.trace("request", &message);
         let body = cstr!("{message}");
         let result = self
             .stdin
@@ -114,7 +148,6 @@ impl LspProcess {
             self.fail(cstr!("failed to send LSP message {message}: {error}"));
         }
     }
-
     pub fn recv_response(&mut self, id: i64) -> Value {
         self.recv_matching(|message| message["id"].as_i64() == Some(id))
     }
@@ -129,8 +162,12 @@ impl LspProcess {
             }
             let remaining = deadline.saturating_duration_since(now);
             match self.messages.recv_timeout(remaining) {
-                Ok(Ok(message)) if matches(&message) => return message,
-                Ok(Ok(message)) => seen.push(message),
+                Ok(Ok(message)) => {
+                    if matches(&message) {
+                        return message;
+                    }
+                    seen.push(message);
+                }
                 Ok(Err(error)) => self.fail(cstr!(
                     "failed while waiting for LSP message: {error}; seen: {seen:#?}"
                 )),
@@ -138,6 +175,16 @@ impl LspProcess {
                     "timed out waiting for LSP message: {error}; seen: {seen:#?}"
                 )),
             }
+        }
+    }
+
+    pub fn trace_dir(&self) -> Option<&Path> {
+        self.capture.as_ref().map(Capture::root)
+    }
+
+    fn trace(&self, direction: &str, message: &Value) {
+        if let Some(capture) = &self.capture {
+            capture.record(direction, message);
         }
     }
 
@@ -159,6 +206,9 @@ impl LspProcess {
                 .unwrap_or_else(|error| self.fail(cstr!("failed to poll LSP process: {error}")));
             if let Some(status) = status {
                 self.status = Some(status);
+                self.finish_readers();
+                assert_eq!(self.stdout_joined, Some(true), "stdout reader panicked");
+                assert_ne!(self.stderr_joined, Some(false), "stderr reader panicked");
                 return status;
             }
             if Instant::now() >= deadline {
@@ -187,13 +237,24 @@ impl LspProcess {
         self.stdin.take();
         if let Some(mut child) = self.child.take() {
             let _ = child.kill();
-            self.status = child.wait().ok();
+            self.status = child.wait().ok().or(self.status);
         }
+        self.finish_readers();
+    }
+
+    fn finish_readers(&mut self) {
         if let Some(reader) = self.stdout_reader.take() {
-            let _ = reader.join();
+            self.stdout_joined = Some(reader.join().is_ok());
         }
         if let Some(reader) = self.stderr_reader.take() {
-            let _ = reader.join();
+            self.stderr_joined = Some(reader.join().is_ok());
+        }
+        if let Some(capture) = &self.capture {
+            let stderr = self
+                .stderr
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            capture.terminal(self.status, &stderr, self.stdout_joined, self.stderr_joined);
         }
     }
 }
