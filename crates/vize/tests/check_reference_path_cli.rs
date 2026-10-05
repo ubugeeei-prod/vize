@@ -36,6 +36,22 @@ fn reference_path_modules_keep_complete_cli_diagnostics() {
                 .unwrap();
             let report: serde_json::Value = serde_json::from_slice(&output.stdout)
                 .unwrap_or_else(|error| panic!("{error}: {output:?}"));
+            if let Some(output_dir) = std::env::var_os("VIZE_REFERENCE_PATH_CAPTURE_DIR") {
+                let output_dir = std::path::PathBuf::from(output_dir);
+                std::fs::create_dir_all(&output_dir).unwrap();
+                let record = serde_json::json!({
+                    "sourceSha":std::env::var("SOURCE_SHA").unwrap(),
+                    "cli":env!("CARGO_BIN_EXE_vize"),"cliSha256":cli_digest,"backend":backend,
+                    "case":case.0,"invalid":invalid,"argv":["check","--format","json"],
+                    "exitCode":output.status.code(),"stdout":output.stdout,"stderr":output.stderr,
+                    "report":report
+                });
+                std::fs::write(
+                    output_dir.join(vize_l0::cstr!("{}-{invalid}-cli.json", case.0).as_str()),
+                    serde_json::to_vec_pretty(&record).unwrap(),
+                )
+                .unwrap();
+            }
             let files = report["files"].as_array().unwrap();
             let diagnostics = files
                 .iter()
@@ -71,22 +87,6 @@ fn reference_path_modules_keep_complete_cli_diagnostics() {
             assert_eq!(programs[0]["root"], ".");
             assert_eq!(programs[0]["tsconfig"], "tsconfig.json");
             assert_eq!(programs[0]["compilerOptions"]["strict"], true);
-            if let Some(output_dir) = std::env::var_os("VIZE_REFERENCE_PATH_CAPTURE_DIR") {
-                let output_dir = std::path::PathBuf::from(output_dir);
-                std::fs::create_dir_all(&output_dir).unwrap();
-                let record = serde_json::json!({
-                    "sourceSha":std::env::var("SOURCE_SHA").unwrap(),
-                    "cli":env!("CARGO_BIN_EXE_vize"),"cliSha256":cli_digest,"backend":backend,
-                    "case":case.0,"invalid":invalid,"argv":["check","--format","json"],
-                    "exitCode":output.status.code(),"stdout":output.stdout,"stderr":output.stderr,
-                    "report":report
-                });
-                std::fs::write(
-                    output_dir.join(vize_l0::cstr!("{}-{invalid}-cli.json", case.0).as_str()),
-                    serde_json::to_vec_pretty(&record).unwrap(),
-                )
-                .unwrap();
-            }
             for (path, original) in paths.iter().zip(originals) {
                 assert_eq!(std::fs::read(path).unwrap(), original);
             }

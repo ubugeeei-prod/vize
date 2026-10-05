@@ -60,3 +60,13 @@ observation is preserved separately; configured-root and actual CLI results
 remain required. Failure captures retain actual virtual source identities.
 The consumer migration inventory must also be regenerated for the newly
 observed native test imports; no production native migration is claimed.
+
+Source `e76d852b2e` retains the same `TS2300` with configured roots. The
+previous broad-scan hypothesis was insufficient. The recorded declaration
+imports already point into the mirror, so complete authored and mirrored
+native CLI outputs with `--listFiles`, generated config bytes and actual CLI
+failures are now captured independently before assertions. Document-local
+authored diagnostics alone do not prove an entire project is duplicate-free.
+Structural witnesses also use configured roots; declaration import aliases
+must participate in reachability even when their targets are `.d.ts`. This
+additional fast-path scope applies only to declaration importers.

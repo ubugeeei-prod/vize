@@ -143,8 +143,12 @@ jobs:
           VIZE_TEST_REQUIRE_TSGO: "1"
           VIZE_REFERENCE_PATH_CAPTURE_DIR: ${{ runner.temp }}/reference-path-module
         run: |
-          cargo test --locked --profile ci-opt -p vize_canon --lib reference_paths::
+          set +e
           cargo test --locked --profile ci-opt -p vize --test check_reference_path_cli
+          cli_exit=$?
+          cargo test --locked --profile ci-opt -p vize_canon --lib reference_paths::
+          native_exit=$?
+          [[ "$cli_exit" == 0 && "$native_exit" == 0 ]]
       - name: Capture every actual shard with byte, map, diagnostic and freshness gates
         env:
           RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404

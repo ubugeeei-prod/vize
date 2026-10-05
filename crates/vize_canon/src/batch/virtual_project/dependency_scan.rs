@@ -107,6 +107,10 @@ impl VirtualProject {
             })
             .map(|(pattern, _)| CompactString::from(pattern.trim_end_matches('*')))
             .collect();
+        let declaration_alias_prefixes = aliases
+            .iter()
+            .map(|(pattern, _)| CompactString::from(pattern.trim_end_matches('*')))
+            .collect::<Vec<_>>();
         let mut queue: Vec<PathBuf> = match initial_sources {
             Some(paths) => paths
                 .iter()
@@ -151,7 +155,11 @@ impl VirtualProject {
             if references.is_empty()
                 && !may_resolve_a_dependency(
                     &virtual_content,
-                    &alias_prefixes,
+                    if is_declaration_file(&importer) {
+                        &declaration_alias_prefixes
+                    } else {
+                        &alias_prefixes
+                    },
                     workspace_package_specifiers,
                 )
             {

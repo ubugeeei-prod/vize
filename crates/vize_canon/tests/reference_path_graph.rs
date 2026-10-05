@@ -33,7 +33,9 @@ fn unprefixed_references_keep_the_complete_declaration_graph() {
             .map(|path| std::fs::read(path).unwrap())
             .collect::<Vec<_>>();
         let mut checker = BatchTypeChecker::new(&root).unwrap();
-        checker.scan_project().unwrap();
+        checker
+            .scan_paths(&[paths[1].clone(), paths[4].clone()])
+            .unwrap();
         let files = checker.virtual_files();
         for path in paths.iter().skip(1) {
             assert!(
@@ -65,7 +67,9 @@ fn path_references_do_not_resolve_through_import_aliases() {
         serde_json::json!({"missing.d.ts":["./types/builder-env.d.ts"]});
     std::fs::write(config_path, serde_json::to_vec(&config).unwrap()).unwrap();
     let mut checker = BatchTypeChecker::new(&root).unwrap();
-    checker.scan_project().unwrap();
+    checker
+        .scan_paths(&[root.join("env.d.ts"), root.join("src/a.ts")])
+        .unwrap();
     assert!(
         checker
             .virtual_files()

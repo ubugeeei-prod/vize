@@ -145,9 +145,31 @@ fn path_references_retain_original_sources_native_reports_and_configuration() {
                 let inputs = paths.iter().zip(&originals).map(|(path, bytes)| serde_json::json!({
                     "file":path.strip_prefix(&root).unwrap(),"source":std::str::from_utf8(bytes).unwrap(),"sha256":project::digest(bytes).as_str()
                 })).collect::<Vec<_>>();
+                let environment = checker
+                    .virtual_files()
+                    .into_iter()
+                    .find(|file| file.original_path == paths[1])
+                    .unwrap();
+                let mut virtual_root = environment.virtual_path.as_path();
+                for _ in paths[1].strip_prefix(&root).unwrap().components() {
+                    virtual_root = virtual_root.parent().unwrap();
+                }
+                let native_cli = |directory: &Path| {
+                    let output = std::process::Command::new(&backend)
+                        .current_dir(directory)
+                        .args(["--checkers", "1", "--pretty", "false", "--project"])
+                        .arg(directory.join("tsconfig.json"))
+                        .arg("--listFiles")
+                        .output()
+                        .unwrap();
+                    serde_json::json!({"backend":backend,"directory":directory,
+                        "config":std::fs::read_to_string(directory.join("tsconfig.json")).unwrap(),
+                        "exitCode":output.status.code(),"stdout":output.stdout,"stderr":output.stderr})
+                };
                 let record = serde_json::json!({
                     "sourceSha":std::env::var("SOURCE_SHA").unwrap(),"testBinary":std::env::current_exe().unwrap(),
                     "case":case.0,"invalid":invalid,"inputs":inputs,
+                    "nativeCliPrograms":{"authored":native_cli(&root),"mirrored":native_cli(virtual_root)},
                     "nativeFileProjection":"unfinished: typed imported const annotation refused",
                     "authoredTsgo":{"sourcePath":source_path,"sourceUri":source_uri,"sourceDigest":project::digest(source.as_bytes()).as_str(),
                         "report":report,"configuration":configuration,"configurationPath":configuration_path,
