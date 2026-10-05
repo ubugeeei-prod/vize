@@ -107,3 +107,19 @@ The literal-main replay onto `d1a25ec1da` preserves all 25 non-canonical owned
 blobs and 11 original authors/messages/reporter trailers. It retains every
 incoming canonical clause at 350 lines. Fresh exact-head Actions, protected
 acceptance, signed merge and release remain separate requirements.
+
+Protected candidate `7467af7581` passes all 104 measured instruction ceilings
+but fails one full Rust test: the derived #4964 strict side-effect control
+expects implicit `vite/client` CSS wildcards in a plain TS program. The
+candidate is removed from the queue. Preserve the original flag-off fixture
+and strict config bytes; give the existing CSS-resolving control an explicitly
+included authored `*.css` declaration. An additional unconfigured control
+requires all three complete TS2882 diagnostics. Strict controls compare the
+whole authored native CLI output/status with Batch diagnostics. The unchanged
+absent-flag fixture retains TS7's raw three-error default separately from an
+explicit CLI `--noUncheckedSideEffectImports false` override matching the
+existing stable-default adapter; no same-option parity is claimed there.
+All input bytes remain unchanged; native Actions capture inputs and whole raw
+reports. No phantom Vue helper or ambient provider is restored. Fresh source
+and protected qualification are required after the literal `ef50601216`
+main replay, retaining all original reference-path vectors and warm limits.

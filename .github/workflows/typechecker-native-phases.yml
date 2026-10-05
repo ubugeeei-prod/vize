@@ -148,7 +148,9 @@ jobs:
           cli_exit=$?
           cargo test --locked --profile ci-opt -p vize_canon --lib reference_paths::
           native_exit=$?
-          [[ "$cli_exit" == 0 && "$native_exit" == 0 ]]
+          cargo test --locked --profile ci-opt -p vize_canon --lib css_side_effect_import::
+          assets_exit=$?
+          [[ "$cli_exit" == 0 && "$native_exit" == 0 && "$assets_exit" == 0 ]]
       - name: Capture every actual shard with byte, map, diagnostic and freshness gates
         env:
           RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
