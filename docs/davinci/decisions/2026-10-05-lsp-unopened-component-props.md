@@ -46,3 +46,9 @@ paragraph and conflicts with the first relocation. Preserve that complete
 clause and its placement history in the existing source-wiring paragraph; all
 production, original corpus and complete RPC expectations stay byte-identical.
 Fresh required source checks and protected full delivery remain mandatory.
+
+The attempted source-wiring placement at `43837616` still collides with the
+live prefix because that paragraph also changed. Retain this failed projection
+as historical evidence, place the complete clause with full-tooling LSP runtime
+custody, and validate the entire sequential prospective composition before
+updating the branch. No source/corpus/RPC or budget changes occur.
