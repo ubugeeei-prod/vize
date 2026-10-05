@@ -1,0 +1,10 @@
+<script setup>
+import Forward from "./Forward.vue";
+</script>
+
+<template>
+  <Forward>
+    <b>default</b>
+    <template #extra="{ answer }"><i>named:{{ answer }}</i></template>
+  </Forward>
+</template>
