@@ -37,6 +37,7 @@ impl ServerState {
     /// Generate and cache virtual documents for a document.
     pub fn update_virtual_docs(&self, uri: &Url, content: &str) {
         self.open_imports.update(uri, content);
+        self.binding_occurrences.remove(uri);
         if uri.path().ends_with(".art.vue") {
             self.update_art_virtual_docs(uri, content);
             return;
@@ -63,11 +64,27 @@ impl ServerState {
         };
 
         let base_uri = uri.path();
-        let mut virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
+        let config = self.occurrence_config();
+        let features = config.features;
+        let revision = self.occurrence_source_revision(uri, content);
+        let (mut virtual_docs, facts) = if revision.is_some()
+            && !config.legacy_vue2
+            && (features.references || features.code_lens)
+        {
+            self.virtual_gen
+                .write()
+                .generate_with_occurrences(&descriptor, base_uri, content)
+        } else {
+            (
+                self.virtual_gen.write().generate(&descriptor, base_uri),
+                None,
+            )
+        };
         add_inline_art_template_virtual_docs(&mut virtual_docs, &descriptor, base_uri);
         super::art_template_context::attach(&mut virtual_docs);
         self.virtual_docs_cache
             .insert(uri.clone(), Arc::new(virtual_docs));
+        self.publish_occurrences(uri, content, revision, config, facts);
     }
 
     /// Generate and cache virtual documents for standalone HTML files.
@@ -116,7 +133,8 @@ impl ServerState {
     /// and generates virtual docs for script_setup if present.
     fn update_art_virtual_docs(&self, uri: &Url, content: &str) {
         use crate::virtual_code::{
-            ScriptCodeGenerator, VirtualDocuments, project_template_fragment,
+            PhysicalOccurrences, ScriptCodeGenerator, VirtualDocuments,
+            project_template_fragment_with_occurrences,
         };
 
         let allocator = vize_l0::Allocator::new();
@@ -128,8 +146,22 @@ impl ServerState {
         };
 
         let base_uri = uri.path();
+        let config = self.occurrence_config();
+        let features = config.features;
+        let revision = self.occurrence_source_revision(uri, content);
+        let capture = revision.is_some()
+            && !config.legacy_vue2
+            && (features.references || features.code_lens);
         let mut docs = VirtualDocuments::new();
         let descriptor = self.sfc_descriptor(uri, content);
+        // This existing fragment analysis owns only its selected script and
+        // variant templates. Do not call a partial Art relation complete.
+        let complete_fragment = descriptor.as_ref().is_some_and(|descriptor| {
+            descriptor.styles.is_empty()
+                && !(descriptor.script.is_some() && descriptor.script_setup.is_some())
+        });
+        let capture = capture && complete_fragment;
+        let mut facts = capture.then(PhysicalOccurrences::default);
         let (script, script_setup, script_offset) = descriptor
             .as_deref()
             .map(script_projection)
@@ -145,20 +177,25 @@ impl ServerState {
             }
 
             let template_allocator = vize_l0::Allocator::new();
-            let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
+            let (ast, errors) = vize_armature::parse(&template_allocator, template_content);
 
             let template_ptr = template_content.as_ptr() as usize;
             let source_ptr = content.as_ptr() as usize;
             let block_offset = (template_ptr - source_ptr) as u32;
 
-            let template_doc = project_template_fragment(
+            let (template_doc, packet) = project_template_fragment_with_occurrences(
                 script,
                 script_setup,
                 script_offset,
                 &ast,
                 block_offset,
                 vize_l0::cstr!("{base_uri}.art_variant_{index}.template.ts").to_string(),
+                (capture && errors.is_empty()).then_some(content),
             );
+            match (facts.as_mut(), packet) {
+                (Some(facts), Some(packet)) => facts.merge(packet),
+                _ => facts = None,
+            }
 
             if variant.is_default || docs.template.is_none() {
                 docs.template = Some(template_doc.clone());
@@ -195,6 +232,7 @@ impl ServerState {
         super::art_template_context::attach(&mut docs);
 
         self.virtual_docs_cache.insert(uri.clone(), Arc::new(docs));
+        self.publish_occurrences(uri, content, revision, config, facts);
     }
 
     /// Owned snapshot of a document's cached virtual documents: an `Arc` clone,
@@ -222,12 +260,14 @@ impl ServerState {
     pub fn remove_virtual_docs(&self, uri: &Url) {
         self.open_imports.remove(uri);
         self.virtual_docs_cache.remove(uri);
+        self.binding_occurrences.remove(uri);
     }
 
     /// Clear all cached virtual documents.
     pub fn clear_virtual_docs(&self) {
         self.open_imports.clear();
         self.virtual_docs_cache.clear();
+        self.binding_occurrences.clear();
     }
 
     /// Cache of parsed imported-component metadata, keyed by resolved path.

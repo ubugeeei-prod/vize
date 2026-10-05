@@ -11,6 +11,7 @@ mod binding;
 mod block;
 mod checker_document;
 mod inline_art;
+pub(crate) mod occurrences;
 
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
@@ -76,56 +77,19 @@ impl VirtualCodeGenerator {
         descriptor: &SfcDescriptor<'a>,
         base_uri: &str,
     ) -> VirtualDocuments {
-        // Create arena for temporary parsing data
         let allocator = Allocator::new();
+        self.generate_with_allocator(descriptor, base_uri, &allocator)
+    }
 
-        let mut docs = VirtualDocuments::new();
-
-        // Generate template virtual code
-        let mut template_expressions = Vec::new();
-        if let Some(ref template) = descriptor.template {
-            let template_content = template.content.as_ref();
-
-            // Parse template with arena allocation
-            let (ast, _errors) = vize_armature::parse(&allocator, template_content);
-            template_expressions = extract_expressions(&ast);
-            docs.template = Some(checker_document::template_document(
-                descriptor,
-                &ast,
-                template.loc.start as u32,
-                base_uri,
-            ));
-        }
-
-        // Generate script virtual code
-        if let Some(ref script) = descriptor.script {
-            let mut script_doc = self.script_gen.generate(script, false);
-            script_doc.uri = cstr!("{base_uri}.__script.ts").to_string();
-            docs.script = Some(script_doc);
-        }
-
-        // Generate script setup virtual code
-        if let Some(ref script_setup) = descriptor.script_setup {
-            let template_bindings =
-                template_used_script_bindings(script_setup.content.as_ref(), &template_expressions);
-            let mut script_doc =
-                self.script_gen
-                    .generate_with_exports(script_setup, true, &template_bindings);
-            script_doc.uri = cstr!("{base_uri}.__script_setup.ts").to_string();
-            docs.script_setup = Some(script_doc);
-        }
-
-        // Generate style virtual codes
-        for (i, style) in descriptor.styles.iter().enumerate() {
-            let mut style_doc = self.style_gen.generate(style, i);
-            let ext = style.lang.as_ref().map(|l| l.as_ref()).unwrap_or("css");
-            style_doc.uri = cstr!("{base_uri}.__style_{i}.{ext}").to_string();
-            docs.styles.push(style_doc);
-        }
-
-        // Arena is dropped here, freeing all temporary allocations
-
-        docs
+    /// Carry authored editor facts out of the existing checker analysis.
+    pub(crate) fn generate_with_occurrences(
+        &mut self,
+        descriptor: &SfcDescriptor<'_>,
+        base_uri: &str,
+        source: &str,
+    ) -> (VirtualDocuments, Option<occurrences::PhysicalOccurrences>) {
+        let allocator = Allocator::new();
+        self.generate_demand(descriptor, base_uri, &allocator, Some(source))
     }
 
     /// Generate virtual documents with explicit allocator.
@@ -138,6 +102,18 @@ impl VirtualCodeGenerator {
         base_uri: &str,
         allocator: &'alloc Allocator,
     ) -> VirtualDocuments {
+        self.generate_demand(descriptor, base_uri, allocator, None)
+            .0
+    }
+
+    fn generate_demand(
+        &mut self,
+        descriptor: &SfcDescriptor<'_>,
+        base_uri: &str,
+        allocator: &Allocator,
+        source: Option<&str>,
+    ) -> (VirtualDocuments, Option<occurrences::PhysicalOccurrences>) {
+        let mut packet = None;
         let mut docs = VirtualDocuments::new();
 
         // Generate template virtual code
@@ -146,14 +122,17 @@ impl VirtualCodeGenerator {
             let template_content = template.content.as_ref();
 
             // Parse template with provided allocator
-            let (ast, _errors) = vize_armature::parse(allocator, template_content);
+            let (ast, errors) = vize_armature::parse(allocator, template_content);
             template_expressions = extract_expressions(&ast);
-            docs.template = Some(checker_document::template_document(
+            let (document, facts) = checker_document::template_document(
                 descriptor,
                 &ast,
                 template.loc.start as u32,
                 base_uri,
-            ));
+                source.filter(|_| errors.is_empty()),
+            );
+            docs.template = Some(document);
+            packet = facts;
         }
 
         // Generate script virtual code
@@ -182,7 +161,7 @@ impl VirtualCodeGenerator {
             docs.styles.push(style_doc);
         }
 
-        docs
+        (docs, packet)
     }
 
     /// Quick generation for a single template string.
@@ -218,6 +197,30 @@ pub(crate) fn project_template_fragment(
         root,
         template_offset,
         uri,
+    )
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "existing fragment coordinates with exact authored source witness"
+)]
+pub(crate) fn project_template_fragment_with_occurrences(
+    script: Option<&str>,
+    script_setup: bool,
+    script_offset: u32,
+    root: &vize_relief::RootNode<'_>,
+    template_offset: u32,
+    uri: String,
+    source: Option<&str>,
+) -> (VirtualDocument, Option<occurrences::PhysicalOccurrences>) {
+    checker_document::fragment_document_demand(
+        script,
+        script_setup,
+        script_offset,
+        root,
+        template_offset,
+        uri,
+        source,
     )
 }
 

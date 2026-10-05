@@ -20,6 +20,7 @@ mod workspace_folders;
 
 #[cfg(feature = "native")]
 mod batch_cache;
+mod binding_occurrences;
 #[cfg(feature = "native")]
 mod corsa;
 #[cfg(feature = "native")]
@@ -103,6 +104,7 @@ pub struct ServerState {
     /// shard guard there deadlocks the whole server against the next
     /// `didOpen`/`didChange` write (#3377, same class as #3315/#3373).
     virtual_docs_cache: DashMap<Url, Arc<VirtualDocuments>>,
+    binding_occurrences: DashMap<Url, Arc<binding_occurrences::CachedOccurrences>>,
     /// Published lint diagnostics for the current document revision. Hover
     /// reads this instead of running the linter on every pointer movement.
     lint_hover_cache: DashMap<Url, (i32, Arc<Vec<Diagnostic>>)>,
@@ -222,6 +224,7 @@ impl ServerState {
             resident: resident::ResidentCache::default(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
+            binding_occurrences: DashMap::new(),
             lint_hover_cache: DashMap::new(),
             open_imports: super::importers::OpenImportIndex::with_package_routes(
                 package_route_resolver.clone(),
