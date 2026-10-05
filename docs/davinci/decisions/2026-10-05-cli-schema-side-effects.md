@@ -50,3 +50,15 @@ checks do not claim atomic protection against concurrent filesystem retargeting
 or independently executed Windows junction behavior.
 
 Paired issue decision: [preparation record](https://github.com/ubugeeei-prod/vize/issues/7986#issuecomment-5993667036).
+
+First source `b36f5274e4` failed only the new nonstring `$schema` expectation:
+the existing loader correctly returns status 2 and its complete parse error,
+while the fixture incorrectly expected a clean lint result. The official
+artifact 11343143220 (SHA256 `0ae8ea6b143612892ac999e30da7935e28785714700ae90b15711128a2c13edd`)
+retains all 29 attempted raw process/filesystem vectors, including that failure.
+The successor preserves every production/input/judge byte and all 44 controls;
+the invalid-config case now requires the exact original error, empty stdout,
+status 2 and unchanged filesystem in both formats. Fresh Actions is mandatory;
+the partial first run grants no whole-corpus or delivery acceptance.
+
+Paired correction: [retained first failure](https://github.com/ubugeeei-prod/vize/issues/7986#issuecomment-5993834208).

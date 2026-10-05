@@ -45,6 +45,7 @@ type Scenario = {
   seed?: "stale" | "current";
   obstruction?: "dependencies-file" | "dependencies-link" | "cache-link" | "schema-link";
   check?: boolean;
+  parseError?: string;
 };
 const scenarios: Scenario[] = [
   { id: "original-no-config", noConfig: true },
@@ -94,7 +95,12 @@ const scenarios: Scenario[] = [
     installed: true,
   },
   { id: "other-local-reference", config: { $schema: "custom.schema.json" }, installed: true },
-  { id: "nonstring-reference", config: { $schema: true }, installed: true },
+  {
+    id: "nonstring-reference",
+    config: { $schema: true },
+    installed: true,
+    parseError: "invalid type: boolean `true`, expected a string at line 2 column 17",
+  },
   {
     id: "relocated-config",
     config: { $schema: localSchema },
@@ -221,10 +227,20 @@ test("source CLI preserves original lint output and only materializes explicitly
           save();
           assert.equal(row.error, null, scenario.id);
           assert.equal(row.signal, null, scenario.id);
-          assert.equal(row.status, 0, `${scenario.id}: ${row.stdout}${row.stderr}`);
+          assert.equal(
+            row.status,
+            scenario.parseError ? 2 : 0,
+            `${scenario.id}: ${row.stdout}${row.stderr}`,
+          );
           assert.deepEqual(Buffer.from(row.stdout), result.stdout);
           assert.deepEqual(Buffer.from(row.stderr), result.stderr);
-          if (scenario.check) {
+          if (scenario.parseError) {
+            assert.equal(row.stdout, "");
+            assert.equal(
+              row.stderr,
+              `\x1b[31mError:\x1b[0m failed to parse ${configPath}: ${scenario.parseError}\n`,
+            );
+          } else if (scenario.check) {
             assert.equal(row.stdout, "");
             assert.equal(
               row.stderr,
