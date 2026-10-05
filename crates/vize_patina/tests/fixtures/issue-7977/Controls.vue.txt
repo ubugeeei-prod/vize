@@ -1,0 +1,32 @@
+<template>
+  <button inert aria-hidden="true">own inert</button>
+  <button inert="false" aria-hidden="true">Boolean inert</button>
+  <div inert><template v-if="ready"><button aria-hidden="true">carrier</button></template></div>
+  <div inert><button :inert="false" aria-hidden="true">inherited still inert</button></div>
+  <button disabled aria-hidden="true">disabled</button>
+  <button disabled="false" tabindex="0" aria-hidden="true">Boolean disabled</button>
+  <input disabled aria-hidden="true" />
+  <select disabled aria-hidden="true"></select>
+  <textarea disabled aria-hidden="true"></textarea>
+  <input type="HIDDEN" tabindex="0" aria-hidden="true" />
+  <button :disabled="false" aria-hidden="true">false binding</button>
+  <button :disabled="pending" aria-hidden="true">unknown binding</button>
+  <button disabled :disabled="false" aria-hidden="true">override</button>
+  <button inert :inert="false" aria-hidden="true">inert override</button>
+  <button inert v-bind="attrs" aria-hidden="true">object override</button>
+  <input type="hidden" :type="kind" aria-hidden="true" />
+  <button :[name]="value" disabled aria-hidden="true">dynamic argument</button>
+  <a disabled href="/" aria-hidden="true">disabled anchor stays focusable</a>
+  <div disabled tabindex="0" aria-hidden="true">disabled div</div>
+  <div :inert="false"><button aria-hidden="true">dynamic ancestor</button></div>
+  <div inert><Teleport to="body"><button aria-hidden="true">teleport barrier</button></Teleport></div>
+  <div inert><MyWrapper><button aria-hidden="true">component barrier</button></MyWrapper></div>
+  <div inert><dialog inert><button aria-hidden="true">explicit inert dialog</button></dialog></div>
+  <div inert><dialog><button aria-hidden="true">possible modal</button></dialog></div>
+  <template v-if="ready" inert><button aria-hidden="true">nonphysical inert</button></template>
+  <div inert><button aria-hidden="true">inert sibling</button></div><button aria-hidden="true">restored sibling</button>
+  <input readonly tabindex="-1" aria-hidden="true" />
+  <div contenteditable="true" aria-hidden="true">editable</div>
+  <button aria-hidden="false">visible</button>
+  <button :aria-hidden="true">unchanged dynamic aria</button>
+</template>
