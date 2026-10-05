@@ -18,7 +18,7 @@ use crate::{
 
 use super::{context::CodegenContext, helpers::escape_js_string};
 
-use comment_rewrite::convert_line_comments_to_block;
+pub use comment_rewrite::convert_line_comments_to_block;
 pub use generate::generate_event_handler;
 use scope_prefix::{contains_slot_param_scope_prefix, strip_scope_prefixes_for_slot_params};
 use vize_l0::String;

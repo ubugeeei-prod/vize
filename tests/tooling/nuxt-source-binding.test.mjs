@@ -78,6 +78,15 @@ await test("native fixture custody requires original inputs, actual load, and bo
     assert.throws(() => verifyNuxtSourceBindingEvents(custody, events));
 });
 
+await test("explicit SPA custody qualifies only client execution and rejects invalid backend scopes", () => {
+  const client = { ...custody, backends: ["client"] };
+  assert.deepEqual(verifyNuxtSourceBindingEvents(client, calls.slice(0, 2)).backends, ["client"]);
+  assert.throws(() => verifyNuxtSourceBindingEvents(custody, calls.slice(0, 2)));
+  for (const backends of [[], ["client", "client"], ["other"], "client"])
+    assert.throws(() => verifyNuxtSourceBindingEvents({ ...custody, backends }, calls));
+  assert.throws(() => verifyNuxtSourceBindingEvents(client, [calls[0], calls[2]]));
+});
+
 await test("actual preload scopes source selection and preserves other addons and call identity", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "nuxt-native-guard-"));
   const require = createRequire(import.meta.url);

@@ -1,9 +1,9 @@
 //! Helper functions for script compilation.
 //!
-//! Free functions used by the parsing and props extraction logic.
+//! Helpers used by the parsing and props extraction logic.
 
 use oxc_ast::ast::{
-    BindingPattern, CallExpression, Expression, ImportDeclaration, VariableDeclarationKind,
+    BindingPattern, CallExpression, Expression, ImportDeclaration, Program, VariableDeclarationKind,
 };
 use oxc_span::GetSpan;
 
@@ -12,6 +12,32 @@ use vize_croquis::macros::is_builtin_macro;
 
 use super::super::MacroCall;
 use vize_carton::{String, ToCompactString};
+
+impl super::ScriptCompileContext {
+    /// Analyze the existing parse-once program for the selected SFC target.
+    /// Source must be the exact text the program was parsed from.
+    /// Retained DOM/SSR callers keep their historical import metadata.
+    pub(crate) fn analyze_for_target(
+        &mut self,
+        program: Option<&Program<'_>>,
+        source: &str,
+        vapor: bool,
+    ) {
+        match program {
+            Some(program) => self.process_program(program, source, vapor),
+            None => self.parse_with_oxc(source, vapor),
+        }
+        self.bindings.is_script_setup = true;
+    }
+}
+
+pub(super) fn named_import_binding(source: &str, vapor: bool) -> BindingType {
+    if vapor && source == "vue" {
+        BindingType::SetupConst
+    } else {
+        BindingType::SetupMaybeRef
+    }
+}
 
 /// The source text covered by `span`, or `""` if it falls outside `source`.
 pub(super) fn span_text(source: &str, span: oxc_span::Span) -> &str {

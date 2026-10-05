@@ -1,5 +1,8 @@
 use super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 
+#[path = "imported_runtime_props/capture.rs"]
+mod capture;
+
 #[test]
 fn imported_runtime_define_props_reach_script_and_template() {
     if resolve_test_tsgo_binary().is_none() {
@@ -108,6 +111,7 @@ void valueOnClear
     .unwrap();
 
     let snapshot = snapshot_project_diagnostics(&project_root);
+    capture::retain("imported-runtime-define-props", &project_root, &snapshot);
     let _ = std::fs::remove_dir_all(&project_root);
     let Some(snapshot) = snapshot else {
         return;
@@ -192,6 +196,7 @@ const upper = props.label.toUpperCase()
     .unwrap();
 
     let snapshot = snapshot_project_diagnostics(&project_root);
+    capture::retain("type-with-defaults-imported-omit", &project_root, &snapshot);
     let _ = std::fs::remove_dir_all(&project_root);
     let Some(snapshot) = snapshot else {
         return;
@@ -262,6 +267,11 @@ const value: string = props.label
     .unwrap();
 
     let snapshot = snapshot_project_diagnostics(&project_root);
+    capture::retain(
+        "imported-runtime-props-cache-rebind",
+        &project_root,
+        &snapshot,
+    );
     let _ = std::fs::remove_dir_all(&project_root);
     let Some(snapshot) = snapshot else {
         return;

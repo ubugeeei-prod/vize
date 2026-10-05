@@ -19,7 +19,7 @@
 //! ```text
 //! VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git \
 //!     cargo test -p vize_l1 --features legacy-differential \
-//!     --test davinci_surface_corpus -- --nocapture
+//!     --test surface_corpus -- --nocapture
 //! ```
 
 use std::fs;

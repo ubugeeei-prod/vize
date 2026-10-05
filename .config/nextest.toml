@@ -1,6 +1,12 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Keep the seven exact allocation vectors for this one case in both PR/full
+# JUnit receipts; all other output policies and runtime settings stay unchanged.
+[[profile.default.overrides]]
+filter = 'package(=vize_atelier_vapor) & binary(=davinci_vapor_native_budget) & test(=native_lane_stays_within_its_allocation_ceilings)'
+junit.store-success-output = true
+
 [profile.pr]
 # Audited real-TSGO cases remain mandatory in the full Cargo T1 lane.
 # Exact package, binary and names keep future tests in the PR tier.

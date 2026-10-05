@@ -53,6 +53,7 @@ runs:
       shell: bash
       env: { VIZE_TEST_REQUIRE_TSGO: "1" }
       run: |
+        cargo test -p vize_l1 --features legacy-differential --test surface_corpus -- --nocapture
         cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_lowering_corpus -- --nocapture
         cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_dom_corpus -- --nocapture
         cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_remarks_corpus -- --nocapture

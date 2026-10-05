@@ -28,6 +28,8 @@ mod configured_lint_tests;
 #[cfg(feature = "native")]
 pub(in crate::ide) mod corsa;
 #[cfg(all(test, feature = "native"))]
+mod editor_typecheck_defaults_tests;
+#[cfg(all(test, feature = "native"))]
 mod editor_typecheck_fixture;
 #[cfg(all(test, feature = "native"))]
 mod editor_typecheck_tests;

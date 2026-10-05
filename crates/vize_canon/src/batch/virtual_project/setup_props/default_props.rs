@@ -4,7 +4,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{BindingPattern, Declaration, Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{CompactString, FxHashMap, FxHashSet, ToCompactString, cstr};
+use vize_carton::{CompactString, FxHashMap, FxHashSet, cstr};
 use vize_croquis::{Croquis, macros::MacroKind};
 
 use super::{
@@ -57,11 +57,7 @@ pub(super) fn merge_type_based_with_defaults_into_croquis(
         );
     }
 
-    for name in default_names {
-        croquis
-            .macros
-            .mark_prop_default_value(name.as_str(), "undefined".to_compact_string());
-    }
+    croquis.macros.set_resolved_prop_defaults(default_names);
 }
 
 fn collect_type_based_with_defaults_default_names(

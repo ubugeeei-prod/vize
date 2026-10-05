@@ -1,0 +1,106 @@
+{
+  "issue": 7999,
+  "url": "https://github.com/ubugeeei-prod/vize/issues/7999",
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308,
+    "coauthor": "Co-authored-by: ubugeeei <71201308+ubugeeei@users.noreply.github.com>"
+  },
+  "originalIssueSha256": "f601fbbd747815ae70815aca97e94c0113f2ee22101e2b73cff714f143d61654",
+  "reportedVersions": {
+    "nuxt": "4.5.2",
+    "vue": "3.5.42",
+    "vize": "0.432.0",
+    "@vizejs/nuxt": "0.432.0"
+  },
+  "automaticDependencyCohort": "tests/_fixtures/_projects/nuxt-critical-css-build/package-lock.json",
+  "actualNuxt": "4.5.2",
+  "actualVue": "3.5.43",
+  "priorSource": "4e4c8c977d7052edbb6a2b42808ddc6e7b59f3bf",
+  "routes": [
+    "/",
+    "/reports"
+  ],
+  "fixtures": [
+    {
+      "path": "tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/nuxt.config.ts",
+      "sha256": "cdd7c65e1513dea365aa76e3016b6d9bcfda4e52ce7bb578da7187009829ba19",
+      "custody": "provided issue source with terminal LF"
+    },
+    {
+      "path": "tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/app/app.vue",
+      "sha256": "ecdc95b40adc190558c14b0c9e6dd01bf5008d34ade3167a27ff081782e9aa93",
+      "custody": "provided issue source with terminal LF"
+    },
+    {
+      "path": "tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/app/pages/index.vue",
+      "sha256": "68c900e4714163aded40a7606dd1685c4d877ae4c331beeefede4689415dd6e1",
+      "custody": "provided issue source with terminal LF"
+    },
+    {
+      "path": "tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/app/pages/reports.vue",
+      "sha256": "0dce533a4458613cc2e6b9853dbf3c30afa4b438c665ab65d23623efa4c4e108",
+      "custody": "provided issue source with terminal LF"
+    },
+    {
+      "path": "tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/app/components/ReportTable.vue",
+      "sha256": "39f418d37a264c21d7e1372fe4345758bdc1b1175a8f6cdceefb8b0be09cddba",
+      "custody": "independently authored scoped component"
+    },
+    {
+      "path": "tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/package.json",
+      "sha256": "ffb700b479621028805794a99996becc2f5a29a47c9a3ac37fb84bf9189767a4",
+      "custody": "authored fixture package marker"
+    }
+  ],
+  "literalPrimarySources": [
+    {
+      "url": "https://github.com/nuxt/nuxt/blob/v4.5.2/packages/vite/src/manifest.ts",
+      "sha256": "ce4e949fe6e9b1a753fbd07990129d1d51b26735f934798fae527ebcc70492fc"
+    },
+    {
+      "url": "https://github.com/nuxt/nuxt/blob/v4.5.2/packages/nuxt/src/core/nuxt.ts",
+      "sha256": "8ca9f00f75073f2edcaf81dde400fbce2522dd1acb393dccd16c9dbe415ad691"
+    },
+    {
+      "url": "https://github.com/nuxt/nuxt/blob/v4.5.2/packages/nuxt/src/pages/module.ts",
+      "sha256": "e48d3331580e66cba6a7c8cee420aed660d5ba2078a42e7894f6ce98c64f1a03"
+    },
+    {
+      "url": "https://github.com/nuxt/nuxt/blob/v4.5.2/packages/nuxt/src/components/module.ts",
+      "sha256": "4932ea032eaf3d931d051d1a1411a426425226eae655756944cd04d42c6bec7c"
+    },
+    {
+      "url": "https://github.com/nuxt/nuxt/blob/v4.5.2/packages/vite/src/plugins/ssr-styles.ts",
+      "sha256": "587fedb838fb05fe48770bbb5b76398ba5ccc38b7e04fc04a430569b2dce4a96"
+    }
+  ],
+  "expected": {
+    "currentSourceIds": [
+      "pages/index.vue",
+      "pages/reports.vue"
+    ],
+    "priorSourceIds": [
+      "pages/index.vue?vue&vize",
+      "pages/reports.vue?vue&vize"
+    ],
+    "currentEntryPageDynamicImports": [],
+    "priorEntryPageDynamicImports": [
+      "pages/index.vue?vue&vize",
+      "pages/reports.vue?vue&vize"
+    ],
+    "currentHomeReportPrefetchAndRequests": [],
+    "allArmsReportsRouteText": "Reports",
+    "allArmsReportsRouteColor": "rgb(255, 0, 0)",
+    "pageErrors": [],
+    "failedRequests": []
+  },
+  "limits": {
+    "reporter398vs81Measured": false,
+    "reporter359vs40Measured": false,
+    "reporterVue3542Executed": false,
+    "ssrCredit": false,
+    "nativeMigrationCredit": false,
+    "budgetsChanged": false
+  }
+}

@@ -47,7 +47,7 @@ pub(super) fn emit_macro_template_prop_bindings(
             ts,
             props_type_ref,
             prop.name.as_str(),
-            prop.default_value.is_some() || defaulted_prop_names.contains(&prop.name),
+            defaulted_prop_names.contains(&prop.name),
         );
         emitted_names.insert(prop.name.as_str().into());
     }

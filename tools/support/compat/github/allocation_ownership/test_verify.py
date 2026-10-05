@@ -1,12 +1,16 @@
 """Validator adversarial laws only; these synthetic data grant no cause credit."""
 
 import copy
+import hashlib
 import json
+import os
+import runpy
 import tempfile
 import unittest
 from pathlib import Path
-from common import CASE, FIXTURES
-from run import prepare_output
+from unittest import mock
+from common import BRANCH, CASE, FIXTURES
+from run import experiment, prepare_output, verify_budget_overlay
 from verify import budget_trace, printed_rows
 
 
@@ -31,6 +35,61 @@ def synthetic():
 
 
 class EvidenceValidator(unittest.TestCase):
+    def test_changed_libtest_overlay_refused_before_external_work(self):
+        # Positive bytes and pin here are an authored guard control, not a
+        # recovered historical runtime or permission to execute the campaign.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            budget = root / "crates/vize_atelier_vapor/tests/davinci_vapor_native_budget.rs"
+            budget.parent.mkdir(parents=True)
+            original = b"authored guard control\n"
+            budget.write_bytes(original)
+            with mock.patch("run.LIBTEST_BUDGET_OVERLAY_SHA256", hashlib.sha256(original).hexdigest()):
+                verify_budget_overlay(root)
+                budget.write_bytes(original + b"changed\n")
+                with self.assertRaisesRegex(RuntimeError, "overlay changed"):
+                    verify_budget_overlay(root)
+            actual_root = Path(__file__).resolve().parents[5]
+            with self.assertRaisesRegex(RuntimeError, "overlay changed"):
+                verify_budget_overlay(actual_root)
+            env = {"GITHUB_REF": f"refs/heads/{BRANCH}", "GITHUB_EVENT_NAME": "workflow_dispatch"}
+            with mock.patch("run.sys.platform", "linux"), mock.patch.dict(os.environ, env, clear=True), \
+                 mock.patch("run.command", side_effect=AssertionError("no tool process")), \
+                 mock.patch("run.git", side_effect=AssertionError("no git process")), \
+                 mock.patch("run.original_archive", side_effect=AssertionError("no archive download")), \
+                 mock.patch("run.subprocess.run", side_effect=AssertionError("no external process")):
+                with self.assertRaisesRegex(RuntimeError, "overlay changed"):
+                    experiment(actual_root, root)
+            self.assertFalse((root / "identity.json").exists())
+            # Exercise the literal CLI, including repository discovery and its
+            # fatal receipt. Refusal retains preparation and cannot claim data.
+            output = root / "cli-output"
+            output.mkdir()
+            identity = {"GITHUB_SHA": "frozen-head", "GITHUB_RUN_ID": "run-id",
+                        "GITHUB_RUN_ATTEMPT": "1"}
+            preparation = {"status": "preparation-only", "matrix_execution_credit": False,
+                           "matrix_attempts": 0, "head_sha": identity["GITHUB_SHA"],
+                           "run_id": identity["GITHUB_RUN_ID"],
+                           "run_attempt": identity["GITHUB_RUN_ATTEMPT"]}
+            raw = json.dumps(preparation)
+            (output / "preparation.json").write_text(raw)
+            script = Path(__file__).with_name("run.py")
+            with mock.patch("sys.platform", "linux"), \
+                 mock.patch.dict(os.environ, {**env, **identity}, clear=True), \
+                 mock.patch("sys.argv", [str(script), str(output)]), \
+                 mock.patch("common.command", side_effect=AssertionError("no tool or git process")), \
+                 mock.patch("subprocess.run", side_effect=AssertionError("no external process")):
+                with self.assertRaisesRegex(RuntimeError, "overlay changed"):
+                    runpy.run_path(str(script), run_name="__main__")
+            self.assertEqual((output / "preparation.json").read_text(), raw)
+            self.assertEqual(len(list(output.iterdir())), 2)
+            fatal, = output.glob("fatal-*.json")
+            failure = json.loads(fatal.read_text())
+            self.assertFalse(failure["complete"])
+            self.assertEqual(failure["cause"], "still-unknown")
+            self.assertTrue(failure["original_failure_preserved"])
+            self.assertIn("overlay changed", failure["error"])
+
     def test_fresh_preparation_admitted_and_prior_matrix_or_wrong_identity_refused(self):
         env = {"GITHUB_SHA": "frozen-head", "GITHUB_RUN_ID": "run-id", "GITHUB_RUN_ATTEMPT": "1"}
         value = {"status": "preparation-only", "matrix_execution_credit": False,

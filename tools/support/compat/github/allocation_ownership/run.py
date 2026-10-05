@@ -14,6 +14,17 @@ from common import (ATTEMPTS, BRANCH, CASE, FEATURE, ORIGINAL_BLOBS, OVERLAY,
 from verify import budget_trace, positive_trace, printed_rows
 
 
+# The completed fdfe/9a diagnostic overlays this exact libtest source into the
+# frozen b9/E1 manifests. A later standalone main is not a faithful overlay.
+LIBTEST_BUDGET_OVERLAY_SHA256 = "c7dd7a9bbff3ddb3067ca13d6c5d4964103d49eb94798f18c069cded63e732dd"
+
+
+def verify_budget_overlay(root):
+    budget = root / "crates/vize_atelier_vapor/tests/davinci_vapor_native_budget.rs"
+    require(sha256(budget) == LIBTEST_BUDGET_OVERLAY_SHA256,
+            "historical libtest diagnostic budget overlay changed; reviewed recovery required")
+
+
 def prepare_output(output, env):
     output.mkdir(parents=True, exist_ok=True)
     require({path.name for path in output.iterdir()} == {"preparation.json"},
@@ -134,6 +145,9 @@ def experiment(root, output):
     require(sys.platform == "linux", "authorized diagnostic requires actual Linux TIDs")
     require(os.environ.get("GITHUB_REF") == f"refs/heads/{BRANCH}" and
             os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch", "owned diagnostic dispatch only")
+    # Reject an incompatible current source before fetching an old archive,
+    # creating a worktree, querying tools or launching any matrix process.
+    verify_budget_overlay(root)
     require(os.environ.get("VIZE_TEST_REQUIRE_TSGO") == "1" and
             os.environ.get("VIZE_NUXT_CONFIG_ITERATIONS") == "100" and
             "VIZE_TEST_DISABLE_TSGO" not in os.environ, "original full runtime environment")
@@ -207,7 +221,8 @@ def experiment(root, output):
 
 
 if __name__ == "__main__":
-    root = Path(command(["git", "rev-parse", "--show-toplevel"]))
+    # Repository discovery must not start a Git process before overlay refusal.
+    root = Path(__file__).resolve().parents[5]
     output = Path(sys.argv[1]).resolve()
     try:
         prepare_output(output, os.environ)
