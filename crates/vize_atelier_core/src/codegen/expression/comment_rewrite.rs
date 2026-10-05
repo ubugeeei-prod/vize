@@ -13,6 +13,7 @@ use crate::steps::expression::nesting::scan::{
     keyword_allows_regex_after, skip_identifier, skip_line_comment, skip_number, skip_quoted,
     skip_regex,
 };
+use oxc_syntax::identifier::is_identifier_part;
 use vize_l0::String;
 
 /// Convert `// …` line comments to `/* … */` block comments, copying strings,
@@ -22,12 +23,13 @@ use vize_l0::String;
 /// (escape-aware, no `${}` recursion): a line comment inside an interpolation
 /// survives unrewritten, matching the previous behavior. Copied segments are
 /// sliced, not rebuilt byte-by-byte, so non-ASCII content survives intact.
-pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
+pub fn convert_line_comments_to_block(content: &str) -> String {
     let bytes = content.as_bytes();
     let mut result = String::with_capacity(content.len());
     // Whether a `/` at the cursor would start a regex literal (operand
     // position), mirroring the nesting scanner's tracking.
     let mut can_start_regex = true;
+    let mut property_name = false;
     let mut i = 0;
 
     while let Some(&b) = bytes.get(i) {
@@ -40,6 +42,7 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
                 result.push_str(content.get(i..end).unwrap_or_default());
                 i = end;
                 can_start_regex = false;
+                property_name = false;
             }
             b'/' if bytes.get(i + 1) == Some(&b'/') => {
                 let comment_start = i + 2;
@@ -84,15 +87,21 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
                     result.push_str(content.get(i..end).unwrap_or_default());
                     i = end;
                     can_start_regex = false;
+                    property_name = false;
                 } else {
                     result.push('/');
                     i += 1;
                 }
             }
             b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$' => {
-                let end = skip_identifier(bytes, i + 1);
+                let mut end = skip_identifier(bytes, i + 1);
+                if bytes.get(end).is_some_and(|byte| !byte.is_ascii()) {
+                    end = extend_identifier(content, end);
+                }
                 result.push_str(content.get(i..end).unwrap_or_default());
-                can_start_regex = keyword_allows_regex_after(bytes.get(i..end).unwrap_or_default());
+                can_start_regex = !property_name
+                    && keyword_allows_regex_after(bytes.get(i..end).unwrap_or_default());
+                property_name = false;
                 i = end;
             }
             b'0'..=b'9' => {
@@ -100,11 +109,13 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
                 result.push_str(content.get(i..end).unwrap_or_default());
                 i = end;
                 can_start_regex = false;
+                property_name = false;
             }
             b')' | b']' | b'}' => {
                 result.push(b as char);
                 i += 1;
                 can_start_regex = false;
+                property_name = false;
             }
             // `++`/`--`: the fallback arm would see two operator bytes and claim
             // operand position, so the division in `a++ / b // note` was lexed
@@ -115,6 +126,13 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
                 result.push_str(content.get(i..i + 2).unwrap_or_default());
                 i += 2;
                 can_start_regex = false;
+                property_name = false;
+            }
+            b'.' => {
+                result.push('.');
+                i += 1;
+                can_start_regex = false;
+                property_name = true;
             }
             _ => {
                 // One whole character, not one byte: non-ASCII must not be
@@ -125,11 +143,20 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
                     .chars()
                     .next()
                     .unwrap_or('\u{FFFD}');
-                result.push(ch);
-                i += ch.len_utf8();
-                if !ch.is_ascii_whitespace() {
-                    // Operators, `(`/`[`/`{`, commas: an operand may follow.
-                    can_start_regex = true;
+                if is_identifier_part(ch) {
+                    let end = extend_identifier(content, i);
+                    result.push_str(content.get(i..end).unwrap_or_default());
+                    i = end;
+                    can_start_regex = false;
+                    property_name = false;
+                } else {
+                    result.push(ch);
+                    i += ch.len_utf8();
+                    if !ch.is_whitespace() {
+                        // Operators, `(`/`[`/`{`, commas: an operand may follow.
+                        can_start_regex = true;
+                        property_name = false;
+                    }
                 }
             }
         }
@@ -138,9 +165,40 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
     result
 }
 
+fn extend_identifier(content: &str, mut end: usize) -> usize {
+    for ch in content.get(end..).unwrap_or_default().chars() {
+        if !is_identifier_part(ch) {
+            break;
+        }
+        end += ch.len_utf8();
+    }
+    end
+}
+
 #[cfg(test)]
 mod tests {
     use super::convert_line_comments_to_block;
+
+    #[test]
+    fn unicode_names_and_keyword_properties_keep_division_and_quoted_slashes() {
+        for source in [
+            "_ctx.雪 / \"a//b//c\".length",
+            "_ctx.obj.return / \"a//b//c\".length",
+            "_ctx.雪return / \"a//b//c\".length",
+            "_ctx.a雪return / \"a//b//c\".length",
+        ] {
+            assert_eq!(convert_line_comments_to_block(source), source);
+        }
+        for (source, expected) in [
+            ("_ctx.雪 / 2 // note", "_ctx.雪 / 2 /* note */"),
+            (
+                "_ctx.obj.return / 2 // note",
+                "_ctx.obj.return / 2 /* note */",
+            ),
+        ] {
+            assert_eq!(convert_line_comments_to_block(source), expected);
+        }
+    }
 
     #[test]
     fn regex_literals_survive_including_character_classes() {

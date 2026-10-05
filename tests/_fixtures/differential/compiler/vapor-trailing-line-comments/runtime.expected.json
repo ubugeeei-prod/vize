@@ -1,0 +1,11 @@
+{
+  "caseCount": 15,
+  "productionModes": [false, true],
+  "sourceResults": 30,
+  "runtimeTracePairs": 30,
+  "framesPerTrace": 3,
+  "officialVersion": "3.6.0-rc.9",
+  "observer": "complete rendered tree, attributes, text, diagnostics, interactions and unmount; backend anchors excluded",
+  "vaporSsrAcceptance": false,
+  "nativeAcceptance": false
+}

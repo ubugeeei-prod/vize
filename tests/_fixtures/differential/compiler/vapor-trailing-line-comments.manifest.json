@@ -1,0 +1,57 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "ef506012169d228982ded40d893ac2115a3e58a7",
+  "product": "compiler",
+  "cases": [
+    {
+      "id": "compiler/vapor/trailing-line-comments",
+      "state": "active",
+      "targets": ["vapor"],
+      "inputs": {
+        "root": "vapor-trailing-line-comments",
+        "files": [
+          {
+            "path": "Reported.vue.txt",
+            "sha256": "b7f2f1bea9c5157e0473ea690adf6a9572c6ba86536d177cac50936b4f41408f",
+            "role": "entry"
+          },
+          {
+            "path": "cases.json",
+            "sha256": "511a414fb36ff87f92e929240fb2fe490cfe34be0bd12f8c9a72e35c48f12654",
+            "role": "controls"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-trailing-line-comments/runtime.expected.json",
+        "sha256": "f93bdc397ec80bad515832a6f87cae7bb2fed8e2b7d7c72da59d4abb4e96315f",
+        "source": "crates/vize_atelier_sfc/tests/vapor_trailing_line_comments.rs:complete_vapor_modules_match_official_rendered_behavior_with_line_comments"
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/7894",
+        "reporter": "ubugeeei",
+        "officialVersion": "3.6.0-rc.9"
+      },
+      "adapters": {
+        "legacy": "compiler-public-vapor-sfc-comments-v1",
+        "native": null,
+        "reasons": {
+          "native": "Existing whole-SFC Vapor correctness; no whole-product native or Vapor SSR acceptance."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-whole-vapor-comments-runtime-v1",
+        "requiredFacets": [
+          "complete-public-result",
+          "setup-binding-map",
+          "module-parse",
+          "mounted-tree",
+          "reactive-updates",
+          "event-control",
+          "unmount"
+        ]
+      }
+    }
+  ]
+}

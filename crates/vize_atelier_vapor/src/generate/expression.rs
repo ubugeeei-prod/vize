@@ -39,9 +39,10 @@ pub(super) fn resolve_with_oxc(ctx: &GenerateContext<'_>, expr: &str) -> Option<
         .with_module(true)
         .with_typescript(true);
 
-    let mut wrapped = String::with_capacity(expr.len() + 2);
+    let mut wrapped = String::with_capacity(expr.len() + 3);
     wrapped.push('(');
     wrapped.push_str(expr);
+    wrapped.push('\n');
     wrapped.push(')');
 
     let parser = Parser::new(&allocator, wrapped.as_str(), source_type);
@@ -69,7 +70,7 @@ pub(super) fn apply_rewrites(
     offset: usize,
 ) -> String {
     if rewrites.is_empty() {
-        return expr.to_compact_string();
+        return terminate_line_comments(expr.to_compact_string());
     }
 
     rewrites.sort_by(|a, b| {
@@ -87,7 +88,18 @@ pub(super) fn apply_rewrites(
             result.replace_range(start..end, rewrite.replacement.as_str());
         }
     }
-    result
+    terminate_line_comments(result)
+}
+
+// A caller may append `)`, `]`, or `,` directly after this expression.
+// Reuse the DOM emitter's lexer so only real comments change; strings,
+// regex literals and authored template literals retain their exact bytes.
+fn terminate_line_comments(resolved: String) -> String {
+    if resolved.contains("//") {
+        vize_atelier_core::codegen::expression::convert_line_comments_to_block(&resolved)
+    } else {
+        resolved
+    }
 }
 
 pub(super) fn is_literal_expression(expr: &str) -> bool {
