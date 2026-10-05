@@ -23,7 +23,7 @@
   <div inert><MyWrapper><button aria-hidden="true">component barrier</button></MyWrapper></div>
   <div inert><dialog inert><button aria-hidden="true">explicit inert dialog</button></dialog></div>
   <div inert><dialog><button aria-hidden="true">possible modal</button></dialog></div>
-  <template inert><button aria-hidden="true">nonphysical inert</button></template>
+  <template v-if="ready" inert><button aria-hidden="true">nonphysical inert</button></template>
   <div inert><button aria-hidden="true">inert sibling</button></div><button aria-hidden="true">restored sibling</button>
   <input readonly tabindex="-1" aria-hidden="true" />
   <div contenteditable="true" aria-hidden="true">editable</div>

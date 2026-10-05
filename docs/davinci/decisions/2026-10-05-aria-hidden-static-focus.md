@@ -73,3 +73,9 @@ reporter trailer, and released public payloads remain separate delivery
 requirements. Native/history #6881 and the 10x target remain unfinished.
 The verified primary reporter is ubugeeei, GitHub ID 71201308; the meaningful
 source commit includes the verified noreply Co-Author footer.
+
+Private source preparation [corrects the authored carrier control](https://github.com/ubugeeei-prod/vize/issues/7977#issuecomment-5996810247)
+to an actual structural `<template v-if="ready" inert>`: a plain template is
+correctly an element in the existing parser. Original inputs, production,
+control counts and complete expected findings remain unchanged; no runtime
+acceptance is inferred from this source correction.
