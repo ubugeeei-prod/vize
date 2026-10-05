@@ -456,7 +456,9 @@
           "properties": {
             "contentDirectives": {
               "type": "array",
-              "items": { "type": "string" }
+              "items": {
+                "type": "string"
+              }
             }
           },
           "additionalProperties": false

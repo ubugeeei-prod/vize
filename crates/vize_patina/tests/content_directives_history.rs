@@ -58,11 +58,15 @@ fn original_and_authored_cases_preserve_entire_findings_and_public_reports() {
                 .iter()
                 .map(|target| {
                     let start = source.find(target.as_str()).unwrap() as u32;
+                    // Retained element.loc spans the opening tag, including `>`.
+                    let opening = target
+                        .split_once("</")
+                        .map_or(target.as_str(), |(tag, _)| tag);
                     LintDiagnostic::error(
                         RULE,
                         "<p> element is empty but expects visible content",
                         start,
-                        start + target.len() as u32,
+                        start + opening.len() as u32,
                     )
                     .with_help(HELP)
                 })

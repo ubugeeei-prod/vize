@@ -30,6 +30,15 @@ plain command. Genuine source-built LSP sessions compare all eleven complete ver
 publications across open, same-width unsaved edit, and restored original (33 total).
 Original and authored input/reference hashes are retained; no runtime oracle recording.
 
+The first source run at `6909818ab8` rejected two authored paired-tag range ends.
+The unchanged parser constructs `element.loc` from the opening tag and does not
+extend it on closing; the unchanged rule reports that location. Independent source
+review therefore corrects only those expected CLI/LSP ends and Rust paired-tag
+spans, preserving the full original inputs, all other reference fields, and the
+historical failed reference hash/run. No production range policy is changed.
+The same run rejected hand-authored schema indentation; regeneration from the
+reviewed Pkl source corrects only the array item object whitespace (30 bytes).
+
 Exact source Actions, unchanged protected 104 instruction ceilings/ratchets, full Rust,
 original differential corpus, actual signed merge, and later publication are required.
 These observations confer no native product replacement or #6881 history acceptance.
