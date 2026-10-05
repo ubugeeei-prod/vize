@@ -1,3 +1,7 @@
+mod single;
+
+use single::lower_single_text;
+
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Box, Span, String, StringBuilder, cstr};
@@ -240,37 +244,6 @@ pub(crate) fn lower_text_run<'a>(
         )));
     }
     i
-}
-
-fn lower_single_text<'a>(
-    cx: &mut Cx<'a>,
-    child: &SurfaceChild<'a>,
-    action: TextAction<'a>,
-    out: &mut vize_l0::Vec<'a, Op<'a>>,
-) {
-    match child {
-        SurfaceChild::Text(token) => {
-            let mut content = match action {
-                TextAction::Content(content) => content,
-                _ => token.text,
-            };
-            if let Some(normalized) = normalize_special_text(cx, content, cx.offset(token.text)) {
-                content = cx.allocator.alloc_str(normalized.as_str());
-            }
-            if content != token.text {
-                let span = cx.token_span(token);
-                cx.record(
-                    "condense.whitespace",
-                    None,
-                    token.text,
-                    String::from(content),
-                    span,
-                );
-            }
-            super::super::leaf::lower_text(cx, token, content, out);
-        }
-        child => super::super::leaf::lower_leaf(cx, child, out),
-    }
 }
 
 /// Lower a contiguous text/interpolation run under `v-pre`.
