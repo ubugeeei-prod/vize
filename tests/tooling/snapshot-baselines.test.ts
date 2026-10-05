@@ -57,6 +57,8 @@ const assertionOnlyCheckTests = {
     "solution tsconfig oracle asserts referenced-project CLI and LSP diagnostic parity",
   "vite-plus-relative-tsconfig-oracle":
     "source-bound task/direct oracle asserts full ordered JSON and generated TypeScript with original and inverse operational controls",
+  "vite-plus-relative-tsconfig-allowjs-oracle":
+    "source-bound task/direct oracle asserts whole referenced JavaScript options, intentional exclusions and strict empty-project refusal",
   "vue-benchmarks-correctness-plants":
     "upstream benchmark plants assert exact clean, broken, repaired, and vue-tsc parity",
   "vue-benchmarks-lsp-ref-unwrap-oracle":

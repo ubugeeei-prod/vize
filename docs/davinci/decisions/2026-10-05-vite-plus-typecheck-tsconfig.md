@@ -179,3 +179,37 @@ bytes, all 39 expectations and the L1 remark remain unchanged. Retain the
 reviewed selected-project refusal text; optional pattern-specific wording is
 outside this narrowly qualified repair. TODO: fresh exact-source Actions and
 new protected gates, actual signed merge and release remain necessary.
+
+The paired [owning-program exclusion correction](https://github.com/ubugeeei-prod/vize/issues/8017#issuecomment-5991895706)
+retains exact source `a337126ffa3b2eba4b9d868c4a8b3f6d0ebd42f8` passes:
+[Check37286330908](https://github.com/ubugeeei-prod/vize/actions/runs/37286330908)
+and [native37286330256](https://github.com/ubugeeei-prod/vize/actions/runs/37286330256)
+qualify all 39 whole CLI observations and the strict full L1 corpus. Actual
+protected candidate `80b95b24248f0737b5ed76d675dd83b98db2bb97` fails
+[Check37288128028](https://github.com/ubugeeei-prod/vize/actions/runs/37288128028):
+Rust worker111696311112 passes 4,074 of 4,075 tests, then the original reference
+test's line118 rejects the denied explicit-JavaScript result. The 934,536-byte
+authentic log has SHA-256
+`52aca5ecba665d857309056f6b364ccea97a1aca850311d98cd052e0bafa1093`.
+The permitted child already passed TS2322/fileCount1; references are collected
+with each child's own options. This is not evidence of missing reference
+aggregation. The final empty guard changed the existing owning `allowJs:false`
+explicit-input skip from exit0 to exit2. The PR is dequeued; its separate
+unchanged all104 instruction passes supply no merge acceptance.
+
+Record the actual preparation outcome without a new scan, config load,
+allocation or pipeline stage. An empty final result keeps legacy exit0 only
+when every attempted candidate excluded existing explicit inputs under its
+owning program's file options. Unmatched selected inputs, selected/discovered
+empty workloads and any other empty preparation still refuse with exit2.
+Missing-config validation and disabled/unconfigured contracts are unchanged.
+Preserve the original three-mode Rust test, all 39 original whole CLI vectors,
+every original input and all old449/1032 L1 rows byte-exact. Add 14 separate
+whole task/direct controls for denied, mixed, default/discovered, repaired,
+unmatched and genuinely empty reference selections; register their oracle
+normally. The existing PR8020 source workflow executes the unchanged Rust
+reference test with a required native provider and its old full L1 suites.
+The workflow remains321 lines, or350 with the existing typed-emits qualifier,
+without dropping commands or raising a cap. Thirteen pure controls pass;
+the new complete native vectors and fresh source/protected suites, actual
+signed merge and release remain required. No Windows-native or speed credit.
