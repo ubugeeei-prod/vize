@@ -1,0 +1,104 @@
+{
+  "issue": 8005,
+  "baseRevision": "7f605de65444cf3a54120709fde3c48099dddce8",
+  "reporter": "ubugeeei",
+  "request": {
+    "method": "textDocument/completion",
+    "context": {
+      "triggerKind": 1
+    }
+  },
+  "oracle": "crates/vize/tests/lsp_component_native_events_cli.rs",
+  "inputs": [
+    {
+      "path": "App.vue.txt",
+      "sha256": "64e9c2f4ece31ad9adb23330585a26a5297aa02260283785caf1c7ae258408fb"
+    },
+    {
+      "path": "MySwitch.vue.txt",
+      "sha256": "bd32cf031010224a7d5b9b9f3878a528a1ff4a7f9263d0c6d35b5b2b952bef42"
+    },
+    {
+      "path": "declared.expected.json",
+      "sha256": "8a8c96529452c19508862120c5db2f845fa85145ba6aee0e6c1e5b6522994c63"
+    },
+    {
+      "path": "generic.expected.json",
+      "sha256": "8a1ca597b500f1b7e96d66ffeaac82a03cfd5fc9964f2039390c8a6184ffc0ec"
+    },
+    {
+      "path": "literal-and-handler.expected.json",
+      "sha256": "05f6d032992a2a8b84a9220d3249b57b0dba6eb8544628da1a26db374fbf4d0b"
+    },
+    {
+      "path": "native/button-attributes.expected.json",
+      "sha256": "c5a975a499b6bede515debfcfc9a5a57ac7ba4481c7e5de39bed589f4678ddf7"
+    },
+    {
+      "path": "native/input-attributes.expected.json",
+      "sha256": "3fcfb46096229b39a48d4a72e42c0a0775c20a07e9b2955be7e56b0f8f27d026"
+    },
+    {
+      "path": "original.expected.json",
+      "sha256": "d3a676671b3e1e343f91c1f28d840b638f761acf5c9872f84c684cd8f40a3049"
+    },
+    {
+      "path": "prefixes/focus.expected.json",
+      "sha256": "890a62cce54e463c3a4e0d4dddf2c3ec14275af8729a3fae51baa42dd8290870"
+    },
+    {
+      "path": "prefixes/input.expected.json",
+      "sha256": "5ef958dd5ffeb8077643e12613d1a26c34f27b68e6b2fcaafb036c307227bf1b"
+    },
+    {
+      "path": "prefixes/js-c.expected.json",
+      "sha256": "fa245ef62b9d79917800a1fb2739a4edd3a2447efe2eb4fa165f262be83ada0a"
+    },
+    {
+      "path": "prefixes/modifier.expected.json",
+      "sha256": "19995e864c1d9089447920310fc0a56737846ebc4c3313f30fdaa59204fc1bf8"
+    },
+    {
+      "path": "prefixes/native-c.expected.json",
+      "sha256": "478a0b212f0c91980f793b4972058101317c44318c29b80387e362d509787be8"
+    },
+    {
+      "path": "prefixes/typed-at.expected.json",
+      "sha256": "ec2d31d764a298e43278fa0cc09c07eb0aa51475c9ab6a47f9bed7e660f29d15"
+    },
+    {
+      "path": "prefixes/typed-c.expected.json",
+      "sha256": "64a875a88e49b64ee2be24820685ac7a7ec2b2b5d7c09edcb44e5cc0a5cdd31c"
+    },
+    {
+      "path": "prefixes/typed-cli.expected.json",
+      "sha256": "8d406a2d65bf9d3142070b3979e3b738d61670ca0025b4b595b78cc3a97382ff"
+    },
+    {
+      "path": "prefixes/unsaved-at.expected.json",
+      "sha256": "abbcd52b7f6f9f992bce6f3fe91e359152a75f3685dc27d7e6dfceb20bde508b"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "9b1b22ae1d789f4757ce48e5a07a6719c803c4a65195987980734ae12e8c3c33"
+    },
+    {
+      "path": "vize.config.json.txt",
+      "sha256": "e7a6fe6547d1d5315b5eae90c91e08d15f00ca2150048c586ca6d6f15f5865e4"
+    }
+  ],
+  "contract": "Complete ordered response objects, including documentation, edits, snippet formats, and opaque data; declaration wins only for equivalent event acceptance actions. No response projection.",
+  "completeResponseCount": 45,
+  "completionCount": 43,
+  "nativeHoverCount": 2,
+  "sessions": 7,
+  "reporterPosition": {
+    "line": 12,
+    "character": 12
+  },
+  "actualTagPosition": {
+    "line": 11,
+    "character": 12
+  },
+  "coordinateQualification": "Unchanged original fenced source has the component tag on zero-based line11; reported line12 is the following span interpolation. Both complete requests are retained and independently checked."
+}

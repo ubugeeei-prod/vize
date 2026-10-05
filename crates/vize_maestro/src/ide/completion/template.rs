@@ -22,6 +22,7 @@ mod component_native;
 mod components;
 mod css_modules;
 mod directives;
+mod event_union;
 mod native;
 #[cfg(test)]
 mod native_tests;
@@ -96,7 +97,10 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
 
             let mut items_vec = contextual_directive_completions(ctx);
             items_vec.extend(native::native_element_attribute_completions(ctx));
-            items_vec.extend(component_meta::component_surface_completions(ctx));
+            event_union::append_component_surface(
+                &mut items_vec,
+                component_meta::component_surface_completions(ctx),
+            );
             return prepare_open_tag_completions(ctx, &tag_ctx, items_vec);
         }
 
@@ -117,7 +121,10 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
     if ctx.state.lsp_features().legacy_vue2 {
         items_vec.extend(components::legacy_vue2_component_completions());
     }
-    items_vec.extend(component_meta::component_surface_completions(ctx));
+    event_union::append_component_surface(
+        &mut items_vec,
+        component_meta::component_surface_completions(ctx),
+    );
 
     // Add common template snippets
     items_vec.extend(bindings::template_snippets());
@@ -266,7 +273,10 @@ fn is_bind_completion_label(label: &str) -> bool {
 #[cfg(any(test, feature = "native"))]
 pub(crate) fn corsa_template_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
     let mut items = contextual_directive_completions(ctx);
-    items.extend(component_meta::component_surface_completions(ctx));
+    event_union::append_component_surface(
+        &mut items,
+        component_meta::component_surface_completions(ctx),
+    );
     items.extend(legacy_vue2_template_completions(ctx));
     if let Some(tag_ctx) = tag_context::opening_tag_context_at_offset(&ctx.content, ctx.offset)
         && !tag_ctx.inside_attribute_value
