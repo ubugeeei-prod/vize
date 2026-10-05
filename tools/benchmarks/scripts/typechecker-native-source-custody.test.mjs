@@ -118,7 +118,7 @@ await test("manual identical main uses separate source and records the complete 
     assert.equal(receipt.productionMatchesBaseline, true);
     assert.deepEqual(receipt.changedEntries, []);
     assert.deepEqual(receipt.originalInfrastructurePaths, ORIGINAL);
-    assert.equal(receipt.allowedInfrastructurePaths.length, 23);
+    assert.equal(receipt.allowedInfrastructurePaths.length, 24);
     assert.deepEqual(Object.keys(receipt.bridgeFiles), BRIDGES);
     for (const hashes of Object.values(receipt.bridgeFiles))
       assert.equal(hashes.sourceSha256, hashes.driverSha256);
@@ -134,7 +134,7 @@ await test("manual identical main uses separate source and records the complete 
 await test("manual permits precisely reviewed infrastructure while preserving neutral bridges", () => {
   fixture((f) => {
     const paths = [...INFRASTRUCTURE_PATHS].filter((path) => !BRIDGES.includes(path));
-    assert.equal(paths.length, 20);
+    assert.equal(paths.length, 21);
     for (const path of paths) put(f.root, path);
     const executable = PREFIX + "typechecker-native-phase-capture.mjs";
     chmodSync(join(f.root, executable), 0o755);

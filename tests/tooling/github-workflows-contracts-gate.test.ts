@@ -57,11 +57,15 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
     if: "${{ github.event_name == 'merge_group' }}",
     uses: "./.github/workflows/davinci-contracts.yml",
   });
-  assert.deepEqual(source.jobs["source-report"].needs, [...prior, "wit-contracts"]);
+  assert.deepEqual(source.jobs["source-report"].needs, [
+    ...prior,
+    "wit-contracts",
+    "canonical-corpus",
+  ]);
   assert.equal(source.jobs["source-report"].if, "${{ always() }}");
   assert.equal(
     source.jobs["source-report"].steps?.at(-1)?.run,
-    "node tools/support/compat/github/require-needs-success.mjs --check",
+    "node tools/support/compat/github/canonical-corpus-selection.mjs --check",
   );
   assert.deepEqual(check.jobs["test-report"].needs, topPrior);
   assert.equal(

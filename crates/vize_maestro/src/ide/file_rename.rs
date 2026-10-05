@@ -50,6 +50,9 @@ impl FileRenameService {
 
         #[cfg(feature = "native")]
         {
+            // The notification's store mutation above supersedes old requests;
+            // closing native virtual documents must then wait for their scope.
+            let _scope = state.corsa_request_scope().await;
             state.invalidate_batch_cache();
 
             if !renamed.is_empty()

@@ -61,7 +61,7 @@ transport implementation.
 | P2-19  | [#4543](https://github.com/ubugeeei-prod/vize/pull/4543) | **Review evidence:** [`p2-19.md`](./phase-2-records/p2-19.md). **Executable adjacent contract:** TS-52 feed tests above; this is not a transport implementation witness.                                                                                                                                                                                                                           |
 | P2-20  | [#6059](https://github.com/ubugeeei-prod/vize/pull/6059) | **Review evidence:** [`p2-20.md`](./phase-2-records/p2-20.md). **Executable witnesses:** `davinci-phase2-exit`, `davinci-phase2-ledger`, the P2-12b traversal tests, transform differential tests and the recorded DOM compile allocation miss (`bench-compare` exits 1 with six exact breaches).                                                                                                  |
 
-The executable corpus inventory is **146 gitlinks / 142 ecosystem projects**,
+The executable corpus inventory is **147 gitlinks / 142 ecosystem projects**,
 from [`fixture-compatibility-ledger.test.ts`](../../../tests/tooling/fixture-compatibility-ledger.test.ts).
 Checkout hydration is transient and is not an inventory source.
 

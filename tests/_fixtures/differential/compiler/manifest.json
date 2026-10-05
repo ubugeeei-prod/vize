@@ -35,5 +35,13 @@
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       }
     }
+  ],
+  "runtimePacks": [
+    {
+      "path": "first-newline-runtime.manifest.json",
+      "sha256": "a4ed88464c4ae0f35879cbc34dc08a5da85ca1f625c523a10ded80fac61bc3cb",
+      "adapter": "compiler-cli-whole-sfc-runtime-v1",
+      "workflow": ".github/workflows/pre-textarea-first-newline.yml"
+    }
   ]
 }

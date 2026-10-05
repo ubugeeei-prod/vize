@@ -9,7 +9,7 @@ import { loadManifest } from "../davinci/lib/corpus-baseline-contract.mjs";
 
 export const artifactDir = "real-project-davinci-dom-corpus";
 export const corpusRoot = "tests/_fixtures/_git";
-export const expectedGitlinks = 146;
+export const expectedGitlinks = 147;
 export const expectedDomOutputComparisons = 144;
 export const expectedOldErrorSkips = 16;
 export const expectedOldErrorReasons = {

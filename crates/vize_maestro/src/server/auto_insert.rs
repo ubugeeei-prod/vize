@@ -28,49 +28,56 @@ struct AutoInsertChange {
 
 impl MaestroServer {
     pub(super) async fn auto_insert(&self, params: AutoInsertParams) -> Result<Option<String>> {
-        if !self.state.lsp_features().auto_insert || params.change.range_length != 0 {
-            return Ok(None);
-        }
+        self.native_request(async {
+            if !self.state.lsp_features().auto_insert || params.change.range_length != 0 {
+                return Ok(None);
+            }
 
-        let uri = &params.text_document.uri;
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(selection_offset) =
-            position_to_offset(&content, params.selection.line, params.selection.character)
-        else {
-            return Ok(None);
-        };
-        let Some(range_offset) = utf16_offset_to_byte(&content, params.change.range_offset) else {
-            return Ok(None);
-        };
-        let change_matches_document = if params.change.text == "{}" {
-            let (Some(caret), Some(change_end)) =
-                (range_offset.checked_add(1), range_offset.checked_add(2))
+            let uri = &params.text_document.uri;
+            let Some(content) = self.state.documents.text(uri) else {
+                return Ok(None);
+            };
+            let Some(selection_offset) =
+                position_to_offset(&content, params.selection.line, params.selection.character)
             else {
                 return Ok(None);
             };
-            selection_offset == caret && content.get(range_offset..change_end) == Some("{}")
-        } else {
-            let Some(change_end) = range_offset.checked_add(params.change.text.len()) else {
+            let Some(range_offset) = utf16_offset_to_byte(&content, params.change.range_offset)
+            else {
                 return Ok(None);
             };
-            selection_offset == change_end
-                && content
-                    .get(range_offset..selection_offset)
-                    .is_some_and(|inserted| inserted == params.change.text)
-        };
-        if !change_matches_document {
-            return Ok(None);
-        }
+            let change_matches_document = if params.change.text == "{}" {
+                let (Some(caret), Some(change_end)) =
+                    (range_offset.checked_add(1), range_offset.checked_add(2))
+                else {
+                    return Ok(None);
+                };
+                selection_offset == caret && content.get(range_offset..change_end) == Some("{}")
+            } else {
+                let Some(change_end) = range_offset.checked_add(params.change.text.len()) else {
+                    return Ok(None);
+                };
+                selection_offset == change_end
+                    && content
+                        .get(range_offset..selection_offset)
+                        .is_some_and(|inserted| inserted == params.change.text)
+            };
+            if !change_matches_document {
+                return Ok(None);
+            }
 
-        let Some(ctx) = IdeContext::new(&self.state, uri, selection_offset) else {
-            return Ok(None);
-        };
-        Ok(
-            AutoInsertService::snippet(&ctx, selection_offset, range_offset, &params.change.text)
-                .await,
-        )
+            let Some(ctx) = IdeContext::new(&self.state, uri, selection_offset) else {
+                return Ok(None);
+            };
+            Ok(AutoInsertService::snippet(
+                &ctx,
+                selection_offset,
+                range_offset,
+                &params.change.text,
+            )
+            .await)
+        })
+        .await
     }
 }
 

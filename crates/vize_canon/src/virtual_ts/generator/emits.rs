@@ -99,6 +99,20 @@ fn model_update_payload(
     }
 }
 
+pub(super) fn template_model_emit_type(summary: &Croquis) -> Option<String> {
+    if summary.macros.models().is_empty() {
+        return None;
+    }
+    let mut ts = String::from("__EmitFn<{\n");
+    for model in summary.macros.models() {
+        push_model_update_event_literal(&mut ts, model.name.as_str());
+        let payload = model_update_payload(summary, model);
+        append!(ts, ": [value: {payload}];\n");
+    }
+    ts.push_str("}>");
+    Some(ts)
+}
+
 fn push_model_update_event_literal(ts: &mut String, model_name: &str) {
     let event_name = cstr!("update:{model_name}");
     push_ts_string_literal(ts, event_name.as_str());

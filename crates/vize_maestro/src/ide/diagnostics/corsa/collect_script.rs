@@ -12,10 +12,7 @@ use super::collect_virtual::{
 use crate::server::ServerState;
 
 pub(super) fn is_script_uri(uri: &Url) -> bool {
-    matches!(
-        uri.path().rsplit_once('.').map(|(_, extension)| extension),
-        Some("js" | "mjs" | "cjs" | "ts" | "mts" | "cts")
-    )
+    crate::utils::is_plain_script_path(uri.path())
 }
 
 impl DiagnosticService {

@@ -30,6 +30,7 @@ mod module_input;
 mod module_target;
 #[cfg(feature = "experimental-source-navigation")]
 mod native_navigation;
+mod native_requests;
 mod open_document;
 mod semantic_tokens;
 mod state;

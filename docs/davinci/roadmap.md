@@ -155,7 +155,7 @@ and residual DOM corpus witnesses. Real Project Matrix run
 gitlinks, 142 ecosystem projects, 42,668 files and 42,279 compared templates;
 the full production-lane switch is closed, and P2-20 owns the remaining
 phase-exit gates.
-The executable fixture inventory is 146 gitlinks / 142 ecosystem projects;
+The executable fixture inventory is 147 gitlinks / 142 ecosystem projects;
 fixture checkout hydration is deliberately not a project-count source.
 
 **Exit gate:** DOM corpus parity; Folio dumps for L1/L2 in fixtures; bench

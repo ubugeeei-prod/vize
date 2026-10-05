@@ -21,8 +21,16 @@ export async function traceMountedBackend({
   components = {},
   externalTargets = [],
   production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
-  onPhase = (_phase) => {},
-  onFailure = (_error) => {},
+  onPhase = (phase) => {
+    if (process.env.VIZE_MOUNTED_TRACE_OBSERVATIONS === "1") {
+      process.stderr.write(`mounted trace phase: ${phase}\n`);
+    }
+  },
+  onFailure = (error) => {
+    if (process.env.VIZE_MOUNTED_TRACE_OBSERVATIONS === "1") {
+      process.stderr.write(`mounted trace failure: ${error?.stack ?? String(error)}\n`);
+    }
+  },
 }) {
   assert.ok(backend === "vdom" || backend === "vapor", `unknown backend: ${backend}`);
   if (slots !== null) validateSuppliedSlots(slots);

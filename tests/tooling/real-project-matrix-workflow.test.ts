@@ -4,6 +4,7 @@ import { test } from "node:test";
 import { requiredRealProjectMatrixShardCount } from "../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
 import {
   findStep,
+  readCanonicalCorpusWorkflow,
   readRealProjectMatrixWorkflow,
   realProjectMatrixSteps,
 } from "./support/real-project-matrix-workflow.ts";
@@ -96,7 +97,7 @@ test("real-project workflow schedules every balanced fixture shard", () => {
     FIXTURE_SHARD_INDEX: "${{ matrix.shard }}",
     FIXTURE_REPORT_DIR: "real-project-results/shard-${{ matrix.shard }}",
   });
-  const corpus = workflow.jobs?.["davinci-dom-corpus"];
+  const corpus = readCanonicalCorpusWorkflow().jobs?.["davinci-dom-corpus"];
   assert.ok(corpus);
   for (const checkout of [
     findStep(job.steps ?? [], "Checkout matrix commit"),

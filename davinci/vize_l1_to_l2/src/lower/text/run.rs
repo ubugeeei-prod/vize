@@ -1,3 +1,7 @@
+mod single;
+
+use single::lower_single_text;
+
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Box, Span, String, StringBuilder, cstr};
@@ -5,7 +9,10 @@ use vize_l1::SurfaceChild;
 use vize_l2::expr::OpaqueReason;
 use vize_l2::op::{InterpolationOp, Op, TextOp};
 
-use super::{TextAction, TextPart, TextParts, collapse_fused, extends_run, rebuild_source};
+use super::{
+    TextAction, TextPart, TextParts, collapse_fused, extends_run, normalize_special_text,
+    rebuild_source,
+};
 use crate::lower::cx::Cx;
 use crate::lower::expr::{desc, opaque_at, trimmed};
 
@@ -74,6 +81,7 @@ pub(crate) fn lower_text_run<'a>(
     // parts still tile the merged span; dropped bytes with no following
     // member stay outside the unit.
     let mut parts: StdVec<TextPart> = StdVec::new();
+    let mut needs_collapse = false;
     let mut members = 0usize;
     let mut i = start;
     let mut end = 0u32;
@@ -126,11 +134,15 @@ pub(crate) fn lower_text_run<'a>(
                 }
                 let content = match action {
                     TextAction::Content(content) => content,
-                    _ => token.text,
+                    _ => {
+                        needs_collapse = true;
+                        token.text
+                    }
                 };
                 fold_gap(&mut parts, &mut pending_gap);
                 match parts.last_mut() {
                     Some(last) if !last.dynamic => {
+                        needs_collapse = true;
                         last.text.push_str(content);
                         last.span.end = span.end;
                     }
@@ -158,9 +170,18 @@ pub(crate) fn lower_text_run<'a>(
         members += 1;
         i += 1;
     }
-    if !cx.condense_suppressed() {
+    // Planned Content is normalized already. Raw members and static fusions
+    // still require the original collapse, including whitespace across seams.
+    if needs_collapse && !cx.condense_suppressed() {
         for part in parts.iter_mut().filter(|part| !part.dynamic) {
             collapse_fused(&mut part.text);
+        }
+    }
+    if cx.ignore_newline_at.is_some() || cx.normalize_pre_newlines() {
+        for part in parts.iter_mut().filter(|part| !part.dynamic) {
+            if let Some(content) = normalize_special_text(cx, part.text.as_str(), part.span.start) {
+                part.text = content;
+            }
         }
     }
 
@@ -232,34 +253,6 @@ pub(crate) fn lower_text_run<'a>(
     i
 }
 
-fn lower_single_text<'a>(
-    cx: &mut Cx<'a>,
-    child: &SurfaceChild<'a>,
-    action: TextAction<'a>,
-    out: &mut vize_l0::Vec<'a, Op<'a>>,
-) {
-    match child {
-        SurfaceChild::Text(token) => {
-            let content = match action {
-                TextAction::Content(content) => content,
-                _ => token.text,
-            };
-            if content != token.text {
-                let span = cx.token_span(token);
-                cx.record(
-                    "condense.whitespace",
-                    None,
-                    token.text,
-                    String::from(content),
-                    span,
-                );
-            }
-            super::super::leaf::lower_text(cx, token, content, out);
-        }
-        child => super::super::leaf::lower_leaf(cx, child, out),
-    }
-}
-
 /// Lower a contiguous text/interpolation run under `v-pre`.
 /// Interpolation delimiters render as authored text, while Vue's normal
 /// whitespace condense still applies unless an enclosing `<pre>` disabled it.
@@ -312,6 +305,9 @@ pub(crate) fn lower_v_pre_text_run<'a>(
         .get(span.start as usize..span.end as usize)
         .unwrap_or_default();
     let mut content = String::from(raw);
+    if let Some(normalized) = normalize_special_text(cx, content.as_str(), start_offset) {
+        content = normalized;
+    }
     if !cx.condense_suppressed() {
         collapse_fused(&mut content);
     }

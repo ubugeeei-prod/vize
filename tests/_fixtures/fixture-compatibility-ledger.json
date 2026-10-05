@@ -538,6 +538,11 @@
       "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
+      "fixturePath": "tests/_fixtures/_git/vue-benchmarks",
+      "memberships": [],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
+    },
+    {
       "fixturePath": "tests/_fixtures/_git/vue-bits",
       "memberships": ["ecosystem"],
       "dialectCoverage": { "state": "unknown", "evidence": [] }

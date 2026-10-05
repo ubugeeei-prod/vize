@@ -18,7 +18,7 @@ import { test } from "node:test";
 
 import { loadGlyphCorpusProjects } from "../../tools/support/compat/fixtures/glyph-corpus.mjs";
 import { parseSfc, pug, pugOptions, sha256 } from "./support/pug/oracle-runtime.ts";
-import { findStep, readRealProjectMatrixWorkflow } from "./support/real-project-matrix-workflow.ts";
+import { findStep, readCanonicalCorpusWorkflow } from "./support/real-project-matrix-workflow.ts";
 
 type Project = { id: string; fixturePath: string; fixtureDir: string; revision: string };
 type Row = { project: string; revision: string; file: string; sha256: string };
@@ -90,9 +90,18 @@ function serialize(rows: Row[]): string {
 }
 
 test("pug corpus baseline: every hydrated project's pug SFCs match the pinned pug exactly", () => {
-  const projects = (loadGlyphCorpusProjects() as Project[]).sort((a, b) =>
-    a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
-  );
+  // The read-only benchmark gitlink is deliberately outside the ecosystem
+  // registry. Its one inline Pug source still belongs to the canonical sweep.
+  const benchmarkFixture = "tests/_fixtures/_git/vue-benchmarks";
+  const projects = [
+    ...(loadGlyphCorpusProjects() as Project[]),
+    {
+      id: "vue-benchmarks",
+      fixturePath: benchmarkFixture,
+      fixtureDir: path.resolve(benchmarkFixture),
+      revision: "5489aee433cd1054b9d72973457498544da7c467",
+    },
+  ].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const baseline = readBaseline();
   const known = new Map(projects.map((project) => [project.id, project]));
   for (const row of baseline) {
@@ -109,6 +118,17 @@ test("pug corpus baseline: every hydrated project's pug SFCs match the pinned pu
       continue;
     }
     const rows = computeRows(project);
+    if (project.id === "vue-benchmarks") {
+      assert.equal(vueFiles(projectDir(project)).length, 330, "complete benchmark SFC inventory");
+      assert.equal(rows.length, 1, "complete pinned inline Pug inventory");
+      const original = fs.readFileSync(path.join(projectDir(project), rows[0].file));
+      assert.equal(original.length, 182, "whole original Pug source length");
+      assert.equal(
+        sha256(original),
+        "60a8a8cf7ee56f861a60adc95101f6d05faa69a49b2aee6f3f390360d3cd84f9",
+        "whole original Pug source bytes",
+      );
+    }
     proved.push(`${project.id}:${rows.length}`);
     next.push(...rows);
     if (process.env.VIZE_PUG_ORACLE_WRITE !== "1") {
@@ -131,7 +151,7 @@ test("pug corpus baseline: every hydrated project's pug SFCs match the pinned pu
 test("the real-project matrix runs the pug corpus compile oracle on the hydrated corpus", () => {
   // The Rust lane over the hydrated corpus shares the SSR corpus step, before
   // the finalize step dehydrates it, and fails the job on any divergence.
-  const steps = readRealProjectMatrixWorkflow().jobs?.["davinci-dom-corpus"]?.steps ?? [];
+  const steps = readCanonicalCorpusWorkflow().jobs?.["davinci-dom-corpus"]?.steps ?? [];
   const lane = findStep(steps, "Run L4 SSR and pug L1 differential corpora");
   assert.equal(lane["continue-on-error"], undefined);
   const corpus = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test";

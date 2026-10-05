@@ -621,7 +621,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     if has_template_scope && check_options.check_template_bindings {
         profile!("canon.virtual_ts.emit_template_scope", {
             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
-
             let template_ref_unwraps = template_refs::collect_and_emit_scope_preamble(
                 &mut ts,
                 summary,
@@ -635,9 +634,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 inferred_slots || template_record.any(),
                 &mut semantic_links,
             );
-
             // Vue template context (available in template expressions)
             setup_imports.emit_template_slots(&mut ts, &mut mappings, source_offset);
+            let template_emit = setup_helpers.template_emit_initializer(&mut ts, summary);
             emit_template_context(
                 &mut ts,
                 options,
@@ -645,6 +644,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 legacy_vue2,
                 &setup_imports,
                 &template_record,
+                template_emit.as_deref(),
             );
             let maps = &mut mappings;
             let src = prop_source(maps, summary, script_content, &script_source_offset);

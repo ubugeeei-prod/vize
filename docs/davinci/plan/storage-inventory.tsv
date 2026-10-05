@@ -269,7 +269,9 @@ l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/sugar.rs	1	1	1	2	0	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/table.rs	0	0	0	0	1	11	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/text.rs	1	1	1	3	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/text/condense.rs	1	5	1	2	0	0	0	0
-l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/text/run.rs	1	3	1	9	3	0	0	0
+l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/text/leading_newline.rs	0	0	1	4	0	0	0	0
+l1_to_l2	lower	davinci/vize_l1_to_l2/src/lower/text/run.rs	1	3	1	8	2	0	0	0
+l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/text/run/single.rs	0	0	1	1	1	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/vfor.rs	0	0	0	0	0	0	1	1
 l1_to_l2	-	davinci/vize_l1_to_l2/src/lower/vtext.rs	0	0	1	2	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/pass/cfg.rs	1	2	0	0	0	0	0	0

@@ -25,6 +25,10 @@ mod corsa;
 #[cfg(feature = "native")]
 mod corsa_overlays;
 #[cfg(feature = "native")]
+mod corsa_requests;
+#[cfg(feature = "native")]
+mod diagnostic_locks;
+#[cfg(feature = "native")]
 mod global_components;
 #[cfg(feature = "native")]
 mod global_tag_names;
@@ -59,6 +63,8 @@ use vize_canon::{BatchTypeChecker, CorsaBridge};
 use crate::document::DocumentStore;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 
+#[cfg(feature = "native")]
+pub(crate) use corsa_requests::CorsaRequestStamp;
 pub use features::LspFeatureConfig;
 #[cfg(feature = "experimental-source-navigation")]
 pub(crate) use module_links::physical::{ModuleTargetGateError, ModuleTargetStamp};
@@ -160,6 +166,14 @@ pub struct ServerState {
     /// Serializes Corsa bridge initialization without tying us to a runtime.
     #[cfg(feature = "native")]
     corsa_init_lock: AsyncMutex<()>,
+    /// Hold one complete native open/query/map operation, never syntax-only RPCs.
+    #[cfg(feature = "native")]
+    corsa_request_lock: AsyncMutex<()>,
+    /// Source-independent project/config/backend changes fence pending replies.
+    #[cfg(feature = "native")]
+    corsa_environment_revision: std::sync::atomic::AtomicU64,
+    #[cfg(feature = "native")]
+    corsa_environment_changes: std::sync::atomic::AtomicUsize,
     /// Per-document diagnostic passes. Watcher refreshes and consecutive
     /// didChange notifications may be polled concurrently by tower-lsp, but
     /// they must not race the same Corsa virtual document.
@@ -244,6 +258,12 @@ impl ServerState {
             #[cfg(feature = "native")]
             corsa_init_lock: AsyncMutex::new(()),
             #[cfg(feature = "native")]
+            corsa_request_lock: AsyncMutex::new(()),
+            #[cfg(feature = "native")]
+            corsa_environment_revision: std::sync::atomic::AtomicU64::new(0),
+            #[cfg(feature = "native")]
+            corsa_environment_changes: std::sync::atomic::AtomicUsize::new(0),
+            #[cfg(feature = "native")]
             diagnostic_locks: DashMap::new(),
             #[cfg(feature = "native")]
             corsa_init_failed: std::sync::atomic::AtomicBool::new(false),
@@ -273,26 +293,6 @@ impl ServerState {
         {
             self.corsa_overlays.remove(uri);
             self.remove_idle_diagnostic_lock(uri);
-        }
-    }
-
-    /// Owned per-document lock for a diagnostic pass. Clone the `Arc` before
-    /// awaiting so no DashMap guard survives across a suspension point.
-    #[cfg(feature = "native")]
-    pub(crate) fn diagnostic_lock(&self, uri: &Url) -> Arc<AsyncMutex<()>> {
-        self.diagnostic_locks
-            .entry(uri.clone())
-            .or_insert_with(|| Arc::new(AsyncMutex::new(())))
-            .clone()
-    }
-
-    #[cfg(feature = "native")]
-    fn remove_idle_diagnostic_lock(&self, uri: &Url) {
-        if let dashmap::mapref::entry::Entry::Occupied(entry) =
-            self.diagnostic_locks.entry(uri.clone())
-            && Arc::strong_count(entry.get()) == 1
-        {
-            entry.remove();
         }
     }
 

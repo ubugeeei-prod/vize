@@ -88,6 +88,8 @@ impl ServerState {
     }
 
     fn update_names_configuration<T>(&self, apply: impl FnOnce() -> T) -> T {
+        #[cfg(feature = "native")]
+        let _change = self.corsa_environment_change();
         #[cfg(feature = "experimental-source-navigation")]
         {
             self.update_native_names_configuration(apply)
@@ -99,6 +101,8 @@ impl ServerState {
     }
 
     fn apply_type_checker_config(&self, config: TypeCheckerConfig, timeout_ms: u64, source: &Path) {
+        #[cfg(feature = "native")]
+        let _change = self.corsa_environment_change();
         #[cfg(feature = "experimental-source-navigation")]
         self.update_module_link_context(Some(source.to_path_buf()), || {
             *self.type_checker_config.write() = (config, timeout_ms);
@@ -112,11 +116,16 @@ impl ServerState {
         // overlays are layered onto, so a reload retargets them even though no
         // document changed (#3442).
         #[cfg(feature = "native")]
-        self.invalidate_corsa_overlays();
+        {
+            self.invalidate_corsa_overlays();
+            self.retire_corsa_configuration();
+        }
         tracing::info!("Loaded type checker config from {}", source.display());
     }
 
     fn apply_global_types_config(&self, config: GlobalTypesConfig, source: &str) {
+        #[cfg(feature = "native")]
+        let _change = self.corsa_environment_change();
         *self.global_types.write() = config;
         #[cfg(feature = "native")]
         self.batch_cache.invalidate();
@@ -124,6 +133,8 @@ impl ServerState {
     }
 
     fn apply_config_features(&self, features: vize_l0::config::ConfigFeatureFlags) {
+        #[cfg(feature = "native")]
+        let _change = self.corsa_environment_change();
         self.experimental_patterned_template
             .store(features.experimental_patterned_template, Ordering::SeqCst);
         *self.type_checker_options_api.write() = features.type_checker_options_api;

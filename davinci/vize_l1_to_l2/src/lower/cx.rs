@@ -31,6 +31,8 @@ use vize_l2::scope::{ScopeFacts, ScopeTag};
 mod custom_element;
 mod for_parts;
 mod span;
+mod text_parent;
+use text_parent::TextWhitespace;
 
 pub(crate) struct Cx<'a> {
     pub allocator: &'a Allocator,
@@ -43,6 +45,10 @@ pub(crate) struct Cx<'a> {
     /// How many `<pre>` ancestors the walk is inside; condensing is
     /// suppressed for those subtrees (`lower::text`).
     condense_depth: u32,
+    /// The direct owner's effective text rule, including inherited `<pre>`.
+    pub(crate) text_whitespace: TextWhitespace,
+    /// Authored start of the first visible text child of an HTML pre/textarea.
+    pub(crate) ignore_newline_at: Option<u32>,
     /// How many `v-pre` ancestors the walk is inside; interpolations are
     /// inert authored text for those subtrees.
     v_pre_depth: u32,
@@ -82,6 +88,8 @@ impl<'a> Cx<'a> {
             exhausted: false,
             next_scope: 0,
             condense_depth: 0,
+            text_whitespace: TextWhitespace::Normal,
+            ignore_newline_at: None,
             v_pre_depth: 0,
             preserve_comments,
             diagnostics: Vec::new(),
@@ -111,7 +119,7 @@ impl<'a> Cx<'a> {
 
     /// Whether the walk is inside a condense-suppressing subtree.
     pub(crate) fn condense_suppressed(&self) -> bool {
-        self.condense_depth > 0
+        self.text_whitespace != TextWhitespace::Normal
     }
 
     /// Whether the walk is inside a `v-pre` subtree.

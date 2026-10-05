@@ -1,0 +1,70 @@
+name: Leading newline runtime
+on:
+  pull_request:
+    paths:
+      - crates/vize_armature/src/parser/**
+      - crates/vize_armature/tests/_fixtures/first_newline_parser_*
+      - crates/vize_armature/tests/_fixtures/tokenizer_parser_*.bin
+      - crates/vize_atelier_vapor/src/lower/element/template.rs
+      - crates/vize_atelier_vapor/src/lower/element/template/**
+      - davinci/vize_l1_to_l2/src/lower/**
+      - davinci/vize_l1_to_l2/tests/pre_textarea_first_newline.rs
+      - davinci/vize_l1_to_l2/tests/text_pass.rs
+      - davinci/vize_l1_to_l2/tests/text_singleton.rs
+      - tests/tooling/pre-textarea-first-newline.test.mjs
+      - tests/tooling/support/first-newline-vapor-oracle.mjs
+      - tests/_fixtures/differential/compiler/pre-textarea-first-newline/**
+      - tests/_fixtures/differential/compiler/first-newline-runtime.manifest.json
+      - tests/_fixtures/differential/compiler/manifest.json
+      - .github/workflows/pre-textarea-first-newline.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: first-newline-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  runtime:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
+        with:
+          toolchain: "1.98.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: first-newline
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: true
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install Chromium
+        run: vize-ci-apt-retry vp exec --filter './tests' -- playwright install --with-deps chromium
+      - name: Build the actual CLI and run source-bound browser observations
+        env:
+          VIZE_FIRST_NEWLINE_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_FIRST_NEWLINE_CAPTURE: ${{ runner.temp }}/first-newline-observations.json
+        run: |
+          git rev-parse HEAD > "$RUNNER_TEMP/first-newline-source.txt"
+          cargo build --locked --profile ci -p vize
+          cargo test --locked --profile ci -p vize_armature --lib
+          cargo test --locked --profile ci -p vize_l1_to_l2 --test pre_textarea_first_newline --test text_pass --test text_singleton
+          vp node --test tests/tooling/pre-textarea-first-newline.test.mjs
+          mkdir -p "$RUNNER_TEMP/first-newline-tokenizer-current"
+          VIZE_TOKENIZER_CAPTURE_DIR="$RUNNER_TEMP/first-newline-tokenizer-current" cargo test --locked --profile ci -p vize_armature --features legacy --lib
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: first-newline-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/first-newline-source.txt
+            ${{ runner.temp }}/first-newline-observations.json
+            ${{ runner.temp }}/first-newline-tokenizer-*
+          if-no-files-found: error
+          retention-days: 7

@@ -27,6 +27,40 @@ impl SetupHelperPlan {
             ts.push_str("// Keep the authored Vue helper import used by its specialized setup signature\nvoid useTemplateRef;\n");
         }
     }
+
+    pub(crate) fn template_emit_initializer(
+        &self,
+        ts: &mut String,
+        summary: &Croquis,
+    ) -> Option<String> {
+        let emits = summary
+            .macros
+            .define_emits()
+            .filter(|_| !self.shadowed.contains("defineEmits"));
+        let base = emits.and_then(|emits| {
+            if let Some(type_args) = emits.type_args.as_deref() {
+                let inner = super::super::emits::inner_type_of(type_args);
+                Some(vize_carton::cstr!("__EmitFn<{inner}>"))
+            } else if let Some(args) = emits.runtime_args.as_ref() {
+                append!(
+                    *ts,
+                    "    const __vize_template_emit = defineEmits({args});\n"
+                );
+                Some(String::from("typeof __vize_template_emit"))
+            } else {
+                None
+            }
+        });
+        let models = (!self.shadowed.contains("defineModel"))
+            .then(|| super::super::emits::template_model_emit_type(summary))
+            .flatten();
+        let ty = match (base, models) {
+            (Some(base), Some(models)) => vize_carton::cstr!("{base} & {models}"),
+            (Some(ty), None) | (None, Some(ty)) => ty,
+            (None, None) => return None,
+        };
+        Some(vize_carton::cstr!("undefined as unknown as {ty}"))
+    }
 }
 
 pub(super) fn emit(
