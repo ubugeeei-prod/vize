@@ -304,3 +304,26 @@ retained primary/cleanup errors after cleanup; primary errors take precedence.
 No suppression, timing/body/native/default/profile/pin or budget change repairs
 the source gate. Preserve that failed raw log and require fresh exact-head CI;
 previous native/vector observations do not establish the corrected source gain.
+
+The first matched helper run on6f completed its six budget-law arms, but its
+artifact11363535848 (SHA256 a76f81e392ab7a090e84493288f958079cfbcfa7614638f79a87bb16cac7012a)
+contains identical original/bulk integration binary hashes. The baseline build
+compiled Canon into the shared target directory; the subsequent consumer build
+reported both its library and test as fresh and reused that same baseline binary.
+Its raw median differences are therefore same-binary variation, not bulk gains;
+preserve the full receipt and failed acceptance. The independently preceding
+whole681 native/LSP equality remains separate quality evidence.
+
+Before each arm build, use Cargo's supported package/profile-scoped clean to
+evict only Canon CI artifacts, keeping external dependency caches and the already
+built CLI/LSP binaries intact. Retain clean/build outcomes and complete compiler
+artifact records before assertions; require exact source-root manifest and
+library/test paths, fresh=false for both owned artifacts, equal features/profile
+and distinct final binary hashes before any timing arm. This rebuild/custody work
+runs outside all unchanged timing windows, retains the same six driver overlays,
+physical originals/config/native/process checks and 15000/10000 ms budgets, and
+adds no production path, pipeline stage, SDK or dependency. Cargo's
+[package/profile cleanup](https://doc.rust-lang.org/cargo/commands/cargo-clean.html)
+and [compiler artifact identity](https://doc.rust-lang.org/cargo/reference/external-tools.html#artifact-messages)
+are the primary interface authorities. Genuine rebuilt matched gain and exact-head
+source/native/full/protected delivery remain required; #7698 stays open.

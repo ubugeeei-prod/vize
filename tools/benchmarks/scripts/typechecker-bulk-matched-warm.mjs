@@ -13,6 +13,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
+import { buildMatchedBinaries } from "./typechecker-bulk-build-custody.mjs";
 import { prepareSourceCustody } from "./typechecker-bulk-source-custody.mjs";
 
 // The actual parent-only main retains the original route and all incoming fixes.
@@ -135,60 +136,16 @@ try {
   const productionOverlay = git("-C", parent, "diff", "--name-only").split("\n").filter(Boolean);
   assert(productionOverlay.every((path) => driverPaths.includes(path)));
   receipt.baselineChangedPaths = productionOverlay;
-  const binaries = {};
-  for (const [arm, cwd] of [
-    ["original", parent],
-    ["bulk", root],
-  ]) {
-    const result = spawnSync(
-      "cargo",
-      [
-        "test",
-        "--locked",
-        "--profile",
-        "ci",
-        "-p",
-        "vize_canon",
-        "--test",
-        "tier_l_incremental",
-        "--no-run",
-        "--message-format=json",
-      ],
-      {
-        cwd,
-        env: { ...process.env, CARGO_TARGET_DIR: join(root, "target") },
-        encoding: "utf8",
-        maxBuffer: 128 * 1024 * 1024,
-      },
-    );
-    writeFileSync(join(output, `${arm}-build.jsonl`), result.stdout ?? "");
-    writeFileSync(join(output, `${arm}-build.stderr`), result.stderr ?? "");
-    assert.equal(
-      result.status,
-      0,
-      `${arm} source build failed: ${result.error ?? result.signal ?? result.status}`,
-    );
-    const artifacts = result.stdout
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => JSON.parse(line));
-    const executable = artifacts.findLast(
-      (item) =>
-        item.reason === "compiler-artifact" &&
-        item.target?.name === "tier_l_incremental" &&
-        item.executable,
-    )?.executable;
-    assert(executable, `${arm} integration binary absent`);
-    const pinned = join(temporary, `${arm}-tier-l-test`);
-    copyFileSync(executable, pinned);
-    binaries[arm] = {
-      path: pinned,
-      sha256: digest(readFileSync(pinned)),
-      productionSource: arm === "original" ? baseline : source,
-    };
-  }
-  receipt.binaries = binaries;
-  persist();
+  const binaries = buildMatchedBinaries({
+    root,
+    parent,
+    source,
+    baseline,
+    temporary,
+    output,
+    receipt,
+    persist,
+  });
   // Three authored pairs alternate execution order on this one runner.
   for (let pair = 0; pair < 3; pair++) {
     const order = pair % 2 === 0 ? ["original", "bulk"] : ["bulk", "original"];
