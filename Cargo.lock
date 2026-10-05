@@ -4885,6 +4885,7 @@ dependencies = [
  "async-trait",
  "dashmap 6.2.1",
  "futures",
+ "htmlize",
  "ignore",
  "insta",
  "libc",

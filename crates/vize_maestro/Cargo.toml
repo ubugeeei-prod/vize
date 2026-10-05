@@ -38,6 +38,7 @@ async-trait.workspace = true
 # Text Processing
 ropey.workspace = true
 memchr.workspace = true
+htmlize.workspace = true
 
 # Serialization
 serde.workspace = true

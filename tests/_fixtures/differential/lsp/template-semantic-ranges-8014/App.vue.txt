@@ -1,0 +1,16 @@
+<script setup lang="ts">
+function close() {}
+const count = 1;
+</script>
+
+<template>
+  <button
+    @click="
+      // always call close here
+      close()
+    "
+  >
+    {{ count /* the count value */ }}
+  </button>
+  <p :title="/* explanation text */ String(count)">x</p>
+</template>

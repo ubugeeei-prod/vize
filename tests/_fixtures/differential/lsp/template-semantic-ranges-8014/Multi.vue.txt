@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const open = true;
+</script>
+
+<template>
+  <i
+    :class="`icon-${
+      open ? 'down' : 'right'
+    }`"
+  />
+</template>

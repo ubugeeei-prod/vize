@@ -12,12 +12,15 @@
 
 mod art;
 mod encoding;
+mod expression_lines;
 mod expressions;
 mod style;
 mod template;
 mod template_attrs;
 mod types;
 
+#[cfg(test)]
+mod regression_8014_tests;
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod resident_tests;

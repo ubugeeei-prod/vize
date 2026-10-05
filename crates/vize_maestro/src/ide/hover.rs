@@ -1,8 +1,6 @@
 //! Hover information provider.
 //!
-//! Provides contextual hover information for:
-//! - Template expressions and bindings
-//! - Vue directives
+//! Contextual hover information for template expressions/bindings and Vue directives.
 #![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
@@ -46,6 +44,7 @@ impl HoverService {
     /// Get hover information for the given context.
     pub fn hover(ctx: &IdeContext) -> Option<Hover> {
         match ctx.block_type? {
+            _ if crate::ide::template_expression::is_in_template_comment(ctx) => None,
             BlockType::Template => Self::hover_template(ctx),
             BlockType::Script => Self::hover_script(ctx, false),
             BlockType::ScriptSetup => Self::hover_script(ctx, true),
@@ -65,6 +64,7 @@ impl HoverService {
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<Hover> {
         match ctx.block_type? {
+            _ if crate::ide::template_expression::is_in_template_comment(ctx) => None,
             BlockType::Template => Self::hover_template_with_corsa(ctx, corsa_bridge).await,
             BlockType::Script => Self::hover_script_with_corsa(ctx, false, corsa_bridge).await,
             BlockType::ScriptSetup => Self::hover_script_with_corsa(ctx, true, corsa_bridge).await,

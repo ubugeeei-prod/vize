@@ -1,4 +1,6 @@
+mod comments;
 mod dynamic_argument;
+pub(crate) use comments::is_in_template_comment;
 
 /// Check if a cursor offset is inside a Vue template expression.
 ///
@@ -17,7 +19,8 @@ pub(crate) fn is_in_vue_template_expression(content: &str, offset: usize) -> boo
         return false;
     }
 
-    is_in_mustache_expression(content, offset) || is_in_vue_directive_expression(content, offset)
+    is_in_mustache_expression(content, offset)
+        || directive_expression_start(content, offset).is_some()
 }
 
 /// Check if a cursor offset completes a *member* of the expression to its left,
@@ -178,10 +181,10 @@ fn is_in_mustache_expression(content: &str, offset: usize) -> bool {
         .is_some_and(|rest| rest.contains("}}"))
 }
 
-fn is_in_vue_directive_expression(content: &str, offset: usize) -> bool {
+fn directive_expression_start(content: &str, offset: usize) -> Option<usize> {
     let bytes = content.as_bytes();
     let Some(before) = content.get(..offset) else {
-        return false;
+        return None;
     };
     for (tag_start, _) in before.match_indices('<').rev() {
         let name_start = tag_start + 1;
@@ -212,7 +215,7 @@ fn is_in_vue_directive_expression(content: &str, offset: usize) -> bool {
                     quote_start = None;
                 }
             } else if byte == b'[' && dynamic_argument::contains_cursor(content, pos, offset) {
-                return true;
+                return Some(pos + 1);
             } else if byte == b'"' || byte == b'\'' {
                 quote = Some(byte);
                 quote_start = Some(pos);
@@ -229,10 +232,11 @@ fn is_in_vue_directive_expression(content: &str, offset: usize) -> bool {
             continue;
         };
         return directive_attribute_name_before_quote(content, quote_start)
-            .is_some_and(is_vue_expression_attribute);
+            .filter(|name| is_vue_expression_attribute(name))
+            .map(|_| quote_start + 1);
     }
 
-    false
+    None
 }
 
 fn directive_attribute_name_before_quote(content: &str, quote_start: usize) -> Option<&str> {
