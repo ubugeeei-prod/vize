@@ -202,3 +202,48 @@ the unchanged complete original400 oracle. Earlier equal-binary observations
 and source JUnit outcomes remain historical, with no execution or performance
 credit transferred. Existing #8035 stays Draft/offqueue under the finite cut
 hold; current source peer and automatic Actions remain mandatory.
+
+## Authenticated warm result and release-version replay
+
+Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5996811776).
+
+The exact `005a` same-worker original400 run 37321925950 passed. Official artifact
+11350842839 has 7,572,038 bytes and SHA256
+`c618476661f09acd25f233f5c270c6b65fdf1c42e1655cc878d835b4c18a299b`;
+independent owner and source peer authenticate all 782 safe unique CRC members,
+every original 534 and foreign-root 27 source byte, four fresh native/default
+Cargo artifacts per side, distinct build/launch receipt hashes, and all 74
+whole measured RPC envelopes with all 20 warm requests and inverse controls.
+Current source Check 37321927123 separately passes 16,176 unique Rust tests,
+with zero failures/errors/skips and all four whole-source laws executed.
+
+In this one fixed-order ci-profile pair, warm wall median is 2591.626 ms before
+and 45.579 ms after, about 56.86 times faster for this workload; current warm
+samples are 44.199–67.353 ms. Parent sampled CPU median falls 2.59→0.05s while
+matched live native CPU median is zero on both sides. Raw main-thread and I/O
+records support reduced parent work without a statement-level, Program-count,
+release-build or general user-machine performance claim.
+
+Warm Vize parent RSS median is 365447168→444948480 bytes; the full-control
+inclusive sampled peak is 3264831488→3839451136 bytes with differing
+overlapping native children. Retain this memory tradeoff without a memory
+reduction or heap-cause claim. The existing eight-context bound is unchanged.
+
+Both sides retain six native diagnostic timeout warnings and snapshot-release
+queue warnings. Collection markers do not prove complete native diagnostics.
+The current first priming hover takes 7.223s and configuration probe 12.580s;
+those startup/configuration paths remain unfinished. All original native lives
+are observed nonrunning, with one same-birth zombie per side, so complete OS
+reaping remains unproved. Actual locked Vue 3.6.0-beta.10 differs from reported
+3.5.41. Preserve the earlier equal-ELF pair without successor-compilation attribution.
+
+Genuinely replay all ten existing authored commits onto actual v0.433 main
+8a8521d6897bbe3fd0af0cbfaebd83f4fc933933. All 29 owned blobs and all ten
+full source author/email/date/body/reporter records remain exact before this
+docs-only addition; incoming version/lock promotion stays untouched. Preserve
+all 350 incoming canonical lines and append this qualified result. Fresh
+version-bound source and the unchanged original400 Actions must execute
+again; `005a` execution stays historical. No new lane, retry, profile/ceiling
+change, response filtering, native shortcut or diagnostic-readiness waiver
+is added. Existing #8035 remains Draft/offqueue under the finite first-v0.433
+publication hold; its first cut remains independent.
