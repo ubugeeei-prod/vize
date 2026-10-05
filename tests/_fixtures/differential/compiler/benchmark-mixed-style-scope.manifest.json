@@ -1,0 +1,55 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "d1a25ec1da2efca98534520ff8ebe84d34708e3d",
+  "product": "compiler",
+  "cases": [
+    {
+      "id": "compiler/sfc/benchmark-mixed-style-scope",
+      "state": "active",
+      "targets": ["dom", "ssr", "vapor"],
+      "inputs": {
+        "root": "benchmark-mixed-style-scope",
+        "files": [
+          {
+            "path": "original.vue.txt",
+            "sha256": "78c44890f7d99f3716c9291712f962bf5fcf4b09efbe2f020a92b3cd6778d35b",
+            "role": "entry"
+          },
+          {
+            "path": "source-custody.json",
+            "sha256": "7e83a35e778057fdd55b873e3cdb2af901c7c7a165b74c0a452bd3056c003345",
+            "role": "upstream-custody"
+          }
+        ]
+      },
+      "reference": {
+        "path": "benchmark-mixed-style-scope/scope.expected.json",
+        "sha256": "914030420df61949330b32263caede158b53f05394239529a8ac8185d1a058c6",
+        "source": "crates/vize_atelier_sfc/tests/mixed_style_scope.rs:full_sfc_scopes_only_each_authored_style_block"
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/7862",
+        "reporter": "ubugeeei",
+        "upstreamIssue": "https://github.com/ubugeeei-prod/vize/issues/7856",
+        "upstreamCommit": "5489aee433cd1054b9d72973457498544da7c467"
+      },
+      "adapters": {
+        "legacy": "compiler-public-mixed-style-scope-v1",
+        "native": null,
+        "reasons": {
+          "native": "Existing full-SFC CSS correctness slice; no native product acceptance."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-css-scope-runtime-v1",
+        "requiredFacets": [
+          "original-block-scope",
+          "complete-rule-order",
+          "css-dom-scope-observations",
+          "standalone-explicit-option"
+        ]
+      }
+    }
+  ]
+}

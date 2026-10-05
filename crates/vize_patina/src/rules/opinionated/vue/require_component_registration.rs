@@ -226,22 +226,27 @@ impl Rule for RequireComponentRegistration {
         // Collect all custom components used in template
         let mut used_components: Vec<(String, u32, u32)> = Vec::new();
         collect_components(root, &mut used_components);
-        let async_components = ctx
-            .sfc_descriptor()
-            .and_then(|descriptor| descriptor.script_setup.as_ref())
-            .map(async_component_names)
-            .unwrap_or_default();
-        let setup_bindings: Vec<String> = ctx
-            .sfc_descriptor()
-            .and_then(|descriptor| descriptor.script_setup.as_ref())
-            .map(|script| {
-                parse_script_setup(script.content.as_ref())
-                    .bindings
-                    .iter()
-                    .map(|(name, _)| name.to_compact_string())
-                    .collect()
-            })
-            .unwrap_or_default();
+        let art_bindings = art::setup_bindings(ctx);
+        let async_components = if art_bindings.is_some() {
+            Vec::new()
+        } else {
+            ctx.sfc_descriptor()
+                .and_then(|descriptor| descriptor.script_setup.as_ref())
+                .map(async_component_names)
+                .unwrap_or_default()
+        };
+        let setup_bindings: Vec<String> = art_bindings.unwrap_or_else(|| {
+            ctx.sfc_descriptor()
+                .and_then(|descriptor| descriptor.script_setup.as_ref())
+                .map(|script| {
+                    parse_script_setup(script.content.as_ref())
+                        .bindings
+                        .iter()
+                        .map(|(name, _)| name.to_compact_string())
+                        .collect()
+                })
+                .unwrap_or_default()
+        });
 
         // For now, we warn on all custom components that aren't built-in or framework globals
         for (tag, start, end) in used_components {
@@ -250,11 +255,13 @@ impl Rule for RequireComponentRegistration {
                 && !self.is_framework_global(&tag)
             {
                 // Recursive self-reference needs no registration (#4953).
-                if self.is_self_reference(ctx, &tag) {
+                if (!art::is_context(ctx) && self.is_self_reference(ctx, &tag))
+                    || art::is_target(ctx, &tag)
+                {
                     continue;
                 }
 
-                if ctx.analysis().is_some_and(|analysis| {
+                if art::analysis(ctx).is_some_and(|analysis| {
                     self.is_template_visible_imported_component(ctx, analysis, &tag)
                         || self.is_options_api_registered_component(analysis, &tag)
                 }) || async_components
@@ -333,6 +340,7 @@ fn component_name_matches(used: &str, registered: &str) -> bool {
         || to_pascal_case(used).as_str() == registered
 }
 
+mod art;
 mod async_setup;
 mod self_name;
 

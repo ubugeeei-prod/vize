@@ -18,22 +18,21 @@ use vize_curator::profile::{
 
 mod data;
 mod entries;
+mod file_support;
 mod files;
 mod format_source;
 mod ignores;
 mod options;
 use format_source::format_file_source;
 mod patterns;
-use options::build_format_options;
-
 pub(crate) use files::collect_files;
 use ignores::load_fmt_ignore_set;
+use options::build_format_options;
 use patterns::{FORMAT_EXTENSIONS_DISPLAY, default_fmt_patterns};
-
 #[derive(Args)]
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct FmtArgs {
-    /// Glob pattern(s) to match files supported by vize fmt
+    /// Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented.
     #[arg(default_values_t = default_fmt_patterns())]
     pub patterns: Vec<String>,
 
@@ -346,6 +345,7 @@ fn process_file(
     write: bool,
     profile: bool,
 ) -> Result<FormatFileResult, String> {
+    file_support::validate(path).map_err(str::to_owned)?;
     let (vue_version, sort_imports) = formatting;
     let file_start = profile.then(Instant::now);
     let read_start = profile.then(Instant::now);

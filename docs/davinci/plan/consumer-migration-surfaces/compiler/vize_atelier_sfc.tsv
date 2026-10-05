@@ -429,6 +429,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/imported_pick_intersect
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/imported_prop_defaults.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/imported_prop_defaults.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/imported_type_cache.rs	13	l0	L0	stage	vize_l0	preferred	2
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/mixed_style_scope.rs	17	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/module_mode_setup_bindings.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/module_mode_setup_bindings.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502.rs	2	l0	L0	stage	vize_l0	preferred	1

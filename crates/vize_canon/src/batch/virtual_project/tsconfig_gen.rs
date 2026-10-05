@@ -2,6 +2,7 @@ mod alias_rewrite_policy;
 mod base_url;
 pub(super) mod compiler_options;
 mod compiler_options_snapshot;
+mod config_anchor;
 pub use compiler_options_snapshot::snapshot_tsconfig_compiler_options;
 mod control_alias;
 mod native_options;
@@ -21,7 +22,6 @@ use serde_json::{Map, Value};
 use vize_carton::{String as CompactString, ToCompactString, cstr};
 
 use crate::batch::error::CorsaResult;
-use crate::batch::materialize_fs::write_if_changed;
 use crate::batch::source_policy::SourceFilePolicy;
 
 use super::{SHARED_HELPERS_FILE, VirtualProject};
@@ -92,17 +92,15 @@ impl VirtualProject {
         self.write_tsconfig_file_with_includes(path, out_dir, declaration_map, None)
     }
 
-    /// Write a tsconfig whose `include` lists only the given virtual paths
-    /// (plus the shared stub files). Used for shard configs that partition the
-    /// project across parallel Corsa CLI runs.
+    /// Write a shard config including only its virtual paths and shared stubs.
     pub(crate) fn write_shard_tsconfig(
         &self,
         shard_index: usize,
         include_virtual_paths: &[&Path],
     ) -> CorsaResult<PathBuf> {
         let config_path = self
-            .virtual_root
-            .join(cstr!("tsconfig.shard{shard_index}.json").as_str());
+            .generated_tsconfig_path()
+            .with_file_name(cstr!("tsconfig.shard{shard_index}.json").as_str());
         self.write_tsconfig_file_with_includes(
             &config_path,
             None,
@@ -119,11 +117,9 @@ impl VirtualProject {
         declaration_map: bool,
         include_virtual_paths: Option<&[&Path]>,
     ) -> CorsaResult<()> {
-        let tsconfig =
+        let mut tsconfig =
             self.generate_tsconfig_value(out_dir, declaration_map, include_virtual_paths)?;
-        let content = serde_json::to_string_pretty(&tsconfig)?;
-        write_if_changed(path, content.as_bytes())?;
-        Ok(())
+        self.write_generated_config(path, &mut tsconfig)
     }
 
     fn generate_tsconfig_value(

@@ -277,3 +277,13 @@ and ceilings remain unchanged, cause remains UNKNOWN, #7764 stays open and
 #7757 remains Draft/off until a meaningful diagnosed correction is qualified.
 This integration grants no native/default product, performance or fix-history
 completion credit. Source/protected/actual delivery remain pending.
+
+The exactb08 source Actions passed, but a concurrent actual-main advancement
+to signed5fb and queued-prefix0034 changed the same performance paragraph.
+The queue marked this source UNMERGEABLE with no protected candidate. It was
+dequeued; this was a composition conflict, not a failing CI or measured case.
+The genuine current-main reconciliation preserves every incoming code/doc blob
+and relocates the complete diagnostic decision to the existing CI-baseline
+paragraph, byte-equal between actualmain5fb and queuedprefix0034 before the
+addition. All historical outcomes and ownership limits remain unchanged.
+Fresh exact-head Actions and conflict-free protected delivery are still required.

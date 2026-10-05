@@ -1,0 +1,3 @@
+<template>
+  <svg aria-hidden="true" width="16" height="16" />
+</template>

@@ -1,0 +1,54 @@
+{
+  "schema": "vize.formatter-document-support-regression",
+  "version": 1,
+  "issue": 7867,
+  "native": "unsupported",
+  "files": {
+    "config.yaml": "a:   1\nb: [ x,y ]\nlist:\n- a\n",
+    "README.md": "# Title\n\n\n\n* one\n* two\n\n| a | b |\n|---|---|\n| long value | x |\n",
+    "config.yml": "a:   1\nb: [ x,y ]\nlist:\n- a\n",
+    "README.markdown": "# Title\n\n\n\n* one\n* two\n\n| a | b |\n|---|---|\n| long value | x |\n",
+    "breaks.md": "Text with two spaces  \nnext line\n",
+    "src/main.ts": "const   a=1\n"
+  },
+  "formattedScript": "const a = 1;\n",
+  "error": "YAML and Markdown formatting is not implemented; these formats are excluded from default discovery",
+  "cases": [
+    {
+      "id": "default-discovery",
+      "patterns": [],
+      "selected": ["src/main.ts"],
+      "errors": []
+    },
+    {
+      "id": "reported-explicit",
+      "patterns": ["config.yaml", "README.md"],
+      "selected": ["config.yaml", "README.md"],
+      "errors": ["config.yaml", "README.md"]
+    },
+    {
+      "id": "alternate-extensions",
+      "patterns": ["config.yml", "README.markdown"],
+      "selected": ["config.yml", "README.markdown"],
+      "errors": ["config.yml", "README.markdown"]
+    },
+    {
+      "id": "hard-break-preserved",
+      "patterns": ["breaks.md"],
+      "selected": ["breaks.md"],
+      "errors": ["breaks.md"]
+    },
+    {
+      "id": "mixed-source-documents",
+      "patterns": ["src/main.ts", "config.yaml", "README.md"],
+      "selected": ["src/main.ts", "config.yaml", "README.md"],
+      "errors": ["config.yaml", "README.md"]
+    },
+    {
+      "id": "explicit-document-glob",
+      "patterns": ["*.yaml"],
+      "selected": ["config.yaml"],
+      "errors": ["config.yaml"]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "compilerOptions": { "strict": true, "target": "ES2022", "module": "ESNext", "moduleResolution": "bundler", "noEmit": true },
+  "include": ["*.vue"]
+}

@@ -72,6 +72,8 @@ pub struct LintContext<'a> {
     config_rule_severities: FxHashMap<String, Severity>,
     /// Optional semantic analysis from croquis.
     pub(crate) analysis: Option<&'a Croquis>,
+    /// Original Art script facts, separate from each fragment's template facts.
+    pub(crate) art_script_analysis: Option<&'a Croquis>,
     /// One lazy fact manager per drawn artifact for this lint pass.
     facts: Option<vize_croquis::facts::CroquisFacts<'a>>,
     /// Optional parsed SFC descriptor shared by SFC-level rules.
@@ -134,6 +136,7 @@ impl<'a> LintContext<'a> {
             config_disabled_rules: FxHashSet::default(),
             config_rule_severities: FxHashMap::default(),
             analysis: None,
+            art_script_analysis: None,
             facts: None,
             sfc_descriptor: None,
             analysis_excluded_rules: None,
@@ -179,6 +182,7 @@ impl<'a> LintContext<'a> {
             config_disabled_rules: FxHashSet::default(),
             config_rule_severities: FxHashMap::default(),
             analysis: Some(analysis),
+            art_script_analysis: None,
             facts: Some(vize_croquis::facts::CroquisFacts::new(analysis)),
             sfc_descriptor: None,
             analysis_excluded_rules: None,

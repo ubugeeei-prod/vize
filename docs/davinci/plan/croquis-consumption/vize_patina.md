@@ -11,13 +11,13 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | product                           | kind  | module              | files | sites |
 | --------------------------------- | ----- | ------------------- | ----: | ----: |
 | `COMPILER_MACRO_NAMES`            | type  | `croquis`           |     1 |     1 |
-| `Croquis`                         | type  | `croquis`           |    13 |    26 |
+| `Croquis`                         | type  | `croquis`           |    15 |    30 |
 | `Drawer`                          | type  | `drawer`            |     1 |     1 |
 | `ElementIdKind`                   | type  | `croquis::template` |     1 |     2 |
 | `OptionMember`                    | type  | `croquis`           |     2 |     3 |
 | `Scope`                           | type  | `scope`             |     2 |     2 |
 | `ScopeData`                       | type  | `scope`             |     2 |     2 |
-| `ScopeKind`                       | type  | `scope`             |     2 |     3 |
+| `ScopeKind`                       | type  | `scope`             |     3 |     4 |
 | `UnusedVarContext`                | type  | `croquis`           |     1 |     4 |
 | `Croquis.binding_spans`           | field | `croquis`           |     1 |     1 |
 | `Croquis.component_registrations` | field | `croquis`           |     2 |     2 |
@@ -44,7 +44,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScriptParseResult`                       |     3 |     3 |
 | `ScriptParserOptions`                     |     2 |     2 |
 | `SfcCustomBlock`                          |     1 |     2 |
-| `SfcDescriptor`                           |    13 |    17 |
+| `SfcDescriptor`                           |    13 |    19 |
 | `SfcError`                                |     1 |     2 |
 | `SfcParseOptions`                         |    13 |    14 |
 | `SfcScriptBlock`                          |     1 |     1 |
@@ -65,5 +65,5 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `parse_v_for_expression`                  |     1 |     1 |
 | `parse_v_for_scope_expression`            |     1 |     1 |
 | `reactivity_lookup`                       |     1 |     1 |
-| `to_pascal_case`                          |     2 |     3 |
+| `to_pascal_case`                          |     3 |     4 |
 | `used_component_name_list`                |     1 |     1 |

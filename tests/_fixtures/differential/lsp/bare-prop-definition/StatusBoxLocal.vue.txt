@@ -1,0 +1,11 @@
+<script setup lang="ts">
+interface StatusBoxProps {
+  status?: "default" | "error";
+}
+
+const props = withDefaults(defineProps<StatusBoxProps>(), { status: "default" });
+</script>
+
+<template>
+  <div :class="`status-box--${status}`" :data-status="props.status"></div>
+</template>

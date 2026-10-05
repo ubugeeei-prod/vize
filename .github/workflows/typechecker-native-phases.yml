@@ -21,6 +21,8 @@ on:
       - "tools/benchmarks/scripts/check-gate-*.mjs"
       - "tools/benchmarks/scripts/typecheck-command.mjs"
       - "tools/benchmarks/scripts/benchmark-binary.mjs"
+      - "crates/vize/tests/check_outside_import_types_cli.rs"
+      - "tests/_fixtures/differential/typechecker/outside-import-types/**"
       - "crates/vize_canon/**"
       - "crates/vize/src/**"
       - "Cargo.toml"
@@ -123,6 +125,65 @@ jobs:
           node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
           cd "$NATIVE_PHASE_SOURCE_ROOT"
           cargo clippy --locked -p vize_canon --example native_phase_projection -- -D warnings
+      - name: Qualify original outside-import types with the source CLI and official native oracle
+        if: github.event_name == 'pull_request'
+        env:
+          VIZE_TEST_REQUIRE_TSGO: "1"
+          VIZE_TYPECHECK_REGRESSION_CAPTURE: ${{ runner.temp }}/outside-import-types
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          cd "$NATIVE_PHASE_SOURCE_ROOT"
+          cargo test --locked --profile ci-opt -p vize --test check_outside_import_types_cli \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' \
+            --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
+          export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync} from "node:fs"; process.stdout.write(JSON.parse(readFileSync(process.env.VIZE_TYPECHECK_REGRESSION_CAPTURE + "/outside_import_preserves_original_type_libraries_and_real_cli_diagnostics/oracle.json", "utf8")).nativeBinary)')"
+          export CORSA_PATH="$VIZE_TEST_TSGO_PATH"
+          cargo test --locked --profile ci-opt -p vize_canon original_outside_import_preserves_types_in_native_editor \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+          cargo test --locked --profile ci-opt -p vize_canon native_editor_resolves_package_alias_from_monorepo_root \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { existsSync, readFileSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
+          import { dirname, join } from 'node:path';
+          import { spawnSync } from 'node:child_process';
+          const root = process.env.VIZE_TYPECHECK_REGRESSION_CAPTURE;
+          const cases = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory() && !['editor-original-script', 'editor-monorepo-alias'].includes(e.name)).map(e => e.name).sort();
+          assert.deepEqual(cases, ['outside_import_keeps_direct_scoped_type_packages_at_the_config_anchor', 'outside_import_preserves_original_type_libraries_and_real_cli_diagnostics', 'type_config_anchor_does_not_expose_app_modules_to_sibling_sources']);
+          const sha256 = file => createHash('sha256').update(readFileSync(file)).digest('hex');
+          const files = dir => readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]);
+          const receipts = cases.map(name => {
+            const dir = join(root, name);
+            const oracle = JSON.parse(readFileSync(join(dir, 'oracle.json'), 'utf8'));
+            const cli = JSON.parse(readFileSync(join(dir, 'cli.json'), 'utf8'));
+            const nativeBinary = realpathSync(oracle.nativeBinary);
+            let packageDir = dirname(nativeBinary);
+            while (!existsSync(join(packageDir, 'package.json')) && dirname(packageDir) !== packageDir) packageDir = dirname(packageDir);
+            const packagePath = join(packageDir, 'package.json');
+            const nativePackage = JSON.parse(readFileSync(packagePath, 'utf8'));
+            assert.equal(nativePackage.name, `@typescript/typescript-${process.platform}-${process.arch}`);
+            assert.equal(nativePackage.version, '7.0.2');
+            const version = spawnSync(nativeBinary, ['--version'], { encoding: 'utf8' });
+            assert.equal(version.status, 0);
+            assert.equal(version.stdout.trim(), 'Version 7.0.2');
+            assert.equal(version.stderr, '');
+            return { name, sourceSha: process.env.SOURCE_SHA, cliBinary: realpathSync(cli.cliBinary), cliSha256: sha256(cli.cliBinary), nativeBinary, nativeSha256: sha256(nativeBinary), nativePackageSha256: sha256(packagePath), nativePackage: { name: nativePackage.name, version: nativePackage.version }, nativeVersion: version.stdout.trim(), completeOutputsAndInputs: files(dir).map(path => ({ path: path.slice(root.length + 1), sha256: sha256(path) })) };
+          });
+          const editor = JSON.parse(readFileSync(join(root, 'editor-original-script/runtime.json'), 'utf8'));
+          assert.equal(realpathSync(editor.nativeBinary), receipts[0].nativeBinary);
+          const aliasRuntime = JSON.parse(readFileSync(join(root, 'editor-monorepo-alias/runtime.json'), 'utf8'));
+          assert.equal(realpathSync(aliasRuntime.nativeBinary), receipts[0].nativeBinary);
+          const editorFiles = ['editor-original-script', 'editor-monorepo-alias'].flatMap(name => files(join(root, name))).map(path => ({ path: path.slice(root.length + 1), sha256: sha256(path) }));
+          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, fixtureSha256: sha256('tests/_fixtures/differential/typechecker/outside-import-types/input.json'), matchedCompleteExpectations: true, cases: receipts, editor: { nativeBinary: realpathSync(editor.nativeBinary), nativeSha256: sha256(editor.nativeBinary), completeOutputsAndInputs: editorFiles } }, null, 2) + '\n');
+          JS
       - name: Build the actual production CLI and standalone projection example
         run: |
           set -euo pipefail
@@ -165,6 +226,7 @@ jobs:
         with:
           name: typechecker-native-phases
           path: |
+            ${{ runner.temp }}/outside-import-types/
             ${{ runner.temp }}/typechecker-native-source-custody.json
             ${{ runner.temp }}/reference-path-module/
             ${{ runner.temp }}/typechecker-native-phases.json
@@ -177,3 +239,4 @@ jobs:
             ${{ runner.temp }}/typechecker-native-phases.json.samples/virtual-ts/
           if-no-files-found: error
           retention-days: 30
+          include-hidden-files: true
