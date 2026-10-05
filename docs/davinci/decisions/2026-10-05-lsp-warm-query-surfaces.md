@@ -260,3 +260,9 @@ locked Linux provider graph remain outside measured windows. A separate closed
 harness-only path authority preserves original inputs and unchanged production;
 its observations establish no speed gain. Public-installed launch/capture and
 fresh source execution remain pending.
+
+The [physical SDK association correction](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5999761304)
+requires the actual executable, SDK directory, selected Linux package manifest
+and ordinary graph member hash to identify the same locked 7.0.2 provider.
+No symlink fallback or fixed package-member count establishes that association;
+fresh execution and the separate installed-public qualification remain pending.

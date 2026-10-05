@@ -50,10 +50,28 @@ export function runtimeIdentity() {
   assert.equal(read(runtimeManifest).content.version, "7.0.2");
   const probe = spawnSync(runtime, ["--version"], { encoding: "utf8" });
   assert.equal(probe.status, 0, probe.stderr);
+  const executable = fs.realpathSync(runtime);
+  const sdkRoot = fs.realpathSync(path.join(path.dirname(runtimeManifest), "lib"));
+  assert.equal(
+    path.dirname(executable),
+    sdkRoot,
+    "the executed native program belongs to its attested SDK",
+  );
+  assert.equal(path.dirname(sdkRoot), fs.realpathSync(path.dirname(runtimeManifest)));
+  assert.equal(fs.realpathSync(path.join(path.dirname(sdkRoot), "package.json")), runtimeManifest);
+  assert.equal(read(runtimeManifest).content.name, "@typescript/typescript-linux-x64");
+  const resolvedPackageGraph = runtimeGraph([vueManifest, runtimeManifest]);
+  const provider = resolvedPackageGraph.filter((entry) => entry.manifestPath === runtimeManifest);
+  assert.equal(provider.length, 1);
+  const members = provider[0].packagePayload as Array<Record<string, unknown>>;
+  const program = members.filter((entry) => entry.path === "lib/tsc");
+  assert.equal(program.length, 1);
+  assert.equal(program[0].kind, "file", "the attested program must be an ordinary package member");
+  assert.equal(program[0].sha256, sha256(fs.readFileSync(executable)));
   return {
     vue: read(vueManifest),
     native: read(runtimeManifest),
-    executable: fs.realpathSync(runtime),
+    executable,
     binarySha256: sha256(fs.readFileSync(runtime)),
     versionProbe: {
       status: probe.status,
@@ -61,8 +79,8 @@ export function runtimeIdentity() {
       stdout: probe.stdout,
       stderr: probe.stderr,
     },
-    resolvedPackageGraph: runtimeGraph([vueManifest, runtimeManifest]),
-    nativeSiblingSdkRoot: fs.realpathSync(path.join(path.dirname(runtimeManifest), "lib")),
+    resolvedPackageGraph,
+    nativeSiblingSdkRoot: sdkRoot,
     driverLock: {
       path: path.join(driverRoot, "pnpm-lock.yaml"),
       sha256: sha256(fs.readFileSync(path.join(driverRoot, "pnpm-lock.yaml"))),
