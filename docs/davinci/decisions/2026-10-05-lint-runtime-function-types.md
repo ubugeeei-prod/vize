@@ -34,3 +34,10 @@ inventory. Regenerate the owned shard with the existing official generator;
 the raw OXC AST dependencies are explicitly recorded as legacy source custody,
 with no native level credit or inventory waiver. Fresh source qualification is
 required at the successor head; the failed head stays historical and unqueued.
+
+The remote bottom becomes conflicted after actual main advances to
+`a2712e78968e9112c89cbc2111b108bd0e51959c`. Rebase onto that immutable main,
+retain the reviewed production/corpus bytes and all current canonical decisions,
+and regenerate the census without additional changes. Historical source checks
+do not qualify this successor; fresh exact-head Actions and the native Stack
+prefix/protected queue remain required before every actual merge and release.
