@@ -143,7 +143,7 @@ jobs:
           VIZE_TEST_REQUIRE_TSGO: "1"
           VIZE_REFERENCE_PATH_CAPTURE_DIR: ${{ runner.temp }}/reference-path-module
         run: |
-          cargo test --locked --profile ci-opt -p vize_canon --test original_program_check reference_paths::
+          cargo test --locked --profile ci-opt -p vize_canon --lib reference_paths::
           cargo test --locked --profile ci-opt -p vize --test check_reference_path_cli
       - name: Capture every actual shard with byte, map, diagnostic and freshness gates
         env:

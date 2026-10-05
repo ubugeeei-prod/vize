@@ -9,16 +9,16 @@
   },
   "inputs": [
     "tsconfig.json.txt",
-    "env.d.ts",
-    "types/builder-env.d.ts",
-    "vendor/client/index.d.ts",
-    "src/a.ts"
+    "env.d.ts.txt",
+    "types/builder-env.d.ts.txt",
+    "vendor/client/index.d.ts.txt",
+    "src/a.ts.txt"
   ],
   "witnesses": [
     {
       "path": "crates/vize_canon/tests/original_program_check/reference_paths.rs",
       "symbol": "path_references_retain_original_sources_native_reports_and_configuration",
-      "executor": "source-built-native-and-batch-checker"
+      "executor": "source-built-configured-authored-tsgo-and-batch-checker"
     },
     {
       "path": "crates/vize/tests/check_reference_path_cli.rs",
@@ -26,15 +26,19 @@
       "executor": "source-built-rust-cli-test"
     }
   ],
-  "normalization": "All native report fields and returned diagnostic order; only absolute project identity is dynamic. Authored bytes and configuration are retained.",
+  "normalization": "Complete configured authored TSGO report and returned diagnostic order; every input byte and configuration snapshot is retained. Native File projection remains refused for the typed imported const annotation.",
   "sha256": {
-    "env.d.ts": "171c22153ee5b44807b5ee4ae3b6bd1fce0bfe4342a580fd94a5ee0b1f6c3d20",
-    "types/builder-env.d.ts": "235dcf89ac6bf68e1b93212823c4438e25ef1b0a64e6cc39066f736a8c2d7719",
-    "vendor/client/index.d.ts": "b1468a5fdf42fb384f243ff5cdf6d69c69f132952643781515222610ecd3a867",
-    "src/a.ts": "94fc5ae95511a78fe08c8963a47a33f3d5243709c1a4d992bddbc99ed1e3ec55",
+    "env.d.ts.txt": "171c22153ee5b44807b5ee4ae3b6bd1fce0bfe4342a580fd94a5ee0b1f6c3d20",
+    "types/builder-env.d.ts.txt": "235dcf89ac6bf68e1b93212823c4438e25ef1b0a64e6cc39066f736a8c2d7719",
+    "vendor/client/index.d.ts.txt": "b1468a5fdf42fb384f243ff5cdf6d69c69f132952643781515222610ecd3a867",
+    "src/a.ts.txt": "94fc5ae95511a78fe08c8963a47a33f3d5243709c1a4d992bddbc99ed1e3ec55",
     "tsconfig.json.txt": "0db9b511fa1cb1be0cf6e40401210996375c00e2807d73bdd6e70dd58165bd0f"
   },
   "runtimeFileNames": {
-    "tsconfig.json.txt": "tsconfig.json"
+    "tsconfig.json.txt": "tsconfig.json",
+    "env.d.ts.txt": "env.d.ts",
+    "types/builder-env.d.ts.txt": "types/builder-env.d.ts",
+    "vendor/client/index.d.ts.txt": "vendor/client/index.d.ts",
+    "src/a.ts.txt": "src/a.ts"
   }
 }

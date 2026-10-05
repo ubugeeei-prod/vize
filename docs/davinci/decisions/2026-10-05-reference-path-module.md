@@ -21,12 +21,21 @@ leading `./`, nested `.nuxt/` ownership, aliased side-effect imports and
 must retain the exact string-to-number diagnostic. A structural negative
 control refuses import-alias resolution for a missing reference target.
 
-The original Program test borrows its genuine completed File, asserts the
-same projection owner and SHA-256 source, compares every raw native
-diagnostic field in returned order, and verifies the same diagnosing
-session's before/after compiler options and configured project. Production
-batch and source-built CLI tests compare their complete diagnostic vectors;
-all authored source and configuration bytes must remain unchanged.
+The configured TSGO oracle sends the exact authored source through the existing
+read-only configured diagnostic request, compares every raw diagnostic field
+in returned order, and verifies the same diagnosing session's before/after
+compiler options and configured project. Production batch and source-built
+CLI tests compare their complete diagnostic vectors; all authored source and
+configuration bytes must remain unchanged.
+
+Source `61982d926e` exposed an existing native File gap: the exact reported
+`export const text: string = source` is refused as `UnsupportedSyntax` at
+span 50..71 before checking. A separate test retains that incomplete File
+and its projection refusal. The authored TSGO oracle does not claim native
+File/projection acceptance and does not close this unfinished native work.
+The same source's intentional triple-slash lint warning requires every
+reported TS/declaration input to use an unchanged `.txt` carrier; runtime
+paths and all source bytes remain exact.
 
 Actions run these native, batch and actual CLI checks with required TSGO in
 the existing native-phase workflow. Ordinary Rust checks retain the graph

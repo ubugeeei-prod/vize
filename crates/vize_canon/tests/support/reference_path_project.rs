@@ -24,7 +24,7 @@ pub(crate) const CASES: &[(&str, bool, bool, bool, bool)] = &[
 ];
 
 pub(crate) const SOURCE: &str =
-    include_str!("../../../../tests/fixtures/typechecker/reference-path-module/src/a.ts");
+    include_str!("../../../../tests/fixtures/typechecker/reference-path-module/src/a.ts.txt");
 
 pub(crate) fn prepare(
     root: &Path,
@@ -38,7 +38,7 @@ pub(crate) fn prepare(
         "types/builder-env.d.ts"
     };
     let mut reference = vize_l0::String::from(include_str!(
-        "../../../../tests/fixtures/typechecker/reference-path-module/env.d.ts"
+        "../../../../tests/fixtures/typechecker/reference-path-module/env.d.ts.txt"
     ));
     if leading_dot {
         reference = reference.replace("path=\"types/", "path=\"./types/").into();
@@ -49,7 +49,7 @@ pub(crate) fn prepare(
         "import \"../../vendor/client/index\";\n"
     } else {
         include_str!(
-            "../../../../tests/fixtures/typechecker/reference-path-module/types/builder-env.d.ts"
+            "../../../../tests/fixtures/typechecker/reference-path-module/types/builder-env.d.ts.txt"
         )
     };
     let original_config = include_str!(
@@ -81,7 +81,7 @@ pub(crate) fn prepare(
         (
             "vendor/client/index.d.ts",
             include_bytes!(
-                "../../../../tests/fixtures/typechecker/reference-path-module/vendor/client/index.d.ts"
+                "../../../../tests/fixtures/typechecker/reference-path-module/vendor/client/index.d.ts.txt"
             ),
         ),
         ("src/a.ts", source.as_bytes()),

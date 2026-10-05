@@ -1,13 +1,58 @@
-//! The unchanged reported program agrees with the native and batch checkers.
-use super::{Allocator, Lang, assert_diagnosing_options, block_on, file, real_bridge};
+//! Authored TSGO oracle; the existing native File refusal stays explicit.
+#![expect(clippy::unwrap_used, reason = "fixture assertions panic")]
+
+use crate::corsa_bridge::{CorsaBridge, CorsaBridgeConfig};
+use crate::{BatchTypeChecker, BatchTypeCheckerTrait};
+use corsa::runtime::block_on;
 use lsp_types::{DocumentDiagnosticReport, DocumentDiagnosticReportResult};
-use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
+use std::path::Path;
+use vize_l0::{Allocator, SourceRoot};
+use vize_l1::embed::{
+    EmbedSource, Lang,
+    syntax::{ProgramOptions, parse_program_once},
+};
+use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
+use vize_l4::targets::ts::{ProjectionError, project_program};
 
 #[path = "../support/reference_path_project.rs"]
 mod project;
 
 #[test]
+fn typed_import_binding_native_file_coverage_remains_unfinished() {
+    let arena = Allocator::default();
+    let source = project::SOURCE;
+    let block = SourceRoot::new(source).unwrap().whole_block();
+    let syntax = parse_program_once(
+        &arena,
+        EmbedSource::authored(source, block.span()).unwrap(),
+        ProgramOptions::module(Lang::Ts),
+    );
+    let mut producer = FileProducer::new(&arena, source).unwrap();
+    producer
+        .program(
+            ProgramInput::checked(syntax.admitted_program().unwrap(), block, 17).unwrap(),
+            ProgramScope::Module,
+        )
+        .unwrap();
+    let original = producer.finish().unwrap();
+    assert_eq!(original.artifact().source(), source);
+    assert!(!original.is_complete(), "{:?}", original.issues());
+    assert!(matches!(
+        project_program(&original),
+        Err(ProjectionError::IncompleteFile)
+    ));
+}
+
+#[test]
 fn path_references_retain_original_sources_native_reports_and_configuration() {
+    let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let backend = vize_carton::corsa_resolver::resolve_corsa_executable(
+        vize_carton::corsa_resolver::CorsaResolveRequest {
+            explicit_path: std::env::var_os("CORSA_PATH").as_deref().map(Path::new),
+            project_root: Some(&workspace),
+        },
+    )
+    .unwrap();
     for case in project::CASES {
         for invalid in [false, true] {
             let directory = tempfile::tempdir().unwrap();
@@ -19,69 +64,80 @@ fn path_references_retain_original_sources_native_reports_and_configuration() {
                 .collect::<Vec<_>>();
             let source_path = root.join("src/a.ts");
             let source = std::fs::read_to_string(&source_path).unwrap();
-            let arena = Allocator::default();
-            let original = file(&arena, &source, Lang::Ts);
-            assert!(original.is_complete(), "{:?}", original.issues());
-            let bridge = real_bridge(&root);
+            let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
+                corsa_path: Some(backend.clone()),
+                working_dir: Some(root.clone()),
+                ..Default::default()
+            });
             block_on(bridge.spawn()).unwrap();
-            let result = block_on(bridge.check_original_program(&original, &source_path)).unwrap();
-            assert_diagnosing_options(&result);
-            assert!(std::ptr::eq(result.projection().file(), &original));
-            assert_eq!(result.source_path(), source_path);
+            let source_uri = crate::file_uri::path_to_file_uri(&source_path);
+            let uri = source_uri.clone();
+            let config = root.join("tsconfig.json");
+            let authored = vize_l0::String::from(source.as_str());
+            // Read-only authored overlay through the existing configured TSGO
+            // request. This is an oracle, never a native File projection.
+            let (report, configuration, configuration_path, custody) =
+                block_on(bridge.with_client(move |client| {
+                    Ok(client.original_program_diagnostics(&uri, &authored, &config, false))
+                }))
+                .unwrap()
+                .unwrap();
+            assert!(!custody.session().session_id.is_empty());
+            assert_ne!(custody.before().handle(), custody.after().handle());
+            for observed in [custody.before(), custody.after()] {
+                assert_eq!(observed.project().compiler_options, configuration.options);
+                assert_eq!(
+                    Path::new(&observed.project().config_file_name),
+                    configuration_path
+                );
+                assert!(
+                    observed
+                        .projects()
+                        .iter()
+                        .any(|project| project.id == observed.project().id)
+                );
+            }
+            assert_eq!(configuration_path, root.join("tsconfig.json"));
+            assert_eq!(configuration.options["strict"], true);
             assert_eq!(
-                result.source_digest(),
-                project::digest(source.as_bytes()).as_str()
-            );
-            assert_eq!(
-                result.diagnostic_configuration_path(),
-                root.join("tsconfig.json")
-            );
-            assert_eq!(result.configuration().options["strict"], true);
-            assert_eq!(
-                result.configuration().options["skipLibCheck"]
+                configuration.options["skipLibCheck"]
                     .as_bool()
                     .unwrap_or(false),
                 case.4
             );
-            let DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Full(report)) =
-                result.report()
+            let DocumentDiagnosticReportResult::Report(DocumentDiagnosticReport::Full(full)) =
+                &report
             else {
                 panic!("complete native report required")
             };
             let expected = if invalid {
                 serde_json::json!([{
                     "range":{"start":{"line":1,"character":13},"end":{"line":1,"character":17}},
-                    "severity":1,"code":2322,"source":"ts",
-                    "message":"Type 'string' is not assignable to type 'number'."
+                    "severity":1,"code":2322,"source":"ts","message":"Type 'string' is not assignable to type 'number'."
                 }])
             } else {
                 serde_json::json!([])
             };
             assert_eq!(
-                serde_json::to_value(&report.full_document_diagnostic_report.items).unwrap(),
+                serde_json::to_value(&full.full_document_diagnostic_report.items).unwrap(),
                 expected,
-                "{}: full native vector, invalid={invalid}",
+                "{}: full authored TSGO vector, invalid={invalid}",
                 case.0
             );
             block_on(bridge.shutdown()).unwrap();
             let mut checker = BatchTypeChecker::new(&root).unwrap();
             checker.scan_project().unwrap();
             let checked = checker.check_project().unwrap();
-            let diagnostics = checked
-                .diagnostics
-                .iter()
-                .map(|diagnostic| {
-                    serde_json::json!({"file":diagnostic.file.strip_prefix(&root).unwrap(),
-                    "line":diagnostic.line,"column":diagnostic.column,
-                    "severity":diagnostic.severity,"code":diagnostic.code,
-                    "message":diagnostic.message.as_str()})
-                })
-                .collect::<Vec<_>>();
+            let diagnostics = checked.diagnostics.iter().map(|diagnostic| serde_json::json!({
+                "file":diagnostic.file.strip_prefix(&root).unwrap(),"line":diagnostic.line,"column":diagnostic.column,
+                "severity":diagnostic.severity,"code":diagnostic.code,"message":diagnostic.message.as_str()
+            })).collect::<Vec<_>>();
             assert_eq!(
                 serde_json::json!(diagnostics),
                 if invalid {
-                    serde_json::json!([{"file":"src/a.ts","line":1,"column":13,
-                    "severity":1,"code":2322,"message":"Type 'string' is not assignable to type 'number'."}])
+                    serde_json::json!([{
+                        "file":"src/a.ts","line":1,"column":13,"severity":1,"code":2322,"message":"Type 'string' is not assignable to type 'number'."
+                    }])
                 } else {
                     serde_json::json!([])
                 }
@@ -90,32 +146,22 @@ fn path_references_retain_original_sources_native_reports_and_configuration() {
             if let Some(output) = std::env::var_os("VIZE_REFERENCE_PATH_CAPTURE_DIR") {
                 let output = std::path::PathBuf::from(output);
                 std::fs::create_dir_all(&output).unwrap();
-                let custody = result.diagnosing_configuration();
-                let observation = |snapshot: &vize_canon::DiagnosingSnapshot| {
-                    serde_json::json!({"handle":snapshot.handle(),"projects":snapshot.projects(),
-                        "changes":snapshot.changes(),"project":snapshot.project()})
-                };
-                let inputs = paths
-                    .iter()
-                    .zip(&originals)
-                    .map(|(path, bytes)| {
-                        serde_json::json!({"file":path.strip_prefix(&root).unwrap(),
-                        "source":std::str::from_utf8(bytes).unwrap(),
-                        "sha256":project::digest(bytes).as_str()})
+                let observation = |snapshot: &crate::DiagnosingSnapshot| {
+                    serde_json::json!({
+                        "handle":snapshot.handle(),"projects":snapshot.projects(),"changes":snapshot.changes(),"project":snapshot.project()
                     })
-                    .collect::<Vec<_>>();
+                };
+                let inputs = paths.iter().zip(&originals).map(|(path, bytes)| serde_json::json!({
+                    "file":path.strip_prefix(&root).unwrap(),"source":std::str::from_utf8(bytes).unwrap(),"sha256":project::digest(bytes).as_str()
+                })).collect::<Vec<_>>();
                 let record = serde_json::json!({
-                    "sourceSha":std::env::var("SOURCE_SHA").unwrap(),
-                    "testBinary":std::env::current_exe().unwrap(),
+                    "sourceSha":std::env::var("SOURCE_SHA").unwrap(),"testBinary":std::env::current_exe().unwrap(),
                     "case":case.0,"invalid":invalid,"inputs":inputs,
-                    "native":{"sourcePath":result.source_path(),"sourceUri":result.source_uri(),
-                        "sourceDigest":result.source_digest(),"report":result.report(),
-                        "configuration":result.configuration(),
-                        "configurationPath":result.diagnostic_configuration_path(),
-                        "session":custody.session(),"before":observation(custody.before()),
-                        "after":observation(custody.after())},
-                    "batch":{"diagnostics":diagnostics,"success":checked.success,
-                        "exitCode":checked.exit_code}
+                    "nativeFileProjection":"unfinished: typed imported const annotation refused",
+                    "authoredTsgo":{"sourcePath":source_path,"sourceUri":source_uri,"sourceDigest":project::digest(source.as_bytes()).as_str(),
+                        "report":report,"configuration":configuration,"configurationPath":configuration_path,
+                        "session":custody.session(),"before":observation(custody.before()),"after":observation(custody.after())},
+                    "batch":{"diagnostics":diagnostics,"success":checked.success,"exitCode":checked.exit_code}
                 });
                 std::fs::write(
                     output.join(vize_l0::cstr!("{}-{invalid}-native.json", case.0).as_str()),
