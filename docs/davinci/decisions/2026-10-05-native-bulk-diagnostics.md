@@ -296,3 +296,11 @@ does not establish whole AST decoding, Windows native execution, default
 migration, history closure, bulk delivery or matched gains. The remaining
 consumer is genuinely replayed onto that actual parent composition in Stack
 #8051 and stays Draft until its own fresh qualification.
+
+Fresh6f source Check rejected four zero-budget JavaScript warnings: implicit
+string-sort comparators and control transfer from the helper's finally block.
+Use an explicit code-unit lexical comparator with identical ordering and throw
+retained primary/cleanup errors after cleanup; primary errors take precedence.
+No suppression, timing/body/native/default/profile/pin or budget change repairs
+the source gate. Preserve that failed raw log and require fresh exact-head CI;
+previous native/vector observations do not establish the corrected source gain.

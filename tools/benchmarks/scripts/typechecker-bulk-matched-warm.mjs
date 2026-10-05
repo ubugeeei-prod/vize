@@ -21,6 +21,7 @@ const root = process.cwd();
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
 const source = git("rev-parse", "HEAD");
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const compareText = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 assert.equal(source, process.env.GITHUB_SHA);
 assert.equal(process.env.GITHUB_REPOSITORY, "ubugeeei-prod/vize");
 const ancestry = JSON.parse(
@@ -60,11 +61,11 @@ const driverPaths = [
 assert.deepEqual(
   readdirSync(join(root, "crates/vize_canon/tests/support"))
     .filter((name) => name.startsWith("tier_l_") && name.endsWith(".rs"))
-    .sort(),
+    .sort(compareText),
   driverPaths
     .slice(1)
     .map((path) => path.split("/").at(-1))
-    .sort(),
+    .sort(compareText),
 );
 const drivers = driverPaths.map((path) => ({
   path,
@@ -106,6 +107,8 @@ const nativeProcesses = () =>
       }
     });
 
+let primaryFailure;
+let cleanupFailure;
 try {
   const custody = prepareSourceCustody({
     fixture,
@@ -301,8 +304,8 @@ try {
   );
 } catch (error) {
   receipt.failure = { message: error.message, stack: error.stack };
+  primaryFailure = error;
   persist();
-  throw error;
 } finally {
   persist();
   if (existsSync(parent)) {
@@ -311,7 +314,10 @@ try {
     } catch (error) {
       receipt.cleanupError = { message: error.message, stack: error.stack };
       persist();
-      if (!receipt.failure) throw error;
+      cleanupFailure = error;
     }
   }
 }
+
+if (primaryFailure) throw primaryFailure;
+if (cleanupFailure) throw cleanupFailure;

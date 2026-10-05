@@ -5,6 +5,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, relative } from "node:path";
 
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const compareText = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 const injected = "apps/web-antd/src/__vize_batch_incremental_oracle__.vue";
 
 // This observer runs outside the unchanged integration test's timing windows.
@@ -32,8 +33,8 @@ export function prepareSourceCustody({ fixture, capture, output, driver, authori
     assert.equal(sources.filter((path) => path.endsWith(".ts")).length, 181);
     assert.equal(packet.vuePaths.length, 500);
     assert.deepEqual(
-      [...packet.vuePaths].sort(),
-      sources.filter((path) => path.endsWith(".vue")).sort(),
+      [...packet.vuePaths].sort(compareText),
+      sources.filter((path) => path.endsWith(".vue")).sort(compareText),
     );
     return {
       phase,
@@ -83,7 +84,7 @@ export function prepareSourceCustody({ fixture, capture, output, driver, authori
       ...selected.filter((name) => name !== injected),
       ...[...tree.keys()].filter((name) => /\.(?:json|jsonc|ya?ml)$/.test(name)),
     ]),
-  ].sort();
+  ].sort(compareText);
   const originals = names.map((path) => {
     const entry = tree.get(path);
     assert(entry && ["100644", "100755"].includes(entry.mode), "unowned body " + path);
