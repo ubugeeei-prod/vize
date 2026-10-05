@@ -259,3 +259,23 @@ A final static API check uses ProjectionMapping's actual public `spans()`
 accessor in the new mapped law; the initial private `.iter()` premise is
 corrected before hosted compilation. Expected spans/bytes, original controls
 and all production blobs remain unchanged; no failed runtime is inferred.
+
+Published typed source `a0e8c3de6de160f2fa965521d2fe68daec048409`
+(tree `6cfebe9dc361fe28ab6dd5425bcda5b5d15c0b34`) has terminal FAILURE in
+Check `37332747295` and NativePhase `37332746363`. Both expose three E0502
+borrow errors in the new unit closures: inferred parameter lifetimes retain
+the type-only set across two insertions and the Root across its later AST
+mutation. No new generator unit or 33-state success is granted. The affected
+build log is 209,816 bytes, SHA256
+`992c2e1667b26444c3dcd0e122df25166b4357612b4f0e9c6f5c882e87736363`;
+the native job log is 295,073 bytes, SHA256
+`351d9aff7235fe9115a06f6b98b0d598f5cf1aa9de44f70101ef16a4a05a11cf`.
+Its official partial artifact `11355440909` is 3,729,626 bytes, SHA256
+`d648781a4caf4bad6619a986a22a5b7dd1eed69737bb1b65befb11b2ef8f8815`,
+with 671 distinct archive members and complete ZIP CRC verification; unrelated
+partial control reports are not the dynamic 33-state or whole-phase gate.
+A test-only successor annotates both closures' borrowed input types explicitly.
+All production blobs, expected vectors/subspans/bytes, original fixtures and
+33 runtime states remain exact. Fresh peer/source/native/full Actions remain
+required; no lint suppression, provider change, local native execution or
+result transfer is introduced. Draft, open Issue and admission hold persist.

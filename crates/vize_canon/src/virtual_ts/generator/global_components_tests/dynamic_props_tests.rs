@@ -102,7 +102,7 @@ fn expression_roots_keep_import_external_and_type_only_authority() {
         ..Default::default()
     };
     let mut type_only = vize_carton::FxHashSet::default();
-    let resolve = |name, type_only| {
+    let resolve = |name: &str, type_only: &vize_carton::FxHashSet<vize_carton::CompactString>| {
         resolved_exact_component_binding_reference(&summary, &options, type_only, name)
     };
     assert_eq!(resolve("registry", &type_only).as_deref(), Some("registry"));
@@ -161,7 +161,7 @@ fn declined_plain_and_unadmitted_roots_and_legacy_keep_complete_output() {
         if matches!(expression, r"regis\u0074ry.Choice" | "(registry).Choice") {
             assert!(vize_croquis::facts::component_usage_list(&summary).is_empty());
         }
-        let emit = |root| {
+        let emit = |root: &vize_relief::RootNode<'_>| {
             generate_virtual_ts_with_offsets_and_checks(
                 &summary,
                 Some(&script),
