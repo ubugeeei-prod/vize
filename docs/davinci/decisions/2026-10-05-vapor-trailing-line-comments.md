@@ -13,7 +13,10 @@ two strings to `/*  note */`; production and original corpus bytes stay exact.
 The reported original App.vue is retained exactly: 138 bytes,
 SHA-256 b7f2f1bea9c5157e0473ea690adf6a9572c6ba86536d177cac50936b4f41408f.
 Its reporter is GitHub ubugeeei, verified public ID 71201308.
-The implementation starts from actual main ef506012169d228982ded40d893ac2115a3e58a7.
+The implementation originally started from main ef506; the current genuine
+rebase starts from signed actual main a2712e78968e9112c89cbc2111b108bd0e51959c,
+which delivered #7853. Complete incoming canonical clauses and all five
+production blobs were preserved before the isolated spread correction.
 
 Vapor trims expression trivia, then callers append closing punctuation.
 A final line comment consequently swallowed that punctuation and broke the
@@ -25,13 +28,20 @@ The shared lexer must recognize full Unicode identifiers and keyword-named
 properties before deciding division versus regex; an independent source peer
 found a quoted-slash corruption in the initial reuse, before any acceptance.
 Preserve quoted strings, regex, template literals and comment-free output.
+Exact954 peer review withdrew the earlier lexical clearance after executing
+valid `async () => [...await /[//]/.exec('/')]`: three spread dots must begin
+an operand, rather than make `await` a property name. Correct that one
+transition and add the unchanged authored async expression to a complete SFC
+event control. Click it, await its real Promise, require `/`, and compare all
+three actual mounted states against official output. All fourteen prior
+control sources and the original138 bytes remain exact; counts only increase.
 
-The corpus contains the original plus fourteen fixed controls. It covers
+The corpus contains the original plus fifteen fixed controls. It covers
 reactive if/else-if/show/title/class, same-line comments, a block terminator
 inside comment text, Unicode/property division with trailing comments and
 quoted slashes, and working event/html/regex-string controls. Source-built
-full SFCs run in development and production: 30 complete public results,
-30 independent whole-module trace pairs, each with three rendered states,
+full SFCs run in development and production: 32 complete public results,
+32 independent whole-module trace pairs, each with three rendered states,
 exact diagnostics/interactions and complete unmount. Capture every public
 field, compare the full setup-binding map with the independent compiler,
 and require CSS/map absence plus empty errors/warnings/macro artifacts.

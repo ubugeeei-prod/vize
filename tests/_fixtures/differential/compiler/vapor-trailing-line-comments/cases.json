@@ -54,5 +54,9 @@
   {
     "name": "regex-string-control",
     "source": "<script setup>\nimport { reactive } from \"vue\";\nconst state = reactive({ ok: true, label: \"first\", classes: { on: true }, html: \"<b>first</b>\", clicks: 0, 雪: 4, obj: { return: 4 } });\nglobalThis.__lineCommentState = state;\n</script>\n\n<template>\n<span :title=\"'https://example.test/' + state.label.replace(/\\/\\//g, '/')\">yes</span>\n</template>\n"
+  },
+  {
+    "name": "async-spread-regex-control",
+    "source": "<script setup>\nimport { reactive } from \"vue\";\nconst state = reactive({ ok: true, label: \"first\", classes: { on: true }, html: \"<b>first</b>\", clicks: 0, 雪: 4, obj: { return: 4 } });\nglobalThis.__lineCommentState = state;\n</script>\n\n<template>\n  <button @click=\"state.pending = (async () => [...await /[//]/.exec('/')])().then(value => { state.label = value.join('') })\">{{ state.label }}</button>\n</template>\n"
   }
 ]

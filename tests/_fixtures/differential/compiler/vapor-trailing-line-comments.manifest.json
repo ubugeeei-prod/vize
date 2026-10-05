@@ -1,7 +1,7 @@
 {
   "schema": "vize.differential.manifest",
   "version": 1,
-  "baseRevision": "ef506012169d228982ded40d893ac2115a3e58a7",
+  "baseRevision": "a2712e78968e9112c89cbc2111b108bd0e51959c",
   "product": "compiler",
   "cases": [
     {
@@ -18,14 +18,14 @@
           },
           {
             "path": "cases.json",
-            "sha256": "511a414fb36ff87f92e929240fb2fe490cfe34be0bd12f8c9a72e35c48f12654",
+            "sha256": "e3dd2989967cbb831b46d168cb78b19f49640cee7df91945a1c902076948feda",
             "role": "controls"
           }
         ]
       },
       "reference": {
         "path": "vapor-trailing-line-comments/runtime.expected.json",
-        "sha256": "f93bdc397ec80bad515832a6f87cae7bb2fed8e2b7d7c72da59d4abb4e96315f",
+        "sha256": "0568870b6a461cce73ec527d2f35479f7c138706b6e3c1bffc605fd86389a5cf",
         "source": "crates/vize_atelier_sfc/tests/vapor_trailing_line_comments.rs:complete_vapor_modules_match_official_rendered_behavior_with_line_comments"
       },
       "provenance": {

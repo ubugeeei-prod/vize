@@ -128,6 +128,12 @@ pub fn convert_line_comments_to_block(content: &str) -> String {
                 can_start_regex = false;
                 property_name = false;
             }
+            b'.' if bytes.get(i + 1) == Some(&b'.') && bytes.get(i + 2) == Some(&b'.') => {
+                result.push_str("...");
+                i += 3;
+                can_start_regex = true;
+                property_name = false;
+            }
             b'.' => {
                 result.push('.');
                 i += 1;
@@ -182,6 +188,7 @@ mod tests {
     #[test]
     fn unicode_names_and_keyword_properties_keep_division_and_quoted_slashes() {
         for source in [
+            "async () => [...await /[//]/.exec('/')]",
             "_ctx.雪 / \"a//b//c\".length",
             "_ctx.obj.return / \"a//b//c\".length",
             "_ctx.雪return / \"a//b//c\".length",

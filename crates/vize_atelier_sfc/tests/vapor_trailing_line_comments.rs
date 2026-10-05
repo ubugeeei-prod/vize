@@ -30,7 +30,7 @@ const CASES: &str = include_str!(
 fn complete_vapor_modules_match_official_rendered_behavior_with_line_comments() {
     let mut fixtures = vec![json!({"name": "reported", "source": REPORTED})];
     fixtures.extend(serde_json::from_str::<Vec<Value>>(CASES).unwrap());
-    assert_eq!(fixtures.len(), 15);
+    assert_eq!(fixtures.len(), 16);
     for production in [false, true] {
         let mut observations = Vec::new();
         for fixture in &fixtures {

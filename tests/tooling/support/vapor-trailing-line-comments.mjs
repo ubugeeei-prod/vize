@@ -32,7 +32,7 @@ const expectedSources = new Map([
   ["reported", reported],
   ...controls.map((c) => [c.name, c.source]),
 ]);
-assert.equal(expectedSources.size, 15);
+assert.equal(expectedSources.size, 16);
 
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
@@ -130,10 +130,15 @@ async function observe(code, name) {
       { ok: true, label: "last", classes: { last: true }, html: "<em>last</em>" },
     ]) {
       if (state) Object.assign(state, patch);
-      if (name === "event-control") {
+      if (name === "event-control" || name === "async-spread-regex-control") {
         const buttons = host.querySelectorAll("button");
         assert.equal(buttons.length, 1);
         buttons[0].click();
+        if (name === "async-spread-regex-control") {
+          assert.ok(state.pending instanceof Promise);
+          await state.pending;
+          assert.equal(state.label, "/", "the unchanged authored async regex actually executes");
+        }
       }
       await vue.nextTick();
       frames.push({ tree: observeChildren(host), diagnostics: [...diagnostics] });

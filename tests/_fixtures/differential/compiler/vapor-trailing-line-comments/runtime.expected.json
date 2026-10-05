@@ -1,8 +1,8 @@
 {
-  "caseCount": 15,
+  "caseCount": 16,
   "productionModes": [false, true],
-  "sourceResults": 30,
-  "runtimeTracePairs": 30,
+  "sourceResults": 32,
+  "runtimeTracePairs": 32,
   "framesPerTrace": 3,
   "officialVersion": "3.6.0-rc.9",
   "observer": "complete rendered tree, attributes, text, diagnostics, interactions and unmount; backend anchors excluded",
