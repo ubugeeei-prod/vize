@@ -40,3 +40,9 @@ The prospective prefix at `b8bca915` conflicts only in the shared canonical
 record. Remove the queue entry and relocate the complete owned clause to its
 existing relevant paragraph, preserving every clause and all source/corpus/RPC
 bytes. Fresh exact-head Actions and protected delivery remain mandatory.
+
+The subsequent live prospective prefix at `8f667ea0` changed the shared-project
+paragraph and conflicts with the first relocation. Preserve that complete
+clause and its placement history in the existing source-wiring paragraph; all
+production, original corpus and complete RPC expectations stay byte-identical.
+Fresh required source checks and protected full delivery remain mandatory.
