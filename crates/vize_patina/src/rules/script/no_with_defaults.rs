@@ -31,11 +31,12 @@
 //! const props = defineProps<{ count: number }>()
 //! ```
 
-use memchr::memmem;
+use oxc_ast::ast::{Expression, Program, Statement};
+use oxc_span::Span;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-with-defaults",
@@ -51,47 +52,118 @@ impl ScriptRule for NoWithDefaults {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        // Fast bailout
-        if memmem::find(bytes, b"withDefaults").is_none() {
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        if !sfc.is_sfc || !sfc.is_script_setup {
             return;
         }
-
-        // Find all withDefaults calls
-        let finder = memmem::Finder::new(b"withDefaults(");
-        let mut search_start = 0;
-
-        while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
-            let abs_pos = search_start + pos;
-            search_start = abs_pos + 12;
-
-            result.add_diagnostic(
-                LintDiagnostic::warn(
-                    META.name,
-                    "Prefer destructuring defaults over withDefaults (Vue 3.5+)",
-                    (offset + abs_pos) as u32,
-                    (offset + abs_pos + 12) as u32,
-                )
-                .with_help(
-                    "Use destructuring with defaults: \
-                     `const { count = 0, name = 'default' } = defineProps<Props>()`",
-                ),
-            );
+        // Vue processes macro statements and declarator initializers at the
+        // setup block's top level. Nested function calls are ordinary code.
+        for statement in &program.body {
+            match statement {
+                Statement::ExpressionStatement(statement) => {
+                    report_macro(&statement.expression, offset, result);
+                }
+                Statement::VariableDeclaration(declaration) if !declaration.declare => {
+                    for declarator in &declaration.declarations {
+                        if let Some(initializer) = &declarator.init {
+                            report_macro(initializer, offset, result);
+                        }
+                    }
+                }
+                _ => {}
+            }
         }
     }
 }
 
+fn report_macro(expression: &Expression<'_>, offset: usize, result: &mut ScriptLintResult) {
+    let Some(span) = macro_span(expression) else {
+        return;
+    };
+    result.add_diagnostic(
+        LintDiagnostic::warn(
+            META.name,
+            "Prefer destructuring defaults over withDefaults (Vue 3.5+)",
+            offset as u32 + span.start,
+            offset as u32 + span.end,
+        )
+        .with_help(
+            "Use destructuring with defaults: \
+             `const { count = 0, name = 'default' } = defineProps<Props>()`",
+        ),
+    );
+}
+
+fn macro_span(expression: &Expression<'_>) -> Option<Span> {
+    let Expression::CallExpression(call) = expression.get_inner_expression() else {
+        return None;
+    };
+    let Expression::Identifier(callee) = call.callee.without_parentheses() else {
+        return None;
+    };
+    if call.optional || callee.name != "withDefaults" {
+        return None;
+    }
+    let first = call.arguments.first()?.as_expression()?;
+    let Expression::CallExpression(props) = first.without_parentheses() else {
+        return None;
+    };
+    let Expression::Identifier(props_callee) = props.callee.without_parentheses() else {
+        return None;
+    };
+    (!props.optional && props_callee.name == "defineProps").then_some(callee.span)
+}
+
 #[cfg(test)]
 mod tests {
-    use super::NoWithDefaults;
-    use crate::rules::script::ScriptLinter;
+    use super::{NoWithDefaults, ScriptLintResult, ScriptRule, SfcScriptContext};
+    use crate::rules::script::{ScriptLinter, script_source_type};
+    use oxc_allocator::Allocator;
+    use oxc_parser::Parser;
+    use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+    use vize_l0::String;
 
     fn create_linter() -> ScriptLinter {
         let mut linter = ScriptLinter::new();
         linter.add_rule(Box::new(NoWithDefaults));
         linter
+    }
+
+    fn lint_setup(source: &str) -> ScriptLintResult {
+        let mut sfc_source = String::from("<script setup lang=\"ts\">");
+        sfc_source.push_str(source);
+        sfc_source.push_str("</script>");
+        let descriptor = parse_sfc(&sfc_source, SfcParseOptions::default()).unwrap();
+        let setup = descriptor.script_setup.as_ref().unwrap();
+        assert_eq!(setup.content, source);
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, setup.content, script_source_type()).parse();
+        assert!(!parsed.panicked && parsed.diagnostics.is_empty());
+        let mut result = ScriptLintResult::default();
+        NoWithDefaults.check_program_with_sfc(
+            &parsed.program,
+            setup.content,
+            // Preserve this existing unit oracle's script-local byte frame.
+            0,
+            SfcScriptContext {
+                is_sfc: true,
+                is_script_setup: descriptor.script_setup.is_some(),
+                ..SfcScriptContext::default()
+            },
+            &mut result,
+        );
+        result
     }
 
     #[test]
@@ -103,10 +175,8 @@ mod tests {
 
     #[test]
     fn test_invalid_with_defaults() {
-        let linter = create_linter();
-        let result = linter.lint(
+        let result = lint_setup(
             "const props = withDefaults(defineProps<{ count?: number }>(), { count: 0 })",
-            0,
         );
         assert_eq!(result.warning_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);

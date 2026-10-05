@@ -1,0 +1,2 @@
+<!doctype html><html><body><script>const props = withDefaults(defineProps<{ size?: string }>(), { size: "m" });
+</script></body></html>
