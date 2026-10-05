@@ -6,6 +6,7 @@
     reason = "complete source/module/map/selected-backend regression evidence"
 )]
 
+use vize_atelier_core::RuntimeHelper;
 use vize_atelier_core::options::{
     BindingMetadata, BindingType, CodegenExperimentalOptions, CodegenMode, CodegenOptions,
     CustomElementMatcher, TemplateSyntaxMode,
@@ -144,6 +145,102 @@ fn original_dynamic_setup_modules_require_selected_emission_and_full_compatibili
                 assert_eq!(
                     capture.pages.last().map(|page| page.text.as_str()),
                     Some(cstr!("{}\n{}", current.result.preamble, current.result.code).as_str())
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn setup_write_helpers_preserve_real_first_use_and_whole_selected_module_maps() {
+    for (name, source, unref_first) in [
+        (
+            "WriteBeforeRead",
+            "<button @click=\"evt++\" :title=\"evt\"></button>",
+            false,
+        ),
+        (
+            "ReadBeforeWrite",
+            "<button :title=\"evt\" @click=\"evt++\"></button>",
+            true,
+        ),
+        (
+            "WriteBeforeSiblingRead",
+            "<button @click=\"evt++\"></button><p>{{ evt }}</p>",
+            false,
+        ),
+        (
+            "SiblingReadBeforeWrite",
+            "<p>{{ evt }}</p><button @click=\"evt++\"></button>",
+            true,
+        ),
+        (
+            "ReadAndWriteInOneResult",
+            "<button @click=\"evt = attr\"></button>",
+            true,
+        ),
+    ] {
+        for inline in [true, false] {
+            for source_map in [true, false] {
+                let allocator = Allocator::default();
+                let options = DomCompilerOptions {
+                    mode: CodegenMode::Module,
+                    prefix_identifiers: true,
+                    inline,
+                    cache_handlers: inline,
+                    source_map,
+                    binding_metadata: Some(metadata(name, BindingType::SetupLet)),
+                    ..Default::default()
+                };
+                let codegen = CodegenOptions {
+                    source_map,
+                    filename: cstr!("{}.vue", name),
+                    ..Default::default()
+                };
+                let (root, errors, old) = compatibility(
+                    &allocator,
+                    source,
+                    options.clone(),
+                    TemplateSyntaxMode::Standard,
+                    None,
+                    CustomElementMatcher::default(),
+                    codegen.clone(),
+                );
+                assert!(errors.is_empty(), "{name}: {errors:?}");
+                let mut capture = StageCapture::new("dom");
+                let (errors, current) = selected(
+                    &allocator,
+                    source,
+                    options,
+                    TemplateSyntaxMode::Standard,
+                    None,
+                    CustomElementMatcher::default(),
+                    codegen,
+                    CodegenExperimentalOptions::default(),
+                    &mut capture,
+                );
+                assert!(errors.is_empty(), "{name}: {errors:?}");
+                assert_eq!(capture.outcome, CaptureOutcome::Accepted, "{name}");
+                assert_eq!(current.result.preamble, old.preamble, "{name}");
+                assert_eq!(current.result.code, old.code, "{name}");
+                assert_eq!(current.result.map, old.map, "{name}");
+                assert_eq!(current.result.map.is_some(), source_map);
+                let actual: std::vec::Vec<_> = root
+                    .helpers
+                    .iter()
+                    .copied()
+                    .filter(|helper| matches!(helper, RuntimeHelper::Unref | RuntimeHelper::IsRef))
+                    .collect();
+                let expected = if !inline {
+                    std::vec::Vec::new()
+                } else if unref_first {
+                    std::vec![RuntimeHelper::Unref, RuntimeHelper::IsRef]
+                } else {
+                    std::vec![RuntimeHelper::IsRef, RuntimeHelper::Unref]
+                };
+                assert_eq!(
+                    actual, expected,
+                    "{name}: complete owned registration sequence"
                 );
             }
         }

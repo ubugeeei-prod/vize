@@ -39,11 +39,13 @@ pub(super) fn rewrite_from_wrapped_expr(
     collector.visit_expression(expr);
 
     let used_unref = collector.used_unref;
+    let used_is_ref = collector.used_is_ref;
     let result = splice_insertions(js_content, collector.rewrites, collector.suffix_rewrites, 1);
 
     RewriteResult {
         code: rewrite_props_aliases(result, ctx),
         used_unref,
+        used_is_ref,
         parse_error: None,
     }
 }
@@ -86,6 +88,7 @@ pub(super) fn rewrite_reparsed(
                 collector.visit_program(&parse_result2.program);
 
                 let used_unref = collector.used_unref;
+                let used_is_ref = collector.used_is_ref;
                 let result = splice_insertions(
                     &js_content,
                     collector.rewrites,
@@ -96,6 +99,7 @@ pub(super) fn rewrite_reparsed(
                 return RewriteResult {
                     code: rewrite_props_aliases(result, ctx),
                     used_unref,
+                    used_is_ref,
                     parse_error: None,
                 };
             }
@@ -146,6 +150,7 @@ pub(super) fn rewrite_reparsed(
             RewriteResult {
                 code: rewrite_props_aliases(code, ctx),
                 used_unref: false,
+                used_is_ref: false,
                 parse_error,
             }
         }

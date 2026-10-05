@@ -14,6 +14,7 @@ use vize_l0::String;
 use vize_relief::ExpressionScope;
 
 mod scope;
+mod setup_write;
 
 use super::is_template_global;
 
@@ -42,6 +43,7 @@ pub(crate) struct IdentifierCollector<'a, 'ctx> {
     pub(crate) assignment_targets: FxHashSet<usize>,
     /// Whether _unref helper was used
     pub(crate) used_unref: bool,
+    pub(crate) used_is_ref: bool,
 }
 
 impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
@@ -55,6 +57,7 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
             suffix_rewrites: Vec::new(),
             assignment_targets: FxHashSet::default(),
             used_unref: false,
+            used_is_ref: false,
         }
     }
 
@@ -274,11 +277,13 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
     fn visit_assignment_expression(&mut self, expr: &oxc_ast_types::AssignmentExpression<'_>) {
         self.collect_assignment_targets(&expr.left);
         walk_assignment_expression(self, expr);
+        self.guard_setup_assignment(expr);
     }
 
     fn visit_update_expression(&mut self, expr: &oxc_ast_types::UpdateExpression<'_>) {
         self.collect_simple_assignment_targets(&expr.argument);
         walk_update_expression(self, expr);
+        self.guard_setup_update(expr);
     }
 
     fn visit_object_property(&mut self, prop: &oxc_ast_types::ObjectProperty<'_>) {

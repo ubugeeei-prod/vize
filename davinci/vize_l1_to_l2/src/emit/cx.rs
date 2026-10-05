@@ -99,6 +99,10 @@ impl EmitCx<'_> {
         if prefixed.used_unref && self.used_unref.get() == u32::MAX {
             self.used_unref.set(self.walk.visits());
         }
+        if prefixed.used_is_ref && self.used_is_ref.get().0 == u32::MAX {
+            self.used_is_ref
+                .set((self.walk.visits(), self.used_unref.get() != u32::MAX));
+        }
         prefixed.text
     }
 

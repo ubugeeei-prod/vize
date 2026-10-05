@@ -250,6 +250,7 @@ struct EmitCx<'facts> {
     /// The op-visit count at which prefixing first needed `_unref`
     /// (`u32::MAX`: never) — where the transform would register it.
     used_unref: core::cell::Cell<u32>,
+    used_is_ref: core::cell::Cell<(u32, bool)>,
     /// The shipped lane's `component_name`, for the self-reference flag
     /// on `resolveComponent`.
     component_name: Option<&'facts str>,
