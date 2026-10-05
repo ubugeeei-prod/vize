@@ -85,3 +85,23 @@ canonical clause and every reporter trailer. Place the complete owned decision
 clauses beside the existing type-checker paragraph to avoid unrelated trailing
 line conflicts. Fresh replay-head source/native Actions and protected full
 suites, actual signed merge and published consumers remain required.
+
+Queue admission at qualified 070eb is removed immediately when its entry becomes
+UNMERGEABLE. Literal merge-tree against actual main 60fc40d is clean; against
+actual ahead candidate f0f5b37, only the shared native-phase workflow conflicts
+with the independently qualified defaults step in three insertion slots. Replay
+onto actual main without source conflicts. Move the unchanged outside-import
+trigger rows to their own existing gap, move its entire 5,424-byte qualification
+step after neutral preflight and before the ordinary source-build step, and move its raw
+artifact folder before the custody entry. Retain every invocation, native
+requirement, input, expectation, capture and existing phase command unchanged.
+Require a clean literal merge-tree with the actual ahead candidate and fresh
+source/native Actions before matched queue readmission; all original inputs,
+reporter trailers and every incoming decision remain exact.
+
+The first bounded relocation still overlaps the original reference-path owner's
+existing pre-capture qualification. The final placement is after neutral
+preflight and before the ordinary source-build step, keeping its entire command
+block unchanged. Its cargo integration invocation itself builds the tested
+source CLI; the existing production/projection build and phase capture then run
+unchanged. All three existing qualifications must survive prospective composition.

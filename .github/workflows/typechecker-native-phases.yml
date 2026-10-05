@@ -21,10 +21,10 @@ on:
       - "tools/benchmarks/scripts/check-gate-*.mjs"
       - "tools/benchmarks/scripts/typecheck-command.mjs"
       - "tools/benchmarks/scripts/benchmark-binary.mjs"
-      - "crates/vize_canon/**"
-      - "crates/vize/src/**"
       - "crates/vize/tests/check_outside_import_types_cli.rs"
       - "tests/_fixtures/differential/typechecker/outside-import-types/**"
+      - "crates/vize_canon/**"
+      - "crates/vize/src/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - "pnpm-lock.yaml"
@@ -125,28 +125,6 @@ jobs:
           node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
           cd "$NATIVE_PHASE_SOURCE_ROOT"
           cargo clippy --locked -p vize_canon --example native_phase_projection -- -D warnings
-      - name: Build the actual production CLI and standalone projection example
-        run: |
-          set -euo pipefail
-          node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
-          cd "$NATIVE_PHASE_SOURCE_ROOT"
-          cargo build --locked --profile ci-opt -p vize \
-            --config 'profile.ci-opt.inherits="release"' \
-            --config 'profile.ci-opt.lto="thin"' \
-            --config 'profile.ci-opt.codegen-units=16' \
-            --config 'profile.ci-opt.package.vize.strip="symbols"'
-          cargo build --locked --profile ci-opt -p vize_canon --example native_phase_projection \
-            --config 'profile.ci-opt.inherits="release"' \
-            --config 'profile.ci-opt.lto="thin"' \
-            --config 'profile.ci-opt.codegen-units=16'
-      - name: Capture every actual shard with byte, map, diagnostic and freshness gates
-        env:
-          RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
-        run: |
-          node tools/benchmarks/scripts/typechecker-native-phases.mjs \
-            "$GITHUB_WORKSPACE/target/ci-opt/vize" \
-            "$GITHUB_WORKSPACE/target/ci-opt/examples/native_phase_projection" \
-            "$NATIVE_PHASE_OUTPUT"
       - name: Qualify original outside-import types with the source CLI and official native oracle
         if: github.event_name == 'pull_request'
         env:
@@ -206,12 +184,35 @@ jobs:
           const editorFiles = ['editor-original-script', 'editor-monorepo-alias'].flatMap(name => files(join(root, name))).map(path => ({ path: path.slice(root.length + 1), sha256: sha256(path) }));
           writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, fixtureSha256: sha256('tests/_fixtures/differential/typechecker/outside-import-types/input.json'), matchedCompleteExpectations: true, cases: receipts, editor: { nativeBinary: realpathSync(editor.nativeBinary), nativeSha256: sha256(editor.nativeBinary), completeOutputsAndInputs: editorFiles } }, null, 2) + '\n');
           JS
+      - name: Build the actual production CLI and standalone projection example
+        run: |
+          set -euo pipefail
+          node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
+          cd "$NATIVE_PHASE_SOURCE_ROOT"
+          cargo build --locked --profile ci-opt -p vize \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' \
+            --config 'profile.ci-opt.package.vize.strip="symbols"'
+          cargo build --locked --profile ci-opt -p vize_canon --example native_phase_projection \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16'
+      - name: Capture every actual shard with byte, map, diagnostic and freshness gates
+        env:
+          RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
+        run: |
+          node tools/benchmarks/scripts/typechecker-native-phases.mjs \
+            "$GITHUB_WORKSPACE/target/ci-opt/vize" \
+            "$GITHUB_WORKSPACE/target/ci-opt/examples/native_phase_projection" \
+            "$NATIVE_PHASE_OUTPUT"
       - name: Upload raw native phases, memberships, full reports and generated sources
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: typechecker-native-phases
           path: |
+            ${{ runner.temp }}/outside-import-types/
             ${{ runner.temp }}/typechecker-native-source-custody.json
             ${{ runner.temp }}/typechecker-native-phases.json
             ${{ runner.temp }}/typechecker-native-phases.json.samples/provenance.json
@@ -221,7 +222,6 @@ jobs:
             ${{ runner.temp }}/typechecker-native-phases.json.samples/native/
             ${{ runner.temp }}/typechecker-native-phases.json.samples/projections/
             ${{ runner.temp }}/typechecker-native-phases.json.samples/virtual-ts/
-            ${{ runner.temp }}/outside-import-types/
           if-no-files-found: error
           retention-days: 30
           include-hidden-files: true
