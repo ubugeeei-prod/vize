@@ -188,6 +188,15 @@ runs:
         VIZE_RUNTIME_NODE_MODULES: node_modules
       run: cargo test --locked --profile ci -p vize_canon --test tier_l_incremental -- --ignored --nocapture
 
+    - name: Compare whole original Tier-L native and LSP diagnostics
+      shell: bash
+      env:
+        VIZE_TIER_L_FIXTURE: tests/_fixtures/_git/vue-vben-admin
+        VIZE_TIER_L_CORSA_BIN: node_modules/@typescript/typescript-linux-x64/lib/tsc
+        VIZE_TIER_L_BULK_CAPTURE_DIR: target/vize-tests/metrics/vben-bulk-native-whole
+        VIZE_RUNTIME_NODE_MODULES: node_modules
+      run: cargo test --locked --profile ci -p vize_canon --lib native_bulk_original_500_sfc_whole_generations_match_original_lsp -- --ignored --nocapture
+
     - name: Check Vue 2 build snapshots
       shell: bash
       env:
@@ -308,5 +317,14 @@ runs:
       with:
         name: misskey-lsp-churn-metrics
         path: target/vize-tests/metrics/misskey-lsp-churn/
+        if-no-files-found: warn
+        retention-days: 14
+
+    - name: Upload whole original Tier-L native diagnostic evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: vben-bulk-native-whole
+        path: target/vize-tests/metrics/vben-bulk-native-whole/
         if-no-files-found: warn
         retention-days: 14

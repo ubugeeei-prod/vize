@@ -76,13 +76,13 @@ fn eight_real_native_profiles_match_complete_per_file_lsp_before_and_after_edits
                 .unwrap(),
             BulkDiagnostics::Refused
         ));
-        assert!(super::super::take_receipt().is_none());
+        assert_eq!(super::super::take_receipt().unwrap()["outcome"], "refused");
         let absent = path_to_file_uri(&root.path().join("absent.ts"));
         assert!(matches!(
             editor.bulk_diagnostics(&config, &[absent]).unwrap(),
             BulkDiagnostics::Refused
         ));
-        assert!(super::super::take_receipt().is_none());
+        assert_eq!(super::super::take_receipt().unwrap()["outcome"], "refused");
         compare(&mut editor, &config, &uris, index, "unchanged");
         editor.mirror(&a_uri, repaired).unwrap();
         compare(&mut editor, &config, &uris, index, "edited");

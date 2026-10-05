@@ -15,9 +15,22 @@ pub(super) fn record(receipt: Value) {
     OBSERVED.with(|value| *value.borrow_mut() = Some(receipt));
 }
 
+pub(super) fn refusal(reason: &str) {
+    OBSERVED.with(|value| {
+        if let Some(receipt) = value.borrow_mut().as_mut() {
+            receipt["refusal"] = serde_json::json!(reason);
+        }
+    });
+}
+
 pub(super) fn finish(outcome: &super::BulkDiagnostics) {
     match outcome {
-        super::BulkDiagnostics::Refused => reset(),
+        super::BulkDiagnostics::Refused => OBSERVED.with(|value| {
+            if let Some(receipt) = value.borrow_mut().as_mut() {
+                receipt["outcome"] = serde_json::json!("refused");
+                receipt["release"] = serde_json::json!("acknowledged");
+            }
+        }),
         super::BulkDiagnostics::Complete(_) => OBSERVED.with(|value| {
             if let Some(receipt) = value.borrow_mut().as_mut() {
                 receipt["outcome"] = serde_json::json!("complete");

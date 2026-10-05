@@ -129,6 +129,42 @@ All four source Rust workers passed. The source Check still failed on one
 extra Markdown blank line; this receipt corrects it. These are exact `82b2`
 receipts, not qualification of a later parent replay or matched timing.
 
+## Original Tier-L admission qualification
+
+Genuine parent replay `c6b538228ca56dc42c14f8708dd839a6d2d8ad93` passed
+[native run 37311368805](https://github.com/ubugeeei-prod/vize/actions/runs/37311368805):
+eight unit and three native laws. Its original 500 SFC / 681-file
+[Vue parity job](https://github.com/ubugeeei-prod/vize/actions/runs/37311684779/job/111768388780)
+passed the unchanged cold/warm, single-session and one-file-delta gates.
+Artifact `11345964859` has ZIP SHA-256
+`1548f1fc8c6788983aaa5ffe15ea4560bab572c6315a95403005c6d9bbc87196`;
+all CRCs passed. The single unpaired sample is 8552 / 6750 / 6951 ms.
+These are quality observations, not a matched speed result or proof that
+project-wide categories supplied those 681-file responses.
+
+The existing `VIZE_NESTED_BATCH_CAPTURE_DIR` receipt is compiled only in lib
+unit tests, so it cannot attest the integration timing build. Its nested
+`App.vue.ts` selector also does not represent the original Tier-L inputs.
+The successor therefore adds a separate ignored lib law in the existing
+hydrated Vue parity action, after the unchanged integration timing test.
+Both tests share the original fixture path selection, 500-root count,
+153-byte clean and 160-byte broken injected sources, and file cleanup.
+The pinned fixture revision, nested configuration, 681-file request census
+and all timing budgets remain unchanged.
+
+For cold, broken and repaired generations, the law observes the existing
+materialized session and compares every complete cached native diagnostic
+with the original per-file LSP path before public projection. It preserves
+all requested URIs, generated files and source maps, generated configuration,
+both full vectors and actual route/attachment custody before assertions.
+A bounded refusal now retains its reason in test-only evidence; it earns
+no `NativeBulk` credit. All three generation packets are saved before route
+or vector assertions, so a refused first generation cannot hide the later
+original cases. This law must demonstrate successful categories and exact
+whole vectors on the real inputs before the optimization can be admitted.
+No production observation flag, readiness bypass, provider or budget change
+is introduced. Matched same-host timing remains a separate pending gate.
+
 Pending: exact-head Actions, fresh native responses after parent replay,
 full original 500 warm/no-op/leaf/shared-dependency and CLI/LSP/config/delta
 vectors, declaration controls, matched source timings, protected full suites,

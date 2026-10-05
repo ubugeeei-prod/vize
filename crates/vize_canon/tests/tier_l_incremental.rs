@@ -1,7 +1,7 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 #![expect(clippy::panic, reason = "tests assert by panicking")]
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::time::Instant;
 
 use serde::Deserialize;
@@ -22,23 +22,10 @@ use budget::{
     assert_cold_metrics, assert_no_injected_diagnostics, assert_warm_metrics, assert_within_budget,
     budget_scale,
 };
-use fixture::{env_path, git_revision};
-
-const FIXTURE_ID: &str = "vue-vben-admin";
-const TIER_L_VUE_FILES: usize = 500;
-const INJECTED_FILE: &str = "apps/web-antd/src/__vize_batch_incremental_oracle__.vue";
-const CLEAN_SOURCE: &str = r#"<script setup lang="ts">
-const __vizeBatchIncrementalOracle: number = 1;
-</script>
-
-<template><span>{{ __vizeBatchIncrementalOracle }}</span></template>
-"#;
-const BROKEN_SOURCE: &str = r#"<script setup lang="ts">
-const __vizeBatchIncrementalOracle: number = 'broken';
-</script>
-
-<template><span>{{ __vizeBatchIncrementalOracle }}</span></template>
-"#;
+use fixture::{
+    BROKEN_SOURCE, CLEAN_SOURCE, FIXTURE_ID, INJECTED_FILE, InjectedFixtureFile, TIER_L_VUE_FILES,
+    collect_vue_paths, env_path, git_revision,
+};
 
 #[derive(Deserialize)]
 struct Registry {
@@ -51,26 +38,6 @@ struct RegistryProject {
     id: String,
     revision: String,
     batch_incremental_budget: Option<BatchIncrementalBudget>,
-}
-
-struct InjectedFixtureFile(PathBuf);
-
-impl InjectedFixtureFile {
-    fn create(path: PathBuf) -> Self {
-        assert!(!path.exists(), "injected fixture path must start absent");
-        fs::write(&path, CLEAN_SOURCE).expect("clean fixture source should write");
-        Self(path)
-    }
-
-    fn write(&self, source: &str) {
-        fs::write(&self.0, source).expect("fixture patch should write");
-    }
-}
-
-impl Drop for InjectedFixtureFile {
-    fn drop(&mut self) {
-        let _ = fs::remove_file(&self.0);
-    }
 }
 
 #[test]
@@ -237,25 +204,6 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
     };
     write_artifact(&repo_root, &artifact);
     failure.disarm();
-}
-
-fn collect_vue_paths(fixture_root: &Path) -> Vec<PathBuf> {
-    let mut paths = ["apps", "packages", "playground"]
-        .into_iter()
-        .flat_map(|relative| walkdir::WalkDir::new(fixture_root.join(relative)))
-        .filter_map(Result::ok)
-        .filter(|entry| entry.file_type().is_file())
-        .map(walkdir::DirEntry::into_path)
-        .filter(|path| path.extension().and_then(|extension| extension.to_str()) == Some("vue"))
-        .collect::<Vec<_>>();
-    paths.sort();
-    assert!(
-        paths.len() > TIER_L_VUE_FILES,
-        "pinned fixture fell below Tier-L scale"
-    );
-    paths.truncate(TIER_L_VUE_FILES);
-    assert!(paths.iter().any(|path| path.ends_with(INJECTED_FILE)));
-    paths
 }
 
 fn assert_budget(budget: &BatchIncrementalBudget) {

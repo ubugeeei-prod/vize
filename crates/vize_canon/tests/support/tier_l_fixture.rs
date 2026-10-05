@@ -1,4 +1,5 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use vize_l0::{String, ToCompactString};
@@ -29,4 +30,59 @@ pub(super) fn git_revision(root: &Path) -> String {
         .expect("revision should be UTF-8")
         .trim()
         .to_compact_string()
+}
+
+pub(super) const FIXTURE_ID: &str = "vue-vben-admin";
+pub(super) const TIER_L_VUE_FILES: usize = 500;
+pub(super) const INJECTED_FILE: &str = "apps/web-antd/src/__vize_batch_incremental_oracle__.vue";
+pub(super) const CLEAN_SOURCE: &str = r#"<script setup lang="ts">
+const __vizeBatchIncrementalOracle: number = 1;
+</script>
+
+<template><span>{{ __vizeBatchIncrementalOracle }}</span></template>
+"#;
+pub(super) const BROKEN_SOURCE: &str = r#"<script setup lang="ts">
+const __vizeBatchIncrementalOracle: number = 'broken';
+</script>
+
+<template><span>{{ __vizeBatchIncrementalOracle }}</span></template>
+"#;
+
+pub(super) struct InjectedFixtureFile(PathBuf);
+
+impl InjectedFixtureFile {
+    pub(super) fn create(path: PathBuf) -> Self {
+        assert!(!path.exists(), "injected fixture path must start absent");
+        fs::write(&path, CLEAN_SOURCE).expect("clean fixture source should write");
+        Self(path)
+    }
+
+    pub(super) fn write(&self, source: &str) {
+        fs::write(&self.0, source).expect("fixture patch should write");
+    }
+}
+
+impl Drop for InjectedFixtureFile {
+    fn drop(&mut self) {
+        let _ = fs::remove_file(&self.0);
+    }
+}
+
+pub(super) fn collect_vue_paths(fixture_root: &Path) -> Vec<PathBuf> {
+    let mut paths = ["apps", "packages", "playground"]
+        .into_iter()
+        .flat_map(|relative| walkdir::WalkDir::new(fixture_root.join(relative)))
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().is_file())
+        .map(walkdir::DirEntry::into_path)
+        .filter(|path| path.extension().and_then(|extension| extension.to_str()) == Some("vue"))
+        .collect::<Vec<_>>();
+    paths.sort();
+    assert!(
+        paths.len() > TIER_L_VUE_FILES,
+        "pinned fixture fell below Tier-L scale"
+    );
+    paths.truncate(TIER_L_VUE_FILES);
+    assert!(paths.iter().any(|path| path.ends_with(INJECTED_FILE)));
+    paths
 }

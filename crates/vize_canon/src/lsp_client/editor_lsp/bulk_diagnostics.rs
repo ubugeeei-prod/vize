@@ -63,9 +63,13 @@ impl EditorLspSession {
             // A single retained configured project makes default-project
             // ownership unambiguous. Mixed configured/inferred views fall back.
             let [project] = snapshot.projects.as_slice() else {
+                #[cfg(test)]
+                receipt::refusal("snapshot does not have exactly one project");
                 return Ok(None);
             };
             if Path::new(&project.config_file_name) != config {
+                #[cfg(test)]
+                receipt::refusal("snapshot project configuration differs");
                 return Ok(None);
             }
             let params = json!({"snapshot": snapshot.handle, "project": project.id});
@@ -74,9 +78,13 @@ impl EditorLspSession {
                     .raw_json_request("getSourceFileNames", params.clone()),
             )?;
             let Ok(names) = serde_json::from_value::<Vec<String>>(names) else {
+                #[cfg(test)]
+                receipt::refusal("source-name response schema differs");
                 return Ok(None);
             };
             if !conversion::requested_members_are_present(uris, &names) {
+                #[cfg(test)]
+                receipt::refusal("requested URI is not an exact native source-name member");
                 return Ok(None);
             }
             let mut categories = Vec::with_capacity(4);
@@ -88,11 +96,19 @@ impl EditorLspSession {
                 let Ok(diagnostics) =
                     serde_json::from_value::<Option<Vec<NativeDiagnostic>>>(value)
                 else {
+                    #[cfg(test)]
+                    receipt::refusal("diagnostic response schema differs");
                     return Ok(None);
                 };
                 categories.push(diagnostics.unwrap_or_default());
             }
             let converted = project_diagnostics(&categories, uris, &self.documents);
+            #[cfg(test)]
+            if converted.is_none() {
+                receipt::refusal(
+                    "complete diagnostic conversion lacks owned text or valid coordinates",
+                );
+            }
             #[cfg(test)]
             if converted.is_some() {
                 receipt::record(json!({

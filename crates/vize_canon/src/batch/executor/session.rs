@@ -20,6 +20,8 @@ use crate::batch::virtual_project::{
 
 mod diagnostic_paths;
 #[cfg(test)]
+mod native_bulk_qualification;
+#[cfg(test)]
 mod native_test_receipt;
 mod snapshot;
 

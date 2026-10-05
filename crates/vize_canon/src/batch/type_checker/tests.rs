@@ -11,11 +11,11 @@ use vize_carton::{String, corsa_resolver::platform_suffix, cstr};
 mod camel_case_component_props;
 #[path = "tests_symlink.rs"]
 mod symlink;
-
 use symlink::symlink_path;
 mod emit_object_recursion;
 mod generic_component_listener_payload;
 mod generic_props;
+mod native_bulk_tier_l;
 mod no_check_props;
 mod no_unused;
 mod options_api_required_props;

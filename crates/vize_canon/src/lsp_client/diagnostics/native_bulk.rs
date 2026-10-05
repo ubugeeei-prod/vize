@@ -4,6 +4,9 @@ use super::super::editor_lsp::bulk_diagnostics::BulkDiagnostics;
 use super::{CorsaProjectClient, DiagnosticBatch, String, convert_diagnostics};
 use vize_l0::cstr;
 
+#[cfg(test)]
+mod qualification;
+
 impl CorsaProjectClient {
     pub(super) fn request_diagnostics_batch_via_native_bulk(
         &mut self,
