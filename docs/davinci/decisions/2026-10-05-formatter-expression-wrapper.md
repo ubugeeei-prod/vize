@@ -31,3 +31,7 @@ This corrects legacy behavior without native-stage or performance credit.
 Historical capture bytes, instruction ceilings and source limits stay intact.
 Exact-head Actions, protected full suites, actual merge and release inclusion
 remain required; a stable but semantically invalid output is not acceptance.
+
+The strict current source-owner witness hash tracks the changed script wrapper
+file. Every original capture SHA, revision, retained Rust function body hash
+and expected byte remains unchanged; the new helper does not waive source custody.
