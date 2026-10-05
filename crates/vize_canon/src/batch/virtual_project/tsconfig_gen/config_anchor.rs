@@ -42,7 +42,7 @@ impl VirtualProject {
         path.strip_prefix(&self.virtual_root)
             .unwrap_or(Path::new(SHARED_HELPERS_FILE))
             .to_string_lossy()
-            .as_ref()
+            .replace('\\', "/")
             .into()
     }
 

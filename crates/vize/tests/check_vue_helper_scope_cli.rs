@@ -147,7 +147,7 @@ fn native_oracle(
     }
     assert_eq!(
         output.status.code(),
-        Some(if model_error || attribute_error { 2 } else { 0 })
+        Some(if model_error || attribute_error { 1 } else { 0 })
     );
     assert_eq!(
         String::from_utf8(output.stdout)

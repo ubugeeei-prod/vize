@@ -19,7 +19,7 @@ assert.deepEqual(
   readdirSync(root, { withFileTypes: true })
     .filter((e) => e.isDirectory())
     .map((e) => e.name)
-    .sort(),
+    .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0)),
   cases,
 );
 const hash = (file) => createHash("sha256").update(readFileSync(file)).digest("hex");
@@ -104,7 +104,7 @@ for (const name of cases) {
   }
   assert.equal(
     json(join(directory, "native.runtime.json")).exitCode,
-    name === "valid-disabled" ? 0 : 2,
+    name === "valid-disabled" ? 0 : 1,
   );
   assert.equal(readFileSync(join(directory, "native.stderr.txt"), "utf8"), "");
   const nativeExpected =

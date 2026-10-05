@@ -50,6 +50,18 @@ always-uploaded raw outputs. All old cargo qualifier argument vectors are
 preserved; two existing command continuations are only joined to keep the
 workflow below 350 lines. The [paired issue decision](https://github.com/ubugeeei-prod/vize/issues/7949#issuecomment-5992769531) records the same scope.
 
+The initial private peer found that root-only control alias protection would not
+cover the relocated app helper. The successor adds that actual relative path to
+existing exact-control protection, retaining every root control and explicit
+user alias priority. Absolute in-project targets use the same lexical boundary
+as mirror expansion; unrelated absolute imports stay untouched. Nested wildcard,
+exact, absolute and real authored-file controls exercise actual governing-config
+flattening/materialization. Helper include separators are normalized only as
+paths for this cross-platform alias match. Original diagnostic vectors are
+unchanged. The official native process failure status is 1, independently checked
+against retained 7.0.2 raw receipts; new runtime execution remains unqualified.
+The [paired correction decision](https://github.com/ubugeeei-prod/vize/issues/7949#issuecomment-5992964278) records this guard, status and explicit lexical sort correction.
+
 Fresh strict source Actions, authentic whole native/editor execution, independent
 artifact verification, protected full Rust/all 104 instruction gates, actual
 signed merge/issue closure and public release/consumer proof remain required.
