@@ -72,8 +72,9 @@ Prepared Rust controls cover complete reported projects, destructuring/defaults,
 exports, nested members/classes, TS/JSX, directives, UTF-16/CRLF, malformed and
 empty content, art, and honest Pug fallback. Eleven local pure controls pass;
 the original five highlight sessions are selected by their fixed IDs so new
-outline cases cannot extend their original nine-request vector. Source and protected Actions are
-pending; publication, queue entry and completion require actual terminal proof.
+outline cases cannot extend their original nine-request vector. The corrected
+source Actions pass as recorded below; the integrated source and protected
+whole RPC corpus still require fresh actual terminal proof.
 
 Pug has no original-span element tree in the current resident descriptor. Keep
 its block-only template outline rather than substitute generated HTML offsets;
@@ -103,3 +104,13 @@ whole LSP RPC corpus is explicitly retained for the protected merge tier.
 The independent shared-registry order is the actual hover fix #8027, then
 links #8029, then this outline fix. Each integration retains every accepted
 case and refreshes its source qualification; queue entry grants no acceptance.
+
+The actual signed hover commit `4e818a4e` and document-link commit `d8cd6a20`
+are genuine integration parents. Preserve all 14 accepted session objects and
+their complete 22 response contracts, then append the two unchanged outline
+sessions: 16 sessions and 24 responses. All five outline Rust files and both
+whole expected arrays remain exact corrected-source bytes. Restore the exact
+reviewed hierarchy-capability helper when uniting the shared manifest; old
+capability objects remain untouched. Fresh source Actions qualify this union.
+The full RPC corpus runs only in the protected tier, and admission remains off
+during the finite v0.433 release hold until the maintainer explicitly thaws it.

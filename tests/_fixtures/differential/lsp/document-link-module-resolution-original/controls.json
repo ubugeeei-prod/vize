@@ -1,0 +1,384 @@
+{
+  "version": 1,
+  "files": [
+    {
+      "runtimePath": "src/App.vue",
+      "text": "<script setup lang=\"ts\">\nimport Detail from \"./pages/[id]/Detail.vue\";\nimport { version } from \"./lib\";\nimport Other from \"@/pages/[id]/Detail.vue\";\nimport { ref } from \"vue\";\n\nconst message = ref(`v${version}`);\n</script>\n\n<template>\n  <Detail :name=\"message\" />\n</template>\n",
+      "sha256": "4887832158be0ef54595226e4441ddf11ce433486d79446eeb7cb75499895681"
+    },
+    {
+      "runtimePath": "src/lib/index.ts",
+      "text": "export const version = \"1\";\n",
+      "sha256": "6c6f805f3f3bb5f306dc9993d7ebcad35909d48fc4249432eec3aca4a8fe430c"
+    },
+    {
+      "runtimePath": "src/pages/[id]/Detail.vue",
+      "text": "<script setup lang=\"ts\">\ndefineProps<{ name: string }>();\n</script>\n<template><span>{{ name }}</span></template>\n",
+      "sha256": "c3c05a28bb0b85c98771b761a2ed2ca038f132d1af194732c38630718c250863"
+    },
+    {
+      "runtimePath": "tsconfig.json",
+      "text": "{\"compilerOptions\": {\"baseUrl\": \".\", \"paths\": {\"@/*\": [\"src/*\"], \"@js\": [\"src/js-dir/index.js\"], \"@decl\": [\"src/decl-dir/index.d.ts\"], \"linked-export\": [\"src/pages/[id]/Detail.vue\"], \"@missing\": [\"src/does-not-exist\"]}}}\n",
+      "sha256": "7e9e8f02178aa7d84bb60ecb57b2c36c65009b34a81d5296a4fee1af9bdc40e2"
+    },
+    {
+      "runtimePath": "src/Controls.vue",
+      "text": "<script setup lang=\"ts\">\n/* 🧭 */ import DirectoryTs from \"./lib\";\nimport DirectoryJs from \"./js-dir\";\nimport DirectoryDeclaration from \"./decl-dir\";\nimport DirectoryTsx from \"./tsx-dir\";\nimport DirectoryVue from \"./vue-dir\";\nimport DirectoryMjs from \"./mjs-dir\";\nimport DirectoryCjs from \"./cjs-dir\";\nimport RelativeJsx from \"./view\";\nimport DirectoryJsx from \"./jsx-dir\";\nimport Dotted from \"./x.use\";\nimport Aliased from \"@/lib\";\nimport AliasedJs from \"@js\";\nimport AliasedDeclaration from \"@decl\";\nimport ShadowedPackage from \"linked-export\";\nimport MissingAlias from \"@missing\";\nimport EmptyDirectory from \"./empty-dir\";\nimport MissingRelative from \"./not-yet-created\";\nimport UnicodeRoute from \"./pages/[id]/space 名前.vue\";\nimport LiteralPercent from \"./pages/[id]/literal%20.vue\";\nimport BareExport from \"unambiguous-export\";\nimport Ambiguous from \"conditional-export\";\nimport Unknown from \"missing-package\";\n</script>\n<template><div /></template>\n",
+      "sha256": "8848ba8eb22739287af93c77614f87dfc76eb0f84eeda403af7d18d425c5ff74"
+    },
+    {
+      "runtimePath": "src/js-dir/index.js",
+      "text": "export default 1;\n",
+      "sha256": "96909e1dce85ca534fd8881f6c8369a8a87e06df5a4bf81ef44a72db195b0704"
+    },
+    {
+      "runtimePath": "src/decl-dir/index.d.ts",
+      "text": "declare const value: string;\nexport default value;\n",
+      "sha256": "378ff29d5670a4ee6ebfad719b5dcacb6eaf1873b326cb15ea6c44ba8db23b12"
+    },
+    {
+      "runtimePath": "src/tsx-dir/index.tsx",
+      "text": "export default 1;\n",
+      "sha256": "96909e1dce85ca534fd8881f6c8369a8a87e06df5a4bf81ef44a72db195b0704"
+    },
+    {
+      "runtimePath": "src/vue-dir/index.vue",
+      "text": "<template><div /></template>\n",
+      "sha256": "9ad562f9d14f7b6fc38257d8cd05511af78a091b664b2074cf437c1f4209c335"
+    },
+    {
+      "runtimePath": "src/mjs-dir/index.mjs",
+      "text": "export default 1;\n",
+      "sha256": "96909e1dce85ca534fd8881f6c8369a8a87e06df5a4bf81ef44a72db195b0704"
+    },
+    {
+      "runtimePath": "src/cjs-dir/index.cjs",
+      "text": "module.exports = 1;\n",
+      "sha256": "6e66e366f0aefb84ad8110afcd9b2245702c643c831edf8316ff048fec739d2e"
+    },
+    {
+      "runtimePath": "src/x.use.ts",
+      "text": "export default 1;\n",
+      "sha256": "96909e1dce85ca534fd8881f6c8369a8a87e06df5a4bf81ef44a72db195b0704"
+    },
+    {
+      "runtimePath": "src/pages/[id]/space 名前.vue",
+      "text": "<template><span>名前</span></template>\n",
+      "sha256": "ac95a5b260892be39a9a9138236c98d67e1aa19ee0f42dce132ac83b22c506fe"
+    },
+    {
+      "runtimePath": "src/pages/[id]/literal%20.vue",
+      "text": "<template><span>literal percent</span></template>\n",
+      "sha256": "dab4e7612f23d8c7fa4dadd85248e8b3ce2318f2c4a0997fb9b682d64e477ecf"
+    },
+    {
+      "runtimePath": "node_modules/linked-export/package.json",
+      "text": "{\"name\":\"linked-export\",\"exports\":{\".\":{\"types\":\"./index.d.ts\"}}}\n",
+      "sha256": "4f91497a4a110540a996d27551178cecb51059f96eb0b404a3c0fd69e74d192d"
+    },
+    {
+      "runtimePath": "node_modules/linked-export/index.d.ts",
+      "text": "export default 2;\n",
+      "sha256": "38b5a31fa5dd51d6f1eb8c3ec5fd65f8fba0930db22b2dc5468d8d3b991dfb42"
+    },
+    {
+      "runtimePath": "node_modules/unambiguous-export/package.json",
+      "text": "{\"name\":\"unambiguous-export\",\"exports\":{\".\":{\"types\":\"./index.d.ts\"}}}\n",
+      "sha256": "0aa8f8acf0fefe55e3ee7f218707c3bbfbe7f2be2aeb3c107379abdc03472ba4"
+    },
+    {
+      "runtimePath": "node_modules/unambiguous-export/index.d.ts",
+      "text": "export default 3;\n",
+      "sha256": "5d529a40421373783e003d39240ed0707be9c68ca84598119a39c01a8f2e6de5"
+    },
+    {
+      "runtimePath": "node_modules/conditional-export/package.json",
+      "text": "{\"name\":\"conditional-export\",\"exports\":{\".\":{\"types\":\"./index.d.ts\",\"import\":\"./index.js\"}}}\n",
+      "sha256": "19df1f8e1fdada6cc86cd3486a9218dad8d5fb1f1589cad3fd5b654399366562"
+    },
+    {
+      "runtimePath": "node_modules/conditional-export/index.d.ts",
+      "text": "export default 4;\n",
+      "sha256": "e05aa851f0be283fe3119a513ddaa29c9a67d046869bac7bc0cd4a489a96492e"
+    },
+    {
+      "runtimePath": "node_modules/conditional-export/index.js",
+      "text": "export default 4;\n",
+      "sha256": "e05aa851f0be283fe3119a513ddaa29c9a67d046869bac7bc0cd4a489a96492e"
+    },
+    {
+      "runtimePath": "src/Normal.vue",
+      "text": "<script lang=\"js\">\nexport { default } from \"./js-dir\";\n</script>\n<template><div /></template>\n",
+      "sha256": "40a45f69ca9bac1e653ef02cbfc9307f2190edf1b458604f376864aedcd1f7e5"
+    },
+    {
+      "runtimePath": "src/Unresolved.vue",
+      "text": "<script setup lang=\"ts\">\nimport Alias from \"@missing\";\nimport Empty from \"./empty-dir\";\nimport Bare from \"unambiguous-export\";\nimport Windows from \"C:/src/lib/index.ts\";\n</script>\n<template><div /></template>\n",
+      "sha256": "ee3292ac3cbb153710b506694a528549c2db43ab26ddc440fac2ca0ed879ac6c"
+    },
+    {
+      "runtimePath": "src/view.jsx",
+      "text": "export default () => <span />;\n",
+      "sha256": "00ff94073fbd1ac98110fa53f202dd7b361c8491914756c2179cf6da2af45f76"
+    },
+    {
+      "runtimePath": "src/jsx-dir/index.jsx",
+      "text": "export default () => <span />;\n",
+      "sha256": "00ff94073fbd1ac98110fa53f202dd7b361c8491914756c2179cf6da2af45f76"
+    }
+  ],
+  "directories": [
+    "src/empty-dir"
+  ],
+  "sessions": [
+    {
+      "entry": "src/Controls.vue",
+      "expected": [
+        {
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 33
+            },
+            "end": {
+              "line": 1,
+              "character": 40
+            }
+          },
+          "target": "${workspace}/src/lib/index.ts"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 24
+            },
+            "end": {
+              "line": 2,
+              "character": 34
+            }
+          },
+          "target": "${workspace}/src/js-dir/index.js"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 33
+            },
+            "end": {
+              "line": 3,
+              "character": 45
+            }
+          },
+          "target": "${workspace}/src/decl-dir/index.d.ts"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 4,
+              "character": 25
+            },
+            "end": {
+              "line": 4,
+              "character": 36
+            }
+          },
+          "target": "${workspace}/src/tsx-dir/index.tsx"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 5,
+              "character": 25
+            },
+            "end": {
+              "line": 5,
+              "character": 36
+            }
+          },
+          "target": "${workspace}/src/vue-dir/index.vue"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 25
+            },
+            "end": {
+              "line": 6,
+              "character": 36
+            }
+          },
+          "target": "${workspace}/src/mjs-dir/index.mjs"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 25
+            },
+            "end": {
+              "line": 7,
+              "character": 36
+            }
+          },
+          "target": "${workspace}/src/cjs-dir/index.cjs"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 24
+            },
+            "end": {
+              "line": 8,
+              "character": 32
+            }
+          },
+          "target": "${workspace}/src/view.jsx"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 9,
+              "character": 25
+            },
+            "end": {
+              "line": 9,
+              "character": 36
+            }
+          },
+          "target": "${workspace}/src/jsx-dir/index.jsx"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 10,
+              "character": 19
+            },
+            "end": {
+              "line": 10,
+              "character": 28
+            }
+          },
+          "target": "${workspace}/src/x.use.ts"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 11,
+              "character": 20
+            },
+            "end": {
+              "line": 11,
+              "character": 27
+            }
+          },
+          "target": "${workspace}/src/lib/index.ts"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 12,
+              "character": 22
+            },
+            "end": {
+              "line": 12,
+              "character": 27
+            }
+          },
+          "target": "${workspace}/src/js-dir/index.js"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 13,
+              "character": 31
+            },
+            "end": {
+              "line": 13,
+              "character": 38
+            }
+          },
+          "target": "${workspace}/src/decl-dir/index.d.ts"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 14,
+              "character": 28
+            },
+            "end": {
+              "line": 14,
+              "character": 43
+            }
+          },
+          "target": "${workspace}/src/pages/%5Bid%5D/Detail.vue"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 17,
+              "character": 28
+            },
+            "end": {
+              "line": 17,
+              "character": 47
+            }
+          },
+          "target": "${workspace}/src/not-yet-created"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 18,
+              "character": 25
+            },
+            "end": {
+              "line": 18,
+              "character": 52
+            }
+          },
+          "target": "${workspace}/src/pages/%5Bid%5D/space%20%E5%90%8D%E5%89%8D.vue"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 19,
+              "character": 27
+            },
+            "end": {
+              "line": 19,
+              "character": 56
+            }
+          },
+          "target": "${workspace}/src/pages/%5Bid%5D/literal%2520.vue"
+        }
+      ]
+    },
+    {
+      "entry": "src/Normal.vue",
+      "expected": [
+        {
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 24
+            },
+            "end": {
+              "line": 1,
+              "character": 34
+            }
+          },
+          "target": "${workspace}/src/js-dir/index.js"
+        }
+      ]
+    },
+    {
+      "entry": "src/Unresolved.vue",
+      "expected": null
+    }
+  ],
+  "scope": "whole LF/CRLF standard RPC controls; quoted UTF-16 spans, actual filesystem jumps, bare-package compatibility, alias-over-package priority, missing-relative compatibility, unresolved refusal"
+}

@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const count = defineModel<number>({ required: true });
+</script>
+
+<template>
+  <button @click="count++">{{ count }}</button>
+</template>

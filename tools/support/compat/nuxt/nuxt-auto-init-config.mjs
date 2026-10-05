@@ -126,7 +126,8 @@ async function runProbe(fixture, artifacts) {
       },
     });
     assert.equal(nuxt.constructor.version, "v2.17.3");
-    const generated = path.join(nuxt.options.buildDir, "oxlint.config.json");
+    const generated = path.join(fixture, ".oxlint.vize.json");
+    files.push(generated);
     assert.equal(
       JSON.parse(fs.readFileSync(generated, "utf8")).settings.vize.preset,
       "incremental",

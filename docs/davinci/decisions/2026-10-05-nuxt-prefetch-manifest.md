@@ -129,3 +129,20 @@ The first artifact11329991020 also follows the temporary prior-pack dependency
 symlink during upload. Unlink only that borrowed link in the pack `finally`; keep
 all source/archive/dist/hash/raw/native packets and original dependency bytes.
 This finite cleanup requires fresh execution and adds no runtime qualification.
+
+## Signed protected delivery
+
+[PR8021](https://github.com/ubugeeei-prod/vize/pull/8021) actually merged as
+verified signed `0757ec393479eefd4957000ded38f91f51fa92f3` at08:17:00UTC;
+Issue7999 closed two seconds later. Protected Check37280865402 is terminal
+success: full Rust/four workers, unchanged100+4 ceilings with three identical
+runs, authentic whole original source-NAPI/Nuxt3 compiler/SSR/Chromium controls
+and the complete stock/prior/current SPA manifests, requests and ordered
+contextual prefetch packet. Stock5/prior8/current5 links are verified; original
+native call order is retained but no cross-arm call-order parity is claimed.
+The [terminal issue receipt](https://github.com/ubugeeei-prod/vize/issues/7999#issuecomment-5990752713)
+and `/tmp/vize-7999-075-terminal-receipt.json` seal the source/prefix identity.
+The failed old885 candidate's450-versus449 census is retained separately;
+its predecessor8020 was removed and gives no replacement-candidate credit.
+No SPA map, SPA SSR, large-app counts, speed or publication proof is claimed.
+Supported publication remains the release owner's next frequent cut.

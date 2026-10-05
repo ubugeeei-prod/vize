@@ -257,25 +257,57 @@ void test("later global plan items win without losing earlier keys", () => {
   );
 });
 
-void test("override and ignore globs are rebased onto the generated config directory", () => {
+void test("the original below-root config location is rejected instead of emitting parent ignores", () => {
+  assert.throws(
+    () =>
+      renderNuxtOxlintConfig(
+        [
+          { name: "ignores", ignores: ["!dist/**", "/tmp/keep/**"] },
+          {
+            name: "pages",
+            files: ["app/pages/**/*.{vue,ts}"],
+            ignores: ["app/pages/generated/**"],
+          },
+        ],
+        "./plugin.mjs",
+        { rootDir: "/proj", configDir: "/proj/.output/nuxt" },
+      ),
+    { message: "Generated oxlint config must be in the lint root or an ancestor directory" },
+  );
+});
+
+void test("an ancestor config retains the precise plan-root namespace and outside layer paths", () => {
   const rendered = renderNuxtOxlintConfig(
     [
-      { name: "ignores", ignores: ["!dist/**", "/tmp/keep/**"] },
+      { name: "ignores", ignores: ["**/dist", "!dist/keep.ts"] },
       {
         name: "pages",
-        files: ["app/pages/**/*.{vue,ts}"],
+        files: ["app/pages/**/*.{vue,ts}", "../../../layer/**/*.vue"],
         ignores: ["app/pages/generated/**"],
       },
     ],
     "./plugin.mjs",
-    { rootDir: "/proj", configDir: "/proj/.output/nuxt" },
+    { rootDir: "/proj/packages/web", configDir: "/proj" },
   );
-  const config = JSON.parse(rendered) as {
-    ignorePatterns: string[];
-    overrides: Array<{ files: string[]; excludeFiles: string[] }>;
-  };
-
-  assert.deepEqual(config.ignorePatterns, ["!../../dist/**", "/tmp/keep/**"]);
-  assert.deepEqual(config.overrides[0].files, ["../../app/pages/**/*.{vue,ts}"]);
-  assert.deepEqual(config.overrides[0].excludeFiles, ["../../app/pages/generated/**"]);
+  assert.deepEqual(JSON.parse(rendered), {
+    plugins: ["vue"],
+    jsPlugins: [{ name: "vize", specifier: "./plugin.mjs" }],
+    settings: { vize: { preset: "incremental" } },
+    ignorePatterns: ["packages/web/**/dist", "!packages/web/dist/keep.ts"],
+    overrides: [
+      {
+        files: ["packages/web/app/pages/**/*.{vue,ts}", "/layer/**/*.vue"],
+        excludeFiles: ["packages/web/app/pages/generated/**"],
+      },
+    ],
+  });
+  assert.throws(
+    () =>
+      renderNuxtOxlintConfig(
+        [{ name: "outside-ignore", ignores: ["../outside/**"] }],
+        "./plugin.mjs",
+        { rootDir: "/proj", configDir: "/proj" },
+      ),
+    { message: "Oxlint cannot ignore a path outside its config directory: ../outside/**" },
+  );
 });

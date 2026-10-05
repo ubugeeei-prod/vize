@@ -9,7 +9,7 @@ use crate::batch::materialize_fs::{ensure_dir, ensure_materialize_root, write_if
 
 use super::{
     AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUBS_FILE, PACKAGE_BOUNDARY_FILE,
-    SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
+    VUE_MODULE_STUBS_FILE, VirtualProject,
 };
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -62,7 +62,7 @@ impl VirtualProject {
             self.virtual_root.join(AUTO_IMPORT_STUBS_FILE),
             self.virtual_root.join(MODULE_AUGMENTATION_STUBS_FILE),
             self.virtual_root.join(VUE_MODULE_STUBS_FILE),
-            self.virtual_root.join(SHARED_HELPERS_FILE),
+            self.shared_helpers_path(),
         ]);
     }
 
@@ -132,9 +132,7 @@ impl VirtualProject {
         if candidates.contains(&self.virtual_root.join(VUE_MODULE_STUBS_FILE)) {
             self.write_vue_module_stubs()?;
         }
-        if candidates.contains(&self.virtual_root.join(SHARED_HELPERS_FILE))
-            && self.uses_shared_helpers()
-        {
+        if candidates.contains(&self.shared_helpers_path()) && self.uses_shared_helpers() {
             self.write_shared_helpers()?;
         }
         if candidates.contains(&self.generated_tsconfig_path()) {
@@ -221,7 +219,7 @@ impl VirtualProject {
         path == self.virtual_root.join(PACKAGE_BOUNDARY_FILE)
             || path == self.generated_tsconfig_path()
             || path == self.virtual_root.join(VUE_MODULE_STUBS_FILE)
-            || (path == self.virtual_root.join(SHARED_HELPERS_FILE) && self.uses_shared_helpers())
+            || (path == self.shared_helpers_path() && self.uses_shared_helpers())
             || (path == self.virtual_root.join(AUTO_IMPORT_STUBS_FILE)
                 && self.has_global_auto_import_stubs())
             || (path == self.virtual_root.join(MODULE_AUGMENTATION_STUBS_FILE)

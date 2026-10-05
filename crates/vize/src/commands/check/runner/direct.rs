@@ -18,7 +18,6 @@ use super::{
 pub(crate) fn run_direct(args: &CheckArgs) {
     let start = Instant::now();
     args.profile_export.begin(args.profile);
-    crate::config::write_schema(None);
     validate_config_arg(args);
 
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
@@ -31,6 +30,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     } else {
         crate::config::load_config_with_features_and_source(args.config.as_deref())
     };
+    crate::config::write_schema_for_config(loaded_config.source_path.as_deref());
     let experimental_vue = if args.no_config {
         crate::config::ConfigExperimentalVueFlags::default()
     } else {

@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const title = "About";
+</script>
+
+<template>
+  <h1 style="color: red">{{ title }}</h1>
+</template>

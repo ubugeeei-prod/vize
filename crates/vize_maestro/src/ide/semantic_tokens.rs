@@ -12,12 +12,15 @@
 
 mod art;
 mod encoding;
+mod expression_lines;
 mod expressions;
 mod style;
 mod template;
 mod template_attrs;
 mod types;
 
+#[cfg(test)]
+mod regression_8014_tests;
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod resident_tests;
@@ -115,11 +118,19 @@ impl SemanticTokensService {
 
         // Collect tokens from template
         if let Some(ref template) = descriptor.template {
-            template::collect_template_tokens(
-                &template.content,
-                template.loc.start_line.saturating_sub(1) as u32,
-                &mut tokens,
-            );
+            let first = tokens.len();
+            let (line, column) = encoding::offset_to_line_col(content, template.loc.start);
+            template::collect_template_tokens(&template.content, line, &mut tokens);
+            if column != 0
+                && !template.content.starts_with('\n')
+                && !template.content.starts_with("\r\n")
+            {
+                for token in tokens.iter_mut().skip(first) {
+                    if token.line == line {
+                        token.start += column;
+                    }
+                }
+            }
         }
 
         // Collect tokens from script setup

@@ -18,8 +18,9 @@ import { setupNuxtLintConfigAddons, type NuxtLintConfigAddonNuxt } from "./addon
 import { renderNuxtOxlintConfig } from "./emitter.ts";
 import { toNuxtLintProjectState, type NuxtLintSourceOptions } from "./nuxt-state.ts";
 import { readProjectLintRules, type ProjectLintRules } from "./project-rules.ts";
+import { writeOwnedNuxtConfig } from "./owned-config.ts";
 
-const GENERATED_CONFIG_NAME = "oxlint.config.json";
+const GENERATED_CONFIG_NAME = ".oxlint.vize.json";
 
 /** Root config names supported by oxlint's config discovery. */
 export const ROOT_OXLINT_CONFIG_NAMES = [
@@ -167,8 +168,28 @@ function renderRootOxlintConfig(rootDir: string, generatedConfig: string): strin
   ].join("\n");
 }
 
-async function initRootOxlintConfig(rootDir: string, generatedConfig: string): Promise<void> {
-  if (await findRootLintConfig(rootDir)) return;
+async function initRootOxlintConfig(
+  rootDir: string,
+  generatedConfig: string,
+  previousDefault?: string,
+): Promise<void> {
+  const existing = await findRootLintConfig(rootDir);
+  if (existing) {
+    // Only the exact former generated loader can migrate automatically.
+    if (
+      existing === path.join(rootDir, "oxlint.config.mts") &&
+      previousDefault &&
+      (await lstat(existing)).isFile() &&
+      (await readFile(existing, "utf8")) === renderRootOxlintConfig(rootDir, previousDefault)
+    ) {
+      await writeFileIfChanged(existing, renderRootOxlintConfig(rootDir, generatedConfig));
+    }
+    return;
+  }
+
+  if (path.dirname(generatedConfig) !== rootDir) {
+    throw new Error("Set lint.autoInit to false when lint.configFile is outside the Nuxt root");
+  }
 
   const target = path.join(rootDir, "oxlint.config.mts");
   const handle = await open(target, "wx").catch((error: unknown) => {
@@ -205,10 +226,8 @@ export async function setupNuxtLintConfigGeneration(
   } = config;
   const nuxtRoot = path.resolve(nuxt.options.rootDir);
   const planRoot = configuredRoot ? path.resolve(nuxtRoot, configuredRoot) : nuxtRoot;
-  const configFile = path.resolve(
-    nuxtRoot,
-    configuredFile ?? path.join(nuxt.options.buildDir, GENERATED_CONFIG_NAME),
-  );
+  const configFile = path.resolve(nuxtRoot, configuredFile ?? GENERATED_CONFIG_NAME);
+  const ownsReservedConfig = configFile === path.join(nuxtRoot, GENERATED_CONFIG_NAME);
   const hasTypeScriptProbe = dependencies.hasTypeScript ?? hasTypeScript;
   const resolvePluginSpecifier = dependencies.resolvePluginSpecifier ?? resolveVizePluginSpecifier;
   const resolveAddons =
@@ -240,9 +259,15 @@ export async function setupNuxtLintConfigGeneration(
     const artifact = renderNuxtOxlintConfig(
       nextPlan,
       resolvePluginSpecifier(path.dirname(configFile)),
-      { rootDir: planRoot, configDir: path.dirname(configFile) },
+      {
+        rootDir: planRoot,
+        configDir: path.dirname(configFile),
+        owner: ownsReservedConfig ? "@vizejs/nuxt" : undefined,
+      },
     );
-    const changed = await writeFileIfChanged(configFile, artifact);
+    const changed = ownsReservedConfig
+      ? await writeOwnedNuxtConfig(configFile, artifact, writeFileIfChanged)
+      : await writeFileIfChanged(configFile, artifact);
     currentPlan = nextPlan;
     return changed;
   };
@@ -259,7 +284,14 @@ export async function setupNuxtLintConfigGeneration(
     // template generation begins so the root loader never points to ENOENT.
     nuxt.hook("build:templates", regenerate);
   }
-  if (autoInit) await initRootOxlintConfig(nuxtRoot, configFile);
+  if (autoInit)
+    await initRootOxlintConfig(
+      nuxtRoot,
+      configFile,
+      ownsReservedConfig
+        ? path.resolve(nuxtRoot, nuxt.options.buildDir, "oxlint.config.json")
+        : undefined,
+    );
 
   return { configFile, root: planRoot, regenerate, resolvePlan };
 }

@@ -1,6 +1,6 @@
 //! Exact path mappings that keep Canon's control files private.
 
-use std::path::Path;
+use std::{borrow::Cow, path::Path};
 
 use serde_json::{Map, Value};
 use vize_carton::cstr;
@@ -28,6 +28,8 @@ pub(super) fn protect_control_file_aliases(
     paths: &Map<std::string::String, Value>,
     remapped: &mut Map<std::string::String, Value>,
     project_prefix: &str,
+    project_root: &Path,
+    shared_helpers: &str,
 ) {
     let mut overrides = Vec::new();
     for (alias, targets) in paths {
@@ -35,14 +37,21 @@ pub(super) fn protect_control_file_aliases(
             continue;
         };
         for target in targets.iter().filter_map(Value::as_str) {
-            for control_file in CONTROL_FILES {
-                let Some(exact_alias) = exact_alias_for_target(alias, target, control_file) else {
+            let Some(target) = target_onto_project_root(target, project_root) else {
+                continue;
+            };
+            for control_file in CONTROL_FILES
+                .iter()
+                .copied()
+                .chain(std::iter::once(shared_helpers))
+            {
+                let Some(exact_alias) = exact_alias_for_target(alias, &target, control_file) else {
                     continue;
                 };
                 if exact_alias != *alias && paths.contains_key(&exact_alias) {
                     continue;
                 }
-                overrides.push((exact_alias, *control_file));
+                overrides.push((exact_alias, control_file));
             }
         }
     }
@@ -55,6 +64,19 @@ pub(super) fn protect_control_file_aliases(
             )]),
         );
     }
+}
+
+// Mirror expansion also translates absolute in-project targets onto the root.
+// Use the identical lexical boundary here; unrelated absolute targets remain
+// direct authored imports and cannot expose a private mirror control.
+fn target_onto_project_root<'a>(target: &'a str, project_root: &Path) -> Option<Cow<'a, str>> {
+    let path = Path::new(target);
+    if !path.is_absolute() {
+        return Some(Cow::Borrowed(target));
+    }
+    let normalized = super::super::tsconfig_paths::normalize_path_lexically(path);
+    let relative = normalized.strip_prefix(project_root).ok()?;
+    Some(Cow::Owned(relative.to_string_lossy().replace('\\', "/")))
 }
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
@@ -73,6 +95,7 @@ fn exact_alias_for_target(alias: &str, target: &str, control_file: &str) -> Opti
 #[cfg(test)]
 mod tests {
     use serde_json::{Map, Value, json};
+    use std::path::Path;
 
     use super::protect_control_file_aliases;
 
@@ -80,7 +103,13 @@ mod tests {
     fn protect(paths: Value) -> Map<std::string::String, Value> {
         let paths = paths.as_object().unwrap();
         let mut remapped = paths.clone();
-        protect_control_file_aliases(paths, &mut remapped, "../../../");
+        protect_control_file_aliases(
+            paths,
+            &mut remapped,
+            "../../../",
+            Path::new("/source"),
+            "apps/web/__vize_helpers.d.ts",
+        );
         remapped
     }
 
@@ -115,5 +144,39 @@ mod tests {
             json!(["fixtures/package.json"])
         );
         assert_eq!(protected["src/*"], json!(["src/*"]));
+    }
+
+    #[test]
+    fn nested_helpers_protect_wildcard_exact_absolute_targets_and_authored_priority() {
+        let root = std::env::temp_dir().join("vize-helper-root");
+        let foreign = std::env::temp_dir().join("vize-helper-other/apps/web/__vize_helpers.d.ts");
+        let paths = json!({
+            "private/*": ["apps/web/*"],
+            "helper": ["./apps/web/__vize_helpers.d.ts"],
+            "absolute": [root.join("apps/web/__vize_helpers.d.ts")],
+            "authored/*": ["apps/web/*"],
+            "authored/__vize_helpers.d.ts": ["apps/web/authored.ts"],
+            "foreign": [foreign]
+        });
+        let paths = paths.as_object().unwrap();
+        let mut protected = paths.clone();
+        protect_control_file_aliases(
+            paths,
+            &mut protected,
+            "../../../",
+            &root,
+            "apps/web/__vize_helpers.d.ts",
+        );
+        for alias in ["private/__vize_helpers.d.ts", "helper", "absolute"] {
+            assert_eq!(
+                protected[alias],
+                json!(["../../../apps/web/__vize_helpers.d.ts"])
+            );
+        }
+        assert_eq!(
+            protected["authored/__vize_helpers.d.ts"],
+            json!(["apps/web/authored.ts"])
+        );
+        assert_eq!(protected["foreign"], json!([foreign]));
     }
 }

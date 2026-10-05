@@ -199,10 +199,9 @@ test("current receipted CLI records both untouched eleven-pair judges for both t
       assert.deepEqual(machine.beforeInventory, human.afterInventory);
       assert.deepEqual(machine.afterInventory, human.afterInventory);
       for (const run of [human, machine]) {
-        const schema = fs.readFileSync(path.join(destination, run.generatedSchema.file));
-        assert.equal(schema.length, run.generatedSchema.bytes);
-        assert.equal(sha256(schema), run.generatedSchema.sha256);
-        assert.equal(run.generatedSchema.sha256, observed.generatedSchema.sha256);
+        assert.equal(run.generatedSchema, undefined);
+        assert.deepEqual(run.beforeInventory, run.inventory);
+        assert.deepEqual(run.afterInventory, run.inventory);
       }
       assert.equal(machine.cwd, human.cwd);
       assert.deepEqual(human.args, ["lint", "."]);

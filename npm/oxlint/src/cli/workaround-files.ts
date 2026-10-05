@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { isStandaloneHtmlFile } from "../file-kinds.js";
-import { appendScriptlessWorkaround } from "../workaround.js";
+import { isStandaloneHtmlFile } from "../file-kinds.ts";
+import { appendScriptlessWorkaround } from "../workaround.ts";
 
 export interface PreparedWorkaroundFiles {
   appendedArgs: string[];
@@ -103,7 +103,7 @@ function toCliPath(filename: string): string {
   return filename.split(path.sep).join("/");
 }
 
-function registerPathReplacementVariants(
+export function registerPathReplacementVariants(
   replacements: Map<string, string>,
   cwd: string,
   tempFilename: string,

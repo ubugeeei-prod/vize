@@ -15,6 +15,7 @@ pub mod code_lens;
 pub mod completion;
 mod context;
 mod corsa_support;
+mod expression_regions;
 #[cfg(feature = "native")]
 mod native_code_actions;
 #[cfg(all(test, feature = "native"))]

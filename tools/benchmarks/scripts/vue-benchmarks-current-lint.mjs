@@ -109,7 +109,7 @@ export async function probeCurrentLint(repoRoot = root) {
         verifyConfigs(cwd);
         for (const reporter of ["human", "machine"]) {
           const beforeRun = inventory(cwd);
-          verifyWorkInventory(beforeRun, before, bundledSchema, reporter === "machine");
+          verifyWorkInventory(beforeRun, before, bundledSchema, false);
           const args = [...command.args, ...(reporter === "machine" ? ["--format", "json"] : [])];
           const run = execute(binary, args, cwd, env);
           const name = `${profile}-${polarity}-${reporter}`;
@@ -138,7 +138,7 @@ export async function probeCurrentLint(repoRoot = root) {
           assert.equal(run.error, null, `${name}: ${run.error}`);
           assert.equal(run.signal, null, name);
           assert.ok([0, 1].includes(run.exitStatus), `${name}: exit ${run.exitStatus}`);
-          verifyWorkInventory(retained.afterInventory, before, bundledSchema, true);
+          verifyWorkInventory(retained.afterInventory, before, bundledSchema, false);
           assert.deepEqual(fs.readdirSync(path.join(cwd, ".git")), [], "repository marker changed");
           verifyConfigs(cwd);
           for (const stream of [run.stdout, run.stderr]) {

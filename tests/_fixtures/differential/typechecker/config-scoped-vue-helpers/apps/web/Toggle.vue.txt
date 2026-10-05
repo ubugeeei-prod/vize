@@ -1,0 +1,3 @@
+<template>
+  <button :disabled="42">toggle</button>
+</template>

@@ -1,0 +1,7 @@
+{
+  "name": "web",
+  "private": true,
+  "type": "module",
+  "dependencies": { "vue": "3.6.0-rc.10" },
+  "devDependencies": { "typescript": "7.0.2", "vize": "0.432.0" }
+}

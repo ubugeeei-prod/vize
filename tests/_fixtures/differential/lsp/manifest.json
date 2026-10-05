@@ -338,6 +338,44 @@
       }
     },
     {
+      "id": "lsp/fix-history/document-link-module-resolution-original",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "document-link-module-resolution-original",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "4887832158be0ef54595226e4441ddf11ce433486d79446eeb7cb75499895681"
+          },
+          {
+            "path": "index.ts.txt",
+            "sha256": "6c6f805f3f3bb5f306dc9993d7ebcad35909d48fc4249432eec3aca4a8fe430c"
+          },
+          {
+            "path": "Detail.vue.txt",
+            "sha256": "c3c05a28bb0b85c98771b761a2ed2ca038f132d1af194732c38630718c250863"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "10ca0d428d6980e1a714aeee0c2a3093a41913731d2d620ef5543e6d85331db1"
+          }
+        ]
+      },
+      "case": {
+        "path": "document-link-module-resolution-original/case.json",
+        "sha256": "d9b40c4cd036cd14480838f4cde8e8fa7d1e670d1b9d22ee38715babebfd8690"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
       "id": "lsp/regression/document-symbol-outline-parent",
       "state": "active",
       "targets": [

@@ -31,6 +31,9 @@ use crate::virtual_code::{ArtCursorPosition, BlockType};
 impl super::DefinitionService {
     /// Get definition for the symbol at the current position.
     pub fn definition(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
+        if crate::ide::template_expression::is_in_template_comment(ctx) {
+            return None;
+        }
         match ctx.block_type? {
             BlockType::Template => import_target::component_tag_definition(ctx)
                 .or_else(|| component_event::definition(ctx))
@@ -54,6 +57,9 @@ impl super::DefinitionService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
+        if crate::ide::template_expression::is_in_template_comment(ctx) {
+            return None;
+        }
         match ctx.block_type? {
             BlockType::Template => Self::definition_in_template_with_corsa(ctx, corsa_bridge).await,
             BlockType::Script | BlockType::ScriptSetup => {

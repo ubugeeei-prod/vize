@@ -190,18 +190,10 @@ void test("the most recently published unimport contexts drive regeneration", as
   });
 });
 
-/** The recorded artifact is root-relative. The file is written under `.nuxt`. */
-function artifactInNuxtDir(artifact: string): string {
-  const config = JSON.parse(artifact) as {
-    ignorePatterns?: string[];
-    overrides?: Array<{ files?: string[]; excludeFiles?: string[] }>;
-  };
-  const rebase = (glob: string) => (path.posix.isAbsolute(glob) ? glob : `../${glob}`);
-  if (config.ignorePatterns) config.ignorePatterns = config.ignorePatterns.map(rebase);
-  for (const override of config.overrides ?? []) {
-    if (override.files) override.files = override.files.map(rebase);
-    if (override.excludeFiles) override.excludeFiles = override.excludeFiles.map(rebase);
-  }
+/** Keep the original full oracle while adding the reserved-file ownership marker. */
+function ownedRootArtifact(artifact: string): string {
+  const config = JSON.parse(artifact) as { settings: { vize: Record<string, string> } };
+  config.settings.vize.generatedBy = "@vizejs/nuxt";
   return `${JSON.stringify(config, null, 2)}\n`;
 }
 
@@ -256,7 +248,7 @@ void test("generation writes the recorded initial and regenerated artifacts byte
   });
   assert.equal(
     await readFile(generation?.configFile ?? "", "utf8"),
-    artifactInNuxtDir(recording.importGlobals.artifacts.initial),
+    ownedRootArtifact(recording.importGlobals.artifacts.initial),
   );
 
   await nuxt.callHook("imports:context", importContext(corpus.importGlobals.nuxt));
@@ -266,7 +258,7 @@ void test("generation writes the recorded initial and regenerated artifacts byte
   await nuxt.callHook("builder:generateApp");
   assert.equal(
     await readFile(generation?.configFile ?? "", "utf8"),
-    artifactInNuxtDir(recording.importGlobals.artifacts.regenerated),
+    ownedRootArtifact(recording.importGlobals.artifacts.regenerated),
   );
 });
 

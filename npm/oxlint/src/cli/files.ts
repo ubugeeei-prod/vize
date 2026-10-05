@@ -5,11 +5,15 @@ import { hasVueLikeExtension } from "../file-kinds.ts";
 
 const GLOB_PATTERN = /[*?[\]{}]/u;
 
-export function collectVueLikeFilesFromTargets(cwd: string, targets: readonly string[]): string[] {
+export function collectVueLikeFilesFromTargets(
+  cwd: string,
+  targets: readonly string[],
+  onCandidate?: (filename: string) => void,
+): string[] {
   const files = new Set<string>();
 
   for (const target of targets) {
-    for (const file of collectVueLikeFilesFromTarget(cwd, target)) {
+    for (const file of collectVueLikeFilesFromTarget(cwd, target, onCandidate)) {
       files.add(file);
     }
   }
@@ -17,7 +21,16 @@ export function collectVueLikeFilesFromTargets(cwd: string, targets: readonly st
   return [...files].sort();
 }
 
-function collectVueLikeFilesFromTarget(cwd: string, target: string): string[] {
+function collectVueLikeFilesFromTarget(
+  cwd: string,
+  target: string,
+  onCandidate?: (filename: string) => void,
+): string[] {
+  const observe = (filename: string) => {
+    onCandidate?.(filename);
+    return filename;
+  };
+  const absoluteTarget = observe(path.resolve(cwd, target));
   if (GLOB_PATTERN.test(target)) {
     return fs
       .globSync(target, {
@@ -25,11 +38,10 @@ function collectVueLikeFilesFromTarget(cwd: string, target: string): string[] {
         withFileTypes: false,
         exclude: ["**/node_modules/**", "**/.git/**"],
       })
-      .map((entry) => path.resolve(cwd, entry))
+      .map((entry) => observe(path.resolve(cwd, entry)))
       .filter(isSupportedLintFile);
   }
 
-  const absoluteTarget = path.resolve(cwd, target);
   if (!fs.existsSync(absoluteTarget)) {
     return [];
   }
@@ -42,7 +54,7 @@ function collectVueLikeFilesFromTarget(cwd: string, target: string): string[] {
         withFileTypes: false,
         exclude: ["**/node_modules/**", "**/.git/**"],
       })
-      .map((entry) => path.resolve(absoluteTarget, entry))
+      .map((entry) => observe(path.resolve(absoluteTarget, entry)))
       .filter(isSupportedLintFile);
   }
 

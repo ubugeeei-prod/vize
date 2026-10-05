@@ -17,7 +17,7 @@ lsp	LSP	manifest	crates/vize_maestro/Cargo.toml	16	raw_oxc	raw OXC	raw	oxc_synta
 lsp	LSP	source	crates/vize_maestro/src/document/store.rs	83	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/document/text.rs	6	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/document/text/tests.rs	4	l0	L0	stage	vize_l0	preferred	8
-lsp	LSP	source	crates/vize_maestro/src/ide.rs	104	l0	L0	stage	vize_l0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide.rs	105	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/auto_insert.rs	78	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy.rs	140	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy/document.rs	48	l0	L0	stage	vize_l0	preferred	1
@@ -145,13 +145,14 @@ lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_a
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	13	croquis	Croquis analysis	old	vize_croquis	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_fixture.rs	213	carton	Carton host/compatibility	old	vize_carton	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_tests.rs	15	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_vue_helper_tests.rs	45	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/line_index.rs	7	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/line_index.rs	9	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/linter_options.rs	2	l0	L0	stage	vize_l0	preferred	22
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/vize_sfc_type.rs	5	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/document_link/imports.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/document_link/imports.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/document_link/imports.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/document_link/imports.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/document_link/imports.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/document_link/imports.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/i18n.rs	12	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/ecosystem/router_extension_tests.rs	2	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/ecosystem/router_param_parser_tests.rs	18	l0	L0	stage	vize_l0	preferred	1
@@ -161,6 +162,9 @@ lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/router.rs	8	l0	L0	stage	viz
 lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/router.rs	8	croquis	Croquis analysis	old	vize_croquis_cf	legacy	2
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/ecosystem/router.rs	542	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/void.rs	7	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/expression_regions.rs	31	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/expression_regions.rs	31	raw_oxc	raw OXC	raw	oxc_syntax	raw	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/expression_regions.rs	299	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/file_rename/manual.rs	67	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/file_rename/manual/script.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/file_rename/manual/script.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	3
@@ -270,10 +274,12 @@ lsp	LSP	source	crates/vize_maestro/src/ide/selection_range/markup.rs	121	l0	L0	s
 lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/art.rs	276	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/encoding.rs	13	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/encoding.rs	13	raw_oxc	raw OXC	raw	oxc_syntax	raw	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/semantic_tokens/regression_8014_tests.rs	6	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/signature_help.rs	187	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/signature_help/tests/fixture.rs	155	carton	Carton host/compatibility	old	vize_carton	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/tag_pair.rs	122	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/template_expression.rs	158	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/template_expression.rs	161	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/template_expression/comments.rs	54	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/template_expression/dynamic_argument.rs	57	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/analysis.rs	7	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/analysis.rs	7	old_ast	old AST/parser	old	vize_armature	legacy	1

@@ -37,7 +37,8 @@ impl VirtualProject {
                 Value::Array(remap_path_targets(&targets, &up)),
             );
         }
-        protect_control_file_aliases(paths, &mut remapped, &up);
+        let helpers = self.shared_helpers_include();
+        protect_control_file_aliases(paths, &mut remapped, &up, &self.project_root, &helpers);
         remapped
     }
 
@@ -171,6 +172,75 @@ mod tests {
         assert_eq!(
             project.path_target_onto_project_root(&json!("/outside/src/*")),
             json!("/outside/src/*")
+        );
+    }
+
+    #[test]
+    fn nested_config_rebasing_keeps_helper_aliases_private_and_authored_aliases_first() {
+        let case = tempfile::tempdir().unwrap();
+        let root = case.path().canonicalize().unwrap();
+        let app = root.join("apps/web");
+        std::fs::create_dir_all(&app).unwrap();
+        let config = app.join("tsconfig.json");
+        let helper = app.join("__vize_helpers.d.ts");
+        let authored = app.join("authored.ts");
+        let authored_source = "export const source: 'authored' = 'authored';\n";
+        let authored_helper = "export declare const marker: 'authored-helper';\n";
+        let options = json!({"compilerOptions": {"strict":true, "moduleResolution":"Bundler", "paths": {
+            "private/*": ["./*"],
+            "helper": ["./__vize_helpers.d.ts"],
+            "absolute": [helper],
+            "authored/*": ["./*"],
+            "authored/__vize_helpers.d.ts": ["./authored.ts"]
+        }}});
+        std::fs::write(&config, serde_json::to_vec(&options).unwrap()).unwrap();
+        std::fs::write(&authored, authored_source).unwrap();
+        std::fs::write(&helper, authored_helper).unwrap();
+        let component = app.join("Counter.vue");
+        std::fs::write(
+            &component,
+            "<script setup lang=\"ts\">const count = 1;</script><template>{{ count }}</template>\n",
+        )
+        .unwrap();
+        let mut project = VirtualProject::new(&root).unwrap();
+        project.set_tsconfig_path(Some(config.clone()));
+        let flattened = project
+            .load_compiler_options_flattened(Some(&config))
+            .unwrap();
+        assert_eq!(
+            flattened.options["paths"],
+            json!({
+                "private/*": ["apps/web/*"],
+                "helper": ["apps/web/__vize_helpers.d.ts"],
+                "absolute": [helper],
+                "authored/*": ["apps/web/*"],
+                "authored/__vize_helpers.d.ts": ["apps/web/authored.ts"]
+            })
+        );
+        project.register_path(&component).unwrap();
+        project.materialize().unwrap();
+        let generated: Value =
+            serde_json::from_slice(&std::fs::read(project.generated_tsconfig_path()).unwrap())
+                .unwrap();
+        let up = project.virtual_root_to_project_prefix();
+        for alias in ["private/__vize_helpers.d.ts", "helper", "absolute"] {
+            assert_eq!(
+                generated["compilerOptions"]["paths"][alias],
+                json!([vize_carton::cstr!("../../{up}apps/web/__vize_helpers.d.ts")])
+            );
+        }
+        assert_eq!(
+            generated["compilerOptions"]["paths"]["authored/__vize_helpers.d.ts"],
+            json!([
+                "../.././apps/web/authored.ts",
+                vize_carton::cstr!("../../{up}apps/web/authored.ts")
+            ])
+        );
+        assert_eq!(std::fs::read_to_string(authored).unwrap(), authored_source);
+        assert_eq!(std::fs::read_to_string(helper).unwrap(), authored_helper);
+        assert_ne!(
+            std::fs::read_to_string(project.shared_helpers_path()).unwrap(),
+            authored_helper
         );
     }
 

@@ -16,7 +16,7 @@ use crate::batch::runtime_deps::materialize_runtime_dependencies;
 use super::package_node_modules::materialize_package_node_modules;
 use super::{
     AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUBS_FILE, PACKAGE_BOUNDARY_FILE,
-    SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
+    VUE_MODULE_STUBS_FILE, VirtualProject,
 };
 
 impl VirtualProject {
@@ -281,7 +281,7 @@ impl VirtualProject {
         }
         files.insert(self.virtual_root.join(VUE_MODULE_STUBS_FILE));
         if self.uses_shared_helpers() {
-            files.insert(self.virtual_root.join(SHARED_HELPERS_FILE));
+            files.insert(self.shared_helpers_path());
         }
         files.insert(self.virtual_root.join(PACKAGE_BOUNDARY_FILE));
         files.insert(self.generated_tsconfig_path());
