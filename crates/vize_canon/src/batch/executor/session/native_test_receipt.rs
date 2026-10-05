@@ -49,4 +49,18 @@ pub(super) fn capture(
         serde_json::json!(config),
         "the diagnosing native process must select the exact generated config: {receipt}"
     );
+    assert!(receipt["native"]["project"].is_object(), "{receipt}");
+    assert!(
+        receipt["native"]["snapshotProjects"].is_array(),
+        "{receipt}"
+    );
+    assert!(
+        receipt["native"]["normalizedRequestedOptions"].is_object(),
+        "{receipt}"
+    );
+    assert_eq!(
+        receipt["native"]["project"]["compilerOptions"],
+        receipt["native"]["normalizedRequestedOptions"],
+        "the actual diagnosing project's full normalized options must match: {receipt}"
+    );
 }

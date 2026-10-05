@@ -237,10 +237,11 @@ impl CorsaProjectClient {
     pub(super) fn editor_lsp_session(&mut self) -> Result<&mut EditorLspSession, String> {
         let project_root = self.editor_lsp_project_root();
         if self.editor_lsp.is_none() {
-            self.editor_lsp = Some(EditorLspSession::spawn(
+            self.editor_lsp = Some(EditorLspSession::spawn_with_config(
                 self.executable.as_str(),
                 &self.cwd,
                 &project_root,
+                self.explicit_project_config.as_deref(),
             )?);
             self.editor_lsp_documents_dirty = true;
         }
@@ -262,10 +263,11 @@ impl CorsaProjectClient {
         let project_root = self.editor_lsp_project_root();
         let keep_dirty_after_sync = !document_maps_equal(documents, &self.document_texts);
         if self.editor_lsp.is_none() {
-            self.editor_lsp = Some(EditorLspSession::spawn(
+            self.editor_lsp = Some(EditorLspSession::spawn_with_config(
                 self.executable.as_str(),
                 &self.cwd,
                 &project_root,
+                self.explicit_project_config.as_deref(),
             )?);
             self.editor_lsp_documents_dirty = true;
         }

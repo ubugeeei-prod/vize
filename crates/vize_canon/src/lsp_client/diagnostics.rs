@@ -405,6 +405,10 @@ impl CorsaProjectClient {
         for (external_uri, document_uri) in document_pairs {
             let report = match self.diagnostics_via_editor_lsp(document_uri.as_str(), &documents) {
                 Ok(report) => report,
+                #[cfg(not(unix))]
+                Err(error) if error.as_str() == super::EXPLICIT_CONFIG_ATTACHMENT_UNSUPPORTED => {
+                    return Err(error);
+                }
                 Err(error) if diagnostics_api_error_is_unsupported(&error) => {
                     return Ok(None);
                 }

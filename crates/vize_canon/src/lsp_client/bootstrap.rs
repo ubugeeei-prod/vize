@@ -49,6 +49,7 @@ impl CorsaProjectClient {
         config_path: Option<&Path>,
     ) -> Result<Self, String> {
         let project_root = root_path.as_deref().unwrap_or(&cwd);
+        let explicit_project_config = config_path.map(Path::to_path_buf);
         let config_path = selected_workspace_config(project_root, config_path);
         let (session, capabilities) = match spawn_project_session(executable, &cwd, &config_path) {
             Ok((session, capabilities)) => (Some(session), capabilities),
@@ -69,6 +70,7 @@ impl CorsaProjectClient {
             overlay_api_disabled: false,
             materialized_project_session: false,
             project_root: project_root.to_path_buf(),
+            explicit_project_config,
             diagnostics: Default::default(),
             overlay_versions: Default::default(),
             document_texts: Default::default(),
@@ -135,6 +137,9 @@ impl CorsaProjectClient {
             self.remember_session_document_uri(uri.as_str(), document_uri);
         }
         self.materialized_project_session = true;
+        if self.explicit_project_config.is_some() {
+            self.explicit_project_config = Some(config_path);
+        }
         // The overlay root moved, so the editor session must be respawned
         // against the materialized tree on the next request.
         self.retire_editor_lsp()

@@ -19,7 +19,7 @@ pub(super) enum ConfigurationError {
 }
 
 pub(super) struct DiagnosingApi {
-    client: ApiClient,
+    pub(super) client: ApiClient,
     pub(super) session: InitializeApiSessionResult,
 }
 
@@ -31,6 +31,11 @@ impl EditorLspSession {
     ) -> Result<DiagnosingApi, ConfigurationError> {
         self.ready_document_uri(uri)
             .map_err(ConfigurationError::Communication)?;
+        self.attach_api()
+    }
+
+    #[cfg(unix)]
+    pub(super) fn attach_api(&self) -> Result<DiagnosingApi, ConfigurationError> {
         let session = block_on(
             self.client
                 .request::<InitializeApiSessionRequest>(Default::default()),
@@ -50,6 +55,11 @@ impl EditorLspSession {
         _uri: &str,
     ) -> Result<DiagnosingApi, ConfigurationError> {
         // The pinned SDK exposes no real named-pipe attachment on this target.
+        Err(ConfigurationError::Unsupported)
+    }
+
+    #[cfg(not(unix))]
+    pub(super) fn attach_api(&self) -> Result<DiagnosingApi, ConfigurationError> {
         Err(ConfigurationError::Unsupported)
     }
 }
@@ -100,13 +110,17 @@ impl DiagnosingApi {
         // owning LSP first so the peer closes, then drain and join that reader.
         // observe() has already released each snapshot while the backend lived.
         let owner = editor.shutdown().map_err(ConfigurationError::Communication);
-        let attachment = block_on(self.client.close()).map_err(|error| {
-            ConfigurationError::Communication(cstr!("cannot close diagnosing API: {error}"))
-        });
+        let attachment = self.close_attachment();
         match (owner, attachment) {
             (Ok(()), Ok(())) => Ok(()),
             (Err(error), _) | (_, Err(error)) => Err(error),
         }
+    }
+
+    pub(super) fn close_attachment(&self) -> Result<(), ConfigurationError> {
+        block_on(self.client.close()).map_err(|error| {
+            ConfigurationError::Communication(cstr!("cannot close diagnosing API: {error}"))
+        })
     }
 }
 

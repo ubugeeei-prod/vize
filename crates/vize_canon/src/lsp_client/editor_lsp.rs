@@ -35,6 +35,7 @@ mod call_hierarchy;
 mod client;
 mod code_actions;
 mod completion_resolve;
+mod configured_project;
 mod declaration;
 mod file_rename;
 mod implementation;
@@ -66,6 +67,7 @@ pub(super) struct EditorLspSession {
     overlay: LspOverlay,
     stop: Arc<AtomicBool>,
     responder: Option<std::thread::JoinHandle<()>>,
+    configured_api: Option<project_configuration::DiagnosingApi>,
     closed: bool,
     /// Last text mirrored into the server, keyed by session document URI.
     documents: FxHashMap<String, String>,
@@ -106,6 +108,7 @@ impl EditorLspSession {
             client,
             stop,
             responder: Some(responder),
+            configured_api: None,
             closed: false,
             documents: Default::default(),
             document_generation: 0,
@@ -316,6 +319,14 @@ impl EditorLspSession {
     }
 
     fn finish_close(&mut self, mut first_error: Option<String>) -> Result<(), String> {
+        // The owning process is already reaped: its socket peer must close
+        // before the SDK joins the attached full-duplex reader.
+        if let Some(api) = self.configured_api.take()
+            && let Err(error) = api.close_attachment()
+            && first_error.is_none()
+        {
+            first_error = Some(configured_project::configuration_error(error));
+        }
         self.stop.store(true, Ordering::Relaxed);
         if let Some(responder) = self.responder.take()
             && responder.join().is_err()

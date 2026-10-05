@@ -9,7 +9,7 @@ impl CorsaProjectClient {
         let mut receipt = json!({
             "nativeBinary": self.executable, "cwd": self.cwd,
             "workspaceRoot": self.project_root,
-            "startupCpu": null,
+            "startupCpu": null, "nativeProgramCount": null, "diagnosticGroups": null,
         });
         let route = test_route::take();
         if route == Some(Route::Editor) {
@@ -29,8 +29,20 @@ impl CorsaProjectClient {
                     });
                 }
             }
-            receipt["project"] = Value::Null;
-            receipt["snapshotProjects"] = Value::Null;
+            match editor.configured_project_receipt(uri) {
+                Ok(observed) => {
+                    for key in [
+                        "project",
+                        "snapshotProjects",
+                        "normalizedRequestedOptions",
+                        "normalizedRequestedFiles",
+                        "attachment",
+                    ] {
+                        receipt[key] = observed[key].clone();
+                    }
+                }
+                Err(error) => receipt["observationError"] = json!(error),
+            }
         } else if route == Some(Route::Api) {
             let Some(session) = &self.session else {
                 return receipt;
@@ -39,6 +51,15 @@ impl CorsaProjectClient {
             receipt["selectedConfig"] = json!(session.project().config_file_name);
             receipt["project"] = json!(session.project());
             receipt["snapshotProjects"] = json!(session.snapshot().projects);
+            match corsa::runtime::block_on(session.client().parse_config_file(
+                corsa::api::DocumentIdentifier::from(session.project().config_file_name.as_str()),
+            )) {
+                Ok(parsed) => {
+                    receipt["normalizedRequestedOptions"] = parsed.options;
+                    receipt["normalizedRequestedFiles"] = json!(parsed.file_names);
+                }
+                Err(error) => receipt["observationError"] = json!(vize_l0::cstr!("{error}")),
+            }
         } else {
             receipt["mode"] = json!("unknown");
             receipt["selectedConfig"] = Value::Null;

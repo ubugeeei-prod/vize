@@ -71,7 +71,15 @@ impl CorsaExecutor {
             collect_virtual_file_uris(project.virtual_root(), project.source_file_policy())
         )?;
         extend_diagnostic_path_uris(project, &mut uris);
-        check_session_client(&mut client, project, &uris)
+        match check_session_client(&mut client, project, &uris) {
+            Err(error @ crate::batch::error::CorsaError::CorsaExecution { .. })
+                if explicit_config_attachment_unsupported(&error) =>
+            {
+                warn_fallback(FallbackStep::SessionToCli, &error);
+                check_with_cli(&self.corsa_path, project, self.checkers())
+            }
+            result => result,
+        }
     }
 
     pub(crate) fn check_incremental_session(
@@ -134,6 +142,11 @@ impl CorsaExecutor {
             }
         }
     }
+}
+
+fn explicit_config_attachment_unsupported(error: &crate::batch::error::CorsaError) -> bool {
+    matches!(error, crate::batch::error::CorsaError::CorsaExecution { message, .. }
+        if message.as_str() == crate::lsp_client::EXPLICIT_CONFIG_ATTACHMENT_UNSUPPORTED)
 }
 
 impl IncrementalSessionState {
