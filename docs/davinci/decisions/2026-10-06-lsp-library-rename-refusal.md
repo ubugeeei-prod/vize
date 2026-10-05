@@ -82,3 +82,16 @@ original, production byte and budget is retained. Official 210,282-byte job
 112013510004 logSHA508bb095dd54044457e3cedcb0e2e9ed908660b8413d85fa592e0140c8ce099c
 and [paired6004778398](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6004778398)
 require fresh full original/positive native qualification without execution credit.
+
+Currentc628 actually compiled and ran16,279 Rust cases: only the new importer
+control failed. The original four native sessions/60whole replies and all old
+package/crossVue/prop/Event/Model positives passed, separately authenticated
+from the failed source envelope. The new local-import expectation was wrong:
+existing native local alias semantics preserve the export with `old as new`.
+Author the complete two-edit WorkspaceEdit, whole applied source and all three
+unchanged TS/JS/authored-declaration files for every existing request, newline
+and revision. No input/query/whole assertion is omitted, no null is allowed.
+Bare script exporter-origin rename lacks a public route and remains unfinished;
+the old crossVue global exporter law stays unchanged. Preserve failedjob
+112019124360/raw956714B/SHAe5225b7f514ffe384fde1f61a2d4a2917862d909831ce052ea4bd770b9201d9a
+and [paired6005163938](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6005163938); fresh all96/oldnative/protected gates remain required.
