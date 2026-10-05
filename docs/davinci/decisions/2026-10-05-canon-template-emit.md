@@ -89,3 +89,9 @@ remain valid; a numeric model update must produce the one complete TS2769
 vector. The independently authored native oracle uses the actual model ref
 value type. This tenth control adds no workflow lane or new PR. Fresh full
 controls and the independent QuickInfo distinction remain required.
+
+The no-options actual-Vue native oracle at 1b723 accepts both string and
+undefined updates and reports only the numeric payload. Its TS2769 printer
+compares that non-nullish source against string, omitting undefined from the
+message. Keep both positive calls and author the complete printed diagnostic
+explicitly; no source/type/input/output filtering change is made.

@@ -99,7 +99,7 @@ defineModel<string>();
         concat!(
             "oracle.ts(5,27): error TS2769: No overload matches this call.\n",
             "  The last overload gave the following error.\n",
-            "    Argument of type 'number' is not assignable to parameter of type 'string | undefined'.\n"
+            "    Argument of type 'number' is not assignable to parameter of type 'string'.\n"
         ),
     );
     check(
@@ -108,7 +108,7 @@ defineModel<string>();
         &[concat!(
             "error:7:46 [TS2769] No overload matches this call.\n",
             "The last overload gave the following error.\n",
-            "Argument of type 'number' is not assignable to parameter of type 'string | undefined'."
+            "Argument of type 'number' is not assignable to parameter of type 'string'."
         )],
     );
 }
