@@ -3,10 +3,10 @@
 Issue: [#8017](https://github.com/ubugeeei-prod/vize/issues/8017).
 Paired source decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8017#issuecomment-5988901037).
 
-Status: Source qualification passes all 39 complete CLI processes. The first
-protected candidate fails the full L1 corpus's original Counter inventory and
-one independently derived remark registration; it is no longer queued. Fresh
-full corpus qualification, protected checks, merge and release remain required.
+Status: Source qualification passes all 39 complete CLI processes and the
+plain full L1 corpora, including complete remarks/backlog equality. The first
+protected failure remains retained. A fixture checkout-byte guard still needs
+fresh source qualification; protected checks, merge and release remain required.
 The initial private source was reviewed at
 `63a4d2801f8c5d68563508af9952eb7d292fa718`; one necessary P0 Draft is
 authorized to establish the actual whole-process evidence.
@@ -153,3 +153,29 @@ their argv/captures exact and the prospective workflow composition below
 350 lines. No production, original input or 39-process expectation changes.
 TODO: these full corpus/output/span and canonical backlog comparisons must
 pass in fresh source Actions, followed by new protected gates and actual delivery.
+
+The paired [checkout-byte protection](https://github.com/ubugeeei-prod/vize/issues/8017#issuecomment-5991152993)
+retains exact `683cbf0073fca445a6a228b05aadc5c197281722` source passes:
+[Check37284303088](https://github.com/ubugeeei-prod/vize/actions/runs/37284303088)
+and [native37284302146](https://github.com/ubugeeei-prod/vize/actions/runs/37284302146).
+The actual plain lowering, DOM and remarks corpus tests pass with
+450 files, 1,033 remarks, 159 applied, 874 missed and zero changes; the complete
+remarks/backlog match the independently authored addition. Official artifact
+`11333856710`, SHA-256
+`52507745c054ae273ad326241d4558a877ae5f0fe1ab5e22e2dbe86bd5e6571c`,
+retains all 39 full ordered CLI observations, independently replayed against
+unchanged expectations. Default-build checkout
+`fd6843aa01bfbcc44a3fce32410cad786ab26276` has parents actual main69b and
+source683 with the exact source tree; binary SHA-256
+`0698334c129e8c94148b6a66eb62d2ad2d493c1565220a083e7971e79df509cb`.
+
+Actual Git filtering with `core.autocrlf=true` changes the unprotected original
+Counter from 118 to 125 bytes, Vite config163 to169, tsconfig199 to203 and issue
+body2614 to2686. Add a literal fixture-directory `-text` attribute, matching
+existing original-source custody, to preserve committed bytes across checkout.
+The same Git filters then preserve all five fixture/manifest byte vectors exactly.
+This does not establish Windows native runtime. Production, original committed
+bytes, all 39 expectations and the L1 remark remain unchanged. Retain the
+reviewed selected-project refusal text; optional pattern-specific wording is
+outside this narrowly qualified repair. TODO: fresh exact-source Actions and
+new protected gates, actual signed merge and release remain necessary.

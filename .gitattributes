@@ -26,6 +26,7 @@ tests/_fixtures/differential/lsp/highlight-original/witness.test.ts.txt -text
 # Original type-checker sources and diff context keep their pinned bytes.
 tests/_fixtures/differential/typechecker/split-script-original/**/*.txt -text whitespace=-blank-at-eol
 tests/_fixtures/differential/typechecker/v-for-source-original/**/*.txt -text whitespace=-blank-at-eol
+tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/** -text
 
 # Immutable formatter regressions include literal CRLF/CRCRLF output bytes.
 tests/_fixtures/differential/formatter/sfc-vue*/** -text whitespace=-blank-at-eol
