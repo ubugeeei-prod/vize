@@ -37,3 +37,7 @@ law, and requires the new source CLI tests in the existing native-phase job.
 Complete raw stdout/stderr/status, all input files, official package/version,
 binary hashes and source identity are retained as Actions artifacts. Earlier
 PR green is insufficient; fresh corrected-head runtime acceptance is required.
+
+The correction review also moves the new no-probe law inside its existing
+`cfg(test)` module; its complete nested input and no-probe assertion stay
+unchanged. Fresh strict source checks and native capture are still pending.
