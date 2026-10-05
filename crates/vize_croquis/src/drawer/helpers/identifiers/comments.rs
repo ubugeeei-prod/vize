@@ -21,7 +21,7 @@ fn strip_comments(expr: &str, offsets: bool) -> (Cow<'_, str>, Option<Vec<u32>>)
     let len = bytes.len();
     let mut i = 0;
     let mut changed = false;
-    let mut mapping = None;
+    let mut mapping: Option<Vec<u32>> = None;
     #[expect(clippy::disallowed_types, reason = "Cow<str> owns a std String")]
     let mut out = std::string::String::new();
 
