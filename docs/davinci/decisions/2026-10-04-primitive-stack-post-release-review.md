@@ -124,3 +124,36 @@ linked and produced no Check/native source run. This meaningful first-layer
 qualification triggers fresh exact-head Actions after the corrected native
 registration; absent gates provide no acceptance credit. All original source
 and fixtures, every incoming main path and protected ceilings remain intact.
+
+## Actual return-provider delivery and remaining replay
+
+Native Stack #7920 bottom #7769 actually merged at `2026-10-05T04:10:18Z`
+as valid signed `473c1a0947c59cf322d70eced187265fe7caa83f`, with exact
+protected Check `37260559327` successful. The observed squash body retains
+both verified `71201308+ubugeeei@users.noreply.github.com` Co-author trailers.
+Its current full-suite and instruction results are delivery evidence for this
+bounded provider, not completion of the remaining native consumer/history.
+
+The admitted exact-green child #7772 subsequently collided only in this
+canonical record with concurrent #7922. It had no candidate or CI failure.
+Official dequeue rejected its direct parent base as having no merge queue;
+supported Draft conversion preserved source and native membership but did not
+immediately eject it. After the parent actually merged, GitHub retargeted
+#7772 to main and removed that entry automatically. Healthy parent and later
+candidates were preserved throughout; no prospective production was imported.
+The paired receipt is #6849 comment `5987945306` and PR comment `5987945559`.
+
+Replay the remaining five onto literal actual main
+`8f667ea070bb90d57ac7125db35d791025f746e2` and each genuine parent, preserving
+every incoming canonical clause within 350 lines, original complete sources,
+options/vectors/maps, history ledgers and reporter metadata. Keep #7772 Draft
+until fresh exact-head source/native Actions qualify this union. Verify all
+remaining native positions and highest contiguous ready prefix before queue
+admission; actual protected acceptance, signed delivery and release stay open.
+
+The original non-merge source commits retain authors, author dates, messages
+and reporter trailers. Historical integration merge commits remain available
+on the retained old source refs; ordinary replay does not reproduce their
+merge topology. Every owned production, control, whole input and vector blob
+remains byte-exact. The merged return provider records delivery separately
+from the still-open original consumer, fix-history and full-product gates.
