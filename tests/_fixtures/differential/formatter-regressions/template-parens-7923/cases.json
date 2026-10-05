@@ -1,0 +1,265 @@
+{
+  "issue": 7923,
+  "cases": [
+    {
+      "id": "reported-complete-sfc",
+      "file": "App.vue",
+      "source": "<script setup lang=\"ts\">\nconst items: string[] | null = null;\nconst a = 1;\nconst b = 2;\n</script>\n\n<template>\n  <p :title=\"(items || []).join(', ')\">{{ (items || []).join(\", \") }}</p>\n  <p>{{ (a, b) }}</p>\n</template>\n",
+      "expected": "<script setup lang=\"ts\">\nconst items: string[] | null = null;\nconst a = 1;\nconst b = 2;\n</script>\n\n<template>\n  <p :title=\"(items || []).join(', ')\">{{ (items || []).join(\", \") }}</p>\n  <p>{{ (a, b) }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": null,
+          "a": 1,
+          "b": 2
+        },
+        {
+          "items": ["x", "y"],
+          "a": 4,
+          "b": 8
+        }
+      ],
+      "html": ["<p title=\"\"></p><p>2</p>", "<p title=\"x, y\">x, y</p><p>8</p>"]
+    },
+    {
+      "id": "reported-condition",
+      "file": "reported-condition.vue",
+      "source": "<template>\n  <p v-if=\"(items || []).join(', ')\">{{ (items || []).join(\", \") }}</p>\n</template>\n",
+      "expected": "<template>\n  <p v-if=\"(items || []).join(', ')\">{{ (items || []).join(\", \") }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>x, y</p>"]
+    },
+    {
+      "id": "reported-event",
+      "file": "reported-event.vue",
+      "source": "<template>\n  <button @click=\"(() => count++)()\">{{ count }}</button>\n</template>\n",
+      "expected": "<template>\n  <button @click=\"(() => count++)()\">{{ count }}</button>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<button>0</button>"],
+      "eventHtml": ["<button>1</button>"]
+    },
+    {
+      "id": "reported-as-member",
+      "file": "reported-as-member.vue",
+      "source": "<template>\n  <p>{{ (value as Value).m() }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ (value as Value).m() }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>7</p>"]
+    },
+    {
+      "id": "reported-satisfies-member",
+      "file": "reported-satisfies-member.vue",
+      "source": "<template>\n  <p>{{ (value satisfies Value).m() }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ (value satisfies Value).m() }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>7</p>"]
+    },
+    {
+      "id": "reported-iife",
+      "file": "reported-iife.vue",
+      "source": "<template>\n  <p>{{ (() => 1)() }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ (() => 1)() }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>1</p>"]
+    },
+    {
+      "id": "reported-sequence-attribute",
+      "file": "reported-sequence-attribute.vue",
+      "source": "<template>\n  <p :title=\"(a, b)\">{{ (a, b) }}</p>\n</template>\n",
+      "expected": "<template>\n  <p :title=\"(a, b)\">{{ (a, b) }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p title=\"2\">2</p>"]
+    },
+    {
+      "id": "nested-sequence-call",
+      "file": "nested-sequence-call.vue",
+      "source": "<template>\n  <p>{{ (a, (items || []).join(\", \")) }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ (a, (items || []).join(\", \")) }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>x, y</p>"]
+    },
+    {
+      "id": "non-null-member",
+      "file": "non-null-member.vue",
+      "source": "<template>\n  <p>{{ (items || [])!.join(\", \") }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ (items || [])!.join(\", \") }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>x, y</p>"]
+    },
+    {
+      "id": "optional-member",
+      "file": "optional-member.vue",
+      "source": "<template>\n  <p>{{ (items || [])?.join(\", \") }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ (items || [])?.join(\", \") }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>x, y</p>"]
+    },
+    {
+      "id": "quoted-parens-member",
+      "file": "quoted-parens-member.vue",
+      "source": "<template>\n  <p>{{ (\"(\" + text).concat(\")\") }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ (\"(\" + text).concat(\")\") }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>(())</p>"]
+    },
+    {
+      "id": "computed-grouped-member",
+      "file": "computed-grouped-member.vue",
+      "source": "<template>\n  <p>{{ (value || fallback)[\"m\"]() }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ (value || fallback)[\"m\"]() }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>7</p>"]
+    },
+    {
+      "id": "ordinary-binary",
+      "file": "ordinary-binary.vue",
+      "source": "<template>\n  <p>{{ a + b }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ a + b }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>3</p>"]
+    },
+    {
+      "id": "ordinary-call",
+      "file": "ordinary-call.vue",
+      "source": "<template>\n  <p>{{ items.join(\", \") }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ items.join(\", \") }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>x, y</p>"]
+    },
+    {
+      "id": "ordinary-object",
+      "file": "ordinary-object.vue",
+      "source": "<template>\n  <p>{{ { a: 1, b: 2 } }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ { a: 1, b: 2 } }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>{\n  \"a\": 1,\n  \"b\": 2\n}</p>"]
+    },
+    {
+      "id": "ordinary-regexp",
+      "file": "ordinary-regexp.vue",
+      "source": "<template>\n  <p>{{ /[()]/.test(text) }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{ /[()]/.test(text) }}</p>\n</template>\n",
+      "states": [
+        {
+          "items": ["x", "y"],
+          "a": 1,
+          "b": 2,
+          "count": 0,
+          "text": "()"
+        }
+      ],
+      "html": ["<p>true</p>"]
+    }
+  ]
+}

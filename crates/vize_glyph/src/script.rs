@@ -4,6 +4,7 @@
 //! code using OXC's formatter (oxfmt).
 
 mod block_identity;
+mod expression_wrapper;
 mod format;
 
 use crate::error::FormatError;
@@ -175,11 +176,9 @@ fn format_js_expression_with_quote_style(
         let formatted = formatted.strip_suffix(';').unwrap_or(formatted);
         let inner = formatted.strip_prefix("void ").unwrap_or(formatted);
 
-        // Strip outer parens if the formatter kept them
-        let inner = inner
-            .strip_prefix('(')
-            .and_then(|rest| rest.strip_suffix(')'))
-            .unwrap_or(inner);
+        // The retained AST distinguishes the wrapper from authored call/member
+        // parentheses and sequences whose grouping Vue consumers require.
+        let inner = expression_wrapper::unwrap_argument(inner, &parsed.program)?;
 
         Some(inner.trim().to_compact_string())
     })
