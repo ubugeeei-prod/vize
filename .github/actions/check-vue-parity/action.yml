@@ -153,7 +153,7 @@ runs:
     - name: Check Vue compiler and typecheck parity
       shell: bash
       env:
-        VIZE_TEST_BIN: target/ci/vize
+        VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
         VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
         VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
         VIZE_LSP_BUILD_RECIPE: cargo build --profile ci -p vize --features legacy
@@ -171,7 +171,10 @@ runs:
     - name: Bound fixture process topology under a constrained PID budget
       shell: bash
       env:
-        VIZE_TEST_BIN: target/ci/vize
+        VIZE_TEST_BIN: ${{ github.workspace }}/target/ci/vize
+        VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+        VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+        VIZE_LSP_BUILD_RECIPE: cargo build --profile ci -p vize --features legacy
         VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR: ${{ env.VIZE_CHECK_FIXTURES_BUDGET_CPU_FLOOR }}
       run: vp run --no-cache --filter './tests' test:check:fixtures:cycles
 

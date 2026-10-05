@@ -6,6 +6,7 @@ Packaging follow-up: [issue comment](https://github.com/ubugeeei-prod/vize/issue
 Current-wire follow-up: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5992831553).
 Legacy LSP custody: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5996545677).
 Existing workflow contract: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5996956563).
+Absolute fixture CLI: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8007#issuecomment-5998608642).
 Prior VS Code rule: [#7196](https://github.com/ubugeeei-prod/vize/issues/7196),
 commit `6496dd1ea4134f1a8a36dcef593bcaa7efcf5812`.
 
@@ -93,6 +94,21 @@ its exact environment and command with the reviewed source binding. Every other
 original structural ratchet, serial phase, upstream project and process-budget
 law remains unchanged. Both existing tests pass locally; fresh Actions remain
 required without previous-head or full-runtime acceptance.
+
+The actual full successor `de666012` passes the original VitePress completion.
+Authenticated complete source-bound legacy LSP wires retain both requests at
+UTF-16 11:41 and both full replies with the six original expected members.
+This does not identify the earlier unobserved physical executable or cause.
+The same run fails four original create-vue controls with ENOENT because their
+CLI is spawned from temporary workspaces while `VIZE_TEST_BIN` is relative.
+Use the absolute path of the same just-built CI executable in the existing
+main and repeated-cycle fixture steps. Bind repeated LSP cycles to that same
+explicit source-verified legacy executable, fixed recipe and receipt. Keep
+both existing no-cache commands, all original vectors, positions, timeouts,
+serial phases and process ceilings. Align only the corresponding existing
+workflow environment assertions; no retry or product fallback changes.
+The full run remains failed. Fresh complete successor execution and custody
+are required before readiness; current job success grants no later-head credit.
 
 TODO: frozen source peer, current exact-head ordinary Check, existing editor
 packaging/unit and official CLI/real-server Actions, protected full Rust/all104,
