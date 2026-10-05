@@ -121,3 +121,20 @@ fixture's lint:false in effect. Use real overrides/dev:false and assert the
 actual root, with no fallback artifact or oracle adjustment. Recipe350 retains
 all original/production/native-loader/cap bytes and authentic failed packet
 11335759261; fresh fourteen CLI/native cases and protected delivery are pending.
+
+[Original addon and pinned JSON contract](https://github.com/ubugeeei-prod/vize/issues/7983#issuecomment-5991932826)
+retain actual7f/c1d failure: the existing addon hook requires `getConfigs()`
+descriptors, not raw plan rows. One named descriptor returns a fresh complete
+unchanged original three-row plan. Pinned Oxlint1.78's JSON reporter and actual
+old Nuxt2 reports expose no top-level warning/error counters; strict equality
+of the entire expected code/file/message/severity vector already enforces
+all diagnostic cardinality and severities, while real number_of_files and
+complete source-native counters/results stay exact. Remove only those absent
+metadata-field assertions, without changing any expected case/input/value.
+Observer349 and production/corpus/budget bytes stay preserved; failed artifact
+11336556257 remains failed and new fourteen-case execution is still pending.
+Independent read-only delta review clears runner blob
+`e2a28f3697779a57ffecd8743afcaf08b907deb7` and diff SHA256
+`b0cd9c114c621a1a91367632e93799eb2531ca0785d4126435950527003ebac4`;
+it confirms complete vector equality excludes every extra/error/duplicate
+diagnostic and grants no runtime credit.
