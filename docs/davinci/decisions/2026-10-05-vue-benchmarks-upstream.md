@@ -161,7 +161,12 @@ The existing pinned `pug@3.0.4` independently renders the original extracted
 template with unchanged options:
 
 ```html
-<div class="wrapper"><h1 class="title">CONFIRM_PUG_TITLE</h1><ul><li v-for="item in items" :key="item">{{ item }}</li></ul></div>
+<div class="wrapper">
+  <h1 class="title">CONFIRM_PUG_TITLE</h1>
+  <ul>
+    <li v-for="item in items" :key="item">{{ item }}</li>
+  </ul>
+</div>
 ```
 
 Its SHA-256 is `124e9a0eb552a1a1656ec89cac9ee20aa9b44c4f3a05f880de7c490c87d5eb81`.
@@ -202,3 +207,8 @@ contract stay unchanged. Two earlier child executions were cancelled during
 the atomic parent/base update; strict aggregation correctly rejected their
 missing plan. Those cancellations and the original security alert remain
 historical, with fresh complete source/147/Pug checks required for every layer.
+
+Fresh `9a8412f747` source Check `37285006058` rejects formatting only in this
+new action receipt. Format that paragraph with the existing configured
+formatter; preserve every fixture, oracle, workflow step and source failure,
+and require complete current-head Actions after the genuine child replay.
