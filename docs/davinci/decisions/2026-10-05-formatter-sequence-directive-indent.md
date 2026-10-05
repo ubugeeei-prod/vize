@@ -84,3 +84,7 @@ Final independent production reading is clear; full hosted execution, protected 
 actual merge and the fresh finite release cut including the entire Matrix remain
 required. Earlier source greens and the failed candidate do not qualify this
 repair or publication. The original issue reporter remains a commit Co-Author.
+
+The first normal Rust source gate rejected a guarded byte index under the
+existing no-panic Clippy policy. Replace it with `first().copied()` while retaining
+the exact one-byte entity guard; no behavior or gate policy changes.

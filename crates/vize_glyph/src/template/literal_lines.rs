@@ -129,7 +129,9 @@ impl LiteralLineState {
             && let Some((decoded, width)) = decode_one(tail, EntityContext::Attribute)
         {
             let token = match decoded {
-                DecodedEntity::Named(text) if text.len() == 1 => text.as_bytes()[0],
+                DecodedEntity::Named(text) if text.len() == 1 => {
+                    text.as_bytes().first().copied().unwrap_or_default()
+                }
                 DecodedEntity::Numeric(value) if value.is_ascii() => value as u8,
                 _ => 0,
             };
