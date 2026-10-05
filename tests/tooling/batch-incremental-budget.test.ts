@@ -36,6 +36,7 @@ test("Vben owns the Tier-L batch incremental work budget", () => {
 test("the Tier-L oracle gates deterministic incremental work and emits evidence", () => {
   const source = [
     "crates/vize_canon/tests/tier_l_incremental.rs",
+    "crates/vize_canon/tests/support/tier_l_incremental_budget.rs",
     "crates/vize_canon/tests/support/tier_l_incremental_artifact.rs",
   ]
     .map((file) => fs.readFileSync(path.join(root, file), "utf8"))
