@@ -81,3 +81,11 @@ official generated consumption inventories for new source inputs.
 The bridge hover view supports deserialization only. The oracle capture
 serializes every contents variant and range field explicitly in the test
 helper, without changing public bridge types, content or any assertion.
+
+Retain all existing nine vectors and add the reviewer-requested no-options
+`defineModel<string>()` composition to the same integration test/required
+step. Both string and undefined model updates plus numeric declared change
+remain valid; a numeric model update must produce the one complete TS2769
+vector. The independently authored native oracle uses the actual model ref
+value type. This tenth control adds no workflow lane or new PR. Fresh full
+controls and the independent QuickInfo distinction remain required.

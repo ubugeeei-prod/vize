@@ -74,6 +74,46 @@ defineModel<string>({ required: true });
 }
 
 #[test]
+fn optional_model_update_preserves_undefined_and_declared_event_payloads() {
+    let Some(corsa) = corsa_requirement::required_or_skip::<PathBuf>(None) else {
+        return;
+    };
+    let case = case();
+    fixture(
+        case.path(),
+        r#"<script setup lang="ts">
+defineEmits<{ change: [value: number] }>();
+defineModel<string>();
+</script>
+<template>
+  <button @click="$emit('update:modelValue', 'x'); $emit('update:modelValue', undefined); $emit('change', 1)">ok</button>
+  <button @click="$emit('update:modelValue', 1)">bad</button>
+</template>
+"#,
+    );
+    native_emit_oracle(
+        case.path(),
+        &corsa,
+        "const model = defineModel<string>(); const emit = defineEmits<{ change: [value: number]; 'update:modelValue': [value: typeof model.value] }>();",
+        "emit('update:modelValue', 'x');\nemit('update:modelValue', undefined);\nemit('update:modelValue', 1);",
+        concat!(
+            "oracle.ts(5,27): error TS2769: No overload matches this call.\n",
+            "  The last overload gave the following error.\n",
+            "    Argument of type 'number' is not assignable to parameter of type 'string | undefined'.\n"
+        ),
+    );
+    check(
+        case.path(),
+        &corsa,
+        &[concat!(
+            "error:7:46 [TS2769] No overload matches this call.\n",
+            "The last overload gave the following error.\n",
+            "Argument of type 'number' is not assignable to parameter of type 'string | undefined'."
+        )],
+    );
+}
+
+#[test]
 fn generic_setup_emit_preserves_its_local_type_parameter() {
     let Some(corsa) = corsa_requirement::required_or_skip::<PathBuf>(None) else {
         return;
