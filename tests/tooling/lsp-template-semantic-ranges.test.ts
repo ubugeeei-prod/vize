@@ -16,6 +16,7 @@ const corpus = new URL(
   import.meta.url,
 );
 const manifest = JSON.parse(fs.readFileSync(new URL("manifest.json", corpus), "utf8"));
+const inline = JSON.parse(fs.readFileSync(new URL("inline-custody.json", corpus), "utf8"));
 process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD = "1";
 process.env.VIZE_LSP_BIN ??= path.join(root, "target/ci/vize");
 type Token = [number, number, number, number, number];
@@ -209,6 +210,17 @@ test(
           assert.equal(await session.request("textDocument/definition", params), null);
           assert.equal(await session.request("textDocument/hover", params), null);
         }
+      }
+      for (const file of inline.files) {
+        const bytes = fs.readFileSync(new URL(file.path, corpus));
+        assert.equal(bytes.length, file.bytes);
+        assert.equal(createHash("sha256").update(bytes).digest("hex"), file.sha256);
+        const source = bytes.toString("utf8"),
+          uri = pathToFileURL(path.join(workspace, file.runtimePath)).href;
+        session.notify("textDocument/didOpen", {
+          textDocument: { uri, languageId: "vue", version: 1, text: source },
+        });
+        await assertTokens(session, uri, source, inline.tokens);
       }
       for (const [entity, entityTokens] of [
         [

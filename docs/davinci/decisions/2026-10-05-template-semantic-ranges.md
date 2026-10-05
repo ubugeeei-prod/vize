@@ -57,5 +57,14 @@ Initial source fae2680d / Check 37303198798 failed warning-denying Rust1.98
 Clippy's question_mark after the selector's bool-to-Option refactor, before
 building the new laws. Replace only the equivalent early None with `?`, retain
 that failed receipt, and require fresh exact-head execution without a waiver.
+Its original-three full/range/navigation and LF/CRLF/nested controls genuinely
+passed before the encoded-quote inline control failed: the resident collector
+added a block line but omitted its first-content-line column. Authenticate the
+whole closed source CLI frames from artifact11342382641 (SHA-256 4850e92b…);
+use the descriptor's actual content-start byte with the shared UTF-16 index and
+adjust only collected template tokens on that first physical line. Script/style
+and subsequent lines retain their original coordinates; immediate LF/CRLF bodies
+skip rebasing. Add entire inline LF/CRLF/astral corpus and full/range vectors;
+retain all original-three/36 expectations and require fresh source execution.
 No performance budget or frozen history expectation is changed. #6883 remains
 open; this fixture is an additive legacy correction rather than native completion.
