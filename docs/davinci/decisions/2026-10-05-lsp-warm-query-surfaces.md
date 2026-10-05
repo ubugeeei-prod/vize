@@ -266,3 +266,22 @@ requires the actual executable, SDK directory, selected Linux package manifest
 and ordinary graph member hash to identify the same locked 7.0.2 provider.
 No symlink fallback or fixed package-member count establishes that association;
 fresh execution and the separate installed-public qualification remain pending.
+
+The [supported release bridge decision](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-6000212072)
+uses the literal signed Cargo0.433 SOURCE_CUT for the one original400 source
+comparison before the supported minor command. That command creates a distinct
+Cargo0.434 generated release HEAD whose sole actual parent must be SOURCE_CUT.
+The public tagged Linux replay must authenticate the complete tool-derived
+version-only bridge: all implementation, fixtures, helpers, caps, providers and
+third-party dependencies retain their exact bytes or dependency values outside
+explicit tool-owned version fields. The actual release recipe changes no tracked
+changelog; GitHub release notes grant no path allowance. Only the whole retained
+initialize.serverInfo.version has separately attested source/public CLI values;
+every other initialization field and all74 measured envelopes remain exact.
+
+The unchanged independently reviewed finite-source adapter can undergo ordinary
+existing Draft Actions. The public bridge stays private for concrete schema,
+implementation and a new exact-source peer; its earlier unexecuted tag==CUT
+guard is historical and cannot qualify supported publication. Root must freeze
+the literal cut before source original400 dispatch. Historical59x, equal-ELF
+withdrawal, memory/startup/diagnostic and nonrunning-versus-reaped limits remain.
