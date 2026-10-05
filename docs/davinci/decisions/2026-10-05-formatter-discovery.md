@@ -32,3 +32,9 @@ byte-identical. Rust additionally checks root/nested/generated dependencies.
 Hosted source checks, protected full suites and unchanged instruction ceilings
 must pass before actual merge and release. This legacy CLI correction makes no
 native formatter or measured performance claim.
+
+Source Check `37258498141` at `ea265d632e` rejected a missing explicit
+comparator in the test-only expected path sort under the zero-warning rule.
+Add an ordinal comparator to both path sorts; all project inputs, complete
+file maps, path memberships and production bytes remain unchanged. Preserve
+the original red run and require new exact-head acceptance.

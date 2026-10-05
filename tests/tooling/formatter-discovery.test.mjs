@@ -12,6 +12,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const corpusPath = "tests/_fixtures/differential/formatter-regressions/discovery-7869/cases.json";
 const raw = fs.readFileSync(path.join(root, corpusPath));
 const corpus = JSON.parse(raw);
+const comparePaths = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
 void test("formatter discovery never writes installed dependencies and reads standalone gitignore", (t) => {
   const identity = expectedBuildIdentity(root);
@@ -105,10 +106,10 @@ void test("formatter discovery never writes installed dependencies and reads sta
           .map((match) =>
             path.relative(directory, path.resolve(directory, match[1])).split(path.sep).join("/"),
           )
-          .sort();
+          .sort(comparePaths);
         assert.deepEqual(
           observed,
-          [...changed].sort(),
+          [...changed].sort(comparePaths),
           `${fixture.id}: complete changed selection`,
         );
         for (let pass = 1; pass <= 3; pass++) {
