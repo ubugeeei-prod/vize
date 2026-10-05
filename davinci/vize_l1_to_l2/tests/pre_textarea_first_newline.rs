@@ -54,3 +54,35 @@ fn native_first_newline_rule_keeps_second_newline_and_source_spans() {
         assert_transformed_sound(source, "first-newline");
     }
 }
+
+#[test]
+fn native_comment_option_controls_first_visible_text_without_changing_spans() {
+    let source = "<pre><!-- keep -->\nline</pre>";
+    let allocator = vize_l0::Allocator::new();
+    let (tree, errors) = vize_l1::parse(&allocator, source);
+    assert!(errors.is_empty());
+    for comments in [false, true] {
+        let lowered = if comments {
+            vize_l1_to_l2::lower_preserving_comments(&allocator, &tree, &errors)
+        } else {
+            vize_l1_to_l2::lower(&allocator, &tree, &errors)
+        };
+        assert!(lowered.diagnostics.is_empty());
+        let page = vize_l2::dump::Page::of(&lowered.root.ops);
+        let [Op::Element(element)] = page.ops.as_slice() else {
+            panic!("expected pre");
+        };
+        let Some(Op::Text(text)) = element.children.last() else {
+            panic!("expected text");
+        };
+        assert_eq!(text.content, if comments { "\nline" } else { "line" });
+        assert_eq!(
+            &source[text.span.start as usize..text.span.end as usize],
+            "\nline"
+        );
+        assert_eq!(
+            matches!(element.children.first(), Some(Op::Comment(_))),
+            comments
+        );
+    }
+}

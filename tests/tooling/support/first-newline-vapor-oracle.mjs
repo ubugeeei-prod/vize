@@ -41,7 +41,7 @@ const context = {
 };
 
 async function transform(source, filename, ssr) {
-  const plugin = pluginFactory({ compiler, template: { compilerOptions: { comments: true } } });
+  const plugin = pluginFactory({ compiler, template: { compilerOptions: { comments: false } } });
   plugin.configResolved({
     root: "/first-newline",
     command: "build",

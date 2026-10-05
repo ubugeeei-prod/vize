@@ -66,9 +66,9 @@
     "textarea": ["value"]
   },
   {
-    "id": "preserved-comment",
+    "id": "cli-dropped-comment",
     "template": "<pre><!-- keep -->\nline</pre><textarea>\nvalue</textarea>",
-    "pre": ["\nline"],
+    "pre": ["line"],
     "textarea": ["value"]
   },
   {

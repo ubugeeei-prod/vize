@@ -33,6 +33,8 @@ pub use whitespace_context::{
 };
 
 #[cfg(test)]
+mod first_newline_tests;
+#[cfg(test)]
 mod tests;
 
 use vize_l0::{Allocator, String, Vec, interner::Interner};

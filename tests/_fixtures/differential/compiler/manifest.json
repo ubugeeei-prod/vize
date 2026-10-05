@@ -49,7 +49,7 @@
           },
           {
             "path": "runtime.expected.json",
-            "sha256": "f912b2cff250cbb5fe501a03a95181f6ad7da18cefcfa68cde8d30d2e3df59f2",
+            "sha256": "49cb5ffdba4de252bbe01191b941e15709539c89ad1e9400897c2c0afd1addb7",
             "role": "runtime-controls"
           }
         ]

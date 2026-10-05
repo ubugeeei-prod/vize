@@ -91,7 +91,7 @@ test(
       return compiler.compileScript(parsed.descriptor, {
         id: "first-newline",
         inlineTemplate: true,
-        templateOptions: { ssr, compilerOptions: { comments: true } },
+        templateOptions: { ssr, compilerOptions: { comments: false } },
       }).content;
     }
     async function observe(code, vapor, html = null, helper = null) {
