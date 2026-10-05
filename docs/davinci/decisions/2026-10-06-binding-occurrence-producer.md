@@ -115,3 +115,11 @@ required before #7992 is closed. Source-ready provider work is not completion.
 
 Native/default replacement, full #6883 history, all unsupported dialect/source
 ownership and any speed or 10x claim remain unfinished with zero migration credit.
+
+The first published source `cc1861eb` failed actual Check `37368797300` in
+check-vize-apps job `111960409495`: the optional comment offset map needed an
+explicit `Option<Vec<u32>>` type before its first use. Its unused private parser
+re-export also warned. The narrow correction only states that existing type and
+removes the unused re-export; the parser function and all data/loops/original
+inputs/16 laws remain unchanged. That failure is retained, and the corrected
+head requires fresh Actions; no retry or old-source green is qualification.
