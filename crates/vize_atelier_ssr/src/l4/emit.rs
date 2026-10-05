@@ -8,6 +8,7 @@
 //! region segments) is a rejection, never a guess.
 
 mod attrs;
+mod builtin;
 mod component;
 mod component_props;
 mod control;
