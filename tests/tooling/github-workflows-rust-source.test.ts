@@ -121,8 +121,9 @@ test("PR and merge-group source checks are included in the required report", () 
   assert.deepEqual(sourceWorkflow.jobs?.["source-report"]?.needs, [
     ...SOURCE_PR_JOBS,
     "wit-contracts",
+    "canonical-corpus",
   ]);
-  assert.match(commands("source-report"), /require-needs-success\.mjs/);
+  assert.match(commands("source-report"), /canonical-corpus-selection\.mjs/);
 });
 
 test("untrusted source checks cannot write trusted sticky disks", () => {

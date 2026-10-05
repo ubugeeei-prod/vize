@@ -16,6 +16,8 @@ export type WorkflowStep = {
 };
 
 export type WorkflowJob = {
+  uses?: string;
+  with?: Record<string, unknown>;
   env?: Record<string, string>;
   name?: string;
   "runs-on"?: string;
@@ -40,6 +42,12 @@ export const shardSummaryCommandPath =
 export function readRealProjectMatrixWorkflow(): RealProjectMatrixWorkflow {
   return parse(
     readRepoFile(".github", "workflows", "real-project-matrix.yml"),
+  ) as RealProjectMatrixWorkflow;
+}
+
+export function readCanonicalCorpusWorkflow(): RealProjectMatrixWorkflow {
+  return parse(
+    readRepoFile(".github", "workflows", "davinci-canonical-corpus.yml"),
   ) as RealProjectMatrixWorkflow;
 }
 

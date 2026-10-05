@@ -18,7 +18,7 @@ import { test } from "node:test";
 
 import { loadGlyphCorpusProjects } from "../../tools/support/compat/fixtures/glyph-corpus.mjs";
 import { parseSfc, pug, pugOptions, sha256 } from "./support/pug/oracle-runtime.ts";
-import { findStep, readRealProjectMatrixWorkflow } from "./support/real-project-matrix-workflow.ts";
+import { findStep, readCanonicalCorpusWorkflow } from "./support/real-project-matrix-workflow.ts";
 
 type Project = { id: string; fixturePath: string; fixtureDir: string; revision: string };
 type Row = { project: string; revision: string; file: string; sha256: string };
@@ -131,7 +131,7 @@ test("pug corpus baseline: every hydrated project's pug SFCs match the pinned pu
 test("the real-project matrix runs the pug corpus compile oracle on the hydrated corpus", () => {
   // The Rust lane over the hydrated corpus shares the SSR corpus step, before
   // the finalize step dehydrates it, and fails the job on any divergence.
-  const steps = readRealProjectMatrixWorkflow().jobs?.["davinci-dom-corpus"]?.steps ?? [];
+  const steps = readCanonicalCorpusWorkflow().jobs?.["davinci-dom-corpus"]?.steps ?? [];
   const lane = findStep(steps, "Run L4 SSR and pug L1 differential corpora");
   assert.equal(lane["continue-on-error"], undefined);
   const corpus = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test";

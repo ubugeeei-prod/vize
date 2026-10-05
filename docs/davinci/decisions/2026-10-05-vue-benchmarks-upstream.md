@@ -90,3 +90,51 @@ submodule. The completed older #3283 slice is not reopened.
 - Run comparable timing/RSS only after workload parity and correctness.
   No rank-label edit, skipped validator, lower expectation, synthetic
   composition or measured 10x claim is admitted by this registration.
+
+## Automatic canonical qualification on the current Stack
+
+The existing three-layer native Stack #7919 is #7860 → #7910 → #7918.
+Its `d716`/`166238`/`3f2010` source checks remain historical. Literal-main
+`4e4c8c977d7052edbb6a2b42808ddc6e7b59f3bf` contains the actual #7974
+repair of the original seven DOM and seven SSR controls. It does not
+transfer acceptance from the failed 147-source run `37256474108`.
+That run's original 228-byte `v-pre` source, complete failure receipts and
+unexecuted chained Pug command remain in the
+[canonical divergence record](./2026-10-05-canonical-v-pre-divergence.md).
+
+Ordinary PR and merge-group checks previously executed their smaller
+default corpus; only scheduled/manual Real Project Matrix hydrated all
+147 gitlinks. The necessary integration moves that exact canonical job
+into a reusable workflow in a separate move commit. Its original job body
+has SHA-256 `308c7e7753ceec8e73650ad4f62c8d0eb588a26052742425d12924455dd1801c`.
+The Matrix caller preserves its mode, environment, full job commands,
+checkout, pins, 120-minute envelope and every other job. Its default remains
+`enforce`; original DOM run/finalizer/receipt/artifact production and
+strict SSR → Pug chaining remain unchanged. No 22-shard campaign is added.
+
+The ordinary source planner now selects the same reusable execution for
+gitlink/fixture registration, producer and dependency inputs, benchmark
+scripts, workflow/actions and the selection/comparison/receipt helpers.
+Real Git's NUL-separated diff includes deletions and both rename sides.
+Unknown comparison or an empty diff requires execution; malformed context
+and paths refuse. There is no branch-name condition or manual dispatch.
+The source report first requires an explicit successful plan and an actual
+successful corpus result when selected, then delegates every original job
+to the unchanged strict aggregator. An irrelevant skipped corpus is
+accepted only with an explicit false selection; its failure still refuses.
+No global skip allowlist or original queue-only WIT rule changes.
+
+The replay retains every incoming canonical clause at 350 lines, all
+original fixture/scorer/provider bytes, the 147 count, 144 comparisons,
+16 original error-file skips and unchanged budgets. Semantically equal
+flow YAML preserves the source workflow's 350-line ceiling. A first local
+integration test exposed an accidental test selector and was corrected
+without changing its expected WIT job. The complete focused selection,
+strict aggregate, workflow, hydration/refusal and queue controls pass
+32/32 under the available Node 25.8.1; this is local source evidence, not
+configured hosted/native acceptance. Fresh exact-head Actions, actual
+whole147 DOM/SSR/Pug evidence, all protected checks and signed merges of
+the complete native Stack remain required. Keep #7856 and current ranking
+unfinished; the fixed154 manual workflow may run only after actual
+registration on literal main and publication coordination. Whole cold500
+42.55 ms/10x remains unfinished.

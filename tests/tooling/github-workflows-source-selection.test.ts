@@ -144,7 +144,7 @@ test("every isolated tooling runner regenerates its tier and retains the full me
   assert.ok(source.jobs["source-report"].needs?.includes("pr-tooling-scripts"));
   assert.equal(
     source.jobs["source-report"].steps?.at(-1)?.run,
-    "node tools/support/compat/github/require-needs-success.mjs --check",
+    "node tools/support/compat/github/canonical-corpus-selection.mjs --check",
   );
   assert.match(
     steps[build].run ?? "",

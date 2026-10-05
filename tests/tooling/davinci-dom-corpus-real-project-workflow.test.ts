@@ -18,13 +18,12 @@ import {
   validateCorpusEvidence,
   verdictFor,
 } from "../../tools/support/compat/fixtures/davinci-dom-corpus-workflow.mjs";
-import { findStep, readRealProjectMatrixWorkflow } from "./support/real-project-matrix-workflow.ts";
+import { findStep, readCanonicalCorpusWorkflow } from "./support/real-project-matrix-workflow.ts";
 
 const helperSource = readFileSync("tools/commands/fixtures/davinci-dom-corpus-workflow.rs", "utf8");
 
 test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
-  const workflow = readRealProjectMatrixWorkflow();
-  const job = workflow.jobs?.["davinci-dom-corpus"];
+  const job = readCanonicalCorpusWorkflow().jobs?.["davinci-dom-corpus"];
   assert.ok(job, "missing davinci-dom-corpus job");
   const steps = job.steps ?? [];
 
