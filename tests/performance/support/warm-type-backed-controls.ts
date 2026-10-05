@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 
 import { offsetToPosition } from "../../tooling/support/lsp/assertions.ts";
 import { QueryRecorder } from "./warm-type-backed-measure.ts";
+import { nativeIdentities, retireNative } from "./warm-type-backed-processes.ts";
 import {
   assertTypedPackets,
   hoverText,
@@ -222,38 +223,16 @@ export async function controls(
     await sweep("original-root-after-foreign");
   });
   await step("native-epoch-recovery", async () => {
-    const previous = recorder.sampler.sample().processes.filter((entry: { pid: number }) => {
-      try {
-        return fs.realpathSync(`/proc/${entry.pid}/exe`) === runtime.executable;
-      } catch {
-        return false;
-      }
-    });
-    assert.ok(previous.length > 0, "only actual owned native descendants can be retired");
-    inputs.push({ name: "retired-native-epoch", processes: previous, signal: "SIGKILL" });
-    for (const entry of previous) process.kill(entry.pid, "SIGKILL");
-    const deadline = Date.now() + 5_000;
-    const dead = (pid: number) => {
-      try {
-        return fs.readFileSync(`/proc/${pid}/stat`, "utf8").split(") ")[1].startsWith("Z ");
-      } catch (failure) {
-        if ((failure as NodeJS.ErrnoException).code === "ENOENT") return true;
-        throw failure;
-      }
-    };
-    while (!previous.every((entry: { pid: number }) => dead(entry.pid))) {
-      assert.ok(Date.now() < deadline, "native children did not actually exit");
-      await new Promise((resolve) => setTimeout(resolve, 25));
-    }
+    const previous = nativeIdentities(recorder.sampler.sample(), runtime.executable);
+    const retired = await retireNative(
+      () => recorder.sampler.sample(),
+      runtime.executable,
+      previous,
+    );
+    inputs.push({ name: "retired-native-epoch", processes: previous, ...retired });
     await change(2, source);
     await sweep("native-epoch-recovered");
-    const current = recorder.sampler.sample().processes.filter((entry: { pid: number }) => {
-      try {
-        return fs.realpathSync(`/proc/${entry.pid}/exe`) === runtime.executable;
-      } catch {
-        return false;
-      }
-    });
+    const current = nativeIdentities(recorder.sampler.sample(), runtime.executable);
     assert.ok(current.length > 0);
     assert.ok(
       current.every(

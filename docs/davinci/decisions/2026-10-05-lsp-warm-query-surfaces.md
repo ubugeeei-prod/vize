@@ -74,3 +74,25 @@ original400 speed, CPU, native recovery or protected/release credit is claimed
 until the newly configured exact source pair executes and its full artifacts
 are authenticated. No additional production request, pipeline stage, IPC or
 instruction ceiling change is introduced.
+
+## Whole protocol and owned lifecycle correction
+
+Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5994544164).
+
+The first bounded original400 helper review found three test-custody gaps,
+without a production-cache finding. Put session/sampler construction under
+owned cleanup and retain construction, shutdown and capture failures. Recheck
+captured PID and birth against current descendants and the physical native
+executable immediately before any test retirement signal; a reused PID is a
+distinct life. Check every retained native identity after actual shutdown.
+
+Bind each measured client ID to exactly one complete original request and
+response in the existing raw frame decoder. The passive test-client observer
+retains the whole response before unchanged dispatch, including unknown
+fields and the distinction between absent and null error data. Reject duplicate
+response IDs and reconcile the full observed response vector against captured
+frames. The pair compares these complete envelopes after only the same
+physically checked private-root bijection. This correction does not add any
+production/native protocol or response filtering. Fresh exact-source paired
+execution remains required; neither source review nor an earlier unit-test
+pass grants original400 timing, CPU, recovery or release credit.

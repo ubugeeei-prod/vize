@@ -15,6 +15,7 @@ export class QueryRecorder {
   readonly nativeExecutable: string;
   readonly roots = new SessionRoots();
   readonly notifications: Array<{ method: string; params: unknown }> = [];
+  readonly responses: JsonRpcMessage[] = [];
 
   constructor(session: LspSession, nativeExecutable: string) {
     this.session = session;
@@ -23,6 +24,7 @@ export class QueryRecorder {
     session.notificationObservers.push((method, params) =>
       this.notifications.push({ method, params }),
     );
+    session.responseObservers.push((message) => this.responses.push(message));
   }
 
   async query(
@@ -33,9 +35,13 @@ export class QueryRecorder {
     const before = this.sampler.sample();
     const started = performance.now();
     let result: unknown = null;
+    let requestId: number | undefined;
     let error: Record<string, unknown> | null = null;
     try {
-      result = await this.session.request(spec.method, spec.params, 60_000, following);
+      result = await this.session.request(spec.method, spec.params, 60_000, (id) => {
+        requestId = id;
+        return following?.(id) ?? [];
+      });
     } catch (failure) {
       error =
         failure instanceof LspRequestError
@@ -53,6 +59,14 @@ export class QueryRecorder {
     const packet = { name: spec.name, method: spec.method, result };
     let comparable: unknown;
     let comparableParams: unknown;
+    const envelopes = this.responses.filter((message) => message.id === requestId);
+    const response = envelopes.length === 1 ? envelopes[0] : undefined;
+    if (envelopes.length !== 1) {
+      this.failures.push(
+        `${stage}/${spec.name}: exactly one complete response envelope is required`,
+      );
+    }
+    let comparableResponse: unknown;
     try {
       comparable = this.roots.visit([packet]);
     } catch (failure) {
@@ -74,9 +88,17 @@ export class QueryRecorder {
         };
       }
     });
+    try {
+      comparableResponse = this.roots.visit(response);
+    } catch (failure) {
+      this.failures.push(`${stage}/${spec.name} response ownership: ${String(failure)}`);
+    }
     this.rows.push({
       stage,
       ...spec,
+      requestId,
+      response,
+      comparableResponse,
       result,
       error,
       comparable,
