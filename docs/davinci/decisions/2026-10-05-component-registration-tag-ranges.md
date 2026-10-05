@@ -56,11 +56,31 @@ fresh exact-source Actions are required for the corrected harness.
 
 Source review and authored expectations do not establish execution.
 Fresh exact-head automatic Actions must run the Rust laws and public CLI
-test. The current release hold keeps this independent PR Draft and off
-the merge queue. After the hold, unchanged protected 104 instruction
+test. The first-v0.433 publication hold has been lifted; this independent
+PR remains Draft and off queue while its fixture-custody successor qualifies.
+After that qualification, unchanged protected 104 instruction
 ceilings and full suites, the actual signed reporter-credited merge, and
 released public payloads remain separate requirements. Broader global
 component configuration in #7978, native linter/history acceptance in
 #6881, and the separate 10x target remain unfinished. The verified primary
 reporter is `ubugeeei` (GitHub ID `71201308`); the meaningful source commit
 includes the literal verified noreply Co-Author trailer.
+
+## Fresh source and checkout custody
+
+The replayed source `83df06a6b9bcc1d067f274f315d89d5284eec26f` and its
+genuine prospective tree `926fd61f1873382c106f893e56032d93512e38a0` pass
+Check37338548465. Four small JUnit artifacts contain 16,177 passes with
+zero failures or skips, including all five range laws and ten complete Art
+laws once. The four whole CLI JSON results and visible original ANSI range
+pass using the exact source-built binary; `nativeHandled` stays zero.
+
+Git previously left this new fixture directory's text conversion unspecified.
+The scoped `-text` attribute now retains all seven authored files exactly
+under `core.autocrlf=true`, including original LF and explicit CRLF bytes.
+Production, every original/control fixture, full expected diagnostic fields,
+all laws, CLI assertions and budgets remain byte-identical to source83df.
+This meaningful checkout-custody correction requires fresh automatic source
+Actions; the previous source's green execution does not transfer to its
+new head. Actual protected 104/full-suite and signed-merge proof remain
+pending. The [paired issue decision](https://github.com/ubugeeei-prod/vize/issues/7979#issuecomment-5998783276) records the same bounded correction.
