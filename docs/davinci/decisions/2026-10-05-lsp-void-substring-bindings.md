@@ -31,3 +31,8 @@ references/rename/source-byte laws stay exact. The original reporter bindings
 and every broken name still require typed hover from declaration and template.
 Whether a locally shadowed API name should instead prefer native script hover
 is a separate unfinished TODO, not credited to this mapping correction.
+
+The prospective prefix at `b8bca915` conflicts only in the shared canonical
+record. Remove the queue entry and relocate the complete owned clause to its
+existing relevant paragraph, preserving every clause and all source/corpus/RPC
+bytes. Fresh exact-head Actions and protected delivery remain mandatory.
