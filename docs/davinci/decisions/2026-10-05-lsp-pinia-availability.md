@@ -91,3 +91,17 @@ automatic CLI/RPC credit. Source PR selection defers old runtime inventories;
 the merge group preserves full execution. The release tooling run reports 6,125
 tests, 6,070 passed and 55 unrelated skips, with zero failed/cancelled tests.
 Neither this audit nor the new corpus closes #6883 or enables native defaults.
+
+## Accepted source and protected delivery
+
+The maintainer accepts source `6532760dc28ada980ce3f5a73f3d689f6465e615` for
+this bounded availability repair after the complete two-session/seven-publication
+and three-preset source qualification in Check 37245420515. Its compiled checkout
+was `ab13b0ef62973c9cfac538194b2d93ae697d8aaf`; that runtime remains historical.
+The genuine rebase onto main `d1a25ec1da2efca98534520ff8ebe84d34708e3d`
+preserves all original production, fixture, scenario, pure-test and wrapper bytes,
+plus the retained evidence and incoming main decisions. Fresh exact-head Actions,
+the current candidate's seven full publications, all protected 104 ceilings and
+full Rust suites, signed merge/reporting attribution and publication are required.
+Protected admission follows the release owner's first v0.433 publication thaw;
+this record grants no native/default/history completion or performance credit.
