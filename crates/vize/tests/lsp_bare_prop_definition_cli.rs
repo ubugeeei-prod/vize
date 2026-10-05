@@ -127,7 +127,7 @@ fn assert_prop_results(fixture: &mut Fixture, source: &str, expected: &Value) {
 
 fn assert_shadow_results(fixture: &mut Fixture, source: &str) {
     let parameter = source.find("status: string").unwrap();
-    let parameter_use = source.find("status;").unwrap();
+    let parameter_use = source.find("return status;").unwrap() + "return ".len();
     let for_binding = source.find("v-for=\"status in").unwrap() + "v-for=\"".len();
     let for_use = source.find("{{ status }}").unwrap() + 3;
     for (offset, declaration) in [

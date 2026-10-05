@@ -55,3 +55,13 @@ helper. Preserve every exact golden assertion and aggregate their failures
 across the complete matrix to capture all authentic generated edge deltas in
 one Actions run. No snapshot auto-update, force-pass or budget increase applies;
 complete original and extended native RPC expectations remain byte-identical.
+
+Exact ce25 Actions captured all twelve TS-40 rows. Only the Canon semantic-link
+count/hash changes for utf8-crlf-props (1→2), generic-sfc (0→1), and
+child-local-import (0→1); retain every other complete golden field. The complete
+original native imported/local RPC law passed. The extension correctly resolved
+its earlier foreign property when a broad `status;` test selector chose that
+use instead of the parameter return. Select the complete `return status;`
+expression while retaining the full parameter target and all foreign/shadow/
+Unicode/unsaved expectations. Fresh exact-head and protected execution remain
+required; failed ce25 has no acceptance credit.
