@@ -13,6 +13,8 @@ use vize_l0::FxHashSet;
 use vize_l0::String;
 use vize_relief::ExpressionScope;
 
+mod scope;
+
 use super::is_template_global;
 
 use crate::lane::TransformContext;
@@ -330,21 +332,5 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         }
 
         walk_object_property(self, prop);
-    }
-}
-
-impl<'ast> ExpressionScope<'ast> for IdentifierCollector<'_, '_> {
-    fn push_scope(&mut self) {
-        self.local_scopes.push(FxHashSet::default());
-    }
-    fn pop_scope(&mut self) {
-        self.local_scopes.pop();
-    }
-    fn add_local(&mut self, name: &str) {
-        // The walker pushes a scope before any binding; without one there is
-        // nowhere to record the name.
-        if let Some(scope) = self.local_scopes.last_mut() {
-            scope.insert(String::new(name));
-        }
     }
 }
