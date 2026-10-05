@@ -77,7 +77,7 @@ test("every isolated tooling runner regenerates its tier and retains the full me
     (step) => step.name === "Install fixture and JS dependencies",
   );
   const pkl = steps.findIndex(
-    (step) => step.name === "Prepare checksum-pinned Pkl schema dependencies",
+    (step) => step.name === "Prepare checksum-pinned Pkl and upstream lint dependencies",
   );
   const build = steps.findIndex((step) => step.name === "Build and install vize CLI");
   const selected = steps.findIndex((step) => step.name === "Test selected PR tooling scripts");
@@ -85,7 +85,10 @@ test("every isolated tooling runner regenerates its tier and retains the full me
   assert.ok(regenerate >= 0 && regenerate < build && build < selected && selected < full);
   assert.ok(regenerate < dependencies && dependencies < pkl && pkl < build);
   assert.equal(steps[pkl].if, "${{ needs.pr-source-plan.outputs.tooling == 'true' }}");
-  assert.equal(steps[pkl].run, "node tools/support/compat/github/prepare-pkl-schema.mjs");
+  assert.equal(
+    steps[pkl].run,
+    "node tools/support/compat/github/prepare-pkl-schema.mjs && node tools/support/compat/github/prepare-vue-benchmarks.mjs",
+  );
   assert.equal(steps[pkl].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
   assert.equal(
     steps[pkl].env?.VIZE_TOOLING_TEST_TIER,

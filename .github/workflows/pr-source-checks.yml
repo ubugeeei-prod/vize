@@ -177,13 +177,13 @@ jobs:
       - name: Install fixture and JS dependencies
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline
-      - name: Prepare checksum-pinned Pkl schema dependencies
+      - name: Prepare checksum-pinned Pkl and upstream lint dependencies
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         env:
           VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
           VIZE_TOOLING_TEST_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
           VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
-        run: node tools/support/compat/github/prepare-pkl-schema.mjs
+        run: node tools/support/compat/github/prepare-pkl-schema.mjs && node tools/support/compat/github/prepare-vue-benchmarks.mjs
       - name: Test fresh native SSR modules in the merge queue
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
         uses: ./.github/actions/test-native-ssr
