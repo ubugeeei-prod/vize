@@ -51,27 +51,38 @@ fn selected_native_semantics_preserves_dependency_related_rows_and_unrequested_s
     editor
         .mirror(&empty_uri, &std::fs::read_to_string(&empty).unwrap())
         .unwrap();
-    let outcome = editor.bulk_diagnostics(&config, &uris).unwrap();
-    let custody = super::super::super::take_receipt();
-    let mut original = Vec::new();
-    for uri in &uris {
-        original.push(serde_json::to_value(editor.diagnostics(uri).unwrap()).unwrap());
-    }
-    let bulk_rows = match &outcome {
-        BulkDiagnostics::Complete(rows) => serde_json::to_value(rows).unwrap(),
+    let mut packet = json!({"documents":editor.documents,"nativeBinary":executable,
+        "originalResults":[],
+        "originalFiles":["tsconfig.json","requested.ts","empty.ts","dependency.ts","unrequested.ts"].map(|name| json!({"name":name,"bytes":std::fs::read(originals.join(name)).unwrap()}))});
+    let persist = |packet: &serde_json::Value| {
+        if let Some(dir) = std::env::var_os("VIZE_NATIVE_BULK_CAPTURE_DIR") {
+            let dir = Path::new(&dir).join("selected-semantics");
+            std::fs::create_dir_all(&dir).unwrap();
+            std::fs::write(
+                dir.join("whole-diagnostics.json"),
+                serde_json::to_vec_pretty(packet).unwrap(),
+            )
+            .unwrap();
+        }
+    };
+    let bulk_result = editor.bulk_diagnostics(&config, &uris);
+    packet["bulkResult"] = json!(vize_l0::cstr!("{bulk_result:?}"));
+    packet["custody"] = json!(super::super::super::take_receipt());
+    packet["bulk"] = match &bulk_result {
+        Ok(BulkDiagnostics::Complete(rows)) => serde_json::to_value(rows).unwrap(),
         _ => serde_json::Value::Null,
     };
-    let packet = json!({"outcome":vize_l0::cstr!("{outcome:?}"),"bulk":bulk_rows,"custody":custody,
-        "original":original,"documents":editor.documents,"nativeBinary":executable,
-        "originalFiles":["tsconfig.json","requested.ts","empty.ts","dependency.ts","unrequested.ts"].map(|name| json!({"name":name,"bytes":std::fs::read(originals.join(name)).unwrap()}))});
-    if let Some(dir) = std::env::var_os("VIZE_NATIVE_BULK_CAPTURE_DIR") {
-        let dir = Path::new(&dir).join("selected-semantics");
-        std::fs::create_dir_all(&dir).unwrap();
-        std::fs::write(
-            dir.join("whole-diagnostics.json"),
-            serde_json::to_vec_pretty(&packet).unwrap(),
-        )
-        .unwrap();
+    persist(&packet);
+    let outcome = bulk_result.unwrap();
+    let mut original = Vec::new();
+    for uri in &uris {
+        let result = editor.diagnostics(uri);
+        packet["originalResults"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!({"uri":uri,"result":result}));
+        persist(&packet);
+        original.push(serde_json::to_value(result.unwrap()).unwrap());
     }
     let BulkDiagnostics::Complete(rows) = outcome else {
         panic!("selected native scope refused: {packet}");
@@ -92,19 +103,14 @@ fn selected_native_semantics_preserves_dependency_related_rows_and_unrequested_s
                 .any(|info| info.location.uri.as_str() == dependency_uri.as_str())
         })
     ));
-    let semantic: Vec<_> = packet["custody"]["categoryRequests"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter(|request| request["method"] == "getSemanticDiagnostics")
-        .collect();
-    assert_eq!(semantic.len(), 2);
-    assert_eq!(semantic[0]["file"], requested.to_str().unwrap());
-    assert_eq!(semantic[1]["file"], empty.to_str().unwrap());
-    assert!(
-        semantic
-            .iter()
-            .all(|request| request["acknowledged"] == true)
+    assert_eq!(
+        packet["custody"]["categoryRequests"],
+        json!([
+            {"method":"getSyntacticDiagnostics","file":null,"acknowledged":true},
+            {"method":"getSemanticDiagnostics","file":requested.to_str().unwrap(),"acknowledged":true},
+            {"method":"getSemanticDiagnostics","file":empty.to_str().unwrap(),"acknowledged":true},
+            {"method":"getSuggestionDiagnostics","file":null,"acknowledged":true},
+        ])
     );
     assert!(
         packet["custody"]["sourceFileNames"]

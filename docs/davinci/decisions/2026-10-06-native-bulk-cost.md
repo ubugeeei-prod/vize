@@ -120,3 +120,11 @@ After independent frozen source review and real current-main reconciliation,
 run ONE corrected same-host comparison; keep Draft/offqueue until it proves
 actual gains, whole acceptance, fresh required/full/native and protected signed
 ordered delivery. Finite0.434 remains independent; #7698 stays open.
+
+The new selected native law persists complete bulk Result/custody immediately,
+then each full original LSP Result before unwrap or a following request. Thus
+real API/barrier/LSP errors retain their finite failure witness. Pin the entire
+four-entry successful request array: global syntax, requested semantics, empty
+semantics, global suggestion, exact authoritative names and acknowledgements.
+Filtering only semantic requests would not prove total call scope. This is
+source-only test custody, not native execution or optimization acceptance.
