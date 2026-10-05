@@ -39,3 +39,5 @@ all corpus bytes, complete comparisons and budgets remain unchanged. Fresh
 exact-head source and protected execution are required.
 
 The actual-main replay on `a2712e78968e9112c89cbc2111b108bd0e51959c` preserves every incoming decision, every original author/trailer and all owned production, corpus, runtime/helper and strict witness bytes. The earlier source failure/success receipts remain retained; fresh exact-head Actions and protected delivery are required before requeue.
+
+The next actual-main replay on `8f667ea070bb90d57ac7125db35d791025f746e2` preserves the complete incoming protected prefix and every owned source/runtime/corpus/witness byte from `8c8172075d2d69f328963d102ab49ea36db5d77d`. Original authors, reports and ceilings remain intact. Earlier qualified heads are retained as historical receipts; this replay requires its own exact-head source and protected reports before actual merge/release.
