@@ -48,3 +48,10 @@ CLI stderr deliberately includes two existing progress lines; assert their exact
 input counts and isolated root instead of incorrectly expecting silence. Full
 stdout diagnostic vectors, statuses, raw stderr and original inputs remain
 required and unchanged. This is an expectation repair without output filtering.
+
+At 36c6, all three complete native/CLI vectors and the real editor diagnostic,
+optional-hover and range assertions pass. Receipt collection must enumerate the
+three explicit test names separately from the dedicated editor-inputs bucket;
+retain that bucket and hidden fixture bytes in the artifact. No runtime source
+or expected response is changed. Fresh corrected-head receipt/source gates are
+still required before readiness.

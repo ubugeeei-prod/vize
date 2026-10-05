@@ -250,8 +250,8 @@ jobs:
           import { dirname, join } from 'node:path';
           import { spawnSync } from 'node:child_process';
           const root = process.env.VIZE_DEFAULT_PROP_CAPTURE;
-          const cases = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name).sort();
-          assert.equal(cases.length, 3);
+          const cases = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory() && e.name !== 'editor-inputs').map(e => e.name).sort();
+          assert.deepEqual(cases, ['imported_callable_default_remains_defined_in_all_template_prop_views', 'undefined_callable_default_keeps_original_cli_conditions_optional', 'undefined_callable_default_still_rejects_unguarded_template_calls']);
           assert.deepEqual(JSON.parse(readFileSync(join(root, 'editor-diagnostics.json'), 'utf8')), []);
           assert(existsSync(join(root, 'editor-hover.json')));
           const editorRuntime = JSON.parse(readFileSync(join(root, 'editor-runtime.json'), 'utf8'));
@@ -291,6 +291,7 @@ jobs:
             ${{ runner.temp }}/typechecker-native-phases.json.samples/projections/
             ${{ runner.temp }}/typechecker-native-phases.json.samples/virtual-ts/
             ${{ runner.temp }}/undefined-default-props/
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
           include-hidden-files: true
