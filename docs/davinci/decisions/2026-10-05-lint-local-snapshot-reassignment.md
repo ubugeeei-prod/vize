@@ -54,3 +54,10 @@ boundary positive. The actual public CLI compares the complete two-finding JSON
 in both strict-reactivity modes. Preserve all original reporter bytes and the
 parent rules/caps. The observer-only `c881e220ac` stays historical; this semantic
 repair requires its own immutable source head, peer review and fresh Actions.
+
+The reviewed `b3c173621d` correction and every original/control source, whole
+result law and CLI observer are byte-identical after replay onto genuine parent
+`6149fd4a01604968c583b29216f8d5f114d51866`, rooted in actual main `a2712e7896`.
+Preserve all incoming canonical decisions and regenerate the exact current census.
+Historical run acceptance does not transfer to the replay: require fresh source
+Actions/native Stack membership and actual protected-prefix merges, then release.
