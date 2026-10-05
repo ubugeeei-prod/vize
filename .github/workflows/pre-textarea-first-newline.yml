@@ -50,6 +50,22 @@ jobs:
           cargo test --locked --profile ci -p vize_armature --lib
           cargo test --locked --profile ci -p vize_l1_to_l2 --test pre_textarea_first_newline --test text_pass
           vp node --test tests/tooling/pre-textarea-first-newline.test.mjs
+          candidate=$(git rev-parse HEAD)
+          tokenizer_base=7cc79441ab35a0add0f4f90d4bbab0d4bef52e52
+          harness=crates/vize_armature/src/parser/tokenizer_contract_tests.rs
+          cp "$harness" "$RUNNER_TEMP/first-newline-tokenizer-harness.rs"
+          mkdir -p "$RUNNER_TEMP/first-newline-tokenizer-before" "$RUNNER_TEMP/first-newline-tokenizer-after"
+          git fetch --depth=1 origin "$tokenizer_base"
+          git checkout --detach "$tokenizer_base"
+          git rev-parse HEAD > "$RUNNER_TEMP/first-newline-tokenizer-before-source.txt"
+          cp "$RUNNER_TEMP/first-newline-tokenizer-harness.rs" "$harness"
+          git diff -- "$harness" > "$RUNNER_TEMP/first-newline-tokenizer-harness.patch"
+          VIZE_TOKENIZER_CAPTURE_DIR="$RUNNER_TEMP/first-newline-tokenizer-before" cargo test --locked --profile ci -p vize_armature --features legacy --lib tokenizer_contract_tests -- --nocapture
+          git restore -- "$harness"
+          git checkout --detach "$candidate"
+          git diff --exit-code
+          git rev-parse HEAD > "$RUNNER_TEMP/first-newline-tokenizer-after-source.txt"
+          VIZE_TOKENIZER_CAPTURE_DIR="$RUNNER_TEMP/first-newline-tokenizer-after" cargo test --locked --profile ci -p vize_armature --features legacy --lib tokenizer_contract_tests -- --nocapture
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
@@ -57,5 +73,6 @@ jobs:
           path: |
             ${{ runner.temp }}/first-newline-source.txt
             ${{ runner.temp }}/first-newline-observations.json
+            ${{ runner.temp }}/first-newline-tokenizer-*
           if-no-files-found: error
           retention-days: 7

@@ -50,6 +50,12 @@ The existing SSR byte comparisons and native acceptance accounting stay strict.
 Source checks also require explicit Node test promise handling, uniform CLI
 mode descriptors and the retained parser test file's existing line ceiling.
 The original Vapor hydration observation is retained in the hosted artifact.
+The retained legacy-feature tokenizer AST witness also runs in this job.
+Preserve its historical binaries and collect every original source, option,
+whole AST and diagnostic on both the exact pre-fix main and the new source,
+using the same test-only capture harness. Every frozen case still participates
+in strict checking; collection ends in failure if any case differs. Review the
+actual changed vectors before recording a narrowly keyed approved correction.
 The whole original SFC and controls also run through a source-built CLI in DOM,
 SSR, Vapor and Vapor-requested SSR modes. Chromium compares actual mounted
 pre text, live textarea values, complete SSR HTML and hydration with the
