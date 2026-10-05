@@ -39,6 +39,14 @@ pub const FILES: &[(&str, &str)] = &[
 
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+fn require(condition: bool, message: &'static str) -> Result<()> {
+    if condition {
+        Ok(())
+    } else {
+        Err(std::io::Error::other(message).into())
+    }
+}
+
 fn parent(path: &Path) -> Result<&Path> {
     path.parent()
         .ok_or_else(|| std::io::Error::other("fixture path has no parent").into())
@@ -81,8 +89,11 @@ pub fn fixture(root: &Path, root_vue: bool) -> Result<PathBuf> {
         .join("tests/node_modules/vue-ssr-css-vars-oracle")
         .canonicalize()?;
     let package: Value = serde_json::from_slice(&std::fs::read(vue.join("package.json"))?)?;
-    assert_eq!(field(&package, "name")?, "vue");
-    assert_eq!(field(&package, "version")?, "3.6.0-rc.10");
+    require(field(&package, "name")? == "vue", "fixture is not Vue")?;
+    require(
+        field(&package, "version")? == "3.6.0-rc.10",
+        "fixture Vue version differs",
+    )?;
     link(&vue, &root.join("apps/web/node_modules/vue"))?;
     if root_vue {
         write(
@@ -92,7 +103,10 @@ pub fn fixture(root: &Path, root_vue: bool) -> Result<PathBuf> {
         )?;
         link(&vue, &root.join("node_modules/vue"))?;
     } else {
-        assert!(!root.join("node_modules/vue").exists());
+        require(
+            !root.join("node_modules/vue").exists(),
+            "root unexpectedly contains Vue",
+        )?;
     }
     Ok(vue)
 }
@@ -133,8 +147,11 @@ pub fn capture(root: &Path, vue: &Path, corsa: &Path, case: &str) -> Result<Opti
     ] {
         let manifest: Value =
             serde_json::from_slice(&std::fs::read(directory.join("package.json"))?)?;
-        assert_eq!(field(&manifest, "name")?, package);
-        assert_eq!(field(&manifest, "version")?, "3.6.0-rc.10");
+        require(field(&manifest, "name")? == package, "package name differs")?;
+        require(
+            field(&manifest, "version")? == "3.6.0-rc.10",
+            "package Vue version differs",
+        )?;
         let types = field(&manifest, "types")?;
         for name in ["package.json", types] {
             let output = target.join("packages").join(package).join(name);

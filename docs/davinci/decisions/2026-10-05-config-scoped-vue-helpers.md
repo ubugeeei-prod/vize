@@ -86,6 +86,14 @@ all cases. Compact runtime JSON, original inputs, genuine declaration sources,
 all whole expected vectors, production and workflow bytes stay unchanged. Fresh
 successor strict/native qualification is separate from the historical packet.
 
+The [paired predicate correction](https://github.com/ubugeeei-prod/vize/issues/7949#issuecomment-5993949278) retains exact20145 native run37304532817's success
+and strict builder111745874867's two panic-in-Result failures. The same five
+Vue/package name/version and root-absence predicates now return Err from the
+utility; existing test callers still fail on every Err. A mechanical inverse
+restores the entire prior helper. Production, exact originals, whole oracles,
+capture layout and workflow remain unchanged without lint exceptions. Fresh
+successor source/native acceptance remains separate from that historical packet.
+
 Fresh strict source Actions, authentic whole native/editor execution, independent
 artifact verification, protected full Rust/all 104 instruction gates, actual
 signed merge/issue closure and public release/consumer proof remain required.
