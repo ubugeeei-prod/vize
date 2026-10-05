@@ -73,7 +73,13 @@ fn reference_path_modules_keep_complete_cli_diagnostics() {
             assert_eq!(output.status.code(), Some(i32::from(invalid)), "{output:?}");
             assert_eq!(report["errorCount"], usize::from(invalid));
             assert_eq!(report["warningCount"], 0);
-            for path in [&paths[1], &paths[4]] {
+            let reported_paths = if case.2 {
+                &paths[4..]
+            } else {
+                &[paths[1].clone(), paths[4].clone()]
+            };
+            assert_eq!(files.len(), reported_paths.len());
+            for path in reported_paths {
                 assert!(
                     files
                         .iter()

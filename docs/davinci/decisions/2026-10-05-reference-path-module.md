@@ -70,3 +70,13 @@ authored diagnostics alone do not prove an entire project is duplicate-free.
 Structural witnesses also use configured roots; declaration import aliases
 must participate in reachability even when their targets are `.d.ts`. This
 additional fast-path scope applies only to declaration importers.
+
+Source `9694cdcf93` proved the original complete native CLI succeeds. The
+mirrored Batch program instead loads `vite/client` through unused shared Vue
+helpers, colliding with the authored `*?raw` default export. Shared helpers
+now require actual lowered Vue/JSX sources; plain scripts and declarations
+retain their configured ambient scope. The source-built CLI passes original
+and leading-dot clean/error controls. Its nested `.nuxt` case drops an
+explicitly included reference-only manifest from hidden ambient roots; keep
+that manifest as a graph root, including missing targets so TS6053 remains
+observable. Hidden generated declarations remain unreported type context.

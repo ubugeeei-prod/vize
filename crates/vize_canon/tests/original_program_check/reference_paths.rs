@@ -166,10 +166,12 @@ fn path_references_retain_original_sources_native_reports_and_configuration() {
                         "config":std::fs::read_to_string(directory.join("tsconfig.json")).unwrap(),
                         "exitCode":output.status.code(),"stdout":output.stdout,"stderr":output.stderr})
                 };
+                let authored_cli = native_cli(&root);
+                let mirrored_cli = native_cli(virtual_root);
                 let record = serde_json::json!({
                     "sourceSha":std::env::var("SOURCE_SHA").unwrap(),"testBinary":std::env::current_exe().unwrap(),
                     "case":case.0,"invalid":invalid,"inputs":inputs,
-                    "nativeCliPrograms":{"authored":native_cli(&root),"mirrored":native_cli(virtual_root)},
+                    "nativeCliPrograms":{"authored":authored_cli,"mirrored":mirrored_cli},
                     "nativeFileProjection":"unfinished: typed imported const annotation refused",
                     "authoredTsgo":{"sourcePath":source_path,"sourceUri":source_uri,"sourceDigest":project::digest(source.as_bytes()).as_str(),
                         "report":report,"configuration":configuration,"configurationPath":configuration_path,
@@ -182,6 +184,8 @@ fn path_references_retain_original_sources_native_reports_and_configuration() {
                     serde_json::to_vec_pretty(&record).unwrap(),
                 )
                 .unwrap();
+                assert_eq!(authored_cli["exitCode"], i32::from(invalid));
+                assert_eq!(mirrored_cli["exitCode"], i32::from(invalid));
             }
             assert_eq!(
                 serde_json::json!(diagnostics),
