@@ -47,7 +47,9 @@ use default_imports::{
 #[cfg(test)]
 use diagnostics::is_suppressed_false_positive;
 pub(crate) use direct::run_direct;
-use execution::{CheckerSettings, ProgramExecution, ProgramExecutionInput, execute_program};
+use execution::{
+    CheckerSettings, ProgramExecution, ProgramExecutionInput, ProgramPreparation, execute_program,
+};
 use global_components::{
     GlobalComponentStubOptions, build_virtual_ts_options, collect_project_global_component_stubs,
     collect_workspace_global_component_declarations_for_files, dialect_from_features,
@@ -143,7 +145,7 @@ fn prepare_and_execute(
     cache: &mut TsconfigInputCache,
     canonical_paths: &mut CanonicalPathCache,
     package_route_resolver: &mut vize_canon::PackageRouteResolver,
-) -> Result<Option<ProgramExecution>, vize_l0::String> {
+) -> Result<ProgramPreparation, vize_l0::String> {
     let initial_root = candidate
         .tsconfig_path
         .as_deref()
@@ -227,7 +229,10 @@ fn prepare_and_execute(
         canonical_paths,
     });
     if !args.patterns.is_empty() && candidate.inputs.is_empty() {
-        return Ok(None);
+        return Ok(ProgramPreparation {
+            execution: None,
+            excluded_explicit_inputs: true,
+        });
     }
     candidate.reported.extend(
         authored_imports
@@ -272,7 +277,10 @@ fn prepare_and_execute(
         &project_root,
     );
     if candidate.files.is_empty() {
-        return Ok(None);
+        return Ok(ProgramPreparation {
+            execution: None,
+            excluded_explicit_inputs: false,
+        });
     }
 
     sort_package_route_bindings(&mut package_routes);
@@ -294,7 +302,10 @@ fn prepare_and_execute(
         settings,
     )?;
     execution.import_time = import_time;
-    Ok(Some(execution))
+    Ok(ProgramPreparation {
+        execution: Some(execution),
+        excluded_explicit_inputs: false,
+    })
 }
 
 fn validate_config_arg(args: &CheckArgs) {

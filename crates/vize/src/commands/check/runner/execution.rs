@@ -51,6 +51,12 @@ pub(super) struct ProgramExecution {
     _checker_tsconfig: PreparedCheckerTsconfig,
 }
 
+pub(super) struct ProgramPreparation {
+    pub(super) execution: Option<ProgramExecution>,
+    /// Existing explicit inputs rejected by their owning program's file options.
+    pub(super) excluded_explicit_inputs: bool,
+}
+
 pub(super) struct ProgramExecutionInput<'a> {
     pub(super) files: &'a [PathBuf],
     pub(super) reported_files: FxHashSet<PathBuf>,

@@ -9,9 +9,9 @@
 > [remarks-format.md](./remarks-format.md)), ranked by corpus hits: the
 > optimization backlog the P3-13 remarks mine for continuous task C-13.
 
-Corpus: 449 files, 1032 remarks (159 applied, 873 missed), 24 missed reasons.
+Corpus: 450 files, 1033 remarks (159 applied, 874 missed), 24 missed reasons.
 
-1. `s2.hoist-static static-subtree` `blocker="child" op="ui.interpolation"` - 185 hits in 81 files; first at `tests/_fixtures/_projects/class-component/src/App.vue` @354:376
+1. `s2.hoist-static static-subtree` `blocker="child" op="ui.interpolation"` - 186 hits in 82 files; first at `tests/_fixtures/_projects/class-component/src/App.vue` @354:376
 2. `s2.hoist-static static-props` `blocker="binding" op="ui.on"` - 154 hits in 60 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
 3. `s2.hoist-static static-props` `blocker="binding" op="ui.bind" rule="non-constant"` - 97 hits in 57 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue` @179:208
 4. `s2.hoist-static static-subtree` `blocker="binding" op="ui.on"` - 91 hits in 32 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
