@@ -6,19 +6,35 @@ import { collectVueLikeFilesFromTargets } from "./cli/files.js";
 import { resolveOxlintCliEntrypoint, verifyOxlintCliEntrypoint } from "./cli/oxlint.js";
 import { rewriteReportedPaths } from "./cli/output.js";
 import { prepareScriptlessWorkaroundFiles } from "./cli/workaround-files.js";
+import { prepareScopedSelection } from "./cli/scoped-selection.js";
 
 async function main(): Promise<void> {
   const cwd = process.cwd();
   const forwardedArgs = process.argv.slice(2);
   const targets = getLintTargets(forwardedArgs);
-  const lintFiles = collectVueLikeFilesFromTargets(cwd, targets);
+  const candidates = new Set<string>();
+  const lintFiles = collectVueLikeFilesFromTargets(cwd, targets, (file) => candidates.add(file));
   const oxlintEntrypoint = resolveOxlintCliEntrypoint(cwd);
   verifyOxlintCliEntrypoint(process.execPath, oxlintEntrypoint);
-  const prepared = prepareScriptlessWorkaroundFiles(cwd, lintFiles);
-  const args = [oxlintEntrypoint, ...forwardedArgs, ...prepared.appendedArgs];
+  const scoped = await prepareScopedSelection(
+    cwd,
+    forwardedArgs,
+    lintFiles,
+    (args) => runOxlint(process.execPath, [oxlintEntrypoint, ...args], cwd),
+    candidates,
+  );
+  const sourceResult = scoped && "result" in scoped ? scoped.result : undefined;
+  const transport = scoped && "prepared" in scoped ? scoped : undefined;
+  const prepared = sourceResult
+    ? prepareScriptlessWorkaroundFiles(cwd, [])
+    : (transport?.prepared ?? prepareScriptlessWorkaroundFiles(cwd, lintFiles));
+  const args = [
+    oxlintEntrypoint,
+    ...(transport?.args ?? [...forwardedArgs, ...prepared.appendedArgs]),
+  ];
 
   try {
-    const result = await runOxlint(process.execPath, args, cwd);
+    const result = sourceResult ?? (await runOxlint(process.execPath, args, cwd));
     const stdout = rewriteReportedPaths(result.stdout, prepared.pathReplacements);
     const stderr = rewriteReportedPaths(result.stderr, prepared.pathReplacements);
 

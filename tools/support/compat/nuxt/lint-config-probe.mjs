@@ -6,6 +6,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { expectedCliDiagnostic } from "./lint-config-observer.mjs";
 
 const [project, artifacts, inputDir, version] = process.argv.slice(2);
 const require = createRequire(path.join(project, "package.json"));
@@ -53,10 +54,9 @@ const writeConfig = (name, content) => {
   fs.writeFileSync(path.join(artifacts, name.replaceAll("/", "_")), content);
   return file;
 };
-const expectedMessage =
-  "Avoid using inline style attributes (at <template>:6:7)\n    Help:\n      Use CSS classes or scoped styles instead";
 function run(id, file, targets, expectedPaths, { invalid = false, files = targets.length } = {}) {
   const args = [cli, "--config", file, "--format", "json", ...targets];
+  const started = performance.now();
   const processResult = spawnSync(process.execPath, args, {
     cwd: project,
     encoding: "utf8",
@@ -72,6 +72,7 @@ function run(id, file, targets, expectedPaths, { invalid = false, files = target
         status: processResult.status,
         signal: processResult.signal,
         error: processResult.error?.message ?? null,
+        elapsedMs: performance.now() - started,
         stdout: processResult.stdout,
         stderr: processResult.stderr,
       },
@@ -94,15 +95,16 @@ function run(id, file, targets, expectedPaths, { invalid = false, files = target
   const report = JSON.parse(processResult.stdout);
   assert.deepEqual(
     report.diagnostics
-      .map(({ code, filename, message, severity }) => ({ code, filename, message, severity }))
+      .map(({ code, filename, message, severity, labels }) => ({
+        code,
+        filename,
+        message,
+        severity,
+        labels,
+      }))
       .sort((a, b) => a.filename.localeCompare(b.filename)),
     expectedPaths
-      .map((filename) => ({
-        code: corpus.expectedRule,
-        filename,
-        message: expectedMessage,
-        severity: corpus.expectedSeverity,
-      }))
+      .map((filename) => expectedCliDiagnostic(corpus, project, filename))
       .sort((a, b) => a.filename.localeCompare(b.filename)),
   );
   assert.equal(report.number_of_files, files);
@@ -165,7 +167,6 @@ try {
       message: "Generated oxlint config must be in the lint root or an ancestor directory",
     },
   );
-
   const originalCurrent = api.renderNuxtOxlintConfig(corpus.items, "oxlint-plugin-vize", {
     rootDir: project,
     configDir: project,
@@ -247,7 +248,7 @@ try {
         configDir: project,
       }),
     ),
-    [...originals, ...externalNames],
+    [...originals, ...externalFiles],
     ["app/components/InfoCard.vue", externalNames[1]],
   );
   const generation = await api.setupNuxtLintConfigGeneration({ autoInit: false }, nuxt);

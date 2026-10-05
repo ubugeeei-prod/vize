@@ -4,6 +4,7 @@ import fs from "node:fs";
 import test from "node:test";
 
 import { renderNuxtOxlintConfig } from "../../npm/framework/nuxt/src/lint/emitter.ts";
+import { expectedCliDiagnostic } from "../../tools/support/compat/nuxt/lint-config-observer.mjs";
 
 const directory = new URL(
   "../_fixtures/differential/linter/nuxt-oxlint-config-root/",
@@ -30,6 +31,32 @@ void test("original Nuxt Oxlint issue, renderer, SFC and failed artifact remain 
   assert.equal(
     read("Input.vue.txt"),
     '<script setup lang="ts">\nconst title = "About";\n</script>\n\n<template>\n  <h1 style="color: red">{{ title }}</h1>\n</template>\n',
+  );
+});
+
+void test("the unchanged wrapper contract pins mapped full messages, labels and outside filenames", () => {
+  assert.deepEqual(
+    ["app/components/InfoCard.vue", "../foreign/app/pages/About.vue"].map((file) =>
+      expectedCliDiagnostic(corpus, "/project", file),
+    ),
+    [
+      {
+        code: "vize(vue/no-inline-style)",
+        filename: "app/components/InfoCard.vue",
+        message:
+          "Avoid using inline style attributes\n    Help:\n      Use CSS classes or scoped styles instead",
+        severity: "warning",
+        labels: [{ span: { offset: 186, length: 18, line: 6, column: 7 } }],
+      },
+      {
+        code: "vize(vue/no-inline-style)",
+        filename: "/foreign/app/pages/About.vue",
+        message:
+          "Avoid using inline style attributes\n    Help:\n      Use CSS classes or scoped styles instead",
+        severity: "warning",
+        labels: [{ span: { offset: 176, length: 18, line: 6, column: 7 } }],
+      },
+    ],
   );
 });
 

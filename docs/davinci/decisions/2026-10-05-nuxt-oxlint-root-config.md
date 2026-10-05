@@ -138,3 +138,56 @@ Independent read-only delta review clears runner blob
 `b0cd9c114c621a1a91367632e93799eb2531ca0785d4126435950527003ebac4`;
 it confirms complete vector equality excludes every extra/error/duplicate
 diagnostic and grants no runtime credit.
+
+## Original filter and full-source transport
+
+[Paired source decision](https://github.com/ubugeeei-prod/vize/issues/7983#issuecomment-5993038459)
+The current0fa source Check37292032191 fails the old module-addons test's
+former artifact filename; changing only that path retains all plan assertions.
+Nuxt37292031544/job111704430319 executes source3b24 over2cb and fails the
+first CLI case with zero files. Authentic11337510803 retains its valid root
+config, full original bytes and35 source-native events: one load,34 catalog
+calls, zero lint calls. These are failed packets, not fourteen-case success.
+The existing bridge copies every Vue beneath ignored node_modules and changes
+its override identity; retaining #7130's full-source location bridge is required.
+
+The same installed Oxlint selects original files with --debug files after its
+CLI/VCS/config predicates and validation. Transport only those selected Vue
+files outside both roots; exclusively create a sibling JSON config so original
+plugin resolution, fields and ordered values stay rooted. Original rows exclude
+owned copies; adjacent rows retain the supported original comparison domains.
+A second real selector must equal the complete projected original set, including
+untouched non-Vue paths. Every selected path joins the existing single candidate
+enumeration. No JS predicate, no-ignore, expanded namespace or skipped bridge
+substitutes for the original engine. Clean only owned files on every prepare
+failure and execution completion.
+
+Pinned1.78 command/{lint,ignore,mod}.rs establishes all scalar and boolean
+arities. Preserve each whole value, flag order and -- separator; remove only
+original targets and pass the selected physical absolute paths. Plugin flags
+consume no value. Unknown/compact forms and alternate inspection/update modes
+refuse before mutation. Inherited configs, type/import/tsconfig graphs,
+suppression state, non-POSIX roots, CR/LF/backslash candidates and unsupported
+outside wildcard domains fail actionably. Discovered/dynamic configs retain
+their old route, with no new filtering guarantee. The newly authored outside
+control keeps logical paths/source/expected reports but passes exact absolute
+filenames because the pinned CLI rejects positional parent-directory components.
+
+Only the new, unexecuted observer changes: existing plugin/format/path helper
+sources establish no redundant mapped-message annotation and absolute reported
+outside paths. Full code/message/severity/cardinality and full labels remain
+strict: original start76 plus independently authored encoded-source prefix,
+length18, line6/column7. Primary SHA256s are plugin.ts eca74b5c9f89147c8741df39aceb51c2365c8a142ad52dcc7738a955edd2b8c2,
+format.ts 767b7f689ae84c1d4f29b6c57685a3c416d7e35b6156a21ef4878241c331bbe4,
+and old helper837a1f35c31ce78c2e896526b5f4ef1d427d1151870d683d2772507b0cfbd130.
+All old snapshots/original inputs/native whole-span results stay unchanged.
+Each CLI packet records monotonic full-process elapsed time; extra startup cost
+is unmeasured, with no native-stage/performance claim.
+
+Private15-path source receipt03453c475af62075a85c55d0a2c0eb80196fcbb5e12cb30055a917a2e91f5691
+binds the reviewed successor over0fa. Configured formatting/lint and15 pure
+controls pass, including all scalar/bool pairs, Vue-shaped values, separators,
+unknown forms, non-Vue backslash/slash twins, complete namespaces and cleanup.
+Independent source-only review clears packetf093dbff19c2ce2207c7f28932ffa5be80b0a35d2c356ccfdb798bc3f2cb8604; all15 source hashes, original corpus and7130/plugin/format bodies are authenticated. Fresh original fourteen source-NAPI cases,
+unchanged #7130/full integration suites, protected100+4/full Rust and actual
+signed merge/publication remain required. No runtime credit transfers from0fa.
