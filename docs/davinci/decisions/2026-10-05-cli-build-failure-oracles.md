@@ -66,3 +66,24 @@ their retained check/lint/format/LSP controls. Source review, protected full
 suites and all 104 instruction gates precede actual signed merge. Release
 publication and installed-artifact proof remain owned by the separate release
 lane; this repair does not accept the failed or cancelled candidate.
+
+## First automatic source result
+
+Paired findings: [compiler](https://github.com/ubugeeei-prod/vize/issues/7879#issuecomment-5989277584), [release](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-5989278896).
+
+Source `c8a540028b` Check `37271478736` actually executes all seven original
+compiler/lint/format/check/LSP laws successfully. The complete raw artifact
+`11328294700` binds API example SHA-256
+`8106ea7e5a27f63a793f101f3b245d8787fc1eeb1604984ce6f9a3c0fc40a943` to
+checkout `c3de99f06ce751d42087a710ea7fccd06540dd9b`, whose parents are the
+actual main and source head. Six whole API invocations preserve both source
+hashes/exact patches, all seven ordered fields, no final newline, and the
+original Router broken JSON/code hashes; four CLI invocations fail with empty
+stdout and complete original diagnostics. This is source evidence only.
+
+The overall source Check fails the existing typecheck-dependency guard because
+its exact full-Check hydration list lacks the newly required pinned Vue Router.
+Retain the failed log and all runtime vectors. Add Vue Router to that same
+exact guard, preserving all old fixtures/flags/installer and strengthening the
+new bootstrap requirement. Fresh corrected-head Actions and protected
+acceptance remain mandatory; no historical success is transferred.
