@@ -78,8 +78,20 @@ removed so its existing complete process-flag controls use the actual default.
 Local configured formatting/lint, original corpus laws and emitter laws pass.
 The emitter run includes the existing dummy-JS Oxlint test; it gives no source
 NAPI credit. Local generation laws cannot load the absent workspace dist and
-remain unexecuted. Private source/recipe peer review, fresh exact-source Actions,
+remain unexecuted. Fresh exact-source Actions,
 authentic whole packets, unchanged protected100+4/full suites, actual signed
 reporter-credited merge and supported publication are still required.
 No native/compiler/default-history migration, browser/SSR expansion or
 performance result is claimed by this lint-config repair.
+
+## Frozen review and actual-main replay
+
+[Independent read-only review](https://github.com/ubugeeei-prod/vize/issues/7983#issuecomment-5991542057)
+clears private `bbcd2298df59f85652f11c5977bd912021806c4f` over actual `69b2c8c1`.
+The receipt SHA256 is `c357b96a25d1336be9affebffe27989af54462a26f23647ebe58554accf01d34`.
+It checks all25 source hashes, whole original Issue/corpus, reserved-path and
+namespace/refusal controls, full physical CLI/source-NAPI recipe and cleanup.
+The genuine replay onto actual `47dcd54e31e24b8660edacb1a5dde63099eb5a30`
+preserves all21 non-doc blobs and complete incoming decisions. Source review
+grants no execution credit; fresh hosted native/full protected delivery and
+supported publication remain pending.
