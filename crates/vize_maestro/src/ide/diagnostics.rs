@@ -35,6 +35,8 @@ mod editor_typecheck_emit_tests;
 mod editor_typecheck_fixture;
 #[cfg(all(test, feature = "native"))]
 mod editor_typecheck_tests;
+#[cfg(all(test, feature = "native"))]
+mod editor_typecheck_vue_helper_tests;
 mod line_index;
 mod linter_options;
 #[cfg(feature = "native")]

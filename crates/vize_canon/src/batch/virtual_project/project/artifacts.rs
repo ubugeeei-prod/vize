@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use super::super::build::RegisteredFile;
-use super::super::{SHARED_HELPERS_FILE, SourceArtifacts, VirtualFile, VirtualProject};
+use super::super::{SourceArtifacts, VirtualFile, VirtualProject};
 
 const MUSEA_DEFINE_ART_STUB: &str =
     "declare function defineArt(source: string, options?: Record<string, any>): void;";
@@ -122,7 +122,7 @@ impl VirtualProject {
     fn reconcile_shared_helper_membership(&mut self, before: bool) {
         if before != self.uses_shared_helpers() {
             self.incremental_materialized_candidates
-                .insert(self.virtual_root.join(SHARED_HELPERS_FILE));
+                .insert(self.shared_helpers_path());
             self.mark_incremental_config_file();
         }
     }

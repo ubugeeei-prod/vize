@@ -8,6 +8,7 @@ use vize_carton::String;
 use crate::batch::error::CorsaResult;
 use crate::batch::materialize_fs::{ensure_dir, write_if_changed};
 
+use super::super::SHARED_HELPERS_FILE;
 use super::VirtualProject;
 
 impl VirtualProject {
@@ -27,6 +28,22 @@ impl VirtualProject {
             })
             .unwrap_or_default();
         self.virtual_root.join(directory).join("tsconfig.json")
+    }
+
+    /// Vue macro and native-element imports resolve from the governing config's
+    /// mirrored directory, even when a sibling import widens the common root.
+    pub(crate) fn shared_helpers_path(&self) -> PathBuf {
+        self.generated_tsconfig_path()
+            .with_file_name(SHARED_HELPERS_FILE)
+    }
+
+    pub(super) fn shared_helpers_include(&self) -> String {
+        let path = self.shared_helpers_path();
+        path.strip_prefix(&self.virtual_root)
+            .unwrap_or(Path::new(SHARED_HELPERS_FILE))
+            .to_string_lossy()
+            .as_ref()
+            .into()
     }
 
     pub(super) fn write_generated_config(

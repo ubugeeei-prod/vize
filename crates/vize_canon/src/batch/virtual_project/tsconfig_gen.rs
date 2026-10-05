@@ -24,7 +24,7 @@ use vize_carton::{String as CompactString, ToCompactString, cstr};
 use crate::batch::error::CorsaResult;
 use crate::batch::source_policy::SourceFilePolicy;
 
-use super::{SHARED_HELPERS_FILE, VirtualProject};
+use super::VirtualProject;
 use native_options::normalize_native_removed_options;
 
 const PATH_SENSITIVE_COMPILER_OPTIONS: &[&str] = &[
@@ -336,7 +336,7 @@ impl VirtualProject {
         }
         self.push_stub_include_paths(&mut includes);
         if self.uses_shared_helpers() {
-            includes.push(SHARED_HELPERS_FILE.into());
+            includes.push(self.shared_helpers_include());
         }
         includes.sort();
         includes.dedup();
