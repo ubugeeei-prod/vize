@@ -25,5 +25,6 @@
     "completion thing."
   ],
   "nativeEligibility": null,
-  "oracle": "tests/performance/support/warm-type-backed-requests.ts"
+  "oracle": "crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs",
+  "runtimeOraclePending": "tests/performance/support/warm-type-backed-requests.ts"
 }

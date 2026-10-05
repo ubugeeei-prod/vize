@@ -291,12 +291,13 @@ fn identical_source_in_separate_roots_keeps_authored_membership() {
             project.host.dependencies[0].source_path,
             root.path().join("Child.vue").canonicalize().unwrap()
         );
+        let physical_root = root.path().canonicalize().unwrap();
         assert!(
             project
                 .host
                 .materialized_sources
                 .iter()
-                .all(|source| { source.source_path.starts_with(root.path()) })
+                .all(|source| { source.source_path.starts_with(&physical_root) })
         );
     }
 }

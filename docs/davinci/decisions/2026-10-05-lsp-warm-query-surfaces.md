@@ -18,3 +18,12 @@ The original report and generator SHA-256 values are respectively
 `4d0e14d66ce6e7b0b5d2e32a51c39bbe985283aa94934616b4da0ff587d34649`.
 The reported dependency/platform/timing observations remain historical, with
 no transfer to current source execution or CPU measurements.
+
+The [bounded source review checkpoint](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5993558094)
+clears production4d3c only. Compare canonical physical temporary roots in the
+complete cross-root membership law, including macOS `/var` symlink spelling.
+The fixture names its current Rust source law; the original400 paired whole
+wire/native-process/currentCPU observer remains pending. Session config PATH
+equality is not whole native configuration execution, and a fresh mirror
+session is not an actually executed new native process. Source checks remain
+mandatory on the corrected head, with no earlier runtime or timing transfer.
