@@ -3,6 +3,7 @@
 //! Parser callbacks remain the production legacy route. These frozen witnesses
 //! cover their actual v-pre scopes, namespace/recovery and dialect options.
 
+use super::tokenizer_first_newline_witness as correction;
 use super::{Parser, WhitespaceStrategy};
 use vize_l0::{Allocator, config::VueVersion, cstr, hash::StableHasher128};
 use vize_relief::options::ParserOptions;
@@ -12,10 +13,12 @@ struct Oracle {
     index: usize,
     mismatches: usize,
     capture: Option<std::fs::File>,
+    corrections: bool,
+    correction_hits: u8,
 }
 
 impl Oracle {
-    fn check(&mut self, fields: &[&[u8]], context: &str, options: &str) {
+    fn check(&mut self, fields: &[&[u8]; 3], context: &str, options: &ParserOptions) {
         let mut hash = StableHasher128::new();
         for bytes in fields {
             hash.update(&(bytes.len() as u64).to_le_bytes());
@@ -24,7 +27,15 @@ impl Oracle {
         let digest = hash.digest();
         let start = self.index * 16;
         let expected = self.expected.get(start..start + 16);
+        let corrected = self
+            .corrections
+            .then(|| correction::corrected_digest(self.index, fields, context, options, expected))
+            .flatten();
+        if let Some((_, bit)) = corrected {
+            self.correction_hits |= bit;
+        }
         if let Some(capture) = &mut self.capture {
+            let option_fields = cstr!("{options:?}");
             write_capture(
                 capture,
                 self.index as u64,
@@ -33,13 +44,17 @@ impl Oracle {
                     fields[0],
                     fields[1],
                     fields[2],
-                    options.as_bytes(),
+                    option_fields.as_bytes(),
                     expected.unwrap_or_default(),
                     &digest,
                 ],
             );
         }
-        if Some(digest.as_slice()) != expected {
+        let required = corrected
+            .as_ref()
+            .map(|(digest, _)| digest.as_slice())
+            .or(expected);
+        if Some(digest.as_slice()) != required {
             self.mismatches += 1;
             eprintln!(
                 "frozen case {}: {context}; expected {expected:?}; actual {digest:?}",
@@ -62,6 +77,11 @@ impl Oracle {
             self.mismatches, 0,
             "all frozen cases must match; no failed case is skipped"
         );
+        assert_eq!(
+            self.correction_hits,
+            if self.corrections { 3 } else { 0 },
+            "both exact approved vectors must participate"
+        );
     }
 }
 
@@ -74,6 +94,8 @@ fn oracle(expected: &'static [u8], name: &str) -> Oracle {
         index: 0,
         mismatches: 0,
         capture,
+        corrections: name == "fixtures.bin",
+        correction_hits: 0,
     }
 }
 
@@ -101,7 +123,7 @@ fn record(
     options: ParserOptions,
     context: &str,
 ) {
-    let option_fields = cstr!("{options:?}");
+    let recorded_options = options.clone();
     let allocator = Allocator::new();
     let (tree, errors) = if document {
         Parser::document_with_options(&allocator, source, options).parse()
@@ -113,7 +135,7 @@ fn record(
     cases.check(
         &[source.as_bytes(), tree.as_bytes(), errors.as_bytes()],
         context,
-        &option_fields,
+        &recorded_options,
     );
     feed(hash, source.as_bytes());
     feed(hash, tree.as_bytes());
@@ -170,10 +192,8 @@ fn complete_fixture_asts_and_utf8_cuts_keep_the_frozen_tokenizer_contract() {
     cases.finish(&hash.digest());
     assert_eq!(
         hash.digest(),
-        [
-            15, 118, 217, 141, 23, 28, 146, 11, 122, 149, 63, 93, 246, 250, 5, 228
-        ],
-        "captured source: 5bca3a881"
+        correction::APPROVED_AGGREGATE,
+        "captured source: 5bca3a881; exact two-vector correction: #7889"
     );
 }
 

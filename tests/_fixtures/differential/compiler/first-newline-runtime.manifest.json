@@ -18,14 +18,19 @@
           },
           {
             "path": "runtime.expected.json",
-            "sha256": "49cb5ffdba4de252bbe01191b941e15709539c89ad1e9400897c2c0afd1addb7",
+            "sha256": "bace948cf9a824847ffa7ce414f48dad0c408b815a533f56ec2b9122d0a71156",
             "role": "runtime-controls"
+          },
+          {
+            "path": "TrailingSpace.vue.txt",
+            "sha256": "207024315d3128b2d778c489db123015f34bcaec5eb7aaca4d5926cdfeff77f5",
+            "role": "runtime-control"
           }
         ]
       },
       "reference": {
         "path": "pre-textarea-first-newline/runtime.expected.json",
-        "sha256": "49cb5ffdba4de252bbe01191b941e15709539c89ad1e9400897c2c0afd1addb7",
+        "sha256": "bace948cf9a824847ffa7ce414f48dad0c408b815a533f56ec2b9122d0a71156",
         "source": "tests/tooling/pre-textarea-first-newline.test.mjs"
       },
       "provenance": {

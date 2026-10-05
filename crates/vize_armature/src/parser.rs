@@ -23,6 +23,8 @@ mod native_adapter_tests;
 mod pending_text;
 #[cfg(all(test, feature = "legacy"))]
 mod tokenizer_contract_tests;
+#[cfg(all(test, feature = "legacy"))]
+mod tokenizer_first_newline_witness;
 mod whitespace;
 mod whitespace_context;
 

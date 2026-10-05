@@ -53,9 +53,22 @@ The original Vapor hydration observation is retained in the hosted artifact.
 The retained legacy-feature tokenizer AST witness also runs in this job.
 Preserve its historical binaries and collect every original source, option,
 whole AST and diagnostic on both the exact pre-fix main and the new source,
-using the same test-only capture harness. Every frozen case still participates
-in strict checking; collection ends in failure if any case differs. Review the
-actual changed vectors before recording a narrowly keyed approved correction.
+using the same test-only capture harness. The authenticated
+[capture artifact](https://github.com/ubugeeei-prod/vize/actions/runs/37264649146/artifacts/11326026946)
+has SHA256 `1edfbd83a871419c5d0476d0b93bfdb86807c5dc9a232f696d727f3c828d1da4`.
+All 4,296 original fixture vectors and 12 option vectors were compared.
+Only indices 1103 and 3251, the exact 18-byte `<textarea>{{ x }} ` prefix in
+fragment/document mode, add an authored space Text node at span 17..18.
+Their MissingEndTag diagnostic remains exact; all other AST bytes are unchanged.
+Keep the historical binary and aggregate digests in the witness metadata.
+The reviewed current correction keys both indices, exact source/context,
+all default options/callbacks, historical digest and complete before/after AST.
+Every current case remains strict and both corrected vectors must participate.
+A separate complete `TrailingSpace.vue.txt` control qualifies this remaining
+textarea whitespace through actual DOM/SSR/Vapor mounting and hydration.
+The original reporter SFC remains an independent unchanged input.
+The [pinned stock parser](https://github.com/vuejs/core/blob/v3.6.0-rc.9/packages/compiler-core/src/parser.ts#L617-L627)
+also keeps RCDATA out of whitespace condensing before its first-newline rule.
 The whole original SFC and controls also run through a source-built CLI in DOM,
 SSR, Vapor and Vapor-requested SSR modes. Chromium compares actual mounted
 pre text, live textarea values, complete SSR HTML and hydration with the

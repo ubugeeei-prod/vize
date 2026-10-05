@@ -90,6 +90,12 @@
     "textarea": [""]
   },
   {
+    "id": "textarea-trailing-space-after-interpolation",
+    "sourceFile": "TrailingSpace.vue.txt",
+    "pre": ["line"],
+    "textarea": ["A "]
+  },
+  {
     "id": "carriage-return-only",
     "template": "<pre>\rline</pre><textarea>\rvalue</textarea>",
     "pre": ["\rline"],

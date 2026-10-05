@@ -39,7 +39,7 @@
   "runtimePacks": [
     {
       "path": "first-newline-runtime.manifest.json",
-      "sha256": "4c31958bf9611922290cad5e6ffc45e988f9d5c771abe0aefb035ed5d0ca087f",
+      "sha256": "a4ed88464c4ae0f35879cbc34dc08a5da85ca1f625c523a10ded80fac61bc3cb",
       "adapter": "compiler-cli-whole-sfc-runtime-v1",
       "workflow": ".github/workflows/pre-textarea-first-newline.yml"
     }

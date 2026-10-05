@@ -1,0 +1,48 @@
+{
+  "artifact": 11326026946,
+  "artifactSha256": "1edfbd83a871419c5d0476d0b93bfdb86807c5dc9a232f696d727f3c828d1da4",
+  "before": "7cc79441ab35a0add0f4f90d4bbab0d4bef52e52",
+  "after": "010eac06fce59a3c8de70ea597a3f8670deebe20",
+  "historicalAggregate": [15, 118, 217, 141, 23, 28, 146, 11, 122, 149, 63, 93, 246, 250, 5, 228],
+  "approvedAggregate": [85, 144, 88, 208, 172, 88, 157, 157, 0, 9, 189, 50, 214, 112, 133, 47],
+  "cases": [
+    {
+      "index": 1103,
+      "context": "document=false; rcdata_textarea_title prefix@18",
+      "source": "<textarea>{{ x }} ",
+      "options": "ParserOptions { mode: Base, whitespace: Condense, delimiters: (\"{{\", \"}}\"), is_pre_tag: <callback-address>, is_native_tag: None, is_custom_element: None, custom_renderer: false, is_void_tag: <callback-address>, get_namespace: <callback-address>, on_error: None, on_warn: None, comments: true, experimental_in_tag_comments: false, dialect: V3 }",
+      "diagnostics": "[\n    CompilerError {\n        code: MissingEndTag,\n        message: \"Element is missing end tag.\",\n        loc: Some(\n            SourceLocation {\n                span: Span {\n                    start: 0,\n                    end: 10,\n                },\n            },\n        ),\n    },\n]",
+      "beforeDigest": [177, 145, 132, 48, 217, 143, 93, 166, 252, 74, 92, 143, 86, 128, 114, 203],
+      "afterDigest": [74, 137, 159, 212, 99, 214, 35, 180, 208, 148, 114, 27, 206, 253, 63, 2]
+    },
+    {
+      "index": 3251,
+      "context": "document=true; rcdata_textarea_title prefix@18",
+      "source": "<textarea>{{ x }} ",
+      "options": "ParserOptions { mode: Base, whitespace: Condense, delimiters: (\"{{\", \"}}\"), is_pre_tag: <callback-address>, is_native_tag: None, is_custom_element: None, custom_renderer: false, is_void_tag: <callback-address>, get_namespace: <callback-address>, on_error: None, on_warn: None, comments: true, experimental_in_tag_comments: false, dialect: V3 }",
+      "diagnostics": "[\n    CompilerError {\n        code: MissingEndTag,\n        message: \"Element is missing end tag.\",\n        loc: Some(\n            SourceLocation {\n                span: Span {\n                    start: 0,\n                    end: 10,\n                },\n            },\n        ),\n    },\n]",
+      "beforeDigest": [177, 145, 132, 48, 217, 143, 93, 166, 252, 74, 92, 143, 86, 128, 114, 203],
+      "afterDigest": [74, 137, 159, 212, 99, 214, 35, 180, 208, 148, 114, 27, 206, 253, 63, 2]
+    }
+  ],
+  "snapshots": {
+    "before": {
+      "path": "first_newline_parser_before.txt",
+      "sha256": "5db967b7c5f3e574f57d89abfba443bc75c9537ce34e87f2c55702f16a5daabf"
+    },
+    "after": {
+      "path": "first_newline_parser_after.txt",
+      "sha256": "c7b6adcbb439ec6f566d702a044541b0c5bfb873ac7f026a7dddbf0c10f2c35b"
+    }
+  },
+  "historicalBinaries": {
+    "fixtures": {
+      "path": "tokenizer_parser_fixtures.bin",
+      "sha256": "8d4d06bffecd8503651553d312e444c5ba2640db98af592b8224517ff0de44a7"
+    },
+    "options": {
+      "path": "tokenizer_parser_options.bin",
+      "sha256": "927e7c15225e0886d8c90290ba2675050e2baa069a4d4dbeb256c6fb1e154207"
+    }
+  }
+}

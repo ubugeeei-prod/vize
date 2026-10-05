@@ -11,6 +11,13 @@ import { pathToFileURL } from "node:url";
 const root = new URL("../../", import.meta.url);
 const corpus = new URL("_fixtures/differential/compiler/", new URL("../", import.meta.url));
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const witnessRoot = new URL("crates/vize_armature/tests/_fixtures/", root);
+const witness = JSON.parse(readFileSync(new URL("first_newline_parser_witness.json", witnessRoot)));
+for (const reference of [
+  ...Object.values(witness.snapshots),
+  ...Object.values(witness.historicalBinaries),
+])
+  assert.equal(hash(readFileSync(new URL(reference.path, witnessRoot))), reference.sha256);
 const registry = JSON.parse(readFileSync(new URL("manifest.json", corpus)));
 const registration = registry.runtimePacks.find(
   (pack) => pack.path === "first-newline-runtime.manifest.json",
@@ -159,7 +166,7 @@ void test(
     try {
       for (const fixture of cases) {
         const source = fixture.sourceFile
-          ? original
+          ? readFileSync(new URL(fixture.sourceFile, fixtureRoot), "utf8")
           : `<script setup>\nconst a = "A"\n</script>\n<template>${fixture.template}</template>\n`;
         try {
           const input = join(directory, "App.vue");
