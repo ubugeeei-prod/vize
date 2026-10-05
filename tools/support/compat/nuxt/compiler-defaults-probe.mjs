@@ -84,7 +84,12 @@ async function compile(directory, plugins, ssr) {
     assert.ok(component, "the whole original app must remain the default component");
     const context = {};
     const html = await renderToString(createSSRApp(component), context);
-    const rendered = { html, modules: [...(context.modules ?? [])].sort() };
+    const rendered = {
+      html,
+      modules: [...(context.modules ?? [])].sort((left, right) =>
+        left < right ? -1 : left > right ? 1 : 0,
+      ),
+    };
     json(directory, "rendered.json", rendered);
     return { loads, output, rendered };
   } finally {
@@ -197,7 +202,11 @@ for (const scenario of selected) {
       assert.deepEqual(observed.output, control.output);
       const expected = {
         html: scenario.html,
-        modules: ssr ? corpus.paths.map((name) => name.slice(4)).sort() : [],
+        modules: ssr
+          ? corpus.paths
+              .map((name) => name.slice(4))
+              .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0))
+          : [],
       };
       assert.deepEqual(observed.rendered, expected);
       assert.deepEqual(control.rendered, expected);

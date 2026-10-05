@@ -73,3 +73,13 @@ all original inputs, frozen matrix, whole compilation/render references and caps
 remain unchanged. Exact successor Actions must qualify them afresh; the first
 failed logs and small selected artifact members remain historical evidence, with
 no full-archive digest, current compiled acceptance or queue/release claim.
+
+Source `f03fdc22` Nuxt3 run 37328939346 is terminal success, including all
+original Nuxt3/4 setup/client/SSR/full-render controls and the existing suites.
+Aggregate source acceptance remains separate: [the next paired correction](https://github.com/ubugeeei-prod/vize/issues/7959#issuecomment-5997184851)
+retains Check 37328940919's two type-aware array-sort warnings. Explicit UTF-16
+lexical comparators preserve the same string order in all three evidence sorts.
+Configured local type-aware lint passes; production, original/matrix/reference
+bytes and warning/instruction budgets remain exact. The same Draft requires
+fresh successor source and original runtime proof; prior `f03` proof stays
+historical to that exact source, with protected delivery/publication still pending.

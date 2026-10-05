@@ -42,7 +42,7 @@ const hashes = (directory) =>
   Object.fromEntries(
     fs
       .readdirSync(directory, { recursive: true })
-      .sort()
+      .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0))
       .flatMap((name) => {
         const file = path.join(directory, name);
         return fs.statSync(file).isFile() ? [[name, hash(fs.readFileSync(file))]] : [];
