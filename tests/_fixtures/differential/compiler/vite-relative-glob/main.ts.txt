@@ -1,0 +1,4 @@
+import { createApp } from "vue";
+import Plain from "./pages/demo/Plain.vue";
+
+createApp(Plain).mount("#app");

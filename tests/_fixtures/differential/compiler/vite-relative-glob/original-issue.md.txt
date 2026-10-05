@@ -1,0 +1,140 @@
+### Area
+
+`@vizejs/vite-plugin`: `import.meta.glob` with a relative pattern inside an SFC `<script setup>` (follow-up to #884)
+
+### Version
+
+`vize` / `@vizejs/vite-plugin` 0.432.0, `vite` 8.2.2, `vue` 3.5.43, Node v26.8.1, macOS arm64
+
+### Summary
+
+Since #884, a relative glob in an SFC no longer throws, but its result differs from `@vitejs/plugin-vue`:
+
+1. The keys of the returned object are root-absolute (`"/fixtures/Alpha.vue"`) instead of the pattern's own relative form (`"../../../fixtures/Alpha.vue"`). Code that looks a module up by the same relative path it globbed (`modules[`../../../fixtures/${name}.vue`]`) gets `undefined`.
+2. When the relative pattern leaves the Vite root (for example a Nuxt app whose root is `srcDir`, globbing fixtures that live next to it), the glob matches nothing at all: `Object.assign({})`.
+
+Both builds succeed without a warning, so the only symptom is an empty page at runtime.
+
+### Reproduction
+
+```
+package.json
+vite.config.ts            # root = project dir
+vite.src-root.config.ts   # root = src/
+index.html
+src/index.html
+src/main.ts
+src/pages/demo/Plain.vue
+fixtures/Alpha.vue
+```
+
+`package.json`
+
+```json
+{
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@vitejs/plugin-vue": "6.0.8",
+    "@vizejs/vite-plugin": "0.432.0",
+    "vite": "8.2.2",
+    "vize": "0.432.0",
+    "vue": "3.5.43"
+  }
+}
+```
+
+`vite.config.ts`
+
+```ts
+import vue from "@vitejs/plugin-vue";
+import vize from "@vizejs/vite-plugin";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [process.env.USE_VIZE ? vize() : vue()],
+  build: { minify: false, outDir: process.env.USE_VIZE ? "dist-vize" : "dist-vue" }
+});
+```
+
+`vite.src-root.config.ts`
+
+```ts
+import { fileURLToPath } from "node:url";
+import vue from "@vitejs/plugin-vue";
+import vize from "@vizejs/vite-plugin";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  root: fileURLToPath(new URL("./src", import.meta.url)),
+  plugins: [process.env.USE_VIZE ? vize() : vue()],
+  build: {
+    minify: false,
+    emptyOutDir: true,
+    outDir: fileURLToPath(new URL(process.env.USE_VIZE ? "./dist-src-vize" : "./dist-src-vue", import.meta.url))
+  }
+});
+```
+
+`index.html` (and `src/index.html` with `src="./main.ts"`)
+
+```html
+<!doctype html>
+<div id="app"></div>
+<script type="module" src="/src/main.ts"></script>
+```
+
+`src/main.ts`
+
+```ts
+import { createApp } from "vue";
+import Plain from "./pages/demo/Plain.vue";
+
+createApp(Plain).mount("#app");
+```
+
+`src/pages/demo/Plain.vue`
+
+```vue
+<script setup lang="ts">
+const fixtures = import.meta.glob<{ default: object }>("../../../fixtures/*.vue");
+const names = Object.keys(fixtures);
+</script>
+
+<template>
+  <p>{{ names.join(",") || "(none)" }}</p>
+</template>
+```
+
+`fixtures/Alpha.vue`
+
+```vue
+<template>
+  <p>alpha</p>
+</template>
+```
+
+```sh
+npx vite build                                   # @vitejs/plugin-vue, root = project
+USE_VIZE=1 npx vite build                        # vize,              root = project
+npx vite build -c vite.src-root.config.ts        # @vitejs/plugin-vue, root = src/
+USE_VIZE=1 npx vite build -c vite.src-root.config.ts   # vize,         root = src/
+grep -ho 'Object.assign({[^)]\{0,60\}' dist-vue/assets/*.js dist-vize/assets/*.js dist-src-vue/assets/*.js dist-src-vize/assets/*.js
+```
+
+### Actual
+
+| build | generated glob object |
+| --- | --- |
+| plugin-vue, root = project | `Object.assign({ "../../../fixtures/Alpha.vue": (…` |
+| **vize**, root = project | `Object.assign({ "/fixtures/Alpha.vue": (…` |
+| plugin-vue, root = `src/` | `Object.assign({ "../../../fixtures/Alpha.vue": (…` |
+| **vize**, root = `src/` | `Object.assign({}` (no match) |
+
+### Expected
+
+The same object as `@vitejs/plugin-vue`: the pattern is resolved against the `.vue` file, the keys keep the relative form of the pattern, and files outside the Vite root are matched like Vite does for any other module.
+
+### Notes
+
+#884 fixed the build error ("In virtual modules, all globs must start with '/'") by turning the relative pattern into a root-absolute one. That changes the keys, and a root-absolute pattern cannot express a path above the root, which is why the second case is empty. Keeping the original `.vue` path as the importer of the glob transform (or rewriting the keys back to the authored relative form) would avoid both.

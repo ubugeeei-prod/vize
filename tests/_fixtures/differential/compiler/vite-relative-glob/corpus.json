@@ -1,0 +1,137 @@
+{
+  "issue": 7936,
+  "reporter": {
+    "login": "ubugeeei",
+    "githubId": 71201308,
+    "coauthor": "Co-authored-by: ubugeeei <71201308+ubugeeei@users.noreply.github.com>"
+  },
+  "originalBodySha256": "b0da6dfcf530a577a14662ac32188f71c882bfe6be289fedd9894fe80307a611",
+  "files": {
+    "Alpha.vue.txt": {
+      "bytes": 38,
+      "sha256": "aaf622793d28563ae5ae1785e28f01a9937b52f9def55e57d123163cd8902de5"
+    },
+    "First.vue.txt": {
+      "bytes": 38,
+      "sha256": "43738731f0fa6436b235a0ea4f03a64b653025bcb79f5f178af5949714225f9f"
+    },
+    "Lookup.vue.txt": {
+      "bytes": 246,
+      "sha256": "c53cb439cd606d1964febaf2be305cb9c5aa42721ff01fcb9231d9a99c781b54"
+    },
+    "Options.vue.txt": {
+      "bytes": 746,
+      "sha256": "f710c4a72871f08df3c99a6c7f7af04d90c5065082583c4b0c0c406acfa24799"
+    },
+    "Plain.vue.txt": {
+      "bytes": 222,
+      "sha256": "b0392620944bd01c0c69c38dd2e28b6c5e55c40250de5236186be62e3c086809"
+    },
+    "Skip.vue.txt": {
+      "bytes": 37,
+      "sha256": "68fa0fe6281dda9edc552db1ff2ea7f5be02bd5babedfa7b80af785639738f8d"
+    },
+    "index.html.txt": {
+      "bytes": 88,
+      "sha256": "139f020df5c479593c6c9ef3fc4fa1545e183066fd0a173d8d7231c633441f0a"
+    },
+    "layout.txt": {
+      "bytes": 182,
+      "sha256": "c84e981a45d850749c334a1727c1f2957ef595b037ea8df6ae0f43dd3aedb949"
+    },
+    "main.ts.txt": {
+      "bytes": 110,
+      "sha256": "924e40e72f06c65aa63dd9f5db4275ad4cec92c031b342249686278541c8b7db"
+    },
+    "nuxt.config.ts.txt": {
+      "bytes": 204,
+      "sha256": "98b34443b96c2fd224562ba9180d1e4af2f2232808e4a22e6aef4606cd39187e"
+    },
+    "original-issue.md.txt": {
+      "bytes": 4337,
+      "sha256": "b0da6dfcf530a577a14662ac32188f71c882bfe6be289fedd9894fe80307a611"
+    },
+    "package.json.txt": {
+      "bytes": 207,
+      "sha256": "0606b30c1c8b6ba6f12630a049d2474f7265aa1a7bf090989c37bbe5d2626288"
+    },
+    "reproduction.sh.txt": {
+      "bytes": 470,
+      "sha256": "0967c12cf646f59b807891e27ed782751080e6d4b2451755587a3cf4e5e9ffe8"
+    },
+    "src-index.html.txt": {
+      "bytes": 85,
+      "sha256": "f24aef35c987f11c0327159e94b3e3336f1c2f9c5af29eb59343e236f4fdd804"
+    },
+    "ssr-entry.ts.txt": {
+      "bytes": 50,
+      "sha256": "2381e62291fd92a01364910b41853789ac58d81e1f3a621bc152e14ed553fb21"
+    },
+    "vite.config.ts.txt": {
+      "bytes": 286,
+      "sha256": "5bd77f4beb821c30bf00777a6e28d00fdac141750b7ac0a57a0283409f016bc2"
+    },
+    "vite.src-root.config.ts.txt": {
+      "bytes": 472,
+      "sha256": "4521f18be7960890655952ef81a224b9e05ac0293e5533ce763ec186b25bc2ef"
+    }
+  },
+  "originalFenceCount": 9,
+  "derivations": {
+    "src-index.html.txt": "Original HTML with only the explicitly reported src/main.ts \u2192 ./main.ts substitution.",
+    "ssr-entry.ts.txt": "Authored transport entry re-exports the unchanged original component; separate client main remains exact.",
+    "Lookup.vue.txt": "Authored eager/default relative lookup control.",
+    "Options.vue.txt": "Authored arrays/negation, template literal, base, raw query, no-match controls.",
+    "nuxt.config.ts.txt": "Authored genuine Nuxt module setup; original Vite report did not supply Nuxt configuration."
+  },
+  "expected": {
+    "plain": {
+      "innerHtml": "<p>../../../fixtures/Alpha.vue</p>",
+      "ssrHtml": "<p>../../../fixtures/Alpha.vue</p>"
+    },
+    "lookup": {
+      "innerHtml": "<p>alpha</p>",
+      "ssrHtml": "<p>alpha</p>"
+    },
+    "options": {
+      "innerHtml": "<main><p>../../../control-fixtures/First.vue</p><p>../../../fixtures/Alpha.vue</p><p>./Alpha.vue</p><p>(none)</p><pre>&lt;template&gt;\n  &lt;p&gt;alpha&lt;/p&gt;\n&lt;/template&gt;\n</pre></main>",
+      "ssrHtml": "<main><p>../../../control-fixtures/First.vue</p><p>../../../fixtures/Alpha.vue</p><p>./Alpha.vue</p><p>(none)</p><pre>&lt;template&gt;\n  &lt;p&gt;alpha&lt;/p&gt;\n&lt;/template&gt;\n</pre></main>"
+    }
+  },
+  "cohorts": [
+    {
+      "id": "reported-vite",
+      "path": "tools/support/compat/nuxt/fixtures/vite-relative-glob",
+      "vite": "8.2.2",
+      "vue": "3.5.43",
+      "pluginVue": "6.0.8"
+    },
+    {
+      "id": "nuxt3",
+      "path": "tools/support/compat/nuxt/fixtures/nuxt3-module-build",
+      "nuxt": "3.19.3",
+      "vite": "8.3.1",
+      "vue": "3.5.43",
+      "pluginVue": "6.0.9"
+    },
+    {
+      "id": "nuxt4",
+      "path": "tests/_fixtures/_projects/nuxt-critical-css-build",
+      "nuxt": "4.5.2",
+      "vite": "8.3.1",
+      "vue": "3.5.43",
+      "pluginVue": "6.0.9"
+    }
+  ],
+  "roots": [
+    "project",
+    "src"
+  ],
+  "scenarios": [
+    "plain",
+    "lookup",
+    "options"
+  ],
+  "referenceAuthority": "Authored from preserved literal glob/import keys, complete original Alpha source, Vue HTML text escaping and literal templates; never captured from current output. Stock plugin-vue is an independent runtime control, not a replacement for these fixed whole expected outputs.",
+  "scope": "Original Vite config/build + Chromium mounted component + complete SSR render; Nuxt3/4 genuine loadNuxt/module plugin followed by identical actual Vite build/render. No full Nitro/hydration/performance claim."
+}

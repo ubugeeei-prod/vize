@@ -69,7 +69,7 @@ No source clamping, global counter, native IPC or per-node type query is added.
 ## Qualification and remaining work
 
 The orchestration extraction is a separate move-only commit; all source behavior
-changes follow it. Fifteen prepared producer laws cover the entire original,
+changes follow it. Sixteen prepared producer laws cover the entire original,
 script/template shadows, property/string/comment negatives, repeat-cache locations,
 Unicode/CRLF, both CSS blocks, joined script offsets and whole snapshot/VIR
 conservation. External or unsupported regular scripts, malformed/external styles,
@@ -98,7 +98,10 @@ Occurrence facts promise lexical ownership and exact authored uses; they do not
 claim read/write access classification. UI consumers retain the existing explicit
 declaration WRITE/use READ styling, including updates, as a separate contract.
 
-At source preparation, only configured rustfmt and diff hygiene have run. Rust
+At source preparation, only configured rustfmt and diff hygiene have run.
+The bounded independent final source review at `536f646f` cleared its known
+causal groups; it executed no tests. Current-main integration preserves those
+reviewed code/input bytes and fixes the prepared-law count to sixteen. Rust
 producer execution, unchanged differential corpus and fixed 104 instruction
 ceilings require fresh Actions. No local native build or runtime campaign ran.
 
