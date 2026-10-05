@@ -12,7 +12,19 @@ const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
 const vapor = input.target === "vapor";
 const ssr = ["ssr", "vapor-ssr-fallback"].includes(input.target);
 const window = new Window();
-for (const key of ["window", "document", "Document", "Node", "Text", "Comment", "Element", "HTMLElement", "SVGElement", "Event", "ShadowRoot"])
+for (const key of [
+  "window",
+  "document",
+  "Document",
+  "Node",
+  "Text",
+  "Comment",
+  "Element",
+  "HTMLElement",
+  "SVGElement",
+  "Event",
+  "ShadowRoot",
+])
   globalThis[key] = key === "window" ? window : window[key];
 const fromUi = createRequire(new URL("../../../npm/ui/package.json", import.meta.url));
 const compiler = fromUi("vue/compiler-sfc");
@@ -25,10 +37,20 @@ globalThis.__slotCommentRuntime = { vue, server };
 async function load(code) {
   const body = code.replace(
     /import\s*\{([^}]*)\}\s*from\s*["'](vue|@vue\/server-renderer|vue\/server-renderer)["'];?/gu,
-    (_, names, source) => `const {${names.replace(/\s+as\s+/gu, ": ")}} = globalThis.__slotCommentRuntime.${source === "vue" ? "vue" : "server"};`,
+    (_, names, source) =>
+      `const {${names.replace(/\s+as\s+/gu, ": ")}} = globalThis.__slotCommentRuntime.${source === "vue" ? "vue" : "server"};`,
   );
-  const module = await import(`data:text/javascript;base64,${Buffer.from(body).toString("base64")}`);
-  return module.default ?? (vapor ? { __vapor: true, render: module.render } : ssr ? { ssrRender: module.ssrRender } : { render: module.render });
+  const module = await import(
+    `data:text/javascript;base64,${Buffer.from(body).toString("base64")}`
+  );
+  return (
+    module.default ??
+    (vapor
+      ? { __vapor: true, render: module.render }
+      : ssr
+        ? { ssrRender: module.ssrRender }
+        : { render: module.render })
+  );
 }
 
 function reference(source, serverTarget = ssr) {
@@ -38,14 +60,20 @@ function reference(source, serverTarget = ssr) {
   if (vapor) {
     const errors = [];
     const result = officialCompilerVapor.compile(template, {
-      mode: "module", comments: true, onError: (error) => errors.push(error),
+      mode: "module",
+      comments: true,
+      onError: (error) => errors.push(error),
     });
     assert.deepEqual(errors, []);
     return result.code;
   }
   const result = compiler.compileTemplate({
-    source: template, filename: "Reported.vue", id: "probe", ssr: serverTarget,
-    ssrCssVars: [], compilerOptions: { comments: true },
+    source: template,
+    filename: "Reported.vue",
+    id: "probe",
+    ssr: serverTarget,
+    ssrCssVars: [],
+    compilerOptions: { comments: true },
   });
   assert.deepEqual(result.errors, []);
   assert.deepEqual(result.tips, []);
@@ -60,23 +88,36 @@ async function observe(code, mode) {
   const component = await load(code);
   const slotCalls = [];
   const Confirm = vapor
-    ? vue.defineVaporComponent({ name: "Confirm", setup: () => {
-        const button = window.document.createElement("button");
-        button.textContent = "confirm";
-        return button;
-      } })
+    ? vue.defineVaporComponent({
+        name: "Confirm",
+        setup: () => {
+          const button = window.document.createElement("button");
+          button.textContent = "confirm";
+          return button;
+        },
+      })
     : { name: "Confirm", render: () => vue.h("button", "confirm") };
-  const Dialog = mode === "slot-probe"
-    ? { name: "Dialog", render() {
-        const nodes = this.$slots.default?.() ?? [];
-        slotCalls.push({
-          keys: Object.keys(this.$slots).sort(),
-          count: nodes.length,
-          types: nodes.map((node) => node.type === vue.Comment ? "comment" : node.type === Confirm ? "Confirm" : String(node.type)),
-        });
-        return vue.h("section", null, this.$slots.default ? nodes : vue.h("em", "fallback"));
-      } }
-    : await load(childCode);
+  const Dialog =
+    mode === "slot-probe"
+      ? {
+          name: "Dialog",
+          render() {
+            const nodes = this.$slots.default?.() ?? [];
+            slotCalls.push({
+              keys: Object.keys(this.$slots).sort(),
+              count: nodes.length,
+              types: nodes.map((node) =>
+                node.type === vue.Comment
+                  ? "comment"
+                  : node.type === Confirm
+                    ? "Confirm"
+                    : String(node.type),
+              ),
+            });
+            return vue.h("section", null, this.$slots.default ? nodes : vue.h("em", "fallback"));
+          },
+        }
+      : await load(childCode);
   const app = (vapor ? vue.createVaporApp : ssr ? vue.createSSRApp : vue.createApp)(component);
   app.component("Dialog", Dialog);
   app.component("Confirm", Confirm);
@@ -109,7 +150,15 @@ async function observe(code, mode) {
 
 try {
   for (const fixture of input.cases) {
-    assert.deepEqual(Object.keys(fixture.current).sort(), ["bindings", "code", "css", "errors", "macroArtifacts", "map", "warnings"]);
+    assert.deepEqual(Object.keys(fixture.current).sort(), [
+      "bindings",
+      "code",
+      "css",
+      "errors",
+      "macroArtifacts",
+      "map",
+      "warnings",
+    ]);
     const officialCode = reference(fixture.source);
     const modes = vapor ? ["slot-outlet"] : ["slot-probe", "slot-outlet"];
     const observations = [];
@@ -125,14 +174,24 @@ try {
       }
       if (mode === "slot-probe") {
         const absent = fixture.name === "comment-only";
-        const count = absent ? 0 : ["explicit-default", "ordinary-default"].includes(fixture.name) ? 2 : 1;
+        const count = absent
+          ? 0
+          : ["explicit-default", "ordinary-default"].includes(fixture.name)
+            ? 2
+            : 1;
         assert.equal(actual.slotCalls.length, 1);
         assert.equal(actual.slotCalls[0].count, count, fixture.name);
         assert.equal(actual.slotCalls[0].keys.includes("default"), !absent, fixture.name);
       }
       observations.push({ mode, expected, actual });
     }
-    cases.push({ name: fixture.name, source: fixture.source, current: fixture.current, officialCode, observations });
+    cases.push({
+      name: fixture.name,
+      source: fixture.source,
+      current: fixture.current,
+      officialCode,
+      observations,
+    });
   }
   process.stdout.write(JSON.stringify({ target: input.target, version: vue.version, cases }));
 } finally {
