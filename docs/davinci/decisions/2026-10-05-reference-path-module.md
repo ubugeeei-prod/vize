@@ -80,3 +80,8 @@ and leading-dot clean/error controls. Its nested `.nuxt` case drops an
 explicitly included reference-only manifest from hidden ambient roots; keep
 that manifest as a graph root, including missing targets so TS6053 remains
 observable. Hidden generated declarations remain unreported type context.
+
+Helper eligibility also follows incremental source membership. Existing
+config membership changes enqueue the shared helper candidate, letting the
+normal materializer create or remove it. A TS → Vue → TS control verifies
+this transition without changing untouched warm source handling.
