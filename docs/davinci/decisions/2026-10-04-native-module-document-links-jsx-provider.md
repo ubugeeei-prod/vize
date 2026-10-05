@@ -86,3 +86,26 @@ source Actions, complete original laws and protected/full-corpus/104 gates
 remain required. New queue admission is held through the supported #7811
 finite release publication and explicit root thaw; standard/default/history
 completion, stronger watcher/resolution coverage and the 10x target stay separate.
+
+## Queued-prefix conservation and explicit existing-source thaw
+
+Source `67363` Check 37269182081 is terminal SUCCESS. Its actual d34 checkout
+uses the exact source tree and passes 209 SourceProject, 59 native RPC,
+111 normal module-link and 63 minimal module-link tests, the genuine minimal
+check and strict Clippy. All 63 Linux-executable laws in the 64-law freeze
+actually pass; the non-Unix law remains unexecuted.
+
+The first admission preflight finds a canonical-only prospective conflict:
+the queued eight-entry prefix changes the adjacent Type checker paragraph,
+while source `67363` appends the consumer history to the LSP paragraph. No queue
+admission is attempted. Place the whole owned history in the existing LSP fix-history paragraph,
+preserving every incoming byte and all 350 lines.
+All production/test/fixture/provider and budget bytes remain unchanged.
+
+The coordinator explicitly thaws existing qualified PR admissions while the
+separate supported-release parity repair proceeds, superseding the earlier
+operational publication hold. This successor has no transferred execution
+credit: fresh exact source Actions, current required checks, clean actual
+queued-prefix composition, protected all 104/full suites and actual signed
+merge remain mandatory. Publication and broader/default/history completion
+are still unfinished.
