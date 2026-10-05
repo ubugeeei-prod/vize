@@ -214,3 +214,12 @@ would reach353 lines; compact only the TS40 cargo command's wrapping by three
 lines, mechanically preserving every argv token, profile and receipt command.
 The combined workflow fits350 with no command/capture/limit removal. This
 composition-only successor still requires fresh exact-head source/native proof.
+
+Actual signed #7878 main40e permits a genuine independent replay. Both native
+editor modules remain registered. All 32 original/control/raw-proof blobs are
+byte-exact against qualified 9a; only the necessary test registration, complete
+workflow composition, paired canonical record and official Canon census differ.
+The incoming complete defaults qualifier is retained byte-for-byte, and the
+workflow stays at 350 lines. Official generation records real combined usage;
+no counter is edited by hand. Fresh exact source/native and ordered queue proof
+are required before admission; protected full/all104 and publication remain open.
