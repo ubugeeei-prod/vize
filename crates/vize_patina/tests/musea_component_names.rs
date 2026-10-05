@@ -1,7 +1,7 @@
 //! Original Art filename regressions and unchanged complete template diagnostics.
 #![expect(clippy::disallowed_macros, reason = "compare complete fixture results")]
 
-use vize_patina::{LintPreset, LintResult, Linter, Severity, rule::RuleRegistry};
+use vize_patina::{LintPreset, LintResult, Linter, RuleRegistry, Severity};
 
 const BUTTON: &str = include_str!("fixtures/musea-component-names/my-button.art.vue.txt");
 const BADGE: &str = include_str!("fixtures/musea-component-names/Badge.art.vue.txt");

@@ -40,3 +40,12 @@ This filename correction changes no parser/compiler/variant context,
 legacy-backed Davinci route, default migration, fix-history acceptance or
 performance budget. Hold admission through the verified release thaw and
 close the issue only after the correction actually merges with its gates.
+
+## First source build repair
+
+Check 37258584235 rejects original source 26ccf3ca44 before executing the
+new tests: the integration test imports the private `rule` module (E0603).
+Use the existing public `vize_patina::RuleRegistry` re-export, keeping all
+source inputs, seven test functions, expectations, production and budgets
+unchanged. The raw build job 111601472556 remains the failure receipt.
+The failed Draft was never queued; fresh exact-source Actions are required.
