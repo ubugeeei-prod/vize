@@ -104,7 +104,7 @@ pub(super) fn assert_complete_alias_response(
         )
         .unwrap();
         std::fs::write(capture.join("generated.vue.ts"), document.code.as_bytes()).unwrap();
-        std::fs::write(capture.join("runtime.json"), serde_json::to_vec_pretty(&json!({"nativeBinary": std::env::var_os("CORSA_PATH").unwrap(), "workingDirectory": root, "timeoutMs": 30_000})).unwrap()).unwrap();
+        std::fs::write(capture.join("runtime.json"), serde_json::to_vec_pretty(&json!({"nativeBinary": PathBuf::from(std::env::var_os("CORSA_PATH").unwrap()), "workingDirectory": root, "timeoutMs": 30_000})).unwrap()).unwrap();
         let config = document
             .session_project_root
             .as_ref()
