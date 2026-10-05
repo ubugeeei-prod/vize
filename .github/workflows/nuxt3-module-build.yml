@@ -5,11 +5,16 @@ on:
     paths:
       - .github/workflows/nuxt3-module-build.yml
       - npm/framework/nuxt/**
+      - npm/framework/nuxt-lint-config/**
+      - npm/oxlint/**
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.mjs
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
+      - tools/support/compat/nuxt/lint-config-*
+      - tests/_fixtures/differential/linter/nuxt-oxlint-config-root/**
+      - tests/tooling/nuxt-oxlint-config-root.test.mjs
       - tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**
       - tests/_fixtures/differential/compiler/nuxt-prefetch-manifest/**
       - tests/tooling/nuxt-prefetch-manifest.test.mjs
@@ -25,11 +30,16 @@ on:
     paths:
       - .github/workflows/nuxt3-module-build.yml
       - npm/framework/nuxt/**
+      - npm/framework/nuxt-lint-config/**
+      - npm/oxlint/**
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.mjs
       - tools/support/compat/nuxt/source-binding*
       - tools/support/compat/nuxt/prefetch-manifest-*
+      - tools/support/compat/nuxt/lint-config-*
+      - tests/_fixtures/differential/linter/nuxt-oxlint-config-root/**
+      - tests/tooling/nuxt-oxlint-config-root.test.mjs
       - tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**
       - tests/_fixtures/differential/compiler/nuxt-prefetch-manifest/**
       - tests/tooling/nuxt-prefetch-manifest.test.mjs
@@ -86,6 +96,12 @@ jobs:
       - name: Build the candidate Vite adapter
         working-directory: npm/builder/vite
         run: vp pack
+      - name: Build the candidate Nuxt lint preset
+        working-directory: npm/framework/nuxt-lint-config
+        run: vp pack
+      - name: Build the candidate Oxlint bridge
+        working-directory: npm/oxlint
+        run: vp pack
       - name: Build the candidate Nuxt integration
         working-directory: npm/framework/nuxt
         run: vp pack
@@ -103,6 +119,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Verify original SPA manifest and physical prefetch with the source compiler
         run: vp env exec node tools/support/compat/nuxt/prefetch-manifest-build.mjs "$RUNNER_TEMP/nuxt-prefetch-proof"
+      - name: Verify original Nuxt lint configuration with the source linter
+        run: vp env exec node tools/support/compat/nuxt/lint-config-build.mjs "$RUNNER_TEMP/nuxt-lint-config-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Upload Nuxt 3 build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -111,4 +129,5 @@ jobs:
           path: |
             ${{ runner.temp }}/nuxt3-module-proof
             ${{ runner.temp }}/nuxt-prefetch-proof
+            ${{ runner.temp }}/nuxt-lint-config-proof
           if-no-files-found: ignore
