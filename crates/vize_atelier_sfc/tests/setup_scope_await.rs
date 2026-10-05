@@ -37,6 +37,7 @@ fn whole_setup_scope_await_modules_restore_instance_injection_and_ssr_lifecycle(
         .join("setup-scope-await");
     fs::create_dir_all(&capture).unwrap();
     let mut observations = Vec::new();
+    let mut compilations = Vec::new();
     for fixture in &fixtures {
         let name = fixture["name"].as_str().unwrap();
         let source = fixture["source"].as_str().unwrap();
@@ -47,8 +48,8 @@ fn whole_setup_scope_await_modules_restore_instance_injection_and_ssr_lifecycle(
         };
         let descriptor = parse_sfc(source, parse.clone()).unwrap();
         for ssr in [false, true] {
-            let compile = |source_map| {
-                compile_sfc_with_template_syntax_and_codegen_options(
+            let mut compile = |source_map| {
+                let result = compile_sfc_with_template_syntax_and_codegen_options(
                     &descriptor,
                     SfcCompileOptions {
                         parse: parse.clone(),
@@ -64,8 +65,20 @@ fn whole_setup_scope_await_modules_restore_instance_injection_and_ssr_lifecycle(
                         filename: filename.as_str().into(),
                         ..Default::default()
                     },
+                );
+                compilations.push(json!({
+                    "name": name, "source": source, "filename": filename,
+                    "target": if ssr { "ssr" } else { "dom" },
+                    "sourceMap": source_map, "result": &result,
+                }));
+                fs::write(
+                    capture.join("compile-results.json"),
+                    serde_json::to_vec(&compilations).unwrap(),
                 )
-                .unwrap()
+                .unwrap();
+                result.unwrap_or_else(|error| {
+                    panic!("{name}, ssr={ssr}, map={source_map}: {error:?}")
+                })
             };
             let (off, on) = (compile(false), compile(true));
             let mut off = serde_json::to_value(off).unwrap();
