@@ -62,6 +62,13 @@ every frozen original input and expected response byte. The initial `0dd56c0f`
 Actions cannot grant acceptance to its meaningful successor; fresh execution is
 required. No runtime reference is re-recorded.
 
+Actual source Check `37297395887` rejects only the new integration test's direct
+`tokio` attribute (`E0433`): Maestro intentionally uses its own minimal runtime.
+Use the existing `vize_maestro::runtime::block_on` facade for the same public
+future and whole objects, adding no dependency. Production and frozen original/
+expected/RPC bytes stay exact. The failed build and any partial hosted runtime
+are historical evidence; this test-only successor needs fresh full source Actions.
+
 Source Actions, unchanged protected
 104 instruction probes/full Rust/original corpus, actual signed merge and release
 publication are pending. This source record grants no runtime acceptance.

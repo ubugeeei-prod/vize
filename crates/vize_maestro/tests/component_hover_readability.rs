@@ -18,8 +18,8 @@ const EXPECTED: &str = include_str!(
     "../../../tests/_fixtures/differential/lsp/component-hover-readability/responses.expected.json"
 );
 
-#[tokio::test]
-async fn complete_long_and_short_component_hovers_preserve_types_and_authored_ranges() {
+#[test]
+fn complete_long_and_short_component_hovers_preserve_types_and_authored_ranges() {
     let workspace = tempfile::tempdir().expect("hover fixture workspace");
     for (name, source) in [
         ("App.vue", APP),
@@ -42,7 +42,7 @@ async fn complete_long_and_short_component_hovers_preserve_types_and_authored_ra
         let offset =
             position_to_offset(APP, position.line, position.character).expect("fixture offset");
         let ctx = IdeContext::new(&state, &uri, offset).expect("fixture context");
-        let actual = HoverService::hover_with_corsa(&ctx, None).await;
+        let actual = vize_maestro::runtime::block_on(HoverService::hover_with_corsa(&ctx, None));
         assert_eq!(
             serde_json::to_value(actual).expect("complete Hover"),
             row["result"]
