@@ -27,6 +27,23 @@ impl SetupHelperPlan {
             ts.push_str("// Keep the authored Vue helper import used by its specialized setup signature\nvoid useTemplateRef;\n");
         }
     }
+
+    pub(crate) fn template_emit_initializer(&self, summary: &Croquis) -> Option<String> {
+        if self.shadowed.contains("defineEmits") {
+            return None;
+        }
+        let emits = summary.macros.define_emits()?;
+        if let Some(type_args) = emits.type_args.as_deref() {
+            let inner = super::super::emits::inner_type_of(type_args);
+            return Some(vize_carton::cstr!(
+                "undefined as unknown as __EmitFn<{inner}>"
+            ));
+        }
+        emits
+            .runtime_args
+            .as_ref()
+            .map(|args| vize_carton::cstr!("defineEmits({args})"))
+    }
 }
 
 pub(super) fn emit(

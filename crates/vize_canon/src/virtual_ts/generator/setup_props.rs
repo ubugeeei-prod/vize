@@ -22,6 +22,7 @@ pub(super) fn emit_template_context(
     legacy_vue2: bool,
     imports: &super::setup_imports::SetupImportPlan,
     record: &super::template_record::TemplateRecord,
+    emit_initializer: Option<&str>,
 ) {
     let context = profile!(
         "canon.virtual_ts.generate_template_context",
@@ -30,7 +31,11 @@ pub(super) fn emit_template_context(
             dialect,
             legacy_vue2,
             imports.has_own_slots(),
-            (imports.attrs_type(), record.template_refs_type()),
+            (
+                imports.attrs_type(),
+                record.template_refs_type(),
+                emit_initializer
+            ),
         )
     );
     ts.push_str(&context);

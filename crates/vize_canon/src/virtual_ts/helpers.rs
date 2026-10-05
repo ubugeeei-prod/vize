@@ -34,7 +34,7 @@ pub(crate) fn generate_template_context(
     dialect: VueVersion,
     legacy_vue2: bool,
     has_own_slots: bool,
-    (attrs_type, refs_type): (Option<&str>, Option<&str>),
+    (attrs_type, refs_type, emit_initializer): (Option<&str>, Option<&str>, Option<&str>),
 ) -> String {
     let mut ctx = String::default();
 
@@ -78,7 +78,11 @@ pub(crate) fn generate_template_context(
     } else {
         ctx.push_str("    const $refs = __ctx.$refs;\n");
     }
-    ctx.push_str("    const $emit = __ctx.$emit;\n");
+    if let Some(initializer) = emit_initializer {
+        append!(ctx, "    const $emit = {initializer};\n");
+    } else {
+        ctx.push_str("    const $emit = __ctx.$emit;\n");
+    }
 
     // Vue 2-only instance members (absent from Vue 3's ComponentPublicInstance).
     if vue2_dialect {
