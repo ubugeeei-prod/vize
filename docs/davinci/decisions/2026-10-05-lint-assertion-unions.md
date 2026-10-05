@@ -15,11 +15,12 @@ existing arrow-union and JavaScript filter paths add no expression parse. No
 shared pipeline stage, dependency, serialization or instruction budget is added.
 Protected instruction counts remain mandatory; no speed improvement is claimed.
 
-Preserve Vue 2/petite-vue gating, all original scanner laws, whole messages/help,
+Preserve existing dialect admission and scanner laws, whole messages/help,
 labels/fixes and authored diagnostic locations. Source-hashed reporter corpus and
 complete public-result laws cover all original bindings, nested types, casts in
 function bodies/interpolations, runtime filter positives, invalid/trailing syntax,
-strings, Vue 2 and UTF-8/CRLF positions. This change grants no native-stage credit.
+strings, the legacy raw-template constructor and UTF-8/CRLF positions. This change
+grants no native-stage credit.
 
 Source Actions, protected full fixtures/Rust suites and unchanged instruction
 ceilings, actual signed merge, issue closure and published release remain required.
@@ -28,3 +29,12 @@ Corpus uses raw `.fixture` carriers with original public filenames and input
 hashes unchanged, retaining repository zero-warning lint/format policy. A
 preserved parenthesis wrapper forces complete expression consumption while
 allowing trailing comments; union spans subtract only its one-byte prefix.
+
+Hosted Check `37258541630` executes 1,534 Rust tests and rejects one new control:
+`lint_template` with `with_vue_version(V2)` still selects `VueDialect::Vue` in
+the existing implementation, so it correctly retains the complete filter finding
+under that constructor. Preserve that actual historical result instead of
+changing unrelated dialect routing or waiving a runtime pipe. True Vue 2 routing
+through this raw API remains a separate unfinished gap. The owned Patina consumer
+inventory is regenerated without a waiver. Replay the canonical decision clause
+with its parent's inventory repair intact; fresh exact-head Actions is required.
