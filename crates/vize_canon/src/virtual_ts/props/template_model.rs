@@ -71,7 +71,11 @@ impl TemplatePropsModel {
         // marks type-based `withDefaults` entries when their defaults resolve
         // through imported values.
         for prop in props {
-            if prop.default_value.is_some() {
+            if prop
+                .default_value
+                .as_deref()
+                .is_some_and(|value| value.trim() != "undefined")
+            {
                 defaulted_prop_names.insert(prop.name.as_str().into());
             }
         }
@@ -134,7 +138,11 @@ fn sfc_generic_param(summary: &Croquis) -> Option<&str> {
 }
 
 fn collect_with_defaults_default_names(summary: &Croquis) -> FxHashSet<String> {
-    let mut names = FxHashSet::default();
+    let mut names = summary
+        .macros
+        .resolved_with_defaults()
+        .map(String::from)
+        .collect();
     for call in summary.macros.all_calls() {
         if call.kind != MacroKind::WithDefaults {
             continue;

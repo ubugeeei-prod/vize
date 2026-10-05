@@ -36,10 +36,25 @@ impl StaticDefaultObject {
 pub(super) struct WithDefaults {
     expression: Option<CompactString>,
     values: FxHashMap<CompactString, CompactString>,
+    resolved_names: FxHashSet<CompactString>,
     objects: FxHashMap<CompactString, StaticDefaultObject>,
 }
 
 impl MacroTracker {
+    /// Non-undefined defaults proven by the existing imported-object resolver.
+    /// Keep these facts separate from the exact authored default expressions.
+    pub fn set_resolved_with_defaults(&mut self, names: FxHashSet<CompactString>) {
+        self.with_defaults.resolved_names = names;
+    }
+
+    /// Names of defaults whose non-undefined values were resolved externally.
+    pub fn resolved_with_defaults(&self) -> impl Iterator<Item = &str> {
+        self.with_defaults
+            .resolved_names
+            .iter()
+            .map(CompactString::as_str)
+    }
+
     /// The exact authored second argument of `withDefaults`, including opaque
     /// expressions for which individual default values cannot be proven.
     pub fn with_defaults_expression(&self) -> Option<&str> {

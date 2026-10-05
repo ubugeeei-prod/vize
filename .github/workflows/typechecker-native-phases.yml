@@ -25,6 +25,10 @@ on:
       - "tests/_fixtures/differential/typechecker/outside-import-types/**"
       - "crates/vize_canon/**"
       - "crates/vize/src/**"
+      - "crates/vize/tests/check_undefined_default_props_cli.rs"
+      - "crates/vize_croquis/src/macros/defaults.rs"
+      - "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_defaults_tests.rs"
+      - "tests/_fixtures/differential/typechecker/undefined-default-prop/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - "pnpm-lock.yaml"
@@ -220,6 +224,52 @@ jobs:
             "$GITHUB_WORKSPACE/target/ci-opt/vize" \
             "$GITHUB_WORKSPACE/target/ci-opt/examples/native_phase_projection" \
             "$NATIVE_PHASE_OUTPUT"
+      - name: Qualify optional callable defaults in the source CLI and editor
+        if: github.event_name == 'pull_request'
+        env:
+          VIZE_TEST_REQUIRE_TSGO: "1"
+          VIZE_DEFAULT_PROP_CAPTURE: ${{ runner.temp }}/undefined-default-props
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          cd "$NATIVE_PHASE_SOURCE_ROOT"
+          cargo test --locked --profile ci-opt -p vize --test check_undefined_default_props_cli \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' \
+            --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
+          cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_defaults_tests \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { existsSync, readFileSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
+          import { dirname, join } from 'node:path';
+          import { spawnSync } from 'node:child_process';
+          const root = process.env.VIZE_DEFAULT_PROP_CAPTURE;
+          const cases = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name).sort();
+          assert.equal(cases.length, 3);
+          assert.deepEqual(JSON.parse(readFileSync(join(root, 'editor-diagnostics.json'), 'utf8')), []);
+          assert(existsSync(join(root, 'editor-hover.json')));
+          const hash = file => createHash('sha256').update(readFileSync(file)).digest('hex');
+          const files = dir => readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]);
+          const receipts = cases.map(name => {
+            const raw = JSON.parse(readFileSync(join(root, name, 'oracle.json'), 'utf8'));
+            const nativeBinary = realpathSync(raw.nativeBinary);
+            let packageDir = dirname(nativeBinary);
+            while (!existsSync(join(packageDir, 'package.json')) && dirname(packageDir) !== packageDir) packageDir = dirname(packageDir);
+            const packagePath = join(packageDir, 'package.json');
+            const pkg = JSON.parse(readFileSync(packagePath, 'utf8'));
+            assert.equal(pkg.name, `@typescript/typescript-${process.platform}-${process.arch}`);
+            assert.equal(pkg.version, '7.0.2');
+            const version = spawnSync(nativeBinary, ['--version'], { encoding: 'utf8' });
+            assert.equal(version.status, 0); assert.equal(version.stdout.trim(), 'Version 7.0.2'); assert.equal(version.stderr, '');
+            return { name, sourceSha: process.env.SOURCE_SHA, cliBinary: realpathSync(raw.cliBinary), cliSha256: hash(raw.cliBinary), nativeBinary, nativeSha256: hash(nativeBinary), nativePackageSha256: hash(packagePath), nativeVersion: version.stdout.trim() };
+          });
+          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, matchedCompleteExpectations: true, cases: receipts, fullInputsAndOutputs: files(root).map(path => ({ path: path.slice(root.length + 1), sha256: hash(path) })) }, null, 2) + '\n');
+          JS
       - name: Upload raw native phases, memberships, full reports and generated sources
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -237,6 +287,7 @@ jobs:
             ${{ runner.temp }}/typechecker-native-phases.json.samples/native/
             ${{ runner.temp }}/typechecker-native-phases.json.samples/projections/
             ${{ runner.temp }}/typechecker-native-phases.json.samples/virtual-ts/
+            ${{ runner.temp }}/undefined-default-props/
           if-no-files-found: error
           retention-days: 30
           include-hidden-files: true

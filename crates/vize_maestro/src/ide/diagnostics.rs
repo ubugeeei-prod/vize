@@ -31,6 +31,8 @@ pub(in crate::ide) mod corsa;
 mod editor_typecheck_fixture;
 #[cfg(all(test, feature = "native"))]
 mod editor_typecheck_tests;
+#[cfg(all(test, feature = "native"))]
+mod editor_typecheck_defaults_tests;
 mod line_index;
 mod linter_options;
 #[cfg(feature = "native")]
