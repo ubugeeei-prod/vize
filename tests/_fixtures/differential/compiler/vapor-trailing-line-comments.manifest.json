@@ -1,7 +1,7 @@
 {
   "schema": "vize.differential.manifest",
   "version": 1,
-  "baseRevision": "a2712e78968e9112c89cbc2111b108bd0e51959c",
+  "baseRevision": "7364b1e40d9263de06eea2b91ca278fdee7d9ee2",
   "product": "compiler",
   "cases": [
     {

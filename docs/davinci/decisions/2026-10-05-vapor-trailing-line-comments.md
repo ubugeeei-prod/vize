@@ -87,6 +87,17 @@ used the old parser signature after 4cbc was pushed. Correct that public
 default-context entry point to explicit false, preserving retained semantics.
 No source or runtime acceptance belongs to 4cbc; require fresh complete Actions.
 
+Fresh main advanced to signed7364 while 4a was Draft; GitHub refused mergeability
+and ordinary PR Actions did not start. Genuinely rebase all six owned commits
+on that literal main, preserving their authors/messages/reporter trailers.
+All eight other production blobs and the whole runtime inputs/helper/test stay
+exact; shared compile.rs retains incoming Nuxt page-meta ownership, with only
+the existing target-aware analysis call as this branch delta. Preserve every
+incoming canonical byte at350; move only the own Vapor clause to the order
+overview to avoid repeated unrelated changes in the Nuxt history paragraph.
+Update the manifest base to the true new origin. No previous source result
+transfers to this replay; fresh exact-head Actions remain required.
+
 TODO: exact source Actions including whole-module runtime, root peer review,
 protected full suites and all 104 immutable instruction ceilings, signed
 actual main with reporter trailer/issue closure, then a verified frequent cut.
