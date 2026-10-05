@@ -61,3 +61,5 @@ and all owned source/corpus bytes; this clause now occupies its relevant
 distinct canonical location at350 lines. Fresh exact source and protected
 delivery remain required; no earlier acceptance or publication is transferred.
 Paired [placement decision](https://github.com/ubugeeei-prod/vize/issues/7923#issuecomment-5988293589).
+
+The actual #7925 BOM merge (`0034fdc3f4ff1cc1b8b40234e9e06a90ab306981`) permits this independent source slice to be replayed onto fresh main. The replay retains all incoming style/BOM source owners and canonical350 text, preserves every original commit author/message/reporter trailer and all six executable/corpus paths, and regenerates the complete incoming formatter census. The strict current witness changes only this script owner hash. Fresh exact-head Actions and full twenty-two-row/110-attempt DOM/click/SSR qualification are required before queue admission; release inclusion remains pending. Paired issue checkpoint: [#7923](https://github.com/ubugeeei-prod/vize/issues/7923#issuecomment-5989324151).
