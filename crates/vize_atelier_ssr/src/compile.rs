@@ -308,6 +308,9 @@ pub(crate) fn compile_ssr_on_lane<'a>(
     let codegen_result = match selection {
         SsrL4Selection::Emitted(result) => result,
         other => {
+            if codegen_options.ssr_css_vars.is_some() {
+                crate::codegen::css_vars::inject(allocator, &mut root);
+            }
             if let SsrL4Selection::Rejected(diagnostics) = other {
                 errors.extend(diagnostics.into_iter().map(|diagnostic| {
                     CompilerError::with_message(ErrorCode::ExtendPoint, diagnostic, None)

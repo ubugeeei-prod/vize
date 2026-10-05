@@ -96,6 +96,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 as_fragment: false,
                 disable_nested_fragments: false,
                 inherit_attrs: false,
+                css_vars: false,
             });
             self.ctx.flush_push();
             self.ctx.current_template_parts = saved;

@@ -160,6 +160,9 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
             result
         }
         other => {
+            if codegen_options.ssr_css_vars.is_some() {
+                crate::codegen::css_vars::inject(allocator, &mut root);
+            }
             let legacy_reason = match &other {
                 SsrL4Selection::Legacy(reason) => Some(*reason),
                 SsrL4Selection::Rejected(_) => None,

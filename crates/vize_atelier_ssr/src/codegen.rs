@@ -5,6 +5,7 @@
 
 mod component_binding;
 mod component_resolution;
+pub(crate) mod css_vars;
 pub(crate) mod element;
 pub(crate) mod helpers;
 mod module_parts;
@@ -12,9 +13,7 @@ pub(crate) mod scope_prefix;
 mod spans;
 
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
-use vize_atelier_core::{
-    RootNode, RuntimeHelper, TemplateChildNode, codegen::document::EmitDocument,
-};
+use vize_atelier_core::{RootNode, RuntimeHelper, codegen::document::EmitDocument};
 use vize_l0::{Allocator, FxHashSet, SmallVec, String};
 
 /// SSR codegen result
@@ -136,18 +135,7 @@ impl<'a> SsrCodegenContext<'a> {
             self.use_core_helper(RuntimeHelper::Unref);
         }
 
-        // Directive comments are consumed by the linter and do not render.
-        // Keep them out of the legacy root shape, just as the L4 plan does.
-        let mut rendered_children = 0;
-        let mut has_non_text_child = false;
-        for child in &root.children {
-            if matches!(child, TemplateChildNode::Comment(comment) if comment.directive.is_some()) {
-                continue;
-            }
-            rendered_children += 1;
-            has_non_text_child |= !matches!(child, TemplateChildNode::Text(_));
-        }
-        let is_fragment = rendered_children > 1 && has_non_text_child;
+        let is_fragment = css_vars::root_is_fragment(&root.children);
 
         self.begin_render(root.loc.span.start);
         self.process_root_children(&root.children, is_fragment, false, false);

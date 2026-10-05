@@ -7,9 +7,10 @@ compiler	Compiler	manifest	crates/vize_atelier_ssr/Cargo.toml	13	l1_to_l2	L1->L2
 compiler	Compiler	manifest	crates/vize_atelier_ssr/Cargo.toml	13	old_ast	old AST/parser	old	vize_relief	legacy	1
 compiler	Compiler	manifest	crates/vize_atelier_ssr/Cargo.toml	13	old_ast	old AST/parser	old	vize_armature	legacy	2
 compiler	Compiler	manifest	crates/vize_atelier_ssr/Cargo.toml	13	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen.rs	18	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen.rs	17	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/component_binding.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/component_resolution.rs	2	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/css_vars.rs	12	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element.rs	22	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/component_props.rs	227	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/codegen/element/component.rs	530	l0	L0	stage	vize_l0	preferred	1
@@ -127,6 +128,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/fallthrough_roots.rs	13
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/native_stage_capture.rs	6	l0	L0	stage	vize_l0	preferred	3
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/native_stage_capture.rs	6	l2	L2	stage	vize_l2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/setup_component_parity.rs	8	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/ssr_fragment_css_vars.rs	11	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/ssr_snapshot.rs	9	l0	L0	stage	vize_l0	preferred	4
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/support/fix_history_next.rs	8	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/support/fix_history.rs	8	l0	L0	stage	vize_l0	preferred	2

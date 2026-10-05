@@ -39,6 +39,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         open: SsrStringSegment<'r, 'a>,
         element: &'r l2::ElementOp<'a>,
         inherit: bool,
+        css_vars: bool,
     ) -> Result<()> {
         let tag = plan_source(&open, SsrStringPayloadKind::TagName)?;
         if REFUSED_TAGS.contains(&tag) || !vize_l0::is_native_tag(tag) {
@@ -59,6 +60,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 as_fragment: false,
                 disable_nested_fragments: false,
                 inherit_attrs: false,
+                css_vars,
             })?;
             return self.close(Kind::CloseElement, |source| {
                 matches!(source, Source::Element(closed) if core::ptr::eq(*closed, element))
@@ -74,8 +76,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         self.ctx
             .push_string_part_static_mapped(tag, open_tag_anchor(self.ctx.source, element, tag));
         let mut owned_content = None;
-        if inherit || merged::needs_merged(attached) {
-            if let Some(merged) = self.merged_attrs(attached, tag, inherit)? {
+        if inherit || css_vars || merged::needs_merged(attached) {
+            if let Some(merged) = self.merged_attrs(attached, tag, inherit, css_vars)? {
                 self.ctx.push_string_part_dynamic_spanned(merged.attrs);
                 owned_content = merged.content;
             }
@@ -120,6 +122,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             as_fragment: false,
             disable_nested_fragments: false,
             inherit_attrs: false,
+            css_vars: false,
         };
         match content {
             Content::Children => self.children(flags),

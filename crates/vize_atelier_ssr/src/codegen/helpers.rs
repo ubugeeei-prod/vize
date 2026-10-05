@@ -1,6 +1,6 @@
 //! HTML escaping utilities and child/control-flow processing for SSR codegen.
 
-mod branch_fragment;
+pub(crate) mod branch_fragment;
 mod destructure;
 mod escape;
 mod match_scope;
@@ -314,7 +314,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 }
 
-fn single_fallthrough_child_index(children: &[TemplateChildNode]) -> Option<usize> {
+pub(crate) fn single_fallthrough_child_index(children: &[TemplateChildNode]) -> Option<usize> {
     let mut index = None;
 
     for (current_index, child) in children.iter().enumerate() {
