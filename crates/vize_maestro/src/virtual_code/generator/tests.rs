@@ -281,3 +281,43 @@ const count = ref(0)
         Some(BlockType::Art(ArtCursorPosition::VariantTemplate(_)))
     ));
 }
+
+#[test]
+fn bare_void_substrings_map_to_emitted_expression_instead_of_keyword() {
+    for newline in ["\n", "\r\n"] {
+        for name in [
+            "v", "o", "i", "id", "vo", "oid", "voi", "ix", "ID", "void2", "名",
+        ] {
+            let source = format!(
+                "<script setup lang=\"ts\">\nconst {name} = 1;\n</script>\n<template>{{{{ '😀' }}}} {{{{ {name} }}}} {{{{ {name} + 1 }}}}</template>"
+            ).replace('\n', newline);
+            let descriptor = vize_atelier_sfc::parse_sfc(&source, Default::default()).unwrap();
+            let document = VirtualCodeGenerator::new()
+                .generate(&descriptor, "App.vue")
+                .template
+                .unwrap();
+            for expression in [name.to_owned(), format!("{name} + 1")] {
+                let authored = source.find(&format!("{{{{ {expression} }}}}")).unwrap() + 3;
+                let generated = document.source_map.to_generated(authored).unwrap();
+                assert_eq!(
+                    &document.content[generated..generated + expression.len()],
+                    expression,
+                    "{name}, newline={newline:?}"
+                );
+                assert_eq!(&document.content[generated - 6..generated], "void (");
+                for delta in 0..name.len() {
+                    if name.is_char_boundary(delta) {
+                        assert_eq!(
+                            document.source_map.to_generated(authored + delta),
+                            Some(generated + delta)
+                        );
+                        assert_eq!(
+                            document.source_map.to_source(generated + delta),
+                            Some(authored + delta)
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
