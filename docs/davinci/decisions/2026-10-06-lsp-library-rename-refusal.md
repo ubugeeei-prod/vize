@@ -73,3 +73,12 @@ vector and cap. The authentic 207,963-byte failed log has SHA256
 9d7bbbe4f1f705940076e718dd5b4470e976376649735102cbe5ecfa5327b9e6;
 [paired6004608394](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6004608394)
 requires meaningful fresh exact source execution without runtime credit.
+
+Next523d source Check37384120550 passed the Maestro borrow point but failed
+before native on E0433/E0425: two new CLI helpers used the server-only Url API.
+Use standalone lsp_types::Uri FromStr, as existing CLI controls do, for the same
+complete fixture URI strings. Every whole response/edit/application/publication,
+original, production byte and budget is retained. Official 210,282-byte job
+112013510004 logSHA508bb095dd54044457e3cedcb0e2e9ed908660b8413d85fa592e0140c8ce099c
+and [paired6004778398](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6004778398)
+require fresh full original/positive native qualification without execution credit.

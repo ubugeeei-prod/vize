@@ -83,7 +83,7 @@ fn non_null_ts_js_and_authored_declaration_renames_keep_complete_importer_edits(
                     let changes = typed.changes.unwrap();
                     assert_eq!(changes.len(), 2);
                     for (path, text) in [(file, target), ("src/Probe.vue", source)] {
-                        let uri = lsp_types::Url::parse(&fixture.uri(path)).unwrap();
+                        let uri: lsp_types::Uri = fixture.uri(path).parse().unwrap();
                         let mut edits = changes[&uri].clone();
                         edits.sort_by_key(|edit| std::cmp::Reverse(edit.range.start));
                         let mut applied = text.to_owned();

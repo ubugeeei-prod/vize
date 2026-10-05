@@ -134,6 +134,6 @@ fn original_emit_string_refuses_the_whole_library_transaction_without_file_write
     }
 }
 
-fn lsp_process_uri(fixture: &Fixture) -> lsp_types::Url {
-    lsp_types::Url::parse(&fixture.uri("src/Toggle.vue")).unwrap()
+fn lsp_process_uri(fixture: &Fixture) -> lsp_types::Uri {
+    fixture.uri("src/Toggle.vue").parse().unwrap()
 }
