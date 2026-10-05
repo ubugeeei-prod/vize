@@ -30,6 +30,8 @@ its CRLF control exercises the rule in both whitespace modes.
 The unchanged public CLI drops comments by default; its stock whole-SFC
 control uses the same option. Separate retained and native parser controls
 enable comments and verify that a preserved first comment prevents removal.
+The stock SFC parse also receives that option before its template AST is reused
+by inline compilation, as required by the official SFC parse API.
 whole original SFC and controls also run through a source-built CLI in DOM,
 SSR, Vapor and Vapor-requested SSR modes. Chromium compares actual mounted
 pre text, live textarea values, complete SSR HTML and hydration with the

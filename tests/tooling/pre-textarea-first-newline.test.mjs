@@ -85,7 +85,10 @@ test(
       return html;
     }
     function stock(source, ssr) {
-      const parsed = compiler.parse(source, { filename: "App.vue" });
+      const parsed = compiler.parse(source, {
+        filename: "App.vue",
+        templateParseOptions: { comments: false },
+      });
       assert.deepEqual(parsed.errors, []);
       assert.equal(parsed.descriptor.source, source);
       return compiler.compileScript(parsed.descriptor, {
