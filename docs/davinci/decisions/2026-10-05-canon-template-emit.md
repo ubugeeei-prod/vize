@@ -107,3 +107,12 @@ followed by fresh strict source checks, protected full suites and actual merge.
 No new PR or workflow lane is added. The typed hover assertion stays intact
 until the authentic native Vue oracle separates source behavior from QuickInfo
 presentation.
+
+The complete retained 1b723 source failure is the unchanged source-length
+ratchet: generator.rs grew from 854 to 856 lines when its existing template
+context gained the typed initializer and third tuple member. Remove two local
+blank lines to retain all non-whitespace source bytes and the existing 854-line
+ceiling. Rust formatting and both genuine generated-inventory checks pass;
+fresh source Actions must confirm the exact correction. Runtime oracles,
+original inputs, instruction budgets and all independently authored vectors
+stay unchanged.
