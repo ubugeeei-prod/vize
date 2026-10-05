@@ -55,3 +55,10 @@ three explicit test names separately from the dedicated editor-inputs bucket;
 retain that bucket and hidden fixture bytes in the artifact. No runtime source
 or expected response is changed. Fresh corrected-head receipt/source gates are
 still required before readiness.
+
+Required b6b0 native Actions pass the exact three real-Vue CLI/native cases
+and complete original editor diagnostics/optional hover. Strict source Actions
+correctly detect the generated Croquis consumption table changing one macro
+usage (72 to 73); regenerate it with the official generator and preserve the
+new API semantics. Fresh successor source/native gates remain required; the
+receipt is evidence for b6b0 only and protected merge/release is unfinished.
