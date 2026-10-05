@@ -88,6 +88,28 @@ fn native_bulk_original_500_sfc_whole_generations_match_original_lsp() {
             packet["observed"]
         );
         assert_eq!(packet["observed"]["bulk"]["release"], "acknowledged");
+        let bulk = &packet["observed"]["bulk"];
+        let sources = bulk["relatedSnapshotSources"].as_array().unwrap();
+        let mut names = Vec::new();
+        for source in sources {
+            assert_eq!(source["snapshot"], bulk["snapshot"]);
+            assert_eq!(source["project"], bulk["project"]);
+            assert_eq!(source["fileName"], source["path"]);
+            let name = source["fileName"].as_str().unwrap();
+            let uri = crate::file_uri::path_to_file_uri(Path::new(name));
+            assert_eq!(source["requestedUri"].as_str(), Some(uri.as_str()));
+            assert!(
+                bulk["sourceFileNames"]
+                    .as_array()
+                    .unwrap()
+                    .contains(&source["fileName"])
+            );
+            assert!(source["text"].is_string());
+            assert!(source["encodedBytes"].is_array());
+            names.push(Path::new(name).file_name().unwrap().to_str().unwrap());
+        }
+        names.sort_unstable();
+        assert_eq!(names, ["lib.es2017.object.d.ts", "lib.es5.d.ts"]);
         assert_eq!(packet["metrics"]["sessionStarts"], 1);
         assert_eq!(packet["metrics"]["sessionToCliFallbacks"], 0);
         assert!(packet["actualError"].is_null());

@@ -1,6 +1,9 @@
 //! Project-wide categories on the already retained diagnosing attachment.
 
-use super::EditorLspSession;
+use super::{
+    EditorLspSession,
+    snapshot_source::{SnapshotSourceOwner, SourceTextOutcome},
+};
 use corsa::{CorsaError, runtime::block_on};
 use lsp_types::Diagnostic;
 use serde_json::json;
@@ -19,7 +22,7 @@ pub(in crate::lsp_client) use receipt::reset as reset_receipt;
 #[cfg(test)]
 pub(super) use receipt::take as take_receipt;
 
-use conversion::{NativeDiagnostic, project_diagnostics};
+use conversion::{NativeDiagnostic, project_diagnostics_with_source};
 
 #[derive(Debug)]
 pub(in crate::lsp_client) enum BulkDiagnostics {
@@ -45,7 +48,7 @@ impl EditorLspSession {
         let Some(api) = &self.configured_api else {
             return Ok(BulkDiagnostics::Refused);
         };
-        let snapshot = match block_on(api.client.update_snapshot(Default::default())) {
+        let mut snapshot = match SnapshotSourceOwner::create(&api.client) {
             Ok(snapshot) => snapshot,
             Err(error) => {
                 return Ok(BulkDiagnostics::RetireOwner {
@@ -56,39 +59,35 @@ impl EditorLspSession {
         };
         #[cfg(test)]
         receipt::record(json!({
-            "snapshot":snapshot.handle, "snapshotProjects":snapshot.projects,
+            "snapshot":snapshot.handle(),
             "attachment":api.session, "outcome":"attempted",
         }));
         let result = (|| {
-            // A single retained configured project makes default-project
-            // ownership unambiguous. Mixed configured/inferred views fall back.
-            let [project] = snapshot.projects.as_slice() else {
-                #[cfg(test)]
-                receipt::refusal("snapshot does not have exactly one project");
-                return Ok(None);
+            let project = match snapshot.project(config)? {
+                Ok(project) => project,
+                Err(_reason) => {
+                    #[cfg(test)]
+                    receipt::refusal(&vize_l0::cstr!(
+                        "snapshot source project refuses: {_reason:?}"
+                    ));
+                    return Ok(None);
+                }
             };
-            if Path::new(&project.config_file_name) != config {
-                #[cfg(test)]
-                receipt::refusal("snapshot project configuration differs");
-                return Ok(None);
-            }
-            let params = json!({"snapshot": snapshot.handle, "project": project.id});
-            let names = block_on(
-                api.client
-                    .raw_json_request("getSourceFileNames", params.clone()),
-            )?;
-            let Ok(names) = serde_json::from_value::<Vec<String>>(names) else {
-                #[cfg(test)]
-                receipt::refusal("source-name response schema differs");
-                return Ok(None);
-            };
-            if !conversion::requested_members_are_present(uris, &names) {
+            if !uris.iter().all(|uri| project.contains_uri(uri)) {
                 #[cfg(test)]
                 receipt::refusal("requested URI is not an exact native source-name member");
                 return Ok(None);
             }
+            let params = json!({"snapshot": snapshot.handle(), "project": project.descriptor().id});
             let mut categories = Vec::with_capacity(4);
-            let methods = diagnostic_methods(&project.compiler_options);
+            let methods = diagnostic_methods(&project.descriptor().compiler_options);
+            #[cfg(test)]
+            receipt::record(json!({
+                "snapshot":snapshot.handle(),"snapshotProjects":[project.descriptor()],
+                "project":project.descriptor(),"sourceFileNames":project.source_names(),
+                "categoryMethods":methods,"attachment":api.session,"outcome":"attempted",
+                "relatedSnapshotSources":[],
+            }));
             for method in &methods {
                 // Deliberately omit `file`: native 7.0.2 accepts this on each
                 // category endpoint. The SDK's grouped endpoints are absent.
@@ -102,26 +101,44 @@ impl EditorLspSession {
                 };
                 categories.push(diagnostics.unwrap_or_default());
             }
-            let converted = project_diagnostics(&categories, uris, &self.documents);
+            let converted = project_diagnostics_with_source(
+                &categories,
+                uris,
+                &self.documents,
+                |uri| match project.read(uri)? {
+                    SourceTextOutcome::Complete(view) => {
+                        #[cfg(test)]
+                        receipt::related_source(json!({
+                            "requestedUri":uri,"snapshot":view.snapshot_handle(),
+                            "project":view.project_descriptor(),"fileName":view.file_name(),
+                            "path":view.path(),"text":view.text(),"encodedBytes":view.encoded_bytes(),
+                        }));
+                        Ok::<_, CorsaError>(positions::Positions::new(view.text()))
+                    }
+                    SourceTextOutcome::Refused {
+                        reason: _reason,
+                        encoded: _encoded,
+                    } => {
+                        #[cfg(test)]
+                        receipt::related_source(json!({
+                            "requestedUri":uri,"refusal":vize_l0::cstr!("{_reason:?}"),
+                            "encodedBytes":_encoded.as_ref().map(|bytes| bytes.as_bytes()),
+                        }));
+                        Ok(None)
+                    }
+                },
+            )?;
             #[cfg(test)]
             if converted.is_none() {
                 receipt::refusal(
                     "complete diagnostic conversion lacks owned text or valid coordinates",
                 );
             }
-            #[cfg(test)]
-            if converted.is_some() {
-                receipt::record(json!({
-                    "snapshot": snapshot.handle, "project": project,
-                    "sourceFileNames": names, "categoryMethods": methods,
-                    "attachment": api.session,
-                }));
-            }
             Ok(converted)
         })();
         // Eager release on successful conversion, bounded refusal, and error,
         // while the owning LSP process and its attachment are still alive.
-        let cleanup = block_on(snapshot.release());
+        let cleanup = snapshot.release();
         let outcome = match (result, cleanup) {
             (Ok(Some(result)), Ok(())) => BulkDiagnostics::Complete(result),
             (Ok(None), Ok(())) | (Err(CorsaError::Unsupported(_)), Ok(())) => {

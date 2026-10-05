@@ -23,6 +23,19 @@ pub(super) fn refusal(reason: &str) {
     });
 }
 
+pub(super) fn related_source(source: Value) {
+    OBSERVED.with(|value| {
+        if let Some(sources) = value
+            .borrow_mut()
+            .as_mut()
+            .and_then(|receipt| receipt.get_mut("relatedSnapshotSources"))
+            .and_then(Value::as_array_mut)
+        {
+            sources.push(source);
+        }
+    });
+}
+
 pub(super) fn finish(outcome: &super::BulkDiagnostics) {
     match outcome {
         super::BulkDiagnostics::Refused => OBSERVED.with(|value| {

@@ -404,9 +404,10 @@ typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/diagnostics/nati
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/diagnostics/native_bulk/qualification.rs	5	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp.rs	29	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/batch_test_receipt.rs	70	l0	L0	stage	vize_l0	preferred	1
-typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics.rs	8	l0	L0	stage	vize_l0	preferred	1
-typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/conversion.rs	10	l0	L0	stage	vize_l0	preferred	1
-typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/receipt.rs	48	l0	L0	stage	vize_l0	preferred	4
+typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics.rs	11	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics.rs	70	l0	L0	stage	vize_l0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/conversion.rs	11	l0	L0	stage	vize_l0	preferred	2
+typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/receipt.rs	61	l0	L0	stage	vize_l0	preferred	4
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/tests.rs	4	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/tests/native.rs	8	l0	L0	stage	vize_l0	preferred	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/tests/native.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	2

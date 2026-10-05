@@ -208,5 +208,78 @@ fn all_native_style_warnings_and_categories_keep_complete_capability_fields() {
     );
 }
 
+#[test]
+fn snapshot_related_coordinates_are_fetched_once_with_complete_ordered_rows() {
+    let mut documents = FxHashMap::default();
+    documents.insert("file:///a.ts".into(), "ab".into());
+    documents.insert("file:///empty.ts".into(), "export {};".into());
+    let categories = vec![rows(json!([{
+        "fileName":"/a.ts","pos":0,"end":2,"code":2322,"category":1,"text":"Original",
+        "relatedInformation":[
+            {"fileName":"/lib 日 #.d.ts","pos":2,"end":6,"code":0,"category":1,"text":"First"},
+            {"fileName":"/lib 日 #.d.ts","pos":8,"end":12,"code":0,"category":1,"text":"Second"}
+        ]
+    }]))];
+    let mut requested_sources = Vec::new();
+    let actual = conversion::project_diagnostics_with_source(
+        &categories,
+        &[
+            "file:///a.ts".into(),
+            "file:///empty.ts".into(),
+            "file:///a.ts".into(),
+        ],
+        &documents,
+        |uri| {
+            requested_sources.push(String::from(uri));
+            Ok::<_, &'static str>(Positions::new("😀decl\r\nmore"))
+        },
+    )
+    .unwrap()
+    .unwrap();
+    assert_eq!(requested_sources, ["file:///lib%20%E6%97%A5%20%23.d.ts"]);
+    let expected = json!([{
+        "range":{"start":{"line":0,"character":0},"end":{"line":0,"character":2}},
+        "severity":1,"code":2322,"source":"ts","message":"Original",
+        "relatedInformation":[
+            {"location":{"uri":"file:///lib%20%E6%97%A5%20%23.d.ts","range":{"start":{"line":0,"character":2},"end":{"line":0,"character":6}}},"message":"First"},
+            {"location":{"uri":"file:///lib%20%E6%97%A5%20%23.d.ts","range":{"start":{"line":1,"character":0},"end":{"line":1,"character":4}}},"message":"Second"}
+        ]
+    }]);
+    assert_eq!(
+        serde_json::to_value(actual).unwrap(),
+        json!([expected, [], expected])
+    );
+}
+
+#[test]
+fn related_provider_refusal_coordinates_and_real_error_never_return_partial_rows() {
+    let mut documents = FxHashMap::default();
+    documents.insert("file:///a.ts".into(), "ab".into());
+    let categories = vec![rows(json!([
+        {"fileName":"/a.ts","pos":0,"end":1,"code":1005,"category":1,"text":"Already converted"},
+        {"fileName":"/a.ts","pos":0,"end":2,"code":2322,"category":1,"text":"Related",
+         "relatedInformation":[{"fileName":"/lib.d.ts","pos":1,"end":2,"code":0,"category":1,"text":"Witness"}]}
+    ]))];
+    let uris = ["file:///a.ts".into()];
+    assert_eq!(
+        conversion::project_diagnostics_with_source(&categories, &uris, &documents, |_| {
+            Ok::<_, &'static str>(None)
+        }),
+        Ok(None),
+    );
+    assert_eq!(
+        conversion::project_diagnostics_with_source(&categories, &uris, &documents, |_| {
+            Ok::<_, &'static str>(Positions::new("😀"))
+        }),
+        Ok(None),
+    );
+    assert_eq!(
+        conversion::project_diagnostics_with_source(&categories, &uris, &documents, |_| {
+            Err("retained request cause")
+        }),
+        Err("retained request cause"),
+    );
+}
+
 #[cfg(unix)]
 mod native;
