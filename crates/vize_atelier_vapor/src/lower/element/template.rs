@@ -127,7 +127,7 @@ fn write_element_template(
         // element's static template instead of producing a component lookup.
         let placeholders = super::insertion::block_placeholders(&el.children);
         let mut placeholders = placeholders.into_iter();
-        if el.ns == vize_relief::Namespace::Html && matches!(el.tag, "pre" | "textarea") {
+        if el.ns == vize_atelier_core::Namespace::Html && matches!(el.tag, "pre" | "textarea") {
             let mut children = LeadingNewlineWriter {
                 sink: template,
                 first: true,

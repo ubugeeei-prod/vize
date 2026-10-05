@@ -44,10 +44,10 @@ jobs:
           VIZE_FIRST_NEWLINE_BIN: ${{ github.workspace }}/target/ci/vize
           VIZE_FIRST_NEWLINE_CAPTURE: ${{ runner.temp }}/first-newline-observations.json
         run: |
+          git rev-parse HEAD > "$RUNNER_TEMP/first-newline-source.txt"
           cargo build --locked --profile ci -p vize
           cargo test --locked --profile ci -p vize_armature --lib
           cargo test --locked --profile ci -p vize_l1_to_l2 --test pre_textarea_first_newline --test text_pass
-          git rev-parse HEAD > "$RUNNER_TEMP/first-newline-source.txt"
           vp node --test tests/tooling/pre-textarea-first-newline.test.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
