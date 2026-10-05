@@ -1,0 +1,62 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "8a8521d6897bbe3fd0af0cbfaebd83f4fc933933",
+  "product": "compiler",
+  "cases": [
+    {
+      "id": "compiler/setup/scope-await",
+      "state": "active",
+      "targets": [
+        "dom",
+        "ssr"
+      ],
+      "inputs": {
+        "root": "setup-scope-await",
+        "files": [
+          {
+            "path": "Probe.vue.txt",
+            "sha256": "8bdddae43d782e3ef86cf7b8da7926b415dd8f1e479052e0e7d8dbbb4944c3d8",
+            "role": "entry"
+          },
+          {
+            "path": "cases.json",
+            "sha256": "d1248999c2b44ba06c92f2a568f732e3a76c28edd1a885e77646688fa5a865d1",
+            "role": "controls"
+          }
+        ]
+      },
+      "reference": {
+        "path": "setup-scope-await/expected.json",
+        "sha256": "fdc443b478ad3f074f95b0389b92285c2738503a75f3b0e24b47b1ad695e64f2",
+        "source": "crates/vize_atelier_sfc/tests/setup_scope_await.rs:whole_setup_scope_await_modules_restore_instance_injection_and_ssr_lifecycle"
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/7972",
+        "reporter": "ubugeeei",
+        "officialVersion": "3.5.38"
+      },
+      "adapters": {
+        "legacy": "compiler-public-setup-scope-await-v1",
+        "native": null,
+        "reasons": {
+          "native": "Existing whole-SFC compilation with actual Vue SSR rendering; no native compiler or Vapor SSR acceptance."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-whole-setup-await-runtime-v1",
+        "requiredFacets": [
+          "complete-public-result",
+          "module-parse",
+          "setup-owned-awaits",
+          "nested-function-exclusion",
+          "whole-source-maps",
+          "ssr-html",
+          "instance-identity",
+          "injection",
+          "server-prefetch"
+        ]
+      }
+    }
+  ]
+}
