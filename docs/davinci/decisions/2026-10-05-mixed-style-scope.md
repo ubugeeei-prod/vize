@@ -22,10 +22,13 @@ The source-built regression emits complete CSS for the original, reversed
 block order, ordinary-only and scoped-only inputs across DOM/SSR/Vapor and
 both aggregate flags: 24 fixed observations. An independent pinned official
 stable Vue compiler compiles each original style block separately. The child
-compares every CSS rule's selector/order/media constraint and actual
-happy-dom computed values for scoped and ordinary DOM nodes, retaining raw
-actual/reference CSS and observations. A separate law keeps standalone
-explicit scoped compilation. Source Actions must actually execute both laws;
+compares every CSS rule's selector/order/media constraint and the selected
+happy-dom computed values for scoped and ordinary DOM nodes. Raw complete
+actual/reference CSS and observations are emitted to child stdout for those
+comparisons; successful stdout is discarded by the Rust test, so the source
+workflow does not archive a full24-row packet. Declaration priorities and
+computed padding are outside this focused scope projection. A separate law
+keeps standalone explicit scoped compilation. Source Actions must actually execute both laws;
 the unchanged merge queue must execute the full suites and 104 ceilings.
 
 This CSS/DOM observation is not Chromium, Vue component hydration, direct
