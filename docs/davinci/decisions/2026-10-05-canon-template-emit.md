@@ -27,3 +27,10 @@ Fresh exact-head strict/source/native Actions and unchanged instruction ceilings
 are required before readiness. The release owner's first-cut publication hold
 continues to govern queue entry; protected full/104-platform suites, actual
 signed merge, issue closure and public consumer qualification remain separate.
+
+Qualification shares the existing pinned `npm/cli` real Vue dependency through
+normal ancestor lookup; workspace root has no direct Vue dependency. Isolated
+case paths use that package without installation or symlinks. The editor binary
+is pinned to the same authenticated official oracle; complete editor fixture,
+config and raw response bytes are retained before full assertions. Original
+source and all independently authored expectations remain unchanged.

@@ -38,7 +38,7 @@ fn fixture(root: &Path, source: &str) {
 }
 
 fn case() -> tempfile::TempDir {
-    let parent = workspace_root().join("target/vize-tests/template-dollar-emit");
+    let parent = workspace_root().join("npm/cli/target/vize-tests/template-dollar-emit");
     std::fs::create_dir_all(&parent).unwrap();
     tempfile::tempdir_in(parent).unwrap()
 }

@@ -57,7 +57,7 @@ fn original_emit_preserves_complete_editor_diagnostics_and_typed_hover() {
     crate::runtime::block_on(async {
         let bridge = Arc::new(vize_canon::CorsaBridge::with_config(
             vize_canon::CorsaBridgeConfig {
-                corsa_path: Some(corsa),
+                corsa_path: Some(corsa.clone()),
                 working_dir: Some(project.path().to_path_buf()),
                 timeout_ms: 30_000,
                 ..Default::default()
@@ -85,6 +85,16 @@ fn original_emit_preserves_complete_editor_diagnostics_and_typed_hover() {
             .unwrap();
             std::fs::write(capture.join("editor-source.vue"), ORIGINAL).unwrap();
             std::fs::write(capture.join("editor-tsconfig.json"), CONFIG).unwrap();
+            std::fs::write(capture.join("editor-runtime.json"), serde_json::json!({ "nativeBinary": corsa, "workingDirectory": project.path(), "timeoutMs": 30_000 }).to_string()).unwrap();
+            for file in [
+                "vize.config.json",
+                "node_modules/vue/package.json",
+                "node_modules/vue/index.d.ts",
+            ] {
+                let target = capture.join("editor-inputs").join(file);
+                std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+                std::fs::copy(project.path().join(file), target).unwrap();
+            }
         }
         assert_eq!(diagnostics, expected);
         let (line, character) = crate::ide::offset_to_position(ORIGINAL, start);
