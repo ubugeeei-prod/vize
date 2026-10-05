@@ -32,9 +32,7 @@ fn strict_generated_template_context_uses_the_same_declared_emit_vector() {
 
 const MODEL_ERROR: &str = concat!(
     "No overload matches this call.\n",
-    "  Overload 1 of 2, '(event: \"change\", value: number): void', gave the following error.\n",
-    "    Argument of type '\"update:modelValue\"' is not assignable to parameter of type '\"change\"'.\n",
-    "  Overload 2 of 2, '(event: \"update:modelValue\", value: string): void', gave the following error.\n",
+    "  The last overload gave the following error.\n",
     "    Argument of type 'number' is not assignable to parameter of type 'string'."
 );
 
@@ -61,12 +59,12 @@ defineModel<string>({ required: true });
         &corsa,
         "const model = defineModel<string>({ required: true }); const emit = defineEmits<{ change: [value: number]; 'update:modelValue': [value: typeof model.value] }>();",
         "emit('update:modelValue', 'x');\nemit('update:modelValue', 1);",
-        &format!("oracle.ts(4,6): error TS2769: {MODEL_ERROR}\n"),
+        &format!("oracle.ts(4,27): error TS2769: {MODEL_ERROR}\n"),
     );
     check(
         case.path(),
         &corsa,
-        &[&format!("error:7:25 [TS2769] {MODEL_ERROR}")],
+        &[&format!("error:7:46 [TS2769] {MODEL_ERROR}")],
     );
 }
 

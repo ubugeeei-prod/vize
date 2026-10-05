@@ -126,12 +126,12 @@ fn capture(root: &Path, corsa: &Path, phase: &str, output: &Output) {
         return;
     };
     let thread = std::thread::current();
-    let capture = PathBuf::from(capture).join(thread.name().unwrap_or("unknown"));
+    let capture = PathBuf::from(capture).join(thread.name().unwrap_or("unknown").replace(':', "_"));
     std::fs::create_dir_all(&capture).unwrap();
     std::fs::write(capture.join(format!("{phase}.stdout.txt")), &output.stdout).unwrap();
     std::fs::write(capture.join(format!("{phase}.stderr.txt")), &output.stderr).unwrap();
     std::fs::write(capture.join(format!("{phase}.json")), serde_json::json!({
-        "exitCode": output.status.code(), "cliBinary": env!("CARGO_BIN_EXE_vize"), "nativeBinary": corsa
+        "caseName": thread.name(), "exitCode": output.status.code(), "cliBinary": env!("CARGO_BIN_EXE_vize"), "nativeBinary": corsa
     }).to_string()).unwrap();
     for file in [
         "src/A.vue",
@@ -220,13 +220,13 @@ defineEmits(['click', 'change']);
         &corsa,
         "const emit = defineEmits(['click', 'change']);",
         "emit('change', 'x');\nemit('clik');",
-        "oracle.ts(4,6): error TS2345: Argument of type '\"clik\"' is not assignable to parameter of type '\"click\" | \"change\"'.\n",
+        "oracle.ts(4,6): error TS2345: Argument of type '\"clik\"' is not assignable to parameter of type '\"change\" | \"click\"'.\n",
     );
     check(
         case.path(),
         &corsa,
         &[
-            "error:6:25 [TS2345] Argument of type '\"clik\"' is not assignable to parameter of type '\"click\" | \"change\"'.",
+            "error:6:25 [TS2345] Argument of type '\"clik\"' is not assignable to parameter of type '\"change\" | \"click\"'.",
         ],
     );
 }

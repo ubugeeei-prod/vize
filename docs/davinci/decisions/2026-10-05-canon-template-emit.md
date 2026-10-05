@@ -49,3 +49,13 @@ with the original and actual editor vectors, are required before readiness.
 The same source CLI deliberately writes two progress lines to stderr. Assert the
 complete authored one-input count/root progress response, retaining raw stderr
 and complete stdout vectors; no output filtering or runtime change is added.
+
+At 02cbd, original/strict/generic/local/valid/absent/shadowed complete vectors
+pass. The runtime array oracle displays the canonical union as change | click;
+the model oracle emits complete TS2769 last-overload detail at the invalid
+payload. Correct only those explicitly authored rendering/range expectations;
+event membership, model payload semantics and original inputs remain unchanged.
+Model CLI and original editor acceptance still require actual execution.
+Artifact case labels replace Rust namespace colons for portable filesystem
+names, retaining the original test name in metadata; receipts assert exact nine
+names separately from editor-inputs and include original hidden fixture bytes.
