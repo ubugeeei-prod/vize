@@ -45,3 +45,16 @@ These observations confer no native product replacement or #6881 history accepta
 Direct Node/WASM lint options and sanitizer inference are outside this config slice.
 
 Co-authored-by: ubugeeei <71201308+ubugeeei@users.noreply.github.com>
+
+## Post-publication delivery qualification
+
+The [paired current-main decision](https://github.com/ubugeeei-prod/vize/issues/8018#issuecomment-5998346899)
+records the explicit root thaw after supported v0.433 publication. A genuine
+replay onto actual `8a8521d689` preserves all26 noncanonical owned source/config/
+original/reference/test blobs from reviewed `73bf0b9f`; its retained canonical
+clause reproduces every incoming main byte/LF at350 lines when removed. This
+record supplies no new production behavior or historical runtime transfer.
+Fresh exact source/native Actions, prospective whole-prefix compatibility,
+protected full104 suites and signed actual merge remain mandatory. Root alone
+selects and publishes the next finite0.434 release; original failed/successful
+proof and explicit source reporter trailers remain retained separately.
