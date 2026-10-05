@@ -195,3 +195,50 @@ rewriting or warning suppression. The compiler, original corpus, whole module
 map laws and 132 mounted phases stay byte-exact. Fresh exact-source Actions
 still owns execution; neither the failed source nor static review qualifies
 runtime/protected/merge acceptance.
+
+## Original SetupLet whole snapshots
+
+Exact source `8065f19b080fe39334bb1c01d9c12862f257a5bf` /
+Check37362139186 executes signed merge producer
+`3cb96e46028b74e794e6776e56fcc06a9def5d5c` / tree
+`f35cd9fa6a069240c510c2b5d3ce46b97c573d70`, with parents literal main
+`760c5f3f903394cfc5f93743945be534d341ae83` and source8065.
+All18 current/18 official modules, all45 complete raw map graphs (2,488
+mapped anchors), original19 custody pins and all32 mounts/132 independent
+physical phases pass with no diagnostics or cleanup errors. All13 independent
+write expressions/twenty-six real pinned Vue primitive/ref outcomes pass.
+These current maps establish script provenance only; browser, hydration,
+native Davinci and performance remain unqualified.
+
+The four actual Rust workers execute16,248 tests with16,246 passes/two failures
+and no skipped cases. Both failures are the first original PKL SetupLet
+assignment whole JS/TS snapshots; canonical-corpus job111942832035 passes.
+Whole source Check remains failed regardless of these positive laws.
+The source-bound receipt has SHA256
+`e8634399fda97f16604d512b718ab3f92ca38e95d307562c5d4d614730b379b6`.
+
+Preserve the original `patches.pkl` whole bytes, including `let count = $ref(0)`
+and the following `let value = $ref(10)` case. The actual initializer parser
+passes these unknown calls to `infer_binding_type`, whose let/var fallback is
+SetupLet; `$ref` spelling grants no known-ref authority. The corrected original
+AST write role consequently needs the same ref/primitive branch already proved
+by the thirteen-expression law. Independently author only four complete golden
+refinements, two original inputs times JS/TS: assignment
+`(_isRef(count) ? count.value = _unref(count) + 1 : count = _unref(count) + 1)`
+and postfix `(_isRef(value) ? value.value++ : value++)`. The outer handler
+parentheses and all other module bytes remain exact. Assignment registers
+Unref before IsRef from its rewritten RHS; postfix registers IsRef before the
+later interpolation's Unref. Preserve original TS event annotations.
+
+The assignment pair is an authenticated current failure. The subsequent
+postfix pair is source-proven affected but not an observed failure because
+the original whole-fixture test stops at the first mismatch. Archive all four
+old complete snapshots, both original raw PKL case blocks and both authentic
+JUnit failure bodies in
+[the scoped history](./fixtures/setup-write-snapshot-history-7881/authority.json).
+Its literal authority pins old/current full bytes and the unchanged ordered
+inventory of every other snapshot. No bulk regeneration, source input change,
+snapshot comparator waiver, `$ref` reclassification or instruction cap change.
+Fresh exact-source full snapshots/runtime/canonical and protected100+4/full
+Rust/actual signed merge still qualify this same Draft; prior positive source
+execution transfers no acceptance to the successor.
