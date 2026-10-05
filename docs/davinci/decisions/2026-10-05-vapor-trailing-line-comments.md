@@ -122,6 +122,34 @@ to the existing compiler fixture-sweep row. Bind the manifest to actual4e.
 The changed head requires fresh exact Actions before Ready/auto/protected
 admission; no green d7d result is transferred as current-head acceptance.
 
+Fresh d728 source Check37270516589 and associated workflows pass, with15,977
+successful executions and strict32 runtime/dual-target map tests. Independent
+matched admission produces protected d52/Check37271681194, whose instruction
+job111639821369 fails only SSR stress interpolation862525>850681. Immediately
+dequeue #7967 and verify queue/auto null; it has not merged. No red admission
+or source-only performance acceptance is retained.
+
+Authenticate genuine literal0034 protected Check37271074703 raw artifact
+11327713734 and candidate artifact11328553568: both100 ceilings measured three
+times, all self-cost/edge/call maps identical within each head, fixture/caps/
+windows/toolchain/guest/allocator unchanged. Parent842173 grows by20,352.
+The change is concentrated in document appends: push_spanned now calls
+CompactString push_str1002 times and push_escaped502, instead of inlined
+reserve/copy paths; allocation-copy counts remain501. SSR production source
+is unchanged, and the comment-free fixture never calls the guarded converter.
+The authenticated failure packet SHA-256 is
+51d3eeca846db50586d133ce31a2308759dbd0e4a7ea2052b6d9070416ace242.
+
+Both real production callers already require contains("//"); preserve those
+checks and the entire scanner, but declare the shared converter cold and
+out of line. This is a narrow compilation hint, not measured savings. Replay
+all nine commits genuinely onto signed literal0034, preserving original
+source authors/messages/trailers, all eight other production blobs and all
+whole-runtime custody. Incoming SSR/CSS repairs and complete canonical350
+remain present; bind the manifest to the true origin. Fresh exact source and
+all104 actual measurements must establish the result before re-admission.
+No caps, fixtures, native qualification or strict32 assertions are waived.
+
 TODO: exact source Actions including whole-module runtime, root peer review,
 protected full suites and all 104 immutable instruction ceilings, signed
 actual main with reporter trailer/issue closure, then a verified frequent cut.
