@@ -78,6 +78,12 @@ Replay on fresh main retains all incoming text-run gap/drop laws. Move the
 unchanged single-text helper into its own module, with only module visibility
 and leaf paths adjusted, so the run file remains below its 350-line ceiling.
 Review the relocated String/arena Vec inventory counts; storage is unchanged.
+The existing singleton control for `<pre>日本語\r\n  😀</pre>` now expects
+the same CRLF-to-LF normalization as the direct native and stock runtime
+controls. Its complete original span and transformation provenance remain
+strict; only that stale rendered expectation changes.
+Run this existing singleton target in the same focused native test command
+and include its path trigger, so later edits also refresh the runtime proof.
 The [pinned stock parser](https://github.com/vuejs/core/blob/v3.6.0-rc.9/packages/compiler-core/src/parser.ts#L617-L627)
 also keeps RCDATA out of whitespace condensing before its first-newline rule.
 The whole original SFC and controls also run through a source-built CLI in DOM,
