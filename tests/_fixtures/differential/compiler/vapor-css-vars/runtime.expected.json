@@ -46,7 +46,7 @@
         "attributes": {
           "class": "x",
           "data-v-abc12345": "",
-          "style": "--bound-color: red;"
+          "style": "--bound-color:red;"
         },
         "children": ["text"]
       }

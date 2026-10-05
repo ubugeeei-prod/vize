@@ -49,3 +49,7 @@ Whole original 17 CSS and 33 runtime benchmark qualification remains separate
 under #7856; no historical failed snapshot is called current-source failure.
 
 Paired source decision: [#7887 comment](https://github.com/ubugeeei-prod/vize/issues/7887#issuecomment-5987533072).
+
+Before the first source Rust execution, reading the locked stable Vue `stringifyStyle` confirms SSR serializes custom properties as `key:value;`, whereas live DOM setters serialize `key: value;`. Correct only the separately authored frozen SSR formatting expectation and its authenticated digest. Preserve full raw HTML and the complete semantic oracle; no expected value is derived from Vize output and no old-head acceptance transfers.
+
+Paired oracle correction: [#7887 comment](https://github.com/ubugeeei-prod/vize/issues/7887#issuecomment-5987578581).

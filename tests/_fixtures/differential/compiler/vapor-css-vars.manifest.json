@@ -35,7 +35,7 @@
       },
       "reference": {
         "path": "vapor-css-vars/runtime.expected.json",
-        "sha256": "fed2220f54d4067e40801fc6072c705e320d0367ae42b9429033540639eeecad",
+        "sha256": "c87f2f84ed49d2f43af29a3a3a46d29238f68e36cccb1b3e7d28f7a19a382729",
         "source": "crates/vize_atelier_sfc/tests/vapor_css_vars.rs:vapor_css_variables_mount_update_and_preserve_vdom_ssr"
       },
       "provenance": {
