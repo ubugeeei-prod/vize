@@ -29,3 +29,8 @@ Oxlint reports the intentionally unassigned reporter `handler`. Preserve every
 input byte/hash and use `.fixture` carriers, with original public filenames still
 passed to the actual linter. No warning budget/configuration is relaxed; fresh
 source Actions must qualify the successor.
+Hosted source Check `37258429823` rejected the stale Patina consumer surface
+inventory. Regenerate the owned shard with the existing official generator;
+the raw OXC AST dependencies are explicitly recorded as legacy source custody,
+with no native level credit or inventory waiver. Fresh source qualification is
+required at the successor head; the failed head stays historical and unqueued.
