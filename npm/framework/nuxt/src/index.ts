@@ -24,6 +24,7 @@ import {
   unsupportedNuxtVueCompilerOptions,
 } from "./options";
 import { createNuxtModuleResolver } from "./resolver";
+import { mergePlainRecords } from "./module-records";
 import { setupVizeLibraries } from "./libraries";
 import {
   buildNuxtDevAssetBase,
@@ -98,31 +99,6 @@ async function addNuxtServerPlugin(plugin: string): Promise<void> {
 
 async function addNuxtVitePlugin(plugin: unknown): Promise<void> {
   (await loadNuxtKit()).addVitePlugin(plugin as never);
-}
-
-function isPlainRecord(value: unknown): value is Record<string, unknown> {
-  return value != null && typeof value === "object" && !Array.isArray(value);
-}
-
-function mergePlainRecords(
-  ...values: Array<Record<string, unknown> | undefined>
-): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-
-  for (const value of values) {
-    if (!value) {
-      continue;
-    }
-    for (const [key, nextValue] of Object.entries(value)) {
-      const currentValue = result[key];
-      result[key] =
-        isPlainRecord(currentValue) && isPlainRecord(nextValue)
-          ? mergePlainRecords(currentValue, nextValue)
-          : nextValue;
-    }
-  }
-
-  return result;
 }
 
 function resolveModuleOptions(
