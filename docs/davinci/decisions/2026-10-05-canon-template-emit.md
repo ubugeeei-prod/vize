@@ -59,3 +59,10 @@ Model CLI and original editor acceptance still require actual execution.
 Artifact case labels replace Rust namespace colons for portable filesystem
 names, retaining the original test name in metadata; receipts assert exact nine
 names separately from editor-inputs and include original hidden fixture bytes.
+
+At 8f963, all event membership controls pass. The remaining mixed-model CLI
+assertion differs only in multiline diagnostic indentation: the established
+CLI renderer retains every line without the native text printer indentation.
+Keep separate explicit full CLI and native TS2769 expectations; neither output
+is filtered and no production source or diagnostic range changes. Exact-nine
+CLI plus complete editor acceptance must pass again on the successor head.
