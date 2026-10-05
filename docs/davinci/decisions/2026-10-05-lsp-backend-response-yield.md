@@ -7,7 +7,7 @@ The original report and complete App.vue/useToast.ts are retained under
 `tests/_fixtures/lsp-corsa-responsiveness-8012/`, with the reported package and
 strict Bundler project shape. The two sources were compared byte-for-byte with
 the saved issue body. Reported 1.5–2.6 s / 58 s stalls are reporter observations,
-not measurements of this private source proposal.
+not measurements of this source proposal.
 
 Corsa IPC already runs on a dedicated worker, but the async bridge waits for
 its reply synchronously on the foreground executor. One poll therefore prevents
@@ -103,12 +103,15 @@ successful native-query replay. Existing full RPC, versioned diagnostics,
 editor, churn, native backend and deadline fixtures remain required.
 
 Rustfmt, source byte integrity, diff and unchanged 350-line policy checks are
-the only local qualification. Rust tests and the source CLI have not been built
-or run. TODO: refresh onto actual main after the admitted release, independent
-source/rename composition review, exact-source Actions for the whole existing
+the only local qualification. Rust tests and the source CLI were unbuilt/unrun at the source-only peer
+checkpoint. Independent review cleared b25d89f; the genuine main replay starts
+from d8c3f466 and preserves all incoming module-link registration and canonical
+clauses, with 34 peer files byte-identical before this status update. Runtime
+qualification remains pending. TODO: independent source/rename composition
+review, exact-source Actions for the whole existing
 native LSP corpus and new fixtures, unchanged instruction ceilings, protected
-full suites, actual merge and external release verification. No public PR or
-merge admission exists for this source. The four-task/100-message transport
+full suites, actual merge and external release verification. Source Actions, merge admission and external
+release evidence remain required. The four-task/100-message transport
 bounds still permit saturated-queue backpressure; a fifth syntax request behind
 four outstanding typed RPCs is not fixed by worker yielding. Scoped wait itself
 is cancellable but adds no new whole-RPC deadline; the configured bound remains
