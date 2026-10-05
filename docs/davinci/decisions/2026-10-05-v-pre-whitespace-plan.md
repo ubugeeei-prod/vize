@@ -55,3 +55,9 @@ The actual issue author is the existing primary maintainer, ubugeeei (public
 GitHub ID 71201308), not a distinct external reporter. Meaningful source and PR
 metadata carry the verified public noreply Co-authored-by trailer; the actual
 squash footer is verified separately, without inventing a normalization cause.
+
+The first publication omitted the generated DOM test/dev row from its staged
+inventory although the local generator had updated it. The successor commits
+that exact row alongside this receipt; both DOM and SSR inventory rows match
+the actual test imports. No production or fixture bytes change. First-source
+Actions remain historical and cannot qualify this corrected source.
