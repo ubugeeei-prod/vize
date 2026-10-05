@@ -1,0 +1,17 @@
+<template>
+  <p class="note">note</p>
+</template>
+
+<style scoped>
+.note {
+  color: var(--note-color);
+}
+
+.note--indented {
+  margin-left: 8px;
+}
+
+.note--raised {
+  z-index: 1;
+}
+</style>

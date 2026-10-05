@@ -1,0 +1,4 @@
+<template><div /></template>
+<style>
+:is(#inside, #ignored) #outside, :deep(#hidden)#visible { color: red; }
+</style>

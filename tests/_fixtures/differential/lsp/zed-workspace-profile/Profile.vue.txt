@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const total = "3";
+</script>
+<template>{{ total }}</template>

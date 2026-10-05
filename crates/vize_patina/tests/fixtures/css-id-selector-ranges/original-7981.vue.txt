@@ -1,0 +1,21 @@
+<template>
+  <div id="main-banner" class="my-banner">
+    <p id="banner-text">Hello</p>
+  </div>
+</template>
+
+<style scoped>
+.my-banner {
+  padding: 8px;
+}
+
+#main-banner {
+  margin: 0;
+}
+
+.my-banner {
+  #banner-text {
+    margin: 0;
+  }
+}
+</style>

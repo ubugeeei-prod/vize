@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import MySwitch from "./MySwitch.vue";
+
+const on = ref(false);
+function toggle(value: boolean): void {
+  on.value = value;
+}
+</script>
+
+<template>
+  <MySwitch  />
+  <span>{{ on }}</span>
+</template>

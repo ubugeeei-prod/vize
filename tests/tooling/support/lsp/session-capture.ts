@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateBuildReceipt } from "../../../differential/build-receipt.mjs";
+import { BUILD_RECIPE, validateBuildReceipt } from "../../../differential/build-receipt.mjs";
 import { sha256 } from "../../../differential/harness.mjs";
 import { decodeFrames } from "../../../differential/lsp-wire.ts";
 import type { VerifiedLspLaunch } from "./launch.ts";
@@ -20,7 +20,11 @@ function sourceWitnesses(repoRoot: string, callerStack: string): SourceWitness[]
     if (!frame) continue;
     const absolute = fileURLToPath(frame[1]);
     const relative = path.relative(repoRoot, absolute);
-    if (!relative.startsWith(`tests${path.sep}tooling${path.sep}`)) continue;
+    if (
+      !relative.startsWith(`tests${path.sep}tooling${path.sep}`) &&
+      !relative.startsWith(`tests${path.sep}snapshots${path.sep}`)
+    )
+      continue;
     if (relative.endsWith("session-process.ts") || relative.endsWith("session.ts")) continue;
     witnesses.push({
       path: relative.split(path.sep).join("/"),
@@ -58,7 +62,7 @@ export class LspSessionCapture {
     callerStack: string;
   }) {
     assert.ok(launch, "verified source launch is required for raw observations");
-    validateBuildReceipt(launch.receipt, launch.expected);
+    validateBuildReceipt(launch.receipt, launch.expected, launch.buildRecipe ?? BUILD_RECIPE);
     const probe = launch.versionProbe;
     assert.ok(probe, "actual source version probe is required for raw observations");
     assert.equal(probe.exitStatus, 0);

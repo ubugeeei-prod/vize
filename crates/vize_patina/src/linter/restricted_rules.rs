@@ -22,6 +22,21 @@ use crate::rules::vue::{
 use vize_l0::String;
 
 impl Linter {
+    /// Configure known content-providing directives without enabling the rule.
+    pub fn with_palpable_content_directives(mut self, names: Vec<String>) -> Self {
+        if self.registry.has_rule("html/no-empty-palpable-content") {
+            if names.is_empty() {
+                self.registry
+                    .replace(Box::new(crate::rules::html::NoEmptyPalpableContent));
+            } else {
+                self.registry.replace(Box::new(
+                    crate::rules::html::NoEmptyPalpableContent::with_content_directives(names),
+                ));
+            }
+        }
+        self
+    }
+
     /// Configure strict boolean allowances without enabling the opt-in rule.
     pub fn with_strict_boolean_expressions_options(
         mut self,

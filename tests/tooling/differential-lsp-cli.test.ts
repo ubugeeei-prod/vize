@@ -28,14 +28,14 @@ void test("source-built LSP registers complete fix-history response sessions wit
     sourceRevision: revision.stdout.trim(),
   });
   assert.deepEqual(acceptance.total, {
-    planned: 14,
+    planned: 16,
     nativeHandled: 0,
     nativeEquivalent: 0,
-    unsupported: 14,
+    unsupported: 16,
     legacyBacked: 0,
     unverified: 0,
   });
-  assert.equal(report.summary.legacyMatches, 14, JSON.stringify(report.rows, null, 2));
+  assert.equal(report.summary.legacyMatches, 16, JSON.stringify(report.rows, null, 2));
   assert.equal(report.summary.legacyFailures, 0);
   assert.equal(report.summary.baselineDrift, 0);
 });

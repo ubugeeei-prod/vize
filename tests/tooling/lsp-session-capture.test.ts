@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
-import { writeBuildReceipt } from "../differential/build-receipt.mjs";
+import { LEGACY_BUILD_RECIPE, writeBuildReceipt } from "../differential/build-receipt.mjs";
 import { sha256 } from "../differential/harness.mjs";
 import { frameMessage } from "../differential/lsp-wire.ts";
 import { resolveVizeLaunchCommand, type VerifiedLspLaunch } from "./support/lsp/launch.ts";
@@ -174,6 +174,55 @@ test("ordinary unbound helper execution does not manufacture source observations
     child.stdin.end("ordinary client bytes");
     assert.deepEqual(await closed, [23, null]);
     assert.equal(fs.existsSync(path.join(f.root, "target/differential")), false);
+  } finally {
+    fs.rmSync(f.root, { recursive: true, force: true });
+  }
+});
+
+test("legacy passive observations retain the snapshot caller and complete failed RPC bytes", () => {
+  const f = fixture();
+  try {
+    const witness = path.join(f.root, "tests/snapshots/check/synthetic.ts");
+    fs.mkdirSync(path.dirname(witness), { recursive: true });
+    fs.writeFileSync(witness, "// Synthetic snapshot observer law, not a product fixture.\n");
+    execFileSync("git", ["add", "tests/snapshots"], { cwd: f.root });
+    execFileSync("git", ["commit", "-qm", "synthetic snapshot witness"], { cwd: f.root });
+    writeBuildReceipt(f.root, LEGACY_BUILD_RECIPE);
+    let launch: VerifiedLspLaunch | undefined;
+    resolveVizeLaunchCommand(undefined, f.binary, {
+      required: true,
+      repoRoot: f.root,
+      buildRecipe: LEGACY_BUILD_RECIPE,
+      onVerifiedLaunch: (verified) => {
+        launch = verified;
+      },
+    });
+    assert.ok(launch);
+    const capture = new LspSessionCapture({
+      repoRoot: f.root,
+      outputRoot: path.join(f.root, "target/differential/lsp-sessions"),
+      launch,
+      callerStack: `Error\n    at snapshot (${pathToFileURL(witness).href}:11:41)`,
+    });
+    const reply = frameMessage({ jsonrpc: "2.0", id: 3, result: { items: [{ label: "🧪" }] } });
+    capture.append("server", reply);
+    capture.finish(23, null);
+    const observed = JSON.parse(
+      fs.readFileSync(path.join(capture.directory, "observation.json"), "utf8"),
+    );
+    assert.equal(observed.buildReceipt.recipe, LEGACY_BUILD_RECIPE);
+    assert.deepEqual(observed.sourceWitnesses, [
+      {
+        path: "tests/snapshots/check/synthetic.ts",
+        line: 11,
+        column: 41,
+        sha256: sha256(fs.readFileSync(witness)),
+      },
+    ]);
+    assert.deepEqual(fs.readFileSync(path.join(capture.directory, "server.bin")), reply);
+    assert.equal(observed.streams.server.truncated, false);
+    assert.deepEqual(observed.process, { exitStatus: 23, signal: null, error: null });
+    assert.equal(observed.acceptance.nativeHandled, 0);
   } finally {
     fs.rmSync(f.root, { recursive: true, force: true });
   }

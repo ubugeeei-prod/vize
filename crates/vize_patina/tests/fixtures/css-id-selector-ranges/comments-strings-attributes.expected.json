@@ -1,0 +1,43 @@
+{
+  "api": {
+    "filename": "CommentsStringsAttributes.vue",
+    "diagnostics": [
+      {
+        "rule": "css/no-id-selectors",
+        "severity": "warning",
+        "message": "Avoid ID selectors - use class selectors for better reusability",
+        "start": 70,
+        "end": 75,
+        "help": "Replace with a class selector for lower specificity",
+        "labels": [],
+        "fix": null
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  "json": [
+    {
+      "file": "CommentsStringsAttributes.vue",
+      "messages": [
+        {
+          "ruleId": "css/no-id-selectors",
+          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+          "severity": 1,
+          "message": "[vize:css/no-id-selectors] Avoid ID selectors - use class selectors for better reusability",
+          "line": 2,
+          "column": 42,
+          "endLine": 2,
+          "endColumn": 47,
+          "help": "Replace with a class selector for lower specificity"
+        }
+      ],
+      "errorCount": 0,
+      "warningCount": 1
+    }
+  ],
+  "plain": "Patina lint report: 1 warning in 1 file\n\nCommentsStringsAttributes.vue\n  CommentsStringsAttributes.vue:2:42 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n",
+  "authoredSlices": [
+    "#real"
+  ]
+}

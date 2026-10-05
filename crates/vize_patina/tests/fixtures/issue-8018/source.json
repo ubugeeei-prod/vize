@@ -1,0 +1,56 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8018",
+  "bodySha256": "b7f6a252b116cb0b1cb90196eee03aedede5cb9d11026a6d2da85ddd41c82b44",
+  "author": {
+    "login": "ubugeeei",
+    "id": 71201308,
+    "coauthor": "ubugeeei <71201308+ubugeeei@users.noreply.github.com>"
+  },
+  "authority": "First three immutable code blocks from the original report; authored controls and complete references derived from the explicit content-provider contract and existing output serializer, never runtime capture.",
+  "inputs": [
+    {
+      "path": "safe-html.ts",
+      "file": "safe-html.ts.fixture",
+      "bytes": 287,
+      "sha256": "11fbeddaf37089c1d368c7b66e7c611e0820126bd894c7d10e6538211c320cf3",
+      "origin": "original issue code block with final LF"
+    },
+    {
+      "path": "Notice.vue",
+      "file": "Notice.vue.fixture",
+      "bytes": 209,
+      "sha256": "03bbd18faf1cf9547a509c4f4c0e3f623fa078aedc7ed4d2d721a5cf8ec5b67c",
+      "origin": "original issue code block with final LF"
+    },
+    {
+      "path": "vize.config.json",
+      "file": "vize.config.json.fixture",
+      "bytes": 98,
+      "sha256": "c2e238e72d829e58109fa0df63e6aecf33498cf228e60bd0725717b3f7b91ad8",
+      "origin": "original issue code block with final LF"
+    }
+  ],
+  "authored": [
+    {
+      "file": "Controls.vue.fixture",
+      "bytes": 552,
+      "sha256": "3d86793eaa8f8c42ba7eb83eece03152928a1eba4bd1527e9158935495230d88"
+    },
+    {
+      "file": "references.json",
+      "bytes": 79599,
+      "sha256": "8b804ef06715483b11f3cd8d0ec87765910d1b0f26f9307cf78c117a332e51d5"
+    }
+  ],
+  "referenceCorrection": {
+    "originalReference": {
+      "file": "references.json",
+      "bytes": 79613,
+      "sha256": "5b7d605284f31f48283acd01f880d7f5680ba514717346d0267c0e264b9a35f0"
+    },
+    "reason": "The unchanged armature opening-tag creation preserves element.loc through close_stack_element_at; the unchanged rule reports that location. Authored paired empty p/v-if expected spans incorrectly included closing tags. Only complete CLI/LSP end fields and Rust paired-tag expected ends are corrected from that source contract; original inputs and all other expected fields remain unchanged.",
+    "authority": "crates/vize_armature/src/parser/element/tags.rs opening-tag construction and close lifecycle; crates/vize_patina/src/rules/html/no_empty_palpable_content.rs original callback; independently peer reviewed before correction",
+    "historicalSource": "6909818ab8d798645dd7f6d11397ae6b58c54fcf",
+    "historicalRun": 37312394804
+  }
+}
