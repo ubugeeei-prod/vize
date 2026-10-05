@@ -91,6 +91,15 @@ five highlight cases by their IDs instead of a tail slice so the new hover case
 cannot change their nine complete request laws. These failures remain historical;
 the successor requires fresh compiled whole-hover and real-stdio acceptance.
 
+Successor `4d40febf` executes the whole compiled Rust hover law successfully, but
+its new stdio fixture stops before spawning: Vue is declared by `tests/package.json`,
+not the root package. Resolve the already installed package through the existing
+editor-E2E `resolveVuePackagePath` helper, linking its real pnpm package/dependencies
+and retaining its complete actual package identity in the observation. No install,
+manifest, producer, original input or expected response changes. This narrow
+fixture-wiring successor still needs fresh exact-head six-response execution;
+the earlier compiled result is retained separately, not transferred acceptance.
+
 Source Actions, unchanged protected
 104 instruction probes/full Rust/original corpus, actual signed merge and release
 publication are pending. This source record grants no runtime acceptance.

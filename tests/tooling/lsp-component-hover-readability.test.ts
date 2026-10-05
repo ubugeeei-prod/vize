@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
+import { resolveVuePackagePath } from "../../tools/support/compat/editor-e2e/real-vue-workspace.mjs";
 import { readPinnedArtifact } from "../differential/harness.mjs";
 import { loadLspManifest } from "../differential/lsp-manifest.ts";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
@@ -71,10 +72,9 @@ await test("component hovers wrap complete long types and preserve exact short c
     }
     const nodeModules = path.join(workspace, "node_modules");
     fs.mkdirSync(nodeModules);
-    const vuePackage = path.join(root, "node_modules/vue");
-    assert.ok(fs.existsSync(vuePackage), "Vue runtime types are required");
+    const vuePackage = resolveVuePackagePath();
     fs.symlinkSync(vuePackage, path.join(nodeModules, "vue"), "junction");
-    const vueNamespace = path.join(root, "node_modules/@vue");
+    const vueNamespace = path.join(path.dirname(vuePackage), "@vue");
     if (fs.existsSync(vueNamespace)) {
       fs.symlinkSync(vueNamespace, path.join(nodeModules, "@vue"), "junction");
     }
@@ -141,6 +141,10 @@ await test("component hovers wrap complete long types and preserve exact short c
           version: 1,
           sourceAuthority: fixture.data.provenance.witness,
           binary: process.env.VIZE_LSP_BIN,
+          vuePackage: {
+            path: vuePackage,
+            identity: JSON.parse(fs.readFileSync(path.join(vuePackage, "package.json"), "utf8")),
+          },
           serverProcessId: session.processId,
           scope: "six whole public hovers; bounded elapsed observations, no speedup claim",
           observations,
