@@ -29,11 +29,6 @@ impl MaestroServer {
         changes: Vec<TextDocumentContentChangeEvent>,
         version: i32,
     ) {
-        #[cfg(feature = "native")]
-        let diagnostic_lock = self.state.diagnostic_lock(uri);
-        #[cfg(feature = "native")]
-        let diagnostic_guard = diagnostic_lock.lock().await;
-
         if !self.state.documents.apply_changes(uri, changes, version) {
             return;
         }
@@ -46,14 +41,20 @@ impl MaestroServer {
         self.state.update_virtual_docs(uri, &content);
         #[cfg(feature = "native")]
         super::workspace_files::invalidate_changed_document_disk_project_state(self, uri).await;
+        // Apply editor text before waiting for type diagnostics. Their lock
+        // cannot delay didChange or hide the new revision from pending replies.
+        #[cfg(feature = "native")]
+        let diagnostic_lock = self.state.diagnostic_lock(uri);
+        #[cfg(feature = "native")]
+        let diagnostic_guard = diagnostic_lock.lock().await;
+
         let diagnostics = self.collect_diagnostics_unlocked(uri).await;
 
         #[cfg(feature = "native")]
         drop(diagnostic_guard);
 
-        if let Some((diagnostic_version, diagnostics)) = diagnostics {
-            self.publish_collected_diagnostics(uri, diagnostic_version, diagnostics)
-                .await;
+        if let Some(diagnostics) = diagnostics {
+            self.publish_collected_diagnostics(uri, diagnostics).await;
         }
 
         if !self.state.is_lsp_typecheck_enabled() {
@@ -139,9 +140,8 @@ impl MaestroServer {
         #[cfg(feature = "native")]
         drop(diagnostic_guard);
 
-        if let Some((version, diagnostics)) = diagnostics {
-            self.publish_collected_diagnostics(uri, version, diagnostics)
-                .await;
+        if let Some(diagnostics) = diagnostics {
+            self.publish_collected_diagnostics(uri, diagnostics).await;
         }
     }
 
@@ -162,9 +162,8 @@ impl MaestroServer {
         #[cfg(feature = "native")]
         drop(diagnostic_guard);
 
-        if let Some((version, diagnostics)) = diagnostics {
-            self.publish_collected_diagnostics(uri, version, diagnostics)
-                .await;
+        if let Some(diagnostics) = diagnostics {
+            self.publish_collected_diagnostics(uri, diagnostics).await;
         }
     }
 

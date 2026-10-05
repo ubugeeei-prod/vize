@@ -95,6 +95,7 @@ impl ServerState {
     /// Set the workspace root path.
     #[cfg(feature = "native")]
     pub fn set_workspace_root(&self, path: PathBuf) {
+        let _change = self.corsa_environment_change();
         #[cfg(feature = "experimental-source-navigation")]
         self.update_module_link_context(None, || {
             *self.workspace_root.write() = Some(path);
@@ -111,6 +112,7 @@ impl ServerState {
         // Overlays shadow files resolved relative to the workspace root, so a
         // new root retargets them even though no document changed.
         self.corsa_overlays.invalidate();
+        self.retire_corsa_configuration();
     }
 
     /// Get the workspace root path.
@@ -139,6 +141,8 @@ impl ServerState {
     /// Replace the workspace-folder contexts with the folders sent by
     /// `initialize`.
     pub(crate) fn set_workspace_folders(&self, roots: Vec<PathBuf>) {
+        #[cfg(feature = "native")]
+        let _change = self.corsa_environment_change();
         let contexts = roots.into_iter().map(WorkspaceFolderConfig::load).collect();
         *self.workspace_folder_configs.write() = contexts;
     }
@@ -162,6 +166,8 @@ impl ServerState {
     /// Apply a `workspace/didChangeWorkspaceFolders` event: removed roots
     /// drop their contexts, added roots load theirs.
     pub(crate) fn update_workspace_folders(&self, added: Vec<PathBuf>, removed: &[PathBuf]) {
+        #[cfg(feature = "native")]
+        let _change = self.corsa_environment_change();
         let mut contexts = self.workspace_folder_configs.write();
         contexts.retain(|context| !removed.contains(&context.root));
         contexts.extend(added.into_iter().map(WorkspaceFolderConfig::load));

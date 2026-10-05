@@ -1,8 +1,8 @@
 //! Deadline-bounded worker thread for synchronous, un-cancellable state.
 //!
 //! Every Corsa bridge call is synchronous underneath: `corsa`'s project
-//! session drives its IPC through [`corsa::runtime::block_on`], so a bridge
-//! future never yields. Wrapping such a future in an async `timeout`
+//! session drives its IPC through [`corsa::runtime::block_on`]. Before async
+//! worker replies, a bridge future never yielded. An async `timeout`
 //! combinator cannot bound it — the guarded future owns the executor thread
 //! and the timer half never gets polled again, which is why the diagnostics
 //! pass appeared to promise 10s while `CorsaBridgeConfig::timeout_ms` was read
@@ -23,10 +23,10 @@
 //! queueing behind it, so a wedged backend costs one deadline in total rather
 //! than one deadline per request.
 //!
-//! The wait is deliberately blocking rather than an `.await`. Making bridge
-//! calls genuinely yield would activate the latent `IdeContext` shard-guard
-//! deadlock recorded in #3377; bounding without yielding keeps that hazard
-//! unreachable.
+//! Synchronous callers retain their blocking wait. Async callers wait on a
+//! worker-owned reply and a shared deadline wakeup, so the LSP can dispatch
+//! cancellation and lifecycle messages while the backend is busy (#8012).
+//! Maestro's IDE contexts own snapshots rather than shard guards (#3377).
 #![expect(clippy::disallowed_types, reason = "shared across threads")]
 
 use std::sync::Arc;
@@ -34,6 +34,9 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc::{self, RecvTimeoutError};
 use std::thread;
 use std::time::Duration;
+
+mod async_reply;
+mod deadline;
 
 /// A unit of work executed on the worker thread against the owned state.
 type Job<T> = Box<dyn FnOnce(&mut T) + Send>;

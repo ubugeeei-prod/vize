@@ -60,6 +60,9 @@ impl ServerState {
             return None;
         }
 
+        // A config/root/watch notification may run while spawn yields. Do not
+        // publish its old session or poison the newer configuration on failure.
+        let generation = self.corsa_environment_revision.load(Ordering::Acquire);
         // Get workspace root for Corsa configuration.
         let workspace_root = self.get_workspace_root();
         let (type_checker_config, request_timeout_ms) = self.type_checker_config.read().clone();
@@ -84,10 +87,16 @@ impl ServerState {
             self.package_route_resolver.lock().clone(),
         );
 
-        // No `runtime::timeout` wrapper here: `spawn()` never yields, so a
-        // combinator around it could not be polled and never fired (#3376).
-        // The bridge bounds the handshake itself and reports `Timeout`.
-        match bridge.spawn().await {
+        // The bridge's worker-owned async reply yields while its synchronous
+        // handshake drains, and enforces the configured deadline (#8012).
+        let spawned = bridge.spawn().await;
+        if self.corsa_environment_changes.load(Ordering::Acquire) != 0
+            || generation != self.corsa_environment_revision.load(Ordering::Acquire)
+        {
+            tracing::debug!("discarding Corsa startup superseded by a project change");
+            return None;
+        }
+        match spawned {
             Ok(()) => {
                 tracing::info!("corsa bridge initialized successfully");
                 let bridge = Arc::new(bridge);
@@ -128,6 +137,7 @@ impl ServerState {
     /// invalidation to answer. The next Corsa-using request flushes this bit
     /// instead.
     pub(crate) fn mark_corsa_disk_state_dirty(&self) {
+        let _change = self.corsa_environment_change();
         let bridge = { self.corsa_bridge.read().clone() };
         if let Some(bridge) = bridge {
             bridge.mark_disk_project_state_dirty();
@@ -189,10 +199,21 @@ impl ServerState {
             .as_ref()
             .is_some_and(|current| Arc::ptr_eq(current, failed))
         {
+            let _change = self.corsa_environment_change();
             *slot = None;
             tracing::warn!(
                 "corsa bridge retired after a backend failure; a fresh session will be spawned on demand"
             );
         }
+    }
+
+    /// Configuration owns the cached process. Retire without waiting for IPC;
+    /// worker keepalive lets an abandoned old session finish on its own lane.
+    pub(super) fn retire_corsa_configuration(&self) {
+        *self.corsa_bridge.write() = None;
+        self.corsa_init_failed.store(false, Ordering::SeqCst);
+        *self.corsa_init_failure_reason.write() = None;
+        self.typecheck_unavailable_notified
+            .store(false, Ordering::SeqCst);
     }
 }

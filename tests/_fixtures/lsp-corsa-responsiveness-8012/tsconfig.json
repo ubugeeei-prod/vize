@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "Bundler"
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}

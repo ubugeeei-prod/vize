@@ -8,6 +8,13 @@ use crate::ide::DiagnosticService;
 
 use super::MaestroServer;
 
+pub(super) struct CollectedDiagnostics {
+    version: i32,
+    diagnostics: Vec<Diagnostic>,
+    #[cfg(feature = "native")]
+    stamp: Option<super::state::CorsaRequestStamp>,
+}
+
 impl MaestroServer {
     /// Publish non-empty diagnostics that do not need Corsa, provided the
     /// document still has the version opened by the caller. Empty initial
@@ -57,7 +64,13 @@ impl MaestroServer {
     pub(super) async fn collect_diagnostics_unlocked(
         &self,
         uri: &Url,
-    ) -> Option<(i32, Vec<Diagnostic>)> {
+    ) -> Option<CollectedDiagnostics> {
+        #[cfg(feature = "native")]
+        let scope = if self.state.is_lsp_typecheck_enabled() {
+            Some(self.state.corsa_request_scope().await)
+        } else {
+            None
+        };
         let version = self
             .state
             .documents
@@ -65,7 +78,12 @@ impl MaestroServer {
             .map(|document| document.version);
 
         if !self.state.lsp_features().has_diagnostics() {
-            return version.map(|version| (version, Vec::new()));
+            return version.map(|version| CollectedDiagnostics {
+                version,
+                diagnostics: Vec::new(),
+                #[cfg(feature = "native")]
+                stamp: None,
+            });
         }
 
         let Some(version) = version else {
@@ -79,6 +97,11 @@ impl MaestroServer {
 
         #[cfg(not(feature = "native"))]
         let diagnostics = DiagnosticService::collect(&self.state, uri);
+
+        #[cfg(feature = "native")]
+        if scope.as_ref().is_some_and(|scope| !scope.is_current()) {
+            return None;
+        }
 
         let current_version = self
             .state
@@ -95,15 +118,29 @@ impl MaestroServer {
             return None;
         }
 
-        Some((version, diagnostics))
+        Some(CollectedDiagnostics {
+            version,
+            diagnostics,
+            #[cfg(feature = "native")]
+            stamp: scope.as_ref().map(|scope| scope.stamp()),
+        })
     }
 
     pub(super) async fn publish_collected_diagnostics(
         &self,
         uri: &Url,
-        version: i32,
-        diagnostics: Vec<Diagnostic>,
+        collected: CollectedDiagnostics,
     ) {
+        let CollectedDiagnostics {
+            version,
+            diagnostics,
+            #[cfg(feature = "native")]
+            stamp,
+        } = collected;
+        #[cfg(feature = "native")]
+        if stamp.is_some_and(|stamp| !stamp.is_current(&self.state)) {
+            return;
+        }
         tracing::info!(
             "publishing collected diagnostics for {} version {}",
             uri,

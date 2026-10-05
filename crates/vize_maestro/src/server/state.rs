@@ -25,6 +25,8 @@ mod corsa;
 #[cfg(feature = "native")]
 mod corsa_overlays;
 #[cfg(feature = "native")]
+mod corsa_requests;
+#[cfg(feature = "native")]
 mod diagnostic_locks;
 #[cfg(feature = "native")]
 mod global_components;
@@ -61,6 +63,8 @@ use vize_canon::{BatchTypeChecker, CorsaBridge};
 use crate::document::DocumentStore;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 
+#[cfg(feature = "native")]
+pub(crate) use corsa_requests::CorsaRequestStamp;
 pub use features::LspFeatureConfig;
 #[cfg(feature = "experimental-source-navigation")]
 pub(crate) use module_links::physical::{ModuleTargetGateError, ModuleTargetStamp};
@@ -162,6 +166,14 @@ pub struct ServerState {
     /// Serializes Corsa bridge initialization without tying us to a runtime.
     #[cfg(feature = "native")]
     corsa_init_lock: AsyncMutex<()>,
+    /// Hold one complete native open/query/map operation, never syntax-only RPCs.
+    #[cfg(feature = "native")]
+    corsa_request_lock: AsyncMutex<()>,
+    /// Source-independent project/config/backend changes fence pending replies.
+    #[cfg(feature = "native")]
+    corsa_environment_revision: std::sync::atomic::AtomicU64,
+    #[cfg(feature = "native")]
+    corsa_environment_changes: std::sync::atomic::AtomicUsize,
     /// Per-document diagnostic passes. Watcher refreshes and consecutive
     /// didChange notifications may be polled concurrently by tower-lsp, but
     /// they must not race the same Corsa virtual document.
@@ -245,6 +257,12 @@ impl ServerState {
             corsa_bridge: RwLock::new(None),
             #[cfg(feature = "native")]
             corsa_init_lock: AsyncMutex::new(()),
+            #[cfg(feature = "native")]
+            corsa_request_lock: AsyncMutex::new(()),
+            #[cfg(feature = "native")]
+            corsa_environment_revision: std::sync::atomic::AtomicU64::new(0),
+            #[cfg(feature = "native")]
+            corsa_environment_changes: std::sync::atomic::AtomicUsize::new(0),
             #[cfg(feature = "native")]
             diagnostic_locks: DashMap::new(),
             #[cfg(feature = "native")]

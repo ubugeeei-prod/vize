@@ -125,53 +125,65 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
-        self.hover_request(params).await
+        self.native_request(self.hover_request(params)).await
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
-        self.completion_request(params).await
+        self.native_request(self.completion_request(params)).await
     }
 
     async fn completion_resolve(&self, item: CompletionItem) -> Result<CompletionItem> {
-        #[cfg(feature = "native")]
-        let item = CompletionService::resolve(&self.state, item).await;
-        Ok(item)
+        self.native_request(async {
+            #[cfg(feature = "native")]
+            let item = CompletionService::resolve(&self.state, item).await;
+            Ok(item)
+        })
+        .await
     }
 
     async fn signature_help(&self, params: SigHelpParams) -> Result<Option<SigHelp>> {
-        signature_help::signature_help(self, params).await
+        self.native_request(async { signature_help::signature_help(self, params).await })
+            .await
     }
 
     async fn goto_definition(&self, params: DefParams) -> Result<Option<DefResponse>> {
-        navigation::goto_definition(self, params).await
+        self.native_request(async { navigation::goto_definition(self, params).await })
+            .await
     }
 
     async fn goto_type_definition(&self, params: TypeDefParams) -> Result<Option<TypeDefResponse>> {
-        navigation::goto_type_definition(self, params).await
+        self.native_request(async { navigation::goto_type_definition(self, params).await })
+            .await
     }
 
     async fn goto_declaration(&self, params: DeclParams) -> Result<Option<DeclResponse>> {
-        navigation::goto_declaration(self, params).await
+        self.native_request(async { navigation::goto_declaration(self, params).await })
+            .await
     }
 
     async fn goto_implementation(&self, params: ImplParams) -> Result<Option<ImplResponse>> {
-        navigation::goto_implementation(self, params).await
+        self.native_request(async { navigation::goto_implementation(self, params).await })
+            .await
     }
 
     async fn prepare_call_hierarchy(&self, params: CHPrepareParams) -> Result<Option<CHItems>> {
-        call_hierarchy::prepare(self, params).await
+        self.native_request(async { call_hierarchy::prepare(self, params).await })
+            .await
     }
 
     async fn incoming_calls(&self, params: CHIncomingParams) -> Result<Option<CHIncomingResponse>> {
-        call_hierarchy::incoming(self, params).await
+        self.native_request(async { call_hierarchy::incoming(self, params).await })
+            .await
     }
 
     async fn outgoing_calls(&self, params: CHOutgoingParams) -> Result<Option<CHOutgoingResponse>> {
-        call_hierarchy::outgoing(self, params).await
+        self.native_request(async { call_hierarchy::outgoing(self, params).await })
+            .await
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
-        references::references(self, params).await
+        self.native_request(async { references::references(self, params).await })
+            .await
     }
 
     async fn document_highlight(
@@ -211,18 +223,20 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
-        Ok(super::code_actions::code_actions(self, &params).await)
+        self.native_request(async { Ok(super::code_actions::code_actions(self, &params).await) })
+            .await
     }
 
     async fn prepare_rename(
         &self,
         params: TextDocumentPositionParams,
     ) -> Result<Option<PrepareRenameResponse>> {
-        self.prepare_rename_request(params).await
+        self.native_request(self.prepare_rename_request(params))
+            .await
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
-        self.rename_request(params).await
+        self.native_request(self.rename_request(params)).await
     }
 
     async fn semantic_tokens_full(
@@ -254,7 +268,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn will_rename_files(&self, params: RenameFilesParams) -> Result<Option<WorkspaceEdit>> {
-        Ok(super::workspace_files::will_rename_files(&self.state, &params).await)
+        self.native_request(async {
+            Ok(super::workspace_files::will_rename_files(&self.state, &params).await)
+        })
+        .await
     }
 
     async fn did_change_watched_files(&self, params: DidChangeWatchedFilesParams) {

@@ -100,13 +100,14 @@ impl CorsaBridge {
         }
 
         let config = self.config.clone();
-        self.submit(move |slot| {
+        self.submit_async(move |slot| {
             if slot.is_some() {
                 return Ok(());
             }
             *slot = Some(build_client(&config)?);
             Ok(())
-        })?;
+        })
+        .await?;
 
         self.initialized.store(true, Ordering::SeqCst);
 
@@ -123,16 +124,18 @@ impl CorsaBridge {
             return Ok(());
         }
 
-        let result = self.submit(|slot| {
-            let outcome = match slot.as_mut() {
-                Some(client) => client
-                    .shutdown()
-                    .map_err(CorsaBridgeError::CommunicationError),
-                None => Ok(()),
-            };
-            *slot = None;
-            outcome
-        });
+        let result = self
+            .submit_async(|slot| {
+                let outcome = match slot.as_mut() {
+                    Some(client) => client
+                        .shutdown()
+                        .map_err(CorsaBridgeError::CommunicationError),
+                    None => Ok(()),
+                };
+                *slot = None;
+                outcome
+            })
+            .await;
 
         if !matches!(result, Err(CorsaBridgeError::Timeout)) {
             self.initialized.store(false, Ordering::SeqCst);
@@ -177,17 +180,15 @@ impl CorsaBridge {
             return Err(CorsaBridgeError::NotInitialized);
         }
 
-        self.submit(move |slot| match slot.as_mut() {
+        self.submit_async(move |slot| match slot.as_mut() {
             Some(client) => f(client),
             None => Err(CorsaBridgeError::ProcessTerminated),
         })
+        .await
     }
 
     /// Run `f` against the session on the worker thread under the configured
-    /// deadline — the one place the bound is real. The wait blocks on purpose:
-    /// the job never yields, so an async `timeout` around it could never be
-    /// polled, and making it yield would activate #3377's shard-guard hazard.
-    /// See [`super::worker`] for the full argument.
+    /// deadline for the synchronous compatibility API.
     fn submit<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
     where
         F: FnOnce(&mut Option<CorsaProjectClient>) -> Result<R, CorsaBridgeError> + Send + 'static,
@@ -197,6 +198,23 @@ impl CorsaBridge {
         // disabling the bridge; no value turns the bound off.
         let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
         match self.worker.submit(deadline, f) {
+            Ok(result) => result,
+            Err(WorkerError::TimedOut) => {
+                let bound = self.config.timeout_ms;
+                tracing::warn!("corsa request outran the {bound}ms bridge bound; abandoned it");
+                Err(CorsaBridgeError::Timeout)
+            }
+            Err(WorkerError::Stopped) => Err(CorsaBridgeError::ProcessTerminated),
+        }
+    }
+
+    async fn submit_async<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
+    where
+        F: FnOnce(&mut Option<CorsaProjectClient>) -> Result<R, CorsaBridgeError> + Send + 'static,
+        R: Send + 'static,
+    {
+        let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
+        match self.worker.submit_async(deadline, f).await {
             Ok(result) => result,
             Err(WorkerError::TimedOut) => {
                 let bound = self.config.timeout_ms;

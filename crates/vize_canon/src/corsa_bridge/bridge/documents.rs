@@ -125,7 +125,13 @@ impl CorsaBridge {
         if !self.disk_project_state_dirty.swap(false, Ordering::SeqCst) {
             return Ok(());
         }
-        self.invalidate_disk_project_state().await
+        let mut flush = PendingInvalidation {
+            dirty: &self.disk_project_state_dirty,
+            completed: false,
+        };
+        self.invalidate_disk_project_state().await?;
+        flush.completed = true;
+        Ok(())
     }
 
     pub async fn get_diagnostics(&self, uri: &str) -> Result<Vec<LspDiagnostic>, CorsaBridgeError> {
@@ -169,6 +175,25 @@ impl CorsaBridge {
         })
     }
 }
+
+// A queued invalidation can now be cancelled while the worker is busy. Restore
+// its dirty bit on cancellation/failure, while preserving newer watcher marks.
+struct PendingInvalidation<'a> {
+    dirty: &'a std::sync::atomic::AtomicBool,
+    completed: bool,
+}
+
+impl Drop for PendingInvalidation<'_> {
+    fn drop(&mut self) {
+        if !self.completed {
+            self.dirty.store(true, Ordering::SeqCst);
+        }
+    }
+}
+
+#[cfg(test)]
+#[path = "documents/invalidation_tests.rs"]
+mod invalidation_tests;
 
 pub(crate) fn normalize_document_uri(name: &str) -> String {
     if name.starts_with("file://") {

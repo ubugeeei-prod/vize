@@ -6,7 +6,7 @@
 )]
 
 use std::sync::OnceLock;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 
 use dashmap::DashMap;
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
@@ -136,6 +136,7 @@ impl Document {
 pub struct DocumentStore {
     documents: DashMap<Url, Document>,
     revision: AtomicU64,
+    mutations: AtomicUsize,
 }
 
 impl Default for DocumentStore {
@@ -150,11 +151,13 @@ impl DocumentStore {
         Self {
             documents: DashMap::new(),
             revision: AtomicU64::new(0),
+            mutations: AtomicUsize::new(0),
         }
     }
 
     /// Open a new document.
     pub fn open(&self, uri: Url, content: String, version: i32, language_id: String) {
+        let _mutation = self.source_set_mutation();
         let doc = Document::new(uri.clone(), content, version, language_id);
         self.documents.insert(uri, doc);
         self.revision.fetch_add(1, Ordering::Release);
@@ -162,6 +165,10 @@ impl DocumentStore {
 
     /// Close a document.
     pub fn close(&self, uri: &Url) {
+        if !self.documents.contains_key(uri) {
+            return;
+        }
+        let _mutation = self.source_set_mutation();
         if self.documents.remove(uri).is_some() {
             self.revision.fetch_add(1, Ordering::Release);
         }
@@ -176,6 +183,11 @@ impl DocumentStore {
         if self.documents.contains_key(&new_uri) {
             return false;
         }
+
+        if !self.documents.contains_key(old_uri) {
+            return false;
+        }
+        let _mutation = self.source_set_mutation();
 
         let Some((_, mut document)) = self.documents.remove(old_uri) else {
             return false;
@@ -241,6 +253,7 @@ impl DocumentStore {
         if version <= doc.version {
             return false;
         }
+        let _mutation = self.source_set_mutation();
         for change in changes {
             doc.apply_change(&change, version);
         }
@@ -251,6 +264,23 @@ impl DocumentStore {
     /// Stamp of the open source set, including close and rename operations.
     pub(crate) fn revision(&self) -> u64 {
         self.revision.load(Ordering::Acquire)
+    }
+
+    /// Capture only between complete foreground source-set mutations. A stamp
+    /// read during an insert/change/close cannot bind the partially updated set.
+    pub(crate) fn stable_revision(&self) -> Option<u64> {
+        if self.mutations.load(Ordering::Acquire) != 0 {
+            return None;
+        }
+        let revision = self.revision();
+        (self.mutations.load(Ordering::Acquire) == 0 && revision == self.revision())
+            .then_some(revision)
+    }
+
+    fn source_set_mutation(&self) -> SourceSetMutation<'_> {
+        self.mutations.fetch_add(1, Ordering::AcqRel);
+        self.revision.fetch_add(1, Ordering::Release);
+        SourceSetMutation(self)
     }
 
     /// Check if a document exists.
@@ -297,6 +327,14 @@ impl DocumentStore {
     /// Iterate over all documents.
     pub fn iter(&self) -> dashmap::iter::Iter<'_, Url, Document> {
         self.documents.iter()
+    }
+}
+
+struct SourceSetMutation<'a>(&'a DocumentStore);
+impl Drop for SourceSetMutation<'_> {
+    fn drop(&mut self) {
+        self.0.revision.fetch_add(1, Ordering::Release);
+        self.0.mutations.fetch_sub(1, Ordering::Release);
     }
 }
 
