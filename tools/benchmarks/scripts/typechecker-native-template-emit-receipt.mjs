@@ -7,7 +7,7 @@ const root = process.env.VIZE_TEMPLATE_EMIT_CAPTURE;
 const cases = readdirSync(root, { withFileTypes: true })
   .filter((e) => e.isDirectory() && !["editor-inputs", "editor-oracle"].includes(e.name))
   .map((e) => e.name)
-  .sort();
+  .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
 assert.deepEqual(cases, [
   "absent_macro_retains_the_public_instance_emit_contract",
   "controls__declared_emit_and_model_update_keep_both_typed_event_contracts",

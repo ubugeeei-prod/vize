@@ -160,3 +160,10 @@ exposes independently inserted hidden-artifact flags. Put the shared flag at
 the common trailing location. Adjacent Maestro test registration and generated
 Croquis inventory conflicts require replay on actual earlier merged main and
 regeneration before admission; no expected counter is manually fabricated.
+
+The actual 9aa native qualifier succeeds, including all ten full CLI/native
+vectors and the genuine third wrong-payload hover. Strict check-js fails only
+the extracted receipt module default sort comparator warning under the unchanged
+zero-warning budget. Supply an explicit comparator preserving the same UTF16
+lexical case-folder ordering; no diagnostic order, assertion, raw capture or
+budget changes. Fresh successor source/native proof is still required.
