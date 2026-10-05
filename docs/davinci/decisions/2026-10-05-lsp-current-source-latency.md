@@ -104,3 +104,10 @@ Editor TS-45 initialization correction #7836 and Nuxt2/3/Nuxt4 build proofs are
 separate correctness lanes. They cannot establish current Rust/Vapor/SSR memory
 or latency, native migration or actual GUI responsiveness. Optimization follows
 the finite measured baseline; no fast, instant or 10x result is claimed here.
+
+The maintainer's delegated review accepted the finite three-session campaign
+after an independent review of all sixteen changed paths. Its fresh-main replay
+retains all fifteen noncanonical source blobs from `34a6f19e8f` exactly and adds
+only its existing decision clause to the complete `d1a25ec1da` record. Fresh
+head Actions and protected merging precede one dispatch on the resulting
+literal main SHA; historical source checks do not qualify that execution.
