@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "noUncheckedSideEffectImports": false,
+    "strict": true
+  },
+  "exclude": [],
+  "include": ["__vize_vue_modules.d.ts", "src/App.vue.ts", "src/MySwitch.vue.ts"]
+}

@@ -72,3 +72,16 @@ Paired correction: [authentic failure and independent witness](https://github.co
 Independent source review also removes two unfulfilled child-module lint
 expectations before execution; the actual string-slice expectation remains.
 This lint-only correction changes no witness/oracle or production behavior.
+
+Authentic49de source shard2 passes the six original LF/CRLF tag, literal-report
+and native-hover responses; the corrected pr artifact retains both full raw
+protocol and physical mirror witnesses. Each separately derives UTF-16 query
+20908 while authored tag ranges differ (LF201..214, CRLF212..225). Tooling still
+rejects the witness's partial tsconfig include membership. Replace its scalar
+and membership checks with one fixed complete generated-tsconfig object, keeping
+every option and exact include/exclude array. No assertion allowlist changes.
+All production, opaque-data fields, ownership/query witness statements, prior20
+inputs and intended whole45 contract remain unchanged; fresh Actions is required
+for this stricter complete-config assertion and all delivery requirements.
+
+Paired whole-config correction: [retained assertion-lint failure](https://github.com/ubugeeei-prod/vize/issues/8005#issuecomment-5994081448).

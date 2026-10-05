@@ -110,14 +110,12 @@ pub(super) fn observe(root: &Path, mut record: impl FnMut(Value)) -> Witness {
     receipt["query"] = json!({ "sourceRange": [source_start, source_end], "construct": construct, "byteCursor": cursor, "utf16Position": query_position });
     record(receipt);
     let parsed: Value = serde_json::from_str(&config).unwrap();
-    assert_eq!(parsed["compilerOptions"]["strict"], true);
-    assert_eq!(parsed["compilerOptions"]["moduleResolution"], "Bundler");
-    assert_eq!(parsed["compilerOptions"]["noEmit"], true);
-    assert!(
-        parsed["include"]
-            .as_array()
-            .unwrap()
-            .contains(&json!("src/App.vue.ts"))
+    assert_eq!(
+        parsed,
+        serde_json::from_str::<Value>(include_str!(
+            "../../../../tests/_fixtures/differential/lsp/component-native-events/generated-tsconfig.expected.json"
+        ))
+        .unwrap()
     );
     Witness {
         app_path,

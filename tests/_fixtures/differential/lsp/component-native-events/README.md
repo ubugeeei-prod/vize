@@ -55,3 +55,14 @@ PR shards uploaded only pr, so its shard artifact lacks the promised recorder
 files. The corrected recorder uses the actual NEXTEST_PROFILE (full for local
 default/merge queue). Native hovers, both original-coordinate laws, full 45
 responses and actual raw artifact custody require fresh exact-source Actions.
+
+Authentic49de source shard2 passes the six original LF/CRLF tag, literal-report
+and native-hover responses; the corrected pr artifact retains both full raw
+protocol and physical mirror witnesses. Each separately derives UTF-16 query
+20908 while authored tag ranges differ (LF201..214, CRLF212..225). Tooling still
+rejects the witness's partial tsconfig include membership. Replace its scalar
+and membership checks with one fixed complete generated-tsconfig object, keeping
+every option and exact include/exclude array. No assertion allowlist changes.
+All production, opaque-data fields, ownership/query witness statements, prior20
+inputs and intended whole45 contract remain unchanged; fresh Actions is required
+for this stricter complete-config assertion and all delivery requirements.
