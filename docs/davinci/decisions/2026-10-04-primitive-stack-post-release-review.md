@@ -105,3 +105,10 @@ instruction ratchets before actual signed delivery. Native queue admission
 waits for the release owner's verified publication and root's explicit thaw.
 No whole-history, default replacement, complete native products or 10x credit
 is granted by replaying these bounded providers and consumers.
+
+The immediate source refresh also incorporates actual main
+`ef506012169d228982ded40d893ac2115a3e58a7` after the initial replay.
+Its incoming Program stack-headroom/CFG correction and all fourteen changed
+paths remain intact. Every remaining layer includes its literal refreshed
+parent; admission still waits for the release barrier and fresh exact-head
+Actions, not the historical source or private replay checks.

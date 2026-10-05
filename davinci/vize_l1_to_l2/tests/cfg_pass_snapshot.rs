@@ -82,3 +82,60 @@ fn the_dashboard_fixture_snapshots_the_folio_and_the_breakdown() {
     );
     assert_eq!(totals, (13, 18));
 }
+
+#[test]
+fn empty_regions_preserve_all_facts_and_surrounding_page_order() {
+    use vize_l0::Span;
+    use vize_l0::id::NodeId;
+    use vize_l1_to_l2::pass::cfg::{ComplexityFacts, Contribution, DecisionKind};
+
+    support::with_lowered("", |lowered, _folio| {
+        assert_eq!(lowered.op_count, 0);
+        assert_eq!(cfg::run(lowered), ComplexityFacts::empty());
+    });
+
+    // Empty children before, within and after real decisions must not mint ids
+    // or change nesting. A nonempty branch and interpolation retain their rows.
+    let source = r#"<p/><div v-if="ok"></div><span>{{ ready ? 1 : 2 }}</span><footer/>"#;
+    support::with_lowered(source, |lowered, _folio| {
+        // cfg::run also asserts complete shared PageWalk minted accounting.
+        let facts = cfg::run(lowered);
+        assert_eq!(lowered.op_count, 6);
+        assert_eq!(
+            (
+                facts.cyclomatic,
+                facts.cognitive,
+                facts.unknown,
+                facts.max_nesting
+            ),
+            (3, 2, 0, 1)
+        );
+        let authored_span = |text: &str| {
+            let start = u32::try_from(source.find(text).expect("authored control exists"))
+                .expect("short control offset fits");
+            let length = u32::try_from(text.len()).expect("short control length fits");
+            Span::new(start, start + length)
+        };
+        assert_eq!(
+            facts.contributions.as_slice(),
+            &[
+                Contribution {
+                    span: authored_span("ok"),
+                    kind: DecisionKind::If,
+                    op: NodeId::from_index(1),
+                    nesting: 0,
+                    cyclomatic: 1,
+                    cognitive: 1,
+                },
+                Contribution {
+                    span: authored_span("ready ? 1 : 2"),
+                    kind: DecisionKind::Conditional,
+                    op: NodeId::from_index(4),
+                    nesting: 0,
+                    cyclomatic: 1,
+                    cognitive: 1,
+                },
+            ]
+        );
+    });
+}
