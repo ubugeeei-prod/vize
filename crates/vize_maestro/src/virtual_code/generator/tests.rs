@@ -292,9 +292,12 @@ fn bare_void_substrings_map_to_emitted_expression_instead_of_keyword() {
             let source = format!(
                 "<script setup lang=\"ts\">\nconst {name} = 1;\n</script>\n<template>{{{{ '😀' }}}} {{{{ {name} }}}} {{{{ {name} + 1 }}}}</template>"
             ).replace('\n', newline);
-            let descriptor = vize_atelier_sfc::parse_sfc(&source, Default::default()).unwrap();
+            let state = crate::server::ServerState::new();
+            let uri = tower_lsp::lsp_types::Url::parse("file:///workspace/App.vue").unwrap();
+            let context = crate::ide::IdeContext::testing(&state, &uri, 0, source.clone());
+            let descriptor = context.descriptor().unwrap();
             let document = VirtualCodeGenerator::new()
-                .generate(&descriptor, "App.vue")
+                .generate(descriptor, "App.vue")
                 .template
                 .unwrap();
             for expression in [name.to_owned(), format!("{name} + 1")] {
