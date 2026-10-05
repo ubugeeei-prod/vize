@@ -37,3 +37,5 @@ unchecked string slice under the unchanged Clippy string-slice rule. Retain
 the original failure and replace only that slice with checked `strip_prefix`;
 all corpus bytes, complete comparisons and budgets remain unchanged. Fresh
 exact-head source and protected execution are required.
+
+The actual-main replay on `a2712e78968e9112c89cbc2111b108bd0e51959c` preserves every incoming decision, every original author/trailer and all owned production, corpus, runtime/helper and strict witness bytes. The earlier source failure/success receipts remain retained; fresh exact-head Actions and protected delivery are required before requeue.
