@@ -1,0 +1,191 @@
+{
+  "issue": 7959,
+  "url": "https://github.com/ubugeeei-prod/vize/issues/7959",
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308,
+    "coauthor": "Co-authored-by: ubugeeei <71201308+ubugeeei@users.noreply.github.com>"
+  },
+  "files": {
+    "nuxt.config.ts.txt": {
+      "sha256": "a23d799b7d92191b1226e0eba0977a312b81d5b087edd5805821130cdd45637b",
+      "bytes": 269
+    },
+    "vize.config.json.txt": {
+      "sha256": "50b4103fa10b28f97bd191b30c9cedbdf97912537b3230d5d0b274b48b5698ff",
+      "bytes": 173
+    },
+    "TightRow.vue.txt": {
+      "sha256": "95ac855bced571828c7fefae66f1ce67bd21014eaeef25aebcbb7370011d21d5",
+      "bytes": 111
+    },
+    "app.vue.txt": {
+      "sha256": "5c5d0df85e956105711761691a267bb4646a71570ed0bd16f014337720ee99ac",
+      "bytes": 211
+    },
+    "check.mjs.txt": {
+      "sha256": "6a1f295ba6af60442a98a1241b3a67a15dbbf7b5767186e33cfc17e5d7ac12ca",
+      "bytes": 326
+    },
+    "LooseRow.vue.txt": {
+      "sha256": "2e43038f53f03c32352a023689fc0660c94af73a8be45d854bab7e0a459762d4",
+      "bytes": 111
+    },
+    "package.json.txt": {
+      "sha256": "3321d8d995135270c3d31c3412cbdc1b6e28394a82f0bfca12d2b22edb7dd40f",
+      "bytes": 75
+    },
+    "original-issue.md.txt": {
+      "sha256": "b7b7e0bed600bdc90986b1e82bfedb98fbb3e8ee6aad8c40414fae1d1d11d382",
+      "bytes": 3674
+    }
+  },
+  "reportedVersions": {
+    "nuxt": "4.5.2",
+    "vue": "3.5.43",
+    "vize": "0.432.0",
+    "node": "26.8.1"
+  },
+  "cohorts": [
+    {
+      "id": "nuxt3",
+      "path": "tools/support/compat/nuxt/fixtures/nuxt3-module-build",
+      "nuxt": "3.19.3",
+      "vue": "3.5.43"
+    },
+    {
+      "id": "nuxt4",
+      "path": "tests/_fixtures/_projects/nuxt-critical-css-build",
+      "nuxt": "4.5.2",
+      "vue": "3.5.43"
+    }
+  ],
+  "paths": [
+    "app/components/tight/TightRow.vue",
+    "app/components/loose/LooseRow.vue",
+    "app/app.vue"
+  ],
+  "scenarios": [
+    {
+      "id": "original-no-forward",
+      "forward": false,
+      "config": "original",
+      "module": {},
+      "expected": [
+        "condense",
+        "preserve",
+        "preserve"
+      ],
+      "html": "<main><p class=\"tight-row\"><span>tight-alpha</span><span>tight-beta</span></p><p class=\"loose-row\"><span>loose-alpha</span> <span>loose-beta</span></p></main>"
+    },
+    {
+      "id": "original-forward",
+      "forward": true,
+      "config": "original",
+      "module": {},
+      "expected": [
+        "condense",
+        "preserve",
+        "preserve"
+      ],
+      "html": "<main><p class=\"tight-row\"><span>tight-alpha</span><span>tight-beta</span></p><p class=\"loose-row\"><span>loose-alpha</span> <span>loose-beta</span></p></main>"
+    },
+    {
+      "id": "unconfigured-nuxt-default",
+      "forward": true,
+      "config": null,
+      "module": {},
+      "expected": [
+        "preserve",
+        "preserve",
+        "preserve"
+      ],
+      "html": "<main><p class=\"tight-row\"><span>tight-alpha</span> <span>tight-beta</span></p><p class=\"loose-row\"><span>loose-alpha</span> <span>loose-beta</span></p></main>"
+    },
+    {
+      "id": "unconfigured-core-default",
+      "forward": false,
+      "config": null,
+      "module": {},
+      "expected": [
+        "condense",
+        "condense",
+        "condense"
+      ],
+      "html": "<main><p class=\"tight-row\"><span>tight-alpha</span><span>tight-beta</span></p><p class=\"loose-row\"><span>loose-alpha</span><span>loose-beta</span></p></main>"
+    },
+    {
+      "id": "top-level-overrides-default",
+      "forward": true,
+      "config": {
+        "compiler": {
+          "whitespace": "condense"
+        }
+      },
+      "module": {},
+      "expected": [
+        "condense",
+        "condense",
+        "condense"
+      ],
+      "html": "<main><p class=\"tight-row\"><span>tight-alpha</span><span>tight-beta</span></p><p class=\"loose-row\"><span>loose-alpha</span><span>loose-beta</span></p></main>"
+    },
+    {
+      "id": "explicit-module-overrides-entry",
+      "forward": true,
+      "config": "original",
+      "module": {
+        "whitespace": "preserve"
+      },
+      "expected": [
+        "preserve",
+        "preserve",
+        "preserve"
+      ],
+      "html": "<main><p class=\"tight-row\"><span>tight-alpha</span> <span>tight-beta</span></p><p class=\"loose-row\"><span>loose-alpha</span> <span>loose-beta</span></p></main>"
+    },
+    {
+      "id": "explicit-template-overrides-entry",
+      "forward": true,
+      "config": "original",
+      "module": {
+        "template": {
+          "compilerOptions": {
+            "whitespace": "preserve"
+          }
+        }
+      },
+      "expected": [
+        "preserve",
+        "preserve",
+        "preserve"
+      ],
+      "html": "<main><p class=\"tight-row\"><span>tight-alpha</span> <span>tight-beta</span></p><p class=\"loose-row\"><span>loose-alpha</span> <span>loose-beta</span></p></main>"
+    },
+    {
+      "id": "project-overrides-condensed-nuxt",
+      "forward": true,
+      "nuxtWhitespace": "condense",
+      "config": "original",
+      "module": {},
+      "expected": [
+        "condense",
+        "preserve",
+        "preserve"
+      ],
+      "html": "<main><p class=\"tight-row\"><span>tight-alpha</span><span>tight-beta</span></p><p class=\"loose-row\"><span>loose-alpha</span> <span>loose-beta</span></p></main>"
+    }
+  ],
+  "referenceAuthority": {
+    "inputs": "Five original issue code blocks including LF; LooseRow is the explicitly reported tight\u2192loose derivative; package marker is authored.",
+    "html": "Authored entire main output: unchanged preserve_whitespace trims edge runs and reduces the middle run to one ASCII space; condense removes the newline gap between elements.",
+    "code": "Complete actual module-provided Vite load returns and bundle outputs must equal the unchanged explicit-whitespace public Vite control, with the literal authored per-file expectations above. No current output is recorded as an oracle.",
+    "limits": {
+      "fullNuxtGenerate": false,
+      "browserHydration": false,
+      "speedup": false,
+      "nativeMigrationCredit": false,
+      "budgetsChanged": false
+    }
+  }
+}

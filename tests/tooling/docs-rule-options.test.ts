@@ -6,6 +6,7 @@ import { test } from "node:test";
 import { repoRoot } from "./_helpers/moonbit.ts";
 
 const configurableRuleOptions = [
+  "html/no-empty-palpable-content",
   "musea/prefer-design-tokens",
   "script/custom-event-name-casing",
   "script/no-restricted-globals",
@@ -146,6 +147,7 @@ function sectionFor(source: string, heading: string): string {
 
 test("strict boolean rows render within the complete option and type-aware tables", () => {
   const expectedOptions = [
+    "html/no-empty-palpable-content",
     "script/no-restricted-globals",
     "script/no-restricted-members",
     "vue/component-name-in-template-casing",

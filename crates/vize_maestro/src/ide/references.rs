@@ -65,6 +65,9 @@ impl ReferencesService {
         if canonical_locations.is_some() {
             return canonical_locations;
         }
+        if corsa_support::is_component_attribute_query(ctx) {
+            return Some(Vec::new());
+        }
         let Some(block_type) = ctx.block_type else {
             return canonical_locations;
         };

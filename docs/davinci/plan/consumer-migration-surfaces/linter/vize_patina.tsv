@@ -518,6 +518,7 @@ linter	Linter	source	crates/vize_patina/src/rules/html/id_duplication.rs	31	old_
 linter	Linter	source	crates/vize_patina/src/rules/html/no_consecutive_br.rs	28	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/html/no_duplicate_dt.rs	36	l0	L0	stage	vize_l0	preferred	3
 linter	Linter	source	crates/vize_patina/src/rules/html/no_duplicate_dt.rs	36	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/html/no_empty_palpable_content.rs	30	l0	L0	stage	vize_l0	preferred	2
 linter	Linter	source	crates/vize_patina/src/rules/html/no_empty_palpable_content.rs	30	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/html/require_datetime.rs	29	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/html/require_datetime.rs	29	old_ast	old AST/parser	old	vize_relief	legacy	1
@@ -1030,6 +1031,7 @@ linter	Linter	source	crates/vize_patina/src/visitor/branches.rs	4	old_ast	old AS
 linter	Linter	source	crates/vize_patina/src/visitor/root.rs	5	l0	L0	stage	vize_l0	preferred	3
 linter	Linter	source	crates/vize_patina/src/visitor/root.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	test/dev	crates/vize_patina/tests/accessible_content.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/content_directives_history.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/davinci_authored_markup_budget.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/davinci_authored_markup_budget.rs	6	l1	L1	stage	vize_l1	preferred	2
 linter	Linter	test/dev	crates/vize_patina/tests/filter_assertion_history.rs	3	l0	L0	stage	vize_l0	preferred	1

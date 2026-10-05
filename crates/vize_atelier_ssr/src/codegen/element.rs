@@ -13,6 +13,7 @@ pub(crate) mod props;
 mod slot;
 mod slot_fn;
 pub(crate) mod spanned_props;
+mod transition_group;
 mod transparent_builtin;
 mod vnode;
 
@@ -92,6 +93,10 @@ impl<'a> SsrCodegenContext<'a> {
                 self.process_plain_element(el, inherit_attrs, css_vars.enabled && !inherit_attrs);
             }
             ElementType::Component => {
+                if matches!(el.tag, "TransitionGroup" | "transition-group") {
+                    self.process_transition_group(el, inherit_attrs, css_vars.enabled);
+                    return;
+                }
                 self.process_component(
                     el,
                     disable_nested_fragments,

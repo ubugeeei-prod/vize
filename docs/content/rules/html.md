@@ -172,7 +172,9 @@ Good:
 
 Reports empty elements that are expected to expose visible or otherwise perceivable content.
 Elements with text, child content, `aria-label`, `aria-labelledby`, `v-html`, or `v-text` are
-accepted.
+accepted. Known project-local content providers can be listed with
+[`contentDirectives`](./options.md#htmlno-empty-palpable-content), for example `["safe-html"]`.
+Other custom directives still require content.
 
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `opinionated`

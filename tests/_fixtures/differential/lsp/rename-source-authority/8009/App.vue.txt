@@ -1,0 +1,22 @@
+<script setup lang="ts">
+import Item from "./Item.vue";
+import type { Command } from "./types";
+
+const emit = defineEmits<{
+  pick: [cmd: Command];
+}>();
+
+const rows = [[{ kind: "a", label: "A" }], [{ kind: "b", label: "B" }]];
+</script>
+
+<template>
+  <div v-for="(row, index) in rows" :key="`row-${index}`">
+    <Item
+      v-for="(entry, i) in row"
+      :key="`entry-${i}`"
+      :item-kind="entry.kind"
+      :label="entry.label"
+      @click="emit('pick', 'add')"
+    />
+  </div>
+</template>

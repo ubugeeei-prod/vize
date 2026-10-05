@@ -247,6 +247,9 @@ export interface LinterConfig {
   };
 }
 export interface LintRuleOptions {
+  "html/no-empty-palpable-content"?: {
+    contentDirectives?: string[];
+  };
   "type/strict-boolean-expressions"?: {
     allowString?: boolean;
     allowNumber?: boolean;

@@ -147,7 +147,12 @@ class StrictBooleanExpressionsOptions {
   allowAny: Boolean = false
 }
 
+class ContentDirectivesOptions {
+  contentDirectives: Listing<String> = new Listing {}
+}
+
 class LintRuleOptions {
+  `html/no-empty-palpable-content`: ContentDirectivesOptions? = null
   `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null

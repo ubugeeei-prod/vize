@@ -1,0 +1,42 @@
+[
+  {
+    "label": "v-on",
+    "kind": 23,
+    "detail": "Event listener",
+    "labelDetails": {
+      "description": "Vue directive"
+    },
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-on`**\n\n_Vue directive_\n\nEvent listener\n\n**Example**\n\n```vue\n<template>\n  <div v-on:...=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    },
+    "textEdit": {
+      "range": {
+        "start": null,
+        "end": null
+      },
+      "newText": "v-on:$1=\"$2\""
+    }
+  },
+  {
+    "label": "@focus",
+    "kind": 23,
+    "detail": "Focus event",
+    "labelDetails": {
+      "description": "Vue event"
+    },
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`@focus`**\n\n_Vue event listener_\n\nShorthand for `v-on:event`. The handler runs in component scope.\n\n**Example**\n\n```vue\n<template>\n  <button @focus=\"handler\"></button>\n</template>\n```\n\n**Docs**\n\n[Vue event handling](https://vuejs.org/guide/essentials/event-handling.html)"
+    },
+    "textEdit": {
+      "range": {
+        "start": null,
+        "end": null
+      },
+      "newText": "@focus=\"$1\""
+    }
+  }
+]

@@ -86,10 +86,13 @@ impl ContextFingerprint {
         self.host_content = hash.finish();
     }
 
-    pub(super) fn stamps_still_valid(&self) -> bool {
+    pub(super) fn stamps_still_valid(
+        &self,
+        observed: &mut crate::package_route::stamp::InputStampCache,
+    ) -> bool {
         self.stamps
             .iter()
-            .all(crate::package_route::stamp::InputStamp::is_current)
+            .all(|stamp| stamp.is_current_with_cache(observed))
     }
 
     pub(crate) fn input_stamps(&self) -> Vec<crate::package_route::stamp::InputStamp> {

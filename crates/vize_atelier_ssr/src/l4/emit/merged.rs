@@ -73,6 +73,26 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         inherit: bool,
         css_vars: bool,
     ) -> Result<Option<Merged>> {
+        self.merged_attrs_for::<false>(attached, tag, inherit, css_vars)
+    }
+
+    pub(super) fn group_attrs(
+        &mut self,
+        attached: &Attached<'_, '_>,
+        tag: &str,
+        inherit: bool,
+        css_vars: bool,
+    ) -> Result<Option<Merged>> {
+        self.merged_attrs_for::<true>(attached, tag, inherit, css_vars)
+    }
+
+    fn merged_attrs_for<const GROUP: bool>(
+        &mut self,
+        attached: &Attached<'_, '_>,
+        tag: &str,
+        inherit: bool,
+        css_vars: bool,
+    ) -> Result<Option<Merged>> {
         let mut args = self.merged_props_args(attached, tag, inherit, css_vars)?;
         let mut directives = 0usize;
         for segment in attached {
@@ -136,7 +156,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             ));
         }
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttrs);
-        let tag_arg = if tag == "textarea" || tag.contains('-') {
+        let tag_arg = if !GROUP && (tag == "textarea" || tag.contains('-')) {
             cstr!(", \"{tag}\"")
         } else {
             String::default()

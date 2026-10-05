@@ -32,6 +32,14 @@ pub enum VizeSemanticLinkKind {
 }
 
 impl VizeSemanticLink {
+    /// Authenticate the whole authored attribute name against the prop key
+    /// emitted by Canon. The component endpoint identifies its owner and is
+    /// never an alias of the prop name.
+    pub fn matches_component_prop_navigation_name(&self, authored: &str, generated: &str) -> bool {
+        self.kind == VizeSemanticLinkKind::VueComponentPropNavigation
+            && super::helpers::to_camel_case(authored).as_str() == generated
+    }
+
     /// Shift both generated TypeScript endpoint ranges after prefixing code.
     ///
     /// The link's `source_range` names the first semantic endpoint, not an

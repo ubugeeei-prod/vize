@@ -41,6 +41,7 @@ should behave unless noted below.
 
 | Rule | Option shape | Defaults and behavior |
 | --- | --- | --- |
+| `html/no-empty-palpable-content` | `{ contentDirectives?: string[] }` | Defaults to an empty list. Exact bare names identify directives that supply visible content. Rule enablement remains separate. |
 | `script/no-restricted-globals` | `{ globals?: Array<{ name: string; message?: string }> }` | Without options, the built-in deny list is `process`, `localStorage`, and `sessionStorage`. A non-empty `globals` list replaces that built-in list. |
 | `script/no-restricted-members` | `{ members?: Array<{ object: string; property: string; message?: string }> }` | Off unless `members` is configured and the rule is enabled. A missing `message` uses the generic diagnostic help. |
 | `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case" }` | Defaults to `PascalCase`. |
@@ -62,6 +63,30 @@ should behave unless noted below.
   self-closing tags, event names, and attribute casing.
 - [Musea Rule Options](./options-musea.md): design-token inventory configuration.
 
+
+## `html/no-empty-palpable-content`
+
+Custom directives may focus, style, or fill an element. List only the directives your project
+knows provide visible content. Use the exact template name without `v-`; arguments and modifiers
+do not change that name. Unlisted directives still leave an empty element reportable. An empty
+list restores the default behavior, and a matching scoped entry replaces the entire option object.
+This setting does not validate sanitization or enable the rule.
+
+```json
+{"linter":{"rules":{"html/no-empty-palpable-content":"error"},"ruleOptions":{"html/no-empty-palpable-content":{"contentDirectives":["safe-html"]}}}}
+```
+
+Bad (unlisted content source):
+
+```vue
+<p v-sanitize="message" />
+```
+
+Good (configured provider):
+
+```vue
+<p v-safe-html="message" />
+```
 
 ## Scoped Entries
 

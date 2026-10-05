@@ -38,6 +38,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         &mut self,
         open: SsrStringSegment<'r, 'a>,
         element: &'r l2::ElementOp<'a>,
+        disable_nested_fragments: bool,
         inherit: bool,
         css_vars: bool,
     ) -> Result<()> {
@@ -58,7 +59,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 self.take_attached(element.attributes.len() + element.bindings.len())?;
             self.children(Flags {
                 as_fragment: false,
-                disable_nested_fragments: false,
+                disable_nested_fragments,
+                disable_comments: false,
                 inherit_attrs: false,
                 css_vars,
             })?;
@@ -121,6 +123,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let flags = Flags {
             as_fragment: false,
             disable_nested_fragments: false,
+            disable_comments: false,
             inherit_attrs: false,
             css_vars: false,
         };
