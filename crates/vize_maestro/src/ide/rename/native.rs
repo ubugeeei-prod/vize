@@ -21,7 +21,8 @@ impl RenameService {
                     ctx,
                     Some(edit),
                     Self::rename(ctx, new_name),
-                );
+                )
+                .filter(|edit| corsa::RenameScope::new(ctx).admits_authored(edit));
             }
             canonical::Answer::Unavailable if corsa::is_component_attribute_query(ctx) => {
                 return None;
@@ -51,5 +52,6 @@ impl RenameService {
         // Corsa only renames the virtual document the request opened, so the
         // authored edits carry the other blocks of this SFC.
         corsa::merge_authored_rename(ctx, corsa_result, Self::rename(ctx, new_name))
+            .filter(|edit| corsa::RenameScope::new(ctx).admits_authored(edit))
     }
 }
