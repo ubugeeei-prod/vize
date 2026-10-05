@@ -88,8 +88,7 @@ complete cargo stdout/stderr/status and pins the immutable fixture's SHA256;
 the source fixture itself preserves every original input/config and each whole
 empty diagnostic assertion. The original three CLI/native vectors and full
 editor optional-hover response remain required. The failed queue candidate was
-automatically removed, and no new admission is authorized during the finite
-release hold. Fresh source/native Actions, protected full/all104, actual merge
+automatically removed. Fresh source/native Actions, protected full/all104, actual merge
 and publication remain pending; historical 5b green does not cover this repair.
 
 A bounded independent correction review confirms imported-identifier provenance,
@@ -97,3 +96,9 @@ type-based early-return retention and unchanged raw-undefined exclusion. Broader
 pre-existing imported/runtime default-undefined inference remains unclaimed.
 The official consumption generator records the added existing Croquis macro
 access (73 to 74); no counter or instruction limit is weakened.
+
+The release owner thawed existing qualified admissions. Literal composition
+with #7861 exposed two separately added artifact hidden-input flags at different
+positions. Use one shared trailing flag, preserving all raw hidden captures and
+commands; no source/native acceptance transfers from the previous head. The
+original runtime/CLI/native/editor contracts remain mandatory before admission.
