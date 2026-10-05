@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - crates/vize_armature/src/parser/**
+      - crates/vize_atelier_vapor/src/lower/element/template.rs
+      - crates/vize_atelier_vapor/src/lower/element/template/**
       - davinci/vize_l1_to_l2/src/lower/**
       - tests/tooling/pre-textarea-first-newline.test.mjs
       - tests/tooling/support/first-newline-vapor-oracle.mjs
@@ -43,6 +45,7 @@ jobs:
           VIZE_FIRST_NEWLINE_CAPTURE: ${{ runner.temp }}/first-newline-observations.json
         run: |
           cargo build --locked --profile ci -p vize
+          cargo test --locked --profile ci -p vize_armature --lib
           cargo test --locked --profile ci -p vize_l1_to_l2 --test pre_textarea_first_newline --test text_pass
           git rev-parse HEAD > "$RUNNER_TEMP/first-newline-source.txt"
           vp node --test tests/tooling/pre-textarea-first-newline.test.mjs

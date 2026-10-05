@@ -9,7 +9,7 @@ use vize_carton::Span;
 use vize_carton::ensure_sufficient_stack;
 
 mod writer;
-use writer::TemplateWriter;
+use writer::{LeadingNewlineWriter, TemplateWriter};
 
 /// Generate element template string (recursively includes static children)
 #[inline(always)]
@@ -126,13 +126,22 @@ fn write_element_template(
         // dispatcher, so its children contribute directly to the enclosing
         // element's static template instead of producing a component lookup.
         let placeholders = super::insertion::block_placeholders(&el.children);
-        append_child_templates(
-            template,
-            &el.children,
-            scope_id,
-            source,
-            &mut placeholders.into_iter(),
-        );
+        let mut placeholders = placeholders.into_iter();
+        if el.ns == vize_relief::Namespace::Html && matches!(el.tag, "pre" | "textarea") {
+            let mut children = LeadingNewlineWriter {
+                sink: template,
+                first: true,
+            };
+            append_child_templates(
+                &mut children,
+                &el.children,
+                scope_id,
+                source,
+                &mut placeholders,
+            );
+        } else {
+            append_child_templates(template, &el.children, scope_id, source, &mut placeholders);
+        }
 
         template.push_str("</");
         template.push_str(el.tag);

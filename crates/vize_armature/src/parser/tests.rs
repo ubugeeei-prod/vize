@@ -671,7 +671,8 @@ fn test_vue2_migration_line_break_after_interpolation() {
 #[test]
 fn test_vue2_migration_line_break_inside_static_text_before_element() {
     // #7046. The break before an element is inside the static text node, so
-    // the whitespace-only migration pass never sees it. `<pre>` stays raw.
+    // the whitespace-only migration pass never sees it. `<pre>` keeps its
+    // remaining bytes after HTML's first-newline rule.
     let sources = [
         "<p>\n  Label\n  <i />\n</p>",
         "<button>\n  Label\n</button>",
@@ -725,7 +726,7 @@ fn test_vue2_migration_line_break_inside_static_text_before_element() {
     let TemplateChildNode::Text(text) = &pre.children[0] else {
         panic!("expected pre text");
     };
-    assert_eq!(text.content, "\n  Label\n");
+    assert_eq!(text.content, "  Label\n");
 }
 
 #[test]
@@ -767,7 +768,7 @@ fn test_parse_whitespace_condense_preserves_pre_children() {
         assert_eq!(el.children.len(), 1);
         match &el.children[0] {
             TemplateChildNode::Text(text) => {
-                assert_eq!(text.content, "\n  hello\n  world\n");
+                assert_eq!(text.content, "  hello\n  world\n");
             }
             _ => panic!("expected preserved text node"),
         }
@@ -778,7 +779,7 @@ fn test_parse_whitespace_condense_preserves_pre_children() {
 fn test_parse_pre_crlf_matches_vue_in_both_whitespace_modes() {
     // @vue/compiler-core@3.5.41 baseParse with isPreTag normalizes CRLF in
     // both direct and nested <pre> text, for condense and preserve alike.
-    let source = "<pre>one\r\ntwo<span>three\r\nfour</span></pre>";
+    let source = "<pre>\r\none\r\ntwo<span>three\r\nfour</span></pre>";
     for whitespace in [WhitespaceStrategy::Condense, WhitespaceStrategy::Preserve] {
         let allocator = Allocator::new();
         let (root, errors) = parse_with_options(

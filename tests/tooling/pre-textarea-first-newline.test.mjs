@@ -211,6 +211,7 @@ test(
           id: fixture.id,
           sourceSha256: hash(source),
           modules,
+          reference: { dom: referenceDom, ssr: referenceSsr, vapor: referenceVapor },
           dom,
           vapor,
           ssr,
