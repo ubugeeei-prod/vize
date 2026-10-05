@@ -92,9 +92,9 @@ CLI/provider and do not qualify the new source; fresh hosted gates remain.
 
 The reviewed b739 source is now adopted for delivery, with this sole pinned
 fixture rendering contract. Exact source Check37243773669 passes all39 Router
-Rust bodies in each of four workers and47 pure controls (6 groups/41 leaves).
+Rust bodies across four workers and47 pure controls (6 groups/41 leaves).
 Native Phase37243773443 independently retains45 complete ordered output pairs,
-105 graphs and11094 members. It is instrumentation-only, with no CPU captures
+105 graphs and11094 archive members. It is instrumentation-only, with no CPU captures
 or cold-wall speed credit.
 
 The sole full replay [Check37244856830](https://github.com/ubugeeei-prod/vize/actions/runs/37244856830)
