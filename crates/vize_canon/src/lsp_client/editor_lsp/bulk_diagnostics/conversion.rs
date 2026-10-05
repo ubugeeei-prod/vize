@@ -27,6 +27,12 @@ pub(super) struct NativeDiagnostic {
     related_information: Vec<NativeDiagnostic>,
 }
 
+impl NativeDiagnostic {
+    pub(super) fn belongs_to(&self, name: &str) -> bool {
+        self.file_name.as_str() == name
+    }
+}
+
 #[cfg(test)]
 pub(super) fn requested_members_are_present(uris: &[String], names: &[String]) -> bool {
     // Path equality normalizes interior `.` and repeated separators, whereas

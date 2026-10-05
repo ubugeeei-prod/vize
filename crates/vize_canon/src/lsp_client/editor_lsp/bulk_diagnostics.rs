@@ -15,6 +15,7 @@ mod cost;
 mod positions;
 #[cfg(test)]
 mod receipt;
+mod selected_semantics;
 
 #[cfg(test)]
 pub(in crate::lsp_client) use receipt::fallback as fallback_receipt;
@@ -23,7 +24,7 @@ pub(in crate::lsp_client) use receipt::reset as reset_receipt;
 #[cfg(test)]
 pub(super) use receipt::take as take_receipt;
 
-use conversion::{NativeDiagnostic, project_diagnostics_observed};
+use conversion::project_diagnostics_observed;
 
 #[derive(Debug)]
 pub(in crate::lsp_client) enum BulkDiagnostics {
@@ -98,6 +99,11 @@ impl EditorLspSession {
                 receipt::refusal("requested URI is not an exact native source-name member");
                 return Ok(None);
             }
+            let Some(selected) = selected_semantics::names(uris, |uri| project.source_name(uri))
+            else {
+                return Ok(None);
+            };
+            cost.count("semantic-requested-files", selected.len());
             let params = json!({"snapshot": snapshot.handle(), "project": project.descriptor().id});
             let mut categories = Vec::with_capacity(4);
             let methods = diagnostic_methods(&project.descriptor().compiler_options);
@@ -106,26 +112,42 @@ impl EditorLspSession {
                 "snapshot":snapshot.handle(),"snapshotProjects":[project.descriptor()],
                 "project":project.descriptor(),"sourceFileNames":project.source_names(),
                 "categoryMethods":methods,"attachment":api.session,"outcome":"attempted",
-                "relatedSnapshotSources":[],
+                "relatedSnapshotSources":[],"categoryRequests":[],
             }));
             for method in &methods {
-                // Deliberately omit `file`: native 7.0.2 accepts this on each
-                // category endpoint. The SDK's grouped endpoints are absent.
-                let clock = cost.tick();
-                let response = block_on(api.client.raw_json_request(method, params.clone()));
-                cost.duration(method, clock);
-                let value = response?;
-                let clock = cost.tick();
-                let Ok(diagnostics) =
-                    serde_json::from_value::<Option<Vec<NativeDiagnostic>>>(value)
-                else {
-                    #[cfg(test)]
-                    receipt::refusal("diagnostic response schema differs");
-                    return Ok(None);
+                // Native 7.0.2's optional `file` selects one exact SourceFile.
+                // Whole semantics otherwise checks every program source, even
+                // those outside the original requested diagnostic surface.
+                let files: Vec<Option<&str>> = if *method == "getSemanticDiagnostics" {
+                    selected.iter().copied().map(Some).collect()
+                } else {
+                    vec![None]
                 };
-                cost.duration("category-decode", clock);
-                cost.count(method, diagnostics.as_ref().map_or(0, Vec::len));
-                categories.push(diagnostics.unwrap_or_default());
+                let mut category = Vec::new();
+                for file in files {
+                    let mut params = params.clone();
+                    if let Some(name) = file {
+                        params["file"] = json!(name);
+                    }
+                    let clock = cost.tick();
+                    let response = block_on(api.client.raw_json_request(method, params));
+                    cost.duration(method, clock);
+                    #[cfg(test)]
+                    receipt::category_request(json!({
+                        "method":method,"file":file,"acknowledged":response.is_ok(),
+                    }));
+                    let value = response?;
+                    let clock = cost.tick();
+                    let Some(diagnostics) = selected_semantics::decode(value, file) else {
+                        #[cfg(test)]
+                        receipt::refusal("diagnostic schema or selected source identity differs");
+                        return Ok(None);
+                    };
+                    cost.duration("category-decode", clock);
+                    cost.count(method, diagnostics.len());
+                    category.extend(diagnostics);
+                }
+                categories.push(category);
             }
             let clock = cost.tick();
             let converted = project_diagnostics_observed(

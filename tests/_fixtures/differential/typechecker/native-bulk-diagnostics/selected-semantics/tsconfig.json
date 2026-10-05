@@ -1,0 +1,1 @@
+{"compilerOptions":{"strict":true,"target":"ESNext","module":"ESNext","moduleResolution":"Bundler","types":[],"noEmit":true},"files":["requested.ts","empty.ts","unrequested.ts"]}

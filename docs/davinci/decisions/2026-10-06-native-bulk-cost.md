@@ -62,3 +62,61 @@ campaigns. Instrumentation remains default-off. Ignored untracked fixture paths
 are not enumerated by Git custody. Existing30-minute cancellation can prevent
 final PID census, cleanup and artifact upload. Compilation/observation/cause/
 corrected gains/protected signed delivery remain pending; #7698 stays open.
+
+The ONE actual25e observation passed Vuejob111935226002 in fullCheck37360984492.
+Authenticated archive11366747627 is11654550bytes (SHA256
+1634e7d3fe1296b98a7a894d985061ccf2f5126403e48a6d778d5e32f3e0ffad).
+All2043 original/native whole rows,853 fixture bodies and three pre/post states
+passed; both original/bulk artifacts rebuilt fresh=false from independently
+Git-authenticated876/888 physical source objects and distinctef60a320/0119b2a4
+binaries. One bulk arm recorded three complete outcomes, measurements[] and
+warmGainObserved=false. It is not a matched speed comparison. SourcefourRust
+workers and actual native13 laws passed separately; foreign full gates remain.
+
+Warm call totals were5117649/5037547microseconds. Native whole-program semantic
+requests accounted for4816536/4742918 (~94%); overlay position indexing only
+146888/137816 (~~3%). Full conversion including related reads was199189/184088,
+project/name admission36506/42056 and original related-text reads~~15000.
+Cold readiness2751832 and semantic2594030 dominate its5594616 total. Do not
+attribute the regression to Rust text/index work or make an unmeasured ASCII
+optimization. These one-run instrumented durations identify a causal operation,
+not matched gains or a per-file native timing proof.
+
+Use the pinned official [GetDiagnosticsParams and DocumentIdentifier grammar](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/api/proto.go)
+and [exact optional-source resolution](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/api/session.go).
+The same [compiler semantic method](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/compiler/program.go)
+selects one SourceFile when nonnil; nil visits every program file. Resolve each
+original requested URI to its exact sealed provider native name, deduplicate
+lexical names in requested order and send the supported plain-string file on
+semantic calls. Keep one existing snapshot/attachment and all global syntax,
+suggestion/declaration/options behavior, category order and duplicate/empty
+result rows. No guessed files-array, numeric concurrency gate, new SDK/process/
+stage, source fallback or second parse. This adds a private name borrow from the
+existing provider map, without another query/text decode or disk-after-snapshot.
+
+Require every selected semantic main row to name that exact admitted file;
+foreign rows or local schema differences refuse the ENTIRE conversion. Preserve
+related locations under the original source-text provider. Real SDK failures
+still eagerly release, retire/reap the broken owner and recreate the ENTIRE
+original LSP vector; no partial native cache. Record each actual category request
+(method/file/acknowledgement) only in existing cfg(test) custody, including failed
+requests. Logical categoryMethods alone is no longer an actual request count.
+
+Two pure laws cover exact aliases/foreign membership, selected order/duplicates,
+nullable empties/schema refusal and foreign-main versus retained-related rows.
+A genuine native law uses five retained original files: requested typed Unicode
+error, imported declaration, empty file, independently erroneous unrequested
+file and config. Capture full original/bulk vectors and actual request identities
+before assertions; require dependency related information, two unique requested
+semantic calls and preserved duplicate/empty rows without any unrequested
+semantic call. Keep all original eight profiles, legal deep-reader retirement,
+whole681 three generations, literal fixtures and old command order unchanged.
+Compilation and actual semantic/performance behavior remain unverified.
+
+Remove the temporary observation-only Action flag. The default comparison again
+uses three alternating immutable original/current arms with observer0 and all
+physical/build/fresh=false/distinct-binary/body/config/PID/native/budget custody.
+After independent frozen source review and real current-main reconciliation,
+run ONE corrected same-host comparison; keep Draft/offqueue until it proves
+actual gains, whole acceptance, fresh required/full/native and protected signed
+ordered delivery. Finite0.434 remains independent; #7698 stays open.

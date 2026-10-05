@@ -179,6 +179,11 @@ impl SnapshotSourceProject<'_> {
         self.sources.contains_key(uri)
     }
 
+    /// Borrow the exact authoritative name under this selected snapshot/project.
+    pub(in crate::lsp_client) fn source_name(&self, uri: &str) -> Option<&str> {
+        self.sources.get(uri).map(|name| name.as_str())
+    }
+
     /// Preserve the native response's original order without another query.
     pub fn source_names(&self) -> &[String] {
         &self.source_names

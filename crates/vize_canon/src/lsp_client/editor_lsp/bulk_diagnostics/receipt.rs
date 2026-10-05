@@ -23,6 +23,19 @@ pub(super) fn refusal(reason: &str) {
     });
 }
 
+pub(super) fn category_request(request: Value) {
+    OBSERVED.with(|value| {
+        if let Some(requests) = value
+            .borrow_mut()
+            .as_mut()
+            .and_then(|receipt| receipt.get_mut("categoryRequests"))
+            .and_then(Value::as_array_mut)
+        {
+            requests.push(request);
+        }
+    });
+}
+
 pub(super) fn related_source(source: Value) {
     OBSERVED.with(|value| {
         if let Some(sources) = value
