@@ -1,0 +1,29 @@
+{
+  "issue": 8008,
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "originalSha256": {
+    "gen.mjs": "4d0e14d66ce6e7b0b5d2e32a51c39bbe985283aa94934616b4da0ff587d34649",
+    "original-report.md": "247d435038eb8c53f317dc6a5fdcdd216a19fa9bc58d155e355b5ed2c3eb4a58",
+    "package.json": "4a2c593a78dd898566bf14bc68914ae452738d0ef2de4a64fd8c2be8f097f942",
+    "tsconfig.json": "ad4c9c378d4d01ee9230da0acc6aa86d0a5cab68de8e552124c5e557d4506181",
+    "vize.config.json": "c6f468f396b9c5afeb4a348dffc20fab9660182dd4b65364968c77c448cee85d"
+  },
+  "scope": "Complete original generated SFC/TS import graph and source/config inputs; actual hosted Vue/native dependency versions must be disclosed independently.",
+  "files": [
+    20,
+    100,
+    400
+  ],
+  "rounds": 5,
+  "requests": [
+    "script hover open",
+    "template hover label",
+    "definition useThing0",
+    "completion thing."
+  ],
+  "nativeEligibility": null,
+  "oracle": "tests/performance/support/warm-type-backed-requests.ts"
+}
