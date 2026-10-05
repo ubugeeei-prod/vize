@@ -18,9 +18,9 @@ function location(source, offset) {
   return { line: lines.length, column: [...lines.at(-1)].length + 1 };
 }
 
-function message(source, target, text, help) {
-  const start = source.indexOf(target);
+function message(source, target, text, help, start = source.indexOf(target)) {
   assert.ok(start >= 0, target);
+  assert.equal(source.slice(start, start + target.length), target);
   const from = location(source, start);
   const to = location(source, start + target.length);
   return {
@@ -168,8 +168,40 @@ test("source-built lint preserves complete original P0 findings with native Type
         "Use toRef(source, 'key'), toRefs(source), or access the property on the reactive object.",
       ),
     ];
+    const controlSource = fs.readFileSync(
+      path.join(root, croquis, "issue-7914/RightHandSide.vue.fixture"),
+      "utf8",
+    );
+    cases.push({
+      issue: 7914,
+      rule: references,
+      control: {
+        authority: "Authored JavaScript RHS evaluation-order regression from source peer review",
+        input: {
+          path: "RightHandSide.vue",
+          bytes: Buffer.byteLength(controlSource),
+          sha256: sha256(controlSource),
+        },
+        source: controlSource,
+      },
+      messages: [
+        message(
+          controlSource,
+          "props.modelValue",
+          "Assigning 'props.modelValue' to 'last' stores a plain snapshot",
+          "Use toRef(source, 'key'), toRefs(source), or access the property on the reactive object.",
+        ),
+        message(
+          controlSource,
+          "last",
+          "Passing 'last' to 'useFeature' cuts the reactive graph from 'props.modelValue'",
+          "Pass Ref<T> or ComputedRef<T> instead, for example toRef(source, 'key') or computed(() => value).",
+          controlSource.indexOf("useFeature(last)") + "useFeature(".length,
+        ),
+      ],
+    });
     for (const entry of cases) {
-      const { input, source } = entry.original;
+      const { input, source } = entry.original ?? entry.control;
       fs.writeFileSync(path.join(directory, input.path), source);
       const config = {
         linter: {
@@ -209,6 +241,7 @@ test("source-built lint preserves complete original P0 findings with native Type
         const observation = {
           issue: entry.issue,
           original: entry.original,
+          control: entry.control,
           config,
           mode,
           run,

@@ -41,3 +41,16 @@ reports under `target/differential` before comparisons; the existing always-uplo
 step retains them on failure. Native CLI execution and fresh Actions acceptance
 remain pending until the successor's actual hosted run passes. No new PR or
 private #7898 production/corpus is included in this published Stack.
+
+Bounded source peer review finds a concrete evaluation-order error in the first
+candidate: clearing `last` before walking the RHS of `last = useFeature(last)`
+silences the genuine snapshot argument loss. Defer only plain-assignment origin
+replacement until after the existing RHS walk. Reactive-binding reassignment
+recording and member-assignment writeback-root ownership keep their original
+order. The authored full `RightHandSide.vue` carrier and complete ordered vectors
+retain the initial snapshot and RHS call-boundary finding; later reads of the
+replaced binding are clean. Sequence RHS and self-alias controls retain the same
+boundary positive. The actual public CLI compares the complete two-finding JSON
+in both strict-reactivity modes. Preserve all original reporter bytes and the
+parent rules/caps. The observer-only `c881e220ac` stays historical; this semantic
+repair requires its own immutable source head, peer review and fresh Actions.

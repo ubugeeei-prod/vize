@@ -26,6 +26,19 @@ fn assert_losses(source: &str, expected: Vec<ReactivityLoss>) {
     );
 }
 
+fn argument(source: &str) -> ReactivityLoss {
+    let start = (source.find("useFeature(last)").unwrap() + "useFeature(".len()) as u32;
+    ReactivityLoss {
+        kind: ReactivityLossKind::FunctionArgumentExtract {
+            source_name: "props.modelValue".into(),
+            argument_name: "last".into(),
+            callee_name: "useFeature".into(),
+        },
+        start,
+        end: start + "last".len() as u32,
+    }
+}
+
 #[test]
 fn original_reporter_retains_only_the_initial_snapshot() {
     let file = include_str!("fixtures/issue-7914/LazyInput.vue.fixture");
@@ -45,6 +58,42 @@ fn original_reporter_retains_only_the_initial_snapshot() {
 fn later_copy_and_composable_reads_do_not_keep_replaced_provenance() {
     let source = "const props = defineProps<{ modelValue: string }>();\nlet last = props.modelValue;\nlast = 'fresh';\nconst copy = last;\nuseFeature(last);";
     assert_losses(source, vec![property(source, "last", "props.modelValue")]);
+}
+
+#[test]
+fn right_hand_side_keeps_previous_origin_until_the_assignment_finishes() {
+    let source = include_str!("fixtures/issue-7914/RightHandSide.vue.fixture")
+        .strip_prefix("<script setup lang=\"ts\">\n")
+        .unwrap()
+        .split("</script>")
+        .next()
+        .unwrap();
+    assert_losses(
+        source,
+        vec![
+            property(source, "last", "props.modelValue"),
+            argument(source),
+        ],
+    );
+}
+
+#[test]
+fn sequence_and_self_assignment_keep_rhs_reads_before_replacement() {
+    for assignment in [
+        "last = (useFeature(last), 'fresh');",
+        "last = last; useFeature(last);",
+    ] {
+        let source = format!(
+            "const props = defineProps<{{ modelValue: string }}>();\nlet last = props.modelValue;\n{assignment}"
+        );
+        assert_losses(
+            &source,
+            vec![
+                property(&source, "last", "props.modelValue"),
+                argument(&source),
+            ],
+        );
+    }
 }
 
 #[test]
