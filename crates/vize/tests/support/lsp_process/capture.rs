@@ -43,7 +43,7 @@ impl Capture {
         let version = Command::new(&executable).arg("--version").output().unwrap();
         let metadata = json!({
             "pid":pid,"executable":executable,
-            "executableSha256":format!("{:x}",digest.finalize()),
+            "executableSha256":hex(&digest.finalize()),
             "arguments":command.get_args().map(|arg|arg.to_string_lossy()).collect::<Vec<_>>(),
             "cwd":command.get_current_dir(),"sourceSha":std::env::var("SOURCE_SHA").ok(),
             "harnessPackageVersion":env!("CARGO_PKG_VERSION"),
@@ -97,7 +97,7 @@ impl Capture {
             "exitCode":status.and_then(|status|status.code()),
             "exitStatus":status.map(|status|status.to_string()),
             "stdoutReaderJoined":stdout_joined,"stderrReaderJoined":stderr_joined,
-            "stderrBytes":stderr.len(),"stderrSha256":format!("{:x}",Sha256::digest(stderr))
+            "stderrBytes":stderr.len(),"stderrSha256":hex(&Sha256::digest(stderr))
         });
         std::fs::write(
             self.root.join("terminal.json"),
@@ -105,4 +105,12 @@ impl Capture {
         )
         .unwrap();
     }
+}
+
+fn hex(bytes: &[u8]) -> String {
+    bytes
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<Vec<_>>()
+        .concat()
 }
