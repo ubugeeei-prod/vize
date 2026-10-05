@@ -23,8 +23,8 @@ fn expected(filename: &str, starts: &[usize], tag: &str) -> LintResult {
                 LintDiagnostic::warn(
                     RULE,
                     "Component is used but not explicitly imported",
-                    start as u32,
-                    (start + tag.len()) as u32,
+                    (start + 1) as u32,
+                    (start + 1 + tag.len()) as u32,
                 )
                 .with_help(
                     "Import the component in <script setup> or register it in components option",
