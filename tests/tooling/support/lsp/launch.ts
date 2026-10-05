@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import {
+  BUILD_RECIPE,
   expectedBuildIdentity,
   validateBuildReceipt,
 } from "../../../differential/build-receipt.mjs";
@@ -12,6 +13,7 @@ export type VerifiedLspLaunch = {
   binary: string;
   expected: ReturnType<typeof expectedBuildIdentity>;
   receipt: Record<string, unknown>;
+  buildRecipe?: string;
   versionProbe?: {
     exitStatus: number | null;
     signal: string | null;
@@ -37,6 +39,7 @@ export function resolveVizeLaunchCommand(
   sourceBinding: {
     required?: boolean;
     repoRoot?: string;
+    buildRecipe?: string;
     onVerifiedLaunch?: (launch: VerifiedLspLaunch) => void;
   } = {},
 ): string[] {
@@ -64,9 +67,11 @@ export function resolveVizeLaunchCommand(
     const receipt = JSON.parse(
       fs.readFileSync(`${binary}.differential-build.json`, "utf8"),
     ) as Record<string, unknown>;
-    validateBuildReceipt(receipt, expected);
+    const buildRecipe =
+      sourceBinding.buildRecipe ?? process.env.VIZE_LSP_BUILD_RECIPE ?? BUILD_RECIPE;
+    validateBuildReceipt(receipt, expected, buildRecipe);
     assert.ok(probe(binary), "the verified source-built LSP binary cannot launch");
-    sourceBinding.onVerifiedLaunch?.({ binary, expected, receipt, versionProbe });
+    sourceBinding.onVerifiedLaunch?.({ binary, expected, receipt, buildRecipe, versionProbe });
     return [binary, "lsp"];
   }
   const candidates = [
