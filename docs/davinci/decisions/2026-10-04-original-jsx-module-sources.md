@@ -56,3 +56,22 @@ replay remain unfinished. Original source views grant neither URI/snapshot/
 Occurrence authority nor physical target/watch coverage. No legacy route or
 product default is selected, and no whole Davinci or typechecker 10x completion
 is claimed.
+
+## Actual-main delivery replay
+
+The existing #7807 provider is genuinely replayed onto actual main
+`8f667ea070bb90d57ac7125db35d791025f746e2` from the original source
+`f67df2530f2b3e143f1838b5fff4af7e4c2bc382`. All five original Rust owner/law
+blobs remain byte-identical, including the eight original parser-backed laws and
+the exact wrong-profile input. Resolve only the canonical overview conflict by
+adding the owned JSX clause to the complete incoming main record; removing that
+clause restores incoming main byte-for-byte at the unchanged 350-line ceiling.
+
+The original source checks `37197587019` and `37197639956` stay historical. The
+replay requires its own exact-head source Actions, all eight JSX/TSX laws, the
+26 module-source behaviors and seven privacy documents. A matched independent
+protected candidate must pass the full Rust/fixture suites and all 104 unchanged
+instruction ceilings/ratchets before actual signed merge and reporter-credit
+readback. Source replay and preserved expectations grant no fresh runtime or
+protected credit. Existing #7806 must reconcile its original JSX consumer
+control after this provider actually merges; its unpublished repair stays separate.
