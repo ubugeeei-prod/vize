@@ -96,8 +96,12 @@ void test("original Vite+ relative project checks the whole Counter input throug
     const task = await oracle.task("virtual-task", ["--show-virtual-ts"]);
     assert.equal(task.status, 1);
     assert.equal(direct.status, 1);
-    assert.equal(task.stderr, "");
-    assert.equal(direct.stderr, "");
+    assert.equal(task.stderr, direct.stderr, "complete debug dumps must match byte for byte");
+    assert(task.stderr.startsWith("\n=== __vize_helpers.d.ts ===\n"));
+    assert.deepEqual(task.stderr.match(/^=== .* ===$/gm), [
+      "=== __vize_helpers.d.ts ===",
+      `=== ${path.join(oracle.root, "src/Counter.vue")} ===`,
+    ]);
     assert.equal(task.stdout, direct.stdout);
     assert.deepEqual(
       task.report,
@@ -106,6 +110,7 @@ void test("original Vite+ relative project checks the whole Counter input throug
     );
     assert(task.report);
     assert.equal(typeof task.report.files[0].virtualTs, "string");
+    assert(task.stderr.endsWith(`${task.report.files[0].virtualTs}\n`));
     assert(task.report.files[0].virtualTs?.includes('const count: number = "not a number";'));
     const withoutVirtual = {
       ...task.report,

@@ -3,8 +3,9 @@
 Issue: [#8017](https://github.com/ubugeeei-prod/vize/issues/8017).
 Paired source decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/8017#issuecomment-5988901037).
 
-Status: source preparation for exact-source Draft qualification. No native
-execution, Actions acceptance, queue admission, merge or release is claimed.
+Status: Draft source qualification. The latest automatic source Check captures
+39 actual CLI processes but fails one debug-stream expectation. No complete
+Actions acceptance, queue admission, merge or release is claimed.
 The initial private source was reviewed at
 `63a4d2801f8c5d68563508af9952eb7d292fa718`; one necessary P0 Draft is
 authorized to establish the actual whole-process evidence.
@@ -87,8 +88,32 @@ exit-2/full-JSON/stderr pair. The actual L3 run observed 450 files, 150 remarks,
 15 applied, 135 missed and zero remark changes; add only the original Counter
 path to its census, preserving every remark and explanation. No ceiling moves.
 
+The paired [debug-stream correction](https://github.com/ubugeeei-prod/vize/issues/8017#issuecomment-5990026339)
+retains the second automatic source [Check37274579401](https://github.com/ubugeeei-prod/vize/actions/runs/37274579401), which
+uses PR source `2b431bc6455aff13c553500a16204a0aa140eb35` and actual default
+build checkout `14597fe41399e09842fbbc5a471c6c227078b5d2`, binary SHA-256
+`8c1b00d3f936b0ec323ca3467df5a544d8546ffee4ac7d8eabcc3e912b5d6cb2`.
+All four Rust workers pass, including both complete unconfigured/discovered-empty
+laws and the original SFC inventory. All 39 native CLI processes are retained in
+the official tooling artifact `11328988967`, SHA-256
+`12d60898f0cb9dc0b66384f616cdbf093d4f23c84158f933e2656f9f61df92f9`.
+Four oracle groups pass; the original group fails only because it expected empty
+stderr under explicit `--show-virtual-ts`. That flag intentionally dumps the
+complete shared helper and generated Counter source, including in quiet mode.
+The task/direct debug stdout and stderr are byte-identical; each stderr has
+31,872 bytes, SHA-256
+`9bafaedf842dd2e605cf91b33891094d62a3a92e7e4713f592a9877ab980d848`.
+A read-only replay checks all 39 complete ordered reports, statuses, raw UTF-8
+streams and input hashes against the unchanged expectations. Correct only this
+debug expectation: retain complete task/direct stderr equality, exactly the
+helper and authored Counter headers, and the entire JSON `virtualTs` bytes plus
+the output newline as the dump suffix. All original inputs, production modules,
+stdout/report/status expectations and 39 process calls stay unchanged. Fresh
+source Actions must execute this corrected assertion; this replay transfers no
+successor or protected-suite acceptance.
+
 The genuine replay on actual main
-`1744a7ee84c202ce78f03a0148f335a5022b72e3` preserves every owned source/input
+`d8c3f46657f849e1839d55349b6eabdb766bfd57` preserves every owned source/input
 blob and every incoming canonical line. This main already builds the default
 CLI and writes its build receipt before PR/protected tooling tests. The oracle
 is registered through that existing tooling suite, retaining the strict receipt
