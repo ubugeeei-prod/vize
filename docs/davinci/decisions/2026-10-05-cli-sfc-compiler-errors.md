@@ -24,6 +24,12 @@ all emitted artifact bytes are compared. Derived Options API, unsupported Vapor
 memo, repeated invalid stats sources and valid script/template/DOM-memo controls
 remain distinct.
 
+Initial hosted execution exposed a fixture expectation missing the existing
+`./` prefix for glob-discovered files. Correct only that full stderr oracle;
+retain all forty subprocess cases. Replace the extra diagnostic substring
+assertion with complete frozen error vectors and regenerate the source-derived
+Croquis inventory for the new private `SfcError` import. No gate is relaxed.
+
 The independent official Vue 3.5.35 SFC compiler supplies complete pinned parse
 and template error vectors, including source positions, for seven whole inputs.
 Actual source-built NAPI calls compare full script/template-only error vectors.

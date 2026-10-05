@@ -26,22 +26,21 @@ const VALID_SCRIPT: &str = include_str!(
 const VALID_TEMPLATE: &str = include_str!(
     "../../../tests/_fixtures/differential/compiler/build-sfc-errors/ValidTemplateOnly.vue.txt"
 );
+const INVALID_EXPRESSION: &str = r#"Template compilation errors: [CompilerError { code: InvalidExpression, message: "Error parsing JavaScript expression: Unexpected token", loc: Some(SourceLocation { start: Position { offset: 11, line: 2, column: 11 }, end: Position { offset: 14, line: 2, column: 14 }, source: "a +" }) }]"#;
+const MISSING_IF: &str = r#"Template compilation errors: [CompilerError { code: VIfNoExpression, message: "v-if/v-else-if is missing expression.", loc: Some(SourceLocation { start: Position { offset: 6, line: 2, column: 6 }, end: Position { offset: 10, line: 2, column: 10 }, source: "v-if" }) }]"#;
+const UNSUPPORTED_MEMO: &str = r#"Vapor template compilation errors: ["v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented."]"#;
 
 #[test]
 fn build_reports_every_returned_sfc_error_and_never_counts_partial_code_as_success() {
-    for (name, source, vapor, kind) in [
-        ("WithScript.vue", SCRIPT, false, "InvalidExpression"),
-        ("TemplateOnly.vue", TEMPLATE, false, "InvalidExpression"),
-        ("VIf.vue", V_IF, false, "VIfNoExpression"),
-        ("Options.vue", OPTIONS, false, "InvalidExpression"),
-        ("Memo.vue", MEMO, true, "v-memo with dependencies"),
+    for (name, source, vapor, error) in [
+        ("WithScript.vue", SCRIPT, false, INVALID_EXPRESSION),
+        ("TemplateOnly.vue", TEMPLATE, false, INVALID_EXPRESSION),
+        ("VIf.vue", V_IF, false, MISSING_IF),
+        ("Options.vue", OPTIONS, false, INVALID_EXPRESSION),
+        ("Memo.vue", MEMO, true, UNSUPPORTED_MEMO),
     ] {
         let errors = compiler_errors(name, source, vapor);
-        assert!(
-            !errors.is_empty(),
-            "{name} must be refused by the actual compiler"
-        );
-        assert!(errors.join("\n").contains(kind), "{errors:?}");
+        assert_eq!(errors, [error], "{name}");
         for format in ["js", "json", "stats"] {
             for continue_on_error in [false, true] {
                 let project = tempfile::tempdir().unwrap();
@@ -150,7 +149,7 @@ fn stats_repeated_invalid_sources_preserve_every_failure() {
             .lines()
             .map(|line| format!("      {line}\n"))
             .collect();
-        entries.push_str(&format!("    \x1b[1m{name}\x1b[0m\n{lines}"));
+        entries.push_str(&format!("    \x1b[1m./{name}\x1b[0m\n{lines}"));
     }
     let output = run(project.path(), "Same*.vue", "stats", false, false);
     assert_eq!(output.status.code(), Some(1));
