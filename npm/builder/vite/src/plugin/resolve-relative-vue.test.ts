@@ -106,3 +106,57 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 console.log("vite-plugin-vize relative Vue resolve tests passed!");
+
+// Vite resolves the complete asset request against the physical SFC importer.
+// Preserve every returned field in both graphs and dependency scans.
+{
+  const projectRoot = fs.mkdtempSync(path.join(testRoot, "glob-assets-"));
+  const source = path.join(projectRoot, "src/pages/demo/Plain.vue");
+  const target = path.join(projectRoot, "fixtures/Alpha.vue");
+  writeFixtureFile(source, "<template><p>original</p></template>");
+  writeFixtureFile(target, "<template><p>alpha</p></template>");
+  for (const query of ["raw&import=default", "url", "worker&inline", "sharedworker"])
+    for (const ssr of [false, true])
+      for (const scan of [false, true]) {
+        const id = `../../../fixtures/Alpha.vue?${query}`;
+        const resolved = Object.freeze({
+          id: `${target}?${query}`,
+          external: false,
+          meta: Object.freeze({ assetQuery: query }),
+        });
+        const calls: unknown[] = [];
+        const state = createState(projectRoot);
+        const result = await resolveIdHook(
+          {
+            resolve: async (request, importer, options) => {
+              calls.push({ request, importer, options });
+              return resolved;
+            },
+          },
+          state,
+          id,
+          toPluginVisibleVirtualId(source),
+          { ssr, scan },
+        );
+        assert.equal(result, resolved);
+        assert.deepEqual(result, {
+          id: `${target}?${query}`,
+          external: false,
+          meta: { assetQuery: query },
+        });
+        assert.deepEqual(calls, [{ request: id, importer: source, options: { skipSelf: true } }]);
+        assert.equal(state.cache.size, 0);
+        assert.equal(state.ssrCache.size, 0);
+      }
+  const resolvedAsset = Object.freeze({ id: `${target}?raw`, external: false });
+  assert.equal(
+    await resolveIdHook(
+      { resolve: async () => resolvedAsset },
+      createState(projectRoot),
+      "../../../fixtures/Alpha.vue",
+      toPluginVisibleVirtualId(source),
+    ),
+    resolvedAsset,
+    "The effective query from an upstream resolver retains its complete asset result",
+  );
+}

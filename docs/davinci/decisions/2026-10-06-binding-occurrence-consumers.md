@@ -4,6 +4,8 @@ Paired issue: [#7992](https://github.com/ubugeeei-prod/vize/issues/7992).
 This consumer depends on the
 [existing-walk producer](./2026-10-06-binding-occurrence-producer.md).
 It is a dependent source slice, not a second analysis engine or a history gate.
+Its genuine published provider is #8067, frozen `cc1861eb` on actual main
+`f83e26d2`; all consumer code/oracles below are preserved from private `f5149595`.
 
 The entire reported Field.vue, strict tsconfig, stdio client, issue body and
 verified reporter identity remain immutable. The original report provides
