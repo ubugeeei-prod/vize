@@ -331,7 +331,6 @@ SHA256 `6de687751098b3c23e999c916bca18720a760e0fd89257dd41f00c0d5c7aca75`;
 it grants no new compile/native/runtime result. New source Actions and the
 unchanged full 33-state qualification must use this genuine composition.
 
-
 ## Complete dynamic runtime, incomplete full Check
 
 Source `c9f0f590a8` passes ordinary Check 37345651216 (16,214 JUnit cases,
