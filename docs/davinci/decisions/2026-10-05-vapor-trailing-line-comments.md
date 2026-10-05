@@ -109,6 +109,19 @@ failures/skips, including the strict32 whole-module runtime law and real
 dual-target binding boundary. Their authenticated receipt remains source-only
 evidence from the overall failed run; fresh complete Actions are required.
 
+Current d7d Check37265487540 and all six associated workflows complete success.
+Four authenticated Rust artifacts execute15,938 with zero failures/skips/errors,
+including strict32 runtime4.459s and dual-target map0.012s; all census workers
+pass. Its current-source receipt is distinct from census-red6ae. Genuine
+prospective composition with latest signed4e main conflicts only on the order
+overview, now also owned by the incoming CSS decision. Rebase all eight commits
+on literal4e, preserving every original author/date/message/reporter trailer,
+all nine production blobs and whole runtime input/helper/test/reference bytes.
+Preserve all incoming canonical bytes at350; only the own Vapor clause moves
+to the existing compiler fixture-sweep row. Bind the manifest to actual4e.
+The changed head requires fresh exact Actions before Ready/auto/protected
+admission; no green d7d result is transferred as current-head acceptance.
+
 TODO: exact source Actions including whole-module runtime, root peer review,
 protected full suites and all 104 immutable instruction ceilings, signed
 actual main with reporter trailer/issue closure, then a verified frequent cut.
