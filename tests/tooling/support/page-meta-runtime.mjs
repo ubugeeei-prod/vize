@@ -44,8 +44,9 @@ const stableCompiler = fromUi("vue/compiler-sfc");
 const server = fromUi("vue/server-renderer");
 const fromVapor = createRequire(fromUi.resolve("vue-vapor-runtime/package.json"));
 const vaporCompiler = fromVapor("vue/compiler-sfc");
-assert.equal(stable.version, "3.5.43");
-assert.equal(vaporCompiler.version, "3.6.0-rc.9");
+assert.equal(stable.version, pinned.provenance.versions.vueRuntime);
+assert.equal(stableCompiler.version, stable.version);
+assert.equal(vaporCompiler.version, pinned.provenance.versions.vaporRuntime);
 const vapor = await loadRuntime({ production: true });
 const fromPlugin = createRequire(fromUi.resolve("@vitejs/plugin-vue/package.json"));
 const { transformWithOxc } = await import(pathToFileURL(fromPlugin.resolve("vite")).href);
@@ -200,6 +201,7 @@ for (const fixture of fixtures) {
       name: fixture.name,
       shape: fixture.shape,
       nuxt: fixture.nuxt,
+      reference,
       actual,
       vue: fixture.shape === "vapor" ? vaporCompiler.version : stable.version,
       authority: "complete-default-component/setup/production-runtime",

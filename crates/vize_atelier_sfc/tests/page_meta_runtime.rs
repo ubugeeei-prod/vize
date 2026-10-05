@@ -189,4 +189,23 @@ fn original_page_meta_calls_mount_and_ssr_like_the_official_compiler() {
         String::from_utf8_lossy(&output.stderr)
     );
     assert_eq!(String::from_utf8_lossy(&output.stdout).lines().count(), 60);
+    let observations: Vec<serde_json::Value> = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|line| serde_json::from_str(line).expect("whole runtime observation"))
+        .collect();
+    let profile = if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
+        "full"
+    } else {
+        "pr"
+    };
+    let proof = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../target/nextest")
+        .join(profile);
+    std::fs::create_dir_all(&proof).expect("runtime proof directory");
+    std::fs::write(
+        proof.join("page-meta-runtime.json"),
+        serde_json::to_vec(&json!({ "cases": cases, "observations": observations }))
+            .expect("serialize complete source and runtime observations"),
+    )
+    .expect("preserve actual component oracle observations with the JUnit artifact");
 }

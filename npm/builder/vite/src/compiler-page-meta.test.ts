@@ -13,22 +13,24 @@ for (const name of ["Page", "global", "mixed", "local", "alias", "shadowed"]) {
   );
   const file = { path: `/src/${name}.vue`, source };
   for (const ssr of [false, true]) {
-    for (const nuxtPageMeta of [false, true]) {
-      const options = { sourceMap: true, ssr, vapor: false, nuxtPageMeta };
-      const single = compileFile(file.path, new Map(), options, source);
-      const batch = compileBatch([file], new Map(), options);
-      const result = batch.results[0];
-      assert.deepEqual(result.errors, []);
-      assert.equal(result.code, single.code, "single and batch use the same ownership");
-      const extracted = nuxtPageMeta && ["Page", "global", "mixed"].includes(name);
-      assert.equal(single.macroArtifacts?.length, Number(extracted));
-      assert.equal(result.macroArtifacts?.length, Number(extracted));
-      assert.equal(
-        single.code.includes(name === "alias" ? "pageMeta(" : "definePageMeta("),
-        !extracted,
-      );
-      if (name === "mixed") assert.match(single.code, /useRoute/);
-      if (name === "Page") assert.equal(single.code.includes("#imports"), !extracted);
+    for (const vapor of [false, true]) {
+      for (const nuxtPageMeta of [false, true]) {
+        const options = { sourceMap: true, ssr, vapor, nuxtPageMeta };
+        const single = compileFile(file.path, new Map(), options, source);
+        const batch = compileBatch([file], new Map(), options);
+        const result = batch.results[0];
+        assert.deepEqual(result.errors, []);
+        assert.equal(result.code, single.code, "single and batch use the same ownership");
+        const extracted = nuxtPageMeta && ["Page", "global", "mixed"].includes(name);
+        assert.equal(single.macroArtifacts?.length, Number(extracted));
+        assert.equal(result.macroArtifacts?.length, Number(extracted));
+        assert.equal(
+          single.code.includes(name === "alias" ? "pageMeta(" : "definePageMeta("),
+          !extracted,
+        );
+        if (name === "mixed") assert.match(single.code, /useRoute/);
+        if (name === "Page") assert.equal(single.code.includes("#imports"), !extracted);
+      }
     }
   }
 }

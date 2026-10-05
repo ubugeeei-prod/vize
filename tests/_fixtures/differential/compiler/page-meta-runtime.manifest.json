@@ -70,7 +70,7 @@
         "versions": {
           "vize": "0.432.0",
           "vueReported": "3.5.41",
-          "vueRuntime": "3.5.43",
+          "vueRuntime": "3.5.35",
           "vaporRuntime": "3.6.0-rc.9",
           "nuxtIntegration": "3.19.3"
         }

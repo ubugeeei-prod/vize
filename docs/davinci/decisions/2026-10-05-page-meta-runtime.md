@@ -76,3 +76,34 @@ qualified as ordinary runtime behavior and receives no Nuxt dependency-hoisting
 acceptance. No injected locals or fallback conceal those limits.
 
 Paired correction and TODOs: [#7821 comment](https://github.com/ubugeeei-prod/vize/issues/7821#issuecomment-5987203997).
+
+## Locked runtime provenance and preserved observations
+
+The `0041e85ba1` genuine Nuxt run
+[37256654569](https://github.com/ubugeeei-prod/vize/actions/runs/37256654569)
+passed at hosted `98ff60f393`, actual parents `ef50601216` plus `0041e85ba1`,
+tree `f1522269cb`. The official 182,476,367-byte artifact `11322444446`
+(SHA256 `46a61fdbf14da761ad3672c2b1315b9fb209c1e6dfdbde1f3706e458424dcada`)
+passes full transport and all 41 safe member CRCs. Physical dev-profile NAPI
+`0a25aa38945c4318b9760d8ffdcd7d202e2064db9d70bf86e85f9ede2e8a48ea`
+matches Cargo emission/generated/frozen/custody; actual source trees, locks and
+empty working diff match. All 16 original/new client/SSR targets, 26 calls in
+one process, exact four whole metadata artifact vectors, new SSR/Chromium
+layout routes and original SSR/CSS/counter/navigation controls pass.
+
+Check [37256654889](https://github.com/ubugeeei-prod/vize/actions/runs/37256654889)
+passes JS, tooling, browser and three Rust shards. Its remaining new oracle
+fails before component evaluation: the unchanged stable catalog and `npm/ui`
+lock graph resolve Vue `3.5.35`, while the authored assertion and provenance
+incorrectly said `3.5.43`. Preserve that original failed result. Correct the
+oracle and manifest to the locked compiler/runtime pair and assert equality;
+the reporter's `3.5.41` remains separate primary-source evidence. Retain every
+original fixture/reference byte and all production code.
+
+Extend genuine public Vite single/batch ownership checks to its actual Vapor
+flag. Preserve all 60 complete source-built modules and official/actual
+observation pairs beside JUnit, allowing authenticated passing-result audits
+without extra compiler execution. No acceptance transfers from old heads;
+fresh source and protected gates remain required.
+
+Paired provenance correction: [#7821 comment](https://github.com/ubugeeei-prod/vize/issues/7821#issuecomment-5987324122).
