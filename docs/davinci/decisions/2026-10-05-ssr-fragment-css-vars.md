@@ -35,7 +35,8 @@ lint. That source's retained generated binds additionally changed the
 public direct-template API's returned `RootNode`. The successor removes
 that mutation rather than merely correcting the allocator reference, uses
 explicit `void test` registrations, and compares every returned AST field
-against the unchanged original-template compile, with both comment modes.
+against the unchanged original-template compile, with both comment modes
+and the selected and explicitly pinned retained routes.
 The original 141-byte SFC remains the input; no assertion or input is removed.
 The root/fallthrough and Suspense helper moves precede the functional change
 in a move-only commit to keep existing over-limit files from growing.

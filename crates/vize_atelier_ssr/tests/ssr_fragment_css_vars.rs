@@ -52,6 +52,14 @@ fn original_template_css_emission_preserves_the_complete_returned_root() {
     }
 }
 
+#[cfg(feature = "legacy-differential")]
+#[test]
+fn original_template_pinned_retained_emission_preserves_the_complete_returned_root() {
+    vize_atelier_ssr::differential::with_legacy_lane(
+        original_template_css_emission_preserves_the_complete_returned_root,
+    );
+}
+
 #[test]
 fn fragment_css_binds_preserve_maps_and_nested_root_boundaries() {
     for template in TEMPLATES {
