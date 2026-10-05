@@ -180,8 +180,11 @@ export async function waitForInitialTypes(session: LspSession, uri: string): Pro
   await new Promise((resolve) => setTimeout(resolve, 10_000));
 }
 
-export async function finishWire(repoRoot: string, previous: string[]) {
-  const directory = path.join(repoRoot, "target/differential/lsp-sessions");
+export async function finishWire(
+  repoRoot: string,
+  previous: string[],
+  directory = path.join(repoRoot, "target/differential/lsp-sessions"),
+) {
   const created = fs.readdirSync(directory).filter((name) => !previous.includes(name));
   assert.equal(created.length, 1, "each side owns exactly one actual server capture");
   const capture = path.join(directory, created[0]);

@@ -3,7 +3,7 @@ import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { LspRequestError } from "./errors.ts";
-import { recordLspClientWire, spawnLspSessionProcess } from "./session-process.ts";
+import * as lspProcess from "./session-process.ts";
 import type { JsonRpcId, JsonRpcMessage, LspInitializationOptions } from "./protocol.ts";
 
 export { LspRequestError };
@@ -43,10 +43,10 @@ export class LspSession {
   private nextId = 0;
   private stderr = "";
 
-  constructor(sourceBinding?: { repoRoot: string; binary: string }) {
+  constructor(sourceBinding?: Parameters<typeof lspProcess.spawnBoundLspSessionProcess>[0]) {
     this.process = sourceBinding
-      ? spawnLspSessionProcess(sourceBinding.repoRoot, true, sourceBinding.binary)
-      : spawnLspSessionProcess();
+      ? lspProcess.spawnBoundLspSessionProcess(sourceBinding)
+      : lspProcess.spawnLspSessionProcess();
 
     this.process.stdout.on("data", (chunk: Buffer) => {
       this.buffer = Buffer.concat([this.buffer, chunk]);
@@ -254,7 +254,7 @@ export class LspSession {
 
   private send(...messages: JsonRpcMessage[]): void {
     const frame = messages.map((message) => frameMessage(message)).join("");
-    recordLspClientWire(this.process, frame);
+    lspProcess.recordLspClientWire(this.process, frame);
     this.process.stdin.write(frame, "utf8");
   }
 

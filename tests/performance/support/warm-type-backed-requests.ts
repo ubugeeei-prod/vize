@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { LspSession } from "../../tooling/support/lsp/session.ts";
+import type { PublishedSessionBinding } from "../../tooling/support/lsp/session-process.ts";
 import { decodeFrames } from "../../differential/lsp-wire.ts";
 import {
   awaitRetired,
@@ -29,14 +30,16 @@ import {
   sourceIdentity,
 } from "./warm-type-backed-source.ts";
 
-async function runSide(
+export async function runSide(
   repoRoot: string,
   workspace: string,
   runtime: ReturnType<typeof runtimeIdentity>,
   output: string,
+  published?: PublishedSessionBinding & { binary: string },
 ) {
-  const binary = path.join(repoRoot, "target/ci/vize");
-  const captureRoot = path.join(repoRoot, "target/differential/lsp-sessions");
+  const binary = published?.binary ?? path.join(repoRoot, "target/ci/vize");
+  const captureRoot =
+    published?.captureRoot ?? path.join(repoRoot, "target/differential/lsp-sessions");
   fs.mkdirSync(captureRoot, { recursive: true });
   const previous = fs.readdirSync(captureRoot);
   const inputs = generateWorkspace(workspace, runtime);
@@ -55,7 +58,7 @@ async function runSide(
   const remember = (error: unknown) =>
     failures.push(error instanceof Error ? (error.stack ?? error.message) : String(error));
   try {
-    session = new LspSession({ repoRoot, binary });
+    session = new LspSession({ repoRoot, binary, ...(published ? { published } : {}) });
     processId = session.processId;
     recorder = new QueryRecorder(session, runtime.executable, binary);
     initialization = await session.initialize(workspace, { editor: true, typecheck: true });
@@ -127,7 +130,7 @@ async function runSide(
     const created = fs.readdirSync(captureRoot).filter((name) => !previous.includes(name));
     if (created.length) {
       try {
-        wire = await finishWire(repoRoot, previous);
+        wire = await finishWire(repoRoot, previous, captureRoot);
       } catch (error) {
         remember(error);
       }
@@ -183,6 +186,13 @@ async function runSide(
   }
   return {
     source: sourceIdentity(repoRoot),
+    ...(published
+      ? {
+          sourceMeaning:
+            "driver checkout only; actual installed release source is bound by publicationReceipt",
+          launchAuthority: published.authority,
+        }
+      : {}),
     inputs,
     changedInputs,
     initialization,

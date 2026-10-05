@@ -285,3 +285,22 @@ implementation and a new exact-source peer; its earlier unexecuted tag==CUT
 guard is historical and cannot qualify supported publication. Root must freeze
 the literal cut before source original400 dispatch. Historical59x, equal-ELF
 withdrawal, memory/startup/diagnostic and nonrunning-versus-reaped limits remain.
+
+The [installed Linux original400 adapter](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5999853301)
+adds an opt-in publication authority to the same existing Linux-x64 cell. It
+requires the four literal-cut inputs plus exact authority JSON/SHA256, verifies
+the successful finite-source artifact and its complete driver/cut/provider
+custody, and installs the frozen official standalone release asset from the
+matching released tag. Whole archives, actual ELF/hash/version and failures
+remain retained; this mode performs no Cargo build or source fallback.
+
+A tagged public launch records publication custody in an owned capture root;
+default source launches still require their original Cargo receipt. The same
+original534+27,74 complete measured envelopes,20 warm rows and89+89 frames/76
+responses remain mandatory with all controls and Linux kernel observations.
+Asynchronous notifications are retained and counted, rather than asserted
+whole-equal. Public release-profile timings have no ratio against the fresh
+CI-profile source pair. This standalone distribution replay is separate from
+npm's Node-wrapper/NAPI consumer proof. Source review, Actions, the one literal
+cut comparison and installed-public execution remain pending; historical59x,
+RSS/startup/config, native diagnostics and nonrunning/zombie limits remain.

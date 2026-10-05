@@ -185,7 +185,13 @@ if (process.argv[2] === "prepare") {
             .map((name) => [name, sha256(fs.readFileSync(new URL(name, import.meta.url)))]),
         ),
         protocol: Object.fromEntries(
-          ["session.ts", "session-process.ts", "launch.ts", "session-capture.ts"].map((name) => [
+          [
+            "session.ts",
+            "session-process.ts",
+            "launch.ts",
+            "session-capture.ts",
+            "published-launch.ts",
+          ].map((name) => [
             name,
             sha256(fs.readFileSync(path.join(driverRoot, "tests/tooling/support/lsp", name))),
           ]),
