@@ -334,14 +334,6 @@ impl ServerState {
         }
     }
 
-    /// Resolve Vue 3 Options API template bindings. Implied by legacy mode.
-    #[inline]
-    pub(crate) fn options_api_enabled(&self) -> bool {
-        *self.type_checker_options_api.read()
-            || self.lsp_features().options_api
-            || self.legacy_vue2_enabled()
-    }
-
     /// Check whether LSP lint diagnostics are enabled.
     #[inline]
     pub fn is_lsp_lint_enabled(&self) -> bool {
