@@ -98,3 +98,11 @@ force for the Linux native package; no dependency was installed or executed
 locally. Original upstream pnpm and actual prefix npm identities stay distinct.
 The default native-phase 45-pair/CPU authorities and protected tooling jobs
 are unchanged. Root review precedes the sole actual post-registration dispatch.
+
+Fresh source Check `37257533302` rejected five unawaited Node registrations
+and two descriptor getter/setter identity reads under type-aware lint. The
+controls now await completion, and the serializer obtains those original
+functions through their own data descriptors without binding or invoking
+them. The failed original raw job log is retained; this successor needs fresh
+exact-head Actions. Workflow, provider lock, original judge and runtime
+conditions are unchanged, and no historical green or current CLI credit transfers.

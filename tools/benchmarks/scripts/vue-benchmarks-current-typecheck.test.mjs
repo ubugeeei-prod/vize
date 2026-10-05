@@ -12,7 +12,7 @@ import {
 } from "./vue-benchmarks-current-typecheck-capture.mjs";
 import { assertOutside } from "./vue-benchmarks-current-typecheck-fixture.mjs";
 
-test("binary streams and failed status are retained before malformed JSON is rejected", () => {
+await test("binary streams and failed status are retained before malformed JSON is rejected", () => {
   const root = mkdtempSync(join(tmpdir(), "vize-current-typecheck-raw-"));
   try {
     const script =
@@ -35,7 +35,7 @@ test("binary streams and failed status are retained before malformed JSON is rej
   }
 });
 
-test("missing executable preserves ENOENT and null outputs without becoming a clean run", () => {
+await test("missing executable preserves ENOENT and null outputs without becoming a clean run", () => {
   const root = mkdtempSync(join(tmpdir(), "vize-current-typecheck-enoent-"));
   try {
     const command = join(root, "does-not-exist");
@@ -55,7 +55,7 @@ test("missing executable preserves ENOENT and null outputs without becoming a cl
   }
 });
 
-test("terminated stub retains the actual signal before parsing can proceed", () => {
+await test("terminated stub retains the actual signal before parsing can proceed", () => {
   const root = mkdtempSync(join(tmpdir(), "vize-current-typecheck-signal-"));
   try {
     const script = "process.kill(process.pid, 'SIGTERM')";
@@ -69,7 +69,7 @@ test("terminated stub retains the actual signal before parsing can proceed", () 
   }
 });
 
-test("error evidence traverses causes/cycles and distinct symbols without invoking getters", () => {
+await test("error evidence traverses causes/cycles and distinct symbols without invoking getters", () => {
   let getterCalls = 0;
   const first = Symbol("same");
   const second = Symbol("same");
@@ -104,7 +104,7 @@ test("error evidence traverses causes/cycles and distinct symbols without invoki
   assert.equal(accessor.setter, null);
 });
 
-test("output containment guard rejects fixture ancestors and descendants without prefix confusion", () => {
+await test("output containment guard rejects fixture ancestors and descendants without prefix confusion", () => {
   assert.throws(() => assertOutside("/tmp/fixture/work", "/tmp/fixture"));
   assert.throws(() => assertOutside("/tmp/fixture", "/tmp/fixture"));
   assert.throws(() => assertOutside("/tmp", "/tmp/fixture"));

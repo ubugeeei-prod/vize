@@ -27,6 +27,8 @@ export function errorEvidence(error, seen = new Map()) {
     type,
     properties: Reflect.ownKeys(error).map((key) => {
       const descriptor = Object.getOwnPropertyDescriptor(error, key);
+      const getter = Object.getOwnPropertyDescriptor(descriptor, "get")?.value;
+      const setter = Object.getOwnPropertyDescriptor(descriptor, "set")?.value;
       return {
         key: errorEvidence(key, seen),
         enumerable: descriptor.enumerable,
@@ -34,8 +36,8 @@ export function errorEvidence(error, seen = new Map()) {
         ...(Object.hasOwn(descriptor, "value")
           ? { writable: descriptor.writable, value: errorEvidence(descriptor.value, seen) }
           : {
-              getter: descriptor.get ? errorEvidence(descriptor.get, seen) : null,
-              setter: descriptor.set ? errorEvidence(descriptor.set, seen) : null,
+              getter: getter ? errorEvidence(getter, seen) : null,
+              setter: setter ? errorEvidence(setter, seen) : null,
             }),
       };
     }),
