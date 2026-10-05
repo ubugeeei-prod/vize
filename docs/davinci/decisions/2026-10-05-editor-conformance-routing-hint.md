@@ -70,3 +70,24 @@ record while retaining every incoming clause at350 lines. The earlier64
 receipt stays historical for its own source: fresh exact-head source
 Actions and current-source four-client execution qualify this replay
 before protected full/all104 and actual signed delivery.
+
+## Fresh runtime and queue composition
+
+Replayed source `8400184e` passed exact Check 37258940843 and genuine
+Editor Conformance 37259668980: all six jobs, 64 complete steps and 64
+corrupted expectation refusals. All five official artifact ZIP digests and
+the source-built executable were authenticated; server SHA-256 is
+`cd7dccc4e8ad96cdf13139eaec33953d6aadefb8e4c77511b1b4e34554881c30`.
+Neovim, Helix and VS Code drove their editor hosts; Zed used the existing
+replay driver. Twelve focused routing-hint corruptions also fail.
+
+The first actual admission produced no candidate: its queue entry was
+UNMERGEABLE against the preceding healthy Pinia candidate `95a1c482`.
+Remove that entry, then relocate only this additive canonical clause to
+the adjacent retained history paragraph. No queued product/workflow bytes
+are imported, no source or golden changes, and all incoming clauses and
+the 350-line ceiling remain exact. Fresh source checks and a clean
+prospective composition are required before readmission. The source840
+runtime remains an actual observation of unchanged product/test bytes;
+this documentation correction is not another editor execution. Actual
+protected acceptance and signed delivery remain unfinished.
