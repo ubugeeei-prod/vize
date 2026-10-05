@@ -78,7 +78,7 @@ Vize/native/reference/provider command and supply no current CLI acceptance.
 
 Use the genuine ordered native Stack: metadata #7860, lint #7910, then
 this typecheck probe. This child is based on actual lint head
-`16b364359faa22187b30d0ff98e703f523531178`, which includes metadata
+`16623802f55d30337f89ef67f5102ce22e79fb3a`, which includes metadata
 `d7169333f84bb3d8ddfaebcc348b4b83930d6f40` as an ancestor.
 Root review precedes the finite hosted execution. Exact-head Actions and
 protected suites, actual signed merge and subsequent release qualification
@@ -106,3 +106,12 @@ functions through their own data descriptors without binding or invoking
 them. The failed original raw job log is retained; this successor needs fresh
 exact-head Actions. Workflow, provider lock, original judge and runtime
 conditions are unchanged, and no historical green or current CLI credit transfers.
+
+The genuine replay onto repaired lint parent `16623802f5` preserves every
+typecheck helper, workflow, provider manifest and frozen-lock byte from the
+corrected child `749f9333da`. Both original authored commit messages and
+verified reporter trailers are retained. Only the canonical record conflicted;
+it is reconstructed from the exact incoming parent plus the owned typecheck
+clause, preserving all lint schema-custody corrections. Prior source failures
+stay historical; fresh source Actions and actual protected prefix delivery
+are required before the sole main execution.
