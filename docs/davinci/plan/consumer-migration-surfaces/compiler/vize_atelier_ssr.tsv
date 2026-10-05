@@ -50,9 +50,9 @@ compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/component.rs	7	l1_t
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/control.rs	5	l0	L0	stage	vize_l0	preferred	3
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/control.rs	5	l2	L2	stage	vize_l2	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/control.rs	5	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	11	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	11	l2	L2	stage	vize_l2	preferred	1
-compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	11	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	3
+compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	10	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	10	l2	L2	stage	vize_l2	preferred	1
+compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/create_slots.rs	10	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	3
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/directive_props.rs	5	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/directive_props.rs	5	l2	L2	stage	vize_l2	preferred	2
 compiler	Compiler	source	crates/vize_atelier_ssr/src/l4/emit/directive_props.rs	5	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	3

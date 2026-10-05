@@ -51,6 +51,16 @@ pub(super) enum ComponentSlotChildren<'node, 'a> {
     Refs(std::vec::Vec<&'node TemplateChildNode<'a>>),
 }
 
+/// Vue excludes direct comments from implicit default content beside templates.
+fn normalize_implicit_slot_children(children: &mut Vec<&TemplateChildNode<'_>>) {
+    children.retain(|child| !matches!(child, TemplateChildNode::Comment(_)));
+    if children.iter().all(
+        |child| matches!(child, TemplateChildNode::Text(text) if text.content.trim().is_empty()),
+    ) {
+        children.clear();
+    }
+}
+
 /// Authored anchors of one slot: its name token and the element carrying it.
 #[derive(Clone, Copy, Debug)]
 pub(super) struct SlotAnchor {
