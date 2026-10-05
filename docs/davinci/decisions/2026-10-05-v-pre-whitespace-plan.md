@@ -21,10 +21,11 @@ not receive it, so it collapsed the three removable newline gaps into spaces
 instead of removing them. This accounts for the observed extra DOM text helper
 and SSR spaces around the original two child spans.
 
-Forward that same plan to `lower_v_pre_text_run`. When the first authored text
-token is planned `Drop`, retain the existing `condense.drop-whitespace` record
+Forward that same plan to `lower_v_pre_text_run`. After the existing contiguous literal-run scan, when a one-member authored text
+run is planned `Drop`, retain the existing `condense.drop-whitespace` record
 with its exact consumed bytes/span and no produced node, then advance once.
-All other existing literal-run lowering stays intact. The correction adds no
+A run containing literal interpolation delimiters remains one complete text unit,
+so its leading whitespace survives the normal condense. Other existing literal-run lowering stays intact. The correction adds no
 pipeline stage, serialization, legacy dependency or separate whitespace policy.
 `pre` still disables condensing, inline spaces and non-ASCII whitespace survive,
 and literal braces/directive names remain frozen only in their original subtree.
@@ -61,3 +62,20 @@ inventory although the local generator had updated it. The successor commits
 that exact row alongside this receipt; both DOM and SSR inventory rows match
 the actual test imports. No production or fixture bytes change. First-source
 Actions remain historical and cannot qualify this corrected source.
+
+Exact source `1c849a1a7c` Check `37260721463` genuinely fails before queue
+admission. Existing full SSR parity exposes a leading-newline literal run:
+dropping its first Surface whitespace before grouping loses the authored
+leading space around `{{ variable }}`. Apply the existing Drop only after
+the existing run scan establishes a single text member; keep complete fused
+literal text unchanged. An authored L2 leading-newline control and both whole
+DOM/SSR controls pin this counterexample. No second scan/stage is added.
+
+The authored DOM controls also used non-void HTML self-closing syntax, which
+the genuine native compiler reports as two ExtendPoint diagnostics. Make
+these authored controls well-formed with explicit end tags; retain the exact
+original 228-byte SFC and every whole comparison without filtering errors.
+The storage inventory separately records the reviewed existing empty-after
+provenance String occurrence, from 1/8 to 1/9. The failed raw jobs and all
+other original inventories, diagnostics, input bytes and budgets stay intact.
+Fresh source/protected runtime must qualify this meaningful successor.

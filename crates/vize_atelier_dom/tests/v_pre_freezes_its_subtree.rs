@@ -284,12 +284,12 @@ fn v_pre_whitespace_matches_complete_legacy_dom_outputs() {
         .0;
     for source in [
         template,
-        "<div v-pre><i/> <b/></div>",
-        "<div v-pre> before {{ literal }} after </div><p>{{ active }}</p>",
-        "<pre v-pre>x\n  <i/>\n  y</pre>",
-        "<div v-pre><i/>\u{a0}<b/></div>",
-        "<div v-pre>\n<!--keep--><i :id=\"raw\"/>\n</div>",
-        "<div v-pre>\n<i/>\r\n<b/>\n</div><p :id=\"active\"/>",
+        "<div v-pre><i></i> <b></b></div>",
+        "<div v-pre>\n  {{ literal }}\n</div><p>{{ active }}</p>",
+        "<pre v-pre>x\n  <i></i>\n  y</pre>",
+        "<div v-pre><i></i>\u{a0}<b></b></div>",
+        "<div v-pre>\n<!--keep--><i :id=\"raw\"></i>\n</div>",
+        "<div v-pre>\n<i></i>\r\n<b></b>\n</div><p :id=\"active\"></p>",
     ] {
         let allocator = Allocator::new();
         let mut capture = StageCapture::new("dom");

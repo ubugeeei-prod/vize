@@ -150,12 +150,12 @@ fn v_pre_whitespace_matches_complete_legacy_ssr_results() {
     assert_eq!(original.len(), 228);
     for source in [
         original,
-        "<template><div v-pre><i/> <b/></div></template>",
-        "<template><div v-pre> before {{ literal }} after </div><p>{{ active }}</p></template>",
-        "<template><pre v-pre>x\n  <i/>\n  y</pre></template>",
-        "<template><div v-pre><i/>\u{a0}<b/></div></template>",
-        "<template><div v-pre>\n<!--keep--><i :id=\"raw\"/>\n</div></template>",
-        "<template><div v-pre>\n<i/>\r\n<b/>\n</div><p :id=\"active\"/></template>",
+        "<template><div v-pre><i></i> <b></b></div></template>",
+        "<template><div v-pre>\n  {{ literal }}\n</div><p>{{ active }}</p></template>",
+        "<template><pre v-pre>x\n  <i></i>\n  y</pre></template>",
+        "<template><div v-pre><i></i>\u{a0}<b></b></div></template>",
+        "<template><div v-pre>\n<!--keep--><i :id=\"raw\"></i>\n</div></template>",
+        "<template><div v-pre>\n<i></i>\r\n<b></b>\n</div><p :id=\"active\"></p></template>",
     ] {
         let (selected, lanes) = record_lanes(|| complete_v_pre_ssr(source));
         assert_eq!(

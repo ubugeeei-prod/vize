@@ -273,19 +273,6 @@ pub(crate) fn lower_v_pre_text_run<'a>(
     let Some(first) = children.get(start) else {
         return start + 1;
     };
-    if let SurfaceChild::Text(token) = first
-        && plan.get(start) == Some(&TextAction::Drop)
-    {
-        let span = cx.token_span(token);
-        cx.record(
-            "condense.drop-whitespace",
-            None,
-            token.text,
-            String::default(),
-            span,
-        );
-        return start + 1;
-    }
     let Some(mut end) = text_family_end(cx, first) else {
         return start + 1;
     };
@@ -303,6 +290,20 @@ pub(crate) fn lower_v_pre_text_run<'a>(
         };
         end = next_end;
         i += 1;
+    }
+    if i == start + 1
+        && let SurfaceChild::Text(token) = first
+        && plan.get(start) == Some(&TextAction::Drop)
+    {
+        let span = cx.token_span(token);
+        cx.record(
+            "condense.drop-whitespace",
+            None,
+            token.text,
+            String::default(),
+            span,
+        );
+        return i;
     }
 
     let span = Span::new(start_offset, end);

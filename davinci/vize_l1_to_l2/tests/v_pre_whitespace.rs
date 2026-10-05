@@ -97,6 +97,7 @@ fn pre_preserves_newlines_and_v_pre_does_not_freeze_its_sibling() {
             "<div v-pre> before {{ literal }} after </div>",
             " before {{ literal }} after ",
         ),
+        ("<div v-pre>\n  {{ literal }}\n</div>", " {{ literal }} "),
     ] {
         with_lowered(source, |lowered, page| {
             let Op::Element(element) = &page.ops[0] else {
