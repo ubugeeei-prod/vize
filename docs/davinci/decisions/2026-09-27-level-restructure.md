@@ -3,7 +3,7 @@
 > [!NOTE]
 > This record and its linked companion pages collect the decisions from the maintainer's 2026-09-27 design session. It is the working source of truth for crate layout, naming, level
 > responsibilities and CI tiers. Where it conflicts with older pages (S0–S4 naming, the `vize_davinci` substrate crate, Folio naming, S4 placement,
-> charter rows #1, #5 and #11), this record wins until those pages are rewritten. Each section links to the issue that tracks the work.
+> charter rows #1, #5 and #11), this record wins until those pages are rewritten. Each section links to the issue that tracks the work. [CSS ID selector diagnostic ranges](./2026-10-05-css-id-selector-ranges.md).
 > The [Open Questions entry](../open-questions.md#level-restructure-2026-09-27)
 > records what changed against the charter. [First newline in pre and textarea, with owner modes and normalized text runs](./2026-10-05-pre-textarea-first-newline.md).
 

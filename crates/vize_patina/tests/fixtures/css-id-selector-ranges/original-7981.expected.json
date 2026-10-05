@@ -1,0 +1,63 @@
+{
+  "api": {
+    "filename": "MyBanner.vue",
+    "diagnostics": [
+      {
+        "rule": "css/no-id-selectors",
+        "severity": "warning",
+        "message": "Avoid ID selectors - use class selectors for better reusability",
+        "start": 157,
+        "end": 169,
+        "help": null,
+        "labels": [],
+        "fix": null
+      },
+      {
+        "rule": "css/no-id-selectors",
+        "severity": "warning",
+        "message": "Avoid ID selectors - use class selectors for better reusability",
+        "start": 203,
+        "end": 215,
+        "help": null,
+        "labels": [],
+        "fix": null
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  "json": [
+    {
+      "file": "MyBanner.vue",
+      "messages": [
+        {
+          "ruleId": "css/no-id-selectors",
+          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+          "severity": 1,
+          "message": "[vize:css/no-id-selectors] Avoid ID selectors - use class selectors for better reusability",
+          "line": 12,
+          "column": 1,
+          "endLine": 12,
+          "endColumn": 13
+        },
+        {
+          "ruleId": "css/no-id-selectors",
+          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+          "severity": 1,
+          "message": "[vize:css/no-id-selectors] Avoid ID selectors - use class selectors for better reusability",
+          "line": 17,
+          "column": 3,
+          "endLine": 17,
+          "endColumn": 15
+        }
+      ],
+      "errorCount": 0,
+      "warningCount": 2
+    }
+  ],
+  "plain": "Patina lint report: 2 warnings in 1 file\n\nMyBanner.vue\n  MyBanner.vue:12:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  MyBanner.vue:17:3 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
+  "authoredSlices": [
+    "#main-banner",
+    "#banner-text"
+  ]
+}

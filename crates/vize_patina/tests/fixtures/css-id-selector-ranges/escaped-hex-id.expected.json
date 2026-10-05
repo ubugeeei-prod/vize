@@ -1,0 +1,42 @@
+{
+  "api": {
+    "filename": "EscapedHexId.vue",
+    "diagnostics": [
+      {
+        "rule": "css/no-id-selectors",
+        "severity": "warning",
+        "message": "Avoid ID selectors - use class selectors for better reusability",
+        "start": 37,
+        "end": 52,
+        "help": null,
+        "labels": [],
+        "fix": null
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  "json": [
+    {
+      "file": "EscapedHexId.vue",
+      "messages": [
+        {
+          "ruleId": "css/no-id-selectors",
+          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+          "severity": 1,
+          "message": "[vize:css/no-id-selectors] Avoid ID selectors - use class selectors for better reusability",
+          "line": 3,
+          "column": 1,
+          "endLine": 3,
+          "endColumn": 16
+        }
+      ],
+      "errorCount": 0,
+      "warningCount": 1
+    }
+  ],
+  "plain": "Patina lint report: 1 warning in 1 file\n\nEscapedHexId.vue\n  EscapedHexId.vue:3:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
+  "authoredSlices": [
+    "#\\62 anner-text"
+  ]
+}

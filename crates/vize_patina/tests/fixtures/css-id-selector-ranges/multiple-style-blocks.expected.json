@@ -1,0 +1,63 @@
+{
+  "api": {
+    "filename": "MultipleStyleBlocks.vue",
+    "diagnostics": [
+      {
+        "rule": "css/no-id-selectors",
+        "severity": "warning",
+        "message": "Avoid ID selectors - use class selectors for better reusability",
+        "start": 44,
+        "end": 50,
+        "help": null,
+        "labels": [],
+        "fix": null
+      },
+      {
+        "rule": "css/no-id-selectors",
+        "severity": "warning",
+        "message": "Avoid ID selectors - use class selectors for better reusability",
+        "start": 84,
+        "end": 91,
+        "help": null,
+        "labels": [],
+        "fix": null
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
+  },
+  "json": [
+    {
+      "file": "MultipleStyleBlocks.vue",
+      "messages": [
+        {
+          "ruleId": "css/no-id-selectors",
+          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+          "severity": 1,
+          "message": "[vize:css/no-id-selectors] Avoid ID selectors - use class selectors for better reusability",
+          "line": 3,
+          "column": 1,
+          "endLine": 3,
+          "endColumn": 7
+        },
+        {
+          "ruleId": "css/no-id-selectors",
+          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+          "severity": 1,
+          "message": "[vize:css/no-id-selectors] Avoid ID selectors - use class selectors for better reusability",
+          "line": 6,
+          "column": 1,
+          "endLine": 6,
+          "endColumn": 8
+        }
+      ],
+      "errorCount": 0,
+      "warningCount": 2
+    }
+  ],
+  "plain": "Patina lint report: 2 warnings in 1 file\n\nMultipleStyleBlocks.vue\n  MultipleStyleBlocks.vue:3:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  MultipleStyleBlocks.vue:6:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
+  "authoredSlices": [
+    "#first",
+    "#second"
+  ]
+}

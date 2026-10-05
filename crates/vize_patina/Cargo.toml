@@ -45,6 +45,7 @@ oxc_syntax.workspace = true
 
 # Lightning CSS for CSS parsing
 lightningcss.workspace = true
+cssparser.workspace = true
 
 # Error handling
 thiserror.workspace = true

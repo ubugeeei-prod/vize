@@ -1,0 +1,42 @@
+{
+  "api": {
+    "filename": "Original7055Flat.vue",
+    "diagnostics": [
+      {
+        "rule": "css/no-id-selectors",
+        "severity": "warning",
+        "message": "Avoid ID selectors - use class selectors for better reusability",
+        "start": 173,
+        "end": 184,
+        "help": null,
+        "labels": [],
+        "fix": null
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  "json": [
+    {
+      "file": "Original7055Flat.vue",
+      "messages": [
+        {
+          "ruleId": "css/no-id-selectors",
+          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+          "severity": 1,
+          "message": "[vize:css/no-id-selectors] Avoid ID selectors - use class selectors for better reusability",
+          "line": 14,
+          "column": 1,
+          "endLine": 14,
+          "endColumn": 12
+        }
+      ],
+      "errorCount": 0,
+      "warningCount": 1
+    }
+  ],
+  "plain": "Patina lint report: 1 warning in 1 file\n\nOriginal7055Flat.vue\n  Original7055Flat.vue:14:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
+  "authoredSlices": [
+    "#card-title"
+  ]
+}
