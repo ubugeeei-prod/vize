@@ -186,7 +186,7 @@ fn resolve_file_candidate(candidate: &Path) -> Option<PathBuf> {
     }
     let extension_mode = extension_mode(candidate);
     for extension in [
-        "vue", "d.ts", "d.mts", "d.cts", "ts", "tsx", "mts", "cts", "js", "mjs", "cjs",
+        "vue", "d.ts", "d.mts", "d.cts", "ts", "tsx", "mts", "cts", "js", "jsx", "mjs", "cjs",
     ] {
         let with_extension = match extension_mode {
             ExtensionMode::Replace => candidate.with_extension(extension),
@@ -204,6 +204,7 @@ fn resolve_file_candidate(candidate: &Path) -> Option<PathBuf> {
             "index.ts",
             "index.tsx",
             "index.js",
+            "index.jsx",
             "index.vue",
             "index.mts",
             "index.cts",

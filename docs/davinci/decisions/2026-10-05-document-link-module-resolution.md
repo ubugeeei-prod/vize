@@ -8,7 +8,8 @@ Standard `textDocument/documentLink` uses the existing definition resolver's
 relative and project-alias branches. A directory import resolves to its source
 index file, and the original `@/*` tsconfig alias produces a link. The shared
 relative file probe retains its existing candidate order and additionally
-recognizes TSX, Vue and modern JavaScript index files. The existing alias probe,
+recognizes TSX, JSX, Vue and modern JavaScript index files, including the previous
+document-link JSX file contract. The existing alias probe,
 Nuxt/project aliases and package-definition selection keep their order.
 
 Bare-package links remain outside the standard document-link contract. Explicit
@@ -35,7 +36,7 @@ previous fix-history request remain intact.
 Two production stdio laws run eight original/control sessions across LF and
 CRLF. Each session checks the whole versioned empty diagnostic publication, two
 whole ordered document-link replies and successful shutdown with stdin open.
-Controls include an astral prefix and UTF-16 spans, TS/TSX/JS/Vue/declaration and
+Controls include an astral prefix and UTF-16 spans, TS/TSX/JS/JSX/Vue/declaration and
 modern JS directory indices, dotted basenames, aliases and alias-over-package
 priority, encoded brackets/spaces/Unicode/literal percent, missing-relative
 compatibility, empty-directory and unresolved/conditional/bare-package refusal,

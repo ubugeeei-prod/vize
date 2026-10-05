@@ -109,7 +109,7 @@ fn run_session(project: &Path, entry: &str, mut expected: Value, crlf: bool, fil
     );
     let publication = lsp.recv_matching(|message| {
         message["method"] == "textDocument/publishDiagnostics"
-            && message["params"]["uri"] == uri
+            && message["params"]["uri"].as_str() == Some(uri.as_str())
             && message["params"]["version"] == 1
     });
     assert_eq!(
