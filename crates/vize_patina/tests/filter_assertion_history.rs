@@ -28,7 +28,7 @@ fn assert_result(actual: LintResult, filename: &str, diagnostics: Vec<LintDiagno
 
 #[test]
 fn original_reporter_full_sfc_has_no_filter_findings() {
-    let source = include_str!("fixtures/issue-7911/TextField.vue");
+    let source = include_str!("fixtures/issue-7911/TextField.vue.fixture");
     assert_result(
         linter(None).lint_sfc(source, "TextField.vue"),
         "TextField.vue",

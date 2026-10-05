@@ -9,7 +9,8 @@
     {
       "path": "TextField.vue",
       "sha256": "af2106b33fe36d3f3d3ab9a4b038453da8b56051d72ec7a4113adae6ed383865",
-      "bytes": 488
+      "bytes": 488,
+      "file": "TextField.vue.fixture"
     }
   ]
 }

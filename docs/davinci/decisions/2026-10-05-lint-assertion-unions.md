@@ -23,3 +23,8 @@ strings, Vue 2 and UTF-8/CRLF positions. This change grants no native-stage cred
 
 Source Actions, protected full fixtures/Rust suites and unchanged instruction
 ceilings, actual signed merge, issue closure and published release remain required.
+
+Corpus uses raw `.fixture` carriers with original public filenames and input
+hashes unchanged, retaining repository zero-warning lint/format policy. A
+preserved parenthesis wrapper forces complete expression consumption while
+allowing trailing comments; union spans subtract only its one-byte prefix.

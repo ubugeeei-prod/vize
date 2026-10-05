@@ -180,6 +180,8 @@ fn assertion_type_unions_stay_separate_from_runtime_pipes() {
         "value satisfies { handler: () => A | B; nested: [A | B] }",
         "(value as A | B).name",
         "value as\n A | B",
+        "value as A | B /* trailing type comment */",
+        "value as A | B // trailing type comment",
     ] {
         assert!(!has_filter_pipe(expression), "{expression}");
     }

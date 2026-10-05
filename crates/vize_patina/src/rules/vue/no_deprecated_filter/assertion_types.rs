@@ -5,6 +5,7 @@ use oxc_ast::ast::TSUnionType;
 use oxc_ast_visit::{Visit, walk::walk_ts_union_type};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
+use vize_l0::String;
 
 pub(super) fn extend_union_spans(source: &str, spans: &mut Vec<(usize, usize)>) {
     let has_assertion = source
@@ -15,16 +16,18 @@ pub(super) fn extend_union_spans(source: &str, spans: &mut Vec<(usize, usize)>) 
     if !has_assertion {
         return;
     }
+    // Preserve parentheses and force the entire authored expression to finish.
+    // The newline permits an authored trailing line comment before the wrapper.
+    let mut wrapped = String::with_capacity(source.len() + 3);
+    wrapped.push('(');
+    wrapped.push_str(source);
+    wrapped.push_str("\n)");
     let allocator = Allocator::default();
-    let Ok(expression) = Parser::new(&allocator, source, SourceType::ts()).parse_expression()
+    let Ok(expression) = Parser::new(&allocator, &wrapped, SourceType::ts()).parse_expression()
     else {
-        // Invalid or unsupported expression syntax keeps the original finding.
         return;
     };
-    if !source
-        .get(expression.span().end as usize..)
-        .is_some_and(|tail| tail.trim().is_empty())
-    {
+    if expression.span().end as usize != wrapped.len() {
         return;
     }
     UnionSpans { spans }.visit_expression(&expression);
@@ -37,7 +40,7 @@ struct UnionSpans<'spans> {
 impl<'a> Visit<'a> for UnionSpans<'_> {
     fn visit_ts_union_type(&mut self, union: &TSUnionType<'a>) {
         self.spans
-            .push((union.span.start as usize, union.span.end as usize));
+            .push((union.span.start as usize - 1, union.span.end as usize - 1));
         walk_ts_union_type(self, union);
     }
 }
