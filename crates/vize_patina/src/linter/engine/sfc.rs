@@ -164,6 +164,7 @@ impl Linter {
                 source,
                 filename,
                 Self::merge_lint_results(template_result, sfc_result),
+                shared_descriptor,
             );
         }
 
@@ -194,6 +195,7 @@ impl Linter {
                 source,
                 filename,
                 Self::merge_lint_results(template_result, sfc_result),
+                shared_descriptor,
             );
         }
 
@@ -210,7 +212,7 @@ impl Linter {
             None => empty_lint_result(filename),
         };
 
-        self.append_sfc_document_rule_diagnostics(source, filename, result)
+        self.append_sfc_document_rule_diagnostics(source, filename, result, shared_descriptor)
     }
 
     /// Template body extracted from an SFC. [`facade::RULES`] run on the L2 facade.
@@ -250,6 +252,7 @@ impl Linter {
         source: &str,
         filename: &str,
         mut result: LintResult,
+        descriptor: Option<&vize_atelier_sfc::SfcDescriptor<'_>>,
     ) -> LintResult {
         super::super::musea_rules::append_builtin_musea_diagnostics(
             self,
@@ -259,7 +262,7 @@ impl Linter {
         );
         // `<variant>` markup is not an SFC `<template>`, so the template lane
         // never sees it. Gallery variants are real components.
-        self.append_art_variant_template_diagnostics(source, filename, &mut result);
+        self.append_art_variant_template_diagnostics(source, filename, &mut result, descriptor);
         if (source.contains("eslint-") || source.contains("oxlint-"))
             && let Ok(descriptor) = super::super::script_rules::parse_sfc_for_lint(source, filename)
             && crate::context::retain_unless_sfc_suppressed(&descriptor, &mut result.diagnostics)

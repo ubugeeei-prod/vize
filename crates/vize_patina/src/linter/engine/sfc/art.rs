@@ -1,8 +1,11 @@
 //! Template rules for Musea `<variant>` markup inside `<art>`.
 
+use vize_armature::Parser;
 use vize_atelier_sfc::SfcDescriptor;
+use vize_croquis::{Croquis, Drawer, DrawerOptions};
+use vize_l0::{Allocator, SourceRoot};
 
-use super::super::offset_result;
+use super::super::{TemplateAnalysis, TemplateRuleEnv, offset_result};
 use super::empty_lint_result;
 use crate::linter::config::{LintResult, Linter};
 use crate::linter::engine::tag_scan::{find_closing_tag, find_start_tag_end};
@@ -13,21 +16,31 @@ impl Linter {
         source: &str,
         filename: &str,
         result: &mut LintResult,
+        shared_descriptor: Option<&SfcDescriptor<'_>>,
     ) {
         if !filename.ends_with(".art.vue") || !source_has_block(source, b"<art") {
             return;
         }
-        let Ok(descriptor) = crate::linter::script_rules::parse_sfc_for_lint(source, filename)
-        else {
-            return;
+        let parsed;
+        let descriptor = if let Some(descriptor) = shared_descriptor {
+            descriptor
+        } else {
+            parsed = match crate::linter::script_rules::parse_sfc_for_lint(source, filename) {
+                Ok(descriptor) => descriptor,
+                Err(_) => return,
+            };
+            &parsed
         };
+        let source = descriptor.source.as_ref();
+        let summary = self
+            .has_active_semantic_template_rules()
+            .then(|| super::super::analyze_descriptor_for_lint(descriptor, None, false, false));
         let mut extra = empty_lint_result(filename);
-        for (start, end) in art_variant_ranges(source, &descriptor) {
+        for (start, end) in art_variant_ranges(source, descriptor) {
             let Some(inner) = source.get(start..end) else {
                 continue;
             };
-            let mut one = self.lint_sfc_template_source(inner, filename);
-            offset_result(&mut one, start as u32);
+            let one = self.lint_art_variant(inner, filename, descriptor, summary.as_ref());
             extra = Self::merge_lint_results(extra, one);
         }
         if extra.diagnostics.is_empty() {
@@ -35,6 +48,49 @@ impl Linter {
         }
         let current = std::mem::replace(result, empty_lint_result(filename));
         *result = Self::merge_lint_results(current, extra);
+    }
+
+    fn lint_art_variant(
+        &self,
+        source: &str,
+        filename: &str,
+        descriptor: &SfcDescriptor<'_>,
+        summary: Option<&Croquis>,
+    ) -> LintResult {
+        let allocator = Allocator::with_capacity((source.len() * 4).max(self.initial_capacity));
+        let (root, errors) = Parser::new(&allocator, source).parse();
+        let fatal = Self::has_fatal_template_parse_errors(&errors);
+        let analysis = summary.filter(|_| !fatal).map(|summary| {
+            let mut drawer = Drawer::with_summary(DrawerOptions::for_lint(), summary.clone(), true);
+            drawer.draw_template(&root);
+            drawer.finish()
+        });
+        let mut parsed = Self::template_parse_lint_result(filename, source.len(), &errors);
+        let offset = SourceRoot::new(descriptor.source.as_ref())
+            .unwrap()
+            .whole_block()
+            .offset_of(source)
+            .expect("original Art fragment");
+        offset_result(&mut parsed, offset);
+        let linted = self.lint_template_root(
+            &allocator,
+            source,
+            filename,
+            &root,
+            if fatal {
+                TemplateAnalysis::Disabled
+            } else if let Some(analysis) = analysis.as_ref() {
+                TemplateAnalysis::Precomputed(analysis)
+            } else {
+                TemplateAnalysis::Lazy
+            },
+            TemplateRuleEnv {
+                sfc_descriptor: Some(descriptor),
+                dialect: vize_l0::dialect::VueDialect::Vue,
+                facade_rules: super::facade::RULES,
+            },
+        );
+        Self::merge_lint_results(parsed, linted)
     }
 }
 
