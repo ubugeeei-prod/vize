@@ -10,6 +10,9 @@ collection and initial virtual-document construction. Plain scripts avoid the
 SFC route; native diagnostics retain their original source/options/revision.
 JSX/TSX, standalone HTML, Art and actual Vue routes remain their existing owners.
 The client languageId does not override the physical source dialect.
+Initial plain-script cache updates retain import tracking and remove only cached
+virtual documents; they do not invoke the JSX scoped-style parser. A bounded
+source peer found that routing through the JSX helper would add the wrong parse.
 
 Retain all three complete original Map files and the entire reporter client.
 Real source-built stdio pins complete original no-config diagnostic publications

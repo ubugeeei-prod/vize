@@ -349,8 +349,8 @@ lsp	LSP	test/dev	crates/vize_maestro/src/server/state/module_links/tests/native.
 lsp	LSP	source	crates/vize_maestro/src/server/state/native_names/settings.rs	2	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/server/state/resident.rs	22	l2	L2	stage	vize_l2	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/server/state/resident/sources.rs	11	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs.rs	72	l0	L0	stage	vize_l0	preferred	7
-lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs.rs	72	old_ast	old AST/parser	old	vize_armature	legacy	2
+lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs.rs	77	l0	L0	stage	vize_l0	preferred	7
+lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs.rs	77	old_ast	old AST/parser	old	vize_armature	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/server/state/virtual_docs/art.rs	42	l0	L0	stage	vize_l0	preferred	4
 lsp	LSP	source	crates/vize_maestro/src/server/state/virtual_docs/art.rs	42	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/state/virtual_docs/tests.rs	16	l0	L0	stage	vize_l0	preferred	2

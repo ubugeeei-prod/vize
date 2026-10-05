@@ -47,7 +47,12 @@ impl ServerState {
             return;
         }
 
-        if crate::utils::is_jsx_path(uri.path()) || crate::utils::is_plain_script_path(uri.path()) {
+        if crate::utils::is_plain_script_path(uri.path()) {
+            self.virtual_docs_cache.remove(uri);
+            return;
+        }
+
+        if crate::utils::is_jsx_path(uri.path()) {
             self.update_jsx_virtual_docs(uri, content);
             return;
         }
