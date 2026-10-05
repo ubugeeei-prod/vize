@@ -221,6 +221,7 @@ try {
       const diagnostics = [];
       app.config.warnHandler = (message) => diagnostics.push(message);
       app.config.errorHandler = (error) => diagnostics.push(String(error));
+      evidence.currentCase.diagnostics = diagnostics;
       const html = await server.renderToString(app);
       observations.push({
         name: file.name,

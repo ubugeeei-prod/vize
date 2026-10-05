@@ -55,8 +55,12 @@ path now omits the tag argument like the official transform, preserving the
 ordinary path. An appended lowercase camelCase-spread SFC adds two full strict
 observations; the earlier ten source payloads and eighteen expectations remain
 unchanged. Rust retains the complete input/results, raw stdout/stderr, original
-exit and literal Git source/tree/parents before process or semantic assertions.
-Node emits partial modules/maps and the failing HTML/diagnostics on errors,
+exit and literal Git source/tree/parents after the existing compilation
+assertions and before runtime process or semantic assertions. A stdin-write
+failure still reaps the child and retains its original outcome/streams before
+asserting the transport failure.
+Node records diagnostics before awaiting rendering and emits partial
+modules/maps and the failing HTML/diagnostics on errors,
 flushes both streams and exits nonzero. No failed comparison becomes success.
 
 Official primary transforms were inspected at reported Vue `3.6.0-rc.10`:

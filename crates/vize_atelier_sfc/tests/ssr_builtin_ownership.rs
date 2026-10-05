@@ -147,12 +147,11 @@ fn whole_original_builtins_render_like_official_complete_sfc_defaults() {
         .stderr(Stdio::piped())
         .spawn()
         .expect("execute real official SSR runtime");
-    child
+    let write = child
         .stdin
         .take()
         .expect("runtime stdin")
-        .write_all(input.to_string().as_bytes())
-        .expect("send every whole generated result");
+        .write_all(input.to_string().as_bytes());
     let output = child.wait_with_output().expect("runtime exits");
     std::fs::write(
         directory.join("ssr-builtin-ownership.stdout.json"),
@@ -168,10 +167,12 @@ fn whole_original_builtins_render_like_official_complete_sfc_defaults() {
         directory.join("ssr-builtin-ownership-process.json"),
         serde_json::to_vec(&json!({ "source": &source,
             "status": output.status.to_string(), "code": output.status.code(),
-            "success": output.status.success() }))
+            "success": output.status.success(),
+            "stdinWriteError": write.as_ref().err().map(ToString::to_string) }))
         .expect("serialize original process outcome"),
     )
     .expect("retain original exit before success/semantic assertions");
+    assert!(write.is_ok(), "send complete input: {write:?}");
     assert!(
         output.status.success(),
         "status: {}\nstdout: {}\nstderr: {}",
