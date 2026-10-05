@@ -41,3 +41,9 @@ claim follows from this focused fix.
 TODO: exact source Actions, root peer review, protected candidate full
 execution/instruction ratchet, signed actual main and reporter trailer,
 then an authenticated existing-product release. #7856 remains open.
+
+The initial source cc67 contained a stale digest of the new expected-metadata
+file after formatting. Update that exact reference and require the runtime
+child to authenticate every corpus input/reference before observation. The
+original source and production fix remain exact; fresh source Actions are
+required, without acceptance transferred from the superseded head.

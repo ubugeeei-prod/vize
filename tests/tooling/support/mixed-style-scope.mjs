@@ -12,6 +12,20 @@ const fixtureRoot = new URL(
 );
 const original = readFileSync(new URL("original.vue.txt", fixtureRoot));
 const custody = JSON.parse(readFileSync(new URL("source-custody.json", fixtureRoot)));
+const manifest = JSON.parse(
+  readFileSync(new URL("../benchmark-mixed-style-scope.manifest.json", fixtureRoot)),
+);
+const pinned = manifest.cases[0];
+for (const artifact of [
+  ...pinned.inputs.files.map((input) => ({
+    ...input,
+    path: pinned.inputs.root + "/" + input.path,
+  })),
+  pinned.reference,
+]) {
+  const bytes = readFileSync(new URL("../" + artifact.path, fixtureRoot));
+  assert.equal(createHash("sha256").update(bytes).digest("hex"), artifact.sha256, artifact.path);
+}
 assert.equal(custody.sourceCommit, "5489aee433cd1054b9d72973457498544da7c467");
 assert.equal(
   custody.sourceSha256,

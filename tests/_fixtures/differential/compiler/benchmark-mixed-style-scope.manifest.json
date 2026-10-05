@@ -25,7 +25,7 @@
       },
       "reference": {
         "path": "benchmark-mixed-style-scope/scope.expected.json",
-        "sha256": "1e179139a4a4841f6ce49c6ebef30a978d4c2a3643066b74d9a22b1dfe7fe55c",
+        "sha256": "914030420df61949330b32263caede158b53f05394239529a8ac8185d1a058c6",
         "source": "crates/vize_atelier_sfc/tests/mixed_style_scope.rs:full_sfc_scopes_only_each_authored_style_block"
       },
       "provenance": {
