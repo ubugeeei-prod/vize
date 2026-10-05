@@ -203,3 +203,14 @@ Publish this bounded correction to the same Draft only after independent source
 review, then require fresh exact-head source/native Actions and unchanged full
 corpora. Native source success does not grant protected/merge/release or stdio-RPC
 credit. Full history and default replacement remain unfinished.
+
+The exact private `0351c57cd4500c913feb56039659228270fba4e5` correction received
+independent bounded SOURCE_ONLY_CLEAR: the mapped T[K] surface preserves known
+values/modifiers before Omit; all four source contracts match the strict-required
+boundary. All seven owned commits were genuinely replayed onto actual main
+`b416f850aed501d8bc2f5413a96103710087d173`, giving source `cacfcb972def0144bc68c8931b57a5444305b9f3`
+and tree `624940d5cb87d84867fea7845b3a8ae0d348155e`, exactly the independent projection.
+All noncomposition owned blobs and full source-author/date/body/footer records
+remain equal, with every incoming canonical clause and both genuine inventories.
+Publish the same Draft with fresh exact source/native Actions. No old658 execution
+credit transfers to this changed required-surface producer.
