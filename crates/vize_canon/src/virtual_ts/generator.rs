@@ -301,7 +301,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     }
 
     let global_components = GlobalComponentPlan::new(
-        summary,
+        (summary, template_ast),
         legacy_vue2,
         has_script_reference_types || check_options.check_unknown_components,
         generation_options.self_component_name,

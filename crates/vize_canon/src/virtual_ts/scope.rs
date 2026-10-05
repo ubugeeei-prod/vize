@@ -39,6 +39,7 @@ mod vif_guard;
 pub(crate) use closures::generate_scope_closures;
 pub(crate) use component_events::emit_event_inference_helpers;
 pub(crate) use component_prop_checker::is_inline_callback_prop;
+pub(crate) use dynamic_component::is_owned_dynamic_component_alias;
 pub(crate) use component_ref_props::is_inline_ref_callback_prop;
 pub(crate) use context::{ComponentBindingCheck, GlobalComponentCheck, ScopeGenerationOptions};
 pub(crate) use forwarded_roots::{FORWARDED_RETURN_KEY, FORWARDED_ROOT_HELPERS, SLOTS_RETURN_KEY};

@@ -32,11 +32,12 @@ pub(super) struct GlobalComponentPlan<'a> {
     slot_component_names: FxHashSet<&'a str>,
     component_check: GlobalComponentCheck,
     self_component_name: Option<String>,
+    template_ast: Option<&'a vize_relief::RootNode<'a>>,
 }
 
 impl<'a> GlobalComponentPlan<'a> {
     pub(super) fn new(
-        summary: &'a Croquis,
+        (summary, template_ast): (&'a Croquis, Option<&'a vize_relief::RootNode<'a>>),
         legacy_vue2: bool,
         include_all: bool,
         self_component_name: Option<&str>,
@@ -55,6 +56,7 @@ impl<'a> GlobalComponentPlan<'a> {
         };
         Self {
             slot_component_names,
+            template_ast,
             self_component_name: summary
                 .macros
                 .define_options_name()
@@ -132,6 +134,16 @@ impl<'a> GlobalComponentPlan<'a> {
             if !self.component_check.allows(name)
                 && !self.slot_component_names.contains(name)
                 && !is_self
+            {
+                continue;
+            }
+            // Only aliases owned by the actual dynamic component element
+            // are local values; an authored tag with this spelling still checks.
+            if diagnostics.is_some()
+                && crate::virtual_ts::scope::is_owned_dynamic_component_alias(
+                    self.template_ast,
+                    usage,
+                )
             {
                 continue;
             }
@@ -221,3 +233,7 @@ fn append_global_component_stub(
         );
     }
 }
+
+#[cfg(test)]
+#[path = "global_components_tests.rs"]
+mod tests;

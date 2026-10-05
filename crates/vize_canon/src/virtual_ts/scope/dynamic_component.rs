@@ -12,6 +12,17 @@ use vize_carton::{String, append};
 use vize_croquis::{Croquis, drawer::is_dynamic_component_alias};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
+/// Prove the usage is the generated alias of its authored `<component :is>`.
+/// Reserved-looking authored static tags must still receive registry checks.
+pub(crate) fn is_owned_dynamic_component_alias(
+    template_ast: Option<&RootNode<'_>>,
+    usage: &vize_croquis::ComponentUsage,
+) -> bool {
+    is_dynamic_component_alias(usage.name.as_str())
+        && usage.name == vize_croquis::drawer::dynamic_component_alias(usage.start)
+        && template_ast.is_some_and(|root| is_expression(root, usage.start).is_some())
+}
+
 pub(super) fn emit_dynamic_component_aliases(
     ts: &mut String,
     summary: &Croquis,
@@ -59,7 +70,9 @@ fn visit<'a>(
     match node {
         TemplateChildNode::Element(element) => {
             if element.loc.span.start == start {
-                *found = is_directive_expression(element, source);
+                *found = (element.tag == "component")
+                    .then(|| is_directive_expression(element, source))
+                    .flatten();
                 return;
             }
             for child in element.children.iter() {
