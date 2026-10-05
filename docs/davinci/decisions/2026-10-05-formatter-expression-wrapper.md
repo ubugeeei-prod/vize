@@ -54,3 +54,10 @@ qualify the additional inverse boundary or the successor source. Fresh full
 source execution and protected delivery remain required.
 
 The actual-main replay on `8f667ea070bb90d57ac7125db35d791025f746e2` preserves the complete incoming protected prefix and every owned production/runtime/corpus/witness byte from `a9dcf69fe5252cb9395c3522b9e216edc5e61c62`. Original authors, reports and ceilings remain intact. Earlier qualified heads remain historical receipts; this replay needs its own exact-head source and protected reports before actual merge/release.
+
+The genuine bf91 protected-tail composition conflicts only in the shared
+canonical footer. The actual736 main replay retains every incoming decision
+and all owned source/corpus bytes; this clause now occupies its relevant
+distinct canonical location at350 lines. Fresh exact source and protected
+delivery remain required; no earlier acceptance or publication is transferred.
+Paired [placement decision](https://github.com/ubugeeei-prod/vize/issues/7923#issuecomment-5988293589).
