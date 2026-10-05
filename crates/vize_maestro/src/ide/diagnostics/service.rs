@@ -2,7 +2,7 @@
 
 use crate::ide::ecosystem;
 use crate::server::ServerState;
-use crate::utils::{is_jsx_path, is_standalone_html_path};
+use crate::utils::{is_jsx_path, is_plain_script_path, is_standalone_html_path};
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range, Url};
 
 use super::{LineIndex, Severity};
@@ -31,6 +31,10 @@ impl DiagnosticService {
         let features = state.lsp_features();
 
         if !features.has_diagnostics() {
+            return diagnostics;
+        }
+
+        if is_plain_script_path(uri.path()) {
             return diagnostics;
         }
 
@@ -207,6 +211,10 @@ impl DiagnosticService {
         let mut diagnostics = Vec::new();
 
         if !features.has_diagnostics() || !features.lint {
+            return diagnostics;
+        }
+
+        if is_plain_script_path(uri.path()) {
             return diagnostics;
         }
 

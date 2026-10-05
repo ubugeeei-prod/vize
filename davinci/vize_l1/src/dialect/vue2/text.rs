@@ -5,6 +5,14 @@
 
 mod scan;
 use scan::scan;
+mod retained;
+pub use retained::{
+    RetainedFilterChain, RetainedFilterInvocation, RetainedTextBinding, TextExpression,
+};
+
+pub(super) fn retain_binding(binding: TextBinding<'_>) -> RetainedTextBinding<'_> {
+    retained::consume(binding)
+}
 
 use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceBlock, Span};

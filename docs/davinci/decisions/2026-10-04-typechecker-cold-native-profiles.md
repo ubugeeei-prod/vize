@@ -295,3 +295,15 @@ requires this runtime parent; detach its old native Stack relation and verify
 no manual profile campaign or ranking claim. The original failed pilot,
 offline synthetic decoder and unmeasured allocation/CPU/attribution/10x limits
 above remain unchanged; recursive installed-dependency immutability is unclaimed.
+
+The first integration `4109d585d3` passes fresh Check `37287987612` and native
+run `37287986484`: all 134 hosted controls and six aggregate collector rows
+complete; four authenticated PR-profile vectors contain 16,073 passing cases.
+These remain exact-source receipts, not protected acceptance or profiles.
+Admission preflight found only a canonical-line conflict with the existing
+queued Stack tail `d7c1be36f0`; actual main `9f9fb24a9e` composes cleanly.
+Integrate that actual main, without copying the unaccepted queue tail, and move
+only this repair's short record into the existing CI paragraph. Preserve every
+incoming substantive clause, the 350-line cap and all four original code/test blobs.
+Require fresh successor source Actions and a conflict-free live queue composition;
+the older integration's success is not relabeled as successor execution.

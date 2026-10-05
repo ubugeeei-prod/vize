@@ -22,3 +22,12 @@ pub fn is_jsx_path(path: &str) -> bool {
     let path = path.to_ascii_lowercase();
     path.ends_with(".jsx") || path.ends_with(".tsx")
 }
+
+/// Authored non-JSX scripts use their existing native script diagnostic path.
+#[inline]
+pub(crate) fn is_plain_script_path(path: &str) -> bool {
+    matches!(
+        path.rsplit_once('.').map(|(_, extension)| extension),
+        Some("js" | "mjs" | "cjs" | "ts" | "mts" | "cts")
+    )
+}

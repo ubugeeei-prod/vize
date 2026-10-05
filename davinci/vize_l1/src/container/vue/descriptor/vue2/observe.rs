@@ -57,6 +57,8 @@ impl Vue {
             issues: state.issues,
             selection: state.template,
             component: None,
+            #[cfg(test)]
+            _drop_probe: super::hooks::OwnerDrop,
         };
         if owner.issues.is_empty() && owner.container.errors.is_empty() {
             if let Some((selection, _)) = super::view::frame(&owner) {

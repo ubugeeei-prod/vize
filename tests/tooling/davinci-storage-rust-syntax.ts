@@ -123,8 +123,62 @@ function isFunctionItem(tokens: readonly RustToken[]): boolean {
   return false;
 }
 
+function namedFieldEnd(
+  source: string,
+  start: number,
+  tokens: readonly RustToken[],
+): number | undefined {
+  if (source.slice(start, start + (tokens[0]?.start ?? 0)).trim() !== "") return undefined;
+  let at = 0;
+  if (tokens[at]?.value === "pub") {
+    at += 1;
+    if (tokens[at]?.value === "(") {
+      let depth = 1;
+      while (depth > 0 && ++at < tokens.length) {
+        if (tokens[at].value === "(") depth += 1;
+        else if (tokens[at].value === ")") depth -= 1;
+      }
+      at += 1;
+    }
+  }
+  if (ident(tokens[at]) === undefined) return undefined;
+  const next = tokens[at + 1];
+  if (at === 0 && next?.value === ",") return start + next.end;
+  if (at === 0 && next?.value === "}") return start + next.start;
+  if (next?.value !== ":") return undefined;
+  let parens = 0;
+  let brackets = 0;
+  let angles = 0;
+  let braces = 0;
+  for (const token of tokens.slice(at + 2)) {
+    if (token.value === "(") parens += 1;
+    else if (token.value === ")") parens -= 1;
+    else if (token.value === "[") brackets += 1;
+    else if (token.value === "]") brackets -= 1;
+    else if (token.value === "<" && parens === 0 && brackets === 0 && braces === 0) angles += 1;
+    else if (
+      token.value === ">" &&
+      parens === 0 &&
+      brackets === 0 &&
+      braces === 0 &&
+      angles > 0 &&
+      source[start + token.start - 1] !== "-"
+    ) {
+      angles -= 1;
+    } else if (token.value === "{") braces += 1;
+    else if (token.value === "}" && braces > 0) braces -= 1;
+    else if (parens === 0 && brackets === 0 && angles === 0 && braces === 0) {
+      if (token.value === ",") return start + token.end;
+      if (token.value === "}") return start + token.start;
+    }
+  }
+  return source.length;
+}
+
 function itemEnd(source: string, start: number): number {
   const tokens = tokensOf(source.slice(start));
+  const fieldEnd = namedFieldEnd(source, start, tokens);
+  if (fieldEnd !== undefined) return fieldEnd;
   const functionItem = isFunctionItem(tokens);
   const kinds = new Set([
     "const",

@@ -15,8 +15,8 @@ pub use descriptor::{
     AdmittedDescriptor, DescriptorIssue, DescriptorIssueCode, DescriptorObservation,
     DescriptorOptions, DescriptorRefusal, NativeTemplateFrameNameRefusal, NativeTemplateFrameNames,
     ScriptRole, ScriptView, StyleView, TemplateView, Vue1DescriptorObservation,
-    Vue1DescriptorRefusal, Vue1TemplateView, Vue2DescriptorObservation, Vue2DescriptorRefusal,
-    Vue2TemplateView,
+    Vue1DescriptorRefusal, Vue1TemplateView, Vue2DescriptorExpressionPool,
+    Vue2DescriptorObservation, Vue2DescriptorRefusal, Vue2RetainedTemplateView, Vue2TemplateView,
 };
 
 #[cfg(test)]
