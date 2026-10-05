@@ -112,3 +112,37 @@ their explicit dispositions. All original inputs, generated code paths and
 twenty independent full-HTML references remain unchanged. No comparison failure
 or unavailable map is credited as template-map readiness; fresh source Actions
 and protected acceptance remain required.
+
+The same source run's canonical job `111811412002` compares all 42,625 complete
+SFCs and finds 151 selected-versus-walker divergences. Its retained selected
+output still resolves TransitionGroup as an authored component. Repair the
+existing legacy product's selected L2/string-plan emitter as well: read the
+original group attachment/tag and direct Suspense carrier ranges from the
+same plan, preserve ordered props and scoped anchors, and keep the original
+no-slot/default-only writer. This does not extend the separate native L4 SSR
+target. A move-only commit isolates the unchanged private Suspense writer
+before its behavioral repair. No AST reread, fabricated lower fact, fallback
+shortcut, comparison exception or extra level stage is introduced.
+The official rc.10
+[conditional writer](https://raw.githubusercontent.com/vuejs/core/v3.6.0-rc.10/packages/compiler-ssr/src/transforms/ssrVIf.ts)
+suppresses the missing-else comment only at the direct group-child boundary;
+conditional branch and loop bodies start their own child context. Both current
+writers retain that boundary instead of propagating comment suppression into
+nested bodies. Ordinary controls keep their original false flag and bytes.
+All eleven original full SFC inputs join the existing strict emitter and whole
+SFC differential battery, plus an exact selected-plan ownership law. Every
+existing canonical input/full-field comparison and all twenty independent HTML
+references stay mandatory. The failed 151/42,625 sweep remains failed; fresh
+Actions must prove zero divergence and actual SSR rendering before readiness.
+
+The independent selected-emitter review found one fact-custody gap: generic
+components ignore custom directives, while the new group attrs path renders
+their operands. Only that group dispatch now applies the existing attribute
+admission guard to each original custom-directive segment, requiring its dynamic
+partition even when valueless and validating optional value/argument operands.
+A genuine original-parser/L2/L3/plan law joins the original component binding
+pointer and whole directive span, then deliberately changes only the copied
+partition to require an exact invariant rejection. Two additional compiler
+fixtures require selected/legacy full code, maps and diagnostics parity under
+all four existing option sets. No blanket group refusal or generic component
+behavior change is introduced. These new laws remain unexecuted until Actions.

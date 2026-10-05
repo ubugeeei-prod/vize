@@ -235,7 +235,7 @@ pub(crate) fn is_valid_js_identifier(value: &str) -> bool {
     chars.all(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric())
 }
 
-pub(super) fn is_simple_identifier(value: &str) -> bool {
+pub(crate) fn is_simple_identifier(value: &str) -> bool {
     is_valid_js_identifier(value) && !matches!(value, "true" | "false" | "null" | "undefined")
 }
 

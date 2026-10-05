@@ -121,6 +121,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let no_inherit = Flags {
             as_fragment: false,
             disable_nested_fragments: false,
+            disable_comments: false,
             inherit_attrs: false,
             css_vars: false,
         };
@@ -129,6 +130,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 css_vars,
                 ..no_inherit
             })?,
+            "TransitionGroup" | "transition-group" => {
+                super::transition_group::admit_directives(attached, open.fact, name)?;
+                self.transition_group(attached, name, inherit, css_vars)?;
+            }
             "Teleport" | "teleport" => self.teleport(attached, no_inherit)?,
             _ if is_transparent_builtin(name) => self.children(Flags {
                 inherit_attrs: inherit,
