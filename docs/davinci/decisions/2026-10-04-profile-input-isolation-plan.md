@@ -174,3 +174,30 @@ this decision with #6834. Unavailable observations remain null, native exporter
 read/assembly ordering and supplied telemetry stay exact; no CPU result or 10x
 claim follows. Native clocks, TLS/locks, arena/recursion, IO and full platform
 isolation remain unfinished, so #6834 remains open.
+
+## Provider qualification and actual squash custody
+
+Exact provider source `75f9f4e21324492f02fa13ab2ef73a75f85c80ff`
+[Check 37271179049](https://github.com/ubugeeei-prod/vize/actions/runs/37271179049)
+is terminal successful, including every required context and four Rust
+workers. Authenticated complete JUnit artifacts retain 15,991 executions with
+zero failures, errors or skips: four whole provider laws each execute once,
+as do all 23 preserved timing, wire and page laws. This is source execution
+proof, distinct from protected instruction measurements and actual merge.
+
+Native highest-prefix admission produced provider candidate `fccc7736` and
+child `a3134621`. Their actual GitHub squash messages omit the meaningful
+qualification merge-commit messages and therefore omit the required verified
+reporter trailer. Remove the full prefix from the queue before either merges.
+The bottom Stack owner removal clears both entries; the child-only dequeue
+API rejects its non-queue parent branch. Record this actual custody correction
+in regular meaningful qualification commits with the reporter trailer, keeping
+all original implementation history, source, whole laws and incoming decisions.
+
+This regular provider record pairs with #6834 and the central L0 decision.
+It changes no API, native read/assembly order, telemetry, report or cap. Fresh
+exact-head source qualification and protected highest-prefix re-entry remain
+required. Inspect the actual protected squash footer as well as signature,
+full suites and unchanged 104-by-three parent ratchets before accepting merge.
+Large archive/executable bytes were not independently downloaded or rehashed.
+Full platform isolation, CPU/10x results and #6834 closure remain unfinished.
