@@ -13,8 +13,10 @@ import {
 import { controls } from "./warm-type-backed-controls.ts";
 import { QueryRecorder } from "./warm-type-backed-measure.ts";
 import {
+  assertOriginalFrames,
   assertTypedPackets,
   finishWire,
+  object,
   requests,
   waitForInitialTypes,
 } from "./warm-type-backed-packets.ts";
@@ -146,9 +148,7 @@ async function runSide(
         const server = decodeFrames(
           fs.readFileSync(path.join(captured.capture, "server.bin")),
         ).messages;
-        const responses = server.filter(
-          (message) => typeof message.id === "number" && message.method == null,
-        );
+        const responses = assertOriginalFrames(client, server, initialization);
         assert.deepEqual(
           responses,
           recorder.responses,
@@ -210,9 +210,12 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   const sourceBinding = JSON.parse(
     fs.readFileSync(path.join(outputRoot, "workflow-source.json"), "utf8"),
   );
+  const afterRoot = sourceBinding.afterRoot ?? driverRoot;
+  const releaseCut = sourceBinding.authority === "root-frozen-release-cut";
+  assert.deepEqual(sourceIdentity(driverRoot), sourceBinding.driverSource);
   assert.equal(sourceIdentity(beforeRoot).revision, sourceBinding.baseline);
-  assert.equal(sourceIdentity(driverRoot).revision, sourceBinding.head);
-  const buildCustody = [beforeRoot, driverRoot].map((root, index) => {
+  assert.equal(sourceIdentity(afterRoot).revision, sourceBinding.head);
+  const buildCustody = [beforeRoot, afterRoot].map((root, index) => {
     const side = index === 0 ? "before" : "after";
     const custody = JSON.parse(
       fs.readFileSync(path.join(outputRoot, `${side}-cargo-custody.json`), "utf8"),
@@ -233,16 +236,18 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   fs.mkdirSync(outputRoot, { recursive: true });
   const before = await runSide(beforeRoot, workspace, runtime, path.join(outputRoot, "before"));
   fs.writeFileSync(path.join(outputRoot, "before.json"), `${JSON.stringify(before, null, 2)}\n`);
-  const after = await runSide(driverRoot, workspace, runtime, path.join(outputRoot, "after"));
+  const after = await runSide(afterRoot, workspace, runtime, path.join(outputRoot, "after"));
   fs.writeFileSync(path.join(outputRoot, "after.json"), `${JSON.stringify(after, null, 2)}\n`);
   const packet = {
     buildCustody,
+    sourceBinding,
     originals,
     runtime,
     before,
     after,
-    protocol:
-      "original400+134; same worker/workspace/locks/runtime/ci build; completed initial types+10s idle; retained prime; all5x4 warm requests",
+    protocol: releaseCut
+      ? "original400+134; same worker/workspace/runtime/fresh ci build; exact per-source locks; completed initial types+10s idle; retained prime; all5x4 warm requests"
+      : "original400+134; same worker/workspace/locks/runtime/ci build; completed initial types+10s idle; retained prime; all5x4 warm requests",
     timingScope:
       "request wall time; inclusive sampled Linux Maestro/native-descendant CPU; observational, no numeric ceiling or Program count",
     pendingDelivery:
@@ -253,8 +258,23 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   assert.deepEqual(after.failures, [], "every current outcome is retained and required");
   assert.deepEqual(before.inputs.source, after.inputs.source);
   assert.equal(before.inputs.sourceSha256, after.inputs.sourceSha256);
-  assert.deepEqual(before.source.locks, after.source.locks);
-  assert.deepEqual(before.initialization, after.initialization);
+  if (!releaseCut) {
+    assert.deepEqual(before.source.locks, after.source.locks);
+    assert.deepEqual(before.initialization, after.initialization);
+  } else {
+    const expected = structuredClone(before.initialization);
+    for (const [index, side] of [before, after].entries()) {
+      const info = object(object(side.initialization).serverInfo);
+      assert.equal(info.name, "vize-maestro");
+      assert.equal(info.version, buildCustody[index].cliVersion.slice("vize ".length));
+    }
+    object(object(expected).serverInfo).version = buildCustody[1].cliVersion.slice("vize ".length);
+    assert.deepEqual(
+      after.initialization,
+      expected,
+      "only the attested setup release version differs",
+    );
+  }
   assert.equal(before.source.dirty, "");
   assert.equal(after.source.dirty, "");
   for (const [index, side] of [before, after].entries()) {
@@ -282,6 +302,7 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   const completePackets = publicPackets;
   assert.deepEqual(completePackets(after), completePackets(before));
   for (const side of [before, after]) {
+    assert.equal(side.rows.length, 74, "all original measured whole request rows are required");
     assert.equal(side.rows.filter((row) => /^warm-[1-5]$/u.test(String(row.stage))).length, 20);
   }
   assert.notEqual(before.processId, after.processId, "two source builds own two real processes");

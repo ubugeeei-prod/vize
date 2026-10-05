@@ -6,6 +6,8 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { runtimeGraph } from "./warm-type-backed-runtime.ts";
+
 export const driverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 export const fixtureRoot = path.join(
   driverRoot,
@@ -59,6 +61,7 @@ export function runtimeIdentity() {
       stdout: probe.stdout,
       stderr: probe.stderr,
     },
+    resolvedPackageGraph: runtimeGraph([vueManifest, runtimeManifest]),
     reportedVueVersion: "3.5.41",
     dependencyQualification:
       "actual locked dependency graph; reported package version is historical",

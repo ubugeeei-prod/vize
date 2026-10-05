@@ -2,6 +2,23 @@ name: Davinci Canon distinct-host scaling
 
 on:
   workflow_dispatch:
+    inputs:
+      original_control_sha:
+        description: "Literal published v0.433 control commit for the original400 pair"
+        required: false
+        type: string
+      original_after_sha:
+        description: "Root-frozen literal release-cut commit; never a branch or tag"
+        required: false
+        type: string
+      original_after_tree:
+        description: "Root-frozen literal release-cut Git tree"
+        required: false
+        type: string
+      original_manifest_sha256:
+        description: "SHA256 of the complete canonical changed Git-entry manifest"
+        required: false
+        type: string
   pull_request:
     paths:
       - ".github/workflows/davinci-canon-scaling.yml"
@@ -29,13 +46,19 @@ jobs:
     name: ${{ matrix.case }} / ${{ matrix.files }} open and warmed providers
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
+    env:
+      ORIGINAL_CUT_REQUESTED: ${{ inputs.original_control_sha != '' || inputs.original_after_sha != '' || inputs.original_after_tree != '' || inputs.original_manifest_sha256 != '' }}
+      ORIGINAL_CONTROL_SHA: ${{ inputs.original_control_sha }}
+      ORIGINAL_AFTER_SHA: ${{ inputs.original_after_sha }}
+      ORIGINAL_AFTER_TREE: ${{ inputs.original_after_tree }}
+      ORIGINAL_MANIFEST_SHA256: ${{ inputs.original_manifest_sha256 }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(github.event_name == 'pull_request' && '{"include":[{"case":"paired-original","files":400}]}' || '{"include":[{"case":"before","files":32,"source":"18a105fd5fa7ebbe385881dc6052ed44f12b498b"},{"case":"before","files":512,"source":"18a105fd5fa7ebbe385881dc6052ed44f12b498b"},{"case":"after","files":32,"source":"fba75ade0ca66d9b1bfbdafb22251878f9c15de1"},{"case":"after","files":512,"source":"fba75ade0ca66d9b1bfbdafb22251878f9c15de1"}]}') }}
+      matrix: ${{ fromJSON((github.event_name == 'pull_request' || inputs.original_control_sha != '' || inputs.original_after_sha != '' || inputs.original_after_tree != '' || inputs.original_manifest_sha256 != '') && '{"include":[{"case":"paired-original","files":400}]}' || '{"include":[{"case":"before","files":32,"source":"18a105fd5fa7ebbe385881dc6052ed44f12b498b"},{"case":"before","files":512,"source":"18a105fd5fa7ebbe385881dc6052ed44f12b498b"},{"case":"after","files":32,"source":"fba75ade0ca66d9b1bfbdafb22251878f9c15de1"},{"case":"after","files":512,"source":"fba75ade0ca66d9b1bfbdafb22251878f9c15de1"}]}') }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.pull_request.head.sha || matrix.source }}
+          ref: ${{ github.event.pull_request.head.sha || (env.ORIGINAL_CUT_REQUESTED == 'true' && github.sha) || matrix.source }}
           fetch-depth: 0
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -56,7 +79,7 @@ jobs:
           key: davinci-canon-scaling
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.case }}-${{ matrix.files }}
       - name: Save exact source and protocol provenance
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}
         env:
           SOURCE_SHA: ${{ matrix.source }}
           CASE: ${{ matrix.case }}
@@ -86,14 +109,14 @@ jobs:
           path.write_text(json.dumps(data, indent=2) + "\n")
           PY
       - name: Build the measured production server
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}
         run: >-
           cargo build --profile ci-opt -p vize
           --config 'profile.ci-opt.inherits="release"'
           --config 'profile.ci-opt.lto="thin"'
           --config 'profile.ci-opt.codegen-units=16'
       - name: Measure the identical bounded distinct-host protocol
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}
         env:
           FILES: ${{ matrix.files }}
         run: >-
@@ -102,7 +125,7 @@ jobs:
           --server target/ci-opt/vize --files "$FILES" --warm-providers "$FILES"
           --runs 1 --idle-seconds 10 --out "$RUNNER_TEMP/lsp-resource.json"
       - name: Save binary identity and exact command with every result
-        if: ${{ always() && github.event_name == 'workflow_dispatch' }}
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && env.ORIGINAL_CUT_REQUESTED != 'true' }}
         run: |
           python3 - <<'PY'
           import hashlib, json, os, pathlib
@@ -122,19 +145,19 @@ jobs:
               manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
           PY
       - name: Bind the original warm-request pair to its actual source baseline
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true' }}
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: vp exec node tests/performance/support/warm-type-backed-workflow.ts prepare
       - name: Build the original baseline with the identical CI recipe
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true' }}
         run: vp exec node tests/performance/support/warm-type-backed-build.ts before
       - name: Build the original warm-request successor with the identical CI recipe
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true' }}
         run: vp exec node tests/performance/support/warm-type-backed-build.ts after
       - name: Compare every original400 warm packet and invalidation control on this worker
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true' }}
         run: >-
           timeout --signal=TERM --kill-after=30s 20m
           vp exec node tests/performance/support/warm-type-backed-requests.ts
