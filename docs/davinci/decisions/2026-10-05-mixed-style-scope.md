@@ -49,3 +49,27 @@ original source and production fix remain exact; fresh source Actions are
 required, without acceptance transferred from the superseded head.
 
 Fresh source Check 37255740116 at b33 failed: the CSS oracle treated every truthy cssRules as media, although happy-dom CSSStyleRule inherits an empty cssRules collection; it crashed before comparing CSS. Discriminate actual MEDIA_RULE/STYLE_RULE and refuse other/nested rules. Replace the standalone partial selector check with complete authored CSS equality and regenerate the one added test/dev L0 inventory row. Full original source, production correction, all 24 identities, official expected CSS and all ceilings stay unchanged. The source Nuxt 3 lane 37255739543 succeeded separately, without curing the failed Check. Fresh successor source Actions remain required.
+
+## Protected prefix composition preservation
+
+Corrected source `13d00ab6dc` passed complete Check37256770986,
+all49 terminal source contexts, genuine Nuxt37256770728 and scoped CSS
+37256770720. Four authenticated source JUnit packets contain 15,837 affected
+Rust identities and both new CSS laws. Passing child stdout was not archived;
+this establishes executed fixed24 comparisons, without a retained full24-row
+raw packet claim or protected full-suite credit.
+
+After explicit release-coordination THAW, independent matched-head admission
+entered queue position9. GitHub marked it UNMERGEABLE before any candidate
+build against the prospective, unmerged prefix `95a1c482b7`; real main was
+still `ef50601216` and merged cleanly. The only conflict was the canonical
+paragraph containing both this complete history and an incoming Nuxt lint
+clause. Remove the owned entry promptly, preserve every decision, relocate
+this complete history beside runtime tooling, and replay the original three
+commits onto actual main. No unmerged prefix code or docs are imported. All
+eight owned non-doc SHA256 values and original author/date/body/trailers
+remain exact. New source Actions and fresh protected composition remain
+mandatory; the earlier passing source is historical, without failure/retry
+attribution or acceptance transferred to the successor.
+
+Paired composition repair: [#7862 comment](https://github.com/ubugeeei-prod/vize/issues/7862#issuecomment-5987659873).
