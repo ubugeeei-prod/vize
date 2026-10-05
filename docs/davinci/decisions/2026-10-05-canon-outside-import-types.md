@@ -26,8 +26,7 @@ an app-only import stays unavailable to a sibling source. A unit test preserves
 all transformed path values and original type-library names.
 
 Fresh exact-head Actions, unchanged instruction ceilings, protected full suites,
-actual merge and published consumer verification are required. The release
-owner's publication hold applies until its first-cut qualification finishes.
+actual merge and published consumer verification are required. Queue admission follows the maintainer's current release-barrier decision.
 This repairs the existing product without native-stage acceptance credit.
 
 Independent review of b738 found the option-probe disk reader still used the old
@@ -75,3 +74,14 @@ field of the explicit complete four-suggestion response, retaining their
 generated source/config ownership and all original inputs. No diagnostics
 are filtered, and any resolution error or extra suggestion still fails.
 Refresh current-head source/native receipts before readiness.
+
+The fd434 native run 37260581058 passes all three full CLI/official 7.0.2
+cases, the original five-file native script-editor response and the complete
+four-suggestion alias response. Artifact 11325245702 is independently audited:
+all 65 input/output hashes, original bytes and official binary identity match.
+This is historical runtime proof only. Replay the nine existing commits onto
+actual main 3c3d991, preserving all 20 owned non-doc file bytes, every incoming
+canonical clause and every reporter trailer. Place the complete owned decision
+clauses beside the existing type-checker paragraph to avoid unrelated trailing
+line conflicts. Fresh replay-head source/native Actions and protected full
+suites, actual signed merge and published consumers remain required.
