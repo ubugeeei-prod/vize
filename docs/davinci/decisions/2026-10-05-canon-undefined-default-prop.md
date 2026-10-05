@@ -42,3 +42,9 @@ resolve its unchanged real Vue declarations without installation or symlinks.
 Pin the editor runtime to the same authenticated oracle binary, retain complete
 editor fixture/config inputs and full responses before assertions. This repairs
 qualification only; original corpus and all expected diagnostics remain intact.
+
+The next run authenticates the real Vue oracle and reaches all CLI controls.
+CLI stderr deliberately includes two existing progress lines; assert their exact
+input counts and isolated root instead of incorrectly expecting silence. Full
+stdout diagnostic vectors, statuses, raw stderr and original inputs remain
+required and unchanged. This is an expectation repair without output filtering.
