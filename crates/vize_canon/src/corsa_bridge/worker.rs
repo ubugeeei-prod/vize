@@ -61,6 +61,9 @@ pub(super) struct BoundedWorker<T> {
 }
 
 impl<T: Send + 'static> BoundedWorker<T> {
+    pub(super) fn is_draining(&self) -> bool {
+        self.abandoned.load(Ordering::Acquire) > 0
+    }
     /// Move `state` onto a worker thread named `name`.
     ///
     /// A failed thread spawn is not fatal: every later `submit` reports

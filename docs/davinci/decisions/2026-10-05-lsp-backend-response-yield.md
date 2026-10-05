@@ -26,6 +26,23 @@ preserving framing and session resource keepalive. Outstanding abandonment
 retains the existing fast timeout refusal until it drains. Completion/drop also
 clears abandonment when worker failure drops a queued closure.
 
+Startup also needs retained ownership. The server caches the pending bridge
+before awaiting its handshake; cancellation keeps that same worker instead of
+starting another backend. An additive `CorsaBridge::is_draining` probe refuses
+retry during uncancellable work. After drain, a failed cancelled startup may
+retry on that worker without poisoning the existing initialization-failure
+latch; actual returned timeout/failure retains the old latch and fallback.
+Initialization flags and entered shutdown's session cleanup belong to the
+worker, including when their awaiting caller disappears. Completed shutdown
+does not clear a later successful spawn from the caller side. Superseded
+configuration still discards only its matching pending owner. A real held-IPC
+state fixture checks owner identity, one backend during cancellation, immediate
+refusal, drain/retry, the returned-timeout failure latch and superseded failure
+without a timing or successful-query performance claim.
+Existing public method signatures and dependencies remain unchanged; the drain
+probe is an additive API. Successful native startup/shutdown replay is still
+required before adoption.
+
 Cancellation must preserve deferred disk invalidation. A drop guard restores
 the dirty bit if a queued flush is cancelled or fails; a completed flush never
 clears a later watcher mark. A regression exercises cancellation of an actual

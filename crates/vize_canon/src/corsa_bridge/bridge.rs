@@ -34,7 +34,7 @@ pub struct CorsaBridge {
     /// Worker thread owning the synchronous Corsa project session.
     worker: BoundedWorker<Option<CorsaProjectClient>>,
     /// Whether the bridge is initialized
-    initialized: AtomicBool,
+    initialized: Arc<AtomicBool>,
     /// Whether the reusable editor LSP session may have read stale disk state.
     disk_project_state_dirty: AtomicBool,
     /// Profiler for performance tracking
@@ -80,7 +80,7 @@ impl CorsaBridge {
                 Arc::clone(&editor_session),
             ),
             config,
-            initialized: AtomicBool::new(false),
+            initialized: Arc::new(AtomicBool::new(false)),
             disk_project_state_dirty: AtomicBool::new(false),
             profiler,
             cache_stats: CacheStats::new(),
@@ -100,16 +100,18 @@ impl CorsaBridge {
         }
 
         let config = self.config.clone();
+        let initialized = Arc::clone(&self.initialized);
         self.submit_async(move |slot| {
             if slot.is_some() {
+                initialized.store(true, Ordering::SeqCst);
                 return Ok(());
             }
             *slot = Some(build_client(&config)?);
+            // The worker owns completion even if the awaiting caller cancels.
+            initialized.store(true, Ordering::SeqCst);
             Ok(())
         })
         .await?;
-
-        self.initialized.store(true, Ordering::SeqCst);
 
         if let Some(timer) = _timer {
             timer.record(&self.profiler);
@@ -124,8 +126,10 @@ impl CorsaBridge {
             return Ok(());
         }
 
+        let initialized = Arc::clone(&self.initialized);
+        let editor_session = Arc::clone(&self.editor_session);
         let result = self
-            .submit_async(|slot| {
+            .submit_async(move |slot| {
                 let outcome = match slot.as_mut() {
                     Some(client) => client
                         .shutdown()
@@ -133,13 +137,18 @@ impl CorsaBridge {
                     None => Ok(()),
                 };
                 *slot = None;
+                editor_session.clear();
+                initialized.store(false, Ordering::SeqCst);
                 outcome
             })
             .await;
 
-        if !matches!(result, Err(CorsaBridgeError::Timeout)) {
-            self.initialized.store(false, Ordering::SeqCst);
+        // Entered shutdown owns this state on the worker. Clearing it again
+        // here could overwrite a later successful spawn before we are polled.
+        // A stopped worker cannot run that cleanup or a competing spawn.
+        if matches!(&result, Err(CorsaBridgeError::ProcessTerminated)) {
             self.editor_session.clear();
+            self.initialized.store(false, Ordering::SeqCst);
         }
         result
     }
@@ -147,6 +156,12 @@ impl CorsaBridge {
     /// Check if bridge is initialized.
     pub fn is_initialized(&self) -> bool {
         self.initialized.load(Ordering::SeqCst)
+    }
+
+    /// Whether a cancelled or timed-out call still owns the synchronous lane.
+    /// Retaining this bridge until it drains prevents parallel retry processes.
+    pub fn is_draining(&self) -> bool {
+        self.worker.is_draining()
     }
 
     /// Get profiler reference.
