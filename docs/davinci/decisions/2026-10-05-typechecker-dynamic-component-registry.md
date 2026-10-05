@@ -330,3 +330,21 @@ and 33-state driver remain exact. The parent peer's source-only receipt is
 SHA256 `6de687751098b3c23e999c916bca18720a760e0fd89257dd41f00c0d5c7aca75`;
 it grants no new compile/native/runtime result. New source Actions and the
 unchanged full 33-state qualification must use this genuine composition.
+
+
+## Complete dynamic runtime, incomplete full Check
+
+Source `c9f0f590a8` passes ordinary Check 37345651216 (16,214 JUnit cases,
+all 12 generator laws) and NativePhase 37345649986 with `profile:none`.
+Full [37347905314](https://github.com/ubugeeei-prod/vize/actions/runs/37347905314)
+is FAILURE only in inherited NoNative helper/real-editor CodeAction gates;
+the unchanged dynamic tooling job succeeds. Official artifact 11362586144 is
+58,672,617 bytes, SHA256 `76f25ef70033465f01f75020915e362abc1572218033a05a68300ce6aeabdeff`, with 1,412 unique members/all ZIP CRCs verified.
+Its original 33 inputs yield 33 CLI/33 version-matched whole publications across
+three sessions (true/false/absent 11 each): 17 genuine error rows per channel and
+16 clean observations. Named clean/member/value/prop controls pass every mode.
+Original fixtures/281-line driver and ordered count/code/start/severity/source
+assertions remain exact; raw messages/end fields survive, without independent
+full-message/end expected or executable-byte audit credit. Keep foreign failures,
+await their owners' signed main fixes, then genuine replay/fresh full qualification;
+Draft/offqueue, protected signed merge/release and complete P0 credit remain pending.
