@@ -53,3 +53,31 @@ Paired source decision: [#7887 comment](https://github.com/ubugeeei-prod/vize/is
 Before the first source Rust execution, reading the locked stable Vue `stringifyStyle` confirms SSR serializes custom properties as `key:value;`, whereas live DOM setters serialize `key: value;`. Correct only the separately authored frozen SSR formatting expectation and its authenticated digest. Preserve full raw HTML and the complete semantic oracle; no expected value is derived from Vize output and no old-head acceptance transfers.
 
 Paired oracle correction: [#7887 comment](https://github.com/ubugeeei-prod/vize/issues/7887#issuecomment-5987578581).
+
+## First source runtime precondition and raw failure custody
+
+Source `b3058ed4ef` Check37259527439 passes Clippy, JS/tooling/browser,
+Nuxt and three Rust shards. Rust3 job111605523950 fails the new oracle:
+the first official rc9 Vapor mount owns and updates its root CSS property,
+but emits `ReferenceError: MutationObserver is not defined`. The happy-dom
+global bridge omitted the helper's real Window API. The expected diagnostics
+remain empty, and this failure precedes first Vize component evaluation;
+no source-built mounted acceptance follows. Original authenticated raw log
+SHA256 `0215895d16df5de388d15920b66bda138adc341fd2573dbb10fcd7cf9faf7636`
+and failed JUnit artifact11324685344 are preserved.
+
+Register only the actual `window.MutationObserver`, without a stub or helper
+replacement. Preserve every original source, frozen CSS value/tree and the
+three production files. Retain full original input/stdout/stderr bytes/exit
+before Rust assertions, and preserve complete/partial official/actual rows
+and raw modules even on failure. Successful complete16 pairs remain mandatory.
+No extra compilation or best-of selection is introduced.
+
+The current-main projection is clean; historical prospective queue prefix
+`95a1c482b7` conflicts only at the shared canonical paragraph339. Relocate
+this complete decision/failure history beside existing Rust source wiring,
+preserving all incoming clauses without importing unmerged production/docs.
+Fresh successor source Actions and protected gates remain required; the
+failed head's separate passing Nuxt lanes confer no CSS runtime acceptance.
+
+Paired runtime precondition/custody correction: [#7887 comment](https://github.com/ubugeeei-prod/vize/issues/7887#issuecomment-5987717993).

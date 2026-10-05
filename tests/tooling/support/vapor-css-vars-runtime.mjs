@@ -51,6 +51,7 @@ for (const name of [
   "SVGElement",
   "Event",
   "ShadowRoot",
+  "MutationObserver",
 ])
   globalThis[name] = name === "window" ? window : window[name];
 const fromUi = createRequire(new URL("../../../npm/ui/package.json", import.meta.url));
@@ -176,7 +177,7 @@ function observe(host, property, sameRoot, diagnostics) {
   };
 }
 
-async function mounted(compiled, fixture) {
+async function mounted(compiled, fixture, capture) {
   const component = await evaluate(compiled.code, runtime);
   const app = (fixture.vapor ? runtime.createVaporApp : runtime.createApp)(component);
   const diagnostics = [];
@@ -186,6 +187,7 @@ async function mounted(compiled, fixture) {
   window.document.body.append(host);
   const property = propertyName(compiled.css);
   const raw = [];
+  capture.raw = raw;
   try {
     app.mount(host);
     await runtime.nextTick();
@@ -193,6 +195,7 @@ async function mounted(compiled, fixture) {
     assert.ok(original, "original root exists");
     raw.push({ html: host.innerHTML, property });
     const result = [observe(host, property, original, diagnostics)];
+    capture.result = result;
     original.click();
     await runtime.nextTick();
     raw.push({ html: host.innerHTML, property });
@@ -203,14 +206,13 @@ async function mounted(compiled, fixture) {
     raw.push({ html: host.innerHTML, property });
     result.push(observe(host, property, original, diagnostics));
     assert.deepEqual(result, expected.mounted);
-    return { result, raw };
   } finally {
     if (host.childNodes.length) app.unmount();
     host.remove();
   }
 }
 
-async function ssr(compiled) {
+async function ssr(compiled, capture) {
   const component = await evaluate(compiled.code, stable);
   const app = stable.createSSRApp(component);
   const diagnostics = [];
@@ -222,8 +224,8 @@ async function ssr(compiled) {
   const property = propertyName(compiled.css);
   const { tree, cssValues } = observe(host, property, null, diagnostics);
   const result = { tree, cssValues, diagnostics };
+  Object.assign(capture, { result, raw: { html, property } });
   assert.deepEqual(result, expected.ssr);
-  return { result, raw: { html, property } };
 }
 
 const rows = [];
@@ -234,14 +236,9 @@ try {
     assert.equal(typeof fixture.ssr, "boolean");
     const reference = official(fixture);
     const actualModule = fixture.compiled.result;
-    const referenceObservation = fixture.ssr
-      ? await ssr(reference)
-      : await mounted(reference, fixture);
-    const actualObservation = fixture.ssr
-      ? await ssr(actualModule)
-      : await mounted(actualModule, fixture);
-    assert.deepEqual(actualObservation.result, referenceObservation.result, fixture.name);
-    rows.push({
+    const referenceObservation = {};
+    const actualObservation = {};
+    const row = {
       name: fixture.name,
       ssr: fixture.ssr,
       production: input.production,
@@ -251,10 +248,27 @@ try {
       versions: { client: runtime.version, ssr: stable.version },
       authority:
         fixture.ssr && fixture.vapor ? "existing-vdom-ssr-fallback" : "real-mounted-vue-runtime",
-    });
+      status: "RUNNING",
+    };
+    rows.push(row);
+    try {
+      if (fixture.ssr) {
+        await ssr(reference, referenceObservation);
+        await ssr(actualModule, actualObservation);
+      } else {
+        await mounted(reference, fixture, referenceObservation);
+        await mounted(actualModule, fixture, actualObservation);
+      }
+      assert.deepEqual(actualObservation.result, referenceObservation.result, fixture.name);
+      row.status = "PASS";
+    } catch (error) {
+      row.status = "FAIL";
+      row.error = { name: error.name, message: error.message, stack: error.stack };
+      throw error;
+    }
   }
-  process.stdout.write(JSON.stringify(rows));
 } finally {
+  process.stdout.write(JSON.stringify(rows));
   delete globalThis.__cssVarsModules;
   await window.happyDOM.close();
 }

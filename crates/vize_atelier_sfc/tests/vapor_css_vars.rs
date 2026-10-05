@@ -85,6 +85,15 @@ fn compile(source: &str, requested: bool, typed: bool, production: bool, ssr: bo
 
 #[test]
 fn vapor_css_variables_mount_update_and_preserve_vdom_ssr() {
+    let profile = if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
+        "full"
+    } else {
+        "pr"
+    };
+    let destination = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../target/nextest")
+        .join(profile);
+    std::fs::create_dir_all(&destination).expect("runtime proof directory");
     let mut receipts = Vec::new();
     for production in [false, true] {
         let mut cases = Vec::new();
@@ -118,6 +127,20 @@ fn vapor_css_variables_mount_update_and_preserve_vdom_ssr() {
             .write_all(input.to_string().as_bytes())
             .expect("write full component outputs");
         let output = child.wait_with_output().expect("runtime results");
+        std::fs::write(
+            destination.join(if production {
+                "vapor-css-vars-process-production.json"
+            } else {
+                "vapor-css-vars-process-development.json"
+            }),
+            serde_json::to_vec(&json!({
+                "input": input, "exitCode": output.status.code(),
+                "success": output.status.success(),
+                "stdoutBytes": output.stdout, "stderrBytes": output.stderr
+            }))
+            .expect("full original process result"),
+        )
+        .expect("retain failure and success custody before assertions");
         assert!(
             output.status.success(),
             "{}\n{}",
@@ -129,15 +152,6 @@ fn vapor_css_variables_mount_update_and_preserve_vdom_ssr() {
         assert_eq!(observations.as_array().expect("rows").len(), 8);
         receipts.push(json!({ "input": input, "observations": observations }));
     }
-    let profile = if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
-        "full"
-    } else {
-        "pr"
-    };
-    let destination = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../target/nextest")
-        .join(profile);
-    std::fs::create_dir_all(&destination).expect("runtime proof directory");
     std::fs::write(
         destination.join("vapor-css-vars-runtime.json"),
         serde_json::to_vec(&receipts).expect("complete original sources and observations"),
