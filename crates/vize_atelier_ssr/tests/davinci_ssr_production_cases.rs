@@ -15,7 +15,7 @@ use vize_atelier_sfc::{
     SfcScriptOutputMode, StyleCompileOptions, TemplateCompileOptions,
     compile_sfc_for_adapter_with_experimental_options, parse_sfc,
 };
-use vize_atelier_ssr::differential::with_legacy_lane;
+use vize_atelier_ssr::differential::{record_lanes, with_legacy_lane};
 
 fn compile(source: &str) -> String {
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse");
@@ -103,4 +103,67 @@ div
   <Child>w-confirm(@cancel="$waveui.notify&amp;#40;'Canceled.', 'error'&amp;#41;")</Child>
 </template>"#;
     assert_matches_legacy("paren-slot", slot);
+}
+
+fn complete_v_pre_ssr(source: &str) -> serde_json::Value {
+    let filename: vize_l0::String = "format-v-pre-content.vue".into();
+    let parse = SfcParseOptions {
+        filename: filename.clone(),
+        ..Default::default()
+    };
+    let descriptor = parse_sfc(source, parse.clone()).expect("parse original SFC");
+    let options = SfcCompileOptions {
+        parse,
+        script: ScriptCompileOptions {
+            id: Some(filename.clone()),
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            id: Some(filename),
+            ssr: true,
+            ..Default::default()
+        },
+        style: StyleCompileOptions::default(),
+        vapor: false,
+        scope_id: None,
+    };
+    let result = compile_sfc_for_adapter_with_experimental_options(
+        &descriptor,
+        options,
+        TemplateSyntaxMode::Standard,
+        CustomElementMatcher::default(),
+        CodegenOptions::default(),
+        SfcScriptOutputMode::SeparateTemplate,
+        SfcCompileExperimentalOptions::default(),
+    )
+    .expect("compile original SFC");
+    assert!(result.errors.is_empty(), "{:?}", result.errors);
+    assert!(result.warnings.is_empty(), "{:?}", result.warnings);
+    serde_json::to_value(result).expect("complete serialized result")
+}
+
+#[test]
+fn v_pre_whitespace_matches_complete_legacy_ssr_results() {
+    let original = include_str!(
+        "../../../tests/_fixtures/differential/compiler/v-pre-whitespace/format-v-pre-content.vue.txt"
+    );
+    assert_eq!(original.len(), 228);
+    for source in [
+        original,
+        "<template><div v-pre><i/> <b/></div></template>",
+        "<template><div v-pre> before {{ literal }} after </div><p>{{ active }}</p></template>",
+        "<template><pre v-pre>x\n  <i/>\n  y</pre></template>",
+        "<template><div v-pre><i/>\u{a0}<b/></div></template>",
+        "<template><div v-pre>\n<!--keep--><i :id=\"raw\"/>\n</div></template>",
+        "<template><div v-pre>\n<i/>\r\n<b/>\n</div><p :id=\"active\"/></template>",
+    ] {
+        let (selected, lanes) = record_lanes(|| complete_v_pre_ssr(source));
+        assert_eq!(
+            lanes,
+            ["s4"],
+            "native SSR provider must execute: {source:?}"
+        );
+        let legacy = with_legacy_lane(|| complete_v_pre_ssr(source));
+        assert_eq!(selected, legacy, "whole SSR result: {source:?}");
+    }
 }

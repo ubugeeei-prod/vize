@@ -266,12 +266,26 @@ fn lower_single_text<'a>(
 pub(crate) fn lower_v_pre_text_run<'a>(
     cx: &mut Cx<'a>,
     children: &[SurfaceChild<'a>],
+    plan: &[TextAction<'a>],
     start: usize,
     out: &mut vize_l0::Vec<'a, Op<'a>>,
 ) -> usize {
     let Some(first) = children.get(start) else {
         return start + 1;
     };
+    if let SurfaceChild::Text(token) = first
+        && plan.get(start) == Some(&TextAction::Drop)
+    {
+        let span = cx.token_span(token);
+        cx.record(
+            "condense.drop-whitespace",
+            None,
+            token.text,
+            String::default(),
+            span,
+        );
+        return start + 1;
+    }
     let Some(mut end) = text_family_end(cx, first) else {
         return start + 1;
     };

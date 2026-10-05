@@ -26,10 +26,15 @@
     reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+use vize_atelier_core::options::{
+    CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
+};
 use vize_atelier_dom::{
     DomCompilerOptions, compile_template, compile_template_legacy_with_options,
+    compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options_with_stage_capture,
 };
 use vize_l0::Allocator;
+use vize_l0::dump::capture::{CaptureOutcome, StageCapture};
 
 /// `(name, template)` — every directive kind, on the `v-pre` element
 /// itself and one level under it.
@@ -262,4 +267,64 @@ fn the_v_pre_attribute_itself_is_dropped() {
         render_body(&result.code),
         r#"return (_openBlock(), _createElementBlock("div", _hoisted_1, "c")) }"#,
     );
+}
+
+/// Compare whole outputs: trimming the render body would hide whitespace.
+#[test]
+fn v_pre_whitespace_matches_complete_legacy_dom_outputs() {
+    let original = include_str!(
+        "../../../tests/_fixtures/differential/compiler/v-pre-whitespace/format-v-pre-content.vue.txt"
+    );
+    assert_eq!(original.len(), 228);
+    let template = original
+        .strip_prefix("<template>")
+        .unwrap()
+        .split_once("</template>")
+        .unwrap()
+        .0;
+    for source in [
+        template,
+        "<div v-pre><i/> <b/></div>",
+        "<div v-pre> before {{ literal }} after </div><p>{{ active }}</p>",
+        "<pre v-pre>x\n  <i/>\n  y</pre>",
+        "<div v-pre><i/>\u{a0}<b/></div>",
+        "<div v-pre>\n<!--keep--><i :id=\"raw\"/>\n</div>",
+        "<div v-pre>\n<i/>\r\n<b/>\n</div><p :id=\"active\"/>",
+    ] {
+        let allocator = Allocator::new();
+        let mut capture = StageCapture::new("dom");
+        let (_, errors, selected) =
+            compile_template_with_custom_elements_template_syntax_codegen_and_experimental_options_with_stage_capture(
+                &allocator,
+                source,
+                DomCompilerOptions::default(),
+                TemplateSyntaxMode::Standard,
+                CustomElementMatcher::default(),
+                CodegenOptions::default(),
+                CodegenExperimentalOptions::default(),
+                &mut capture,
+            );
+        assert_eq!(
+            capture.outcome,
+            CaptureOutcome::Accepted,
+            "native DOM must execute: {source:?}"
+        );
+        let legacy_allocator = Allocator::new();
+        let (_, legacy_errors, legacy) = compile_template_legacy_with_options(
+            &legacy_allocator,
+            source,
+            DomCompilerOptions::default(),
+        );
+        assert!(errors.is_empty(), "native diagnostics: {errors:?}");
+        assert!(
+            legacy_errors.is_empty(),
+            "legacy diagnostics: {legacy_errors:?}"
+        );
+        assert_eq!(selected.code, legacy.code, "whole code: {source:?}");
+        assert_eq!(
+            selected.preamble, legacy.preamble,
+            "whole preamble: {source:?}"
+        );
+        assert_eq!(selected.map, legacy.map, "whole map: {source:?}");
+    }
 }
