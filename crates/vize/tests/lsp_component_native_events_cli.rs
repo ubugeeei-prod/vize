@@ -41,10 +41,11 @@ fn original_complete_response_keeps_declared_types_and_all_other_candidates() {
             position(&app, " />"),
             json!({ "line": 11, "character": 12 })
         );
+        let original = project.original_response(parse(ORIGINAL), newline == "\n");
         project.assert_response(
             "textDocument/completion",
             json!({ "line": 11, "character": 12 }),
-            parse(ORIGINAL),
+            original,
         );
         // The reporter's literal coordinate is on `on` in the next span,
         // not on the unchanged component tag. Preserve it as a separate law.

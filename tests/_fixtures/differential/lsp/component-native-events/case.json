@@ -19,6 +19,10 @@
       "sha256": "bd32cf031010224a7d5b9b9f3878a528a1ff4a7f9263d0c6d35b5b2b952bef42"
     },
     {
+      "path": "checked-native.expected.json",
+      "sha256": "a9f7896a5958b2428afef38a53083aee4b52a58c9d31b89449fb4971684dab34"
+    },
+    {
       "path": "declared.expected.json",
       "sha256": "8a8c96529452c19508862120c5db2f845fa85145ba6aee0e6c1e5b6522994c63"
     },
@@ -100,5 +104,6 @@
     "line": 11,
     "character": 12
   },
-  "coordinateQualification": "Unchanged original fenced source has the component tag on zero-based line11; reported line12 is the following span interpolation. Both complete requests are retained and independently checked."
+  "coordinateQualification": "Unchanged original fenced source has the component tag on zero-based line11; reported line12 is the following span interpolation. Both complete requests are retained and independently checked.",
+  "opaqueDataQualification": "Fixed whole checked native item retains every observed field. Only paths bound before completion to a unique owned package-link filesystem witness, authored source URI, and the unique generated MySwitch prop-binding UTF-16 cursor are substituted. LF cursor must equal authentic20908; CRLF uses its own full generated source witness. Unreferenced marker dependency is separate test bootstrap; original 19 corpus inputs remain byte-exact."
 }

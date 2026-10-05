@@ -25,7 +25,7 @@ as complete raw messages, without claiming a diagnostics oracle for this issue.
 
 Every assertion records the complete sent/received envelopes, authored inputs,
 CLI/native executable hashes, source head and available archive receipt under
-`target/nextest/full/lsp-event-completions/`, already uploaded by the Rust shard
+`target/nextest/<NEXTEST_PROFILE>/lsp-event-completions/`, uploaded by the Rust shard
 artifact. Source review is separate from pending Actions, protected full suites,
 unchanged instruction ceilings, actual merge and public release proof.
 
@@ -36,3 +36,22 @@ separately from the corrected tag response; no source line is inserted. Complete
 handler-reference controls share the independent binding oracle for component
 and native listeners in Vue JS/TS. Whole JSON arrays are stored in genuine
 ≤350-line static shards and concatenated without filtering or field omission.
+
+Authentic source Check37301863828 passed the three supplemental laws (39 whole
+completion responses) but failed the original LF array because the checked prop
+retains native opaque resolve data omitted from the first expected vector. The
+original 29-item vector and all 19 original corpus inputs remain unchanged; a
+separate fixed checked-data shard supplies every field. Its transient paths bind
+to the unique physical fixture through an unreferenced bootstrap marker package
+mirrored by Canon's existing dependency links. Full generated App/MySwitch and
+tsconfig bytes, hashes, link target and unchanged authored root inputs are
+captured before the completion request. The unique complete MySwitch typed
+binding pattern supplies its UTF-16 cursor; LF additionally requires the actual
+20908 witness, while CRLF uses its own generated source. No response field
+constructs or relaxes this expectation.
+
+That first source run wrote raw messages to the full-profile directory while
+PR shards uploaded only pr, so its shard artifact lacks the promised recorder
+files. The corrected recorder uses the actual NEXTEST_PROFILE (full for local
+default/merge queue). Native hovers, both original-coordinate laws, full 45
+responses and actual raw artifact custody require fresh exact-source Actions.

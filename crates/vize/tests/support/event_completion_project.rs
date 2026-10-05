@@ -13,6 +13,9 @@ use vize_carton::corsa_resolver::discover_corsa_in_ancestors;
 
 use super::lsp_process::{LspProcess, file_uri};
 
+#[path = "event_completion_witness.rs"]
+mod witness;
+
 pub struct Project {
     root: tempfile::TempDir,
     pub app_uri: String,
@@ -42,6 +45,7 @@ impl Project {
             .unwrap();
         let modules = root.path().join("node_modules");
         std::fs::create_dir_all(&modules).unwrap();
+        witness::create_marker(root.path());
         #[cfg(unix)]
         std::os::unix::fs::symlink(&vue, modules.join("vue")).unwrap();
         #[cfg(windows)]
@@ -63,13 +67,17 @@ impl Project {
             serde_json::to_vec(&config).unwrap(),
         )
         .unwrap();
+        let profile = std::env::var("NEXTEST_PROFILE").unwrap_or_else(|_| "full".into());
         let capture = workspace
-            .join("target/nextest/full/lsp-event-completions")
+            .join("target/nextest")
+            .join(&profile)
+            .join("lsp-event-completions")
             .join(name)
             .with_extension("json");
         std::fs::create_dir_all(capture.parent().unwrap()).unwrap();
         let archive = workspace.join(".artifacts/rust-test-archive/receipt.json");
         let receipt = json!({
+            "nextestProfile": profile,
             "sourceHead": std::env::var("GITHUB_SHA").ok(),
             "binary": { "path": env!("CARGO_BIN_EXE_vize"), "sha256": hash(&std::fs::read(env!("CARGO_BIN_EXE_vize")).unwrap()) },
             "nativeRuntime": { "path": runtime, "sha256": hash(&std::fs::read(&runtime).unwrap()) }, "vue": vue,
@@ -182,6 +190,55 @@ impl Project {
         );
     }
 
+    pub fn original_response(&mut self, mut expected: Value, lf: bool) -> Value {
+        // Bind paths/query position before sending or reading completion data.
+        for (path, key) in [
+            ("src/App.vue", "app"),
+            ("src/MySwitch.vue", "child"),
+            ("tsconfig.json", "tsconfig"),
+        ] {
+            assert_eq!(
+                std::fs::read_to_string(self.root.path().join(path)).unwrap(),
+                self.receipt["inputs"][key].as_str().unwrap()
+            );
+        }
+        assert_eq!(
+            std::fs::read(self.root.path().join("vize.config.json")).unwrap(),
+            serde_json::to_vec(&self.receipt["inputs"]["runtimeConfig"]).unwrap()
+        );
+        let root = self.root.path().to_path_buf();
+        let observed = witness::observe(&root, |receipt| {
+            self.receipt["mirrorWitness"] = receipt;
+            self.record("receipt", json!({ "mirrorWitnessCaptured": true }));
+        });
+        if lf {
+            assert_eq!(observed.query_position, 20_908);
+        }
+        let mut data: Value = serde_json::from_str(include_str!(
+            "../../../../tests/_fixtures/differential/lsp/component-native-events/checked-native.expected.json"
+        ))
+        .unwrap();
+        for path in ["fileName", "position"] {
+            assert!(data["vizeCompletion"]["item"]["data"][path].is_null());
+        }
+        assert!(data["vizeCompletion"]["requestUri"].is_null());
+        assert!(data["vizeCompletion"]["uri"].is_null());
+        data["vizeCompletion"]["item"]["data"]["fileName"] = json!(observed.app_path);
+        data["vizeCompletion"]["item"]["data"]["position"] = json!(observed.query_position);
+        data["vizeCompletion"]["requestUri"] = json!(file_uri(&observed.app_path));
+        data["vizeCompletion"]["uri"] = json!(self.app_uri);
+        let items = expected.as_array_mut().unwrap();
+        let matches: Vec<_> = items
+            .iter_mut()
+            .filter(|item| item["label"] == "checked")
+            .collect();
+        assert_eq!(matches.len(), 1);
+        let item = matches.into_iter().next().unwrap();
+        assert!(item.get("data").is_none());
+        item["data"] = data;
+        expected
+    }
+
     pub fn assert_disk_child(&self, expected: &str) {
         assert_eq!(
             std::fs::read_to_string(self.root.path().join("src/MySwitch.vue")).unwrap(),
@@ -204,7 +261,7 @@ impl Project {
     }
 }
 
-fn hash(bytes: &[u8]) -> String {
+pub(super) fn hash(bytes: &[u8]) -> String {
     use std::fmt::Write as _;
     let mut out = String::with_capacity(64);
     for byte in Sha256::digest(bytes) {
