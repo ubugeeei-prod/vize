@@ -67,8 +67,13 @@ impl SsrCodegenContext<'_> {
         suffix: &str,
         span: Span,
     ) -> EmitDocument {
-        let mut piece = EmitDocument::plain(prefix);
-        piece.push_spanned(&self.spanned_expression(code, span));
+        let mut piece = EmitDocument::with_capacity(prefix.len() + code.len() + suffix.len(), true);
+        piece.push_str(prefix);
+        if self.spans_enabled() {
+            piece.push_expression(code, span, self.source);
+        } else {
+            piece.push_str(code);
+        }
         piece.push_str(suffix);
         piece
     }
@@ -126,3 +131,6 @@ impl SsrCodegenContext<'_> {
         self.out.push_escaped(part, &[("`", "\\`"), ("${", "\\${")]);
     }
 }
+
+#[cfg(test)]
+mod tests;

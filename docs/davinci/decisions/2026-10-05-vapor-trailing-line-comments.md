@@ -150,6 +150,32 @@ remain present; bind the manifest to the true origin. Fresh exact source and
 all104 actual measurements must establish the result before re-admission.
 No caps, fixtures, native qualification or strict32 assertions are waived.
 
+Actual85c5 dedicated instruction workflow37273350590 repeats the exact sole
+SSR stress failure862525>850681. Authenticate raw artifact11329602168 before
+any successor; remove the ineffective cold/out-of-line hints. No hint-based
+savings, retry admission or performance acceptance is retained.
+
+The raw 500 interpolation appends identify real avoidable work in SSR
+spanned_wrap: create an expression document, then copy its bytes and rebase
+its links into another prefix document, growing that wrapper from inline to
+heap. Construct only the known-size wrapper and invoke the existing
+push_expression directly at its prefix cursor when maps are enabled;
+otherwise append the expression bytes. Prefix/suffix, recording=true,
+all expression_links names/segment flags and generated/authored ranges stay
+exact; spanned_expression and every attr consumer remain unchanged. No
+unsafe/new API, parser walk, pipeline stage or fixture shortcut is added.
+Independent SSR peer review proves old rebase0 followed by prefix rebase
+is identical to the direct prefix rebase, with no measured saving inferred.
+A complete retained-composition control checks text, all links and serialized
+maps with maps on/off, rewritten Unicode names, empty code/span, and24/25-byte
+prefix boundaries. Whole retained DOM/SSR and original32 runtime laws and all
+104 actual ceilings remain mandatory on the fresh source and protected prefix.
+The Cargo-locked compact_str0.10.0 archive authenticates to checksum
+79fcda08c33bb58b97008b2cdada6622500e949e060f5913361763121abd2416;
+its push_str copies each nonempty append and checks capacity, reserving only
+when needed; this corroborates the real-work design.
+No budgets, registry/dependency sources, original inputs or assertions change. Register the sole genuine new SSR test/dev L0 inventory row through the existing Node generator; resolved production surfaces stay exact.
+
 TODO: exact source Actions including whole-module runtime, root peer review,
 protected full suites and all 104 immutable instruction ceilings, signed
 actual main with reporter trailer/issue closure, then a verified frequent cut.

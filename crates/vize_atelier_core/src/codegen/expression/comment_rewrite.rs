@@ -23,8 +23,6 @@ use vize_l0::String;
 /// (escape-aware, no `${}` recursion): a line comment inside an interpolation
 /// survives unrewritten, matching the previous behavior. Copied segments are
 /// sliced, not rebuilt byte-by-byte, so non-ASCII content survives intact.
-#[cold]
-#[inline(never)]
 pub fn convert_line_comments_to_block(content: &str) -> String {
     let bytes = content.as_bytes();
     let mut result = String::with_capacity(content.len());
