@@ -207,3 +207,10 @@ generated TypeScript, so reconstruct both endpoint ranges rather than treating
 the first as authored SFC coordinates. The offline corrected law restores both
 complete prior packets; fresh exact-head Actions must authenticate that law.
 No snapshot/diagnostic/hover expectation or production byte changes.
+
+The exact4b required native qualifier succeeds, including the full matrix and
+raw reconstruction law. Literal prospective workflow composition with #7878
+would reach353 lines; compact only the TS40 cargo command's wrapping by three
+lines, mechanically preserving every argv token, profile and receipt command.
+The combined workflow fits350 with no command/capture/limit removal. This
+composition-only successor still requires fresh exact-head source/native proof.
