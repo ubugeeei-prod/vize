@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { expectedCliDiagnostic } from "./lint-config-observer.mjs";
 
 const [project, artifacts, inputDir, version] = process.argv.slice(2);
@@ -41,10 +41,10 @@ const authoredPaths = [...originals, ...controls, ...externalNames];
 assert.equal(require("nuxt/package.json").version, version);
 const apiHost = path.join(project, "vize-lint-probe-api.mjs");
 const apiHostSource =
-  'export { loadNuxt } from "nuxt";\nexport * as api from "@vizejs/nuxt/lint";\n';
+  'export { loadNuxt } from "nuxt";\nexport * as api from "@vizejs/nuxt/lint";\nexport const lintPluginEntry = import.meta.resolve("oxlint-plugin-vize");\n';
 fs.writeFileSync(apiHost, apiHostSource, { flag: "wx" });
 fs.writeFileSync(path.join(artifacts, "probe-api.mjs"), apiHostSource);
-const { loadNuxt, api } = await import(pathToFileURL(apiHost).href);
+const { loadNuxt, api, lintPluginEntry } = await import(pathToFileURL(apiHost).href);
 const cli = path.join(project, "node_modules/oxlint-plugin-vize/bin/oxlint-vize");
 const rows = [];
 const writeConfig = (name, content) => {
@@ -216,11 +216,10 @@ try {
     { files: 4 },
   );
   const ancestor = path.join(artifacts, "ancestor-config.json");
-  const ancestorBytes = api.renderNuxtOxlintConfig(
-    corpus.items,
-    require.resolve("oxlint-plugin-vize"),
-    { rootDir: project, configDir: artifacts },
-  );
+  const ancestorBytes = api.renderNuxtOxlintConfig(corpus.items, fileURLToPath(lintPluginEntry), {
+    rootDir: project,
+    configDir: artifacts,
+  });
   fs.writeFileSync(ancestor, ancestorBytes, { flag: "wx" });
   run(
     "ancestor-owned-namespace",

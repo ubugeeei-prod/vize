@@ -191,3 +191,26 @@ unknown forms, non-Vue backslash/slash twins, complete namespaces and cleanup.
 Independent source-only review clears packetf093dbff19c2ce2207c7f28932ffa5be80b0a35d2c356ccfdb798bc3f2cb8604; all15 source hashes, original corpus and7130/plugin/format bodies are authenticated. Fresh original fourteen source-NAPI cases,
 unchanged #7130/full integration suites, protected100+4/full Rust and actual
 signed merge/publication remain required. No runtime credit transfers from0fa.
+
+## Public ESM ancestor entry
+
+[Paired recipe correction](https://github.com/ubugeeei-prod/vize/issues/7983#issuecomment-5993485120)
+retains failed89e3/actualb98 run37300452499/job111731655999/artifact11341367437.
+The ancestor case's require.resolve rejects the ESM-only public plugin export;
+raw log4db4a174 authenticates the error at221. Preserve all preceding five
+original cases as partial evidence only: default2/1, bad-ignore nonzero,
+unmatched2/0, root2/1, exclusion4/3 files/warnings. Complete source/binary
+ledger has12 loads,408 catalog calls and7 real lint returns (five whole inline
+results/spans and two whole empty Nuxt results); catalog is not lint credit.
+Partial receipt3178e8bd preserves failed full-run status and all raw packets.
+
+The existing physical project ESM host exports import.meta.resolve for the
+public plugin; fileURLToPath feeds the same ancestor renderer. No fallback,
+private entry, production/argv/observer/input/oracle/cohort/timeout change.
+Independent one-file source peer clears exact file208115cc4ee57166e0dbb74e52d3112cfdd3fc47eb1cb7836df35cbb07f87a92
+and patch9b623d52ea5869a2ffb4eef46fcf24aea5bdd4af07e0c3d6662072eb7baf513d;
+configured checks pass,349lines. Old package integration/7130/script-location/
+casing and new physical scope laws passed job111731843427 in its distinct
+native envelope. Instrumented Nuxt process times1.85–3.58s and that package's
+454ms are not comparable workloads/baselines or a performance claim.
+Fresh fourteen current-source cases and full protected delivery remain pending.
