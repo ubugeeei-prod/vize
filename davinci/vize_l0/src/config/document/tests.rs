@@ -20,12 +20,39 @@ fn document_projects_only_documented_compiler_whitespace_modes() {
             Some("preserve"),
         ),
         (
+            r#"{"compiler":{"whitespace":"\u0070reserve"}}"#,
+            Some("preserve"),
+        ),
+        (
             r#"{"compiler":{"whitespace":"vue2-line-breaks"}}"#,
             Some("vue2-line-breaks"),
         ),
     ] {
         let document: ConfigDocument = serde_json::from_str(json).unwrap();
         assert_eq!(document.compiler_whitespace(), expected);
+    }
+}
+
+#[test]
+fn document_ignores_non_string_whitespace_without_losing_other_compiler_fields() {
+    for value in ["1e400", "-1e400", "[1e400]", "{\"nested\":[1e400]}"] {
+        let json = format!(r#"{{"compiler":{{"whitespace":{value},"vapor":true}}}}"#);
+        let document: ConfigDocument = serde_json::from_str(&json).unwrap();
+        assert_eq!(document.compiler_whitespace(), None, "{json}");
+        assert_eq!(document.compiler_vapor(), Some(true), "{json}");
+    }
+    let document: ConfigDocument = serde_json::from_value(serde_json::json!({
+        "compiler": { "whitespace": "preserve", "vapor": true }
+    }))
+    .unwrap();
+    assert_eq!(document.compiler_whitespace(), Some("preserve"));
+    assert_eq!(document.compiler_vapor(), Some(true));
+    for malformed in ["1e", "[1e400,]", "{\"nested\":}"] {
+        let json = format!(r#"{{"compiler":{{"whitespace":{malformed}}}}}"#);
+        assert!(
+            serde_json::from_str::<ConfigDocument>(&json).is_err(),
+            "{json}"
+        );
     }
 }
 

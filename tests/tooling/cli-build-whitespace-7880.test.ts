@@ -38,7 +38,7 @@ void test("#7880 original CLI source/config bytes and official Vue version stay 
 
 void test("#7880 source-built CLI renders complete original DOM/SSR output like pinned Vue", async () => {
   const captures: any[] = [];
-  const evidence = path.join(repository, "artifacts/cli-whitespace-7880");
+  const evidence = path.join(repository, "target/differential/cli-whitespace-7880");
   fs.mkdirSync(evidence, { recursive: true });
   const variants = [
     {
@@ -137,7 +137,12 @@ void test("#7880 source-built CLI renders complete original DOM/SSR output like 
           );
           assert.equal(fs.readFileSync(path.join(project, "App.vue"), "utf8"), source);
           assert.equal(fs.readFileSync(path.join(project, variant.file), "utf8"), config);
-          const parsed = compiler.parse(source, { filename: "App.vue" });
+          const parsed = compiler.parse(source, {
+            filename: "App.vue",
+            templateParseOptions: {
+              whitespace: variant.preserve ? "preserve" : "condense",
+            },
+          });
           assert.deepEqual(parsed.errors, []);
           const reference = compiler.compileScript(parsed.descriptor, {
             id: "whitespace-7880",

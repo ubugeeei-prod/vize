@@ -42,13 +42,7 @@ impl ConfigDocument {
 
     /// Documented template whitespace mode, without changing the effective model.
     pub fn compiler_whitespace(&self) -> Option<&'static str> {
-        match self
-            .0
-            .compiler
-            .whitespace
-            .as_ref()
-            .and_then(serde_json::Value::as_str)
-        {
+        match self.0.compiler.whitespace.as_deref() {
             Some("preserve") => Some("preserve"),
             Some("condense") => Some("condense"),
             Some("vue2-line-breaks") => Some("vue2-line-breaks"),
