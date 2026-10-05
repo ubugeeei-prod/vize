@@ -204,8 +204,7 @@ highest fully qualified contiguous prefix with native `gh stack merge`, then
 verify each protected candidate's full Rust/differential suites, all 104 probes
 measured three times, unchanged actual-parent ratchets and signed actual merge.
 
-The issue reporter is the publicly verified `ubugeeei` account, user ID
-71201308. This meaningful current-main delivery record carries its explicit
+The issue reporter is the publicly verified `ubugeeei` account, user ID 71201308. This meaningful current-main delivery record carries its explicit
 coauthor trailer without rewriting the original implementation history. Pair
 this decision with #6834. Unavailable observations remain null, native exporter
 read/assembly ordering and supplied telemetry stay exact; no CPU result or 10x
