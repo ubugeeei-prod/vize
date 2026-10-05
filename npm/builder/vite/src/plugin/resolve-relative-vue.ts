@@ -67,6 +67,18 @@ export async function resolveRelativeVueSfcImport(
   }
 
   const effectiveQuery = resolvedRequest.querySuffix || querySuffix;
+  // Asset queries keep Vite's resolved module instead of compiling a component.
+  if (effectiveQuery) {
+    const params = new URLSearchParams(effectiveQuery.slice(1));
+    if (
+      params.has("raw") ||
+      params.has("url") ||
+      params.has("worker") ||
+      params.has("sharedworker")
+    ) {
+      return resolved;
+    }
+  }
   return isDependencyScan
     ? resolvedPath
     : toPluginVisibleVirtualId(resolvedPath, isSsrRequest, effectiveQuery);

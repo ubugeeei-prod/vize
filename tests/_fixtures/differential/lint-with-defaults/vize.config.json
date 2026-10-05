@@ -1,0 +1,1 @@
+{ "linter": { "preset": "incremental", "rules": { "script/no-with-defaults": "error" } } }

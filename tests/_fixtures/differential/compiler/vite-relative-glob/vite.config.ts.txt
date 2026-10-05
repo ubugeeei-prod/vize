@@ -1,0 +1,8 @@
+import vue from "@vitejs/plugin-vue";
+import vize from "@vizejs/vite-plugin";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [process.env.USE_VIZE ? vize() : vue()],
+  build: { minify: false, outDir: process.env.USE_VIZE ? "dist-vize" : "dist-vue" }
+});
