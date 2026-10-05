@@ -133,7 +133,11 @@ impl InlayHintService {
             analyze_script: true,
             ..Default::default()
         });
-        analyzer.analyze_script_setup(&script_setup.content);
+        if matches!(reactive_hints, ReactiveHints::BuiltinFacts) {
+            analyzer.draw_script_setup_with_builtin_types(&script_setup.content);
+        } else {
+            analyzer.analyze_script_setup(&script_setup.content);
+        }
         let croquis = analyzer.finish();
 
         // Get all prop names from defineProps (for template hints)

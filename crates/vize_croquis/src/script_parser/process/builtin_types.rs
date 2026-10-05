@@ -114,14 +114,17 @@ fn numeric_expression(result: &ScriptParseResult, expression: &Expression<'_>) -
         Expression::StaticMemberExpression(member)
             if !member.optional && member.property.name == "value" =>
         {
-            let Expression::Identifier(object) = &member.object else {
+            owned_primitive_value(result, &member.object) == Some(Primitive::Number)
+        }
+        Expression::StaticMemberExpression(member)
+            if !member.optional && member.property.name == "length" =>
+        {
+            let Expression::StaticMemberExpression(value) = &member.object else {
                 return false;
             };
-            let Some(fact) = result.types.builtin_reactive_type(object.name.as_str()) else {
-                return false;
-            };
-            fact.value == Primitive::Number
-                && result.binding_spans.get(object.name.as_str()) == Some(&fact.span)
+            !value.optional
+                && value.property.name == "value"
+                && owned_primitive_value(result, &value.object) == Some(Primitive::String)
         }
         Expression::BinaryExpression(binary)
             if matches!(
@@ -138,4 +141,12 @@ fn numeric_expression(result: &ScriptParseResult, expression: &Expression<'_>) -
         }
         _ => false,
     }
+}
+
+fn owned_primitive_value(result: &ScriptParseResult, object: &Expression<'_>) -> Option<Primitive> {
+    let Expression::Identifier(object) = object else {
+        return None;
+    };
+    let fact = result.types.builtin_reactive_type(object.name.as_str())?;
+    (result.binding_spans.get(object.name.as_str()) == Some(&fact.span)).then_some(fact.value)
 }

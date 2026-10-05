@@ -92,3 +92,30 @@ Record primitive builtin facts inside the existing Croquis declarator AST walk: 
 Consume these facts in the already-required authored decoration analysis only when the native backend is disabled or cannot initialize. A live native query remains sole type authority, including a successful empty result. Preserve the existing request generation/cancellation guard, source buffer ownership, backend-off behavior, and all native structured-label/edit/range/JS/TS vectors. Add whole original scorecard/disabled/unavailable response vectors, numeric/import/unknown controls, exact UTF-16/CRLF ranges and edit invalidation. Fresh source/native Actions, protected full suites and release inclusion remain pending; no budget or legacy positive oracle is weakened.
 
 The PR tooling planner explicitly defers the original Node Scorecard to the merge tier, so a green selected shard is not runtime evidence for that suite. Preserve all original positive assertions and add the independently captured published three-hint whole vector without changing its input. Run the complete original Node suite explicitly in the required inlay qualifier through the normal source-bound CLI build receipt, retaining raw sessions and the receipt on success or failure inside the existing uploaded subtree. Fresh exact-source execution and protected full suites remain required.
+
+The protected candidate `888cedc` failed six unchanged Croquis instruction
+ceilings (small full/compile/hoist on/off and large full/compile). The PR was
+immediately removed from the queue and returned to Draft. The added primitive
+fact hook had also run for ordinary compiler/full analysis; captured source
+proves that unnecessary work, while precise numeric attribution remains bounded
+by the retained candidate measurements. Request primitive facts only from the
+editor's `BuiltinFacts` branch through the same Drawer AST pass. Default parsed,
+parse-free and public statement paths specialize the hook away; private fact
+storage stays absent until a proven editor fact exists. Keep all old inputs,
+positive vectors, native authority and pinned ceilings unchanged. Fresh source,
+native, original Scorecard and protected instruction qualification remain required.
+
+The same protected candidate also failed the untouched granular CodeLens control:
+its 573-byte FeatureIsolation.vue source requires the known string Ref and the
+numeric computed value from `message.value.length * 2` with type checking off.
+Retain that whole input and every positive assertion. Extend only the existing
+AST primitive proof for a static nonoptional length read of a current-span-owned
+primitive StringRef value; unknown objects, arrays, methods, casts and generics
+stay untyped. [ECMAScript StringCreate](https://tc39.es/ecma262/multipage/ordinary-and-exotic-objects-behaviours.html#sec-stringcreate)
+sets its immutable length property to the Number conversion of the string's length.
+Add the complete two-hint vector and refusal laws, and execute the original full
+feature-isolation Node suite through the same source-bound build/receipt after
+the original Scorecard command. Save each complete session family before
+propagating either actual failure status. Native successful empty results keep
+sole authority. No new output-vector acceptance or performance credit precedes
+fresh exact-source Actions and protected qualification.

@@ -1,7 +1,9 @@
-use crate::script_parser::parse_script_setup;
+fn parse_builtin(source: &str) -> crate::script_parser::ScriptParseResult {
+    crate::script_parser::parse_script_setup_for_unused::<true>(source, None, false, false, false)
+}
 
 fn facts(source: &str) -> Vec<(String, String, String, String)> {
-    let parsed = parse_script_setup(source);
+    let parsed = parse_builtin(source);
     let mut facts: Vec<_> = parsed
         .types
         .builtin_reactive_types()
@@ -97,7 +99,7 @@ fn later_binding_ownership_and_fresh_parse_lifecycle_do_not_reuse_stale_facts() 
         Vec::new()
     );
     let source = "import { ref } from 'vue'; const count = ref(0);";
-    let parsed = parse_script_setup(source);
+    let parsed = parse_builtin(source);
     let mut croquis = crate::Croquis::new();
     parsed.apply_to_croquis(&mut croquis);
     let before = croquis
@@ -118,5 +120,74 @@ fn later_binding_ownership_and_fresh_parse_lifecycle_do_not_reuse_stale_facts() 
     assert!(
         !debug.contains("builtin_reactive"),
         "compatibility dump retains its old shape"
+    );
+}
+
+#[test]
+fn owned_primitive_string_length_has_numeric_type_and_unknown_lengths_are_refused() {
+    assert_eq!(
+        facts(
+            "import { ref, computed } from 'vue'; const message = ref('hello'); const doubled = computed(() => message.value.length * 2);"
+        ),
+        vec![
+            (
+                "doubled".into(),
+                "Computed".into(),
+                "number".into(),
+                "doubled".into()
+            ),
+            (
+                "message".into(),
+                "Ref".into(),
+                "string".into(),
+                "message".into()
+            ),
+        ]
+    );
+    for source in [
+        "import { ref, computed } from 'vue'; const message = ref(readMessage()); const x = computed(() => message.value.length * 2);",
+        "import { ref, computed } from 'vue'; const message = ref({ length: 1 }); const x = computed(() => message.value.length * 2);",
+        "import { ref, computed } from 'vue'; const message = ref(['a']); const x = computed(() => message.value.length * 2);",
+        "import { computed } from 'vue'; const x = computed(() => unknown.value.length * 2);",
+        "import { ref, computed } from './fake'; const message = ref('hello'); const x = computed(() => message.value.length * 2);",
+        "import { ref, computed } from 'vue'; const message = ref('hello'); let message = dynamic(); const x = computed(() => message.value.length * 2);",
+    ] {
+        assert_eq!(
+            facts(source),
+            Vec::new(),
+            "whole unknown facts for {source}"
+        );
+    }
+    for expression in [
+        "message.length * 2",
+        "message.value.size * 2",
+        "message.value.length() * 2",
+        "message.value?.length * 2",
+        "message.value.length + unknown.value",
+        "(message.value as string).length * 2",
+    ] {
+        assert_eq!(
+            facts(&format!(
+                "import {{ ref, computed }} from 'vue'; const message = ref('hello'); const x = computed(() => {expression});"
+            )),
+            vec![(
+                "message".into(),
+                "Ref".into(),
+                "string".into(),
+                "message".into()
+            )],
+            "whole facts for {expression}"
+        );
+    }
+    assert_eq!(
+        facts(
+            "import { ref, computed } from 'vue'; const message = ref(0); const x = computed(() => message.value.length * 2);"
+        ),
+        vec![(
+            "message".into(),
+            "Ref".into(),
+            "number".into(),
+            "message".into()
+        )]
     );
 }

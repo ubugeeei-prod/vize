@@ -169,7 +169,7 @@ pub struct TypeResolver {
     resolved_world: Option<ResolvedTypeWorld>,
     resolved_props_complete: Option<bool>,
     resolved_prop_modules: FxHashMap<CompactString, CompactString>,
-    builtin_reactive: FxHashMap<CompactString, BuiltinReactiveType>,
+    builtin_reactive: Option<Box<builtin_reactive::BuiltinReactiveTypes>>,
 }
 
 impl TypeResolver {
@@ -237,9 +237,7 @@ impl TypeResolver {
     #[inline]
     pub fn merge_keep_existing(&mut self, other: TypeResolver) {
         self.definitions.merge_keep_existing(other.definitions);
-        for (name, fact) in other.builtin_reactive {
-            self.builtin_reactive.entry(name).or_insert(fact);
-        }
+        self.merge_builtin_reactive_types(other.builtin_reactive);
     }
 
     /// Extract emit event names from emit type arguments

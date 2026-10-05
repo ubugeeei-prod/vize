@@ -26,11 +26,22 @@ use super::enums::process_enum_declaration;
 use super::macros;
 
 /// Process a single statement
+#[inline]
 pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, source: &str) {
+    process_statement_with_builtin::<false>(result, stmt, source);
+}
+
+pub(in crate::script_parser) fn process_statement_with_builtin<const BUILTIN_TYPES: bool>(
+    result: &mut ScriptParseResult,
+    stmt: &Statement<'_>,
+    source: &str,
+) {
     super::super::extract::invalidate_default_objects(result, stmt);
     match stmt {
         // Variable declarations: const, let, var
-        Statement::VariableDeclaration(decl) => process_variable_declaration(result, decl, source),
+        Statement::VariableDeclaration(decl) => {
+            process_variable_declaration::<BUILTIN_TYPES>(result, decl, source);
+        }
 
         // Function declarations
         Statement::FunctionDeclaration(func) => process_function_declaration(result, func, source),
@@ -168,14 +179,16 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
     }
 }
 
-fn process_variable_declaration(
+fn process_variable_declaration<const BUILTIN_TYPES: bool>(
     result: &mut ScriptParseResult,
     decl: &VariableDeclaration<'_>,
     source: &str,
 ) {
     for declarator in decl.declarations.iter() {
         super::super::extract::invalidate_default_expression(result, declarator.init.as_ref());
-        super::builtin_types::record(result, declarator, decl.kind);
+        if BUILTIN_TYPES {
+            super::builtin_types::record(result, declarator, decl.kind);
+        }
         macros::process_variable_declarator(result, declarator, decl.kind, source);
     }
 }
@@ -234,7 +247,7 @@ fn process_exported_value_declaration(
     super::module_exports::record_module_value_exports(result, decl);
     match decl {
         Declaration::VariableDeclaration(variable) => {
-            process_variable_declaration(result, variable, source)
+            process_variable_declaration::<false>(result, variable, source)
         }
         Declaration::FunctionDeclaration(func) => {
             process_function_declaration(result, func, source)

@@ -229,3 +229,22 @@ fn unavailable_checker_keeps_known_builtin_without_rendering_computed_placeholde
         Some(ORIGINAL)
     );
 }
+
+#[test]
+fn editor_only_original_feature_isolation_keeps_the_complete_string_length_vector() {
+    const SOURCE: &str = include_str!(
+        "../../../../../../tests/_fixtures/differential/lsp/computed-inlay-hints/FeatureIsolation.vue.txt"
+    );
+    let mut service = editor_only_document(SOURCE);
+    assert_eq!(
+        query(
+            &mut service,
+            2,
+            json!({"start":{"line":0,"character":0},"end":{"line":1000,"character":0}})
+        ),
+        json!({"jsonrpc":"2.0","id":2,"result":[
+            builtin_hint(5,13,": Ref<string>","Ref"),
+            builtin_hint(6,13,": ComputedRef<number>","ComputedRef"),
+        ]})
+    );
+}
