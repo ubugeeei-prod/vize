@@ -37,6 +37,16 @@ impl NativeOracle {
         let initialized = process.recv_response(1);
         assert!(initialized["result"].is_object(), "{initialized:#}");
         process.send(json!({"jsonrpc":"2.0","method":"initialized","params":{}}));
+        let registration =
+            process.recv_matching(|message| message["method"] == "client/registerCapability");
+        assert_eq!(
+            registration,
+            json!({"jsonrpc":"2.0","id":"ts1","method":"client/registerCapability","params":{"registrations":[{
+                "id":"typescript-config-watch-id","method":"workspace/didChangeConfiguration",
+                "registerOptions":{"section":["js/ts","typescript","javascript","editor"]}
+            }]}})
+        );
+        process.send(json!({"jsonrpc":"2.0","id":"ts1","result":null}));
         Self {
             _root: root,
             process,

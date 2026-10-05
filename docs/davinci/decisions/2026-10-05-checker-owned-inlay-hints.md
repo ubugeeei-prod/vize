@@ -48,7 +48,9 @@ URI normalization. After both readers join, each process retains exit status and
 raw stderr, plus the executable hash, version output and harness source identity.
 Both native and Vize shutdown must succeed. These captures run on Actions.
 The stock oracle initializes with the pinned required nullable `processId` and
-declared pull-diagnostic capabilities. Its retained bare script has two unused
+declared pull-diagnostic capabilities. Before opening a document, it asserts and
+acknowledges the complete pinned configuration-watch registration request, which
+the native initialization handler awaits synchronously. Its retained bare script has two unused
 binding suggestions for `label`/`items`, whose uses occur in the SFC template.
 Assert that complete native diagnostic vector separately from the complete clean
 SFC diagnostic vector. Authored plain JS/TS controls consume their computed value;
