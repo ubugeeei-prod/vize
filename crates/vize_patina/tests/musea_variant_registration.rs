@@ -130,7 +130,7 @@ fn each_fragment_retains_its_own_template_facts_and_shared_original_registration
     use vize_relief::RootNode;
 
     static AUDIT: RuleMeta = RuleMeta {
-        name: "vue/no-undefined-refs",
+        name: "test/original-art-fragment-facts",
         description: "Retain complete original fragment facts",
         category: RuleCategory::Recommended,
         fixable: false,
@@ -155,10 +155,7 @@ fn each_fragment_retains_its_own_template_facts_and_shared_original_registration
             FACTS.lock().unwrap().push((components, locals));
         }
     }
-    let mut registry = RuleRegistry::new();
-    registry.register(Box::new(
-        vize_patina::rules::opinionated::vue::RequireComponentRegistration::default(),
-    ));
+    let mut registry = RuleRegistry::with_all();
     registry.register(Box::new(Audit));
     let linter = Linter::with_registry(registry)
         .with_enabled_rules(Some(vec![RULE.into(), AUDIT.name.into()]));

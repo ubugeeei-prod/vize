@@ -65,3 +65,13 @@ independent template facts alongside a complete empty registration result.
 All original inputs, prior laws and ceilings stay intact; fresh hosted
 execution is required. New dependent publication is paused until this
 existing parent actually merges under the PR-backlog priority.
+
+The first ownership correction `402d3c5f` compiles the library, but its new
+integration witness rejects a private `opinionated::vue` constructor with
+E0603 in seeded recall 37261177514/job111608548566. [Paired #7897 correction](https://github.com/ubugeeei-prod/vize/issues/7897#issuecomment-5987826468)
+and [#7900 correction](https://github.com/ubugeeei-prod/vize/issues/7900#issuecomment-5987826640)
+use the existing public complete registry and a uniquely named audit rule,
+with only the actual registration and audit instances enabled. The full
+empty result and exact `MyIcon`/VFor1 then 0 callback expectations remain
+unchanged. Production, original files, all eight laws and ceilings remain
+intact; the rejected integration law grants no execution credit.
