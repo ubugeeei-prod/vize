@@ -141,3 +141,38 @@ whole replies, complete raw framing/source/build/PID/exit custody, full Rust
 and unchanged 104 instruction ceilings are required before actual merge.
 Actual signed delivery and supported publication remain pending. Native,
 default, Pug element and full #6883 history completion remain unclaimed.
+
+## Complete create-vue consumer contract
+
+The [paired #8006 consumer decision](https://github.com/ubugeeei-prod/vize/issues/8006#issuecomment-6000978399)
+repairs the existing #8064 child in native Stack #8065 above #8059. The
+unchanged pinned create-vue App.vue has upstream SHA256
+`bdafe70baf73a040d432b574108ce0e11823a3c1c1cc8bdfe01d118d6ff7d35a`;
+the complete original authored patch has SHA256
+`1f763acdf1e64ad0bef203e2c3e495c528eee932336c2c75fe4dcc008396a13b`.
+Keep every parent field/range and the complete three-entry folding vector.
+Require exactly h1, button, p with nested a, and visitCount/doubled const
+children, with whole authored kind/range/selection fields. The original outline
+owner independently derived this literal hierarchy from the actual producer
+and original tokens; it equals authenticated artifact 11364862052, old94a RPC
+id16. The two original #8006 whole outline corpus arrays stay unchanged.
+
+A move-only commit extracts the existing whole symbol/folding literals into a
+bounded helper before the child additions. Its exact inverse recovers the old
+complete test. Preserve the original input, requests, options, all other editor
+assertions, timeout/retry policy, production and ceilings. This correction
+uses the producer contract, not snapshot recapture or child filtering.
+
+Old94a full 37356286971/job111919421349 remains failed, with raw SHA256
+`b97bb913541e6fa51ca369dd11f2f9b169561de2ccc3ba09b754bd8374006149`.
+Current b82b full 37357485998/job111923482024 also failed the same old symbol
+expectation, with raw SHA256
+`8c77c53368ba260e08f772a30e7c6e1c08539c1f6684f3ed3a118845cdaaa90c`.
+Folding was not requested after either failed symbol assertion, so its retained
+vector is source-derived without runtime credit. B82b ordinary Check
+37357491035 succeeded; that separate green cannot qualify the failed full run.
+
+Keep both Stack layers Draft/off queue. The literal-e5 child needs independent
+source review, fresh ordinary and full whole editor Actions, then protected
+full Rust/all104, signed actual merges and supported publication. No old
+execution, native-stage/history completion or release credit transfers.
