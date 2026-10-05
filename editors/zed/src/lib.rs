@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 
 use zed_extension_api::{
-    self as zed,
+    self as zed, Result, serde_json,
     settings::{CommandSettings, LspSettings},
-    Result,
 };
+
+mod initialization_options;
+use initialization_options::recommended_initialization_options;
 
 struct VizeExtension;
 
@@ -105,15 +107,6 @@ fn merge_env(shell_env: zed::EnvVars, custom_env: Option<HashMap<String, String>
     custom_env.sort_by(|(left, _), (right, _)| left.cmp(right));
     env.extend(custom_env);
     env
-}
-
-fn recommended_initialization_options() -> zed::serde_json::Value {
-    zed::serde_json::json!({
-        "editor": true,
-        "ecosystem": true,
-        "lint": true,
-        "typecheck": true,
-    })
 }
 
 #[cfg(test)]
