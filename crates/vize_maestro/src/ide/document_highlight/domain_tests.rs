@@ -87,7 +87,16 @@ fn unknown_template_ownership_keeps_legacy_vectors_without_claiming_authored_fac
 #[test]
 fn same_walk_script_only_capture_preserves_the_complete_virtual_document() {
     let source = "<script setup>\nconst value=1\nvalue\n</script>";
-    let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).unwrap();
+    let (state, uri) = state_for(source, "file:///ScriptOnly.vue", "vue");
+    let _ = state.resident.take_stats();
+    let descriptor = state.sfc_descriptor(&uri, source).unwrap();
+    assert_eq!(
+        state.resident.take_stats(),
+        vize_incremental::DescriptorStats {
+            lookups: 1,
+            parses: 0
+        }
+    );
     let mut ordinary = crate::virtual_code::VirtualCodeGenerator::new();
     let mut demanded = crate::virtual_code::VirtualCodeGenerator::new();
     let before = ordinary.generate(&descriptor, "ScriptOnly.vue");

@@ -1,8 +1,8 @@
 //! Checked physical projections of the existing authored occurrence producer.
 
 use vize_atelier_sfc::{SfcDescriptor, croquis::SfcCroquisAnalysis};
-use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::binding_occurrences::{BindingIdentity, BindingOccurrences, OccurrenceBlock};
+use vize_l0::{CompactString, FxHashMap, FxHashSet};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct PhysicalReference {

@@ -4,7 +4,7 @@ Paired issue: [#7992](https://github.com/ubugeeei-prod/vize/issues/7992).
 This consumer depends on the
 [existing-walk producer](./2026-10-06-binding-occurrence-producer.md).
 It is a dependent source slice, not a second analysis engine or a history gate.
-Its genuine provider is #8067, frozen `552d681e` on signed actual main
+Its genuine provider is #8067, source-corrected `eaaec84e` on signed actual main
 `2902dc98`. Initial private `f5149595` and bounded domain/protocol successor
 `4f894889` remain immutable; this union preserves every final source-peer-qualified
 consumer/helper/control blob.
@@ -128,3 +128,15 @@ The genuine `2902dc98` parent/child incorporation uses sequential checked
 mutations, preserves all incoming decisions and requires fresh exact-head
 Actions plus real protected delivery; source review does not provide runtime
 acceptance.
+
+Literal `34f02050` Check 37374292545 genuinely failed configured source gates:
+its inherited producer Option spelling, stale source inventories, a new direct
+legacy storage import, and one extra direct SFC parser call in a new authored
+conservation law. The bounded successor carries the provider's equivalent lint
+correction and inventories, imports the identical preferred L0 storage types,
+and obtains that law's descriptor from the existing resident open revision.
+The law explicitly requires one cache lookup and zero new parses, while retaining
+its entire ordinary/demanded virtual-document comparison. The existing fifteen
+crate parser-site ceiling and zero request sites stay fixed. All historical and
+authored RPC/oracle inputs, legacy algorithms, producer laws and instruction
+budgets remain unchanged; fresh exact-head runtime acceptance is still pending.
