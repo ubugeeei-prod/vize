@@ -41,5 +41,18 @@ pub(super) fn trace_enabled() -> bool {
     })
 }
 
+#[cfg(feature = "native")]
+pub(super) fn trace_watched_file_events(
+    params: &tower_lsp::lsp_types::DidChangeWatchedFilesParams,
+) {
+    if trace_enabled() {
+        tracing::info!(
+            target: "vize_maestro::server::workspace_files",
+            changes = ?params.changes,
+            "incoming watched file events"
+        );
+    }
+}
+
 #[cfg(all(test, feature = "native"))]
 mod tests;
