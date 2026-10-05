@@ -51,7 +51,7 @@ pub struct SnapshotSourceProject<'owner> {
 
 /// Complete source text cannot outlive its project, snapshot or API owner.
 ///
-/// ```
+/// ```rust,standalone_crate
 /// use corsa::api::ApiClient;
 /// use std::path::Path;
 /// use vize_canon::lsp_client::snapshot_source::{SnapshotSourceOwner, SourceTextOutcome};
