@@ -37,6 +37,7 @@
 //! <Draggable :item-key="(item: A | B | C) => item.id" />
 //! ```
 
+mod assertion_types;
 mod scan;
 use scan::{
     find_arrow_after_type, is_arrow_at, push_param_type_spans, regex_allowed, skip_regex,
@@ -131,7 +132,8 @@ impl Rule for NoDeprecatedFilter {
 /// no bitwise-OR meaning for template expressions that would clash, and
 /// eslint-plugin-vue treats a lone `|` the same way.
 fn has_filter_pipe(expr: &str) -> bool {
-    let type_spans = arrow_param_type_spans(expr);
+    let mut type_spans = arrow_param_type_spans(expr);
+    let mut checked_assertion_types = false;
     let bytes = expr.as_bytes();
     let mut i = 0;
     // Tracks whether a `/` begins a regex literal (start of expression or right
@@ -170,6 +172,18 @@ fn has_filter_pipe(expr: &str) -> bool {
                     i += 1;
                     prev_significant = b'|';
                     continue;
+                }
+                // Only a remaining candidate with assertion keywords needs
+                // the existing TS expression parser. Its exact union spans
+                // cannot exempt a runtime pipe outside the type grammar.
+                if !checked_assertion_types {
+                    checked_assertion_types = true;
+                    assertion_types::extend_union_spans(expr, &mut type_spans);
+                    if type_spans.iter().any(|&(start, end)| i >= start && i < end) {
+                        i += 1;
+                        prev_significant = b'|';
+                        continue;
+                    }
                 }
                 // A `|` preceded by `|` (the second half of `||`) was already
                 // consumed above, so any `|` reaching here is a lone pipe.

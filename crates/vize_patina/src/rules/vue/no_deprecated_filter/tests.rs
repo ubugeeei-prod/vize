@@ -168,3 +168,30 @@ fn ignores_ts_union_in_bound_arrow_function() {
     );
     assert_eq!(result.error_count, 0);
 }
+
+#[test]
+fn assertion_type_unions_stay_separate_from_runtime_pipes() {
+    for expression in [
+        "props.id as string | undefined",
+        "props.label satisfies string | undefined",
+        "String(props.id as string | number)",
+        "(el) => elements.push(el as HTMLElement | null)",
+        "value as Array<A | B>",
+        "value satisfies { handler: () => A | B; nested: [A | B] }",
+        "(value as A | B).name",
+        "value as\n A | B",
+    ] {
+        assert!(!has_filter_pipe(expression), "{expression}");
+    }
+    for expression in [
+        "(value as A | B) | format",
+        "(value satisfies A | B) | format",
+        "((value as A | B).name) | format",
+        "(item: A | B) => (item as A | B) | format",
+        "{ id: rawId | toId, note: 'as string | undefined' }",
+        "value as A | B unexpected",
+        "'as' + value | format",
+    ] {
+        assert!(has_filter_pipe(expression), "{expression}");
+    }
+}
