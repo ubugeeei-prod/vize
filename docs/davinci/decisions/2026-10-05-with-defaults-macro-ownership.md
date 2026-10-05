@@ -113,3 +113,21 @@ separate requirements. Broader native linter/history replacement and the
 10x goal remain unfinished. The verified reporter is `ubugeeei`, GitHub ID
 `71201308`, with the literal verified noreply Co-Author trailer in the
 meaningful source commit.
+
+## Actual main replay
+
+Qualified source `2d43c43d` passes Check37340766631 on the literal8a source
+union: 16,177 affected Rust cases, five new and three original rule tests
+exactly once, seventeen complete CLI cases twice and the original three-file
+command. Its raw receipts and archive ref remain historical evidence.
+
+After #8042 actually merged as `6b5d6a77`, the
+[same-PR replay](https://github.com/ubugeeei-prod/vize/issues/7962#issuecomment-5999538261)
+uses genuine fresh main. All 350 incoming canonical lines and every owned
+clause survive the sole record conflict. Production191, all laws, golden,
+original/control bytes and the whole CLI harness remain exact. Both official
+inventories check the combined source without removing existing rows.
+Fresh exact-head Actions, compatible current-prefix admission, protected
+unchanged104/full Rust/native original suites and actual signed merge remain
+required; old source passes provide no replay acceptance. Publication remains
+the release owner's separate responsibility.
