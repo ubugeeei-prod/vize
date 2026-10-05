@@ -28,7 +28,7 @@ const CASES: &str =
 fn whole_setup_scope_await_modules_restore_instance_injection_and_ssr_lifecycle() {
     let mut fixtures = vec![json!({"name": "reported", "source": REPORTED})];
     fixtures.extend(serde_json::from_str::<Vec<Value>>(CASES).unwrap());
-    assert_eq!(fixtures.len(), 15);
+    assert_eq!(fixtures.len(), 16);
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let profile = std::env::var("NEXTEST_PROFILE").unwrap_or_else(|_| "full".to_owned());
     let capture = root
@@ -113,5 +113,5 @@ fn whole_setup_scope_await_modules_restore_instance_injection_and_ssr_lifecycle(
     );
     let receipt: Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(receipt["complete"], true);
-    assert_eq!(receipt["observations"].as_array().unwrap().len(), 30);
+    assert_eq!(receipt["observations"].as_array().unwrap().len(), 32);
 }

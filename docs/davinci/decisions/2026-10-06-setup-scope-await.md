@@ -19,3 +19,13 @@ TODO: independent immutable source review, whole hosted original/control receipt
 current required source checks, actual protected candidate including all 104
 instruction laws and full Rust suites, signed merge/footer/issue closure, and
 root-owned next-release public-payload original replay.
+
+## Independent object-argument correction
+
+Independent source review rejected the first private a38a75c6 proposal: a newly collected value-context await of a bare object literal would put that object after an arrow without grouping, making it a block and losing the value. The correction carries the actual OXC ObjectExpression argument role and adds grouping only for that role; the existing parser preserves ParenthesizedExpression, so already grouped operands and ordinary direct-await output remain exact. Previously incorrect bare-object direct callbacks receive the same semantic repair; no claim of retaining those broken bytes is made.
+
+All original fifteen complete source/control objects and their authored references are unchanged. One extra full control keeps the valid original bare-object expressions and independently pins a complete semantic reference SFC with explicitly grouped operands. JavaScript grouping preserves the operand/result. Pinned Vue3.5.38 uses the same ungrouped raw-arrow emission for the bare source, so its entire bare compile object/code/map and parsed block-callback evidence are retained separately without stock-bare runtime acceptance. Fixed Vize bare and actual Vue grouped components must produce the same independently authored whole HTML/context/warning vector. This adds six semantic render pairs to the original ninety same-source pairs; both complete sources and their map probes/identities are explicit. No original oracle is changed, filtered, or recaptured.
+
+Current source verification remains UNEXECUTED: no install/build/native runtime, no PR/Ready/queue claim. Fresh exact successor source review, all96 real SSR pairs, complete maps/results, protected104/fullRust, signed delivery and public release replay remain mandatory.
+
+The complete seven-field current result is compared between source-map modes and retained whole. Stock binding metadata is captured whole, but the existing DOM/SSR Vue-import classifications differ; no current-versus-stock binding byte parity or full metadata acceptance is claimed.

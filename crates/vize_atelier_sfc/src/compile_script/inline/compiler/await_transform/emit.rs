@@ -98,7 +98,13 @@ impl Emitter<'_> {
                 self.output.push_str("async ");
             }
             self.output.push_str("() => ");
+            if region.object_argument {
+                self.output.push('(');
+            }
             self.range(argument_start, await_end, traced && legacy.is_none())?;
+            if region.object_argument {
+                self.output.push(')');
+            }
             self.output.push_str(")),\n  ");
             if !region.is_statement {
                 self.output.push_str("__temp = ");

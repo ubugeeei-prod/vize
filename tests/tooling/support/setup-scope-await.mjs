@@ -20,7 +20,7 @@ const reported = readFileSync(new URL("setup-scope-await/Probe.vue.txt", fixture
 const controls = JSON.parse(readFileSync(new URL("setup-scope-await/cases.json", fixtureRoot)));
 const expected = JSON.parse(readFileSync(new URL(pin.reference.path, fixtureRoot)));
 const sources = new Map([["reported", reported], ...controls.map((row) => [row.name, row.source])]);
-assert.equal(sources.size, 15);
+assert.equal(sources.size, 16);
 assert.deepEqual(
   expected.map((row) => row.name),
   [...sources.keys()],
@@ -29,7 +29,7 @@ assert.deepEqual(
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
 const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-assert.equal(input.cases.length, 30);
+assert.equal(input.cases.length, 32);
 const fromTests = createRequire(new URL("../../package.json", import.meta.url));
 const vuePackagePath = fromTests.resolve("vue-setup-await-oracle/package.json");
 const fromVue = createRequire(vuePackagePath);
@@ -77,6 +77,7 @@ function astFacts(code) {
   let wraps = 0;
   let awaits = 0;
   let nestedAwaits = 0;
+  let blockCallbacks = 0;
   function walk(value, authoredFunction = false, parent = null) {
     if (!value || typeof value !== "object") return;
     if (Array.isArray(value)) {
@@ -104,12 +105,17 @@ function astFacts(code) {
     ) {
       assert.equal(own, false, "no transformation inside the authored nested async functions");
       wraps++;
+      if (
+        value.arguments[0]?.type === "ArrowFunctionExpression" &&
+        value.arguments[0].body.type === "BlockStatement"
+      )
+        blockCallbacks++;
     }
     for (const [key, child] of Object.entries(value))
       if (!["loc", "start", "end", "comments", "tokens"].includes(key)) walk(child, own, value);
   }
   walk(ast);
-  return { wraps, awaits, nestedAwaits };
+  return { wraps, awaits, nestedAwaits, blockCallbacks };
 }
 
 function mappingFacts(code, map, source, name) {
@@ -255,7 +261,9 @@ for (const row of input.cases) {
     { css: null, errors: [], warnings: [], macroArtifacts: [] },
   );
   assert.ok(current.bindings?.isScriptSetup);
-  const parsed = compiler.parse(row.source, { filename: row.filename });
+  const referenceSource =
+    controls.find((value) => value.name === row.name)?.referenceSource ?? row.source;
+  const parsed = compiler.parse(referenceSource, { filename: row.filename });
   assert.deepEqual(parsed.errors, []);
   const official = compiler.compileScript(parsed.descriptor, {
     id: "probe",
@@ -263,16 +271,36 @@ for (const row of input.cases) {
     sourceMap: true,
     templateOptions: { ssr: row.target === "ssr" },
   });
+  const officialBare =
+    referenceSource === row.source
+      ? null
+      : compiler.compileScript(compiler.parse(row.source, { filename: row.filename }).descriptor, {
+          id: "probe",
+          inlineTemplate: true,
+          sourceMap: true,
+          templateOptions: { ssr: row.target === "ssr" },
+        });
   const observation = {
     name: row.name,
     target: row.target,
     source: row.source,
     current,
+    referenceSource,
     official: JSON.parse(JSON.stringify(official)),
+    sourceSha256: sha(row.source),
+    referenceSourceSha256: sha(referenceSource),
+    stockBareEvidence: officialBare
+      ? {
+          complete: JSON.parse(JSON.stringify(officialBare)),
+          facts: astFacts(officialBare.content),
+          mappings: mappingFacts(officialBare.content, officialBare.map, row.source, row.name),
+          runtimeAcceptance: false,
+        }
+      : null,
     currentFacts: astFacts(current.code),
     officialFacts: astFacts(official.content),
     currentMappings: mappingFacts(current.code, current.map, row.source, row.name),
-    officialMappings: mappingFacts(official.content, official.map, row.source, row.name),
+    officialMappings: mappingFacts(official.content, official.map, referenceSource, row.name),
     runtime: [],
   };
   receipt.observations.push(observation);
@@ -281,9 +309,12 @@ for (const row of input.cases) {
     wraps: oracle.wraps,
     awaits: oracle.wraps + oracle.nestedAwaits,
     nestedAwaits: oracle.nestedAwaits,
+    blockCallbacks: 0,
   };
   assert.deepEqual(observation.currentFacts, facts, key);
   assert.deepEqual(observation.officialFacts, facts, key);
+  if (officialBare)
+    assert.deepEqual(observation.stockBareEvidence.facts, { ...facts, blockCallbacks: 2 });
   const [actualComponent, officialComponent] = await Promise.all([
     component(current.code),
     component(official.content),
@@ -305,7 +336,7 @@ for (const row of input.cases) {
     assert.deepEqual(actual, reference, "whole actual SSR result " + key);
   }
 }
-assert.equal(seen.size, 30);
+assert.equal(seen.size, 32);
 receipt.complete = true;
 save();
 process.stdout.write(JSON.stringify(receipt) + "\n");

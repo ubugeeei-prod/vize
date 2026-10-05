@@ -21,14 +21,14 @@
           },
           {
             "path": "cases.json",
-            "sha256": "d1248999c2b44ba06c92f2a568f732e3a76c28edd1a885e77646688fa5a865d1",
+            "sha256": "fc638a287644817fb25eb6102644ba76fe31738c7bb96d8866003e0ea8574de5",
             "role": "controls"
           }
         ]
       },
       "reference": {
         "path": "setup-scope-await/expected.json",
-        "sha256": "fdc443b478ad3f074f95b0389b92285c2738503a75f3b0e24b47b1ad695e64f2",
+        "sha256": "06fc656e14279cef57ab350258f3d033daa02fcde5d967cd8ebaba95dffff0d4",
         "source": "crates/vize_atelier_sfc/tests/setup_scope_await.rs:whole_setup_scope_await_modules_restore_instance_injection_and_ssr_lifecycle"
       },
       "provenance": {

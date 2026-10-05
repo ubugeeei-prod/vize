@@ -24,3 +24,14 @@ process status are saved beneath the existing Rust-worker artifact directory.
 This tests the retained whole-SFC entrypoint and real Vue SSR runtime; it gives
 no native compiler, Vapor SSR, hydration, Router/Pinia, or performance credit.
 Hosted source/protected qualification and public release replay remain required.
+
+The added `object-expression` control retains a bare object operand for Vize and
+a separately authored, explicitly parenthesized complete SFC for stock Vue.
+Those JavaScript operands are semantically identical. Vue 3.5.38 has the same
+raw-arrow ambiguity for the bare input: retain its complete compiled object/maps
+and actual parsed block callbacks, granting no stock-bare runtime acceptance.
+The fixed bare and stock grouped components must match the same authored whole
+HTML/context/warnings. The original fifteen sources/references remain exact;
+this separate semantic pair adds six render pairs (ninety-six total).
+
+The complete seven-field current result is compared between source-map modes and retained whole. Stock binding metadata is captured whole, but the existing DOM/SSR Vue-import classifications differ; no current-versus-stock binding byte parity or full metadata acceptance is claimed.

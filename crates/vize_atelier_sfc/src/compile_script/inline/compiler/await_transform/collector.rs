@@ -14,6 +14,7 @@ pub(super) struct AwaitRegion {
     pub(super) legacy_statement: Option<(Span, bool)>,
     pub(super) is_statement: bool,
     pub(super) needs_semicolon: bool,
+    pub(super) object_argument: bool,
 }
 
 #[derive(Default)]
@@ -82,6 +83,7 @@ impl<'a> Visit<'a> for SetupAwaits {
             }),
             is_statement,
             needs_semicolon: is_statement && self.statement_in_sequence,
+            object_argument: matches!(&expression.argument, Expression::ObjectExpression(_)),
         });
         walk::walk_await_expression(self, expression);
     }

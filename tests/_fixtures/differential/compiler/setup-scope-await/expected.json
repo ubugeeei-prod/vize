@@ -148,5 +148,15 @@
       "true": "<p>start:true:provided|block:true:provided|end:true:provided|prefetch:true:provided</p>",
       "false": "<p>start:true:provided|block:true:provided|end:true:provided|prefetch:true:provided</p>"
     }
+  },
+  {
+    "name": "object-expression",
+    "wraps": 2,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|object:true:provided|kept:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|object:true:provided|kept:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|object:true:provided|kept:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
   }
 ]
