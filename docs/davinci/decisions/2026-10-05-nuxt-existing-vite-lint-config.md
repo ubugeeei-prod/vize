@@ -68,6 +68,41 @@ complete before/after witnesses, original config bytes and all production laws.
 Fresh hosted execution remains required; no zero-diagnostic assertion replaces
 the failed positive probe.
 
+## Source qualification and fresh-main reconciliation
+
+At source `710d0f8ab2dfcd4763f3b1765fa13df66b49ba83`, actual PR composition
+`69ae75b730624d436e067d233e877bb50a5cae62` runs on main `85463bfe`.
+Nuxt 2 run `37247495592` passes all 135 laws, original webpack/SSR routes and
+inherited complete Nuxt 2/3/4 controls (0/2/2). Artifact `11319771970` is
+61,537 bytes, ZIP SHA-256
+`06a028a076dcf8bd7d8222aa5ec2e474d7d98ccc2dc6133b29a8f1ec2a569369`;
+API hash and all CRCs authenticate the exact original 238-byte Vite config,
+all five original project files and complete nine-file candidate dist.
+Real Vite+ 0.1.24 emits one complete missing-key error before and after genuine
+Nuxt 2.17.3 default lint loading, with identical message/help/causes/related
+and offset/length/line/column labels. No competing wrapper is created;
+configuration bytes/inode/mtime and original project bytes remain unchanged.
+Published plugin/native 0.429.1 remain the stated configuration oracle.
+
+Core Check `37247496031` passes 24 jobs with 15 declared skips. Its four
+API-hash/CRC-authenticated source JUnits retain 15,805 unique passing cases,
+zero failures/errors/skips; this is not protected instruction execution.
+Nuxt 3/4 and CodeQL source checks also pass. Root reviewed and adopted this
+bounded ownership behavior and authenticated original-authority packet.
+
+The two meaningful commits are genuinely rebased onto literal main
+`d1a25ec1da2efca98534520ff8ebe84d34708e3d`. All ten owned non-canonical blobs
+are initially byte-identical to `710d0f8ab2`; only this companion receipt is
+then extended. Every incoming canonical native Stack/source-binding clause
+is preserved within the unchanged 350-line record. Original project/source,
+whole stock lint witnesses, explicit plain-Vite/manual-composition policy
+and all budgets remain unchanged. This historical qualification does not
+supply current-head CI: fresh automatic Actions must qualify the rebased head.
+Queue admission waits for the first release's verified publication and thaw;
+then current protected full Rust and unchanged 100 + 4 instruction gates,
+actual signed merge/literal verified reporter footer and issue closure remain
+required. The delivered fix is handed to the next frequent legacy release.
+
 ## Delivery checkpoint for the preceding Nuxt fix
 
 [#7840](https://github.com/ubugeeei-prod/vize/pull/7840) actually merged as signed
