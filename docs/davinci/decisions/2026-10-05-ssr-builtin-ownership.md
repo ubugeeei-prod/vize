@@ -82,3 +82,11 @@ suites and protected full suites/ceilings are still required. The first v0.433
 finite release admission hold remains: prepare source/Draft off queue, keep
 #7891 open until both original failures actually merge, and hand the signed
 terminal delivery to the release owner for the next frequent release.
+
+First source Check `37323222769`, Rust build job `111807581667`, stopped before
+execution on two unchanged strict Clippy policies: UTF-8 string indexing in the
+quoted slot-key writer and collection indexing in the selected group property.
+The causal successor strips the known outer quotes and uses checked original
+property access, preserving emitted bytes, locations, all eleven inputs,
+references and comparisons. This failed source supplies no execution credit;
+fresh successor Actions remain required.

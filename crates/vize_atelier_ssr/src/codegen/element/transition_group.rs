@@ -19,18 +19,20 @@ impl<'a> SsrCodegenContext<'a> {
             .props
             .iter()
             .position(|prop| super::props::is_static_named_prop(prop, "tag"));
-        let tag = tag_index.and_then(|index| match &el.props[index] {
-            PropNode::Attribute(attr) if attr.name == "tag" => {
-                attr.value.as_ref().map(GroupTag::Static)
-            }
-            PropNode::Directive(dir) if dir.name == "bind" => match &dir.arg {
-                Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == "tag" => {
-                    dir.exp.as_ref().map(GroupTag::Dynamic)
+        let tag = tag_index
+            .and_then(|index| el.props.get(index))
+            .and_then(|prop| match prop {
+                PropNode::Attribute(attr) if attr.name == "tag" => {
+                    attr.value.as_ref().map(GroupTag::Static)
                 }
+                PropNode::Directive(dir) if dir.name == "bind" => match &dir.arg {
+                    Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == "tag" => {
+                        dir.exp.as_ref().map(GroupTag::Dynamic)
+                    }
+                    _ => None,
+                },
                 _ => None,
-            },
-            _ => None,
-        });
+            });
         let dynamic = tag.as_ref().and_then(|tag| match tag {
             GroupTag::Dynamic(exp) => {
                 let code = self.expression_to_string(exp);

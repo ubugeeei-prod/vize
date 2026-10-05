@@ -92,7 +92,11 @@ impl<'a> SsrCodegenContext<'a> {
                         self.push_mapped(arg.content, arg.loc.span.start);
                     } else {
                         let key = super::props::quoted_js_string(arg.content);
-                        self.push_then_mapped("\"", &key[1..key.len() - 1], arg.loc.span.start);
+                        let inner = key
+                            .strip_prefix('"')
+                            .and_then(|key| key.strip_suffix('"'))
+                            .unwrap_or_default();
+                        self.push_then_mapped("\"", inner, arg.loc.span.start);
                         self.push("\"");
                     }
                 }
