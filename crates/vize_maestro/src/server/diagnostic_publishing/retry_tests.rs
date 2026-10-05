@@ -21,7 +21,7 @@ use tower_lsp::{
 use super::{CollectedDiagnostics, MaestroServer};
 
 const APP: &str =
-    include_str!("../../../../../tests/_fixtures/lsp-corsa-responsiveness-8012/App.vue");
+    include_str!("../../../../../tests/_fixtures/lsp-corsa-responsiveness-8012/App.vue.txt");
 const TOAST: &str =
     include_str!("../../../../../tests/_fixtures/lsp-corsa-responsiveness-8012/useToast.ts");
 const UNRELATED: &str = "<script setup lang=\"ts\">const unrelated = 1;</script>\n";
@@ -63,7 +63,7 @@ fn fixture(held: bool) -> Fixture {
     if held {
         std::fs::write(
             &backend,
-            "#!/bin/sh\necho $$ >> backend.pids\nexec cat > /dev/null\n",
+            "#!/bin/sh\necho $$ >> backend.pids\nexec cat 3>&1 > /dev/null\n",
         )
         .unwrap();
         std::fs::set_permissions(&backend, std::fs::Permissions::from_mode(0o755)).unwrap();

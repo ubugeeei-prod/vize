@@ -11,7 +11,8 @@ use std::time::{Duration, Instant};
 use lsp_process::{LspProcess, file_uri};
 use serde_json::{Value, json};
 
-const APP: &str = include_str!("../../../tests/_fixtures/lsp-corsa-responsiveness-8012/App.vue");
+const APP: &str =
+    include_str!("../../../tests/_fixtures/lsp-corsa-responsiveness-8012/App.vue.txt");
 const TOAST: &str =
     include_str!("../../../tests/_fixtures/lsp-corsa-responsiveness-8012/useToast.ts");
 const PACKAGE: &str =
@@ -20,7 +21,11 @@ const TSCONFIG: &str =
     include_str!("../../../tests/_fixtures/lsp-corsa-responsiveness-8012/tsconfig.json");
 
 fn request(id: Value, method: &str, params: Value) -> Value {
-    json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params })
+    if params.is_null() {
+        json!({ "jsonrpc": "2.0", "id": id, "method": method })
+    } else {
+        json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params })
+    }
 }
 
 fn workspace(root: &Path) {
@@ -30,11 +35,11 @@ fn workspace(root: &Path) {
     std::fs::write(root.join("package.json"), PACKAGE).unwrap();
     std::fs::write(root.join("tsconfig.json"), TSCONFIG).unwrap();
     let backend = root.join("held-corsa");
-    // The shell retains stdout while cat drains stdin: the actual handshake
-    // enters synchronous IPC but cannot finish before the process is released.
+    // The sole exec'd owner retains the original stdout pipe on fd3 before
+    // discarding its input; the API handshake remains held until it is killed.
     std::fs::write(
         &backend,
-        "#!/bin/sh\necho $$ >> backend.pids\n: > backend.entered\nexec cat > /dev/null\n",
+        "#!/bin/sh\necho $$ >> backend.pids\n: > backend.entered\nexec cat 3>&1 > /dev/null\n",
     )
     .unwrap();
     std::fs::set_permissions(&backend, std::fs::Permissions::from_mode(0o755)).unwrap();

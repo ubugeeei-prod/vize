@@ -7,7 +7,7 @@ use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 use super::super::build_lsp_service;
 
 const APP: &str =
-    include_str!("../../../../../tests/_fixtures/lsp-corsa-responsiveness-8012/App.vue");
+    include_str!("../../../../../tests/_fixtures/lsp-corsa-responsiveness-8012/App.vue.txt");
 const TOAST: &str =
     include_str!("../../../../../tests/_fixtures/lsp-corsa-responsiveness-8012/useToast.ts");
 
