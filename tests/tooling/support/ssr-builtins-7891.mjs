@@ -1,4 +1,4 @@
-// Whole original #7891 defaults, source maps and real official server rendering.
+// Whole original #7891 defaults, public map fields and real official server rendering.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -62,6 +62,7 @@ try {
     input.files.map(({ name }) => name),
     ["Async", ...custody.cases],
   );
+  const scriptless = ["FallbackOnly", "OtherSlot", "DefaultOnly"];
   const helperId = "\0plugin-vue:export-helper";
   const url = (code) => `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
   const context = {
@@ -143,13 +144,24 @@ try {
       map: result.map,
       helper,
     });
-    assert.ok(file.current.map && typeof file.current.map.mappings === "string");
-    assert.deepEqual(file.current.map.sources, [`${file.name}.vue`]);
-    assert.deepEqual(file.current.map.sourcesContent, [file.source]);
+    const parsed = compiler.parse(file.source, { filename: `${file.name}.vue` });
+    assert.deepEqual(parsed.errors, []);
+    const hasScript = Boolean(parsed.descriptor.script || parsed.descriptor.scriptSetup);
+    assert.equal(hasScript, !scriptless.includes(file.name));
+    let current = null;
+    if (hasScript) {
+      assert.ok(file.current.map && typeof file.current.map.mappings === "string");
+      assert.deepEqual(file.current.map.sources, [`${file.name}.vue`]);
+      assert.deepEqual(file.current.map.sourcesContent, [file.source]);
+      current = mapGraph(file.current.code, file.current.map, file.source);
+    } else {
+      assert.equal(file.current.map, null);
+    }
     maps.push({
       name: file.name,
       official: mapGraph(result.code, result.map, file.source),
-      current: mapGraph(file.current.code, file.current.map, file.source),
+      current,
+      currentDisposition: hasScript ? "script-provenance-only" : "scriptless-unavailable",
     });
   }
   let sequence = 0;

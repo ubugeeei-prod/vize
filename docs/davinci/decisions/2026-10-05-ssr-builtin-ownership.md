@@ -40,8 +40,11 @@ reference has a SHA-256 pin checked by the executed helper.
 The ordinary Rust tests compile all eleven complete sources through the existing
 SFC SSR API. Mapped/plain complete results must differ only in the requested
 map field; module code stays equal. The runtime test retains every full current
-result, original source, official complete module/helper/map and decoded map
-coordinate graph. Map validation checks complete canonical mappings and valid
+result, original source, official complete module/helper/map and available
+decoded map coordinate graphs. The existing current SFC API returns no map for
+the three scriptless sources and only script-provenance maps for the other
+eight; neither is evidence of template mappings. Map validation checks complete
+canonical mappings and valid
 source/generated positions; it does not claim original-segment semantic
 identity beyond those structural checks. Both real default-component graphs
 render all ten cases to twenty strict whole-HTML references with no runtime
@@ -90,3 +93,22 @@ The causal successor strips the known outer quotes and uses checked original
 property access, preserving emitted bytes, locations, all eleven inputs,
 references and comparisons. This failed source supplies no execution credit;
 fresh successor Actions remain required.
+
+Successor Check `37324046914` builds the Rust archive and passes workers 1/2/3,
+but worker 4 job `111814772169` rejects the new observer's incorrect demand for
+a scriptless SFC map before any SSR render. The retained whole current results
+and partial official graphs remain failure evidence, not twenty observations.
+At actual unchanged main `8a8521d6897bbe3fd0af0cbfaebd83f4fc933933`,
+[`compile.rs`](https://github.com/ubugeeei-prod/vize/blob/8a8521d6897bbe3fd0af0cbfaebd83f4fc933933/crates/vize_atelier_sfc/src/compile.rs#L153)
+selects the descriptor-bound scriptless path;
+[`template_only.rs`](https://github.com/ubugeeei-prod/vize/blob/8a8521d6897bbe3fd0af0cbfaebd83f4fc933933/crates/vize_atelier_sfc/src/compile/template_only.rs#L154)
+returns `map: None`. The SSR template result has no map field and the existing
+module-map assembly carries script provenance, not template anchors.
+The corrected observer requires exactly `FallbackOnly`, `OtherSlot` and
+`DefaultOnly` to have `map: null`, joins that list to each complete original
+parsed descriptor, and still requires all eight scripted maps. It retains the
+full public map fields, all eleven official maps, available decoded graphs and
+their explicit dispositions. All original inputs, generated code paths and
+twenty independent full-HTML references remain unchanged. No comparison failure
+or unavailable map is credited as template-map readiness; fresh source Actions
+and protected acceptance remain required.
