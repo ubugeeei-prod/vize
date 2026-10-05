@@ -246,3 +246,27 @@ fn split_module_declarations_shadow_ambient_owners_in_setup_and_template() {
         );
     });
 }
+
+#[test]
+fn fully_walked_top_level_script_reads_are_kept_alongside_template_reads() {
+    let source = "<script setup>const id=1; id + 1</script><template>{{ id }}</template>";
+    analyze(source, |_, _, packet| {
+        let id = binding(packet, "id");
+        assert_eq!(
+            packet
+                .occurrences()
+                .iter()
+                .map(|reference| (
+                    reference.binding,
+                    reference.block,
+                    reference.start,
+                    reference.end
+                ))
+                .collect::<Vec<_>>(),
+            vec![
+                (id, OccurrenceBlock::Script, 12, 14),
+                (id, OccurrenceBlock::Template, 3, 5)
+            ]
+        );
+    });
+}

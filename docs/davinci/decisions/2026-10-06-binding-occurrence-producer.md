@@ -89,6 +89,11 @@ or semantic errors, direct eval, unsupported nodes, omitted spread arguments and
 unsupported function statements cannot produce a complete empty packet. The
 ordinary compatibility names and diagnostics retain their existing traversal.
 Four adversarial laws preserve whole ordinary outputs while refusing each case.
+A preparation self-audit corrected a misplaced blanket expression-statement
+refusal before publication: runtime enums now refuse at their existing processor,
+including exported enums, while a whole positive law keeps fully walked script
+uses. The rejected private `0a5c`/`3eb4`/`66cfcf` source packets retain their
+source-only review boundaries; no historical or execution result is transferred.
 Occurrence facts promise lexical ownership and exact authored uses; they do not
 claim read/write access classification. UI consumers retain the existing explicit
 declaration WRITE/use READ styling, including updates, as a separate contract.
