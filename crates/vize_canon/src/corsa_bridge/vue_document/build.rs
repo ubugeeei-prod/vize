@@ -62,11 +62,7 @@ pub(super) fn build_vue_virtual_workspace_project(
         )?;
         // Concurrent preparation can share the winner because the validated
         // alias revision includes exact host/options/overlay/request membership.
-        let _ = alias_context.query_surface.set(surface);
-        alias_context
-            .query_surface
-            .get()
-            .expect("prepared query surface")
+        alias_context.query_surface.get_or_init(|| surface)
     };
     let mut host = surface.host.clone();
     // Other hosts can extend the live catalog without replacing this context.

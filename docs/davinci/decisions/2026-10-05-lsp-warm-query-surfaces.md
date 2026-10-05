@@ -27,3 +27,12 @@ wire/native-process/currentCPU observer remains pending. Session config PATH
 equality is not whole native configuration execution, and a fresh mirror
 session is not an actually executed new native process. Source checks remain
 mandatory on the corrected head, with no earlier runtime or timing transfer.
+
+[First source-gate repair](https://github.com/ubugeeei-prod/vize/issues/8008#issuecomment-5993762899)
+retains actual Check37303985181 failures: production expect() was rejected before
+Rust tests, and tooling4 found the moved consumer inventory stale. Stable
+OnceLock::get_or_init follows the same fallible preparation and validated
+revision, preserving the concurrent winner without panic or waiver. The existing
+generator changes only the moved import row and context test offset. Every
+original law/input and native guard remains. Current source tests and original400
+whole-wire/CPU acceptance remain pending; no infrastructure cause is invented.
