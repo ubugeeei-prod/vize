@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const props = withDefaults(defineProps(["size"]), { size: "m" });
+</script>
+<template><p>OK</p></template>

@@ -1,0 +1,18 @@
+<script setup lang="ts">
+// withDefaults(defineProps<Props>(), {})
+const hint = "withDefaults(";
+const template = `withDefaults(defineProps<Props>(), {})`;
+const pattern = /withDefaults\(/;
+const a = api.withDefaults(defineProps<{ size?: string }>(), {});
+const b = otherwithDefaults(defineProps<{ size?: string }>(), {});
+const c = withDefaults({}, {});
+const d = withDefaults(defineProps, {});
+const e = withDefaults?.(defineProps<{ size?: string }>(), {});
+const f = withDefaults(defineProps?.<{ size?: string }>(), {});
+const g = wrap(withDefaults(defineProps<{ size?: string }>(), {}));
+const h = withDefaults((defineProps<{ size?: string }>() as object), {});
+function local(withDefaults: Function) { return withDefaults(defineProps<{ size?: string }>(), {}); }
+const nested = () => withDefaults(defineProps<{ size?: string }>(), {});
+
+</script>
+<template><p>OK</p></template>

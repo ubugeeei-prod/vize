@@ -1,0 +1,155 @@
+# withDefaults macro ownership
+
+Paired issue: [#7962](https://github.com/ubugeeei-prod/vize/issues/7962), with
+[the implementation decision](https://github.com/ubugeeei-prod/vize/issues/7962#issuecomment-5995769323).
+The inspected original baseline is actual main
+`d8cd6a208b9aea02150b140a4b81b87222128a51`.
+
+## Correction
+
+`script/no-with-defaults` previously searched every script's raw bytes for
+`withDefaults(`. Both original setup comments/string literals and both
+ordinary `.ts` files therefore received findings without a macro call.
+The rule now consumes the dispatcher's shared JS/TS Program and checks the
+actual parsed SFC context's `is_sfc` and `is_script_setup` flags.
+Offsets, filename extensions and macro names do not manufacture setup
+ownership.
+
+Only top-level expression statements and non-ambient variable initializers
+can own this macro. Their direct, non-optional `withDefaults` call must
+have a direct, non-optional `defineProps` call as its first argument.
+Existing AST APIs unwrap top-level TypeScript assertions and preserved
+parentheses without traversing nested functions. This follows the
+[Vue 3.5.42 setup statement processing](https://github.com/vuejs/core/blob/v3.5.42/packages/compiler-sfc/src/compileScript.ts)
+and [macro call shape](https://github.com/vuejs/core/blob/v3.5.42/packages/compiler-sfc/src/script/defineProps.ts).
+Comments, strings, templates, regexes, member/prefixed names, nested
+function calls, ordinary scripts and inline HTML scripts cannot supply
+this ownership. There is no blanket binding scan; an unrelated nested
+same-name binding cannot hide an actual outer macro.
+
+The rule joins the existing at-most-one shared Program parse per script
+block. When it is the only enabled script rule, it requires that AST parse
+instead of the former byte-only scan; it never starts a rule-local second
+parse or adds a semantic pass, pipeline stage or serialization. Original
+identifier spans use the existing script offset. Rule name, description,
+warning message, full help, default severity and public docs path remain
+unchanged. Recognized macro owners with runtime props or missing defaults
+still receive the finding; this preference rule does not validate Vue
+compilation or accept invalid macro arguments.
+
+The official migration inventory adds one raw OXC source row and three
+test rows for the existing AST/parser/L0 APIs. Every prior row remains
+unchanged; these are honest legacy consumer facts, not native admission or
+an instruction-budget change.
+
+## Complete original inputs and controls
+
+`tests/_fixtures/differential/lint-with-defaults/` retains the whole
+original issue body and every byte of its config, `SizeLabel.vue`,
+`comment-only.ts` and `source-check.ts`. Source length/hash pins protect
+those files and fourteen complete authored controls. Cases cover actual
+typed, whitespace/comment-separated, parenthesized, TS-wrapped,
+expression-statement, escaped-identifier and multi-declarator macro owners;
+invalid runtime/missing-default arguments; ordinary nested/member/optional
+expressions; non-setup SFC/module/HTML owners; a genuine outer macro beside
+a nested same-name binding; and dual scripts with Unicode and CRLF.
+
+Five Rust laws compare complete ordered diagnostic vectors, result counts,
+filename, original spans, severity, message, full help, labels and fixes.
+The existing positive unit source and complete block-local snapshot stay
+byte-exact, now using an actual parsed setup descriptor. Whole-file laws
+independently check the physical original script frame.
+
+The public CLI corpus requires the existing exact source-build receipt and
+retains full source, raw stdout/stderr and failure/status evidence. Two
+fresh processes per case compare all seventeen complete JSON reports,
+including error severity from the original config, scalar columns and
+unchanged help/docs path. The whole original three-file plain command must
+return zero with the complete clean report. Existing shared forty-four
+history inputs/oracles, native admission and broader #6881 qualification
+remain unchanged; `nativeHandled` remains zero.
+
+## Delivery
+
+The first Draft #8046 head `bd2aca7c` reached hosted compilation in
+unused-bindings run37320718513/job111798771532, then failed with two E0308
+errors in the existing unit's new setup helper: actual SFC content is
+`Cow<str>`, while Parser and rule APIs need `&str`. The complete original
+112756-byte raw failure has SHA256
+`75cf3bb31c81b82428f334a7d7a44672bd7f18954fb365328a3b55fe93dfde76`.
+[The ordinary correction](https://github.com/ubugeeei-prod/vize/issues/7962#issuecomment-5996028321)
+borrows the original content with `Cow::as_ref()` in exactly two test
+arguments, without copying, changing production or weakening any law.
+All original unit/corpus/golden bytes and expected fields remain intact;
+no new Rust-law execution is credited to the failed head.
+
+Corrected head `0367fa49` passed affected-crate Clippy/build/doctests, all
+four Rust workers and unused-bindings Actions. Check37321658872 still
+failed its tooling1/4 Croquis producer/current-matrix checks: the genuine
+unit factory adds one test-only `SfcParseOptions` consumer. The official
+generator corrects only the Patina shard's files/sites row from `13/14`
+to `14/15`, retaining every other row/shard and the complete raw failures
+(SHA256 `4ca5d97d980b1acf7d3d204b63d6c1beb0b71997d34ce504d508803003c934d1`
+and `2b6a0ecae85160acdd6fef35fb22f78bddcecf5443fbb66b4d7d9379aa34cd06`).
+[The paired correction](https://github.com/ubugeeei-prod/vize/issues/7962#issuecomment-5996362866)
+preserves all production, laws, original inputs/goldens, native admission
+and gates; fresh exact-source acceptance remains required.
+
+Ready-stage review found that Git could convert frozen LF fixtures under
+`core.autocrlf=true`, changing their pinned byte ranges. The
+[scoped correction](https://github.com/ubugeeei-prod/vize/issues/7962#issuecomment-5998573400)
+sets `-text` only for this corpus and preserves every committed input,
+production byte, law, snapshot and expected CLI field. Git-filter checks
+compare the retained corpus bytes under `core.autocrlf=true`. All incoming
+central decision clauses remain intact; broader record restructuring is
+outside this fix.
+
+Authored laws and source review do not establish execution. Fresh exact
+head automatic Actions must execute the complete Rust and public CLI
+contracts after the attributes correction. The initial v0.433 release hold
+has been lifted for this owned PR. Protected unchanged 104 instruction gates/full suites,
+actual signed reporter-credited merge and released public payloads remain
+separate requirements. Broader native linter/history replacement and the
+10x goal remain unfinished. The verified reporter is `ubugeeei`, GitHub ID
+`71201308`, with the literal verified noreply Co-Author trailer in the
+meaningful source commit.
+
+## Actual main replay
+
+Qualified source `2d43c43d` passes Check37340766631 on the literal8a source
+union: 16,177 affected Rust cases, five new and three original rule tests
+exactly once, seventeen complete CLI cases twice and the original three-file
+command. Its raw receipts and archive ref remain historical evidence.
+
+After #8042 actually merged as `6b5d6a77`, the
+[same-PR replay](https://github.com/ubugeeei-prod/vize/issues/7962#issuecomment-5999538261)
+uses genuine fresh main. All 350 incoming canonical lines and every owned
+clause survive the sole record conflict. Production191, all laws, golden,
+original/control bytes and the whole CLI harness remain exact. Both official
+inventories check the combined source without removing existing rows.
+Fresh exact-head Actions, compatible current-prefix admission, protected
+unchanged104/full Rust/native original suites and actual signed merge remain
+required; old source passes provide no replay acceptance. Publication remains
+the release owner's separate responsibility.
+
+## Scoped attribute union
+
+Qualified source `b5ea638a` passes Check37348267730 on execution888bd86:
+16,221 affected-source Rust cases, all five new and three original tests
+exactly once, seventeen complete CLI inputs twice, the whole original command
+and the hydrated corpus. Its raw receipts and archive ref remain historical.
+
+After #8053 actually merged as `45e06131`, the
+[attribute-union replay](https://github.com/ubugeeei-prod/vize/issues/7962#issuecomment-6000200598)
+uses the freshly fetched literal main. Both scoped corpus attribute rules,
+all 350 incoming canonical lines and every owned decision clause survive.
+Every other owned source/law/golden/input/harness blob remains byte-exact;
+the combined inventory retains all incoming rows and both official checks
+pass. All twenty-one original corpus files stay exact under Git's
+`core.autocrlf=true` filter. The five meaningful source commits and verified
+reporter trailers remain intact.
+
+This same PR requires fresh source Actions and a clean immediate actual-prefix
+projection before protected unchanged104/full Rust/native-original checks.
+Old source receipts grant no replay or protected acceptance; actual signed
+merge and the release owner's publication remain separate.

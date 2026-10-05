@@ -1,6 +1,62 @@
 //! Markup facade helpers shared by accessibility rules.
 
-use crate::markup::{MarkupBindingKind, MarkupElement};
+use crate::markup::{MarkupBindingKind, MarkupElement, MarkupElementKind};
+
+/// Static Boolean presence, excluding bindings that can override the value.
+fn has_static_boolean(element: &MarkupElement<'_>, name: &str) -> bool {
+    let mut present = false;
+    element.walk_bindings(&mut |binding| {
+        if binding.kind() == MarkupBindingKind::Attribute && binding.is_unqualified_arg_exact(name)
+        {
+            present = true;
+        }
+    });
+    present && !has_unknown_binding(element, name)
+}
+
+fn has_unknown_binding(element: &MarkupElement<'_>, name: &str) -> bool {
+    let mut unknown = false;
+    element.walk_bindings(&mut |binding| {
+        if binding.kind() == MarkupBindingKind::Bind
+            && (binding
+                .arg_name()
+                .is_none_or(|arg| !binding.is_static_unqualified_arg_exact(arg))
+                || binding.is_unqualified_arg_exact(name))
+        {
+            unknown = true;
+        }
+    });
+    unknown
+}
+
+/// Only a physical element's static Boolean attribute establishes inertness.
+pub(crate) fn has_static_inert(element: &MarkupElement<'_>) -> bool {
+    element.kind() == MarkupElementKind::Element && has_static_boolean(element, "inert")
+}
+
+/// Component placement and modal-dialog state are unknown at lint time.
+pub(crate) fn blocks_inert_inheritance(element: &MarkupElement<'_>) -> bool {
+    matches!(
+        element.kind(),
+        MarkupElementKind::Component | MarkupElementKind::Slot
+    ) || element.is_unqualified_tag_exact("dialog")
+}
+
+/// Narrow aria-hidden exclusions; other focus rules retain their old predicate.
+pub(crate) fn is_statically_non_focusable(element: &MarkupElement<'_>) -> bool {
+    if (element.is_unqualified_tag_exact("button")
+        || element.is_unqualified_tag_exact("input")
+        || element.is_unqualified_tag_exact("select")
+        || element.is_unqualified_tag_exact("textarea"))
+        && has_static_boolean(element, "disabled")
+    {
+        return true;
+    }
+    element.is_unqualified_tag_exact("input")
+        && !has_unknown_binding(element, "type")
+        && get_static_markup_attribute_value(element, "type")
+            .is_some_and(|value| value.eq_ignore_ascii_case("hidden"))
+}
 
 /// Check if a markup facade element is natively interactive.
 pub fn is_interactive_markup_element(element: &MarkupElement<'_>) -> bool {
