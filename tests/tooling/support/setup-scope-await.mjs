@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { join } from "node:path";
 import { transformSync } from "@babel/core";
 import { parse } from "@babel/parser";
+import { mappingFacts } from "./setup-scope-await-maps.mjs";
 
 const fixtureRoot = new URL("../../_fixtures/differential/compiler/", import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL("setup-scope-await.manifest.json", fixtureRoot)));
@@ -116,49 +117,6 @@ function astFacts(code) {
   }
   walk(ast);
   return { wraps, awaits, nestedAwaits, blockCallbacks };
-}
-
-function mappingFacts(code, map, source, name) {
-  assert.equal(map.version, 3);
-  assert.deepEqual(map.sourcesContent, [source]);
-  assert.equal(map.sources.length, 1);
-  const generatedLines = code.split("\n");
-  const originalLines = source.split("\n");
-  const consumer = new SourceMapConsumer(map);
-  const mappings = [];
-  consumer.eachMapping((entry) => {
-    assert.ok(entry.generatedLine >= 1 && entry.generatedLine <= generatedLines.length);
-    assert.ok(
-      entry.generatedColumn >= 0 &&
-        entry.generatedColumn <= generatedLines[entry.generatedLine - 1].length,
-    );
-    if (entry.originalLine !== null) {
-      assert.ok(entry.originalLine >= 1 && entry.originalLine <= originalLines.length);
-      assert.ok(
-        entry.originalColumn >= 0 &&
-          entry.originalColumn <= originalLines[entry.originalLine - 1].length,
-      );
-      assert.equal(entry.source, map.sources[0]);
-    }
-    mappings.push(entry);
-  });
-  assert.ok(mappings.length > 0);
-  const token = name === "reported" ? "getCurrentInstance() !== null" : 'mark("end")';
-  function position(text) {
-    const index = text.indexOf(token);
-    assert.ok(index >= 0 && text.indexOf(token, index + 1) < 0, token);
-    const lines = text.slice(0, index).split("\n");
-    return { line: lines.length, column: lines.at(-1).length };
-  }
-  const authored = position(source);
-  const generated = position(code);
-  const mapped = consumer.originalPositionFor(generated);
-  assert.deepEqual(
-    { line: mapped.line, column: mapped.column },
-    authored,
-    "the whole module maps the unchanged post-await observation to its exact authored UTF16 position",
-  );
-  return { mappings, postAwait: { token, authored, generated, mapped } };
 }
 
 async function component(code) {
@@ -292,18 +250,45 @@ for (const row of input.cases) {
     stockBareEvidence: officialBare
       ? {
           complete: JSON.parse(JSON.stringify(officialBare)),
-          facts: astFacts(officialBare.content),
-          mappings: mappingFacts(officialBare.content, officialBare.map, row.source, row.name),
+          facts: null,
+          mappings: null,
           runtimeAcceptance: false,
         }
       : null,
-    currentFacts: astFacts(current.code),
-    officialFacts: astFacts(official.content),
-    currentMappings: mappingFacts(current.code, current.map, row.source, row.name),
-    officialMappings: mappingFacts(official.content, official.map, referenceSource, row.name),
+    currentFacts: null,
+    officialFacts: null,
+    currentMappings: null,
+    officialMappings: null,
     runtime: [],
   };
   receipt.observations.push(observation);
+  save();
+  observation.currentFacts = astFacts(current.code);
+  observation.officialFacts = astFacts(official.content);
+  observation.currentMappings = mappingFacts(
+    current.code,
+    current.map,
+    row.source,
+    row.name,
+    SourceMapConsumer,
+  );
+  observation.officialMappings = mappingFacts(
+    official.content,
+    official.map,
+    referenceSource,
+    row.name,
+    SourceMapConsumer,
+  );
+  if (officialBare) {
+    observation.stockBareEvidence.facts = astFacts(officialBare.content);
+    observation.stockBareEvidence.mappings = mappingFacts(
+      officialBare.content,
+      officialBare.map,
+      row.source,
+      row.name,
+      SourceMapConsumer,
+    );
+  }
   save();
   const facts = {
     wraps: oracle.wraps,

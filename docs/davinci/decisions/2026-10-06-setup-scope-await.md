@@ -29,3 +29,9 @@ All original fifteen complete source/control objects and their authored referenc
 Current source verification remains UNEXECUTED: no install/build/native runtime, no PR/Ready/queue claim. Fresh exact successor source review, all96 real SSR pairs, complete maps/results, protected104/fullRust, signed delivery and public release replay remain mandatory.
 
 The complete seven-field current result is compared between source-map modes and retained whole. Stock binding metadata is captured whole, but the existing DOM/SSR Vue-import classifications differ; no current-versus-stock binding byte parity or full metadata acceptance is claimed.
+
+## Complete failing-result custody
+
+Final harness source review found a recording-order gap: AST/map validators ran while constructing the observation, before the complete official compile result was saved. Persist the complete current, official and stock-bare objects first, then populate and validate the same AST/map facts. This preserves failing official output evidence even when a map assertion rejects it. The map validator body and every assertion are unchanged; it is extracted into a small owned helper receiving the same authenticated SourceMapConsumer constructor.
+
+Production, all sixteen full sources, all independently authored references, runtime states, lock resolutions and prior source records are unchanged. Both helpers remain below 350 lines. No compilation/runtime/Actions/readiness credit is claimed; fresh immutable source review and the existing required/protected/delivery gates remain mandatory.
