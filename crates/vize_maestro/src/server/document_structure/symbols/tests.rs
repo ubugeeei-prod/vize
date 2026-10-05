@@ -30,6 +30,18 @@ fn names(symbols: &[DocumentSymbol]) -> Vec<&str> {
     symbols.iter().map(|symbol| symbol.name.as_str()).collect()
 }
 
+fn contained(symbols: &[DocumentSymbol]) {
+    for parent in symbols {
+        if let Some(children) = &parent.children {
+            for child in children {
+                assert!(parent.range.start <= child.range.start);
+                assert!(child.range.end <= parent.range.end);
+            }
+            contained(children);
+        }
+    }
+}
+
 #[test]
 fn original_reported_projects_preserve_the_complete_authored_hierarchies() {
     for (source, expected) in [
@@ -50,11 +62,73 @@ fn original_reported_projects_preserve_the_complete_authored_hierarchies() {
             ),
         ),
     ] {
+        let symbols = outline(source);
+        contained(&symbols);
         assert_eq!(
-            serde_json::to_value(outline(source)).unwrap(),
+            serde_json::to_value(symbols).unwrap(),
             serde_json::from_str::<serde_json::Value>(expected).unwrap()
         );
     }
+}
+
+#[test]
+fn full_element_ends_use_original_opaque_children_and_never_consume_parent_closures() {
+    let adjacent = outline("<template><Widget><Widget/></Widget></template>");
+    let outer = &adjacent[0].children.as_ref().unwrap()[0];
+    assert_eq!(outer.range.end, Position::new(0, 36));
+    assert_eq!(
+        outer.children.as_ref().unwrap()[0].range.end,
+        Position::new(0, 27)
+    );
+    let source = "<template><Widget><Widget/><input><textarea>&lt;Widget&gt;</textarea><!-- </Widget> --><p>{{ '</Widget>' }}</p> \n</Widget></template>";
+    let symbols = outline(source);
+    contained(&symbols);
+    let outer = &symbols[0].children.as_ref().unwrap()[0];
+    let children = outer.children.as_ref().unwrap();
+    assert_eq!(names(children), ["Widget", "input", "textarea", "p"]);
+    let index = vize_l0::line_index::LineIndex::new(source);
+    for (symbol, fragment) in [
+        (
+            outer,
+            "<Widget><Widget/><input><textarea>&lt;Widget&gt;</textarea><!-- </Widget> --><p>{{ '</Widget>' }}</p> \n</Widget>",
+        ),
+        (&children[0], "<Widget/>"),
+        (&children[1], "<input>"),
+        (&children[2], "<textarea>&lt;Widget&gt;</textarea>"),
+        (&children[3], "<p>{{ '</Widget>' }}</p>"),
+    ] {
+        let start = source.find(fragment).unwrap();
+        let (line, character) = index.line_col(start + fragment.len());
+        assert_eq!(symbol.range.end, Position::new(line, character));
+    }
+}
+
+#[test]
+fn closing_witness_refuses_later_or_prefix_matches() {
+    for (source, expected) in [
+        (" \n</p >later", 7),
+        ("</paragraph>", 0),
+        ("text</p>", 0),
+        ("<!-- </p> -->", 0),
+    ] {
+        assert_eq!(super::template::closing_end(source, "p", 0), expected);
+    }
+}
+
+#[test]
+fn mixed_case_closing_tags_follow_the_original_parser_without_normalizing_names() {
+    let symbols = outline("<template><DIV><span></SPAN></div></template>");
+    contained(&symbols);
+    let parent = &symbols[0].children.as_ref().unwrap()[0];
+    let child = &parent.children.as_ref().unwrap()[0];
+    assert_eq!(parent.name, "DIV");
+    assert_eq!(parent.range.end, Position::new(0, 34));
+    assert_eq!(parent.selection_range.start, Position::new(0, 11));
+    assert_eq!(parent.selection_range.end, Position::new(0, 14));
+    assert_eq!(child.name, "span");
+    assert_eq!(child.range.end, Position::new(0, 28));
+    assert_eq!(child.selection_range.start, Position::new(0, 16));
+    assert_eq!(child.selection_range.end, Position::new(0, 20));
 }
 
 #[test]

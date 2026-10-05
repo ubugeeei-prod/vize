@@ -50,6 +50,14 @@ preserve every name, kind, range, selectionRange, child order and omitted field.
 Rust whole-array controls and shared corpus real stdio sessions use the same
 immutable expected bytes. Synthetic framed data only exercises comparator laws.
 
+Legacy element locations cover opening tags. A postorder walk also retains the
+maximum original child end and accepts only an immediately adjacent authored
+closing tag of the same name, using the parser's ASCII case-insensitive match
+and allowing ASCII whitespace before it. This
+extends the range through the closing `>` without another parse or source scan.
+Self-closing and void nodes retain their opening-tag extent. Opaque original
+text, comments and interpolations bound the walk; their fake tags are not names.
+
 The new corpus requests hierarchical document symbols explicitly while leaving
 all old case capability objects untouched. Both original Vue files and configs
 are materialized; each corpus session opens its entry only, with the existing
@@ -80,3 +88,10 @@ The source-qualified consumption and migration inventories record these legacy
 SFC/parser and raw OXC imports. Their authoritative generators refresh only the
 Maestro shards; the existing rows and fixture gates remain intact. These rows
 record current source use and grant no native migration acceptance.
+
+The first source Check `37300853974` at `12079e0392` failed: its generated Maestro
+inventories were stale, and the whole Parent oracle caught `p.range.end` at 26
+instead of the required 38. Preserve that failure. Refresh only those inventory
+shards and qualify the closing-tag witness on a new source; keep both original
+full expected arrays unchanged. New containment, opaque-content, same-name
+self-closing, mixed-case and false-closing controls require fresh source/protected execution.

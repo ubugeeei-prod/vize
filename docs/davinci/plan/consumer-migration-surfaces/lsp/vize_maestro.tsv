@@ -305,10 +305,10 @@ lsp	LSP	source	crates/vize_maestro/src/server/document_structure/symbols/script.
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/symbols/script.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/symbols/script/members.rs	3	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/symbols/script/members.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-lsp	LSP	source	crates/vize_maestro/src/server/document_structure/symbols/template.rs	5	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/server/document_structure/symbols/template.rs	5	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/symbols/template.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/symbols/template.rs	5	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/server/document_structure/symbols/tests.rs	78	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/server/document_structure/symbols/tests.rs	89	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	test/dev	crates/vize_maestro/src/server/handlers/tests/lifecycle.rs	10	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/handlers/tests/requests.rs	146	carton	Carton host/compatibility	old	vize_carton	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/server/handlers/tests/requests/params.rs	3	l0	L0	stage	vize_l0	preferred	1
