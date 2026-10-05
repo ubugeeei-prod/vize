@@ -70,3 +70,30 @@ production/test/original fixture byte. Put the complete owned clauses beside
 the existing type-check decision paragraph; every incoming canonical line is
 preserved and the document remains 350 lines. Fresh replay qualification and
 protected actual merge are still required; earlier eaa3 green is not reused.
+
+The actual protected 969f candidate failed its fourth Rust worker: the unchanged
+imported runtime props fixture gained TS18048 for `title` and `pagerCount`, whose
+original defaults are `'Ready'` and `7`. Imported runtime prop resolution uses
+`default_value: "undefined"` as a presence/Boolean-cast marker. Preserve that
+existing runtime facts only from the already-resolved imported prop vector,
+retaining names in the same private resolver-proven set through the generalized
+`resolved_prop_defaults` accessor. Raw authored undefined remains excluded;
+inline runtime props cannot acquire imported sentinel provenance. The existing
+type-based resolver returns before changing runtime facts. No cache, new field,
+source input, golden diagnostic or compiler stage changes.
+
+The existing required native qualifier additionally executes all three original
+`imported_runtime_props` tests with its same official 7.0.2 binary. It retains
+complete cargo stdout/stderr/status and pins the immutable fixture's SHA256;
+the source fixture itself preserves every original input/config and each whole
+empty diagnostic assertion. The original three CLI/native vectors and full
+editor optional-hover response remain required. The failed queue candidate was
+automatically removed, and no new admission is authorized during the finite
+release hold. Fresh source/native Actions, protected full/all104, actual merge
+and publication remain pending; historical 5b green does not cover this repair.
+
+A bounded independent correction review confirms imported-identifier provenance,
+type-based early-return retention and unchanged raw-undefined exclusion. Broader
+pre-existing imported/runtime default-undefined inference remains unclaimed.
+The official consumption generator records the added existing Croquis macro
+access (73 to 74); no counter or instruction limit is weakened.

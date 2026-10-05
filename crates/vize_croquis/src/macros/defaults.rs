@@ -41,14 +41,14 @@ pub(super) struct WithDefaults {
 }
 
 impl MacroTracker {
-    /// Non-undefined defaults proven by the existing imported-object resolver.
+    /// Default names proven by the existing imported prop/default resolvers.
     /// Keep these facts separate from the exact authored default expressions.
-    pub fn set_resolved_with_defaults(&mut self, names: FxHashSet<CompactString>) {
+    pub fn set_resolved_prop_defaults(&mut self, names: FxHashSet<CompactString>) {
         self.with_defaults.resolved_names = names;
     }
 
-    /// Names of defaults whose non-undefined values were resolved externally.
-    pub fn resolved_with_defaults(&self) -> impl Iterator<Item = &str> {
+    /// Imported runtime default-presence/Boolean-cast or defined-default facts.
+    pub fn resolved_prop_defaults(&self) -> impl Iterator<Item = &str> {
         self.with_defaults
             .resolved_names
             .iter()

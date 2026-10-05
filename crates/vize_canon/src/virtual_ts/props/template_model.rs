@@ -66,10 +66,9 @@ impl TemplatePropsModel {
             props_type_ref(generic_param, setup_scoped.then_some("__VizeSetupProps"));
 
         let mut defaulted_prop_names = collect_with_defaults_default_names(summary);
-        // A runtime `default:` is Vue's own substitution, so the prop is never
-        // `undefined` inside its own template. The virtual project pass also
-        // marks type-based `withDefaults` entries when their defaults resolve
-        // through imported values.
+        // Imported runtime props and type-based defaults retain their resolved
+        // names separately from authored values, so a raw `undefined` expression
+        // cannot acquire the imported resolver's default-presence facts.
         for prop in props {
             if prop
                 .default_value
@@ -140,7 +139,7 @@ fn sfc_generic_param(summary: &Croquis) -> Option<&str> {
 fn collect_with_defaults_default_names(summary: &Croquis) -> FxHashSet<String> {
     let mut names = summary
         .macros
-        .resolved_with_defaults()
+        .resolved_prop_defaults()
         .map(String::from)
         .collect();
     for call in summary.macros.all_calls() {

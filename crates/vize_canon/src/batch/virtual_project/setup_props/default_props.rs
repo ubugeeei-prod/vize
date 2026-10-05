@@ -57,7 +57,7 @@ pub(super) fn merge_type_based_with_defaults_into_croquis(
         );
     }
 
-    croquis.macros.set_resolved_with_defaults(default_names);
+    croquis.macros.set_resolved_prop_defaults(default_names);
 }
 
 fn collect_type_based_with_defaults_default_names(

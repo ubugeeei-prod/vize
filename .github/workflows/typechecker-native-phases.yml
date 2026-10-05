@@ -239,6 +239,20 @@ jobs:
             --config 'profile.ci-opt.codegen-units=16' \
             --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
           export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync,readdirSync} from "node:fs";import {join} from "node:path";const root=process.env.VIZE_DEFAULT_PROP_CAPTURE;const name=readdirSync(root,{withFileTypes:true}).find(e=>e.isDirectory()).name;process.stdout.write(JSON.parse(readFileSync(join(root,name,"oracle.json"),"utf8")).nativeBinary)')"
+          cp crates/vize_canon/src/batch/type_checker/tests/recent_issues/imported_runtime_props.rs "$VIZE_DEFAULT_PROP_CAPTURE/imported-runtime-props.fixture.rs"
+          set +e
+          cargo test --locked --profile ci-opt -p vize_canon --lib \
+            batch::type_checker::tests::recent_issues::imported_runtime_props \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' -- --nocapture \
+            > "$VIZE_DEFAULT_PROP_CAPTURE/imported-runtime-props.stdout.txt" \
+            2> "$VIZE_DEFAULT_PROP_CAPTURE/imported-runtime-props.stderr.txt"
+          runtime_status=$?
+          set -e
+          printf '%s\n' "$runtime_status" > "$VIZE_DEFAULT_PROP_CAPTURE/imported-runtime-props.status.txt"
+          cat "$VIZE_DEFAULT_PROP_CAPTURE/imported-runtime-props.stdout.txt" "$VIZE_DEFAULT_PROP_CAPTURE/imported-runtime-props.stderr.txt"
+          test "$runtime_status" -eq 0
           cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_defaults_tests \
             --config 'profile.ci-opt.inherits="release"' \
             --config 'profile.ci-opt.lto="thin"' \
@@ -256,6 +270,11 @@ jobs:
           assert(existsSync(join(root, 'editor-hover.json')));
           const editorRuntime = JSON.parse(readFileSync(join(root, 'editor-runtime.json'), 'utf8'));
           const hash = file => createHash('sha256').update(readFileSync(file)).digest('hex');
+          assert.equal(hash(join(root, 'imported-runtime-props.fixture.rs')), 'f588f6b9e3f706011ad32431008032808e2bda0ae4ac4f364c03846efe809687');
+          assert.equal(readFileSync(join(root, 'imported-runtime-props.status.txt'), 'utf8'), '0\n');
+          const runtimeOutput = readFileSync(join(root, 'imported-runtime-props.stdout.txt'), 'utf8');
+          for (const name of ['imported_runtime_define_props_reach_script_and_template', 'type_based_with_defaults_omit_imported_defaults', 'imported_runtime_props_cache_rebinds_local_define_props_name']) assert(runtimeOutput.includes(`test batch::type_checker::tests::recent_issues::imported_runtime_props::${name} ... ok`));
+          assert(runtimeOutput.includes('test result: ok. 3 passed; 0 failed;'));
           const files = dir => readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]);
           const receipts = cases.map(name => {
             const raw = JSON.parse(readFileSync(join(root, name, 'oracle.json'), 'utf8'));
