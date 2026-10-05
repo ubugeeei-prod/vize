@@ -27,7 +27,6 @@ fn incomplete_function_fields_and_statement_families_cannot_finish_complete() {
         "function* f(value) { yield value; }",
         "declare function f(value: number): number;",
         "function f<T>(value) { return value; }",
-        "function f(value): number { return value; }",
         "function f(this: object, value) { return value; }",
         "function f(value?) { return value; }",
         "function f(value = 1) { return value; }",

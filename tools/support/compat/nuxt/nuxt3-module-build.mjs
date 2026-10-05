@@ -146,6 +146,27 @@ try {
         );
       }
     }
+    for (const [route, marker] of [
+      ["/page-meta", "page-meta-explicit"],
+      ["/page-meta-global", "page-meta-global"],
+    ]) {
+      const response = await fetch(`http://127.0.0.1:${port}${route}`, {
+        signal: AbortSignal.timeout(5000),
+      });
+      assert.equal(response.status, 200);
+      const html = await response.text();
+      fs.writeFileSync(path.join(artifacts, `${marker}.html`), html);
+      assert.match(
+        html,
+        new RegExp(
+          `<main[^>]*id="bare-layout"[^>]*><!--\\[--><p[^>]*id="${marker}"[^>]*>page</p><!--\\]--></main>`,
+        ),
+      );
+      assert.ok(
+        !html.includes("DEFAULT LAYOUT"),
+        "extracted page metadata must select its original layout",
+      );
+    }
     const { chromium } = requireTests("@playwright/test");
     browser = await chromium.launch();
     const page = await browser.newPage();
@@ -156,6 +177,16 @@ try {
     await page.getByRole("button", { name: "Clicks: 0" }).click();
     await page.getByRole("button", { name: "Clicks: 1" }).waitFor();
     await page.getByRole("link", { name: "About" }).click();
+    await page.getByRole("heading", { name: "Nuxt 3 route" }).waitFor();
+    for (const marker of ["page-meta-explicit", "page-meta-global"]) {
+      await page.goto(
+        `http://127.0.0.1:${port}/${marker === "page-meta-explicit" ? "page-meta" : "page-meta-global"}`,
+        { waitUntil: "networkidle" },
+      );
+      await page.locator(`#bare-layout #${marker}`).waitFor();
+      assert.equal(await page.locator("#default-header").count(), 0);
+    }
+    await page.goto(`http://127.0.0.1:${port}/about`, { waitUntil: "domcontentloaded" });
     await page.getByRole("heading", { name: "Nuxt 3 route" }).waitFor();
     assert.deepEqual(pageErrors, [], "hydration and client navigation must not throw");
     fs.writeFileSync(
@@ -176,7 +207,7 @@ try {
         node: process.version,
         nuxt: "3.19.3",
         buildExit: build.status,
-        routes: ["/", "/about"],
+        routes: ["/", "/about", "/page-meta", "/page-meta-global"],
         hydratedInteraction: true,
         sourceBinding: sourceBinding.verify(),
       },

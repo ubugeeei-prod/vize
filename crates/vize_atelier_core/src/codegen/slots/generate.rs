@@ -205,13 +205,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         let default_children: Vec<_> = el
             .children
             .iter()
-            .filter(|child| {
-                if let TemplateChildNode::Element(template_el) = child {
-                    !(template_el.tag == "template" && has_v_slot(template_el))
-                } else {
-                    true
-                }
-            })
+            .filter(|child| super::detect::child_is_implicit_default(child, has_slot_template))
             .collect();
         let has_default_content = !has_slot_template
             || super::detect::slot_children_have_meaningful_content(&default_children);

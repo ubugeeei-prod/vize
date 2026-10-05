@@ -32,7 +32,18 @@ impl<'a, O: FileObserver<'a>> Walk<'_, '_, 'a, O> {
             || function.declare
             || function.type_parameters.is_some()
             || function.this_param.is_some()
-            || function.return_type.is_some()
+            || function.return_type.as_ref().is_some_and(|annotation| {
+                // Original keyword types have no type/value namespace reads.
+                // They grant neither a setup annotation nor runtime erasure.
+                let profile = self.input.source_type();
+                exported
+                    || !profile.is_typescript()
+                    || !profile.is_module()
+                    || profile.is_typescript_definition()
+                    || !super::annotations::is_primitive_type(&annotation.type_annotation)
+                    || self.span(annotation.span).is_none()
+                    || self.span(annotation.type_annotation.span()).is_none()
+            })
             || function.params.kind != FormalParameterKind::FormalParameter
             || function.params.rest.is_some()
             || !body.directives.is_empty()

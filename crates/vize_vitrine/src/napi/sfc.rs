@@ -26,6 +26,8 @@ mod bundler;
 mod compile;
 mod css;
 mod experimentals;
+#[cfg(test)]
+mod page_meta_tests;
 mod parse;
 mod thread_pool;
 mod types;

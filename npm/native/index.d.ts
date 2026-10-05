@@ -88,6 +88,8 @@ export interface BatchCompileOptionsNapi {
   mode?: string;
   ssr?: boolean;
   vapor?: boolean;
+  /** Extract Nuxt page metadata only when its integration opts in. */
+  nuxtPageMeta?: boolean;
   customRenderer?: boolean;
   customElements?: Array<string>;
   templateSyntax?: string;
@@ -1250,6 +1252,8 @@ export interface SfcCompileOptionsNapi {
   sourceMap?: boolean;
   ssr?: boolean;
   vapor?: boolean;
+  /** Extract Nuxt page metadata only when its integration opts in. */
+  nuxtPageMeta?: boolean;
   customRenderer?: boolean;
   customElements?: Array<string>;
   templateSyntax?: string;

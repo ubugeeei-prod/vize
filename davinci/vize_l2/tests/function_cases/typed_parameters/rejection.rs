@@ -110,7 +110,6 @@ fn keyword_parameter_does_not_complete_unsupported_function_fields_or_body_closu
         "async function f(value:number){return value;}",
         "function* f(value:number){yield value;}",
         "function f<T>(value:number){return value;}",
-        "function f(value:number):number{return value;}",
         "function f(this:object,value:number){return value;}",
         "function f(value?:number){return value;}",
         "function f(value:number=1){return value;}",

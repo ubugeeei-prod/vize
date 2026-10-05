@@ -83,6 +83,9 @@ fn collect(
             continue;
         }
         match op {
+            Op::Comment(_) => {
+                let _id = cx.walk.mint();
+            }
             Op::If(if_op) => {
                 let is_slot = is_slot_if(cx, peek_id(cx), if_op);
                 let walk_before = cx.walk.clone();

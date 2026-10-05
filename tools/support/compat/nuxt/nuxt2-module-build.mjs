@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { verifyNuxt2LintConfig } from "./nuxt2-lint-config.mjs";
+import { verifyNuxtAutoInitConfig } from "./nuxt-auto-init-config.mjs";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixture = path.join(root, "tools/support/compat/nuxt/fixtures/nuxt2-module-build");
@@ -105,6 +106,7 @@ try {
     fs.closeSync(serverLog);
   }
   verifyNuxt2LintConfig(fixture, artifacts);
+  verifyNuxtAutoInitConfig(fixture, artifacts);
   fs.writeFileSync(
     path.join(artifacts, "proof.json"),
     JSON.stringify(

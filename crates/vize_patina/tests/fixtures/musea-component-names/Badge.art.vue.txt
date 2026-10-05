@@ -1,0 +1,13 @@
+<script setup lang="ts">
+defineArt("./Badge.vue", { title: "Badge" });
+</script>
+
+<art>
+  <variant name="Neutral" default>
+    <Badge>New</Badge>
+  </variant>
+
+  <variant name="Accent">
+    <Badge tone="accent">New</Badge>
+  </variant>
+</art>

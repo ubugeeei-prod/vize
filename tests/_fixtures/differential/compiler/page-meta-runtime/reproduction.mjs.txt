@@ -1,0 +1,9 @@
+import { compileSfc } from "@vizejs/native";
+
+const src = `<script setup lang="ts">
+import { definePageMeta } from "#imports";
+definePageMeta({ layout: "plain" });
+</script>
+<template><div>page</div></template>
+`;
+console.log(compileSfc(src, { filename: "Page.vue" }).code);
