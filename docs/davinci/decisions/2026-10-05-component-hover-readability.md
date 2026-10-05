@@ -52,9 +52,10 @@ and uses the existing source-build receipt/raw-wire capture in Actions. Timings
 are observations, not a speedup claim or a new budget.
 
 The same committed RPC fixture and oracle can be replayed against an installed
-published CLI by supplying `VIZE_LSP_BIN` and the existing native TypeScript
-runtime; `VIZE_LSP_REQUIRE_SOURCE_BUILD=1` remains mandatory in CI. Root owns the
-supported post-release public-payload replay. A bounded review of the actual vendored parser identified a missing AST variant
+published CLI through a strict launcher and the existing native TypeScript
+runtime. The source regression always verifies `target/ci/vize` and its mandatory
+source receipt; root owns the supported post-release public-payload wrapper and
+replay, without a source-binary fallback. A bounded review of the actual vendored parser identified a missing AST variant
 in the initial source: plain no-substitution template types are `TSLiteral`
 `TemplateLiteral` nodes, distinct from interpolated `TSTemplateLiteralType`. Add
 that exact visitor span hook and a whole formatter/collector control, retaining
@@ -68,6 +69,27 @@ Use the existing `vize_maestro::runtime::block_on` facade for the same public
 future and whole objects, adding no dependency. Production and frozen original/
 expected/RPC bytes stay exact. The failed build and any partial hosted runtime
 are historical evidence; this test-only successor needs fresh full source Actions.
+
+Exact source `956760aa` compiles, but its whole Rust hover law finds one authored
+layout mistake. The initial reference review formatted an already multiline
+declaration, while the retained producer removes structural newlines before
+formatting. Pinned OXC `fc702c1` `ObjectLike` expands an object under `Expand::Auto`
+only when a newline precedes its first member; otherwise its soft group can fit.
+The complete `props.selected.metadata` line is 73 columns (71 formatter-relative
+columns within 78), so the 80-column contract permits that one grouped object.
+Independent source review confirms the correction: replace only that expanded
+metadata layout in the three long RPC objects and tag reference, preserving all
+tokens, original inputs, short objects, ranges and every other expected byte.
+`source.json` pins the original reference hashes, source rule hash and rationale;
+the original files and failed raw log remain preserved. No output is re-recorded.
+
+The same source's PR stdio test stops before spawning because PR tooling builds
+the receipted executable but exports LSP environment only in the merge tier.
+Use the existing route/Pinia tests' explicit source verification and temporary
+required environment, with unconditional nested cleanup. Select the original
+five highlight cases by their IDs instead of a tail slice so the new hover case
+cannot change their nine complete request laws. These failures remain historical;
+the successor requires fresh compiled whole-hover and real-stdio acceptance.
 
 Source Actions, unchanged protected
 104 instruction probes/full Rust/original corpus, actual signed merge and release

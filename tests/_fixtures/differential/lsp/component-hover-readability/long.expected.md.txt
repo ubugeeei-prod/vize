@@ -17,10 +17,7 @@ literal second
 literal third`;
     selected?: {
       identifier: string;
-      metadata?: {
-        description: string;
-        punctuation: "a;=b" | "c,d<e>";
-      };
+      metadata?: { description: string; punctuation: "a;=b" | "c,d<e>" };
     };
     entries: ReadonlyArray<
       Record<"key;=" | "other,<>", { value: string; enabled?: boolean }>

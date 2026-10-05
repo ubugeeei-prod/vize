@@ -328,7 +328,7 @@
       },
       "case": {
         "path": "component-hover-readability/case.json",
-        "sha256": "6afb8ad9baa4998bbde0273c5e59c9393baa5a8e8f44afba93bd6194030a409c"
+        "sha256": "b6b3c263d95c79d0a95f49b54547dc101c5808aa38346adffdac537ec5fdbce1"
       },
       "requestCount": 2,
       "initializationOptions": {

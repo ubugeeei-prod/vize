@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url";
 import { readPinnedArtifact } from "../differential/harness.mjs";
 import { loadLspManifest } from "../differential/lsp-manifest.ts";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
+import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 import { root } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 import {
@@ -54,16 +55,17 @@ await test("component hovers wrap complete long types and preserve exact short c
       ["import", "script", "tag"].map((role) => [name, role]),
     ),
   );
-  // The same committed inputs/oracle can run with VIZE_LSP_BIN pointing to a
-  // published CLI. CI uses the existing mandatory source receipt and raw capture.
-  assert.ok(
-    process.env.VIZE_LSP_BIN,
-    "an explicit source-built or published LSP binary is required",
-  );
-  if (process.env.CI) assert.equal(process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
+  // PR tooling already builds this executable and its mandatory source receipt.
+  // Published-payload replay reuses the committed oracle through a strict launcher.
+  const binary = path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize");
+  resolveVizeLaunchCommand(undefined, binary, { required: true });
+  const previousBinary = process.env.VIZE_LSP_BIN;
+  const previousRequired = process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD;
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-component-hover-"));
   let session: LspSession | undefined;
   try {
+    process.env.VIZE_LSP_BIN = binary;
+    process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD = "1";
     for (const file of fixture.files) {
       fs.writeFileSync(path.join(workspace, file.runtimePath), file.bytes);
     }
@@ -158,7 +160,14 @@ await test("component hovers wrap complete long types and preserve exact short c
     try {
       await session?.shutdown();
     } finally {
-      fs.rmSync(workspace, { recursive: true, force: true });
+      try {
+        fs.rmSync(workspace, { recursive: true, force: true });
+      } finally {
+        if (previousBinary === undefined) delete process.env.VIZE_LSP_BIN;
+        else process.env.VIZE_LSP_BIN = previousBinary;
+        if (previousRequired === undefined) delete process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD;
+        else process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD = previousRequired;
+      }
     }
   }
 });

@@ -28,7 +28,7 @@
   "references": [
     {
       "source": "long.expected.md.txt",
-      "sha256": "2ea2fa53226165b08206ad0d985562d049422530b6ab1f8c970292d078f14798"
+      "sha256": "b055c10754a0b6b163666e5639024b9481758524843834acfa9335bf7c15cc31"
     },
     {
       "source": "short.expected.md.txt",
@@ -36,11 +36,32 @@
     },
     {
       "source": "requests.expected.json",
-      "sha256": "0440d2aef557f576f0b31b1ce63fd3c62c8c639baf3ad122bcd19a2deded0e56"
+      "sha256": "6fdb49309778540c60f9e9b75ff03db2c886ef450210af56223c3f0d92ac554b"
     },
     {
       "source": "responses.expected.json",
-      "sha256": "bb9461028781af071d73dd2c21885a344631dfb89e9b132232f754195fcf527c"
+      "sha256": "806a6cc147baad094eff50f9dae7e423eb9fb9a8de0573a525b45abaa3043512"
     }
-  ]
+  ],
+  "referenceCorrection": {
+    "reviewedFrom": "956760aa2658eb89a860bd17d94d519469332fa3",
+    "reason": "The initial authored props metadata layout retained a structural declaration newline removed by the existing compact_type producer. The pinned formatter groups this complete 73-column outer line; no every-nested-member expansion is required. This single layout correction is derived from original tokens and pinned source, not recorded runtime output.",
+    "formatterRevision": "fc702c1fa9f0412d06ec6908b58cd395b826cf7f",
+    "formatterRule": "ObjectLike::members_have_leading_newline and Expand::Auto; otherwise soft group fits 78 columns plus two outer spaces",
+    "formatterRuleSourceSha256": "a0dfc11de0c32e8eb58c56f17596042178853d536356a411df2cbee7d0f8e4bc",
+    "originalReferences": [
+      {
+        "source": "long.expected.md.txt",
+        "sha256": "2ea2fa53226165b08206ad0d985562d049422530b6ab1f8c970292d078f14798"
+      },
+      {
+        "source": "requests.expected.json",
+        "sha256": "0440d2aef557f576f0b31b1ce63fd3c62c8c639baf3ad122bcd19a2deded0e56"
+      },
+      {
+        "source": "responses.expected.json",
+        "sha256": "bb9461028781af071d73dd2c21885a344631dfb89e9b132232f754195fcf527c"
+      }
+    ]
+  }
 }

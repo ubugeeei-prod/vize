@@ -7,7 +7,7 @@
     "meaning": "source revision exhibiting the reported compaction, not fix-history completion credit",
     "witness": {
       "path": "source.json",
-      "sha256": "43079d69ad27b627bd4ee5708496af06f18bbc2c6c07268e26ce2efbc6c37933"
+      "sha256": "16c3d61752747347631ac1c1b977b1b84e28484bbf547272708ea82fb104908d"
     }
   },
   "documentVersion": 1,
@@ -36,7 +36,7 @@
   "entry": "App.vue",
   "expected": {
     "source": "responses.expected.json",
-    "sha256": "bb9461028781af071d73dd2c21885a344631dfb89e9b132232f754195fcf527c"
+    "sha256": "806a6cc147baad094eff50f9dae7e423eb9fb9a8de0573a525b45abaa3043512"
   },
   "method": "textDocument/hover",
   "scope": "whole default legacy component-tag responses only; no native migration/history closure credit"
