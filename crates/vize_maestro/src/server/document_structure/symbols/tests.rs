@@ -75,7 +75,7 @@ fn declarations_follow_ast_order_without_local_variables_references_or_comments(
 #[test]
 fn tsx_jsx_and_typed_exports_keep_original_identifier_spans() {
     for lang in ["tsx", "jsx"] {
-        let source = format!(
+        let source = vize_l0::cstr!(
             "<script setup lang=\"{lang}\">\nexport const Render = () => <Widget />;\n</script>"
         );
         let symbols = outline(&source);

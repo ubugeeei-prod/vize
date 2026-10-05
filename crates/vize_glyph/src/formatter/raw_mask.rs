@@ -7,6 +7,7 @@ use interpolation::InterpolationScan;
 use tags::{RawRegion, starts_v_pre_attribute, tag_name_at};
 
 use crate::template::WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS;
+use crate::template::literal_lines::LiteralLineState;
 
 pub(super) use tags::starts_v_pre_attribute as starts_v_pre_attribute_at;
 
@@ -50,11 +51,8 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
     // actually following.
     let last_close_line = lines.iter().rposition(|line| contains(line, b"}}"));
     for (i, line) in lines.iter().enumerate() {
-        // `'…'` / `"…"` cannot span a newline in JS, so an unbalanced quote
-        // must not swallow the following lines as string content.
-        interpolation.string = None;
         if (!depth_stack.is_empty()
-            || open_quote.is_some_and(OpenQuote::marks_line_raw)
+            || open_quote.as_ref().is_some_and(OpenQuote::marks_line_raw)
             || in_comment
             || interpolation.line_starts_in_quasi())
             && let Some(raw) = mask.get_mut(i)
@@ -76,14 +74,12 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
                 }
                 continue;
             }
-            if let Some(mut quote) = open_quote {
-                if quote.directive && !quote.raw && byte == b'`' && !is_escaped(bytes, cursor) {
-                    quote.in_template_literal = !quote.in_template_literal;
-                    open_quote = Some(quote);
-                    cursor += 1;
+            if let Some(quote) = &mut open_quote {
+                if quote.directive && !quote.raw && byte != quote.quote {
+                    cursor += quote.literal.advance_at(bytes, cursor);
                     continue;
                 }
-                if byte == quote.quote && !quote.in_template_literal {
+                if byte == quote.quote && !quote.literal.quasi_is_raw() {
                     open_quote = None;
                 }
                 cursor += 1;
@@ -210,6 +206,10 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
             }
             cursor += 1;
         }
+        if let Some(quote) = &mut open_quote {
+            quote.literal.finish_line();
+        }
+        interpolation.finish_line();
     }
     mask
 }
@@ -252,12 +252,11 @@ fn literal_attr_quote(line: &[u8], quote_pos: usize) -> bool {
     })
 }
 
-#[derive(Clone, Copy)]
 struct OpenQuote {
     quote: u8,
     raw: bool,
     directive: bool,
-    in_template_literal: bool,
+    literal: LiteralLineState,
 }
 
 impl OpenQuote {
@@ -267,12 +266,12 @@ impl OpenQuote {
             quote,
             raw: literal_attr_quote(line, quote_pos),
             directive: attr_name.is_some_and(directive_expr_attr),
-            in_template_literal: false,
+            literal: LiteralLineState::rendered(),
         }
     }
 
-    fn marks_line_raw(self) -> bool {
-        self.raw || self.in_template_literal
+    fn marks_line_raw(&self) -> bool {
+        self.raw || self.literal.line_is_raw()
     }
 }
 
@@ -283,16 +282,6 @@ fn verbatim_multiline_directive_attr(name: &[u8], line: &[u8], quote_pos: usize)
 fn value_starts_on_following_line(line: &[u8], quote_pos: usize) -> bool {
     line.get(quote_pos + 1..)
         .is_none_or(|tail| tail.iter().all(|b| matches!(b, b' ' | b'\t' | b'\r')))
-}
-
-fn is_escaped(line: &[u8], pos: usize) -> bool {
-    let mut backslashes = 0;
-    let mut cursor = pos;
-    while cursor > 0 && line.get(cursor - 1) == Some(&b'\\') {
-        backslashes += 1;
-        cursor -= 1;
-    }
-    backslashes % 2 == 1
 }
 
 fn attr_name_before_quote(line: &[u8], quote_pos: usize) -> Option<&[u8]> {

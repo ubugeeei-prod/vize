@@ -63,6 +63,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     )
     .with_explicit_tsconfig(args.tsconfig.as_deref());
     let effective_tsconfig = project.tsconfig().map(Path::to_path_buf);
+    super::input_scope::validate_selected_tsconfig(args, effective_tsconfig.as_deref());
     let effective_corsa_path = args.corsa_path.as_ref().map(PathBuf::from).or_else(|| {
         config
             .type_checker
@@ -102,7 +103,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     );
     let collect_time = collect_start.elapsed();
     if collected.files.is_empty() {
-        report_no_inputs(args);
+        report_no_inputs(args, invocation_tsconfig_path.as_deref());
         return;
     }
 
@@ -135,8 +136,9 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     };
     let validate_inputs = !args.patterns.is_empty() && invocation_tsconfig_path.is_some();
     let mut executions = Vec::new();
+    let mut only_excluded_explicit_inputs = !candidates.is_empty();
     for candidate in candidates {
-        let execution = match prepare_and_execute(
+        let prepared = match prepare_and_execute(
             args,
             candidate,
             &cwd,
@@ -150,15 +152,23 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             &mut canonical_paths,
             &mut package_route_resolver,
         ) {
-            Ok(execution) => execution,
+            Ok(prepared) => prepared,
             Err(error) => exit_after_execution_error(executions, error),
         };
-        if let Some(execution) = execution {
+        only_excluded_explicit_inputs &= prepared.excluded_explicit_inputs;
+        if let Some(execution) = prepared.execution {
             executions.push(execution);
         }
     }
     if executions.is_empty() {
-        report_no_inputs(args);
+        // Finding inputs that their owning program intentionally excludes is
+        // distinct from selecting a project with no supported workload.
+        report_no_inputs(
+            args,
+            invocation_tsconfig_path
+                .as_deref()
+                .filter(|_| !only_excluded_explicit_inputs),
+        );
         return;
     }
     finish_executions(
