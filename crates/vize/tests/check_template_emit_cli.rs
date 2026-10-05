@@ -92,7 +92,7 @@ fn native_emit_oracle(root: &Path, corsa: &Path, declaration: &str, calls: &str,
     write(
         root,
         "oracle.ts",
-        &format!("import {{ defineEmits }} from 'vue';\n{declaration}\n{calls}\n"),
+        &format!("import {{ defineEmits, defineModel }} from 'vue';\n{declaration}\n{calls}\n"),
     );
     write(
         root,
@@ -130,6 +130,8 @@ fn capture(root: &Path, corsa: &Path, phase: &str, output: &Output) {
     for file in [
         "src/A.vue",
         "src/events.ts",
+        "nuxt.config.ts",
+        ".nuxt/imports.d.ts",
         "tsconfig.json",
         "oracle.ts",
         "oracle.tsconfig.json",
@@ -297,3 +299,6 @@ fn absent_macro_retains_the_public_instance_emit_contract() {
     );
     check(case.path(), &corsa, &[]);
 }
+
+#[path = "support/template_emit_controls.rs"]
+mod controls;

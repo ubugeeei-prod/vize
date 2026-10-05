@@ -638,7 +638,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
 
             // Vue template context (available in template expressions)
             setup_imports.emit_template_slots(&mut ts, &mut mappings, source_offset);
-            let template_emit = setup_helpers.template_emit_initializer(summary);
+            let template_emit = setup_helpers.template_emit_initializer(&mut ts, summary);
             emit_template_context(
                 &mut ts,
                 options,

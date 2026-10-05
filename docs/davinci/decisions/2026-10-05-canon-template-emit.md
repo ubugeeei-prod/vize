@@ -34,3 +34,14 @@ case paths use that package without installation or symlinks. The editor binary
 is pinned to the same authenticated official oracle; complete editor fixture,
 config and raw response bytes are retained before full assertions. Original
 source and all independently authored expectations remain unchanged.
+
+Independent source review identifies model update events as part of the template
+public contract. Combine authenticated macro emits with model updates using the
+existing exact `model_update_payload` calculation; optional/required/default
+semantics are shared with component emission. A required string model plus
+numeric `change` event has complete valid/invalid update payload controls.
+Generated Nuxt strict mode keeps `$emit` on the declared local binding (both
+strict identifier paths exclude declared template context names), verified by
+running the original full error vector through the strict CLI case. A generic
+setup control checks the local type parameter. These fresh executions, together
+with the original and actual editor vectors, are required before readiness.
