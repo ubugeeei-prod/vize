@@ -125,10 +125,11 @@ impl EditorLspSession {
                 };
                 let mut category = Vec::new();
                 for file in files {
-                    let mut params = params.clone();
-                    if let Some(name) = file {
-                        params["file"] = json!(name);
-                    }
+                    let params = match file {
+                        Some(name) => json!({"snapshot":snapshot.handle(),
+                            "project":project.descriptor().id,"file":name}),
+                        None => params.clone(),
+                    };
                     let clock = cost.tick();
                     let response = block_on(api.client.raw_json_request(method, params));
                     cost.duration(method, clock);

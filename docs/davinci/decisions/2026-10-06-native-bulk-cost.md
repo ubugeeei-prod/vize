@@ -128,3 +128,12 @@ four-entry successful request array: global syntax, requested semantics, empty
 semantics, global suggestion, exact authoritative names and acknowledgements.
 Filtering only semantic requests would not prove total call scope. This is
 source-only test custody, not native execution or optimization acceptance.
+
+Actual e243 native run37365605130/job111949863803 stopped at production Clippy:
+mutable JSON indexing at the new file argument was denied by the unchanged
+indexing-slicing gate. Retained raw271079bytes/SHA256
+675e5dda69d6467293df5abc5a43dfbade35960e70aa1ae4334ce0aa7b809eed.
+Construct the selected request object directly with the same snapshot/project/
+file values; leave global objects, wire grammar, category order and all laws
+unchanged. No lint waiver or execution credit: fresh source/native16 remain
+mandatory before the single observer-disabled matched comparison.
