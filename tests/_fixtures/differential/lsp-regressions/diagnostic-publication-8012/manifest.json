@@ -1,0 +1,51 @@
+{
+  "issue": 8012,
+  "originalIssue": "https://github.com/ubugeeei-prod/vize/issues/8012",
+  "sourceRegression": {
+    "revision": "b899eaf99343c3a8b67ecce6d2d0b4afb4520d4c",
+    "fullCheck": "https://github.com/ubugeeei-prod/vize/actions/runs/37292039582",
+    "fixture": "misskey/packages/frontend",
+    "fixtureRevision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+    "versionsBeforeRapidEdits": {
+      "root": 83,
+      "dependency": 81
+    },
+    "rapidRootVersions": [
+      84,
+      85,
+      86,
+      87
+    ],
+    "expectedTerminalRootPublications": 1,
+    "observedTerminalRootPublications": 3,
+    "actorAttribution": "unknown; saved records contain no scheduling/request owner"
+  },
+  "files": [
+    {
+      "file": "App.vue.txt",
+      "bytes": 172,
+      "sha256": "c043857104a1b9f0b8f16404b2be40d47404c027835ba838be4dcfd5713c2ed5",
+      "original": "tests/_fixtures/lsp-corsa-responsiveness-8012/App.vue.txt"
+    },
+    {
+      "file": "useToast.ts.txt",
+      "bytes": 74,
+      "sha256": "7a36f75337837632e610953906ec15beab09bb3034e9478b3d8c65d09b8151da",
+      "original": "tests/_fixtures/lsp-corsa-responsiveness-8012/useToast.ts"
+    },
+    {
+      "file": "b899-publish-stream.json",
+      "bytes": 76775,
+      "sha256": "dfabd95df21ecb0446a0039f59f04159ebd8c92054d49e54aff727b5deaa2d6c"
+    }
+  ],
+  "controls": [
+    "Original whole App.vue/useToast.ts bytes; full service notification equality against independently collected current source.",
+    "Block native scope while edits84-87 apply; only the caller87 may emit the complete87 result.",
+    "Already-taken retry and foreground same-world complete result have one publication owner.",
+    "Changed dependency/source environment must republish at unchanged root version.",
+    "Backpressured queued notification survives publisher cancellation exactly once; no document lock crosses transport await.",
+    "An older collected source cannot replace newer publication ownership; an expired duplicate cannot retire current source work.",
+    "Two explicit didSave callbacks at unchanged root/source/version each retain one full diagnostic notification."
+  ]
+}

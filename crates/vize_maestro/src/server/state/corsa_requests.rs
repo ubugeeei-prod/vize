@@ -5,7 +5,7 @@ use std::sync::atomic::Ordering;
 
 use super::ServerState;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct CorsaRequestStamp {
     documents: Option<u64>,
     environment: u64,
@@ -39,6 +39,18 @@ impl CorsaRequestScope<'_> {
     pub(crate) fn stamp(&self) -> CorsaRequestStamp {
         self.stamp
     }
+
+    pub(crate) fn trace_refusal(&self) {
+        if super::super::native_requests::trace_enabled() {
+            tracing::warn!(
+                captured = ?self.stamp,
+                current_documents = ?self.state.documents.stable_revision(),
+                current_environment = self.state.corsa_environment_revision.load(Ordering::Acquire),
+                active_environment_changes = self.state.corsa_environment_changes.load(Ordering::Acquire),
+                "native result refused because its source or environment moved"
+            );
+        }
+    }
 }
 
 impl ServerState {
@@ -65,10 +77,18 @@ impl ServerState {
             .fetch_add(1, Ordering::Release);
     }
 
+    #[track_caller]
     pub(super) fn corsa_environment_change(&self) -> CorsaEnvironmentChange<'_> {
         self.corsa_environment_changes
             .fetch_add(1, Ordering::AcqRel);
         self.invalidate_corsa_request_environment();
+        if super::super::native_requests::trace_enabled() {
+            tracing::info!(
+                caller = %std::panic::Location::caller(),
+                environment = self.corsa_environment_revision.load(Ordering::Acquire),
+                "native environment change began"
+            );
+        }
         CorsaEnvironmentChange(self)
     }
 }
@@ -81,5 +101,11 @@ impl Drop for CorsaEnvironmentChange<'_> {
         self.0
             .corsa_environment_changes
             .fetch_sub(1, Ordering::Release);
+        if super::super::native_requests::trace_enabled() {
+            tracing::info!(
+                environment = self.0.corsa_environment_revision.load(Ordering::Acquire),
+                "native environment change finished"
+            );
+        }
     }
 }

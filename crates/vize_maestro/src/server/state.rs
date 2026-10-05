@@ -178,7 +178,7 @@ pub struct ServerState {
     /// didChange notifications may be polled concurrently by tower-lsp, but
     /// they must not race the same Corsa virtual document.
     #[cfg(feature = "native")]
-    diagnostic_locks: DashMap<Url, Arc<AsyncMutex<()>>>,
+    diagnostic_locks: DashMap<Url, Arc<diagnostic_locks::DiagnosticDocument>>,
     /// Flag to track if Corsa initialization has been attempted and failed
     #[cfg(feature = "native")]
     corsa_init_failed: std::sync::atomic::AtomicBool,
@@ -302,6 +302,7 @@ impl ServerState {
         #[cfg(feature = "native")]
         if renamed {
             self.corsa_overlays.remove(old_uri);
+            self.remove_idle_diagnostic_lock(old_uri);
         }
         renamed
     }

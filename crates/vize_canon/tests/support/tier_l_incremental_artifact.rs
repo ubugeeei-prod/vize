@@ -116,7 +116,7 @@ pub(super) fn write_artifact(repo_root: &Path, artifact: &Artifact) {
     fs::write(output_dir.join("summary.md"), summary).expect("metrics summary should write");
 }
 
-fn output_dir(repo_root: &Path) -> PathBuf {
+pub(super) fn output_dir(repo_root: &Path) -> PathBuf {
     let path = std::env::var_os("VIZE_TIER_L_METRICS_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("target/vize-tests/metrics/vben-batch-incremental"));

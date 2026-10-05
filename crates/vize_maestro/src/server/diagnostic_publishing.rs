@@ -1,6 +1,8 @@
 //! Diagnostic collection and LSP transport publishing.
 
 #[cfg(feature = "native")]
+use std::future::Future;
+#[cfg(feature = "native")]
 use tower_lsp::lsp_types::MessageType;
 use tower_lsp::lsp_types::{Diagnostic, Url};
 
@@ -67,6 +69,7 @@ impl MaestroServer {
     pub(super) async fn collect_diagnostics_unlocked(
         &self,
         uri: &Url,
+        expected: Option<i32>,
     ) -> Option<CollectedDiagnostics> {
         #[cfg(feature = "native")]
         let scope = if self.state.is_lsp_typecheck_enabled() {
@@ -79,6 +82,15 @@ impl MaestroServer {
             .documents
             .get(uri)
             .map(|document| document.version);
+
+        // The native scope can wait behind an older request. Bind the pass to
+        // the version that scheduled it only after that wait, so an old edit
+        // or initial job cannot adopt and republish a newer editor revision.
+        if expected.is_some() && version != expected {
+            #[cfg(feature = "native")]
+            self.retry_current_diagnostics(uri);
+            return None;
+        }
 
         if !self.state.lsp_features().has_diagnostics() {
             return version.map(|version| CollectedDiagnostics {
@@ -137,6 +149,20 @@ impl MaestroServer {
         uri: &Url,
         collected: CollectedDiagnostics,
     ) {
+        self.publish_collected_diagnostics_with_cause(uri, collected, false)
+            .await;
+    }
+
+    pub(super) async fn publish_collected_diagnostics_with_cause(
+        &self,
+        uri: &Url,
+        collected: CollectedDiagnostics,
+        explicit_save: bool,
+    ) {
+        // Without native work there is no asynchronous stamped coalescing;
+        // both causes retain the ordinary complete publication below.
+        #[cfg(not(feature = "native"))]
+        let _ = explicit_save;
         let CollectedDiagnostics {
             version,
             diagnostics,
@@ -164,6 +190,46 @@ impl MaestroServer {
             );
             return;
         }
+        // A taken initial/retry job may outlive a foreground publish. Claim
+        // the complete result for this source/environment, not just the root
+        // version: dependency/configuration changes must still republish it.
+        #[cfg(feature = "native")]
+        let retained = super::initial_diagnostics::RetainedDiagnostics::new(self, uri);
+        #[cfg(feature = "native")]
+        let mut publication = if let Some(stamp) = stamp {
+            let document = self.state.diagnostic_lock(uri);
+            let claim = document.claim(
+                &self.state,
+                uri,
+                version,
+                stamp,
+                &diagnostics,
+                explicit_save,
+            );
+            if !stamp.is_current(&self.state) || self.state.documents.version(uri) != Some(version)
+            {
+                self.retry_current_diagnostics(uri);
+                return;
+            }
+            let publication = match claim {
+                Ok(Some(publication)) => publication,
+                Ok(None) => {
+                    if let Some(scheduler) = &self.initial_diagnostics {
+                        scheduler.complete(uri, version);
+                    }
+                    retained.finish();
+                    self.publish_typecheck_unavailable_notice().await;
+                    return;
+                }
+                Err(_) => {
+                    self.retry_current_diagnostics(uri);
+                    return;
+                }
+            };
+            Some(publication)
+        } else {
+            None
+        };
         self.state
             .cache_lint_hover_diagnostics(uri, version, &diagnostics);
         tracing::info!(
@@ -185,17 +251,44 @@ impl MaestroServer {
             version
         );
 
+        #[cfg(feature = "native")]
+        {
+            let notification =
+                self.client
+                    .publish_diagnostics(uri.clone(), diagnostics, Some(version));
+            futures::pin_mut!(notification);
+            futures::future::poll_fn(|cx| {
+                let result = notification.as_mut().poll(cx);
+                // tower-lsp 0.20 clones the futures-channel 0.3 sender for
+                // each notification. Its first poll enqueues into that
+                // sender's reserved slot; Pending can then mean only flush
+                // backpressure. Dropping that flush cannot retract the
+                // queued notification, so retain its claim from this poll.
+                if let Some(publication) = publication.take() {
+                    publication.finish();
+                }
+                result
+            })
+            .await;
+            retained.finish();
+        }
+        #[cfg(not(feature = "native"))]
         self.client
             .publish_diagnostics(uri.clone(), diagnostics, Some(version))
             .await;
         tracing::info!("sent collected diagnostics for {} version {}", uri, version);
 
+        #[cfg(feature = "native")]
+        self.publish_typecheck_unavailable_notice().await;
+    }
+
+    #[cfg(feature = "native")]
+    async fn publish_typecheck_unavailable_notice(&self) {
         // Surface a one-shot UI notification when type checking is requested
         // but Corsa never came up. The hint diagnostic emitted by
         // collect_async (see #708) shows up in the Problems panel; this
         // adds a window/showMessage so users with the Problems panel
         // collapsed also notice. See #681.
-        #[cfg(feature = "native")]
         if self.state.is_lsp_typecheck_enabled()
             && !self.state.has_corsa_bridge()
             && self.state.claim_typecheck_unavailable_notice()

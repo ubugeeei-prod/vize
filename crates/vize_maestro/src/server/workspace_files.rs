@@ -93,6 +93,8 @@ pub(super) async fn did_change_watched_files(
     server: &MaestroServer,
     params: &DidChangeWatchedFilesParams,
 ) {
+    #[cfg(feature = "native")]
+    super::native_requests::trace_watched_file_events(params);
     #[cfg(feature = "experimental-source-navigation")]
     server
         .state

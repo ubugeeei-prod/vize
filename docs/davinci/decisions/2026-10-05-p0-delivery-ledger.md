@@ -4,7 +4,7 @@ The maintainer requested continuing work until Vize has zero P0 issues. This
 ledger records the original open set and delivery rules. It is a snapshot,
 not a claim that any unexecuted source repair is complete.
 
-## Audit and priority
+## Original audit and priority
 
 - Source main: `66a9b15639c828b17d5f655b3dd58f697799b3fa`.
 - Live audit: 198 open issues, including 108 labelled `priority:p0`.
@@ -41,6 +41,65 @@ not a claim that any unexecuted source repair is complete.
   original fixtures remain required. Historical `42a` gates stay historical.
   Source-merged fixes are not yet claimed publicly delivered; unresolved
   reports, P0 zero, 10x and wider Davinci/fix-history work remain unfinished.
+
+## Publication checkpoint: first v0.433.0 complete and THAW
+
+- The [root publication and explicit THAW](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-5998203715)
+  and [paired checkpoint decision](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-5998425710)
+  supersedes the dated 13:10 admission HOLD above. The final seal at
+  2026-10-05 16:00:24 UTC observed main and annotated tag `v0.433.0` at
+  `8a8521d6897bbe3fd0af0cbfaebd83f4fc933933`, after release PR #7811
+  actually merged at 14:12:07 UTC. The signed protected source parent is
+  `92e036de6f8dc651440e7c9a2f415a3c7fa69890`, including 70 actual source
+  PR merges. Official version-only atomic promotion produced an unsigned
+  generated commit/tag; no signed-release claim is made.
+- All six fresh exact-`8a8521d6` gates passed: [Release attempt 3](https://github.com/ubugeeei-prod/vize/actions/runs/37318076195),
+  [Check](https://github.com/ubugeeei-prod/vize/actions/runs/37318378670),
+  [Miri](https://github.com/ubugeeei-prod/vize/actions/runs/37318381346),
+  [Docs build](https://github.com/ubugeeei-prod/vize/actions/runs/37318383983),
+  [Fuzz](https://github.com/ubugeeei-prod/vize/actions/runs/37318387550) and
+  [Matrix](https://github.com/ubugeeei-prod/vize/actions/runs/37318391202).
+  Check includes all 12 registered semver jobs and unsharded workspace/feature
+  commands; the protected parent's four-worker/104-row proof remains a
+  separate code-parent witness. Matrix retains its official record-only lint
+  and skipped typecheck-divergence policy, not strict ecosystem equivalence.
+  Ordinary fixture LSP selected-binary SHA remains unknown; installed-public
+  replays separately bind the actual public binary and original oracles.
+- [GitHub Release](https://github.com/ubugeeei-prod/vize/releases/tag/v0.433.0)
+  became public at 15:33:27 UTC with 78 assets. Verification completed for
+  26 exact/latest npm packages, 26 non-yanked crates, eight NAPI payloads,
+  eight Fresco targets and identical GitHub/Marketplace/Open VSX VSIX bytes.
+  The separate [main Docs build](https://github.com/ubugeeei-prod/vize/actions/runs/37323013885),
+  [real Pages deployment](https://github.com/ubugeeei-prod/vize/actions/runs/37324528523)
+  and [Open VSX publication](https://github.com/ubugeeei-prod/vize/actions/runs/37334312694)
+  passed; actual Chrome docs/search/Playground/gallery checks passed too.
+- Six installed-public helpers exited zero against retained whole fixture
+  oracles: routes, original CLI/LSP wire cases, #8012 provider lifecycle,
+  component hover, eight document-link sessions and #7949 Vue-helper controls.
+  Their rc.6/beta.10/rc.10 environments and method limits remain separate;
+  document links use `typecheck: false` and grant no native-provider credit.
+  These bounded cases do not establish all LSP methods, platforms or history.
+- Release attempts 1/2 retain the native visibility timeout and staged-version
+  conflicts. The staging cause remains unknown; a wrapped error missed the
+  helper's contiguous staged-version match. Attempt 3 followed authenticated
+  changed registry visibility through supported resume, with no retag or
+  manual publication. Earlier failed candidate gates remain historical.
+  The private route helper's invalid shutdown `params: null` was corrected by
+  omitting absent params, preserving all seven original cases; published
+  source was unchanged. The old system-Python verifier failed on
+  `zip(strict=True)` without emitting proof; the unchanged final V7 helper
+  and configuration then passed using existing Python 3.12. Original failures
+  remain retained, with no source, budget, oracle or gate relaxation.
+- Final proof SHA-256:
+  `ea82a1b67a753a28ba92fc6cfc1db2faaca674b6228812a4c3e93d3909a14cff`.
+  The fresh 16:06:34 UTC census still has 102 open P0 issues and 20 open PRs;
+  the original 108 rows below are unchanged historical inputs. Qualified
+  independent fixes resume exact-head squash/merge-queue delivery; dependent
+  slices retain native Stack prefix gates. This docs checkpoint never blocks
+  those admissions, and root remains the sole publisher. Bulk #8038, warm
+  #8008, named-member #8003 and other unmerged fixes were excluded from this
+  first release. P0 zero, global 10x, real CPU/allocation profiles, complete
+  fix history, native-default and wider Davinci work remain unfinished.
 
 ## Delivery rules
 

@@ -5,21 +5,26 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use serde::Deserialize;
-use vize_canon::{
-    BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, IncrementalCheckMetrics,
-};
+use vize_canon::{BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait};
 use vize_carton::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
 use vize_l0::String;
 
 #[path = "support/tier_l_incremental_artifact.rs"]
 mod artifact;
+#[path = "support/tier_l_incremental_budget.rs"]
+mod budget;
+#[path = "support/tier_l_incremental_failure.rs"]
+mod failure;
 #[path = "support/tier_l_fixture.rs"]
 mod fixture;
 use artifact::{Artifact, BatchIncrementalBudget, FixtureEvidence, lane, write_artifact};
+use budget::{
+    assert_cold_metrics, assert_no_injected_diagnostics, assert_warm_metrics, assert_within_budget,
+    budget_scale,
+};
 use fixture::{env_path, git_revision};
 
 const FIXTURE_ID: &str = "vue-vben-admin";
-const BUDGET_SCALE_ENV: &str = "VIZE_TIER_L_BUDGET_SCALE";
 const TIER_L_VUE_FILES: usize = 500;
 const INJECTED_FILE: &str = "apps/web-antd/src/__vize_batch_incremental_oracle__.vue";
 const CLEAN_SOURCE: &str = r#"<script setup lang="ts">
@@ -120,6 +125,15 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
         BatchTypeChecker::with_options_and_corsa_path(&fixture_root, options, Some(&corsa_path))
             .expect("Tier-L checker should start");
 
+    let mut failure = failure::FailureReceipt::new(
+        artifact::output_dir(&repo_root),
+        FIXTURE_ID,
+        project.revision.clone(),
+        INJECTED_FILE,
+        budget.clone(),
+        budget_scale,
+    );
+    failure.begin(0);
     let cold_started = Instant::now();
     let vue_paths = collect_vue_paths(&fixture_root);
     checker
@@ -152,17 +166,21 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
         .check_incremental(std::slice::from_ref(&injected_path))
         .expect("cold incremental session should complete");
     let cold_ms = cold_started.elapsed().as_millis();
-    assert_no_injected_diagnostics(&cold);
     let cold_metrics = checker.incremental_metrics();
+    failure.complete(0, cold_ms, cold_metrics, checker.file_count());
+    assert_no_injected_diagnostics(&cold);
     assert_cold_metrics(cold_metrics, &budget);
     assert_within_budget("cold", cold_ms, budget.cold_ms, budget_scale);
 
+    failure.begin(1);
     injected.write(BROKEN_SOURCE);
     let broken_started = Instant::now();
     let broken = checker
         .check_incremental(std::slice::from_ref(&injected_path))
         .expect("broken warm check should complete");
     let broken_ms = broken_started.elapsed().as_millis();
+    let broken_metrics = checker.incremental_metrics();
+    failure.complete(1, broken_ms, broken_metrics, checker.file_count());
     let injected_errors = broken
         .diagnostics
         .iter()
@@ -185,18 +203,19 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
         "unexpected injected TS2322: {}",
         injected_errors[0].message
     );
-    let broken_metrics = checker.incremental_metrics();
     assert_warm_metrics(broken_metrics, 2, 1, &budget);
     assert_within_budget("broken warm", broken_ms, budget.warm_ms, budget_scale);
 
+    failure.begin(2);
     injected.write(CLEAN_SOURCE);
     let repaired_started = Instant::now();
     let repaired = checker
         .check_incremental(std::slice::from_ref(&injected_path))
         .expect("repaired warm check should complete");
     let repaired_ms = repaired_started.elapsed().as_millis();
-    assert_no_injected_diagnostics(&repaired);
     let repaired_metrics = checker.incremental_metrics();
+    failure.complete(2, repaired_ms, repaired_metrics, checker.file_count());
+    assert_no_injected_diagnostics(&repaired);
     assert_warm_metrics(repaired_metrics, 3, 2, &budget);
     assert_within_budget("repaired warm", repaired_ms, budget.warm_ms, budget_scale);
 
@@ -217,6 +236,7 @@ fn vben_batch_incremental_session_reuses_exact_materialized_delta() {
         ],
     };
     write_artifact(&repo_root, &artifact);
+    failure.disarm();
 }
 
 fn collect_vue_paths(fixture_root: &Path) -> Vec<PathBuf> {
@@ -245,96 +265,5 @@ fn assert_budget(budget: &BatchIncrementalBudget) {
     assert_eq!(
         budget.max_changed_files, 1,
         "one edited SFC must remain the delta budget"
-    );
-}
-
-fn budget_scale() -> f64 {
-    match std::env::var(BUDGET_SCALE_ENV) {
-        Ok(raw) if raw.is_empty() => 1.0,
-        Ok(raw) => {
-            let scale = raw.parse::<f64>().unwrap_or_else(|_| {
-                panic!(
-                    "{BUDGET_SCALE_ENV} must be a finite number greater than 0 and at most 100, got {raw:?}"
-                )
-            });
-            assert!(
-                scale.is_finite() && scale > 0.0 && scale <= 100.0,
-                "{BUDGET_SCALE_ENV} must be a finite number greater than 0 and at most 100, got {raw:?}"
-            );
-            scale
-        }
-        Err(std::env::VarError::NotPresent) => 1.0,
-        Err(error) => panic!("{BUDGET_SCALE_ENV} must be valid UTF-8: {error}"),
-    }
-}
-
-fn assert_no_injected_diagnostics(result: &vize_canon::BatchTypeCheckResult) {
-    assert!(
-        result.diagnostics.iter().all(|diagnostic| {
-            diagnostic.file.file_name().and_then(|name| name.to_str())
-                != Some("__vize_batch_incremental_oracle__.vue")
-        }),
-        "clean source retained injected-file diagnostics"
-    );
-}
-
-fn assert_cold_metrics(metrics: IncrementalCheckMetrics, budget: &BatchIncrementalBudget) {
-    assert_eq!((metrics.checks, metrics.session_starts), (1, 1));
-    assert_eq!((metrics.session_reuses, metrics.session_refreshes), (0, 0));
-    assert_eq!(metrics.session_to_cli_fallbacks, 0);
-    assert!(metrics.last_session_started);
-    assert!(!metrics.last_session_to_cli_fallback);
-    assert_eq!(
-        (
-            metrics.last_changed_files,
-            metrics.last_created_files,
-            metrics.last_deleted_files
-        ),
-        (0, 0, 0)
-    );
-    assert_requested_budget(metrics, budget);
-}
-
-fn assert_warm_metrics(
-    metrics: IncrementalCheckMetrics,
-    checks: usize,
-    reuses: usize,
-    budget: &BatchIncrementalBudget,
-) {
-    assert_eq!((metrics.checks, metrics.session_starts), (checks, 1));
-    assert_eq!(
-        (metrics.session_reuses, metrics.session_refreshes),
-        (reuses, reuses)
-    );
-    assert_eq!(metrics.session_to_cli_fallbacks, 0);
-    assert!(metrics.last_session_reused && metrics.last_session_refreshed);
-    assert!(!metrics.last_session_to_cli_fallback);
-    assert_eq!(metrics.last_changed_files, budget.max_changed_files);
-    assert_eq!(
-        (metrics.last_created_files, metrics.last_deleted_files),
-        (0, 0)
-    );
-    assert_requested_budget(metrics, budget);
-}
-
-fn assert_requested_budget(metrics: IncrementalCheckMetrics, budget: &BatchIncrementalBudget) {
-    assert!(metrics.last_requested_files > 0);
-    assert_eq!(
-        metrics.last_requested_files, budget.max_requested_files,
-        "the pinned Tier-L corpus must request every registered source, including dependencies"
-    );
-    assert!(
-        metrics.last_requested_files <= budget.max_requested_files,
-        "requested {} files, budget is {}",
-        metrics.last_requested_files,
-        budget.max_requested_files
-    );
-}
-
-fn assert_within_budget(lane: &str, elapsed_ms: u128, budget_ms: u64, budget_scale: f64) {
-    let scaled_budget_ms = (budget_ms as f64 * budget_scale).ceil() as u128;
-    assert!(
-        elapsed_ms < scaled_budget_ms,
-        "{lane} took {elapsed_ms}ms, budget is {budget_ms}ms at scale {budget_scale} ({scaled_budget_ms}ms)"
     );
 }

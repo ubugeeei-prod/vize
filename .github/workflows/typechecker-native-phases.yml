@@ -1,5 +1,4 @@
 name: Type checker native backend phases
-
 on:
   workflow_dispatch:
     inputs:
@@ -10,6 +9,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/typechecker-native-phases.yml"
+      - ".github/actions/check-batch-generated-config/**"
       - "tools/benchmarks/scripts/typechecker-native-*.mjs"
       - "tools/benchmarks/scripts/type-snapshot-cli-corpus.mjs"
       - "tools/benchmarks/scripts/type-snapshot-cli-leaf-corpus.mjs"
@@ -27,7 +27,7 @@ on:
       - "tools/benchmarks/scripts/typecheck-command.mjs"
       - "tools/benchmarks/scripts/benchmark-binary.mjs"
       - "crates/vize/tests/check_outside_import_types_cli.rs"
-      - "tests/_fixtures/differential/typechecker/outside-import-types/**"
+      - "tests/_fixtures/differential/typechecker/**"
       - "crates/vize_canon/**"
       - "crates/vize/src/**"
       - "crates/vize/tests/check_undefined_default_props_cli.rs"
@@ -240,7 +240,7 @@ jobs:
           native_exit=$?
           cargo test --locked --profile ci-opt -p vize_canon --lib css_side_effect_import::
           assets_exit=$?
-          [[ "$cli_exit" == 0 && "$native_exit" == 0 && "$assets_exit" == 0 ]]
+          [[ "$cli_exit" == 0 && "$native_exit" == 0 && "$assets_exit" == 0 ]] && VIZE_NESTED_BATCH_CAPTURE_DIR="$RUNNER_TEMP/outside-import-types/nested-batch-config" bash .github/actions/check-batch-generated-config/run.sh
       - name: Capture every actual shard with byte, map, diagnostic and freshness gates
         env:
           RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404

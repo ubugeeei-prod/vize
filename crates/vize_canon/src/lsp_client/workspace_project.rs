@@ -52,7 +52,12 @@ impl CorsaProjectClient {
             .canonicalize()
             .unwrap_or_else(|_| project_root.to_path_buf());
         let root_changed = self.project_root != project_root;
-        if !reload && self.project_root == project_root {
+        let config_changed = explicit_config_changed(
+            self.explicit_project_config.as_deref(),
+            config_path,
+            &project_root,
+        );
+        if !reload && !root_changed && !config_changed {
             return Ok(());
         }
 
@@ -78,12 +83,15 @@ impl CorsaProjectClient {
         self.capabilities = capabilities;
         self.cwd = project_root.clone();
         self.project_root = project_root;
+        if self.explicit_project_config.is_some() {
+            self.explicit_project_config = Some(config_path);
+        }
         self.materialized_project_session = false;
         self.clear_workspace_project_overlays();
         self.session_document_uris.clear();
         self.external_document_uris.clear();
         self.diagnostics.clear();
-        if root_changed {
+        if root_changed || config_changed {
             self.retire_editor_lsp()?;
         }
         Ok(())
@@ -96,9 +104,37 @@ impl CorsaProjectClient {
     }
 }
 
+fn explicit_config_changed(current: Option<&Path>, requested: Option<&Path>, root: &Path) -> bool {
+    current.is_some_and(|current| {
+        requested
+            .map(Path::to_path_buf)
+            .unwrap_or_else(|| workspace_config_path(root))
+            != current
+    })
+}
+
 #[cfg(test)]
 mod tests {
-    use super::CorsaProjectClient;
+    use super::{CorsaProjectClient, explicit_config_changed};
+    use std::path::Path;
+
+    #[test]
+    fn explicit_selection_changes_are_observed_before_same_root_reuse() {
+        let root = tempfile::tempdir().unwrap();
+        let nested = root.path().join("playground/tsconfig.json");
+        assert!(!explicit_config_changed(None, Some(&nested), root.path()));
+        assert!(!explicit_config_changed(
+            Some(&nested),
+            Some(&nested),
+            root.path()
+        ));
+        assert!(explicit_config_changed(Some(&nested), None, root.path()));
+        assert!(explicit_config_changed(
+            Some(&nested),
+            Some(Path::new("/other/config.json")),
+            root.path(),
+        ));
+    }
 
     #[test]
     fn project_reload_drops_overlays_before_the_editor_fallback_can_reopen_them() {
