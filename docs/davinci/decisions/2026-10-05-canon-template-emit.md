@@ -198,3 +198,12 @@ test-only law changes no production, diagnosis, normalization or cap. Existing
 required native Actions execute the full projection matrix and fail on absent
 capture or any additional byte/map change. Fresh exact-head source/native and
 raw packet audit remain required, and finite release admission is on hold.
+
+Actual2e executes the full TS40 matrix successfully. Its required receipt fails
+because nested subspan rows were counted as top-level spans. Preserve the
+original25-span count and complete nested hash by counting balanced top-level
+records. The stable VizeSemanticLink contract identifies both endpoints as
+generated TypeScript, so reconstruct both endpoint ranges rather than treating
+the first as authored SFC coordinates. The offline corrected law restores both
+complete prior packets; fresh exact-head Actions must authenticate that law.
+No snapshot/diagnostic/hover expectation or production byte changes.

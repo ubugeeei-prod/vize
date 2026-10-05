@@ -25,6 +25,19 @@ const declarations = {
 const digest = (text, bytes = false) =>
   `${bytes ? byteLength(text) : text === "" ? 0 : text.split("\n").length}:${hash(text)}`;
 
+function spanDigest(text) {
+  let depth = 0;
+  let count = text === "" ? 0 : 1;
+  for (const character of text) {
+    if (character === "[") depth += 1;
+    if (character === "]") depth -= 1;
+    assert(depth >= 0);
+    if (character === "\n" && depth === 0) count += 1;
+  }
+  assert.equal(depth, 0);
+  return `${count}:${hash(text)}`;
+}
+
 function rewind(text, declaration, allowAbsent = false) {
   const index = text.indexOf(declaration);
   if (allowAbsent && index === -1) {
@@ -83,11 +96,17 @@ for (const [name, expected] of Object.entries(baseline)) {
   assert.equal(digest(canon.text, true), expected.canon.text);
   assert.equal(digest(preRewrite.text, true), expected.canon["pre-rewrite-text"]);
   assert.equal(
-    digest(generatedPairs(read(name, "canon", "mappings.txt"), canon)),
+    spanDigest(generatedPairs(read(name, "canon", "mappings.txt"), canon)),
     expected.canon.mappings,
   );
   assert.equal(
-    digest(targetPairs(read(name, "canon", "semantic-links.txt"), canon)),
+    digest(
+      read(name, "canon", "semantic-links.txt").replace(
+        /(\d+):(\d+)>(\d+):(\d+)/g,
+        (_match, start, end, target, targetEnd) =>
+          `${offset(start, canon)}:${offset(end, canon)}>${offset(target, canon)}:${offset(targetEnd, canon)}`,
+      ),
+    ),
     expected.canon["semantic-links"],
   );
   assert.equal(
@@ -183,6 +202,7 @@ writeFileSync(
   JSON.stringify(
     {
       sourceSha: process.env.SOURCE_SHA,
+      verifierSha256: hash(readFileSync(new URL(import.meta.url))),
       proofs,
       completeRawInputsAndOutputs: files(root).map((path) => ({
         path: path.slice(root.length + 1),
