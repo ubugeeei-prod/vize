@@ -176,3 +176,22 @@ protected acceptance remain required; older green runs are historical. New
 queue admission waits for the root's supported release publication clearance.
 The original history ledgers, native-zero migration denominator and unfinished
 product/default/10x obligations remain unchanged.
+
+## Canonical admission correction
+
+The five fresh source Checks and native-phase successors passed on the actual
+4e replay. A later admitted #7861 candidate changed the shared type-checker
+paragraph; the previously clean six-entry tail projection became stale. The
+admission command incorrectly continued after the new preflight failed.
+Official dequeue of main-based #7772 immediately removed only all five own
+entries, without candidates, source edits or changes to the healthy eight.
+
+The source repair moves only the owned checker clauses beside the existing
+type-check section, leaving the governing paragraph available for incoming
+config-authority decisions. Every original clause and source blob is retained;
+queued production is never imported. A fresh checked composition, exact source
+and native Actions, real Stack positions and empty own queue entries must all
+pass before the next native prefix admission. Failed preflight exits explicitly
+stop the mutation stage. Superseded cancelled runs and failed aggregate reports
+retain their observed conclusions; neither is relabelled successful. Full
+protected acceptance and actual merges remain unfinished.
