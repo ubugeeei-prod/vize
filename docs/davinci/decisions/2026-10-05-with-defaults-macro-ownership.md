@@ -95,10 +95,19 @@ and `2b6a0ecae85160acdd6fef35fb22f78bddcecf5443fbb66b4d7d9379aa34cd06`).
 preserves all production, laws, original inputs/goldens, native admission
 and gates; fresh exact-source acceptance remains required.
 
+Ready-stage review found that Git could convert frozen LF fixtures under
+`core.autocrlf=true`, changing their pinned byte ranges. The
+[scoped correction](https://github.com/ubugeeei-prod/vize/issues/7962#issuecomment-5998573400)
+sets `-text` only for this corpus and preserves every committed input,
+production byte, law, snapshot and expected CLI field. Git-filter checks
+compare the retained corpus bytes under `core.autocrlf=true`. All incoming
+central decision clauses remain intact; broader record restructuring is
+outside this fix.
+
 Authored laws and source review do not establish execution. Fresh exact
 head automatic Actions must execute the complete Rust and public CLI
-contracts. The finite release hold keeps this independent PR Draft and off
-the merge queue. Protected unchanged 104 instruction gates/full suites,
+contracts after the attributes correction. The initial v0.433 release hold
+has been lifted for this owned PR. Protected unchanged 104 instruction gates/full suites,
 actual signed reporter-credited merge and released public payloads remain
 separate requirements. Broader native linter/history replacement and the
 10x goal remain unfinished. The verified reporter is `ubugeeei`, GitHub ID
