@@ -124,3 +124,8 @@ Nuxt entry from639 to648 lines. Move-only `4a20cc0b09` extracts the unchanged
 `isPlainRecord`/`mergePlainRecords` statements into24-line `module-records.ts`.
 The entry shrinks to624 lines; reviewed manifest production and all existing call
 behavior remain intact. The350-line ratchet is unchanged, with no waiver.
+
+The first artifact11329991020 also follows the temporary prior-pack dependency
+symlink during upload. Unlink only that borrowed link in the pack `finally`; keep
+all source/archive/dist/hash/raw/native packets and original dependency bytes.
+This finite cleanup requires fresh execution and adds no runtime qualification.

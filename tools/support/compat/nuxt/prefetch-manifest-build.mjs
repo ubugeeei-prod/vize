@@ -73,7 +73,12 @@ fs.symlinkSync(
   path.join(priorPackage, "node_modules"),
   "dir",
 );
-run("vp", ["pack"], priorPackage, process.env, path.join(artifacts, "prior-pack.log"));
+try {
+  run("vp", ["pack"], priorPackage, process.env, path.join(artifacts, "prior-pack.log"));
+} finally {
+  // Keep the actual source/dist receipts, without uploading borrowed dependencies.
+  fs.unlinkSync(path.join(priorPackage, "node_modules"));
+}
 
 const versions = {};
 for (const [name, version] of [
