@@ -79,8 +79,13 @@ Independent stable3.5.35 execution corroborates that boundary, with no rc9
 execution inferred; a local rc9 probe had no installed runtime alias and did
 not run. Keep the Croquis/type34 template-fact model separate, with no broader
 import/template/native acceptance. The retained DOM/SSR discrepancy remains
-unfixed. Grandfathered parse/context/compile files do not grow; helper277.
+unfixed. Grandfathered parse/context/compile files do not grow; helper278.
 Failed dbd has no complete32-pair acceptance; fresh source is required.
+
+Independent preflight review found the existing extract_all_macros caller still
+used the old parser signature after 4cbc was pushed. Correct that public
+default-context entry point to explicit false, preserving retained semantics.
+No source or runtime acceptance belongs to 4cbc; require fresh complete Actions.
 
 TODO: exact source Actions including whole-module runtime, root peer review,
 protected full suites and all 104 immutable instruction ceilings, signed

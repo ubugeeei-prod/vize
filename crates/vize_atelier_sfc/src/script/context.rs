@@ -179,7 +179,7 @@ impl ScriptCompileContext {
     /// Extract all macros from the source
     pub fn extract_all_macros(&mut self) {
         let source = std::mem::take(&mut self.source);
-        self.parse_with_oxc(&source);
+        self.parse_with_oxc(&source, false);
         self.source = source;
     }
 }
