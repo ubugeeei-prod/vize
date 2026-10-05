@@ -93,3 +93,13 @@ protected full Rust suites and unchanged 104 instruction ceilings, actual
 signed merge and literal reporter credit remain required. Legacy bytes,
 historical laws, budgets and remaining Program/product completion gates stay
 unchanged; #7805 remains open until actual replay and protected delivery.
+
+The tuple correction at `092a19bc13a53d8925a2bdd9d278637d30c5ac29`
+has terminal-success metadata for all nine jobs of existing replay
+`37245166243`. Its normal PR Check did not start while its old `61c975f8`
+base conflicted with later main. The three meaningful source commits were
+therefore genuinely rebased onto actual Nuxt 2 delivery `5d879b2724735749a0d045f11fa5cfcd77542922`.
+All ten owned non-record blobs remain byte-identical to `092a19bc`; every
+incoming canonical and storage row is retained. Old replay and new-source
+acceptance stay distinct; new automatic PR Actions and current-source replay
+must qualify the refreshed head before protected admission.
