@@ -25,6 +25,7 @@ import {
 } from "./options";
 import { createNuxtModuleResolver } from "./resolver";
 import { mergePlainRecords } from "./module-records";
+import { setupNuxtViteCompiler } from "./vite-compiler";
 import { setupVizeLibraries } from "./libraries";
 import {
   buildNuxtDevAssetBase,
@@ -278,12 +279,7 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
   const usesVizeCompiler = shouldUseVizeCompiler(compilerOptions);
 
   if (compilerOptions !== false && compilerOptions.compatibility?.hostCompiler !== true) {
-    const { default: vize } = await import("@vizejs/vite-plugin");
-    nuxt.options.vite ||= {};
-    nuxt.options.vite.plugins = nuxt.options.vite.plugins || [];
-    nuxt.options.vite.plugins.push(
-      vize({ ...compilerOptions, nuxtPageMeta: true, ssrModuleIdRoot: nuxt.options.srcDir }),
-    );
+    await setupNuxtViteCompiler(compilerOptions, nuxt.options);
   }
 
   let isNuxtBuild = false;
