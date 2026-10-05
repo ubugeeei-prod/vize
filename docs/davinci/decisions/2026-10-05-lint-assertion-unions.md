@@ -38,3 +38,9 @@ changing unrelated dialect routing or waiving a runtime pipe. True Vue 2 routing
 through this raw API remains a separate unfinished gap. The owned Patina consumer
 inventory is regenerated without a waiver. Replay the canonical decision clause
 with its parent's inventory repair intact; fresh exact-head Actions is required.
+
+Replay the same reviewed source and full-result corpus onto the genuine parent
+`46fd3fcc6f29125f4382fd80d1127b10b106188b`, rooted in literal actual main
+`a2712e78968e9112c89cbc2111b108bd0e51959c`. Preserve all incoming canonical
+decisions and require fresh source Actions, verified native Stack positions and
+protected unchanged ceilings before admitting the highest ready contiguous prefix.
