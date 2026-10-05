@@ -101,3 +101,31 @@ Clippy/build passed; Rust worker4 then confirms only two new template-law
 endpoint failures, with 4,161 other cases and native refusal passing in
 that shard. Other workers and fresh successor qualification remain
 separate. This corrects source-scope wording, not production spans.
+
+## Protected eager-work correction
+
+The [paired protected correction](https://github.com/ubugeeei-prod/vize/issues/7977#issuecomment-5998592032)
+retains actual8175/Check37338980701 Instruction111860911478 failure:
+patina_jsx_markup_one_root is 46,592 on all three runs, above unchanged
+45,385. The exact9fe predecessor is 44,105 on three identical-methodology
+and fixture runs. The known-red candidate was dequeued before repair;
+its complete paired raw receipt SHA256 is
+f10fba2c36fd76dc055d4893b76ccdb39a4f5cb68722cea9dfad329d2f9e7af0.
+
+The frozen gallery has no aria-hidden attribute. The new callback had
+computed own/ancestor inertness and disabled exclusions before the old
+static-true predicate. Both existing callbacks now test the unchanged
+component/static aria-hidden=true condition first; only genuinely hidden
+elements reach the same inert/focus/help/range worker. The retained visitor
+still carries inertness through non-hidden ancestors. No new scan, parser,
+cache, stage, serialization or compiler hint is added. All original/control
+bytes, five law bodies, whole CLI oracles, catalogs/history and other three
+production blobs remain exact. Fresh revised source/runtime/protected104
+outcomes remain unknown; old c1 source passes do not transfer acceptance.
+
+The issue-7977 fixture directory additionally gets a scoped -text attribute.
+Its prior text/eol attributes were unspecified and could transform frozen
+LF/CRLF inputs under core.autocrlf. Payloads remain byte-exact; no broader
+fixture policy or behavior changes. Issue7979 receives its own correction.
+Fresh source/prefix qualification, actual protected suites/unchanged104,
+signed merge/literal credit and released public payloads remain required.
