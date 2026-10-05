@@ -9,6 +9,7 @@ on:
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.mjs
       - tools/support/compat/nuxt/nuxt2-lint-config.mjs
+      - tools/support/compat/nuxt/nuxt-auto-init-config.mjs
   push:
     branches: [main]
     paths:
@@ -18,6 +19,7 @@ on:
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.mjs
       - tools/support/compat/nuxt/nuxt2-lint-config.mjs
+      - tools/support/compat/nuxt/nuxt-auto-init-config.mjs
   workflow_dispatch:
 
 permissions:
@@ -52,7 +54,7 @@ jobs:
         working-directory: npm/framework/nuxt
         run: vp pack
       - name: Verify version-specific plans and original modern oracle
-        run: vp node --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation.test.ts npm/framework/nuxt/src/builder.test.ts
+        run: vp node --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation*.test.ts npm/framework/nuxt/src/builder.test.ts
       - name: Install the Nuxt 2 reproduction
         working-directory: tools/support/compat/nuxt/fixtures/nuxt2-module-build
         run: npm ci --legacy-peer-deps --no-audit --no-fund
