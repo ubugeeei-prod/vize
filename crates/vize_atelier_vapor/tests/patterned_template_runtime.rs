@@ -158,20 +158,20 @@ fn runtime_failure_preserves_silent_child_status_and_original_case() {
     let cases = json!([{"context": {"items": ["original"]}}]);
     let report = validate_runtime_output("vdom", "authored source", &cases, "render code", &output)
         .unwrap_err();
-    for retained in [
-        "exit_code: Some(13)",
-        "stdout:\npartial stdout",
-        "stderr:\n\nsource:\nauthored source",
-        "cases:\n[{\"context\":{\"items\":[\"original\"]}}]",
-        "code:\nrender code",
-    ] {
-        assert!(report.contains(retained), "missing {retained:?}: {report}");
-    }
+    assert_eq!(
+        report,
+        format!(
+            "vdom: runtime child failed\nstatus: {}\nexit_code: Some(13)\nsignal: None\nstdout:\npartial stdout\nstderr:\n\nsource:\nauthored source\ncases:\n[{{\"context\":{{\"items\":[\"original\"]}}}}]\ncode:\nrender code",
+            output.status,
+        )
+    );
 }
 
 #[cfg(unix)]
 #[test]
 fn runtime_failure_preserves_real_child_signal_and_both_streams() {
+    use std::os::unix::process::ExitStatusExt;
+
     let output = Command::new("node")
         .args([
             "-e",
@@ -181,17 +181,28 @@ fn runtime_failure_preserves_real_child_signal_and_both_streams() {
         .unwrap();
     let report =
         validate_runtime_output("vapor", "source", &json!([{}]), "code", &output).unwrap_err();
-    assert!(report.contains("exit_code: None"), "{report}");
-    assert!(report.contains("signal: Some(15)"), "{report}");
-    assert!(report.contains("stdout:\nbefore signal"), "{report}");
-    assert!(report.contains("stderr:\nsignal stderr"), "{report}");
+    assert_eq!(output.status.code(), None);
+    assert_eq!(output.status.signal(), Some(15));
+    assert_eq!(
+        report,
+        format!(
+            "vapor: runtime child failed\nstatus: {}\nexit_code: None\nsignal: Some(15)\nstdout:\nbefore signal\nstderr:\nsignal stderr\nsource:\nsource\ncases:\n[{{}}]\ncode:\ncode",
+            output.status,
+        )
+    );
 }
 
 #[test]
 fn runtime_protocol_failures_preserve_complete_successful_child_output() {
     for (stdout, reason) in [
-        ("not JSON", "invalid runtime JSON"),
-        ("{\"passed\":0}", "runtime result mismatch"),
+        (
+            "not JSON",
+            "invalid runtime JSON: expected ident at line 1 column 2",
+        ),
+        (
+            "{\"passed\":0}",
+            "runtime result mismatch: expected {\"passed\":1}, received {\"passed\":0}",
+        ),
     ] {
         let output = Command::new("node")
             .args(["-e", "process.stdout.write(process.argv[1])", stdout])
@@ -200,9 +211,13 @@ fn runtime_protocol_failures_preserve_complete_successful_child_output() {
         assert!(output.status.success());
         let report =
             validate_runtime_output("ssr", "source", &json!([{}]), "code", &output).unwrap_err();
-        assert!(report.contains(reason), "{report}");
-        assert!(report.contains(&format!("stdout:\n{stdout}")), "{report}");
-        assert!(report.contains("exit_code: Some(0)"), "{report}");
+        assert_eq!(
+            report,
+            format!(
+                "ssr: {reason}\nstatus: {}\nexit_code: Some(0)\nsignal: None\nstdout:\n{stdout}\nstderr:\n\nsource:\nsource\ncases:\n[{{}}]\ncode:\ncode",
+                output.status,
+            )
+        );
     }
 }
 

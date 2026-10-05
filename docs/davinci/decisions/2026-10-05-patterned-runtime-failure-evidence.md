@@ -47,7 +47,12 @@ failure-only evidence before cleanup; a reporter failure cannot replace it.
 This controlled reproduction does not establish the historical coverage cause.
 The first full check of this reporter flagged an unbound-method warning at its
 callback reference. Use an explicit lexical arrow callback; retain the strict
-zero-warning policy without disabling the rule.
+zero-warning policy without disabling the rule. The corrected source run then
+reported eight weak substring assertions in the new Rust diagnostic laws. Replace
+them with complete expected failure reports, checking every field and byte;
+retain the committed assertion policy and avoid allowlist exceptions. The
+platform-provided status display is retained alongside independently expected
+exit-code and signal fields.
 Completed successful runs retain exactly the existing
 `{passed:N}` stdout and emit no new exit evidence. No compiler, runtime package,
 coverage threshold, corpus or instruction ceiling changes are part of this
