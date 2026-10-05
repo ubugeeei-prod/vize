@@ -16,6 +16,32 @@ not a claim that any unexecuted source repair is complete.
 - Public delivery coordination: [#6239](https://github.com/ubugeeei-prod/vize/issues/6239).
 - Paired decision: [2026-10-05 maintainer objective](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-5993465687).
 
+## Operational checkpoint: first v0.433.0 admission HOLD
+
+- Decision effective: 2026-10-05 13:10 UTC, superseding earlier admission thaws.
+  [Root publication checkpoint](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-5991644254)
+  and [paired ledger decision](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-5995446480).
+- Authenticated readback at 13:22 UTC: actual main
+  `d8cd6a208b9aea02150b140a4b81b87222128a51`, 102 open P0 issues and the
+  coordinator's 69-actual-PR merge checkpoint. #8029 merged at 13:16:12 UTC.
+  The complete 108 original rows below remain a byte-exact historical snapshot.
+- Only qualified bottom Stack prefix #7857 remains admitted: source
+  `9e7ea14327915b3eb65d2b68947f508cb7fa9599`, protected candidate
+  `92e036de6f8dc651440e7c9a2f415a3c7fa69890`, position 1, awaiting checks.
+  Its protected terminal checks and actual merge are still required.
+- After that prefix actually merges and the healthy queue drains, root alone
+  immediately resumes supported release #7811 from literal current main.
+  Private/source preparation and exact-source Actions continue; additional
+  queue or Ready-auto admissions await verified publication and explicit THAW.
+  This ledger-only Draft and its source CI never delay the first finite cut.
+  Bulk child #8038 and private performance work remain outside that cut.
+- #7811 is still Draft; the v0.433.0 Release API returned 404 at this checkpoint.
+  All six fresh candidate gates, atomic main/tag identity, GitHub assets,
+  npm/crates/editor visibility, deployed docs and installed-payload replay of
+  original fixtures remain required. Historical `42a` gates stay historical.
+  Source-merged fixes are not yet claimed publicly delivered; unresolved
+  reports, P0 zero, 10x and wider Davinci/fix-history work remain unfinished.
+
 ## Delivery rules
 
 1. Retain the complete reported input and independently authored expected
