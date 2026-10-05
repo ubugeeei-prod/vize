@@ -38,12 +38,13 @@ pub(super) fn source_text<'a>(
         && nodes <= bytes.len())
         || (strings - table) % 8 != 0
         || (structured - extended) % 4 != 0
-        || (bytes.len() - nodes) % NODE != 0
+        || !(bytes.len() - nodes).is_multiple_of(NODE)
         || bytes.len() - nodes < 2 * NODE
     {
         return Err(Refuse::Sections);
     }
-    if bytes[nodes..nodes + NODE].iter().any(|&byte| byte != 0) {
+    let sentinel = bytes.get(nodes..nodes + NODE).ok_or(Refuse::Root)?;
+    if sentinel.iter().any(|&byte| byte != 0) {
         return Err(Refuse::Root);
     }
     let root = nodes + NODE;
@@ -82,7 +83,10 @@ pub(super) fn source_text<'a>(
         }
         let start = index(bytes, offset)?;
         let end = index(bytes, offset + 4)?;
-        std::str::from_utf8(&bytes[strings + start..strings + end]).map_err(|_| Refuse::Utf8)
+        let value = bytes
+            .get(strings + start..strings + end)
+            .ok_or(Refuse::Strings)?;
+        std::str::from_utf8(value).map_err(|_| Refuse::Utf8)
     };
     let text = read_string(0)?;
     let file_name = read_string(4)?;
