@@ -26,6 +26,9 @@ fn scan_regions(expr: &str, html: bool, mut visit: impl FnMut(Range<usize>, Regi
     let mut template = false;
     let mut substitutions = Vec::<usize>::new();
     let mut operand = true;
+    let mut member = false;
+    let mut control = false;
+    let mut parentheses = vize_l0::SmallVec::<[bool; 4]>::new();
     while let Some(&byte) = bytes.get(cursor) {
         if template {
             if byte == b'\\' {
@@ -132,6 +135,28 @@ fn scan_regions(expr: &str, html: bool, mut visit: impl FnMut(Range<usize>, Regi
             operand = false;
             continue;
         }
+        if bytes.get(cursor..cursor + 3) == Some(b"...".as_slice()) {
+            cursor += 3;
+            operand = true;
+            member = false;
+            control = false;
+            continue;
+        }
+        if byte == b'(' {
+            parentheses.push(control);
+            control = false;
+            member = false;
+            operand = true;
+            cursor += 1;
+            continue;
+        }
+        if byte == b')' {
+            operand = parentheses.pop().unwrap_or(false);
+            member = false;
+            control = false;
+            cursor += 1;
+            continue;
+        }
         if matches!(bytes.get(cursor..cursor + 2), Some(b"++" | b"--")) {
             cursor += 2;
             continue;
@@ -146,26 +171,38 @@ fn scan_regions(expr: &str, html: bool, mut visit: impl FnMut(Range<usize>, Regi
                 }
                 cursor += ch.len_utf8();
             }
-            operand = matches!(
-                expr.get(word_start..cursor),
-                Some(
-                    "return"
-                        | "throw"
-                        | "case"
-                        | "delete"
-                        | "void"
-                        | "typeof"
-                        | "new"
-                        | "yield"
-                        | "await"
-                        | "in"
-                        | "of"
-                        | "instanceof"
-                )
-            );
+            let word = expr.get(word_start..cursor);
+            control = !member
+                && (matches!(
+                    word,
+                    Some("if" | "while" | "for" | "with" | "switch" | "catch")
+                ) || control && word == Some("await"));
+            operand = !member
+                && matches!(
+                    word,
+                    Some(
+                        "return"
+                            | "throw"
+                            | "case"
+                            | "delete"
+                            | "void"
+                            | "typeof"
+                            | "new"
+                            | "yield"
+                            | "await"
+                            | "in"
+                            | "of"
+                            | "instanceof"
+                            | "else"
+                            | "do"
+                    )
+                );
+            member = false;
             continue;
         }
         if !ch.is_whitespace() {
+            member = byte == b'.' || byte == b'#' && member;
+            control = false;
             operand = matches!(
                 byte,
                 b'(' | b'['

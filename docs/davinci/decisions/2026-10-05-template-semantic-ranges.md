@@ -34,16 +34,20 @@ Art opening/closing tag tokens address only art or variant, preserving type,
 modifiers and every other tuple. Regular and inline art share this collector.
 Unrelated identifier, property, function, number, string and operator controls
 retain exact full vectors. Lexer controls cover real comments, quoted comment
-data, regexp classes/escaped slashes, postfix division, nested substitutions,
-unclosed regions and astral text. This lexical structural path does not claim
+data, regexp classes/escaped slashes after spread, postfix and member division,
+ordinary call/group versus control-head parentheses, nested substitutions,
+unclosed regions and astral text. Parenthesis context uses four inline slots with
+uncapped spill. This lexical structural path does not claim
 full grammar-sensitive regular-expression classification.
 
 The new PR-selected real stdio suite advertises multilineTokenSupport: false,
 checks entire full/range token payloads for all three original documents under
-both typecheck settings, and retains original plus LF/CRLF/astral whole vectors.
+both typecheck option settings, and retains original plus LF/CRLF/astral whole vectors.
 Comment punctuation/words must yield literal null hover and definition; adjacent
 real identifiers retain exact definitions. Existing source-built session capture
-retains whole frames and actual CLI/build/source hashes. Those observations remain
+retains whole frames and actual CLI/build/source hashes. The suite mandates the
+receipted checkout CLI even in PR selection; this option-on/off control does not
+by itself prove an initialized native type-checker backend. Those observations remain
 pending session evidence, with zero native whole-product/history closure credit.
 
 Source review, original input custody and authored expectations do not certify

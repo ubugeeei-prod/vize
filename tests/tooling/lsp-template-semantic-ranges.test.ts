@@ -7,6 +7,8 @@ import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { LspSession } from "./support/lsp/session.ts";
 import { offsetToPosition } from "./support/lsp/assertions.ts";
+import { root } from "./support/lsp/paths.ts";
+import { semanticRegionControls } from "./support/lsp/semantic-ranges-controls.ts";
 import { semanticTokensLegend } from "./support/lsp/authored-ranges.ts";
 
 const corpus = new URL(
@@ -14,6 +16,8 @@ const corpus = new URL(
   import.meta.url,
 );
 const manifest = JSON.parse(fs.readFileSync(new URL("manifest.json", corpus), "utf8"));
+process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD = "1";
+process.env.VIZE_LSP_BIN ??= path.join(root, "target/ci/vize");
 type Token = [number, number, number, number, number];
 assert.equal(
   createHash("sha256")
@@ -80,12 +84,20 @@ async function assertTokens(session: LspSession, uri: string, source: string, to
   }
   const range = {
     start: { line: tokens[0][0], character: tokens[0][1] },
-    end: { line: lines.length, character: 0 },
+    end: { line: lines.length - 1, character: lines.at(-1)?.length ?? 0 },
   };
   assert.deepEqual(
     await session.request("textDocument/semanticTokens/range", { textDocument: { uri }, range }),
     { data: encode(tokens) },
   );
+}
+
+async function cleanup(session: LspSession, workspace: string) {
+  try {
+    await session.shutdown();
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
 }
 
 for (const typecheck of [false, true]) {
@@ -141,8 +153,7 @@ for (const typecheck of [false, true]) {
           }
         }
       } finally {
-        await session.shutdown();
-        fs.rmSync(workspace, { recursive: true, force: true });
+        await cleanup(session, workspace);
       }
     },
   );
@@ -251,9 +262,56 @@ test(
         assert.equal(await session.request("textDocument/definition", params), null);
         assert.equal(await session.request("textDocument/hover", params), null);
       }
+      const source = '<template><p :title="[.../[/*]/.exec(count)] /* note */" /></template>';
+      const uri = pathToFileURL(path.join(workspace, "Spread.vue")).href;
+      session.notify("textDocument/didOpen", {
+        textDocument: { uri, languageId: "vue", version: 1, text: source },
+      });
+      const spans: ReadonlyArray<readonly [string, number]> = [
+        [":title", 9],
+        ["/", 21],
+        ["/", 21],
+        ["*", 21],
+        ["/", 21],
+        ["exec", 12],
+        ["count", 8],
+        ["/* note */", 17],
+      ];
+      let cursor = 0;
+      const tokens = spans.map(([text, kind]): Token => {
+        const start = source.indexOf(text, cursor);
+        assert.ok(start >= cursor);
+        cursor = start + text.length;
+        return [0, start, text.length, kind, 0];
+      });
+      await assertTokens(session, uri, source, tokens);
+      for (const [name, value, expressionSpans] of semanticRegionControls) {
+        const attr = name === "Control" ? "@click" : ":title";
+        const source = `<script setup>function close() {} const count=1; const obj={return:2}</script>\n<template><p ${attr}="${value}" /></template>`;
+        const uri = pathToFileURL(path.join(workspace, `${name}.vue`)).href;
+        session.notify("textDocument/didOpen", {
+          textDocument: { uri, languageId: "vue", version: 1, text: source },
+        });
+        let cursor = source.indexOf("<template>");
+        const tokens = [[attr, name === "Control" ? 11 : 9] as const, ...expressionSpans].map(
+          ([text, kind]): Token => {
+            const start = source.indexOf(text, cursor);
+            assert.ok(start >= cursor);
+            cursor = start + text.length;
+            const position = offsetToPosition(source, start);
+            return [position.line, position.character, text.length, kind, 0];
+          },
+        );
+        await assertTokens(session, uri, source, tokens);
+        const params = {
+          textDocument: { uri },
+          position: offsetToPosition(source, source.indexOf("/* close */") + 5),
+        };
+        assert.equal(await session.request("textDocument/definition", params), null);
+        assert.equal(await session.request("textDocument/hover", params), null);
+      }
     } finally {
-      await session.shutdown();
-      fs.rmSync(workspace, { recursive: true, force: true });
+      await cleanup(session, workspace);
     }
   },
 );

@@ -58,12 +58,53 @@ fn regular_expression_data_and_postfix_division_do_not_hide_real_comments() {
         "/[/*'`]/.test(close)",
         "value = /https?:\\/\\//.test(close)",
         "value /= 2",
+        "items = [.../[/*]/.exec(close)] /* note */",
     ] {
         assert!(!comment_at(source, source.find('/').unwrap()));
     }
     let source = "count++ / /* close */ divisor";
     assert!(comment_at(source, source.find("close").unwrap()));
     assert!(!comment_at(source, source.find("divisor").unwrap()));
+    let source = "items = [.../[/*]/.exec(close)] /* note */";
+    assert!(!comment_at(source, source.find("close").unwrap()));
+    assert!(comment_at(source, source.find("note").unwrap()));
+}
+
+#[test]
+fn member_keyword_division_and_control_statement_regex_have_exact_comment_regions() {
+    for source in [
+        "obj.return / 2 /* close */ + count",
+        "obj?.await / 2 /* close */ + count",
+        "obj.if(ready) / 2 /* close */ + count",
+        "(value) / 2 /* close */ + count",
+        "call(value) / 2 /* close */ + count",
+    ] {
+        let comment = source.find("/*").unwrap();
+        let end = source.find("*/").unwrap() + 2;
+        let mut regions = Vec::new();
+        visit_regions(source, |range, kind| {
+            if !range.is_empty() {
+                regions.push((source.get(range).unwrap(), kind));
+            }
+        });
+        assert_eq!(
+            regions,
+            [
+                (source.get(..comment).unwrap(), RegionKind::Code),
+                ("/* close */", RegionKind::Comment),
+                (source.get(end..).unwrap(), RegionKind::Code),
+            ]
+        );
+    }
+    for source in [
+        "if (ready && (count)) /[/*]/.test(close) /* note */",
+        "while (ready) /[/*]/.test(close) /* note */",
+        "for (;ready;) /[/*]/.test(close) /* note */",
+        "return /[/*]/.test(close) /* note */",
+    ] {
+        assert!(!comment_at(source, source.find("close").unwrap()));
+        assert!(comment_at(source, source.find("note").unwrap()));
+    }
 }
 
 #[test]
