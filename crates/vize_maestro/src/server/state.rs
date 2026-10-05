@@ -25,6 +25,8 @@ mod corsa;
 #[cfg(feature = "native")]
 mod corsa_overlays;
 #[cfg(feature = "native")]
+mod diagnostic_locks;
+#[cfg(feature = "native")]
 mod global_components;
 #[cfg(feature = "native")]
 mod global_tag_names;
@@ -273,26 +275,6 @@ impl ServerState {
         {
             self.corsa_overlays.remove(uri);
             self.remove_idle_diagnostic_lock(uri);
-        }
-    }
-
-    /// Owned per-document lock for a diagnostic pass. Clone the `Arc` before
-    /// awaiting so no DashMap guard survives across a suspension point.
-    #[cfg(feature = "native")]
-    pub(crate) fn diagnostic_lock(&self, uri: &Url) -> Arc<AsyncMutex<()>> {
-        self.diagnostic_locks
-            .entry(uri.clone())
-            .or_insert_with(|| Arc::new(AsyncMutex::new(())))
-            .clone()
-    }
-
-    #[cfg(feature = "native")]
-    fn remove_idle_diagnostic_lock(&self, uri: &Url) {
-        if let dashmap::mapref::entry::Entry::Occupied(entry) =
-            self.diagnostic_locks.entry(uri.clone())
-            && Arc::strong_count(entry.get()) == 1
-        {
-            entry.remove();
         }
     }
 
