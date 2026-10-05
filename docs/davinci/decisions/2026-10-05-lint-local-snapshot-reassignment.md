@@ -21,3 +21,10 @@ snapshot, later-copy negatives, original member-write positives and a shadowing
 parameter control. Source Actions and protected full fixture/Rust/instruction
 count gates, actual signed merge/issue closure and publication are required.
 This is a legacy correction, without Davinci native-stage or speed credit.
+Hosted Check `37258805916` inherited the parent filter-control and source-census
+failures. Its genuine successor rebases onto both repaired parent heads, preserves
+the complete loss vectors and production correction, and replays the canonical
+record without dropping either parent decision. The official census generator
+reports no additional owned rows at this layer. Fresh source qualification is
+required; the failed head stays historical and unqueued. Public native CLI proof
+for this original SFC is added with the dependent #7898 original-corpus observer.
