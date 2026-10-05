@@ -48,8 +48,9 @@ pub struct LintContext<'a> {
     pub(crate) diagnostics: Vec<LintDiagnostic>,
     /// Current rule name (set by visitor before calling rule methods).
     pub current_rule: &'static str,
-    /// Parent element stack for context (pre-allocated capacity).
+    /// Parent element stack and current static inertness for aria-hidden checks.
     pub(crate) element_stack: Vec<ElementContext>,
+    pub(crate) aria_hidden_inert: bool,
     /// Variables in current scope (from v-for).
     pub(crate) scope_variables: FxHashSet<CompactString>,
     /// Cached error count for fast access.
@@ -125,6 +126,7 @@ impl<'a> LintContext<'a> {
             diagnostics: Vec::with_capacity(Self::INITIAL_DIAGNOSTICS_CAPACITY),
             current_rule: "",
             element_stack: Vec::with_capacity(Self::INITIAL_STACK_CAPACITY),
+            aria_hidden_inert: false,
             scope_variables: FxHashSet::default(),
             error_count: 0,
             warning_count: 0,
@@ -171,6 +173,7 @@ impl<'a> LintContext<'a> {
             diagnostics: Vec::with_capacity(Self::INITIAL_DIAGNOSTICS_CAPACITY),
             current_rule: "",
             element_stack: Vec::with_capacity(Self::INITIAL_STACK_CAPACITY),
+            aria_hidden_inert: false,
             scope_variables: FxHashSet::default(),
             error_count: 0,
             warning_count: 0,

@@ -27,6 +27,7 @@ pub struct LintVisitor<'a, 'ctx, 'rules> {
     /// pass, so a migrated rule never reports twice. `None` (the common
     /// template path) runs every rule with no extra work.
     keep_mask: Option<&'rules [bool]>,
+    track_aria_hidden_inert: bool,
 }
 
 impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
@@ -45,6 +46,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             run_exit_element_rules,
             forget_next_element: false,
             keep_mask: None,
+            track_aria_hidden_inert: rule_names.contains(&"a11y/no-aria-hidden-on-focusable"),
         }
     }
 
@@ -69,6 +71,10 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             run_exit_element_rules,
             forget_next_element: false,
             keep_mask: Some(keep_mask),
+            track_aria_hidden_inert: rule_names.iter().enumerate().any(|(index, name)| {
+                *name == "a11y/no-aria-hidden-on-focusable"
+                    && Self::rule_active(Some(keep_mask), index)
+            }),
         }
     }
 
@@ -255,6 +261,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         };
 
         self.ctx.push_element(elem_ctx);
+        let previous_inert = self.ctx.aria_hidden_inert;
+        if self.track_aria_hidden_inert {
+            let element = crate::markup::MarkupElement::new(el);
+            let static_inert = crate::rules::a11y::markup_helpers::has_static_inert(&element);
+            self.ctx.aria_hidden_inert = static_inert
+                || (previous_inert
+                    && !crate::rules::a11y::markup_helpers::blocks_inert_inheritance(&element));
+        }
 
         // Enter element - run rules. Element/directive/exit/branch callbacks
         // follow the same coalesced-span pattern as root/interpolation checks:
@@ -319,6 +333,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         }
 
         self.ctx.pop_element();
+        self.ctx.aria_hidden_inert = previous_inert;
     }
 }
 

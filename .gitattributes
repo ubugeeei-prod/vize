@@ -30,3 +30,6 @@ tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/** -text
 
 # Immutable formatter regressions include literal CRLF/CRCRLF output bytes.
 tests/_fixtures/differential/formatter/sfc-vue*/** -text whitespace=-blank-at-eol
+
+# Original linter report fixtures retain authored LF/CRLF bytes on every checkout.
+crates/vize_patina/tests/fixtures/issue-7977/** -text whitespace=cr-at-eol

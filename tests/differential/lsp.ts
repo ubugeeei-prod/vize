@@ -6,7 +6,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.mjs";
 import { assertExactRows, sha256 } from "./harness.mjs";
-import { INITIALIZE_CAPABILITIES, loadLspManifest, NATIVE_REASON } from "./lsp-manifest.ts";
+import { initializeCapabilities, loadLspManifest, NATIVE_REASON } from "./lsp-manifest.ts";
 import { inspectLspObservation, validateLspReport } from "./lsp-report.ts";
 import { LspWire } from "./lsp-wire.ts";
 import {
@@ -50,7 +50,7 @@ async function runLspCase(
     const initialized = await wire.request("initialize", {
       processId: process.pid,
       rootUri: workspaceUri,
-      capabilities: INITIALIZE_CAPABILITIES,
+      capabilities: initializeCapabilities(fixture),
       initializationOptions: fixture.initializationOptions,
       workspaceFolders: [{ uri: workspaceUri, name: path.basename(workspace) }],
     });
