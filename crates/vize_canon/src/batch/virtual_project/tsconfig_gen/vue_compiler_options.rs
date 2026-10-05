@@ -41,8 +41,9 @@ impl VirtualProject {
                 .unwrap_or(true)
         };
         self.virtual_ts_check_options
-            .check_unknown_fallthrough_props =
-            options.as_ref().is_some_and(check_unknown_props_enabled);
+            .check_unknown_fallthrough_props = options.as_ref().is_some_and(|options| {
+            options.get("checkUnknownProps").and_then(Value::as_bool) == Some(true)
+        });
         self.virtual_ts_check_options.strict_css_modules = options
             .as_ref()
             .and_then(|options| options.get("strictCssModules").and_then(Value::as_bool))

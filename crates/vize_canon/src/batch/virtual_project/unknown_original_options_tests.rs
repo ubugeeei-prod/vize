@@ -92,3 +92,18 @@ fn explicit_prop_comment_keeps_absent_configuration_compatible() {
         )
     );
 }
+
+#[test]
+fn strict_only_configuration_keeps_the_original_native_root_fallthrough_open() {
+    let mut config: Value = serde_json::from_str(CONFIG).unwrap();
+    config["vueCompilerOptions"] = json!({"strictTemplates":true});
+    let content = source(Some(config), PARENT);
+    assert_eq!(
+        content
+            .lines()
+            .find(|line| line.starts_with("  type __VizeAllowedFallthroughAttrs")),
+        Some(
+            "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};"
+        ),
+    );
+}

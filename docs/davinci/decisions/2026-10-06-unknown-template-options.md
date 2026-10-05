@@ -214,3 +214,31 @@ All noncomposition owned blobs and full source-author/date/body/footer records
 remain equal, with every incoming canonical clause and both genuine inventories.
 Publish the same Draft with fresh exact source/native Actions. No old658 execution
 credit transfers to this changed required-surface producer.
+
+
+## Protected failure and explicit unknown-prop scope
+
+Candidate `c48c590c`, Check `37351946080`, fails six unchanged compatibility
+cases in Rust workers 1–3: native-root ariaZzz, component-root modelValue,
+wide-props missing-title wording, whole generic declaration emission, generic
+root disable forwarding, and native-root unknown/required-label diagnostics.
+The four official JUnit archives have authenticated SHA256/all CRCs; complete
+failures are retained. All104 instruction measurements pass unchanged ceilings,
+but the candidate is failed. Only #8056 was dequeued; healthy #8052 is retained.
+
+The new private fallthrough flag incorrectly inherited the older public
+strictTemplates default. Limit this tightening to explicit checkUnknownProps:true
+configuration or comment, preserving the existing public default method and all
+strict-only open fallthrough behavior. An explicit false prop comment takes
+priority; otherwise a strict-false comment deactivates the private flag. Both
+generic and nongeneric producers consume it directly. Six whole comment controls
+and the original-project strict-only generated contract check this boundary.
+Only the new authored strict-only case drops its unknown-prop expectation; its
+component/directive checks remain. Every old #4461, generic declaration, 121-prop
+wording, input/configuration and complete corpus oracle stays exact.
+
+This private same-PR repair requires independent source review, fresh exact-head
+ordinary/native Actions, whole7 CLI/14 direct-service/original native vectors,
+all unchanged compatibility cases and protected full/all104 delivery. The old
+failed candidate stays failed; no stdio-RPC, history/default, global strict policy
+or 10x completion is claimed. See the [paired issue record](https://github.com/ubugeeei-prod/vize/issues/7874#issuecomment-5997806537).

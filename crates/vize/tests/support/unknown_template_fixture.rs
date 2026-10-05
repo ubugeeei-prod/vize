@@ -90,7 +90,7 @@ pub fn cases() -> Result<Vec<Case>> {
         (
             "strict-defaults",
             json!({"strictTemplates":true}),
-            vec![0, 1, 2],
+            vec![1, 2],
         ),
         (
             "strict-explicit-false",

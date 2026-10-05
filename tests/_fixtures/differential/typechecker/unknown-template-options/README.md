@@ -16,10 +16,13 @@ addresses/codes are checked before any message supplies a CLI/editor expectation
 
 Seven authored control configurations retain both original SFC inputs and all
 original TypeScript compiler options. They exercise true, false, absent and
-strictTemplates override behavior. The current native controls use the already
+strictTemplates override behavior. The new unknown-prop fallthrough restriction
+requires explicit checkUnknownProps:true; strict-only configurations retain the
+older open fallthrough while component/directive strict defaults remain. The current native controls use the already
 locked genuine Vue 3.6.0-rc.10 and TypeScript 7.0.2. This adds a dedicated public
 CLI/direct-editor corpus; it changes no historical manifest or native credit.
 
-Source preparation is private and unexecuted. Required source-built Actions,
+The same-PR explicit-option compatibility repair is private and unexecuted.
+Earlier source success does not qualify its failed protected candidate. Required source-built Actions,
 full-vector artifact review, protected merge and release remain pending. See
 `docs/davinci/decisions/2026-10-06-unknown-template-options.md`.
