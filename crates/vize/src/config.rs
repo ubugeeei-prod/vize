@@ -7,6 +7,45 @@ pub use vize_carton::config::*;
 pub const VIZE_CONFIG_SCHEMA: &str =
     include_str!("../../../npm/cli/schemas/vize.config.schema.json");
 
+/// Refresh an explicitly requested local editor schema in an installed project.
+/// Ordinary command/config loading must not create a dependency directory.
+pub fn write_schema_for_config(source: Option<&Path>) {
+    let Some(source) = source.filter(|path| path.extension().is_some_and(|ext| ext == "json"))
+    else {
+        return;
+    };
+    let Some(base) = source.parent() else {
+        return;
+    };
+    let Ok(content) = fs::read_to_string(source) else {
+        return;
+    };
+    let Ok(config) = serde_json::from_str::<serde_json::Value>(&content) else {
+        return;
+    };
+    if !matches!(
+        config.get("$schema").and_then(serde_json::Value::as_str),
+        Some(
+            "node_modules/.vize/vize.config.schema.json"
+                | "./node_modules/.vize/vize.config.schema.json"
+        )
+    ) {
+        return;
+    }
+    let dependencies = base.join("node_modules");
+    if !fs::symlink_metadata(&dependencies).is_ok_and(|metadata| metadata.file_type().is_dir()) {
+        return;
+    }
+    let schema_dir = dependencies.join(".vize");
+    let schema_path = schema_dir.join("vize.config.schema.json");
+    for path in [&schema_dir, &schema_path] {
+        if fs::symlink_metadata(path).is_ok_and(|metadata| metadata.file_type().is_symlink()) {
+            return;
+        }
+    }
+    write_schema(Some(base));
+}
+
 /// Write the JSON Schema to `node_modules/.vize/vize.config.schema.json`.
 pub fn write_schema(dir: Option<&Path>) {
     let base = dir
@@ -23,8 +62,8 @@ pub fn write_schema(dir: Option<&Path>) {
 
 /// Returns whether the bundled config schema should be written to disk.
 ///
-/// The CLI asks for schema materialization from several hot command paths, but
-/// the schema almost never changes during one checkout. Checking metadata first
+/// An authored local schema almost never changes during one checkout.
+/// Checking metadata first
 /// avoids reading the file on obvious misses/stale-size cases, and reading only
 /// same-sized files keeps the common "already current" path from paying an
 /// unconditional write syscall and invalidating editor file watchers.
@@ -114,6 +153,24 @@ mod tests {
         fs::write(&schema_path, VIZE_CONFIG_SCHEMA).unwrap();
 
         assert!(!schema_needs_write(&schema_path));
+    }
+
+    #[test]
+    fn write_schema_initializes_an_explicit_authoring_directory() {
+        let project = tempfile::tempdir().unwrap();
+        assert!(!project.path().join("node_modules").exists());
+
+        write_schema(Some(project.path()));
+
+        assert_eq!(
+            fs::read_to_string(
+                project
+                    .path()
+                    .join("node_modules/.vize/vize.config.schema.json")
+            )
+            .unwrap(),
+            VIZE_CONFIG_SCHEMA
+        );
     }
 
     #[test]
