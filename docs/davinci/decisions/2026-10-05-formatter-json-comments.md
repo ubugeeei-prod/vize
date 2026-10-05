@@ -27,3 +27,5 @@ document bytes under `target/differential/`. Failed checks stay read-only.
 Hosted source qualification, protected full suites, unchanged instruction
 ceilings, actual merge and release are still required. No Davinci formatter
 migration or measured performance improvement is credited.
+
+The actual-main replay on `a2712e78968e9112c89cbc2111b108bd0e51959c` preserves every incoming decision, every original author/trailer and all owned production, corpus, runtime/helper and strict witness bytes. The earlier source failure/success receipts remain retained; fresh exact-head Actions and protected delivery are required before requeue.
