@@ -27,7 +27,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | item                                      | files | sites |
 | ----------------------------------------- | ----: | ----: |
-| `BindingType`                             |    17 |   131 |
+| `BindingType`                             |    17 |   133 |
 | `BlockLocation`                           |     5 |     7 |
 | `DEFINE_EMITS`                            |     1 |     2 |
 | `DEFINE_EXPOSE`                           |     1 |     1 |

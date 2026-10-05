@@ -98,6 +98,17 @@ overview to avoid repeated unrelated changes in the Nuxt history paragraph.
 Update the manifest base to the true new origin. No previous source result
 transfers to this replay; fresh exact-head Actions remain required.
 
+Actual6ae source Check37264729832 fails tooling workers1/3 only on the generated
+SFC non-product BindingType census: existing131 sites versus actual133 after
+the producer helper. Run the repository generator directly through its genuine
+Node backend (the Rust command is a launcher), with no install/native build.
+Only that derived row changes; resolved product sites, production/runtime
+sources, fixture bytes, full assertions, caps and native qualifications stay
+exact. Actual four source Rust shards complete15,906 executions with zero
+failures/skips, including the strict32 whole-module runtime law and real
+dual-target binding boundary. Their authenticated receipt remains source-only
+evidence from the overall failed run; fresh complete Actions are required.
+
 TODO: exact source Actions including whole-module runtime, root peer review,
 protected full suites and all 104 immutable instruction ceilings, signed
 actual main with reporter trailer/issue closure, then a verified frequent cut.
