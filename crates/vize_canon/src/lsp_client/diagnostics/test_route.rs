@@ -16,6 +16,7 @@ std::thread_local! {
 }
 
 pub(in crate::lsp_client) fn begin(enabled: bool) {
+    super::super::editor_lsp::bulk_diagnostics::reset_receipt();
     ACTIVE.set(enabled);
     ROUTE.set(None);
 }

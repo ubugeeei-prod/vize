@@ -1,9 +1,10 @@
 # Native bulk diagnostic categories
 
 Issue: [#7698](https://github.com/ubugeeei-prod/vize/issues/7698).
-This is a private dependent source preparation on the explicit Batch config
-binding in #7857. Its parent delivery and finite release cut do not wait for
-this optimization. Source and runtime qualification are still pending.
+This dependent source slice builds on the explicit Batch config binding
+in #7857. Its parent delivery and finite release cut do not wait for
+this optimization. Bounded technical source review passed; runtime
+qualification is still pending.
 
 ## Protocol authority
 
@@ -92,10 +93,13 @@ snapshot, project, source names, method list and attachment. The existing eight
 generated-config laws and other original qualification commands remain intact.
 Complete sides and custody are archived before comparison assertions, including
 failures; no failed raw vector is regenerated as an expected result.
+Test-only custody resets for every request, including disabled observation and
+unconfigured or empty batches, so a previous successful category packet cannot
+be attributed to a later original LSP fallback.
 
-Pending: technical source review, exact-head Actions, real native responses,
+Pending: exact-head Actions, real native responses,
 full original 500 warm/no-op/leaf/shared-dependency and CLI/LSP/config/delta
 vectors, declaration controls, matched source timings, protected full suites,
 and actual ordered native Stack merges. No new performance result, 10x claim,
 default migration, native Davinci product completion, history closure or budget
-increase follows from this private preparation. #7698 remains open.
+increase follows from this prepared source. #7698 remains open.

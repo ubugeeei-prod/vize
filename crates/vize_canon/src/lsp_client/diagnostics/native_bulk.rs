@@ -9,6 +9,8 @@ impl CorsaProjectClient {
         &mut self,
         uris: &[String],
     ) -> Result<Option<DiagnosticBatch>, String> {
+        #[cfg(test)]
+        super::super::editor_lsp::bulk_diagnostics::reset_receipt();
         let Some(config) = self.explicit_project_config.clone() else {
             return Ok(None);
         };

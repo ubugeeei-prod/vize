@@ -15,6 +15,8 @@ mod receipt;
 #[cfg(test)]
 pub(in crate::lsp_client) use receipt::fallback as fallback_receipt;
 #[cfg(test)]
+pub(in crate::lsp_client) use receipt::reset as reset_receipt;
+#[cfg(test)]
 pub(super) use receipt::take as take_receipt;
 
 use conversion::{NativeDiagnostic, project_diagnostics};

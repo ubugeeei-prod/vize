@@ -7,7 +7,7 @@ std::thread_local! {
     static OBSERVED: RefCell<Option<Value>> = const { RefCell::new(None) };
 }
 
-pub(super) fn reset() {
+pub(in crate::lsp_client) fn reset() {
     OBSERVED.with(|value| *value.borrow_mut() = None);
 }
 

@@ -8,6 +8,19 @@ fn rows(value: serde_json::Value) -> Vec<conversion::NativeDiagnostic> {
 }
 
 #[test]
+fn receipt_custody_does_not_leak_into_enabled_or_disabled_requests() {
+    for enabled in [false, true] {
+        super::receipt::record(json!({"outcome":"complete","attachment":"previous"}));
+        crate::lsp_client::diagnostics::test_route::begin(enabled);
+        assert_eq!(super::receipt::take(), None);
+        super::receipt::record(json!({"outcome":"whole-original-fallback"}));
+        crate::lsp_client::diagnostics::test_route::begin(enabled);
+        assert_eq!(super::receipt::take(), None);
+    }
+    assert_eq!(crate::lsp_client::diagnostics::test_route::take(), None);
+}
+
+#[test]
 fn absolute_utf16_matches_lsp_crlf_cr_lf_and_unicode_separator_coordinates() {
     let positions = Positions::new("😀x\r\né\u{2028}Y\rZ\n").unwrap();
     assert_eq!(
