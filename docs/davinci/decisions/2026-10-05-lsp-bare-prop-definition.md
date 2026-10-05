@@ -41,3 +41,9 @@ native definition expectations and all instruction ceilings remain unchanged.
 
 Fresh exact-source Actions, unchanged protected instruction ceilings, actual
 merge, release and installed editor proof remain required.
+
+Replay onto literal actual protected main `8f667ea0` preserves all incoming
+canonical clauses and every reviewed production/test/original-corpus blob.
+The four source commits retain original authors/messages/reporter trailers;
+only canonical placement is resolved. Fresh exact-source and protected full
+qualification remain mandatory, without transferring prior runtime credit.
