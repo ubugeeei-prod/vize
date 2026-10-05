@@ -123,3 +123,10 @@ All input bytes remain unchanged; native Actions capture inputs and whole raw
 reports. No phantom Vue helper or ambient provider is restored. Fresh source
 and protected qualification are required after the literal `ef50601216`
 main replay, retaining all original reference-path vectors and warm limits.
+
+After Router #7845 actually merges as `8f667ea070`, replay onto that literal
+main. Preserve every Router context field and import-owner insert/removal
+alongside atomic O(1) helper membership. Remove only the blank after the new
+counter field to retain the 350-line source cap, regenerate the inventory,
+and retain every incoming canonical clause. The original reference captures
+and CSS repair bytes remain unchanged; fresh exact-head qualification follows.
