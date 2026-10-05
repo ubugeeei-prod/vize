@@ -81,3 +81,11 @@ Fresh successor source Actions and protected gates remain required; the
 failed head's separate passing Nuxt lanes confer no CSS runtime acceptance.
 
 Paired runtime precondition/custody correction: [#7887 comment](https://github.com/ubugeeei-prod/vize/issues/7887#issuecomment-5987717993).
+
+## Symmetric SFC adapter metadata after actual runtime execution
+
+Source `30a8ef22a5` Check37260673399 executes the real MutationObserver and records six successful development pairs: original/flag/typed clients and their diagnosed SSR fallbacks. The seventh ordinary VDOM control fails only its missing scoped DOM attribute; its CSS variable installs and updates correctly. The independent reference already attaches component `__scopeId`, while raw Rust inline output delegates that metadata to the existing Vite adapter (`npm/builder/vite/src/utils/index.ts`, audited main `ef506012169d228982ded40d893ac2115a3e58a7`, lines191–220). Retained full process-development input/stdout/stderr/exit and official failed JUnit artifact11324936610 establish this exact asymmetry. Original log SHA256 is `717ee6f3d86444fe5af8c1c0cac16502ea4caa065b382250434fbe5117d873ad`; the archive digest is `1e1f598e0758a6e25635a609a97ad9afb3cad694303d10cac0c504af053153f7`. Production-mode pairs were not reached and overall acceptance remains incomplete.
+
+Apply the existing ordinary SFC scope metadata attachment equally to both evaluated default components and record the actual attached scope ID. Preserve every original generated code/CSS/map, expected complete tree/value and all three production files; no CSS helper, instance or DOM attribute is synthesized. Fresh exact-head Actions must execute all16 pairs. Client rc9 runtimes are explicitly built for development/production; stable SSR uses its ambient locked runtime with corresponding compiler options, not an independently attested stable-SSR runtime-mode matrix. Maps attest whole-result additivity/source name, not decoded mapping coordinates.
+
+Paired symmetric adapter correction: [#7887 comment](https://github.com/ubugeeei-prod/vize/issues/7887#issuecomment-5987993931).

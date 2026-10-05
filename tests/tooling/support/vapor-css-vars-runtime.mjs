@@ -114,11 +114,15 @@ async function evaluate(code, vue) {
       }),
     ],
   }).code;
-  return (
+  const component = (
     await import(
       `data:text/javascript;base64,${Buffer.from(`${normalized}\n// ${sequence++}`).toString("base64")}`
     )
   ).default;
+  // Both stock and Vize raw SFC modules use the adapter's scope attachment.
+  // This is component metadata, not an instance or a CSS-helper replacement.
+  component.__scopeId = "data-v-abc12345";
+  return component;
 }
 
 function official(fixture) {
@@ -179,6 +183,7 @@ function observe(host, property, sameRoot, diagnostics) {
 
 async function mounted(compiled, fixture, capture) {
   const component = await evaluate(compiled.code, runtime);
+  capture.scopeId = component.__scopeId;
   const app = (fixture.vapor ? runtime.createVaporApp : runtime.createApp)(component);
   const diagnostics = [];
   app.config.warnHandler = (message) => diagnostics.push(message);
@@ -214,6 +219,7 @@ async function mounted(compiled, fixture, capture) {
 
 async function ssr(compiled, capture) {
   const component = await evaluate(compiled.code, stable);
+  capture.scopeId = component.__scopeId;
   const app = stable.createSSRApp(component);
   const diagnostics = [];
   app.config.warnHandler = (message) => diagnostics.push(message);
