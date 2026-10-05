@@ -75,6 +75,14 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
       requests = [{ params: {}, result: expected }];
     } else if (data.method === "textDocument/documentHighlight") {
       requests = loadOriginalHighlightRequests(packRoot, data, expected);
+    } else if (data.method === "textDocument/hover") {
+      assert(
+        Array.isArray(expected) && expected.length === 2,
+        "long and short whole hovers required",
+      );
+      requests = (expected as { position: unknown; result: unknown }[]).map(
+        ({ position, result }) => ({ params: { position }, result }),
+      );
     } else if (data.method === "textDocument/documentSymbol") {
       assert.equal(data.hierarchicalDocumentSymbols, true);
       assert(Array.isArray(expected) && expected.length === 2);
@@ -114,14 +122,3 @@ export const INITIALIZE_CAPABILITIES = {
     completion: { completionItem: { documentationFormat: ["markdown", "plaintext"] } },
   },
 };
-
-export function initializeCapabilities(fixture: LspFixture) {
-  if (fixture.data.method !== "textDocument/documentSymbol") return INITIALIZE_CAPABILITIES;
-  assert.equal(fixture.data.hierarchicalDocumentSymbols, true);
-  return {
-    textDocument: {
-      ...INITIALIZE_CAPABILITIES.textDocument,
-      documentSymbol: { hierarchicalDocumentSymbolSupport: true },
-    },
-  };
-}

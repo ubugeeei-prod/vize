@@ -95,3 +95,11 @@ instead of the required 38. Preserve that failure. Refresh only those inventory
 shards and qualify the closing-tag witness on a new source; keep both original
 full expected arrays unchanged. New containment, opaque-content, same-name
 self-closing, mixed-case and false-closing controls require fresh source/protected execution.
+
+The corrected source `c7f811d7` completed Check 37304360456 with all 12
+symbol laws passing in the authenticated four PR Rust packets. The original
+whole Parent/MySwitch arrays remain unchanged. These are source tests; the
+whole LSP RPC corpus is explicitly retained for the protected merge tier.
+The independent shared-registry order is the actual hover fix #8027, then
+links #8029, then this outline fix. Each integration retains every accepted
+case and refreshes its source qualification; queue entry grants no acceptance.

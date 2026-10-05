@@ -306,6 +306,38 @@
       }
     },
     {
+      "id": "lsp/regression/component-hover-readability",
+      "state": "active",
+      "targets": ["stdio"],
+      "inputs": {
+        "root": "component-hover-readability",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "a72c7a09a75946282d9c0b7040aa71bc38d8b1a2f8a501fcaa1052ac3721bded"
+          },
+          {
+            "path": "LongComponent.vue.txt",
+            "sha256": "c1482d7a08b17492c7a04d137d33cf0f327b8d5ccbc85cf79147808f70c07d27"
+          },
+          {
+            "path": "ShortComponent.vue.txt",
+            "sha256": "5b3dd7a728a708b5dfc85068a81386115896ddd0aa8657cf5b3419ad6e08ada7"
+          }
+        ]
+      },
+      "case": {
+        "path": "component-hover-readability/case.json",
+        "sha256": "b6b3c263d95c79d0a95f49b54547dc101c5808aa38346adffdac537ec5fdbce1"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
+    },
+    {
       "id": "lsp/regression/document-symbol-outline-parent",
       "state": "active",
       "targets": [

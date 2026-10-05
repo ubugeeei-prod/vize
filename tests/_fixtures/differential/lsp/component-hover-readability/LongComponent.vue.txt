@@ -1,0 +1,47 @@
+<script setup lang="ts">
+defineProps<{
+  title: string;
+  subtitle?: string;
+  count: number;
+  disabled?: boolean;
+  loading?: boolean;
+  searchable?: boolean;
+  multiple?: boolean;
+  placeholder?: string;
+  description?: string;
+  "literal,=[]": 'say "hello"';
+  multiline?: `first
+literal second
+literal third`;
+  selected?: {
+    identifier: string;
+    metadata?: {
+      description: string;
+      punctuation: "a;=b" | "c,d<e>";
+    };
+  };
+  entries: ReadonlyArray<
+    Record<"key;=" | "other,<>", { value: string; enabled?: boolean }>
+  >;
+  resolve?: <T extends { id: string }>(value: T) => Promise<T>;
+}>()
+defineEmits<{
+  save: [
+    value: {
+      identifier: string;
+      metadata?: { description: string; punctuation: "a;=b" | "c,d<e>" };
+    },
+  ];
+  update: [entries: ReadonlyArray<{ identifier: string; selected?: boolean }>];
+  cancel: [reason?: "click;=cancel" | "escape,<>"];
+}>()
+defineSlots<{
+  default(props: {
+    selected?: { identifier: string; description?: string };
+    entries: ReadonlyArray<{ identifier: string; selected?: boolean }>;
+  }): unknown;
+  footer(props: { count: number; loading: boolean }): unknown;
+}>()
+defineModel<{ active: boolean; selected?: { identifier: string; description: string; punctuation: "a;=b" | "c,d<e>" } }>()
+</script>
+<template><slot /></template>
