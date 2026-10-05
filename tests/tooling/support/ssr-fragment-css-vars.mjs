@@ -13,12 +13,49 @@ const vuePackage = fromTests.resolve("vue-ssr-css-vars-oracle/package.json");
 const fromVue = createRequire(vuePackage);
 const vue = fromTests("vue-ssr-css-vars-oracle");
 const compiler = fromVue("@vue/compiler-sfc");
+const fromCompiler = createRequire(fromVue.resolve("@vue/compiler-sfc"));
 const server = fromVue("@vue/server-renderer");
 const version = "3.6.0-rc.10";
-assert.equal(process.env.NODE_ENV, "production", "execute actual production Vue builds");
-for (const name of ["vue", "@vue/compiler-sfc", "@vue/compiler-ssr", "@vue/server-renderer"])
-  assert.equal(name === "vue" ? vue.version : fromVue(`${name}/package.json`).version, version);
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+// Compiler SSR belongs to compiler-SFC, not to Vue's direct dependencies.
+// Resolve each package from the owner that actually imports it.
+const manifests = {
+  vue: vuePackage,
+  "@vue/compiler-sfc": fromVue.resolve("@vue/compiler-sfc/package.json"),
+  "@vue/compiler-ssr": fromCompiler.resolve("@vue/compiler-ssr/package.json"),
+  "@vue/server-renderer": fromVue.resolve("@vue/server-renderer/package.json"),
+};
+const oraclePackages = Object.fromEntries(
+  Object.entries(manifests).map(([name, location]) => {
+    const bytes = fs.readFileSync(location);
+    const manifest = JSON.parse(bytes);
+    return [
+      name,
+      {
+        path: fs.realpathSync(location),
+        version:
+          name === "vue"
+            ? vue.version
+            : name === "@vue/compiler-sfc"
+              ? compiler.version
+              : manifest.version,
+        manifestVersion: manifest.version,
+        manifestSha256: hash(bytes),
+      },
+    ];
+  }),
+);
+if (process.env.VIZE_FRAGMENT_CSS_RUNTIME_CAPTURE) {
+  fs.writeFileSync(
+    process.env.VIZE_FRAGMENT_CSS_RUNTIME_CAPTURE,
+    JSON.stringify({ state: "oracle-version-checkpoint", oraclePackages }),
+  );
+}
+assert.equal(process.env.NODE_ENV, "production", "execute actual production Vue builds");
+for (const [name, pkg] of Object.entries(oraclePackages)) {
+  assert.equal(pkg.version, version, `${name}: loaded pinned owner ${pkg.path}`);
+  assert.equal(pkg.manifestVersion, version, `${name}: pinned manifest ${pkg.path}`);
+}
 const dataUrl = (code) => `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
 const browserRuntime = fs.readFileSync(
   path.join(path.dirname(vuePackage), "dist/vue.runtime.esm-browser.prod.js"),
@@ -236,6 +273,7 @@ export async function observeFragmentCss(input) {
     }
     return {
       version,
+      oraclePackages,
       production: true,
       browser: browser.version(),
       browserRuntimeSha256: hash(browserRuntime),

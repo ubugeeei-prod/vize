@@ -66,6 +66,20 @@ production Chromium for client rendering and hydration against independent
 official compiler output. CSS-variable names use the same original
 filename identifier; HTML/property keys are not normalized. Complete CSS
 bytes remain captured, but compiler CSS whitespace equality is not claimed.
+Source `94d9cc754132537863e3fc9535527b4f58eaf37d` executes the SFC packet law
+and all four selected/retained SSR laws successfully, retaining all ten whole
+module packets. Its runtime version guard then observes 3.5.35 rather than
+rc.10 and stops before SSR/browser execution. The guard had requested
+`@vue/compiler-ssr` from Vue, which does not directly depend on that package.
+[Compiler-SFC owns that dependency](https://raw.githubusercontent.com/vuejs/core/v3.6.0-rc.10/packages/compiler-sfc/package.json),
+so the guard now resolves it from the actual pinned compiler-SFC entry.
+Every exact rc.10 assertion remains. A version/path/manifest-hash checkpoint
+is retained before assertions; successful complete observations also carry
+that ownership packet. This corrects test topology without changing the
+lock, production, original inputs or expected runtime output. The earlier
+unlabelled failure does not identify an executed compiler version or grant
+runtime acceptance.
+
 The browser checks colors before JavaScript, retained node identities,
 runtime diagnostics and complete unmount. Only ImportDeclaration source
 literals are linked to the pinned browser runtime; authored compiler
