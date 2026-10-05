@@ -98,7 +98,6 @@ Test-only custody resets for every request, including disabled observation and
 unconfigured or empty batches, so a previous successful category packet cannot
 be attributed to a later original LSP fallback.
 
-
 ## First hosted qualification
 
 Source `426a2453377b3cb1ea6774ecfef0a7a5b6d1c4ee` compiled on Actions.
@@ -113,11 +112,24 @@ collapses adjacent property errors into one dotted path. Preserve those exact
 input bytes and failed runs; their success does not prove reader retirement.
 The successor adds a nested return-signature witness without that property
 reduction and retains the mandatory actual reader-failure/recovery assertions.
-Its runtime outcome remains pending. The first source-length gate also failed
+The first source-length gate also failed
 because module registration grew `diagnostics.rs` from 498 to 499 lines; the
 same-change repair keeps the parent cap without changing the existing body.
 
-Pending: exact-head Actions, real native responses,
+Successor `82b2d7ac55f63d73ac0f576d1941f2c81a7a1203` passed native run
+`37308278705`: eight unit and three native laws, including the mandatory actual
+reader refusal and recovery. Artifact `11345262019` has ZIP SHA-256
+`24c8cf3f492e3aabb58c895d09ebb5b3be886a8c484b5ae8fb254db49be8cb99`;
+all CRCs passed. The return-chain packet records real Protocol recursion refusal,
+attempted release returning Closed, successful owner retirement, complete
+old/new-owner diagnostic equality, a different attachment pipe, and a later
+acknowledged bulk generation on that same healthy successor. The original
+property control stays on its existing owner with equal complete vectors.
+All four source Rust workers passed. The source Check still failed on one
+extra Markdown blank line; this receipt corrects it. These are exact `82b2`
+receipts, not qualification of a later parent replay or matched timing.
+
+Pending: exact-head Actions, fresh native responses after parent replay,
 full original 500 warm/no-op/leaf/shared-dependency and CLI/LSP/config/delta
 vectors, declaration controls, matched source timings, protected full suites,
 and actual ordered native Stack merges. No new performance result, 10x claim,
