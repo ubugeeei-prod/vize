@@ -23,6 +23,8 @@ on:
       - "tools/benchmarks/scripts/benchmark-binary.mjs"
       - "crates/vize_canon/**"
       - "crates/vize/src/**"
+      - "crates/vize/tests/check_outside_import_types_cli.rs"
+      - "tests/_fixtures/differential/typechecker/outside-import-types/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - "pnpm-lock.yaml"
@@ -145,6 +147,50 @@ jobs:
             "$GITHUB_WORKSPACE/target/ci-opt/vize" \
             "$GITHUB_WORKSPACE/target/ci-opt/examples/native_phase_projection" \
             "$NATIVE_PHASE_OUTPUT"
+      - name: Qualify original outside-import types with the source CLI and official native oracle
+        if: github.event_name == 'pull_request'
+        env:
+          VIZE_TEST_REQUIRE_TSGO: "1"
+          VIZE_TYPECHECK_REGRESSION_CAPTURE: ${{ runner.temp }}/outside-import-types
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          cd "$NATIVE_PHASE_SOURCE_ROOT"
+          cargo test --locked --profile ci-opt -p vize --test check_outside_import_types_cli \
+            --config 'profile.ci-opt.inherits="release"' \
+            --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' \
+            --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { createHash } from 'node:crypto';
+          import { existsSync, readFileSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
+          import { dirname, join } from 'node:path';
+          import { spawnSync } from 'node:child_process';
+          const root = process.env.VIZE_TYPECHECK_REGRESSION_CAPTURE;
+          const cases = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name).sort();
+          assert.equal(cases.length, 3);
+          const sha256 = file => createHash('sha256').update(readFileSync(file)).digest('hex');
+          const files = dir => readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)]);
+          const receipts = cases.map(name => {
+            const dir = join(root, name);
+            const oracle = JSON.parse(readFileSync(join(dir, 'oracle.json'), 'utf8'));
+            const cli = JSON.parse(readFileSync(join(dir, 'cli.json'), 'utf8'));
+            const nativeBinary = realpathSync(oracle.nativeBinary);
+            let packageDir = dirname(nativeBinary);
+            while (!existsSync(join(packageDir, 'package.json')) && dirname(packageDir) !== packageDir) packageDir = dirname(packageDir);
+            const packagePath = join(packageDir, 'package.json');
+            const nativePackage = JSON.parse(readFileSync(packagePath, 'utf8'));
+            assert.equal(nativePackage.name, `@typescript/typescript-${process.platform}-${process.arch}`);
+            assert.equal(nativePackage.version, '7.0.2');
+            const version = spawnSync(nativeBinary, ['--version'], { encoding: 'utf8' });
+            assert.equal(version.status, 0);
+            assert.equal(version.stdout.trim(), 'Version 7.0.2');
+            assert.equal(version.stderr, '');
+            return { name, sourceSha: process.env.SOURCE_SHA, cliBinary: realpathSync(cli.cliBinary), cliSha256: sha256(cli.cliBinary), nativeBinary, nativeSha256: sha256(nativeBinary), nativePackageSha256: sha256(packagePath), nativePackage: { name: nativePackage.name, version: nativePackage.version }, nativeVersion: version.stdout.trim(), completeOutputsAndInputs: files(dir).map(path => ({ path: path.slice(root.length + 1), sha256: sha256(path) })) };
+          });
+          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, fixtureSha256: sha256('tests/_fixtures/differential/typechecker/outside-import-types/input.json'), matchedCompleteExpectations: true, cases: receipts }, null, 2) + '\n');
+          JS
       - name: Upload raw native phases, memberships, full reports and generated sources
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -160,5 +206,6 @@ jobs:
             ${{ runner.temp }}/typechecker-native-phases.json.samples/native/
             ${{ runner.temp }}/typechecker-native-phases.json.samples/projections/
             ${{ runner.temp }}/typechecker-native-phases.json.samples/virtual-ts/
+            ${{ runner.temp }}/outside-import-types/
           if-no-files-found: error
           retention-days: 30

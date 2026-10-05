@@ -29,3 +29,11 @@ Fresh exact-head Actions, unchanged instruction ceilings, protected full suites,
 actual merge and published consumer verification are required. The release
 owner's publication hold applies until its first-cut qualification finishes.
 This repairs the existing product without native-stage acceptance credit.
+
+Independent review of b738 found the option-probe disk reader still used the old
+root path and normal PR Rust runs disable native execution. The correction
+updates that authoritative reader, adds a nested unsanitized-config no-probe
+law, and requires the new source CLI tests in the existing native-phase job.
+Complete raw stdout/stderr/status, all input files, official package/version,
+binary hashes and source identity are retained as Actions artifacts. Earlier
+PR green is insufficient; fresh corrected-head runtime acceptance is required.

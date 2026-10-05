@@ -95,7 +95,7 @@ fn reanchor_entry(entry: &mut Value, prefix: &str) {
 
 #[cfg(test)]
 mod tests {
-    use super::reanchor_config;
+    use super::{VirtualProject, reanchor_config};
     use serde_json::json;
 
     #[test]
@@ -128,4 +128,24 @@ mod tests {
             })
         );
     }
+}
+#[test]
+fn unchanged_nested_config_needs_no_option_probe() {
+    let case = tempfile::tempdir().unwrap();
+    let app = case.path().join("app");
+    std::fs::create_dir_all(&app).unwrap();
+    let config = app.join("tsconfig.json");
+    std::fs::write(
+        &config,
+        r#"{"compilerOptions":{"strict":true,"target":"ES2022"}}"#,
+    )
+    .unwrap();
+    let mut project = VirtualProject::new(case.path()).unwrap();
+    project.set_tsconfig_path(Some(config));
+    assert_eq!(
+        project.generated_tsconfig_path(),
+        project.virtual_root.join("app/tsconfig.json")
+    );
+    project.materialize().unwrap();
+    assert!(project.write_option_probe_tsconfig().unwrap().is_none());
 }

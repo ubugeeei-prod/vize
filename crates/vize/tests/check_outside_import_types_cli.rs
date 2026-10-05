@@ -7,7 +7,10 @@
 mod corsa_requirement;
 
 use serde_json::{Value, json};
-use std::{path::Path, process::Command};
+use std::{
+    path::Path,
+    process::{Command, Output},
+};
 
 const INPUT: &str = include_str!(
     "../../../tests/_fixtures/differential/typechecker/outside-import-types/input.json"
@@ -35,6 +38,7 @@ fn cli_diagnostics(app: &Path, corsa: &Path, extra: &[&str]) -> Vec<(String, Val
         .args(extra)
         .output()
         .unwrap();
+    capture(app, corsa, "cli", extra, &output);
     let stdout = String::from_utf8(output.stdout).unwrap();
     let stderr = String::from_utf8(output.stderr).unwrap();
     assert!(
@@ -69,6 +73,7 @@ fn oracle(app: &Path, corsa: &Path, expected: &str) {
         .args(["-p", "tsconfig.json", "--pretty", "false"])
         .output()
         .unwrap();
+    capture(app, corsa, "oracle", &[], &output);
     assert!(!output.status.success());
     assert_eq!(String::from_utf8(output.stderr).unwrap(), "");
     assert_eq!(
@@ -77,6 +82,53 @@ fn oracle(app: &Path, corsa: &Path, expected: &str) {
             .replace("\r\n", "\n"),
         expected
     );
+}
+
+fn capture(app: &Path, corsa: &Path, phase: &str, extra: &[&str], output: &Output) {
+    let Some(root) = std::env::var_os("VIZE_TYPECHECK_REGRESSION_CAPTURE") else {
+        return;
+    };
+    let thread = std::thread::current();
+    let case = thread.name().unwrap_or("unknown");
+    let root = std::path::PathBuf::from(root).join(case);
+    std::fs::create_dir_all(&root).unwrap();
+    let phase = if extra.is_empty() {
+        phase.to_owned()
+    } else {
+        format!("{phase}-sharded")
+    };
+    std::fs::write(root.join(format!("{phase}.stdout.txt")), &output.stdout).unwrap();
+    std::fs::write(root.join(format!("{phase}.stderr.txt")), &output.stderr).unwrap();
+    std::fs::write(
+        root.join(format!("{phase}.json")),
+        json!({
+            "exitCode": output.status.code(), "cwd": app,
+            "cliBinary": env!("CARGO_BIN_EXE_vize"),
+            "nativeBinary": corsa,
+            "arguments": extra,
+        })
+        .to_string(),
+    )
+    .unwrap();
+    if phase == "oracle" {
+        copy_inputs(app.parent().unwrap(), &root.join("inputs"));
+    }
+}
+
+fn copy_inputs(source: &Path, target: &Path) {
+    std::fs::create_dir_all(target).unwrap();
+    for entry in std::fs::read_dir(source).unwrap() {
+        let entry = entry.unwrap();
+        if entry.file_name() == ".vize" {
+            continue;
+        }
+        let output = target.join(entry.file_name());
+        if entry.file_type().unwrap().is_dir() {
+            copy_inputs(&entry.path(), &output);
+        } else {
+            std::fs::copy(entry.path(), output).unwrap();
+        }
+    }
 }
 
 #[test]
