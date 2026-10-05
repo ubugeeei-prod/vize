@@ -31,12 +31,16 @@ to array parsing. Other recursion paths require their own evidence.
 ## Bounded parser correction
 
 The existing pinned `stacker = "=0.1.25"` becomes a direct vendor-parser
-dependency. The lock adds only that existing dependency edge. The complete original array parser body executes in
-`stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, ...)`, before token/span work,
-except exact adjacent `[]`, which cannot recurse and runs that same full body
-without a stack query. The complete tuple body always retains its headroom guard. It uses the same parser, arena, context, trailing-comma bookkeeping,
-grammar and ordinary diagnostics. Flat scalar elements do not each gain a
-stack check. No Vize dependency, depth limit, synthetic diagnostic, parse
+dependency. The lock adds only that existing dependency edge. The complete
+original array-entry body remains unchanged. Its original delimited list
+calls a guarded element callback before any nested element, spread or
+assignment descent. That complete original callback executes in
+`stacker::maybe_grow(512 * 1024, 4 * 1024 * 1024, ...)`. Empty arrays leave the
+list before reaching the callback. Nonempty arrays check each element,
+including flat scalars and elisions; their cost needs fresh measurement.
+The complete tuple body always retains its headroom guard. The same parser,
+arena, context, trailing-comma bookkeeping, grammar and ordinary diagnostics
+remain in use. No Vize dependency, depth limit, synthetic diagnostic, parse
 retry, panic suppression, input skip or extra pipeline stage is added.
 
 These constants reuse L0's stack-headroom configuration; that does not prove
@@ -148,3 +152,39 @@ current-head sanitizer replay and protected actual delivery remain required.
 No saved count or successful source/queue/release result is inferred from the
 static optimization. v0.433.0 remains unpublished; supported resume must refresh
 from the final accepted literal main and rerun the effective release contract.
+
+## Measured residual and guard at the recursive callback
+
+The adjacent-empty-literal source `c7eacbbd036f1bb46c20619ab4674e2a66d71f13`
+passed source Check 37249979040 and all-nine-target replay 37250194633.
+Its independent instruction run 37250192078/job 111576084849 still failed:
+all three script measurements are 929,067 against the unchanged 929,044
+ceiling. Raw log SHA256 is
+`a335aea9ddc4bc2bfaf012a083bcf110ce85f86d9535134261f4482955e2ea9e`.
+Artifacts 11320677801 and 11320782513 retain the original 100 and four
+formatter probes. No retry or admission follows this genuine failure.
+
+Independent raw reconstruction finds no remaining stack query in this script
+window. Removing its 30 direct query instructions adds four primary-expression
+instructions, giving an actual reduction of 26. The residual +154 versus
+accepted 2c33 is array-body outlining +274, delimited-list +72,
+primary-expression -230, binding-pattern +70 and try-statement -32.
+The successful source/sanitizer receipts do not satisfy the strict ceiling.
+
+The next correction restores the entire array-entry function byte-for-byte
+to accepted main. It guards the complete original element callback instead.
+Every nested element, spread and assignment route crosses that callback before
+its recursive child expression. Empty arrays leave the original list before
+that callback, so they add neither a branch, stack query nor outlined body.
+This includes whitespace/comment-only empty arrays without a new lexer peek.
+Each nonempty-array element now checks headroom, including flat scalars and
+elisions; this is a real tradeoff, and its cost is not claimed as measured.
+The unchanged full 100+4 probes must qualify that broader effect.
+
+The tuple guard, exact original crash bytes, all six existing complete source
+laws, custody seeds, fixture hashes, ceilings and original benchmark windows
+remain unchanged. The owned commits are rebased onto actual selected native
+Stack delivery `d1a25ec1da2efca98534520ff8ebe84d34708e3d`; incoming canonical
+clauses stay intact. Fresh automatic source Actions, all-nine-target sanitizer
+replay, unchanged instruction measurements and protected actual delivery are
+pending. Only their accepted literal main can refresh supported release #7811.
