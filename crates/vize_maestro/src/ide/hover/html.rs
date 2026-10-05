@@ -5,8 +5,8 @@
 
 use std::sync::Arc;
 
-use tower_lsp::lsp_types::Hover;
-use vize_canon::CorsaBridge;
+use tower_lsp::lsp_types::{Hover, Position, Range};
+use vize_canon::{CorsaBridge, LspHover};
 
 use super::{HoverBuilder, HoverService};
 use crate::ide::IdeContext;
@@ -85,8 +85,8 @@ impl HoverService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<&Arc<CorsaBridge>>,
     ) -> Option<Hover> {
-        let (attr_name, tag_name) =
-            crate::ide::definition::helpers::get_attribute_and_component_at_offset(ctx)?;
+        let (attr_name, tag_name, source_span) =
+            crate::ide::definition::helpers::get_attribute_with_source_span_at_offset(ctx)?;
         if crate::ide::is_component_tag(&tag_name) {
             return None;
         }
@@ -106,7 +106,28 @@ impl HoverService {
         let (line, character) = crate::ide::offset_to_position(&doc.content, doc.hover_offset);
         let hover = bridge.hover(&request_uri, line, character).await.ok()??;
 
-        Some(Self::convert_lsp_hover(hover))
+        Some(Self::project_native_attribute_hover(
+            ctx,
+            source_span,
+            hover,
+        ))
+    }
+
+    fn project_native_attribute_hover(
+        ctx: &IdeContext<'_>,
+        source_span: Option<(usize, usize)>,
+        hover: LspHover,
+    ) -> Hover {
+        let mut converted = Self::convert_lsp_hover(hover);
+        converted.range = source_span.map(|(start, end)| {
+            let (line, character) = crate::ide::offset_to_position(&ctx.content, start);
+            let (end_line, end_character) = crate::ide::offset_to_position(&ctx.content, end);
+            Range::new(
+                Position::new(line, character),
+                Position::new(end_line, end_character),
+            )
+        });
+        converted
     }
 
     pub(super) async fn hover_html_tag_with_corsa(
@@ -316,3 +337,6 @@ const disabled = true
         (state, uri)
     }
 }
+
+#[cfg(test)]
+mod attribute_range_tests;
