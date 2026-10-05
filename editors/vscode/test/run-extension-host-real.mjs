@@ -18,6 +18,7 @@ import { createRealHostEnvironment, runPackagedExtensionHost } from "./packaged-
 import { readPinnedCreateVueHostResult } from "./pinned-create-vue-host-result.mjs";
 import { runTsxHostScenarios } from "./run-tsx-host-scenarios.mjs";
 import { retainRealHostFailure } from "./real-host-failure.mjs";
+import { prepareScenarioContracts } from "./prepare-scenario-contracts.mjs";
 
 const sourceExtensionPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const testDataPath = path.join(sourceExtensionPath, ".vscode-test", "host-smoke-real");
@@ -50,6 +51,7 @@ await withPinnedFixtureWorkspace(
   async (fixture) => {
     materializeCreateVueTypecheckSource(fixture);
     prepareRealVueWorkspace(fixture.workspaceDir, { preserveExisting: true });
+    prepareScenarioContracts(fixture.workspaceDir);
     fixture.write(
       "tsconfig.json",
       `${JSON.stringify(

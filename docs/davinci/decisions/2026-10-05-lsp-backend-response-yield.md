@@ -159,3 +159,36 @@ No actor is presumed, no rename retry or wait is introduced, and every
 original assertion, stale-result refusal, cancellation/lifecycle law and cap
 remains mandatory. A fresh whole editor-host/full/native run must establish
 the actual cause before a production behavior correction is selected.
+
+### Deterministic contract-hover fixture topology
+
+The genuine `44030abdb59f42bfb4a310d36a106f48cf9cf4a4` full Check
+`37305562676`, editor job `111748289882`, retained artifact `11343840939`
+shows the recorded invalidation path: at 11:53:58.304272 UTC the client sent
+a batch containing two Created events each for ContractChild.vue and
+ContractHost.vue; `mark_corsa_disk_state_dirty` moved environment 16 to 18.
+The refused result at 11:53:58.333057 retained document stamp 108 unchanged
+and observed the newer environment. This records the actual invalidating
+notification, without claiming that disk content or topology was equivalent
+at every earlier backend observation. The conservative whole-result refusal
+is preserved. All original 500-file and complete Misskey controls passed at
+this head; the packaged editor gate failed.
+
+Contract hover exercises an existing imported component, so the same two
+complete authored files are now copied from the retained immutable corpus
+before the packaged client starts. The hover step verifies both entire disk
+inputs against the unchanged original expected-source constants instead of
+creating new project members while the scorecard is running. All three
+complete hover responses, child definition, typed-ref broken-to-unsaved-repair
+sequence, quick fix, format-on-save, semantic tokens and one-shot rename
+assertions remain. A focused preparation/launcher control checks full bytes
+and SHA-256 at client launch while preserving the unrelated scorecard input.
+Its recorded launcher proves preparation order, not native/editor behavior.
+
+No watcher events are filtered, delayed or reclassified, no source/environment
+stamp or backend lifecycle changes, and no retry, sleep or budget waiver is
+added. Existing create/delete/closed-Vue/declaration/configuration invalidation
+controls and all six original native stale-result/cancellation laws remain
+byte-exact and mandatory. Fresh whole source/native/editor/full Actions and
+actual protected parent delivery remain required; this source correction alone
+does not qualify a release or performance improvement.

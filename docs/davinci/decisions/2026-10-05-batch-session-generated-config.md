@@ -95,3 +95,32 @@ signed main `66a9b15639c828b17d5f655b3dd58f697799b3fa`; all observations above
 remain bc81-specific. Fresh source/native/full editor and original Tier-L
 execution, protected full suites and actual merge are still required. The
 whole cold 10x target remains unfinished.
+
+The exact `44030abdb59f42bfb4a310d36a106f48cf9cf4a4` successor passed native
+`37305540577` and complete Vue parity in full `37305562676`: original Tier-L
+cold/warm phases were 5,399/3,305/3,351 ms, with unchanged scale-1 membership,
+ceilings and 1/2/2/1/0 start/reuse/refresh/delta/fallback counters. Native
+artifact `11344410402` SHA256 is
+`2cb715aa3ac4688683bb5a681cc12b6e0a771b8ad80a8ea01bf132aad30fd6e1`;
+Tier-L artifact `11343119796` is
+`17ea192613323ce0c09b84ae67f1f47cee23b63a3322fd7a6f8896abc716742f`.
+The whole 287-row Misskey churn again passed with one rapid-87 publication;
+artifact `11343746851` SHA256 is
+`9220cd685adfc73f3afd102b06532fe7b4303092e2f48ac4040e7712bf1fec23`.
+Native receipt `rootConfigExists` describes the generated virtual root's
+top-level config, which is absent in both authored cases; the second case's
+weak conflicting config belongs to the authored root. It does not claim a
+conflicting generated/native root config. Full same-process chosen-config,
+options/root-file identities, maps and mapped/stock-CLI vectors passed.
+
+The source tooling run nevertheless correctly rejected workspace_files.rs
+growing from 348 to 352 lines. Move the intact trace to the small native
+request module with its original logger target, restoring 350 without
+packing lines or changing the cap. The packaged editor again refused rename;
+its retained full event/stamp evidence identifies delayed contract-file
+creation during the request. Prepare those same complete contract inputs
+before client startup, retain all provider results and real topology/stale
+controls, and add complete-input launch-order coverage. These bounded source
+corrections were independently reviewed; the old failed source/full runs stay
+failed, and fresh exact-head whole gates remain required before protected
+parent merge and release. No matched speed or 10x credit follows.
