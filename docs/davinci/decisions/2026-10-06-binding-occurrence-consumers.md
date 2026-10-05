@@ -4,8 +4,10 @@ Paired issue: [#7992](https://github.com/ubugeeei-prod/vize/issues/7992).
 This consumer depends on the
 [existing-walk producer](./2026-10-06-binding-occurrence-producer.md).
 It is a dependent source slice, not a second analysis engine or a history gate.
-Its genuine published provider is #8067, frozen `bfd4e902` on actual main
-`f83e26d2`; all consumer code/oracles below are preserved from private `f5149595`.
+Its genuine provider is #8067, frozen `552d681e` on signed actual main
+`2902dc98`. Initial private `f5149595` and bounded domain/protocol successor
+`4f894889` remain immutable; this union preserves every final source-peer-qualified
+consumer/helper/control blob.
 
 The entire reported Field.vue, strict tsconfig, stdio client, issue body and
 verified reporter identity remain immutable. The original report provides
@@ -118,3 +120,11 @@ admission/framing laws passed locally. Rust, native CLI, whole source corpus,
 fixed 104 instruction ceilings, protected queue and actual signed main delivery
 remain UNEXECUTED at this source preparation point. No latency/RSS/10x claim or
 manual performance campaign is made. #7992 stays open until actual acceptance.
+
+The first Draft #8068 publication retained reviewed `4f894889` after a shell
+continuation missed the prepublication main-update failure. Both PRs were
+immediately verified Draft/unqueued without an overwrite or old-green claim.
+The genuine `2902dc98` parent/child incorporation uses sequential checked
+mutations, preserves all incoming decisions and requires fresh exact-head
+Actions plus real protected delivery; source review does not provide runtime
+acceptance.

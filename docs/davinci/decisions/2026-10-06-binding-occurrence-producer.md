@@ -123,3 +123,8 @@ re-export also warned. The narrow correction only states that existing type and
 removes the unused re-export; the parser function and all data/loops/original
 inputs/16 laws remain unchanged. That failure is retained, and the corrected
 head requires fresh Actions; no retry or old-source green is qualification.
+
+The genuine signed-main `2902dc98` incorporation preserves every qualified
+producer source/test/original blob and all incoming source/decision bytes.
+Earlier `bfd4e902` compile success is retained at its own scope; fresh successor
+Actions and protected whole qualification remain required after this union.
