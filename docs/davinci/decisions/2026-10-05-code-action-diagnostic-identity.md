@@ -76,3 +76,28 @@ no runtime, Windows, native-migration, performance or delivery credit.
 Paired issue decision: https://github.com/ubugeeei-prod/vize/issues/8000#issuecomment-5995087452
 First source corrections: https://github.com/ubugeeei-prod/vize/issues/8000#issuecomment-5995695437
 Second source corrections: https://github.com/ubugeeei-prod/vize/issues/8000#issuecomment-5996202440
+
+The signed #8043 producer now attaches the complete selected client lint
+diagnostic to both Fix and Suppress actions. Full editor-host run `37347905314`
+(job `111891086773`, source `c9f0f590`) rejects only the two missing diagnostic
+fields in the old shared Zed/Helix oracle. Removing those fields from the actual
+whole responses exactly recovers every old edit, title, kind, preference and
+ordering field. The numeric TS2322 diagnostic remains outside both actions.
+
+The consumer expectations now include only the authored complete
+`vue/no-multi-spaces` diagnostic, including the strict JS and TS45 siblings.
+Whole inputs, request contexts, empty-context discovery, URI normalization and
+production remain unchanged. The shared Rust helper keeps its 533-line ratchet
+with normal JSON fields and two fewer function-boundary blank lines. Existing
+full source Actions must execute Zed and Helix again; real TS45 client
+serialization remains separately pending. No old-source runtime, native,
+performance or release credit transfers to this correction. Zed #8028 actually
+merged as signed `7f7def6c`; its distinct legacy-source completion proof remains
+retained. Paired consumer decision: https://github.com/ubugeeei-prod/vize/issues/8000#issuecomment-5999894234
+
+The current full Check also needs the separately owned #8059 native-only
+attribute-helper cfg correction. This oracle follow-up branches from its fresh
+literal head as the top of a verified GitHub native Stack. Exact combined full
+Actions precede protected prefix admission through `gh stack merge`; individual
+auto-merge and known-red admission are excluded. The native source stays with
+its original owner. Paired Stack decision: https://github.com/ubugeeei-prod/vize/issues/8000#issuecomment-5999922088
