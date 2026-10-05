@@ -27,11 +27,18 @@ remain in force. No pipeline stage, serialization or selector fallback is added.
 Direct native lowering tests cover the correction and authored ranges. The
 retained parser's existing pre controls now expect the first newline removed;
 its CRLF control exercises the rule in both whitespace modes.
-The unchanged public CLI drops comments by default; its stock whole-SFC
-control uses the same option. Separate retained and native parser controls
+The unchanged DOM/SSR CLI drops comments by default; its stock whole-SFC
+control uses that option during parse and compilation. Existing Vapor client
+parsing preserves comments, while its SSR request uses ordinary SSR options;
+the independent stock plugin control records those actual target differences.
+Separate retained and native parser controls
 enable comments and verify that a preserved first comment prevents removal.
 The stock SFC parse also receives that option before its template AST is reused
 by inline compilation, as required by the official SFC parse API.
+The Vapor target uses an owned descriptor copy, preserving all stock blocks
+and source without mutating the official ordinary-target parse cache.
+Each whole-corpus run records every control and fails if any control fails;
+an early failure cannot hide the remaining runtime observations.
 whole original SFC and controls also run through a source-built CLI in DOM,
 SSR, Vapor and Vapor-requested SSR modes. Chromium compares actual mounted
 pre text, live textarea values, complete SSR HTML and hydration with the

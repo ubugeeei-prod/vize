@@ -51,6 +51,7 @@ test(
     const browser = await chromium.launch();
     const directory = mkdtempSync(join(tmpdir(), "vize-first-newline-"));
     const observations = [];
+    const failures = [];
     let sequence = 0;
     function relink(code, imports) {
       return transformSync(code, {
@@ -152,81 +153,91 @@ test(
         const source = fixture.sourceFile
           ? original
           : `<script setup>\nconst a = "A"\n</script>\n<template>${fixture.template}</template>\n`;
-        const input = join(directory, "App.vue");
-        writeFileSync(input, source);
-        const modules = {};
-        for (const [mode, flags] of [
-          ["dom", []],
-          ["ssr", ["--ssr"]],
-          ["vapor", ["--vapor"]],
-          ["vaporSsr", ["--vapor", "--ssr"]],
-        ]) {
-          const output = join(directory, mode);
-          execFileSync(
-            process.env.VIZE_FIRST_NEWLINE_BIN,
-            ["build", "--no-config", "-o", output, ...flags, input],
-            { cwd: directory, encoding: "utf8", stdio: "pipe" },
+        try {
+          const input = join(directory, "App.vue");
+          writeFileSync(input, source);
+          const modules = {};
+          for (const [mode, flags] of [
+            ["dom", []],
+            ["ssr", ["--ssr"]],
+            ["vapor", ["--vapor"]],
+            ["vaporSsr", ["--vapor", "--ssr"]],
+          ]) {
+            const output = join(directory, mode);
+            execFileSync(
+              process.env.VIZE_FIRST_NEWLINE_BIN,
+              ["build", "--no-config", "-o", output, ...flags, input],
+              { cwd: directory, encoding: "utf8", stdio: "pipe" },
+            );
+            modules[mode] = readFileSync(join(output, "App.js"), "utf8");
+          }
+          const referenceDom = stock(source, false);
+          const referenceSsr = await serverHtml(stock(source, true));
+          const referenceVapor = await compileFirstNewlineVaporReference(
+            source,
+            "/first-newline/App.vue",
           );
-          modules[mode] = readFileSync(join(output, "App.js"), "utf8");
+          const dom = await observe(modules.dom, false);
+          const expectedDom = await observe(referenceDom, false);
+          assert.deepEqual(dom, expectedDom, `${fixture.id}: complete VDOM`);
+          assert.deepEqual(dom.pre, fixture.pre, `${fixture.id}: only first pre newline`);
+          assert.deepEqual(dom.textarea, fixture.textarea, `${fixture.id}: live textarea value`);
+          const vapor = await observe(modules.vapor, true);
+          const expectedVapor = await observe(
+            referenceVapor.code,
+            true,
+            null,
+            referenceVapor.helperCode,
+          );
+          assert.deepEqual(vapor.pre, expectedVapor.pre, `${fixture.id}: Vapor pre`);
+          assert.deepEqual(vapor.textarea, expectedVapor.textarea, `${fixture.id}: Vapor textarea`);
+          assert.deepEqual(vapor.diagnostics, []);
+          const ssr = await serverHtml(modules.ssr);
+          const vaporSsr = await serverHtml(modules.vaporSsr);
+          assert.equal(ssr, referenceSsr, `${fixture.id}: complete SSR HTML`);
+          assert.equal(
+            vaporSsr,
+            referenceVapor.serverHtml,
+            `${fixture.id}: complete Vapor-requested SSR HTML`,
+          );
+          const hydrated = await observe(modules.dom, false, ssr);
+          const expectedHydrated = await observe(referenceDom, false, referenceSsr);
+          assert.deepEqual(
+            hydrated,
+            expectedHydrated,
+            `${fixture.id}: actual HTML-parser hydration`,
+          );
+          if (fixture.id === "reporter") {
+            assert.deepEqual(hydrated.diagnostics, []);
+            assert(hydrated.retained);
+            const vaporHydrated = await observe(modules.vapor, true, vaporSsr);
+            assert.deepEqual(vaporHydrated.diagnostics, []);
+            assert(vaporHydrated.retained);
+            assert.deepEqual(vaporHydrated.pre, fixture.pre);
+            assert.deepEqual(vaporHydrated.textarea, fixture.textarea);
+          }
+          observations.push({
+            id: fixture.id,
+            sourceSha256: hash(source),
+            modules,
+            reference: { dom: referenceDom, ssr: referenceSsr, vapor: referenceVapor },
+            dom,
+            vapor,
+            ssr,
+            vaporSsr,
+            hydrated,
+          });
+        } catch (error) {
+          failures.push({ id: fixture.id, message: error.message, stack: error.stack });
+          observations.push({ id: fixture.id, sourceSha256: hash(source), error: error.message });
         }
-        const referenceDom = stock(source, false);
-        const referenceSsr = await serverHtml(stock(source, true));
-        const referenceVapor = await compileFirstNewlineVaporReference(
-          source,
-          "/first-newline/App.vue",
-        );
-        const dom = await observe(modules.dom, false);
-        const expectedDom = await observe(referenceDom, false);
-        assert.deepEqual(dom, expectedDom, `${fixture.id}: complete VDOM`);
-        assert.deepEqual(dom.pre, fixture.pre, `${fixture.id}: only first pre newline`);
-        assert.deepEqual(dom.textarea, fixture.textarea, `${fixture.id}: live textarea value`);
-        const vapor = await observe(modules.vapor, true);
-        const expectedVapor = await observe(
-          referenceVapor.code,
-          true,
-          null,
-          referenceVapor.helperCode,
-        );
-        assert.deepEqual(vapor.pre, expectedVapor.pre, `${fixture.id}: Vapor pre`);
-        assert.deepEqual(vapor.textarea, expectedVapor.textarea, `${fixture.id}: Vapor textarea`);
-        assert.deepEqual(vapor.diagnostics, []);
-        const ssr = await serverHtml(modules.ssr);
-        const vaporSsr = await serverHtml(modules.vaporSsr);
-        assert.equal(ssr, referenceSsr, `${fixture.id}: complete SSR HTML`);
-        assert.equal(
-          vaporSsr,
-          referenceVapor.serverHtml,
-          `${fixture.id}: complete Vapor-requested SSR HTML`,
-        );
-        const hydrated = await observe(modules.dom, false, ssr);
-        const expectedHydrated = await observe(referenceDom, false, referenceSsr);
-        assert.deepEqual(hydrated, expectedHydrated, `${fixture.id}: actual HTML-parser hydration`);
-        if (fixture.id === "reporter") {
-          assert.deepEqual(hydrated.diagnostics, []);
-          assert(hydrated.retained);
-          const vaporHydrated = await observe(modules.vapor, true, vaporSsr);
-          assert.deepEqual(vaporHydrated.diagnostics, []);
-          assert(vaporHydrated.retained);
-          assert.deepEqual(vaporHydrated.pre, fixture.pre);
-          assert.deepEqual(vaporHydrated.textarea, fixture.textarea);
-        }
-        observations.push({
-          id: fixture.id,
-          sourceSha256: hash(source),
-          modules,
-          reference: { dom: referenceDom, ssr: referenceSsr, vapor: referenceVapor },
-          dom,
-          vapor,
-          ssr,
-          vaporSsr,
-          hydrated,
-        });
       }
       if (process.env.VIZE_FIRST_NEWLINE_CAPTURE)
         writeFileSync(
           process.env.VIZE_FIRST_NEWLINE_CAPTURE,
           JSON.stringify(observations, null, 2),
         );
+      assert.deepEqual(failures, [], "every whole-SFC runtime control must qualify");
     } finally {
       rmSync(directory, { recursive: true, force: true });
       await browser.close();

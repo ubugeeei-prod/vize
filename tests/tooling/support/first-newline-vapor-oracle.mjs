@@ -26,8 +26,7 @@ const compiler = {
     assert.deepEqual(parsed.errors, []);
     assert.equal(parsed.descriptor.source, args[0], "complete unchanged SFC");
     // Choose the same explicit Vapor target as the CLI, preserving every block.
-    parsed.descriptor.vapor = true;
-    return parsed;
+    return { ...parsed, descriptor: { ...parsed.descriptor, vapor: true } };
   },
 };
 const context = {
@@ -41,7 +40,9 @@ const context = {
 };
 
 async function transform(source, filename, ssr) {
-  const plugin = pluginFactory({ compiler, template: { compilerOptions: { comments: false } } });
+  // Match the existing CLI target options: Vapor client parsing preserves
+  // comments; its public SSR request uses the ordinary SSR comment option.
+  const plugin = pluginFactory({ compiler, template: { compilerOptions: { comments: !ssr } } });
   plugin.configResolved({
     root: "/first-newline",
     command: "build",
@@ -91,5 +92,10 @@ export async function compileFirstNewlineVaporReference(source, filename) {
   app.config.errorHandler = (error) => diagnostics.push(String(error));
   const serverHtml = await renderToString(app);
   assert.deepEqual(diagnostics, []);
-  return { ...client, serverCode: server.code, serverHtml };
+  return {
+    ...client,
+    serverCode: server.code,
+    serverHtml,
+    commentOptions: { client: true, ssr: false },
+  };
 }
