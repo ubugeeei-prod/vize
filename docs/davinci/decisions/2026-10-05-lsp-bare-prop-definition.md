@@ -28,6 +28,11 @@ real emitted endpoints after import rewriting and UTF-16 round trips.
 The foreign-interface control imports its dependency into the native program;
 the corpus config matches the strict Vue-root fixture and imports retain their
 TypeScript ownership. Complete original sources and definition targets stay exact.
+Hosted required-native coverage passed the complete original definition case,
+then correctly rejected the unused foreign type import in the separate control.
+Give that imported type a real value/property use and assert its full different
+definition owner through each unsaved revision; retain empty publications and
+all original/native/shadow expectations instead of suppressing the diagnostic.
 
 The first hosted compile caught the new edge in exhaustive protocol and native
 inspection matches. Keep this Vize-only navigation edge out of upstream protocol

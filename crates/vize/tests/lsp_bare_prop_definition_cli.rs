@@ -56,7 +56,7 @@ fn actual_prop_owners_survive_utf16_unsaved_defaults_and_same_name_lexical_shado
                 .replace("  status?:", "  /* 😀 */ status?:")
                 .replace(
                     "</script>",
-                    "import type { ForeignProps } from \"./foreign.types\";\nfunction label(status: string) { return status; }\n</script>",
+                    "import type { ForeignProps } from \"./foreign.types\";\nconst foreign: ForeignProps = { status: 1 };\nvoid foreign.status;\nfunction label(status: string) { return status; }\n</script>",
                 )
                 .replace(
                     "</template>",
@@ -78,6 +78,7 @@ fn actual_prop_owners_survive_utf16_unsaved_defaults_and_same_name_lexical_shado
             };
             assert_ne!(expected["uri"], foreign_uri);
             assert_prop_results(&mut fixture, &source, &expected);
+            assert_foreign_results(&mut fixture, &source, &foreign_uri, foreign);
             assert_shadow_results(&mut fixture, &source);
             let changed = format!(
                 "<!-- 😀 current -->{newline}{}",
@@ -90,13 +91,23 @@ fn actual_prop_owners_survive_utf16_unsaved_defaults_and_same_name_lexical_shado
                 json!({ "uri": fixture.uri, "range": token_range(&changed, changed.find("status?:").unwrap(), 6) })
             };
             assert_prop_results(&mut fixture, &changed, &changed_expected);
+            assert_foreign_results(&mut fixture, &changed, &foreign_uri, foreign);
             assert_shadow_results(&mut fixture, &changed);
             assert_eq!(fixture.change(&source, 3), json!([]));
             assert_prop_results(&mut fixture, &source, &expected);
+            assert_foreign_results(&mut fixture, &source, &foreign_uri, foreign);
             assert_shadow_results(&mut fixture, &source);
             fixture.shutdown();
         }
     }
+}
+
+fn assert_foreign_results(fixture: &mut Fixture, source: &str, uri: &str, foreign: &str) {
+    let offset = source.find("foreign.status").unwrap() + "foreign.".len();
+    assert_eq!(
+        definition_at(fixture, source, offset + 1),
+        json!({ "uri": uri, "range": token_range(foreign, foreign.find("status?:").unwrap(), 6) })
+    );
 }
 
 fn assert_prop_results(fixture: &mut Fixture, source: &str, expected: &Value) {
