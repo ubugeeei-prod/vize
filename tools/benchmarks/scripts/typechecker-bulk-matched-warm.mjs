@@ -21,6 +21,7 @@ const baseline = "e8be174060515b5f2a97087f5dc8004dcbcae54e";
 const root = process.cwd();
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
 const source = git("rev-parse", "HEAD");
+const profileOnly = process.env.VIZE_BULK_COST_PROFILE_ONLY === "1";
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const compareText = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 assert.equal(source, process.env.GITHUB_SHA);
@@ -78,6 +79,7 @@ const project = (path) =>
 const packets = [];
 const receipt = {
   schemaVersion: 1,
+  instrumentationOnly: profileOnly,
   source,
   baseline,
   ancestry,
@@ -146,9 +148,13 @@ try {
     receipt,
     persist,
   });
-  // Three authored pairs alternate execution order on this one runner.
-  for (let pair = 0; pair < 3; pair++) {
-    const order = pair % 2 === 0 ? ["original", "bulk"] : ["bulk", "original"];
+  // The opt-in observation pass does not make a matched timing comparison.
+  for (let pair = 0; pair < (profileOnly ? 1 : 3); pair++) {
+    const order = profileOnly
+      ? ["bulk"]
+      : pair % 2 === 0
+        ? ["original", "bulk"]
+        : ["bulk", "original"];
     const packet = { pair, order, arms: {} };
     packets.push(packet);
     for (const arm of order) {
@@ -177,6 +183,7 @@ try {
             VIZE_TIER_L_CORSA_BIN: native,
             VIZE_RUNTIME_NODE_MODULES: runtime,
             VIZE_TIER_L_METRICS_DIR: dir,
+            VIZE_CANON_BULK_COST_TRACE: profileOnly ? "1" : "0",
           },
           encoding: "utf8",
           maxBuffer: 64 * 1024 * 1024,
@@ -193,6 +200,12 @@ try {
         signal: result.signal,
         error: result.error?.message,
         metrics,
+        costObservations: profileOnly
+          ? (result.stderr ?? "")
+              .split("\n")
+              .filter((line) => line.startsWith("bulk-cost-observation "))
+              .map((line) => JSON.parse(line.slice("bulk-cost-observation ".length)))
+          : [],
         nativeProcessesBefore: before,
         nativeShaBefore,
         nativeShaAfter: digest(readFileSync(native)),
@@ -219,6 +232,15 @@ try {
         injectedFile: "apps/web-antd/src/__vize_batch_incremental_oracle__.vue",
       });
     }
+    if (profileOnly) {
+      assert.equal(packet.arms.bulk.costObservations.length, 3);
+      assert(
+        packet.arms.bulk.costObservations.every(
+          (row) => row.schemaVersion === 1 && row.outcome === "complete",
+        ),
+      );
+      continue;
+    }
     assert.deepEqual(packet.arms.original.metrics.budget, packet.arms.bulk.metrics.budget);
     assert.equal(packet.arms.original.metrics.budgetScale, packet.arms.bulk.metrics.budgetScale);
     assert.deepEqual(
@@ -227,29 +249,34 @@ try {
     );
   }
   const median = (values) => [...values].sort((a, b) => a - b)[1];
-  receipt.measurements = ["cold", "brokenWarm", "repairedWarm"].map((lane) => {
-    const durations = (arm) =>
-      packets.map(
-        (packet) => packet.arms[arm].metrics.lanes.find((row) => row.name === lane).durationMs,
-      );
-    const original = durations("original");
-    const bulk = durations("bulk");
-    return {
-      lane,
-      originalMs: original,
-      bulkMs: bulk,
-      originalMedianMs: median(original),
-      bulkMedianMs: median(bulk),
-      ratio: median(bulk) / median(original),
-    };
-  });
-  receipt.warmGainObserved = receipt.measurements
-    .filter((row) => row.lane !== "cold")
-    .every((row) => row.bulkMedianMs < row.originalMedianMs);
+  receipt.measurements = profileOnly
+    ? []
+    : ["cold", "brokenWarm", "repairedWarm"].map((lane) => {
+        const durations = (arm) =>
+          packets.map(
+            (packet) => packet.arms[arm].metrics.lanes.find((row) => row.name === lane).durationMs,
+          );
+        const original = durations("original");
+        const bulk = durations("bulk");
+        return {
+          lane,
+          originalMs: original,
+          bulkMs: bulk,
+          originalMedianMs: median(original),
+          bulkMedianMs: median(bulk),
+          ratio: median(bulk) / median(original),
+        };
+      });
+  receipt.warmGainObserved =
+    !profileOnly &&
+    receipt.measurements
+      .filter((row) => row.lane !== "cold")
+      .every((row) => row.bulkMedianMs < row.originalMedianMs);
   receipt.cancellationScope =
     "Existing 30-minute job limit contains hangs; job cancellation cannot guarantee final PID census, cleanup or artifact upload. No execution-time fit claim.";
-  receipt.scope =
-    "Matched BatchTypeChecker integration timings only; whole681 diagnostic custody is the separate strict law. No CLI/LSP gain, 10x or default claim.";
+  receipt.scope = profileOnly
+    ? "One instrumented original BatchTypeChecker integration pass; observer duration includes instrumentation overhead. No matched/gain/CLI/LSP/default acceptance; original budgets and whole681 law stay mandatory."
+    : "Matched BatchTypeChecker integration timings only; whole681 diagnostic custody is the separate strict law. No CLI/LSP gain, 10x or default claim.";
   persist();
   console.log(
     JSON.stringify({

@@ -330,3 +330,7 @@ adds no production path, pipeline stage, SDK or dependency. Cargo's
 and [compiler artifact identity](https://doc.rust-lang.org/cargo/reference/external-tools.html#artifact-messages)
 are the primary interface authorities. Genuine rebuilt matched gain and exact-head
 source/native/full/protected delivery remain required; #7698 stays open.
+
+[The genuine regression and bounded cost observation](./2026-10-06-native-bulk-cost.md)
+retain source9f5e distinct-binary slower results and one default-off operation
+observation pass; optimization acceptance failed and #8038 stays Draft/offqueue.

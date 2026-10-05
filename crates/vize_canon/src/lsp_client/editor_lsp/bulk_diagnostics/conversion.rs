@@ -1,6 +1,6 @@
 //! Native categories projected using the pinned LSP converter's semantics.
 
-use super::positions::Positions;
+use super::{cost::Cost, positions::Positions};
 use crate::file_uri::path_to_file_uri;
 use lsp_types::{
     Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, Location, NumberOrString, Uri,
@@ -52,18 +52,33 @@ pub(super) fn project_diagnostics(
     }
 }
 
+#[cfg(test)]
 pub(super) fn project_diagnostics_with_source<E>(
     categories: &[Vec<NativeDiagnostic>],
     uris: &[String],
     documents: &FxHashMap<String, String>,
-    mut source: impl FnMut(&str) -> Result<Option<Positions>, E>,
+    source: impl FnMut(&str) -> Result<Option<Positions>, E>,
 ) -> Result<Option<Vec<Vec<Diagnostic>>>, E> {
+    project_diagnostics_observed(categories, uris, documents, source, None)
+}
+
+pub(super) fn project_diagnostics_observed<E>(
+    categories: &[Vec<NativeDiagnostic>],
+    uris: &[String],
+    documents: &FxHashMap<String, String>,
+    mut source: impl FnMut(&str) -> Result<Option<Positions>, E>,
+    observer: Option<&Cost>,
+) -> Result<Option<Vec<Vec<Diagnostic>>>, E> {
+    let position_start = observer.and_then(Cost::tick);
     let mut positions = FxHashMap::default();
     for (uri, text) in documents {
         let Some(text_positions) = Positions::new(text) else {
             return Ok(None);
         };
         positions.insert(uri.clone(), text_positions);
+    }
+    if let Some(cost) = observer {
+        cost.duration("overlay-position-indexes", position_start);
     }
     let mut by_uri: FxHashMap<String, Vec<Diagnostic>> = FxHashMap::default();
     for uri in uris {
