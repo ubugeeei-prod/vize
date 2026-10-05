@@ -30,10 +30,12 @@ impl NativeOracle {
         let uri = file_uri(&root.path().join(format!("src/Oracle.{extension}"))).to_string();
         let mut process = LspProcess::spawn_native(root.path(), executable);
         process.send(json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{
-            "rootUri":file_uri(root.path()),"capabilities":{},
+            "processId":null,"rootUri":file_uri(root.path()),
+            "capabilities":{"textDocument":{"diagnostic":{"dynamicRegistration":false,"relatedDocumentSupport":true,"relatedInformation":true}}},
             "initializationOptions":{"userPreferences":{"tsserver":{"automaticTypeAcquisition":{"enabled":false}},"inlayHints":{"variableTypes":{"enabled":true}}}}
         }}));
-        assert!(process.recv_response(1)["result"].is_object());
+        let initialized = process.recv_response(1);
+        assert!(initialized["result"].is_object(), "{initialized:#}");
         process.send(json!({"jsonrpc":"2.0","method":"initialized","params":{}}));
         Self {
             _root: root,
@@ -44,7 +46,13 @@ impl NativeOracle {
         }
     }
 
-    pub fn hints(&mut self, source: &str, language: &str, range: Value) -> Value {
+    pub fn hints(
+        &mut self,
+        source: &str,
+        language: &str,
+        range: Value,
+        expected_diagnostics: Value,
+    ) -> Value {
         self.version += 1;
         if self.version == 1 {
             std::fs::write(
@@ -71,8 +79,7 @@ impl NativeOracle {
         }
         let diagnostics = self.request("textDocument/diagnostic", json!({}));
         assert_eq!(
-            diagnostics,
-            json!({"kind":"full","items":[]}),
+            diagnostics, expected_diagnostics,
             "native whole diagnostics: {diagnostics:#}"
         );
         self.request("textDocument/inlayHint", json!({"range":range}))

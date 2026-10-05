@@ -47,6 +47,12 @@ frames. Original inputs/configs and whole native/actual vectors are saved before
 URI normalization. After both readers join, each process retains exit status and
 raw stderr, plus the executable hash, version output and harness source identity.
 Both native and Vize shutdown must succeed. These captures run on Actions.
+The stock oracle initializes with the pinned required nullable `processId` and
+declared pull-diagnostic capabilities. Its retained bare script has two unused
+binding suggestions for `label`/`items`, whose uses occur in the SFC template.
+Assert that complete native diagnostic vector separately from the complete clean
+SFC diagnostic vector. Authored plain JS/TS controls consume their computed value;
+no suggestion/style preference is disabled and no diagnostic is filtered.
 Checker-disabled and genuinely unavailable-runtime original RPCs are retained. Existing prop/i18n/resident
 laws and the entire legacy differential corpus remain required.
 

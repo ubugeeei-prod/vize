@@ -10,5 +10,8 @@ workspace store. It compares complete structured vectors with stock native hints
 on the retained script bytes and tests original/edit/repair, CRLF, ranges and
 plain JS/TS alias/generic controls. Separate source projection laws preserve
 UTF-16 positions and every optional field, and refuse synthetic writable spans.
+The bare stock script retains the complete two-unused-binding diagnostic vector
+in `native-script-diagnostics.json`; the SFC template consumes those bindings.
+Plain authored variants consume their computed value without suppressing suggestions.
 Native execution and release inclusion remain pending until exact-head Actions
 and the protected delivery checks complete.

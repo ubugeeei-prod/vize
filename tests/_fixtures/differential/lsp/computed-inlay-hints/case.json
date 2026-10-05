@@ -24,5 +24,10 @@
     "sha256": "1b59a25a14a75793ce05e9ea89ac896a03398d49cc382c01eb19fc9168d46377",
     "literalBytesProvided": false,
     "omittedOptions": "not inferred from the issue"
+  },
+  "stockScriptDiagnostics": {
+    "path": "native-script-diagnostics.json",
+    "sha256": "72dfb90abcfaa3971ba4a5d46d8103998d37dcb553601afd446594505875d1f8",
+    "derivation": "Retained bare script has unused label/items; native7.0.2 includes suggestions and pull conversion preserves complete range/code/severity/message/source. Original SFC template consumes both."
   }
 }

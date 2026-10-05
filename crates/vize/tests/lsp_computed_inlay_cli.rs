@@ -28,6 +28,9 @@ const CONFIG: &str = include_str!(
 const VIZE_CONFIG: &str = include_str!(
     "../../../tests/_fixtures/differential/lsp/computed-inlay-hints/vize.config.json.txt"
 );
+const STOCK_SCRIPT_DIAGNOSTICS: &str = include_str!(
+    "../../../tests/_fixtures/differential/lsp/computed-inlay-hints/native-script-diagnostics.json"
+);
 
 fn workspace() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -113,7 +116,12 @@ fn original_computed_types_match_complete_stock_native_hints_after_edits_and_ran
                 assert_eq!(fixture.change(&current, version as i64 + 1), json!([]));
             }
             let original_script = script(&current);
-            let expected = native.hints(&original_script, "typescript", range(&original_script));
+            let expected = native.hints(
+                &original_script,
+                "typescript",
+                range(&original_script),
+                serde_json::from_str(STOCK_SCRIPT_DIAGNOSTICS).unwrap(),
+            );
             assert_eq!(
                 expected.as_array().unwrap().len(),
                 3,
@@ -177,12 +185,12 @@ fn plain_ts_and_js_keep_checker_generic_alias_types_and_utf16_ranges() {
         (
             "ts",
             "typescript",
-            "import { computed } from 'vue';\r\ntype Row = { id: number };\r\n/*😀*/ const café = computed(() => new Map<string, Row[]>([['rows', [{id:1}]]]));\r\n",
+            "import { computed } from 'vue';\r\ntype Row = { id: number };\r\n/*😀*/ const café = computed(() => new Map<string, Row[]>([['rows', [{id:1}]]]));\r\nvoid café.value;\r\n",
         ),
         (
             "js",
             "javascript",
-            "import { computed } from 'vue';\r\n/*😀*/ const café = computed(() => ['Ada', 'Linus']);\r\n",
+            "import { computed } from 'vue';\r\n/*😀*/ const café = computed(() => ['Ada', 'Linus']);\r\nvoid café.value;\r\n",
         ),
     ] {
         let mut config: Value = serde_json::from_str(CONFIG).unwrap();
@@ -198,7 +206,12 @@ fn plain_ts_and_js_keep_checker_generic_alias_types_and_utf16_ranges() {
         let uri = fixture.write_file(&format!("src/Plain.{extension}"), source);
         assert_eq!(fixture.open_file_as(&uri, source, language), json!([]));
         let mut native = NativeOracle::new(&runtime, &vue, &config, extension);
-        let expected = native.hints(source, language, range(source));
+        let expected = native.hints(
+            source,
+            language,
+            range(source),
+            json!({"kind":"full","items":[]}),
+        );
         assert_eq!(expected.as_array().unwrap().len(), 1);
         let actual = fixture.request_file_with(
             "textDocument/inlayHint",

@@ -46,8 +46,19 @@ const doubled = computed(() => count.value * 2)
     );
     assert_eq!(
         labels,
-        vec![": Ref<number>"],
-        "unknown computed types are not syntax-proven"
+        vec![": Ref<number>", ": ComputedRef<number>"],
+        "the retained arithmetic control has a known numeric result"
+    );
+}
+
+#[test]
+fn unknown_imported_computed_result_is_not_guessed() {
+    let content = "<script setup lang=\"ts\">\nimport { computed } from 'vue';\nimport { readProfile } from './profile';\nconst profile = computed(readProfile);\n</script>\n";
+    let uri = Url::parse("file:///unknown-computed.vue").unwrap();
+    let range = Range::new(Position::new(0, 0), Position::new(6, 0));
+    assert_eq!(
+        InlayHintService::get_hints(&super::fresh_state(), content, &uri, range),
+        Vec::new()
     );
 }
 
