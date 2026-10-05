@@ -35,3 +35,8 @@ must be empty. A pure admission law guards local/native attribute scope.
 Exact-source Actions, unchanged protected instruction ceilings, actual merge,
 release and installed editor proof remain pending. This is the current legacy
 product correction without native or complete fix-history credit; #6883 stays open.
+
+The prospective prefix at `b8bca915` conflicts only in the shared canonical
+record. Remove the queue entry and relocate the complete owned clause to its
+existing relevant paragraph, preserving every clause and all source/corpus/RPC
+bytes. Fresh exact-head Actions and protected delivery remain mandatory.
