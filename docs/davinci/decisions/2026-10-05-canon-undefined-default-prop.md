@@ -129,3 +129,10 @@ editor hover with exact source/config bytes. Replay onto signed main7c87
 repairs only canonical composition, preserving all 13 owned non-document files
 and every incoming350-line prefix. The replay requires its own fresh Actions;
 no historical runtime receipt transfers to protected admission.
+
+The admission successor rebases onto actual signed main d8c3 and moves the complete
+owned canonical clauses to the existing script-side sentence. The earlier own
+UNMERGEABLE entry behind #8020 was immediately removed; queued branches are not
+source parents. Original source, all whole native/editor vectors and three
+mandatory runtime snapshots stay byte-exact. Fresh Actions and clean prospective
+ordered queue composition are required before readmission.
