@@ -137,7 +137,8 @@ async function component(code) {
             const moduleName =
               path.node.source.value === "vue"
                 ? "vue"
-                : path.node.source.value === "@vue/server-renderer"
+                : path.node.source.value === "@vue/server-renderer" ||
+                    path.node.source.value === "vue/server-renderer"
                   ? "server"
                   : null;
             assert.ok(moduleName, path.node.source.value);
