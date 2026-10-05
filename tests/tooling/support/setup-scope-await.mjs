@@ -55,7 +55,7 @@ assert.equal(vue.version, "3.5.38");
 assert.equal(compiler.version, vue.version);
 globalThis.__setupAwaitModules = { vue, server };
 const receipt = {
-  schema: "vize.setup-scope-await-runtime-v1",
+  schema: "vize.setup-scope-await-runtime-v2",
   complete: false,
   identities,
   typescriptVersion: ts.version,
