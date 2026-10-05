@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -22,14 +23,52 @@ function distHashes(directory) {
 }
 
 export function verifyNuxtAutoInitConfig(fixture, artifacts) {
-  const run = spawnSync(process.execPath, [fileURLToPath(import.meta.url), fixture, artifacts], {
-    cwd: fixture,
-    stdio: "inherit",
-    timeout: 60_000,
-  });
-  assert.equal(run.error, undefined);
-  assert.equal(run.signal, null);
-  assert.equal(run.status, 0);
+  // Vite+ 0.1.24 selects workspace-root lint settings. A nested reproduction
+  // otherwise runs this repository's rules instead of the issue's Vite config.
+  const project = fs.mkdtempSync(path.join(os.tmpdir(), "vize-nuxt-auto-init-"));
+  try {
+    const tracked = spawnSync("git", ["ls-files", "-z", "--", path.relative(root, fixture)], {
+      cwd: root,
+      encoding: "utf8",
+    });
+    assert.equal(tracked.error, undefined);
+    assert.equal(tracked.status, 0);
+    const original = {};
+    for (const file of tracked.stdout.split("\0").filter(Boolean)) {
+      const relative = path.relative(fixture, path.join(root, file));
+      const bytes = fs.readFileSync(path.join(root, file));
+      const target = path.join(project, relative);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, bytes, { flag: "wx" });
+      original[relative] = hash(bytes);
+    }
+    assert.equal(Object.keys(original).length, 5);
+    const modules = path.join(project, "node_modules");
+    fs.mkdirSync(modules);
+    for (const name of fs.readdirSync(path.join(fixture, "node_modules"))) {
+      fs.symlinkSync(path.join(fixture, "node_modules", name), path.join(modules, name));
+    }
+    assert.equal(fs.existsSync(path.join(modules, "vite-plus")), false);
+    fs.symlinkSync(path.join(root, "node_modules/vite-plus"), path.join(modules, "vite-plus"));
+    const run = spawnSync(process.execPath, [fileURLToPath(import.meta.url), project, artifacts], {
+      cwd: project,
+      stdio: "inherit",
+      timeout: 60_000,
+    });
+    assert.equal(run.error, undefined);
+    assert.equal(run.signal, null);
+    assert.equal(run.status, 0);
+    for (const [file, digest] of Object.entries(original)) {
+      assert.equal(hash(fs.readFileSync(path.join(project, file))), digest);
+      assert.equal(hash(fs.readFileSync(path.join(fixture, file))), digest);
+    }
+    fs.writeFileSync(
+      path.join(artifacts, "issue-7829-original-project-inventory.json"),
+      JSON.stringify(original, null, 2) + "\n",
+    );
+  } finally {
+    fs.rmSync(project, { recursive: true });
+  }
 }
 
 async function runProbe(fixture, artifacts) {

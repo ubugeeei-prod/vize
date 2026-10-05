@@ -41,14 +41,32 @@ default/disabled controls pass; the corrected generator passes all seventeen
 locally using the actual current shared preset source.
 
 The existing locked Nuxt 2 webpack/SSR fixture and route assertions are
-preserved. A separate child rooted in that real project exclusively installs
-the retained Vite config and temporary Vue input, executes actual `vp lint`
+preserved. A separate child retains all five original tracked project files outside the
+repository workspace and links the authentic installed fixture packages plus
+pinned Vite+ tooling. It exclusively installs the retained Vite config and
+temporary Vue input, executes actual `vp lint`
 before and after genuine lint-enabled Nuxt loading, and compares complete
 diagnostic witnesses without filtering. It verifies the entire installed
 candidate Nuxt dist inventory, retains raw outputs and the generated artifact,
 and preserves original project/config bytes. Published plugin/native 0.429.1
 remain a qualified configuration oracle; no current native build is claimed.
 Hosted proof, protected checks, signed delivery and publication remain gates.
+
+Initial source `db59c54a`, Nuxt 2 run `37246574823`, passed all 135 unit laws,
+the original webpack/SSR assertions and the inherited genuine Nuxt 2/3/4 plan
+controls. Its new Vite+ before probe returned exit 0 and no diagnostics, so it
+failed before new Nuxt loading; that is retained failed acceptance, not a
+positive configuration proof. Pinned Vite+ 0.1.24 documents
+[workspace-root configuration with overrides](https://github.com/voidzero-dev/vite-plus/blob/v0.1.24/docs/config/lint.md).
+The nested fixture selected repository lint authority. An independent tiny
+standalone control with the exact original 238-byte config attempts its bare
+plugin load, establishing a different configuration path. The correction
+copies the complete five-file original project outside workspace discovery,
+links the real installed packages and checks every original file hash again
+after genuine Nuxt loading. It preserves the positive missing-key expectation,
+complete before/after witnesses, original config bytes and all production laws.
+Fresh hosted execution remains required; no zero-diagnostic assertion replaces
+the failed positive probe.
 
 ## Delivery checkpoint for the preceding Nuxt fix
 
