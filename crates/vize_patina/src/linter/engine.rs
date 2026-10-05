@@ -61,6 +61,7 @@ pub(crate) struct SfcTemplateLintInput<'a> {
 #[derive(Clone, Copy)]
 pub(crate) struct TemplateRuleEnv<'a> {
     pub sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
+    pub art_script_analysis: Option<&'a Croquis>,
     pub dialect: VueDialect,
     /// Markup rules `lint_sfc` runs on the L2 facade instead of the visitor.
     /// Empty on the raw-template and standalone-HTML lanes.
@@ -71,6 +72,7 @@ impl<'a> TemplateRuleEnv<'a> {
     const fn relief(dialect: VueDialect) -> Self {
         Self {
             sfc_descriptor: None,
+            art_script_analysis: None,
             dialect,
             facade_rules: &[],
         }
@@ -234,6 +236,7 @@ impl Linter {
         ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
         ctx.set_dialect(env.dialect);
+        ctx.art_script_analysis = env.art_script_analysis;
         if let Some(descriptor) = env.sfc_descriptor {
             ctx.set_sfc_template_descriptor(descriptor);
         }

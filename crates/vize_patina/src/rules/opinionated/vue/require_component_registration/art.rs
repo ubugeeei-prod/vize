@@ -14,16 +14,18 @@ pub(super) fn is_context(context: &LintContext<'_>) -> bool {
         })
 }
 
-fn analysis<'a>(context: &'a LintContext<'_>) -> Option<&'a Croquis> {
-    if !is_context(context) {
-        return None;
+pub(super) fn analysis<'a>(context: &'a LintContext<'_>) -> Option<&'a Croquis> {
+    if is_context(context) {
+        context.art_script_analysis
+    } else {
+        context.analysis()
     }
-    context.analysis()
 }
 
 pub(super) fn setup_bindings(context: &LintContext<'_>) -> Option<Vec<String>> {
     Some(
-        analysis(context)?
+        analysis(context)
+            .filter(|_| is_context(context))?
             .scopes
             .iter()
             .filter(|scope| scope.kind == ScopeKind::ScriptSetup)
@@ -34,6 +36,9 @@ pub(super) fn setup_bindings(context: &LintContext<'_>) -> Option<Vec<String>> {
 }
 
 pub(super) fn is_target(context: &LintContext<'_>, tag: &str) -> bool {
+    if !is_context(context) {
+        return false;
+    }
     if let Some(art) = analysis(context).and_then(|analysis| analysis.macros.define_art()) {
         return super::component_name_matches(tag, art.component_name.as_str());
     }

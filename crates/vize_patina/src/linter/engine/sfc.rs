@@ -21,6 +21,7 @@ impl Linter {
             input.analysis,
             TemplateRuleEnv {
                 sfc_descriptor: input.descriptor,
+                art_script_analysis: None,
                 dialect: VueDialect::Vue,
                 facade_rules: facade::RULES,
             },
@@ -227,6 +228,7 @@ impl Linter {
             true,
             TemplateRuleEnv {
                 sfc_descriptor: None,
+                art_script_analysis: None,
                 dialect: VueDialect::Vue,
                 facade_rules: facade::RULES,
             },

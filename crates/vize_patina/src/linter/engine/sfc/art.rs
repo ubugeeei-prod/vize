@@ -2,7 +2,7 @@
 
 use vize_armature::Parser;
 use vize_atelier_sfc::SfcDescriptor;
-use vize_croquis::{Croquis, Drawer, DrawerOptions};
+use vize_croquis::Croquis;
 use vize_l0::{Allocator, SourceRoot};
 
 use super::super::{TemplateAnalysis, TemplateRuleEnv, offset_result};
@@ -60,11 +60,6 @@ impl Linter {
         let allocator = Allocator::with_capacity((source.len() * 4).max(self.initial_capacity));
         let (root, errors) = Parser::new(&allocator, source).parse();
         let fatal = Self::has_fatal_template_parse_errors(&errors);
-        let analysis = summary.filter(|_| !fatal).map(|summary| {
-            let mut drawer = Drawer::with_summary(DrawerOptions::for_lint(), summary.clone(), true);
-            drawer.draw_template(&root);
-            drawer.finish()
-        });
         let mut parsed = Self::template_parse_lint_result(filename, source.len(), &errors);
         let offset = SourceRoot::new(descriptor.source.as_ref())
             .unwrap()
@@ -79,13 +74,12 @@ impl Linter {
             &root,
             if fatal {
                 TemplateAnalysis::Disabled
-            } else if let Some(analysis) = analysis.as_ref() {
-                TemplateAnalysis::Precomputed(analysis)
             } else {
                 TemplateAnalysis::Lazy
             },
             TemplateRuleEnv {
                 sfc_descriptor: Some(descriptor),
+                art_script_analysis: summary.filter(|_| !fatal),
                 dialect: vize_l0::dialect::VueDialect::Vue,
                 facade_rules: super::facade::RULES,
             },

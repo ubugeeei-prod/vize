@@ -7,17 +7,21 @@ The actual Art consumer passed a template-only context for each variant.
 Retain the original physical filename, descriptor and fragment root. Reuse
 an existing shared descriptor, parse each genuine variant exactly once,
 and analyze original descriptor scripts once when semantic rules demand
-it. Seed each original fragment's own Drawer from that summary; do not
-manufacture an SFC/template, rename the file or expose another variant's
-template scopes. Genuine script scopes provide imports and local setup
-values without per-variant script parsing.
+it. A private borrowed script-analysis slot supplies the actual registration
+callback; each original fragment retains its existing independent template
+Drawer/facts. Do not manufacture an SFC/template, rename the file or expose
+another variant's template scopes. Genuine script scopes provide imports
+and local setup values without per-variant script parsing. This is not a
+general joined analysis provider: other callbacks keep their existing
+fragment-only semantics.
 
 The original summary's defineArt macro supplies its actual target. An
 actual component attribute belongs only to the descriptor custom block
 containing that original fragment. Art file stems cannot grant implicit
 self registration; ordinary Vue recursive references remain unchanged.
-The existing component-source naming policy applies to those literal
-paths; general runtime/module resolution is not claimed.
+The existing Croquis literal-path naming helper handles these authored
+ASCII paths. General JavaScript runtime normalization/module resolution
+is not claimed.
 
 A genuine SourceRoot slice supplies template diagnostics' physical offset.
 Ordinary owned template content retains the existing descriptor offset
@@ -30,10 +34,11 @@ filter is used.
 
 Retain all six original files from the issues in
 `crates/vize_patina/tests/fixtures/musea-variant-bindings/`, with exact lengths,
-SHA-256 hashes and URLs. Seven complete result laws cover original imports,
+SHA-256 hashes and URLs. Eight complete result laws cover original imports,
 macro/attribute targets with unrelated physical filenames, missing imports,
 false Art self references, distinct UTF-8/CRLF variant positions, independent
-Art blocks, real local/type-only bindings and ordinary Vue registration.
+Art blocks, real local/type-only bindings, ordinary Vue registration and
+independent fragment facts with original imported registration.
 The owned Patina consumer ledger is scanner-generated; no foreign rows,
 ceilings or fixture captures are changed.
 
@@ -45,3 +50,18 @@ variant reads and one physical script report. Its dependent child must use
 a genuine native Stack if delivered before this parent actually merges.
 No default/native/SDK/fix-history closure, compiler behavior change or
 performance improvement follows from this source preparation.
+
+## Rejected-source ownership correction
+
+[Paired #7897 receipt](https://github.com/ubugeeei-prod/vize/issues/7897#issuecomment-5987783863)
+and [#7900 receipt](https://github.com/ubugeeei-prod/vize/issues/7900#issuecomment-5987784057)
+retain the exact `9b599f03` rejection: Check 37260081441, seeded recall
+37260080820 and Nuxt3 37260080864 all fail the same E0308. `Croquis` does
+not implement Clone; cloning its reference cannot seed an owned Drawer.
+The original seven laws did not execute in that rejected source. The
+private borrowed context correction avoids a public clone or repeated
+script analysis. The new eighth law observes each genuine variant's
+independent template facts alongside a complete empty registration result.
+All original inputs, prior laws and ceilings stay intact; fresh hosted
+execution is required. New dependent publication is paused until this
+existing parent actually merges under the PR-backlog priority.

@@ -121,3 +121,54 @@ fn ordinary_vue_import_registration_and_recursive_filename_reference_are_unchang
         &expected("Card.vue", &[start], "MissingPanel"),
     );
 }
+
+#[test]
+fn each_fragment_retains_its_own_template_facts_and_shared_original_registration() {
+    use std::sync::Mutex;
+    use vize_croquis::ScopeKind;
+    use vize_patina::{LintContext, Rule, RuleCategory, RuleMeta, RuleRegistry, Severity};
+    use vize_relief::RootNode;
+
+    static AUDIT: RuleMeta = RuleMeta {
+        name: "vue/no-undefined-refs",
+        description: "Retain complete original fragment facts",
+        category: RuleCategory::Recommended,
+        fixable: false,
+        default_severity: Severity::Warning,
+    };
+    type FragmentFacts = Vec<(Vec<vize_l0::String>, usize)>;
+    static FACTS: Mutex<FragmentFacts> = Mutex::new(Vec::new());
+    struct Audit;
+    impl Rule for Audit {
+        fn meta(&self) -> &'static RuleMeta {
+            &AUDIT
+        }
+        fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
+            let analysis = ctx.analysis().expect("actual original fragment analysis");
+            let mut components = analysis.used_components.iter().cloned().collect::<Vec<_>>();
+            components.sort();
+            let locals = analysis
+                .scopes
+                .iter()
+                .filter(|scope| scope.kind == ScopeKind::VFor)
+                .count();
+            FACTS.lock().unwrap().push((components, locals));
+        }
+    }
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(
+        vize_patina::rules::opinionated::vue::RequireComponentRegistration::default(),
+    ));
+    registry.register(Box::new(Audit));
+    let linter = Linter::with_registry(registry)
+        .with_enabled_rules(Some(vec![RULE.into(), AUDIT.name.into()]));
+    let source = "<script setup>import MyIcon from './MyIcon.vue';const rows = [1];</script>\n<art><variant name=\"One\"><MyIcon v-for=\"row in rows\" :key=\"row\"/></variant><variant name=\"Two\"><MyIcon/></variant></art>";
+    compare(
+        &linter.lint_sfc(source, "Gallery.art.vue"),
+        &expected("Gallery.art.vue", &[], ""),
+    );
+    assert_eq!(
+        *FACTS.lock().unwrap(),
+        vec![(vec!["MyIcon".into()], 1), (vec!["MyIcon".into()], 0)]
+    );
+}

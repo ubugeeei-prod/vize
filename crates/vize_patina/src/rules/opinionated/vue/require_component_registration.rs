@@ -261,7 +261,7 @@ impl Rule for RequireComponentRegistration {
                     continue;
                 }
 
-                if ctx.analysis().is_some_and(|analysis| {
+                if art::analysis(ctx).is_some_and(|analysis| {
                     self.is_template_visible_imported_component(ctx, analysis, &tag)
                         || self.is_options_api_registered_component(analysis, &tag)
                 }) || async_components
