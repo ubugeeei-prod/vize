@@ -5,7 +5,7 @@
 > responsibilities and CI tiers. Where it conflicts with older pages (S0–S4 naming, the `vize_davinci` substrate crate, Folio naming, S4 placement,
 > charter rows #1, #5 and #11), this record wins until those pages are rewritten. Each section links to the issue that tracks the work.
 > The [Open Questions entry](../open-questions.md#level-restructure-2026-09-27)
-> records what changed against the charter. [First newline in pre and textarea, with owner whitespace modes](./2026-10-05-pre-textarea-first-newline.md).
+> records what changed against the charter. [First newline in pre and textarea, with owner modes and normalized text runs](./2026-10-05-pre-textarea-first-newline.md).
 
 Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (restructure), [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) (products), [#6828](https://github.com/ubugeeei-prod/vize/issues/6828) (legacy deletion), [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) (multi-framework), [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) (CI). [SSR option compatibility](./2026-09-27-ssr-source-compatibility.md). [CLI failure oracle custody](./2026-10-05-cli-build-failure-oracles.md) retains the original create-vue/Vue Router whole API results, authored diagnostic/code/hash vectors and repair controls while asserting actual failed CLI status/no artifact/full stderr; automatic source-built tooling and unchanged protected gates must pass before release recovery. The failed first source run retains all seven authentic original runtime passes and strengthens the exact dependency guard to require added pinned Router hydration; fresh corrected-head acceptance remains required.
 

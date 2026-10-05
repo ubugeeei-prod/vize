@@ -133,3 +133,12 @@ checks RCDATA inside pre, restored pre descendants and normal sibling text.
 Keep all original 4,296+12 witnesses, 17 complete runtime controls and 104 fixed
 measurement fixtures, windows and ceilings. Fresh source Actions, independent
 peer review and all 104 measurements must qualify the repair before readmission.
+
+The first owner-mode repair measured 5,344,726 instructions in all three runs,
+still above the same ceiling. Native text runs also rescanned static members
+that the complete whitespace plan had already returned as normalized Content.
+Skip this second collapse only when every static member is planned Content
+and no adjacent static members fuse. Any raw Keep member or static fusion
+retains the original collapse, including deferred groups and comment seams.
+The owner lifecycle and all text facts, ranges, provenance and maps stay intact.
+Re-run the same source/runtime suites and all 104 unchanged measurement gates.

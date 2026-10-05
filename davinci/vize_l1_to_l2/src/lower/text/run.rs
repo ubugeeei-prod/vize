@@ -81,6 +81,7 @@ pub(crate) fn lower_text_run<'a>(
     // parts still tile the merged span; dropped bytes with no following
     // member stay outside the unit.
     let mut parts: StdVec<TextPart> = StdVec::new();
+    let mut needs_collapse = false;
     let mut members = 0usize;
     let mut i = start;
     let mut end = 0u32;
@@ -133,11 +134,15 @@ pub(crate) fn lower_text_run<'a>(
                 }
                 let content = match action {
                     TextAction::Content(content) => content,
-                    _ => token.text,
+                    _ => {
+                        needs_collapse = true;
+                        token.text
+                    }
                 };
                 fold_gap(&mut parts, &mut pending_gap);
                 match parts.last_mut() {
                     Some(last) if !last.dynamic => {
+                        needs_collapse = true;
                         last.text.push_str(content);
                         last.span.end = span.end;
                     }
@@ -165,7 +170,9 @@ pub(crate) fn lower_text_run<'a>(
         members += 1;
         i += 1;
     }
-    if !cx.condense_suppressed() {
+    // Planned Content is normalized already. Raw members and static fusions
+    // still require the original collapse, including whitespace across seams.
+    if needs_collapse && !cx.condense_suppressed() {
         for part in parts.iter_mut().filter(|part| !part.dynamic) {
             collapse_fused(&mut part.text);
         }
