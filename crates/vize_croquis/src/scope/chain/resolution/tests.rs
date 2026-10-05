@@ -134,6 +134,10 @@ fn fused_resolution_uses_physical_slot_when_public_scope_id_changes() {
         assert_eq!(fused.mark_used_if_defined(name), found);
         assert_whole_chain(&original, &fused);
     }
+    let (scope, binding) = fused.lookup("shared").unwrap();
+    assert!(core::ptr::eq(scope, fused.get_scope(physical).unwrap()));
+    assert_eq!(binding.declaration_offset, 33);
+    assert!(core::ptr::eq(binding, scope.get_binding("shared").unwrap()));
     assert!(
         fused
             .get_scope(physical)

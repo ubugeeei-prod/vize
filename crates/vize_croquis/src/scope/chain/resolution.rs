@@ -11,11 +11,11 @@ impl ScopeChain {
     #[inline]
     pub fn lookup(&self, name: &str) -> Option<(&Scope, &ScopeBinding)> {
         self.lookup_location(name)
-            .map(|(_, scope, binding)| (scope, binding))
+            .and_then(|(id, binding)| self.scopes.get(id).map(|scope| (scope, binding)))
     }
 
     /// Carry the physical slot chosen by the original immutable lookup.
-    fn lookup_location(&self, name: &str) -> Option<(ScopeId, &Scope, &ScopeBinding)> {
+    fn lookup_location(&self, name: &str) -> Option<(ScopeId, &ScopeBinding)> {
         let mut visited: SmallVec<[ScopeId; 8]> = SmallVec::new();
         let mut queue: SmallVec<[ScopeId; 8]> = smallvec![self.current];
 
@@ -32,7 +32,7 @@ impl ScopeChain {
             // compiler's busiest semantic-analysis loop.
             let scope = unsafe { self.scopes.raw.get_unchecked(id.as_u32() as usize) };
             if let Some(binding) = scope.get_binding(name) {
-                return Some((id, scope, binding));
+                return Some((id, binding));
             }
 
             // Add all parents to queue
@@ -87,7 +87,7 @@ impl ScopeChain {
 
     /// Resolve once, preserving cheap immutable misses and the physical slot.
     pub(crate) fn mark_used_if_defined(&mut self, name: &str) -> bool {
-        let Some((id, _, _)) = self.lookup_location(name) else {
+        let Some((id, _)) = self.lookup_location(name) else {
             return false;
         };
         if let Some(binding) = self

@@ -165,3 +165,17 @@ public checked mark-used body exactly. Retain the existing public lookup inline
 attribute and add no private annotation or unsafe operation. All original inputs,
 whole vectors and ceilings remain intact; fresh source/native/100+4 qualification
 and protected acceptance are still required.
+
+Exact `f4a5448` still exceeded compile stress-wide by 61 instructions: 510,163
+against 510,102 in all three runs; full-large passed at 2,727,051. All 100+4
+whole repeat vectors and original fixture/methodology contracts are retained.
+Its 50 reference-check calls to immutable physical resolution cost 12,651, versus
+12,379 for the actual predecessor lookup; this establishes a remaining call
+subtree difference, not a proof of one return-layout cause. The marker needs only
+the physical slot, and the public query needs its binding reference: stop
+returning the redundant scope reference. Recover the public scope through checked
+physical access only for a found binding, without another parent walk or binding
+hash. Extend the existing corrupted-public-ID whole-state law to verify the exact
+returned scope/binding pair. Keep the original unsafe operation count, public
+inline annotation, all inputs/vectors, budgets and qualification commands intact.
+Fresh source/native/100+4 and protected acceptance remain required.
