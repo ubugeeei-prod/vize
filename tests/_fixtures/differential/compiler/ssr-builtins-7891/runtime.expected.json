@@ -7,5 +7,6 @@
   "NoTag": "<!--[--><li>1</li><li>2</li><!--]-->",
   "DynamicTag": "<ol id=\"list\"><li>1</li><li>2</li></ol>",
   "Attrs": "<ul class=\"one two\" data-owner=\"authored\" style=\"color:red;\"><li>1</li></ul>",
-  "DefaultOnly": "<p>done</p>"
+  "DefaultOnly": "<p>done</p>",
+  "Lowercase": "<ul readonly tabindex=\"1\"><li>1</li></ul>"
 }

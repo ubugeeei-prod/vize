@@ -38,6 +38,7 @@ const FILES: &[(&str, &str)] = &[
     ("DynamicTag", source!("DynamicTag")),
     ("Attrs", source!("Attrs")),
     ("DefaultOnly", source!("DefaultOnly")),
+    ("Lowercase", source!("Lowercase")),
 ];
 
 fn compile(name: &str, source: &str, map: bool) -> SfcCompileResult {
@@ -108,6 +109,33 @@ fn whole_original_builtins_render_like_official_complete_sfc_defaults() {
         json!({ "name": name, "source": source, "current": compile(name, source, true) })
     }).collect();
     let input = json!({ "files": files });
+    let profile = if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
+        "full"
+    } else {
+        "pr"
+    };
+    let directory =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("../../target/nextest/{profile}"));
+    std::fs::create_dir_all(&directory).expect("existing evidence directory");
+    let git = Command::new("git")
+        .args(["show", "--no-patch", "--format=%H%n%T%n%P", "HEAD"])
+        .current_dir(env!("CARGO_MANIFEST_DIR"))
+        .output()
+        .expect("record literal executed source/tree/parents");
+    let source = json!({ "githubSha": std::env::var("GITHUB_SHA").ok(),
+        "gitStatus": git.status.to_string(), "gitCode": git.status.code(),
+        "gitStdout": git.stdout, "gitStderr": git.stderr });
+    std::fs::write(
+        directory.join("ssr-builtin-ownership-input.json"),
+        serde_json::to_vec(&json!({ "input": &input, "source": &source }))
+            .expect("serialize original execution input before launching runtime"),
+    )
+    .expect("retain every original source/full current result before execution");
+    assert_eq!(
+        source["gitCode"],
+        json!(0),
+        "literal source identity command"
+    );
     let mut child = Command::new("node")
         .arg(
             Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -126,6 +154,24 @@ fn whole_original_builtins_render_like_official_complete_sfc_defaults() {
         .write_all(input.to_string().as_bytes())
         .expect("send every whole generated result");
     let output = child.wait_with_output().expect("runtime exits");
+    std::fs::write(
+        directory.join("ssr-builtin-ownership.stdout.json"),
+        &output.stdout,
+    )
+    .expect("preserve raw complete or partial runtime output before assertion");
+    std::fs::write(
+        directory.join("ssr-builtin-ownership.stderr.txt"),
+        &output.stderr,
+    )
+    .expect("preserve raw runtime stderr before assertion");
+    std::fs::write(
+        directory.join("ssr-builtin-ownership-process.json"),
+        serde_json::to_vec(&json!({ "source": &source,
+            "status": output.status.to_string(), "code": output.status.code(),
+            "success": output.status.success() }))
+        .expect("serialize original process outcome"),
+    )
+    .expect("retain original exit before success/semantic assertions");
     assert!(
         output.status.success(),
         "status: {}\nstdout: {}\nstderr: {}",
@@ -139,20 +185,12 @@ fn whole_original_builtins_render_like_official_complete_sfc_defaults() {
             .as_array()
             .expect("all original and control cases")
             .len(),
-        18
+        20
     );
-    let profile = if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
-        "full"
-    } else {
-        "pr"
-    };
-    let directory =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("../../target/nextest/{profile}"));
-    std::fs::create_dir_all(&directory).expect("existing evidence directory");
     std::fs::write(
         directory.join("ssr-builtin-ownership-runtime.json"),
         serde_json::to_vec(&json!({ "input": input, "referenceAndRuntime": observed,
-            "sourceHead": std::env::var("GITHUB_SHA").ok(), "nativeLevelCredit": false }))
+            "source": source, "nativeLevelCredit": false }))
         .expect("serialize full code/map/runtime evidence"),
     )
     .expect("retain complete original inputs, current modules and official reference graphs");

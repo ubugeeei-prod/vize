@@ -167,7 +167,7 @@ impl<'a> SsrCodegenContext<'a> {
             ));
         }
         self.use_ssr_helper(RuntimeHelper::SsrRenderAttrs);
-        let tag_arg = if el.tag == "textarea" || el.tag.contains('-') {
+        let tag_arg = if !SKIP_TAG && (el.tag == "textarea" || el.tag.contains('-')) {
             cstr!(", \"{}\"", el.tag)
         } else {
             String::default()

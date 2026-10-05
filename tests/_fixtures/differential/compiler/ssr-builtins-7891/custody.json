@@ -24,7 +24,8 @@
     "original-issue.md": "934c280af57ed07881f30595858371e465c57e3f394804a6442a71b14baacb4f",
     "NoTag.vue.txt": "b57dd9d2ce2f25a0b048b881c474c1dd7ac9f8595b3cdc563f44a708ab31eca6",
     "Async.vue.txt": "e94f9775b924050bcf1c63fa1d68122da43e8970853fa6cb7633ce506fb6e4d4",
-    "runtime.expected.json": "6741cc958b5bc5cc5dd46cca2a1d4f7a6c8cd5820179e095c2ed2ffce4cc64cf"
+    "runtime.expected.json": "62908778ac59845dcf97b7d73cfc71b8060a985724d88bdad690a6376eb8645e",
+    "Lowercase.vue.txt": "e9bf33219c362c99516088feae4b7bffc5f2cc10787b691c8af0d4ccbec4b110"
   },
   "originalWholeSfcFiles": [
     "App.vue.txt",
@@ -39,7 +40,8 @@
     "NoTag",
     "DynamicTag",
     "Attrs",
-    "DefaultOnly"
+    "DefaultOnly",
+    "Lowercase"
   ],
   "referenceSources": [
     "https://raw.githubusercontent.com/vuejs/core/v3.6.0-rc.10/packages/compiler-ssr/src/transforms/ssrTransformSuspense.ts",

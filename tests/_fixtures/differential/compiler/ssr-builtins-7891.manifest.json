@@ -67,17 +67,22 @@
             "path": "original-issue.md",
             "sha256": "934c280af57ed07881f30595858371e465c57e3f394804a6442a71b14baacb4f",
             "role": "reporter-reproduction"
+          },
+          {
+            "path": "Lowercase.vue.txt",
+            "sha256": "e9bf33219c362c99516088feae4b7bffc5f2cc10787b691c8af0d4ccbec4b110",
+            "role": "entry"
           }
         ]
       },
       "reference": {
         "path": "ssr-builtins-7891/runtime.expected.json",
-        "sha256": "6741cc958b5bc5cc5dd46cca2a1d4f7a6c8cd5820179e095c2ed2ffce4cc64cf",
+        "sha256": "62908778ac59845dcf97b7d73cfc71b8060a985724d88bdad690a6376eb8645e",
         "source": "crates/vize_atelier_sfc/tests/ssr_builtin_ownership.rs:whole_original_builtins_render_like_official_complete_sfc_defaults"
       },
       "custody": {
         "path": "ssr-builtins-7891/custody.json",
-        "sha256": "b3a178a18a60c3e54d47600e1081242416eddef1dd7d0dcf80deaede6565765f"
+        "sha256": "e5b9ed11f883daae5b44bce573992ab70da5363fa7b669eeb819c0e5bcf139dc"
       },
       "provenance": {
         "issue": "https://github.com/ubugeeei-prod/vize/issues/7891",
@@ -107,7 +112,7 @@
           "strict-whole-html",
           "zero-runtime-diagnostics",
           "both-original-failures",
-          "eight-positive-controls"
+          "nine-positive-controls"
         ]
       }
     }

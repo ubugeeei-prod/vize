@@ -30,24 +30,34 @@ components, Transition, Teleport and current native L4 routing are unchanged.
 The exact reported App.vue, Async.vue and issue body are immutable corpus inputs
 under `tests/_fixtures/differential/compiler/ssr-builtins-7891/`. A separate
 manifest registers this whole-SFC runtime pack without inflating the existing
-single-row CLI adapter's acceptance count. Eight newly authored controls cover
+single-row CLI adapter's acceptance count. Nine newly authored controls cover
 explicit/default-only/missing-default/other/dynamic slots, static/dynamic/no-tag
 groups, list and false-conditional ranges, comments and merged attributes. The
 attribute control uses a bound style object; static-style normalization is not
 part of this repair. Every input and the independently authored full-HTML
 reference has a SHA-256 pin checked by the executed helper.
 
-The ordinary Rust tests compile all ten complete sources through the existing
+The ordinary Rust tests compile all eleven complete sources through the existing
 SFC SSR API. Mapped/plain complete results must differ only in the requested
 map field; module code stays equal. The runtime test retains every full current
 result, original source, official complete module/helper/map and decoded map
 coordinate graph. Map validation checks complete canonical mappings and valid
 source/generated positions; it does not claim original-segment semantic
 identity beyond those structural checks. Both real default-component graphs
-render all nine cases to eighteen strict whole-HTML references with no runtime
+render all ten cases to twenty strict whole-HTML references with no runtime
 warnings/errors. Transport rewrites only parsed import declarations to the
 actual Vue/server/Async/helper bindings, never compiler text or expected HTML.
 The packet remains in the existing automatic nextest worker artifact directory.
+Independent source review found two concrete blockers before publication: the
+lowercase builtin name incorrectly selected the custom-element attrs namespace,
+and assertions could discard failing runtime evidence. The group-only const
+path now omits the tag argument like the official transform, preserving the
+ordinary path. An appended lowercase camelCase-spread SFC adds two full strict
+observations; the earlier ten source payloads and eighteen expectations remain
+unchanged. Rust retains the complete input/results, raw stdout/stderr, original
+exit and literal Git source/tree/parents before process or semantic assertions.
+Node emits partial modules/maps and the failing HTML/diagnostics on errors,
+flushes both streams and exits nonzero. No failed comparison becomes success.
 
 Official primary transforms were inspected at reported Vue `3.6.0-rc.10`:
 
