@@ -87,6 +87,16 @@ fn complete_sfc_id_selector_ranges_and_public_reports() {
     let output = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../target/differential/css-id-selector-ranges-api.json");
     fs::create_dir_all(output.parent().unwrap()).expect("API receipt directory");
-    fs::write(output, serde_json::to_vec_pretty(&observations).unwrap())
-        .expect("retain every complete actual API observation");
+    let bytes = serde_json::to_vec_pretty(&observations).unwrap();
+    fs::write(output, &bytes).expect("retain every complete actual API observation");
+    if let Ok(profile) = std::env::var("NEXTEST_PROFILE")
+        && ["pr", "full"].contains(&profile.as_str())
+    {
+        let retained = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../target/nextest")
+            .join(profile)
+            .join("css-id-selector-ranges-api.json");
+        fs::create_dir_all(retained.parent().unwrap()).expect("existing shard result directory");
+        fs::write(retained, bytes).expect("retain whole API rows in the existing uploaded shard");
+    }
 }

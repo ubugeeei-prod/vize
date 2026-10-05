@@ -12,7 +12,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const fixture = path.join(root, "crates/vize_patina/tests/fixtures/css-id-selector-ranges");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
-test("source-built CLI locates every original and authored CSS ID selector", () => {
+await test("source-built CLI locates every original and authored CSS ID selector", () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(fixture, "cases.json"), "utf8"));
   assert.equal(manifest.issue, 7981);
   assert.equal(manifest.reporter.id, 71201308);

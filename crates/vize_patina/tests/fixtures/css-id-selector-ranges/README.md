@@ -17,5 +17,6 @@ API and compares every diagnostic field, authored slice and complete reports.
 `css-id-selector-ranges.test.mjs` requires a source-built CLI receipt and all
 33 complete JSON/plain attempts using the original config. Actual complete
 observations are retained under `target/differential/`; neither test can skip a
-missing binary or failed case. This does not confer native-stage eligibility
+missing binary or failed case. Rust CI also retains the complete API rows in
+its existing nextest pr/full shard result artifact. This does not confer native-stage eligibility
 or permit rewriting historical oracles.

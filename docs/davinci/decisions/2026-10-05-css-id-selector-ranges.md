@@ -3,6 +3,7 @@
 Issue: [#7981](https://github.com/ubugeeei-prod/vize/issues/7981).
 Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5993981503).
 Byte custody: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994107580).
+CI repair: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994214970).
 Prior reports: [#7055](https://github.com/ubugeeei-prod/vize/issues/7055)
 and [#7171](https://github.com/ubugeeei-prod/vize/issues/7171).
 
@@ -42,6 +43,13 @@ unchanged, and retains all 33 actual attempts for complete JSON/plain output
 plus the original JSON repeat. No missing binary, failed case or partial
 observation can qualify. These are legacy CSS product observations; no new
 native-stage eligibility or historical corpus rebaseline is inferred.
+
+The first current Check found an unawaited Node test registration. Await that
+promise while preserving all 33 complete attempts and assertions. Retain the
+same complete API rows in the existing nextest pr/full result envelope as well
+as `target/differential/`, because Rust workers upload that envelope. This adds
+no workflow or execution stage; production and all vectors stay unchanged.
+Fresh successor execution remains required.
 
 TODO: frozen independent source review, fresh exact-source ordinary Actions,
 all 16 API and 33 CLI observations, protected full Rust/all104, actual signed
