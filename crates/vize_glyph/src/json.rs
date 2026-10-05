@@ -52,6 +52,9 @@ fn format_document(
     options: &FormatOptions,
     jsonc: bool,
 ) -> Result<String, FormatError> {
+    if let Some(document) = source.strip_prefix('\u{feff}') {
+        return format_bom_document(document, options, jsonc);
+    }
     if options.end_of_line == crate::EndOfLine::Auto {
         return options.format_with_source_line_ending(source, |options| {
             format_document(source, options, jsonc)
@@ -89,6 +92,20 @@ fn format_document(
         printer.write_comment(&mut output, comment);
     }
     output.push_str(newline);
+    Ok(output)
+}
+
+#[cold]
+#[inline(never)]
+fn format_bom_document(
+    document: &str,
+    options: &FormatOptions,
+    jsonc: bool,
+) -> Result<String, FormatError> {
+    let formatted = format_document(document, options, jsonc)?;
+    let mut output = String::with_capacity(formatted.len() + '\u{feff}'.len_utf8());
+    output.push('\u{feff}');
+    output.push_str(formatted.as_str());
     Ok(output)
 }
 

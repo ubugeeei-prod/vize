@@ -85,6 +85,9 @@ impl<'a> GlyphFormatter<'a> {
 
     /// Format a Vue SFC source string
     pub fn format(&self, source: &str) -> Result<FormatResult, FormatError> {
+        if source.starts_with('\u{feff}') {
+            return self.format_bom(source);
+        }
         if self.options.end_of_line == crate::EndOfLine::Auto {
             return self
                 .options
@@ -250,6 +253,19 @@ impl<'a> GlyphFormatter<'a> {
         let code = unsafe { String::from_utf8_unchecked(output) };
         let changed = code != source;
 
+        Ok(FormatResult { code, changed })
+    }
+
+    // A document BOM is an encoding marker, not an SFC prologue block. Keep
+    // the uncommon prefix outside the ordinary formatting allocation frame.
+    #[cold]
+    #[inline(never)]
+    fn format_bom(&self, source: &str) -> Result<FormatResult, FormatError> {
+        let result = self.format(&source['\u{feff}'.len_utf8()..])?;
+        let mut code = String::with_capacity(result.code.len() + '\u{feff}'.len_utf8());
+        code.push('\u{feff}');
+        code.push_str(result.code.as_str());
+        let changed = code.as_str() != source;
         Ok(FormatResult { code, changed })
     }
 
