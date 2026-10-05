@@ -66,18 +66,15 @@ const context = {
 };
 
 async function reference(source, name, target) {
-  const selected =
-    target === "vapor"
-      ? {
-          ...compiler,
-          parse(...args) {
-            const result = compiler.parse(...args);
-            assert.equal(result.descriptor.source, args[0]);
-            result.descriptor.vapor = true;
-            return result;
-          },
-        }
-      : compiler;
+  const selected = {
+    ...compiler,
+    parse(...args) {
+      const result = compiler.parse(...args);
+      assert.equal(result.descriptor.source, args[0]);
+      // compiler-sfc caches descriptors: select this target on an owned copy.
+      return { ...result, descriptor: { ...result.descriptor, vapor: target === "vapor" } };
+    },
+  };
   const plugin = pluginFactory({ compiler: selected });
   plugin.configResolved({
     root: "/slot-forwarding",
@@ -85,7 +82,7 @@ async function reference(source, name, target) {
     isProduction: true,
     build: { sourcemap: true },
     define: {},
-    logger: { warn: context.warn },
+    logger: { warn: (warning) => context.warn(warning) },
   });
   plugin.buildStart.call(context);
   const result = await plugin.transform.handler.call(
