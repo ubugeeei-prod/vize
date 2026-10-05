@@ -40,7 +40,8 @@ test(
     assert.equal(vue.version, compiler.version);
     const { transformSync } = fromUi("@babel/core");
     const { chromium } = createRequire(new URL("tests/package.json", root))("@playwright/test");
-    const { compileVaporSfcReference } = await import("./support/native-vapor-sfc-oracle.mjs");
+    const { compileFirstNewlineVaporReference } =
+      await import("./support/first-newline-vapor-oracle.mjs");
     const runtimeUrl = dataUrl(
       readFileSync(
         fromUi.resolve("vue-vapor-runtime/dist/vue.runtime-with-vapor.esm-browser.js"),
@@ -167,7 +168,10 @@ test(
         }
         const referenceDom = stock(source, false);
         const referenceSsr = await serverHtml(stock(source, true));
-        const referenceVapor = await compileVaporSfcReference(source, "/first-newline/App.vue");
+        const referenceVapor = await compileFirstNewlineVaporReference(
+          source,
+          "/first-newline/App.vue",
+        );
         const dom = await observe(modules.dom, false);
         const expectedDom = await observe(referenceDom, false);
         assert.deepEqual(dom, expectedDom, `${fixture.id}: complete VDOM`);

@@ -30,6 +30,8 @@ SSR, Vapor and Vapor-requested SSR modes. Chromium compares actual mounted
 pre text, live textarea values, complete SSR HTML and hydration with the
 repository-pinned Vue 3.6.0-rc.9 compiler/runtime. The report used rc.10;
 the fixture metadata records that difference explicitly.
+The stock Vapor oracle keeps script setup's actual inline SSR component form;
+its setup and SSR render function are never reconstructed for the comparison.
 
 The reporter must mount and hydrate without warnings and retain its original
 elements. Controls compare complete observations against the independent Vue
