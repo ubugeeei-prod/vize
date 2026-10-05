@@ -15,6 +15,7 @@ use oxc_span::SourceType;
 use vize_l0::{Allocator, String, ToCompactString};
 
 pub(crate) use block_identity::format_sfc_script_content_stable;
+pub(crate) use expression_wrapper::FormattedExpression;
 
 const MAX_SCRIPT_STABILIZATION_PASSES: usize = 6;
 
@@ -118,7 +119,7 @@ thread_local! {
 /// Format a JS expression (for use in template directive values and interpolations).
 /// Returns None if the expression cannot be parsed/formatted.
 pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<String> {
-    format_js_expression_with_quote_style(expr, options, None)
+    format_js_expression_with_quote_style(expr, options, None).map(|formatted| formatted.code)
 }
 
 /// HTML attributes use double quotes independently of the script quote option.
@@ -127,17 +128,27 @@ pub(crate) fn format_js_expression_in_attribute(
     expr: &str,
     options: &FormatOptions,
 ) -> Option<String> {
+    format_js_expression_in_attribute_with_layout(expr, options).map(|formatted| formatted.code)
+}
+
+pub(crate) fn format_js_expression_in_attribute_with_layout(
+    expr: &str,
+    options: &FormatOptions,
+) -> Option<FormattedExpression> {
     format_js_expression_with_quote_style(expr, options, Some(QuoteStyle::Single))
 }
 
-fn format_js_expression_with_quote_style(
+pub(crate) fn format_js_expression_with_quote_style(
     expr: &str,
     options: &FormatOptions,
     quote_style: Option<QuoteStyle>,
-) -> Option<String> {
+) -> Option<FormattedExpression> {
     let trimmed = expr.trim();
     if trimmed.is_empty() {
-        return Some(String::default());
+        return Some(FormattedExpression {
+            code: String::default(),
+            retained_bare_sequence: false,
+        });
     }
 
     EXPR_SCRATCH.with(|cell| {
@@ -180,7 +191,10 @@ fn format_js_expression_with_quote_style(
         // parentheses and sequences whose grouping Vue consumers require.
         let inner = expression_wrapper::unwrap_argument(inner, &parsed.program, trimmed)?;
 
-        Some(inner.trim().to_compact_string())
+        Some(FormattedExpression {
+            code: inner.text.trim().to_compact_string(),
+            retained_bare_sequence: inner.retained_bare_sequence,
+        })
     })
 }
 

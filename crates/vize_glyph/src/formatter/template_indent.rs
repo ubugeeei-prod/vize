@@ -19,8 +19,13 @@ fn needs_raw_line_mask(source: &[u8]) -> bool {
     // A backtick is uncommon in templates and may open a multi-line literal in
     // either an interpolation or directive value. Keep that hostile path on
     // the real lexer instead of trying to duplicate its JS state machine here.
-    if memchr(b'`', source).is_some() {
-        return true;
+    let mut raw_cursor = 0;
+    while let Some(offset) = memchr2(b'`', b'\\', source.get(raw_cursor..).unwrap_or_default()) {
+        let at = raw_cursor + offset;
+        if source.get(at) == Some(&b'`') || matches!(source.get(at + 1), Some(b'\r' | b'\n')) {
+            return true;
+        }
+        raw_cursor = at + 1;
     }
 
     let mut cursor = 0;

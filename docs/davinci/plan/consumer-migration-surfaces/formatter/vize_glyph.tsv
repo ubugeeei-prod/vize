@@ -104,13 +104,14 @@ formatter	Formatter	source	crates/vize_glyph/src/options.rs	8	raw_oxc	raw OXC	ra
 formatter	Formatter	source	crates/vize_glyph/src/script.rs	12	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/script.rs	12	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 formatter	Formatter	source	crates/vize_glyph/src/script.rs	12	raw_oxc	raw OXC	raw	oxc_formatter	raw	1
-formatter	Formatter	test/dev	crates/vize_glyph/src/script.rs	145	l0	L0	stage	vize_l0	preferred	1
-formatter	Formatter	test/dev	crates/vize_glyph/src/script.rs	145	raw_oxc	raw OXC	raw	oxc_allocator	raw	4
-formatter	Formatter	test/dev	crates/vize_glyph/src/script.rs	145	raw_oxc	raw OXC	raw	oxc_formatter	raw	1
+formatter	Formatter	test/dev	crates/vize_glyph/src/script.rs	156	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/src/script.rs	156	raw_oxc	raw OXC	raw	oxc_allocator	raw	4
+formatter	Formatter	test/dev	crates/vize_glyph/src/script.rs	156	raw_oxc	raw OXC	raw	oxc_formatter	raw	1
 formatter	Formatter	source	crates/vize_glyph/src/script/block_identity.rs	4	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/script/block_identity.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 formatter	Formatter	source	crates/vize_glyph/src/script/block_identity.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 formatter	Formatter	source	crates/vize_glyph/src/script/block_identity.rs	4	raw_oxc	raw OXC	raw	oxc_formatter	raw	1
+formatter	Formatter	source	crates/vize_glyph/src/script/expression_wrapper.rs	2	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/script/expression_wrapper.rs	2	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 formatter	Formatter	source	crates/vize_glyph/src/script/format.rs	2	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/script/format.rs	2	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
@@ -126,7 +127,7 @@ formatter	Formatter	source	crates/vize_glyph/src/style/color.rs	4	l0	L0	stage	vi
 formatter	Formatter	source	crates/vize_glyph/src/style/number.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/style/stabilization.rs	9	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/src/style/stabilization.rs	240	l0	L0	stage	vize_l0	preferred	1
-formatter	Formatter	test/dev	crates/vize_glyph/src/template.rs	29	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/src/template.rs	30	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/template/attributes.rs	5	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/template/directives.rs	7	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/template/directives/normalize.rs	6	l0	L0	stage	vize_l0	preferred	1
@@ -134,6 +135,8 @@ formatter	Formatter	source	crates/vize_glyph/src/template/formatter.rs	9	l0	L0	s
 formatter	Formatter	source	crates/vize_glyph/src/template/formatter/interpolation.rs	12	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/template/formatter/text.rs	10	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/template/helpers.rs	6	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	source	crates/vize_glyph/src/template/literal_lines.rs	5	l0	L0	stage	vize_l0	preferred	4
+formatter	Formatter	source	crates/vize_glyph/src/template/literal_lines.rs	5	l1	L1	stage	vize_l1	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/src/template/tests.rs	9	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/template/vue_filters.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/vue_version.rs	4	l0	L0	stage	vize_l0	preferred	2
