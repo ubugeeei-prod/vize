@@ -46,7 +46,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `SfcCustomBlock`                          |     1 |     2 |
 | `SfcDescriptor`                           |    13 |    19 |
 | `SfcError`                                |     1 |     2 |
-| `SfcParseOptions`                         |    13 |    14 |
+| `SfcParseOptions`                         |    14 |    15 |
 | `SfcScriptBlock`                          |     1 |     1 |
 | `UndefinedRefs`                           |     1 |     2 |
 | `UnusedBindings`                          |     1 |     4 |

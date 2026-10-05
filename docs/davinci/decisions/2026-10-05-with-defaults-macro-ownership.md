@@ -83,6 +83,18 @@ arguments, without copying, changing production or weakening any law.
 All original unit/corpus/golden bytes and expected fields remain intact;
 no new Rust-law execution is credited to the failed head.
 
+Corrected head `0367fa49` passed affected-crate Clippy/build/doctests, all
+four Rust workers and unused-bindings Actions. Check37321658872 still
+failed its tooling1/4 Croquis producer/current-matrix checks: the genuine
+unit factory adds one test-only `SfcParseOptions` consumer. The official
+generator corrects only the Patina shard's files/sites row from `13/14`
+to `14/15`, retaining every other row/shard and the complete raw failures
+(SHA256 `4ca5d97d980b1acf7d3d204b63d6c1beb0b71997d34ce504d508803003c934d1`
+and `2b6a0ecae85160acdd6fef35fb22f78bddcecf5443fbb66b4d7d9379aa34cd06`).
+[The paired correction](https://github.com/ubugeeei-prod/vize/issues/7962#issuecomment-5996362866)
+preserves all production, laws, original inputs/goldens, native admission
+and gates; fresh exact-source acceptance remains required.
+
 Authored laws and source review do not establish execution. Fresh exact
 head automatic Actions must execute the complete Rust and public CLI
 contracts. The finite release hold keeps this independent PR Draft and off
