@@ -42,6 +42,7 @@ pub(super) async fn qualify(corsa: &Path) {
     let diagnostics = bridge.get_diagnostics(uri).await.unwrap();
     let hover = bridge.hover(uri, 4, 1).await.unwrap().unwrap();
     let valid_hover = bridge.hover(uri, 3, 1).await.unwrap().unwrap();
+    let payload_hover = bridge.hover(uri, 5, 1).await.unwrap().unwrap();
     bridge.shutdown().await.unwrap();
     if let Some(capture) = std::env::var_os("VIZE_TEMPLATE_EMIT_CAPTURE") {
         let capture = std::path::PathBuf::from(capture).join("editor-oracle");
@@ -53,6 +54,7 @@ pub(super) async fn qualify(corsa: &Path) {
             ),
             ("hover.json", hover_response(&hover)),
             ("valid-hover.json", hover_response(&valid_hover)),
+            ("payload-hover.json", hover_response(&payload_hover)),
             (
                 "runtime.json",
                 serde_json::json!({"nativeBinary": corsa, "workingDirectory": root.path(), "timeoutMs": 30_000}),
@@ -117,6 +119,13 @@ pub(super) async fn qualify(corsa: &Path) {
         serde_json::json!({
             "contents": {"kind": "markdown", "value": "```typescript\nconst $emit: (evt: \"change\", value: number) => void\n```\n"},
             "range": {"start": {"line": 3, "character": 0}, "end": {"line": 3, "character": 5}}
+        })
+    );
+    assert_eq!(
+        hover_response(&payload_hover),
+        serde_json::json!({
+            "contents": {"kind": "markdown", "value": "```typescript\nconst $emit: (evt: \"change\" | \"click\", ...args: never[]) => void\n```\n"},
+            "range": {"start": {"line": 5, "character": 0}, "end": {"line": 5, "character": 5}}
         })
     );
 }

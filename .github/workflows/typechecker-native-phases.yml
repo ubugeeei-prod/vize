@@ -297,12 +297,7 @@ jobs:
           assert.deepEqual(cases, ['imported_callable_default_remains_defined_in_all_template_prop_views', 'undefined_callable_default_keeps_original_cli_conditions_optional', 'undefined_callable_default_still_rejects_unguarded_template_calls']);
           assert.deepEqual(JSON.parse(readFileSync(join(root, 'editor-diagnostics.json'), 'utf8')), []);
           assert(existsSync(join(root, 'editor-hover.json')));
-          assert(existsSync(join(root, 'editor-payload-hover.json')));
-          assert(existsSync(join(root, 'editor-oracle', 'hover.json')));
-          assert(existsSync(join(root, 'editor-oracle', 'valid-hover.json')));
-          assert.equal(JSON.parse(readFileSync(join(root, 'editor-oracle', 'diagnostics.json'), 'utf8')).length, 2);
           const editorRuntime = JSON.parse(readFileSync(join(root, 'editor-runtime.json'), 'utf8'));
-          const oracleRuntime = JSON.parse(readFileSync(join(root, 'editor-oracle', 'runtime.json'), 'utf8'));
           const hash = file => createHash('sha256').update(readFileSync(file)).digest('hex');
           assert.equal(hash(join(root, 'imported-runtime-props.fixture.rs')), '73fc6c23f5a91296bb9bce4ef133b5781f27d7b8c0d4f1a5f8d3b10de018aaa8');
           assert.equal(readFileSync(join(root, 'imported-runtime-props.status.txt'), 'utf8'), '0\n');
@@ -318,7 +313,6 @@ jobs:
             const raw = JSON.parse(readFileSync(join(root, name, 'oracle.json'), 'utf8'));
             const nativeBinary = realpathSync(raw.nativeBinary);
             assert.equal(realpathSync(editorRuntime.nativeBinary), nativeBinary);
-            assert.equal(realpathSync(oracleRuntime.nativeBinary), nativeBinary);
             let packageDir = dirname(nativeBinary);
             while (!existsSync(join(packageDir, 'package.json')) && dirname(packageDir) !== packageDir) packageDir = dirname(packageDir);
             const packagePath = join(packageDir, 'package.json');

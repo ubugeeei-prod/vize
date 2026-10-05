@@ -137,3 +137,19 @@ official binary; all complete declarations and raw hovers remain in the hashed
 manifest. Fresh corrected-head native/source Actions must qualify the additional
 original payload hover before queue admission. No diagnostic filtering, source
 semantic weakening or generic-any fallback is introduced.
+
+The ce618 native run 37264533997 again passes all ten whole CLI/native vectors
+and the complete original/oracle diagnostic and first-hover controls. The
+original second call has an invalid string payload, so its whole native hover
+also prints the contextual event union/rest-never form, at 9:32..37; it is not
+the valid numeric-call presentation. Preserve that exact original response and
+add an independent real-Vue wrong-payload hover at 5:0..5 before comparison,
+retaining the existing exact valid numeric hover and all diagnostics. The new
+wrong-payload oracle counterpart remains unknown until fresh execution.
+Move this existing qualification before neutral preflight and place its trigger
+and artifact entries at distinct existing gaps, preserving the commands. Move
+its complete receipt checker from the inline Node block into a directly invoked
+module, retaining all assertions/captures and formatting with the existing tool.
+This keeps composition with the three existing qualifications under the same
+350-line workflow ratchet; literal prospective composition and fresh source/native
+acceptance remain required. The current release-prefix admission hold applies.

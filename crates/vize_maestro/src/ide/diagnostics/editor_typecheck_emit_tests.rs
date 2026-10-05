@@ -131,7 +131,7 @@ fn original_emit_preserves_complete_editor_diagnostics_and_typed_hover() {
         assert_eq!(payload_hover, tower_lsp::lsp_types::Hover {
             contents: HoverContents::Markup(tower_lsp::lsp_types::MarkupContent {
                 kind: MarkupKind::Markdown,
-                value: "```typescript\nconst $emit: (event: \"change\", value: number) => void\n```".into(),
+                value: "```typescript\nconst $emit: (event: \"change\" | \"click\", ...args: never[]) => void\n```".into(),
             }),
             range: Some(Range::new(Position::new(line, character), Position::new(line, character + 5))),
         });
