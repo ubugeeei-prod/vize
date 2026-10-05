@@ -62,3 +62,11 @@ correctly detect the generated Croquis consumption table changing one macro
 usage (72 to 73); regenerate it with the official generator and preserve the
 new API semantics. Fresh successor source/native gates remain required; the
 receipt is evidence for b6b0 only and protected merge/release is unfinished.
+
+The source/native-qualified eaa3 head cannot enter the queue because its
+canonical paragraph conflicts with fresh main. Replay all six commits onto
+actual main a2712e7896, retaining their reporter trailers and every owned
+production/test/original fixture byte. Put the complete owned clauses beside
+the existing type-check decision paragraph; every incoming canonical line is
+preserved and the document remains 350 lines. Fresh replay qualification and
+protected actual merge are still required; earlier eaa3 green is not reused.
