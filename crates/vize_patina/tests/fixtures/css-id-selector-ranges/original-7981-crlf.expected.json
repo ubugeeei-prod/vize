@@ -8,7 +8,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 168,
         "end": 180,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       },
@@ -18,7 +18,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 219,
         "end": 231,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       }
@@ -38,7 +38,8 @@
           "line": 12,
           "column": 1,
           "endLine": 12,
-          "endColumn": 13
+          "endColumn": 13,
+          "help": "Replace with a class selector for lower specificity"
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -48,14 +49,15 @@
           "line": 17,
           "column": 3,
           "endLine": 17,
-          "endColumn": 15
+          "endColumn": 15,
+          "help": "Replace with a class selector for lower specificity"
         }
       ],
       "errorCount": 0,
       "warningCount": 2
     }
   ],
-  "plain": "Patina lint report: 2 warnings in 1 file\n\nOriginal7981Crlf.vue\n  Original7981Crlf.vue:12:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  Original7981Crlf.vue:17:3 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
+  "plain": "Patina lint report: 2 warnings in 1 file\n\nOriginal7981Crlf.vue\n  Original7981Crlf.vue:12:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n  Original7981Crlf.vue:17:3 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n",
   "authoredSlices": [
     "#main-banner",
     "#banner-text"

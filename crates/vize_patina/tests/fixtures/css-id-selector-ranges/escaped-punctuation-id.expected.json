@@ -8,7 +8,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 37,
         "end": 50,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       }
@@ -28,14 +28,15 @@
           "line": 3,
           "column": 1,
           "endLine": 3,
-          "endColumn": 14
+          "endColumn": 14,
+          "help": "Replace with a class selector for lower specificity"
         }
       ],
       "errorCount": 0,
       "warningCount": 1
     }
   ],
-  "plain": "Patina lint report: 1 warning in 1 file\n\nEscapedPunctuationId.vue\n  EscapedPunctuationId.vue:3:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
+  "plain": "Patina lint report: 1 warning in 1 file\n\nEscapedPunctuationId.vue\n  EscapedPunctuationId.vue:3:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n",
   "authoredSlices": [
     "#main\\:banner"
   ]

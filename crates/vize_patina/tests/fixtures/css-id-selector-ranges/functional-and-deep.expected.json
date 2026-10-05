@@ -8,7 +8,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 60,
         "end": 68,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       },
@@ -18,7 +18,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 84,
         "end": 92,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       }
@@ -38,7 +38,8 @@
           "line": 3,
           "column": 24,
           "endLine": 3,
-          "endColumn": 32
+          "endColumn": 32,
+          "help": "Replace with a class selector for lower specificity"
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -48,14 +49,15 @@
           "line": 3,
           "column": 48,
           "endLine": 3,
-          "endColumn": 56
+          "endColumn": 56,
+          "help": "Replace with a class selector for lower specificity"
         }
       ],
       "errorCount": 0,
       "warningCount": 2
     }
   ],
-  "plain": "Patina lint report: 2 warnings in 1 file\n\nFunctionalAndDeep.vue\n  FunctionalAndDeep.vue:3:24 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  FunctionalAndDeep.vue:3:48 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
+  "plain": "Patina lint report: 2 warnings in 1 file\n\nFunctionalAndDeep.vue\n  FunctionalAndDeep.vue:3:24 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n  FunctionalAndDeep.vue:3:48 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n",
   "authoredSlices": [
     "#outside",
     "#visible"

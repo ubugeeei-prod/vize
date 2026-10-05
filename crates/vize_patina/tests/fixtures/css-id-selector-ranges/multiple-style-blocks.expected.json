@@ -8,7 +8,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 44,
         "end": 50,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       },
@@ -18,7 +18,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 84,
         "end": 91,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       }
@@ -38,7 +38,8 @@
           "line": 3,
           "column": 1,
           "endLine": 3,
-          "endColumn": 7
+          "endColumn": 7,
+          "help": "Replace with a class selector for lower specificity"
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -48,14 +49,15 @@
           "line": 6,
           "column": 1,
           "endLine": 6,
-          "endColumn": 8
+          "endColumn": 8,
+          "help": "Replace with a class selector for lower specificity"
         }
       ],
       "errorCount": 0,
       "warningCount": 2
     }
   ],
-  "plain": "Patina lint report: 2 warnings in 1 file\n\nMultipleStyleBlocks.vue\n  MultipleStyleBlocks.vue:3:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  MultipleStyleBlocks.vue:6:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
+  "plain": "Patina lint report: 2 warnings in 1 file\n\nMultipleStyleBlocks.vue\n  MultipleStyleBlocks.vue:3:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n  MultipleStyleBlocks.vue:6:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n",
   "authoredSlices": [
     "#first",
     "#second"

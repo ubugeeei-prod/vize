@@ -8,7 +8,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 43,
         "end": 48,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       },
@@ -18,7 +18,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 37,
         "end": 42,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       },
@@ -28,7 +28,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 50,
         "end": 55,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       },
@@ -38,7 +38,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 63,
         "end": 69,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       }
@@ -58,7 +58,8 @@
           "line": 3,
           "column": 7,
           "endLine": 3,
-          "endColumn": 12
+          "endColumn": 12,
+          "help": "Replace with a class selector for lower specificity"
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -68,7 +69,8 @@
           "line": 3,
           "column": 1,
           "endLine": 3,
-          "endColumn": 6
+          "endColumn": 6,
+          "help": "Replace with a class selector for lower specificity"
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -78,7 +80,8 @@
           "line": 3,
           "column": 14,
           "endLine": 3,
-          "endColumn": 19
+          "endColumn": 19,
+          "help": "Replace with a class selector for lower specificity"
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -88,14 +91,15 @@
           "line": 3,
           "column": 27,
           "endLine": 3,
-          "endColumn": 33
+          "endColumn": 33,
+          "help": "Replace with a class selector for lower specificity"
         }
       ],
       "errorCount": 0,
       "warningCount": 4
     }
   ],
-  "plain": "Patina lint report: 4 warnings in 1 file\n\nRepeatedSelectorList.vue\n  RepeatedSelectorList.vue:3:7 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  RepeatedSelectorList.vue:3:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  RepeatedSelectorList.vue:3:14 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  RepeatedSelectorList.vue:3:27 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
+  "plain": "Patina lint report: 4 warnings in 1 file\n\nRepeatedSelectorList.vue\n  RepeatedSelectorList.vue:3:7 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n  RepeatedSelectorList.vue:3:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n  RepeatedSelectorList.vue:3:14 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n  RepeatedSelectorList.vue:3:27 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n",
   "authoredSlices": [
     "#same",
     "#same",

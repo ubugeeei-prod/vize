@@ -4,6 +4,7 @@ Issue: [#7981](https://github.com/ubugeeei-prod/vize/issues/7981).
 Paired decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5993981503).
 Byte custody: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994107580).
 CI repair: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994214970).
+Help authority: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994391973).
 Prior reports: [#7055](https://github.com/ubugeeei-prod/vize/issues/7055)
 and [#7171](https://github.com/ubugeeei-prod/vize/issues/7171).
 
@@ -50,6 +51,16 @@ same complete API rows in the existing nextest pr/full result envelope as well
 as `target/differential/`, because Rust workers upload that envelope. This adds
 no workflow or execution stage; production and all vectors stay unchanged.
 Fresh successor execution remains required.
+
+The first original CLI wire receipt also caught an incorrect new expectation:
+the existing CSS rule help survives `--help-level none` through the unchanged
+direct diagnostic adapter and JSON/plain formatters. Official artifact
+11343864947 retains the full original command/output at compiled source
+`b87a30c35e6d74cf9acc079bf65874d3854bd8f8`; both corrected selector ranges are
+exact. Restore the established help in all complete API/JSON/plain vectors.
+Every source/config byte, range, count/order and strict whole assertion remains
+exact. This failed first-case receipt does not qualify all 16 API cases or
+33 CLI attempts; the successor must execute them all.
 
 TODO: frozen independent source review, fresh exact-source ordinary Actions,
 all 16 API and 33 CLI observations, protected full Rust/all104, actual signed

@@ -8,7 +8,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 103,
         "end": 109,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       },
@@ -18,7 +18,7 @@
         "message": "Avoid ID selectors - use class selectors for better reusability",
         "start": 149,
         "end": 155,
-        "help": null,
+        "help": "Replace with a class selector for lower specificity",
         "labels": [],
         "fix": null
       }
@@ -38,7 +38,8 @@
           "line": 5,
           "column": 14,
           "endLine": 5,
-          "endColumn": 20
+          "endColumn": 20,
+          "help": "Replace with a class selector for lower specificity"
         },
         {
           "ruleId": "css/no-id-selectors",
@@ -48,14 +49,15 @@
           "line": 8,
           "column": 16,
           "endLine": 8,
-          "endColumn": 22
+          "endColumn": 22,
+          "help": "Replace with a class selector for lower specificity"
         }
       ],
       "errorCount": 0,
       "warningCount": 2
     }
   ],
-  "plain": "Patina lint report: 2 warnings in 1 file\n\nNestedGroupRules.vue\n  NestedGroupRules.vue:5:14 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n  NestedGroupRules.vue:8:16 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n",
+  "plain": "Patina lint report: 2 warnings in 1 file\n\nNestedGroupRules.vue\n  NestedGroupRules.vue:5:14 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n  NestedGroupRules.vue:8:16 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n",
   "authoredSlices": [
     "#inner",
     "#layer"
