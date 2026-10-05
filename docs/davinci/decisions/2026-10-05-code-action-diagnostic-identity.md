@@ -42,9 +42,26 @@ mandatory in their normal Actions scopes. Passive existing session capture
 retains complete framed input/output and failure streams; explicit source
 receipt validation prohibits a global executable or build fallback.
 
+The first source Check at `17dd7ed3` stopped the Rust lane on the extracted
+constructor's `clippy::question_mark` requirement (job `111784552775`). The
+equivalent optional lookup now uses `?`; all configured options, inputs and
+complete runtime expectations are retained. Fresh successor Actions are required.
+
+The same source-built tooling run retained 21 observations before refusing the
+first suppression publication: the authored fixture incorrectly expected the
+other rule to remain. Existing Patina `@vize:forget` treats its payload as a
+reason and suppresses the entire next element. Both suppression variants now
+require complete empty publications and null obsolete shifted requests; all 36
+observations, individual-rule actions, restores and actual replacement-fix
+controls remain. The official failed artifact `11347834938` retains the complete
+process receipt and framed session (SHA-256 `7a12d20637a3823695445e5270c1779c397302104df7aec73de7f9daa923b001`).
+The existing consumer-surface generator also registers only the extraction's
+two moved coordinates and new test dependency row.
+
 Actual source Actions, complete new runtime observations, every old corpus,
 protected full suites/all 104 unchanged instruction ceilings, signed actual
 merge and release publication remain pending. Static source review alone gives
 no runtime, Windows, native-migration, performance or delivery credit.
 
 Paired issue decision: https://github.com/ubugeeei-prod/vize/issues/8000#issuecomment-5995087452
+First source corrections: https://github.com/ubugeeei-prod/vize/issues/8000#issuecomment-5995695437

@@ -9,9 +9,7 @@ pub(in crate::ide) fn linter_for_uri(
     uri: &Url,
     ecosystem_enabled: bool,
 ) -> Option<vize_patina::Linter> {
-    let Some((linter_config, rule_options)) = state.linter_settings_for_uri(uri) else {
-        return None;
-    };
+    let (linter_config, rule_options) = state.linter_settings_for_uri(uri)?;
     if !linter_config.enabled {
         return None;
     }
