@@ -2,7 +2,6 @@
 #![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros,
     reason = "wire fixtures use std strings and protocol JSON"
 )]
 
@@ -206,5 +205,10 @@ impl Project {
 }
 
 fn hash(bytes: &[u8]) -> String {
-    format!("{:x}", Sha256::digest(bytes))
+    use std::fmt::Write as _;
+    let mut out = String::with_capacity(64);
+    for byte in Sha256::digest(bytes) {
+        write!(out, "{byte:02x}").unwrap();
+    }
+    out
 }

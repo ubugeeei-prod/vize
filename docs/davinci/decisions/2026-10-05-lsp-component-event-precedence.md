@@ -39,3 +39,10 @@ separately from the corrected tag response; no source line is inserted. Complete
 handler-reference controls share the independent binding oracle for component
 and native listeners in Vue JS/TS. Whole JSON arrays are stored in genuine
 ≤350-line static shards and concatenated without filtering or field omission.
+
+The first authentic source archive build at baff failed before any runtime
+execution: current sha2 digest arrays do not implement LowerHex. The private
+recorder now converts each digest byte with the existing fixed-width hex loop,
+matching current repository code; product/original/full response bytes remain
+unchanged. Remove the now-unused format-macro lint expectation. Fresh exact-head
+Actions are required; the failed build supplies no native or runtime credit.
