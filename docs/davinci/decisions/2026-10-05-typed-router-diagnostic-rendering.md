@@ -2,7 +2,8 @@
 
 Tracking: external [#7817](https://github.com/ubugeeei-prod/vize/issues/7817),
 [Draft #7845](https://github.com/ubugeeei-prod/vize/pull/7845).
-This is fixture comparison preparation; source/runtime adoption remains pending.
+The historical fixture preparation below is followed by adopted runtime
+evidence and the required fresh literal-main replay.
 
 ## Actual failure
 
@@ -86,3 +87,55 @@ Local pure controls pass47/0 (Node25.8.1); the unchanged raw-first stub
 controls pass8/0 (Node26.10.0). Configured bound format/lint passes all five
 changed TS files with zero warnings/errors. These checks execute no real native
 CLI/provider and do not qualify the new source; fresh hosted gates remain.
+
+## Adopted runtime and literal-main replay
+
+The reviewed b739 source is now adopted for delivery, with this sole pinned
+fixture rendering contract. Exact source Check37243773669 passes all39 Router
+Rust bodies in each of four workers and47 pure controls (6 groups/41 leaves).
+Native Phase37243773443 independently retains45 complete ordered output pairs,
+105 graphs and11094 members. It is instrumentation-only, with no CPU captures
+or cold-wall speed credit.
+
+The sole full replay [Check37244856830](https://github.com/ubugeeei-prod/vize/actions/runs/37244856830)
+passes all19 active jobs (5 separately skipped), including the10 primary and18
+secondary CLI groups and all39 Router Rust laws. Original artifact11319266408
+is57,647,865 bytes, SHA256
+`d39b3fe76507bdff58dd1488decdbe035293a565cdff5e0db89e4acb710e839a`.
+Its1316 safe unique members preserve28 combined CLI reports,56 raw processes,
+196 actual inputs and the whole70-member official provider. All27 ordinary
+parsed native/reference vectors agree under the unchanged existing whitespace
+join; this is not raw cross-engine message-byte equality. The remaining case
+retains both exact full message vectors under the closed contract above.
+Original raw streams are preserved before all comparisons.
+
+Four physically identified primary Router editor streams prove six complete
+bad-to-repair cycles, four numeric parameter hover responses and16 ordered
+publications with exact full native messages/source/severity/UTF16 ranges.
+The original source-built CLI/editor binary SHA256 is
+`52688d489d9300bad8b6a1551016d09908e1d16ef9112cc378da9e4ee73b04be`.
+The complete owner custody receipt SHA256 is
+`786723077536e404b213a0c95ec964bb7f274360a81a75e4803dd56fae62acb7`;
+independent streamed review also passes. The full workflow's executed
+workflow_sha is unobserved; do not substitute its source head for that field.
+
+Replay the12 original authored commits onto signed literal main
+`d1a25ec1da2efca98534520ff8ebe84d34708e3d`. Preserve all incoming decision
+clauses, pnpm package owners and snapshot cases. Regenerate the actual consumer
+inventory. The49 untouched Router paths remain byte-identical to b739; five
+paths also contain authentic incoming main changes. Removing one blank line
+from the combined private struct preserves the existing350-line ceiling with
+all fields intact. Original authors/messages/reporter trailers remain retained.
+This source replay requires fresh exact-head Actions and original full runtime,
+all104 protected ceilings, actual signed merge and verified reporter trailer.
+The first recovery release excludes this feature; publication belongs to the
+next approved cut after the release owner's explicit admission thaw.
+
+The provider remains mixed-version and the13 generated-map custom parsers are
+not supplied. Explicit native editor mode does not establish default ecosystem
+heuristic parity. Arbitrary plugin execution and upstream dependency closure
+remain unsupported. Opt-in whole-Program fallback cost is unmeasured; this
+correctness fix supplies no speed/CPU claim, and the whole-cold500-SFC
+425.5ms→42.55ms target remains unfinished. The paired
+[issue receipt](https://github.com/ubugeeei-prod/vize/issues/7817#issuecomment-5983520264)
+records the same adoption and remaining delivery gates.

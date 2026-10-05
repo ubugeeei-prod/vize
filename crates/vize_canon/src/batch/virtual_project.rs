@@ -202,7 +202,6 @@ pub struct VirtualProject {
     /// Internal check generation settings applied to every Vue file.
     virtual_ts_check_options: VirtualTsCheckOptions,
     typed_router: typed_router::Context,
-
     /// Importer-local package identities retained until native package
     /// topology is materialized. This must never collapse to a specifier map.
     package_routes: FxHashMap<crate::package_route::PackageRouteKey, crate::PackageRouteBinding>,

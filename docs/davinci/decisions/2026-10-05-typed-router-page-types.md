@@ -339,3 +339,7 @@ native-versus-JS parser-union message presentation. Preserve every raw result;
 prepares separate full engine vectors for this exact source/provider context,
 with all common fields and unchanged full native LSP comparison still required.
 Fresh source/full runtime proof remains pending; no generic parity waiver.
+
+The [adopted runtime receipt](./2026-10-05-typed-router-diagnostic-rendering.md#adopted-runtime-and-literal-main-replay)
+records the original b739 full CLI/editor success and current literal-main
+source replay. Fresh source/protected/actual-merge/next-cut gates remain.
