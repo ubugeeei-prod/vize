@@ -1,6 +1,7 @@
 //! Workspace-rooted native project startup.
 
 use std::path::Path;
+use vize_l0::String;
 
 use super::{CorsaProjectClient, resolve_corsa_executable};
 

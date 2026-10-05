@@ -12,10 +12,10 @@ use vize_carton::cstr;
 use tempfile::TempDir;
 
 mod declaration_emit;
-mod nested_generated_config;
 #[cfg(unix)]
 #[path = "tests/incremental_fallback.rs"]
 mod incremental_fallback;
+mod nested_generated_config;
 
 fn unique_case_dir(name: &str) -> PathBuf {
     static NEXT_CASE_ID: AtomicUsize = AtomicUsize::new(0);

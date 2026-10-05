@@ -421,6 +421,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/type_
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/lifecycle_setup.rs	7	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/lifecycle.rs	23	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/lifecycle/tests.rs	5	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/lifecycle/workspace.rs	4	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/materialized_refresh.rs	7	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/queries.rs	5	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/session_paths.rs	4	l0	L0	stage	vize_l0	preferred	1
