@@ -179,3 +179,19 @@ its RHS splice. Declare those exact inferred buffers as StdVec and record their
 one import/two uses under the existing emit category, plus the unchanged String
 one import/three uses. This exposes the real allocations without adding or
 removing them; no memory, timing or protected instruction gain is claimed.
+
+## Exact source warning-budget failure
+
+The first corrected-source Check37361181662 at
+`bff8888bc7582c1a0f3757ffd99ee3c23772679d` fails check-js job111935879270:
+typescript(no-implied-eval) flags the new Function constructor in the thirteen
+expression observer. Preserve the raw failure and unchanged zero warning
+budget. Use node:vm compileFunction in the default current context with the
+identical complete generated body and parameters `context`, `asRef`; retain the
+same actual pinned Vue ref/isRef/unref functions, thirteen independent expected
+objects, all twenty-six required observations and raw failure cleanup. This
+changes only the observer's compilation API, without a new realm, source
+rewriting or warning suppression. The compiler, original corpus, whole module
+map laws and 132 mounted phases stay byte-exact. Fresh exact-source Actions
+still owns execution; neither the failed source nor static review qualifies
+runtime/protected/merge acceptance.

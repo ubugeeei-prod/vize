@@ -1,6 +1,7 @@
 // Actual pinned Vue refs; full independently authored write-result vectors.
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { compileFunction } from "node:vm";
 const evidence = { vue: null, observations: [] };
 try {
   assert.equal(process.env.NODE_ENV, "production");
@@ -19,9 +20,7 @@ try {
         _unref: vue.unref,
         ref: vue.ref,
       };
-      const run = new Function(
-        "context",
-        "asRef",
+      const run = compileFunction(
         `
         const { _isRef, _unref, ref } = context;
         let evt = asRef ? ref(1) : 1;
@@ -32,6 +31,7 @@ try {
         const value = (${row.code});
         return { value, event: _unref(evt), attr: _unref(attr), calls, n: n.value };
       `,
+        ["context", "asRef"],
       );
       const actual = run(context, ref);
       evidence.observations.push({ source: row.source, code: row.code, ref, actual });
