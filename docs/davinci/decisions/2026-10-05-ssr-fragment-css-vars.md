@@ -18,15 +18,27 @@ the component's own values.
 The correction preserves the current single-root `_attrs` merge and its
 output bytes. Roots that cannot inherit those attrs receive `_cssVars` in
 their existing props composition, before moved `v-show` and custom
-directive props. The retained walker adds generated binds only to these
-root lists; the already-admitted L4 string-plan emitter carries an explicit
-root CSS flag through its existing root/conditional emission. Neither
-route reparses input or adds a level, serialization or admission refusal.
-Generated zero-length source locations produce no authored map links.
-The retained route allocates its generated directive/expression in the
-existing arena; the native route adds one boolean to the existing Flags
-metadata and no per-root storage allocation. These are structural costs,
-not a measured performance claim.
+directive props. Both the retained walker and the already-admitted L4
+string-plan emitter carry root eligibility through existing emission.
+The retained metadata additionally identifies conditional-template and
+Suspense-slot carriers; ordinary descendants and loop bodies clear it.
+No authored node or span is modified, and generated props have no authored
+map links. Neither route reparses input or adds a level, serialization,
+admission refusal or per-root storage allocation. These metadata costs
+are not a measured performance claim.
+
+Published source `96d4956653572ef9be83c4136a2eb810d1ffdcf2` failed Check
+[37260572300](https://github.com/ubugeeei-prod/vize/actions/runs/37260572300):
+the generated-bind allocator calls produced two E0277 errors, before runtime
+execution; two top-level Node test registrations also violated the promise
+lint. That source's retained generated binds additionally changed the
+public direct-template API's returned `RootNode`. The successor removes
+that mutation rather than merely correcting the allocator reference, uses
+explicit `void test` registrations, and compares every returned AST field
+against the unchanged original-template compile, with both comment modes.
+The original 141-byte SFC remains the input; no assertion or input is removed.
+The root/fallthrough and Suspense helper moves precede the functional change
+in a move-only commit to keep existing over-limit files from growing.
 
 The original SFC and nine independently authored controls retain complete
 public client, SSR and explicit Vapor-to-standard-SSR fallback results.

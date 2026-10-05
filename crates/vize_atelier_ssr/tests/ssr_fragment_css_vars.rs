@@ -15,6 +15,44 @@ const TEMPLATES: &[&str] = &[
 ];
 
 #[test]
+fn original_template_css_emission_preserves_the_complete_returned_root() {
+    let original = include_str!(
+        "../../../tests/_fixtures/differential/compiler/ssr-fragment-css-vars/Reported.vue.txt"
+    );
+    let descriptor = vize_atelier_sfc::parse_sfc(original, Default::default())
+        .expect("original complete reported SFC");
+    let template = descriptor.template.expect("original template");
+    for comments in [false, true] {
+        let allocator = Allocator::new();
+        let options = SsrCompilerOptions {
+            comments,
+            ..Default::default()
+        };
+        let (plain_root, errors, _) = vize_atelier_ssr::compile_ssr_with_options(
+            &allocator,
+            &template.content,
+            options.clone(),
+        );
+        assert!(errors.is_empty());
+        let original_tree = vize_l0::cstr!("{plain_root:?}");
+        let (css_root, errors, _) = vize_atelier_ssr::compile_ssr_with_options(
+            &allocator,
+            &template.content,
+            SsrCompilerOptions {
+                ssr_css_vars: Some("{ \":--fixture-color\": (_ctx.color) }".into()),
+                ..options
+            },
+        );
+        assert!(errors.is_empty());
+        assert_eq!(
+            vize_l0::cstr!("{css_root:?}"),
+            original_tree,
+            "CSS code generation must preserve every returned AST field"
+        );
+    }
+}
+
+#[test]
 fn fragment_css_binds_preserve_maps_and_nested_root_boundaries() {
     for template in TEMPLATES {
         let allocator = Allocator::new();

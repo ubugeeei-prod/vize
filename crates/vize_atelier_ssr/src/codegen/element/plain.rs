@@ -10,7 +10,7 @@ mod input_model;
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a plain HTML element
-    pub(super) fn process_plain_element(&mut self, el: &ElementNode<'a>, inherit_attrs: bool) {
+    pub(super) fn process_plain_element(&mut self, el: &ElementNode<'a>, attrs: bool, css: bool) {
         let tag = &el.tag;
 
         // Start tag
@@ -20,8 +20,8 @@ impl<'a> SsrCodegenContext<'a> {
         // Process attributes: one merged props object (Vue's `needMergeProps`)
         // or the inline attribute parts.
         let mut owned_content = None;
-        if inherit_attrs || super::merged::needs_merged_props(el) {
-            if let Some(merged) = self.merged_element_attrs(el, inherit_attrs) {
+        if attrs || css || super::merged::needs_merged_props(el) {
+            if let Some(merged) = self.merged_element_attrs(el, attrs, css) {
                 self.push_string_part_dynamic_spanned(merged.attrs);
                 owned_content = merged.content;
             }

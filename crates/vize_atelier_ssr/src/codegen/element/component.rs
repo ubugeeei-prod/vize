@@ -14,9 +14,10 @@ impl<'a> SsrCodegenContext<'a> {
         el: &ElementNode<'a>,
         _disable_nested_fragments: bool,
         inherit_attrs: bool,
+        css_vars: bool,
     ) {
         if matches!(el.tag, "Suspense" | "suspense") {
-            self.process_suspense(el);
+            self.process_suspense(el, css_vars);
             return;
         }
         if matches!(el.tag, "Teleport" | "teleport") {
@@ -38,7 +39,12 @@ impl<'a> SsrCodegenContext<'a> {
         } else {
             self.resolve_component_binding_expr(tag)
         };
-        let props = self.build_component_props(el, false, is_dynamic_component);
+        let props = self.build_component_props_with_css_vars(
+            el,
+            false,
+            is_dynamic_component,
+            css_vars && !inherit_attrs,
+        );
         let props = self.with_scope_id_prop(props);
         let props = self.with_fallthrough_attrs(props, inherit_attrs);
 
@@ -431,7 +437,13 @@ impl<'a> SsrCodegenContext<'a> {
             }
             ComponentSlotChildren::Refs(children) => {
                 for child in vize_atelier_core::walk_probe::ssr_children(children) {
-                    self.process_child(child, false, false, false);
+                    self.process_child(
+                        child,
+                        false,
+                        false,
+                        false,
+                        super::super::css_vars::RootCssVars::default(),
+                    );
                 }
             }
         }

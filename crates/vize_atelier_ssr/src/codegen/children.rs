@@ -1,6 +1,7 @@
 //! SSR root and fallthrough child-list emission.
 
 use super::SsrCodegenContext;
+use super::css_vars::RootCssVars;
 use super::helpers::single_fallthrough_child_index;
 use vize_atelier_core::TemplateChildNode;
 
@@ -14,12 +15,16 @@ impl<'a> SsrCodegenContext<'a> {
         disable_nested_fragments: bool,
         disable_comment: bool,
     ) {
-        self.process_children_with_fallthrough_attrs(
+        self.process_children_with_fallthrough_attrs_and_css_vars(
             children,
             as_fragment,
             disable_nested_fragments,
             disable_comment,
             true,
+            RootCssVars {
+                enabled: self.options.ssr_css_vars.is_some(),
+                template_wrapper: false,
+            },
         );
     }
 
@@ -30,6 +35,25 @@ impl<'a> SsrCodegenContext<'a> {
         disable_nested_fragments: bool,
         disable_comment: bool,
         inherit_attrs: bool,
+    ) {
+        self.process_children_with_fallthrough_attrs_and_css_vars(
+            children,
+            as_fragment,
+            disable_nested_fragments,
+            disable_comment,
+            inherit_attrs,
+            RootCssVars::default(),
+        );
+    }
+
+    pub(crate) fn process_children_with_fallthrough_attrs_and_css_vars(
+        &mut self,
+        children: &[TemplateChildNode<'a>],
+        as_fragment: bool,
+        disable_nested_fragments: bool,
+        disable_comment: bool,
+        inherit_attrs: bool,
+        css_vars: RootCssVars,
     ) {
         if as_fragment {
             self.push_string_part_static("<!--[-->");
@@ -47,6 +71,7 @@ impl<'a> SsrCodegenContext<'a> {
                 disable_nested_fragments,
                 disable_comment,
                 fallthrough_child_index == index,
+                css_vars,
             );
         }
 

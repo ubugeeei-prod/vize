@@ -10,7 +10,7 @@ use vize_atelier_core::{
     TemplateChildNode, TextNode,
 };
 
-use super::SsrCodegenContext;
+use super::{SsrCodegenContext, css_vars::RootCssVars};
 pub(crate) use destructure::{collect_for_scoped_params, extract_destructure_params};
 pub(crate) use escape::{escape_html, escape_html_attr};
 use vize_l0::{String, ToCompactString};
@@ -40,6 +40,7 @@ impl<'a> SsrCodegenContext<'a> {
         disable_nested_fragments: bool,
         disable_comment: bool,
         inherit_attrs: bool,
+        css_vars: RootCssVars,
     ) {
         match child {
             TemplateChildNode::Element(el) => {
@@ -47,6 +48,7 @@ impl<'a> SsrCodegenContext<'a> {
                     el,
                     disable_nested_fragments,
                     inherit_attrs,
+                    css_vars,
                 );
             }
             TemplateChildNode::Text(text) => {
@@ -66,6 +68,7 @@ impl<'a> SsrCodegenContext<'a> {
                     disable_nested_fragments,
                     disable_comment,
                     inherit_attrs,
+                    css_vars,
                 );
             }
             TemplateChildNode::For(for_node) if for_node.parse_result.match_scope => {
@@ -119,6 +122,7 @@ impl<'a> SsrCodegenContext<'a> {
         disable_nested_fragments: bool,
         disable_comment: bool,
         inherit_attrs: bool,
+        css_vars: RootCssVars,
     ) {
         // Flush current push before if statement
         self.flush_push();
@@ -150,12 +154,16 @@ impl<'a> SsrCodegenContext<'a> {
             let needs_fragment =
                 !disable_nested_fragments && branch_fragment::needs_fragment(&branch.children);
 
-            self.process_children_with_fallthrough_attrs(
+            self.process_children_with_fallthrough_attrs_and_css_vars(
                 &branch.children,
                 needs_fragment,
                 disable_nested_fragments,
                 disable_comment,
                 inherit_attrs,
+                RootCssVars {
+                    enabled: css_vars.enabled,
+                    template_wrapper: branch.is_template_if,
+                },
             );
             self.flush_push();
             self.indent_level -= 1;
