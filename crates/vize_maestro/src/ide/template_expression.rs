@@ -183,9 +183,7 @@ fn is_in_mustache_expression(content: &str, offset: usize) -> bool {
 
 fn directive_expression_start(content: &str, offset: usize) -> Option<usize> {
     let bytes = content.as_bytes();
-    let Some(before) = content.get(..offset) else {
-        return None;
-    };
+    let before = content.get(..offset)?;
     for (tag_start, _) in before.match_indices('<').rev() {
         let name_start = tag_start + 1;
         if matches!(bytes.get(name_start), Some(b'/' | b'!' | b'?')) {

@@ -53,5 +53,9 @@ pending session evidence, with zero native whole-product/history closure credit.
 Source review, original input custody and authored expectations do not certify
 execution. Exact-head normal Actions and protected full Rust/104 ceilings are
 required before actual signed merge, literal reporter trailer and release handoff.
+Initial source fae2680d / Check 37303198798 failed warning-denying Rust1.98
+Clippy's question_mark after the selector's bool-to-Option refactor, before
+building the new laws. Replace only the equivalent early None with `?`, retain
+that failed receipt, and require fresh exact-head execution without a waiver.
 No performance budget or frozen history expectation is changed. #6883 remains
 open; this fixture is an additive legacy correction rather than native completion.
