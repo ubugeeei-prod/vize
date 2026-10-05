@@ -13,6 +13,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
+import { prepareSourceCustody } from "./typechecker-bulk-source-custody.mjs";
 
 // The actual parent-only main retains the original route and all incoming fixes.
 const baseline = "58e6a0272b4044e3aaa8b7a9cb3ac62100ccec7c";
@@ -50,11 +51,21 @@ const temporary = mkdtempSync(join(process.env.RUNNER_TEMP, "bulk-matched-"));
 const parent = join(temporary, "original-source");
 const driverPaths = [
   "crates/vize_canon/tests/tier_l_incremental.rs",
-  ...readdirSync(join(root, "crates/vize_canon/tests/support"))
-    .filter((name) => name.startsWith("tier_l_") && name.endsWith(".rs"))
-    .sort()
-    .map((name) => `crates/vize_canon/tests/support/${name}`),
+  "crates/vize_canon/tests/support/tier_l_fixture.rs",
+  "crates/vize_canon/tests/support/tier_l_incremental_artifact.rs",
+  "crates/vize_canon/tests/support/tier_l_incremental_budget.rs",
+  "crates/vize_canon/tests/support/tier_l_incremental_failure.rs",
+  "crates/vize_canon/tests/support/tier_l_incremental_failure_tests.rs",
 ];
+assert.deepEqual(
+  readdirSync(join(root, "crates/vize_canon/tests/support"))
+    .filter((name) => name.startsWith("tier_l_") && name.endsWith(".rs"))
+    .sort(),
+  driverPaths
+    .slice(1)
+    .map((path) => path.split("/").at(-1))
+    .sort(),
+);
 const drivers = driverPaths.map((path) => ({
   path,
   sha256: digest(readFileSync(join(root, path))),
@@ -96,6 +107,21 @@ const nativeProcesses = () =>
     });
 
 try {
+  const custody = prepareSourceCustody({
+    fixture,
+    capture: resolve(root, process.env.VIZE_TIER_L_BULK_CAPTURE_DIR),
+    output,
+    driver: readFileSync(join(root, driverPaths[1]), "utf8"),
+    authority: receipt.fixtureAuthority,
+  });
+  receipt.sourceCustody = {
+    catalogPath: custody.catalogPath,
+    catalogSha256: custody.catalogSha256,
+    scope:
+      "Complete original 500 Vue +181 TS catalog, Git-pinned bodies/configs, authored patches and restored absence; outside timers.",
+  };
+  persist();
+  custody.verify("before-builds");
   git("worktree", "add", "--detach", parent, baseline);
   assert.deepEqual(project(join(parent, registryPath)), receipt.fixtureAuthority);
   // Both production sources receive the same already-qualified timed driver.
@@ -169,6 +195,12 @@ try {
       const dir = join(output, `pair-${pair}`, arm);
       mkdirSync(dir, { recursive: true });
       const before = nativeProcesses();
+      custody.verify("pair-" + pair + "/" + arm + "/before");
+      const nativeShaBefore = digest(readFileSync(native));
+      packet.arms[arm] = { nativeProcessesBefore: before, nativeShaBefore };
+      persist();
+      assert.deepEqual(before, [], "matched arm starts with a retained exact-native process");
+      assert.equal(nativeShaBefore, receipt.nativeSha256, "native binary changed before arm");
       const result = spawnSync(
         binaries[arm].path,
         [
@@ -202,9 +234,17 @@ try {
         error: result.error?.message,
         metrics,
         nativeProcessesBefore: before,
+        nativeShaBefore,
+        nativeShaAfter: digest(readFileSync(native)),
         newNativeProcessesAfterExit: live,
       };
       persist();
+      custody.verify("pair-" + pair + "/" + arm + "/after");
+      assert.equal(
+        packet.arms[arm].nativeShaAfter,
+        receipt.nativeSha256,
+        "native binary changed during arm",
+      );
       assert.equal(
         result.status,
         0,
@@ -246,8 +286,10 @@ try {
   receipt.warmGainObserved = receipt.measurements
     .filter((row) => row.lane !== "cold")
     .every((row) => row.bulkMedianMs < row.originalMedianMs);
+  receipt.cancellationScope =
+    "Existing 30-minute job limit contains hangs; job cancellation cannot guarantee final PID census, cleanup or artifact upload. No execution-time fit claim.";
   receipt.scope =
-    "Matched original500 production timings only; whole681 diagnostic custody is the separate strict law. No 10x/default claim.";
+    "Matched BatchTypeChecker integration timings only; whole681 diagnostic custody is the separate strict law. No CLI/LSP gain, 10x or default claim.";
   persist();
   console.log(
     JSON.stringify({

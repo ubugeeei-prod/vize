@@ -250,19 +250,29 @@ release and other branch runs retain their existing gates. Authenticate ancestry
 through the primary GitHub compare response and fetch only the immutable baseline
 tree even on a shallow checkout. Compile the original route at actual parent-only
 main `58e6a0272b4044e3aaa8b7a9cb3ac62100ccec7c` and the consumer source using the
-same locked CI profile and six byte-identical qualified Tier-L driver files.
+same locked CI profile and exactly six explicitly named, byte-identical qualified
+Tier-L driver files; additional discovered driver names refuse the control.
 This keeps incoming projection and fingerprint corrections on both sides;
 the first-v0.433 tree would confound those corrections with the bulk delta.
 The baseline's only working-tree overlay is those explicit hashed test files;
 its production remains the immutable baseline. Both arms use the same absolute
 original fixture, native binary, runtime dependency root, authored patches,
-configuration and budgets. Three pairs alternate arm order on one runner and
+configuration and budgets. Bind the preceding strict whole-681 captures' exact
+500 Vue/181 TS original-path catalog and generated configurations. Preserve all
+680 Git-pinned physical bodies plus authored config/manifest bytes, exact
+CLEAN/BROKEN patch bytes and the integration's restored-absence exception.
+Authenticate complete bodies before and after every arm outside timing windows;
+require no exact-native process before an arm and an unchanged native binary
+before and after it. Three pairs alternate arm order on one runner and
 retain every whole metric packet, build/test log, source/driver/binary hash and
 post-exit native-process census before assertions, including failure receipts.
 The existing whole-681 archive retains the comparison. This measurement avoids
 the lib test's full custody serialization inside timed production calls.
-Its raw distributions and median ratios are observations, with no invented
-performance budget or 10x/default claim. Execution, gain, protected acceptance
+Its raw distributions and median ratios describe BatchTypeChecker integration
+binaries only, with no CLI/LSP gain, invented performance budget or 10x/default
+claim. The existing 30-minute job policy contains hangs, but cancellation cannot
+guarantee the final PID census, worktree cleanup or artifact upload; execution
+cost and fit are unknown until actual qualification. Execution, gain, protected acceptance
 and actual ordered delivery remain pending; #7698 stays open.
 
 The snapshot-text prerequisite #8049 actually signed-merged as
