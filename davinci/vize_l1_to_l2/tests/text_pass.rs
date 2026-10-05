@@ -228,10 +228,10 @@ fn whitespace_condenses_by_the_armature_rules() {
 }
 
 #[test]
-fn pre_subtrees_keep_their_bytes_and_rawtext_condenses() {
+fn pre_and_textarea_keep_their_remaining_whitespace() {
     // `<pre>` (the shipped `is_pre_tag`) is exempt from condensing;
-    // rawtext content still follows the shipped DOM lane's condense
-    // strategy. Merging still applies inside `<pre>` (the legacy codegen
+    // textarea RCDATA keeps the remaining whitespace too.
+    // Merging still applies inside `<pre>` (the legacy codegen
     // grouping never checked pre), with the parts uncondensed.
     let source = "<pre>  a   {{ x }}  b </pre><textarea> c   d </textarea>";
     with_transformed(source, |_, folio, facts, _| {
@@ -248,7 +248,9 @@ fn pre_subtrees_keep_their_bytes_and_rawtext_condenses() {
         let DumpOp::Element(textarea) = &folio.ops[1] else {
             panic!("no textarea element: {:?}", folio.ops);
         };
-        assert!(matches!(&textarea.children[..], [DumpOp::Text(text)] if text.content == " c d "));
+        assert!(
+            matches!(&textarea.children[..], [DumpOp::Text(text)] if text.content == " c   d ")
+        );
     });
     assert_transformed_sound(source, "pre-rawtext");
 }
@@ -257,8 +259,8 @@ fn pre_subtrees_keep_their_bytes_and_rawtext_condenses() {
 fn rawtext_whitespace_only_subtrees_drop_like_the_shipped_dom_lane() {
     let source = "<textarea>\n</textarea><iframe>\n</iframe><noscript>\n</noscript><pre>\n</pre>";
     with_transformed(source, |_, folio, _, _| {
-        for (index, tag) in ["textarea", "iframe", "noscript"].into_iter().enumerate() {
-            let DumpOp::Element(element) = &folio.ops[index] else {
+        for (index, tag) in ["iframe", "noscript"].into_iter().enumerate() {
+            let DumpOp::Element(element) = &folio.ops[index + 1] else {
                 panic!("no {tag} element: {:?}", folio.ops);
             };
             assert_eq!(element.tag, tag);
@@ -268,11 +270,15 @@ fn rawtext_whitespace_only_subtrees_drop_like_the_shipped_dom_lane() {
                 element.children
             );
         }
+        let DumpOp::Element(textarea) = &folio.ops[0] else {
+            panic!("no textarea element");
+        };
+        assert!(matches!(&textarea.children[..], [DumpOp::Text(text)] if text.content.is_empty()));
         let DumpOp::Element(pre) = &folio.ops[3] else {
             panic!("no pre element: {:?}", folio.ops);
         };
         assert_eq!(pre.tag, "pre");
-        assert!(matches!(&pre.children[..], [DumpOp::Text(text)] if text.content == "\n"));
+        assert!(matches!(&pre.children[..], [DumpOp::Text(text)] if text.content.is_empty()));
     });
     assert_transformed_sound(source, "rawtext-empty-whitespace");
 }

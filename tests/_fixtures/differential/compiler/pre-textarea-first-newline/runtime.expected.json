@@ -1,0 +1,98 @@
+[
+  {
+    "id": "reporter",
+    "sourceFile": "App.vue.txt",
+    "pre": ["line A"],
+    "textarea": ["value"]
+  },
+  {
+    "id": "second-newline",
+    "template": "<pre>\n\ntwo</pre><textarea>\n\ntwo</textarea>",
+    "pre": ["\ntwo"],
+    "textarea": ["\ntwo"]
+  },
+  {
+    "id": "crlf",
+    "template": "<pre>\r\nline\r\nend</pre><textarea>\r\nvalue</textarea>",
+    "pre": ["line\nend"],
+    "textarea": ["value"]
+  },
+  {
+    "id": "remaining-encoded-crlf",
+    "template": "<pre>\nline&#13;&#10;end</pre><textarea>\nvalue</textarea>",
+    "pre": ["line\nend"],
+    "textarea": ["value"]
+  },
+  {
+    "id": "numeric-entity",
+    "template": "<pre>&#10;line {{ a }}</pre><textarea>&#x0A;value</textarea>",
+    "pre": ["line A"],
+    "textarea": ["value"]
+  },
+  {
+    "id": "entity-pair",
+    "template": "<pre>&#13;&#10;line</pre><textarea>&NewLine;value</textarea>",
+    "pre": ["line"],
+    "textarea": ["value"]
+  },
+  {
+    "id": "escaped-entity",
+    "template": "<pre>&amp;#10;line</pre><textarea>&amp;NewLine;value</textarea>",
+    "pre": ["&#10;line"],
+    "textarea": ["&NewLine;value"]
+  },
+  {
+    "id": "space-before-newline",
+    "template": "<pre> \nline</pre><textarea> \nvalue</textarea>",
+    "pre": [" \nline"],
+    "textarea": [" \nvalue"]
+  },
+  {
+    "id": "remaining-spacing",
+    "template": "<pre>\n  line   end\n</pre><textarea>\n  value   end\n</textarea>",
+    "pre": ["  line   end\n"],
+    "textarea": ["  value   end\n"]
+  },
+  {
+    "id": "nested-text",
+    "template": "<pre>\nouter<strong>\ninner</strong>\nend</pre><textarea>\nvalue</textarea>",
+    "pre": ["outer\ninner\nend"],
+    "textarea": ["value"]
+  },
+  {
+    "id": "nested-pre",
+    "template": "<pre>\nouter<pre>\ninner</pre>\nend</pre><textarea>\nvalue</textarea>",
+    "pre": ["outerinner\nend", "inner"],
+    "textarea": ["value"]
+  },
+  {
+    "id": "preserved-comment",
+    "template": "<pre><!-- keep -->\nline</pre><textarea>\nvalue</textarea>",
+    "pre": ["\nline"],
+    "textarea": ["value"]
+  },
+  {
+    "id": "interpolation-first",
+    "template": "<pre>{{ a }}\nline</pre><textarea>{{ a }}\nvalue</textarea>",
+    "pre": ["A\nline"],
+    "textarea": ["A\nvalue"]
+  },
+  {
+    "id": "v-pre",
+    "template": "<pre v-pre>\n{{ a }}\nend</pre><textarea v-pre>\n{{ a }}</textarea>",
+    "pre": ["{{ a }}\nend"],
+    "textarea": ["{{ a }}"]
+  },
+  {
+    "id": "empty",
+    "template": "<pre>\n</pre><textarea>\n</textarea>",
+    "pre": [""],
+    "textarea": [""]
+  },
+  {
+    "id": "carriage-return-only",
+    "template": "<pre>\rline</pre><textarea>\rvalue</textarea>",
+    "pre": ["\rline"],
+    "textarea": ["\nvalue"]
+  }
+]

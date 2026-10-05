@@ -5,7 +5,10 @@ use vize_l1::SurfaceChild;
 use vize_l2::expr::OpaqueReason;
 use vize_l2::op::{InterpolationOp, Op, TextOp};
 
-use super::{TextAction, TextPart, TextParts, collapse_fused, extends_run, rebuild_source};
+use super::{
+    TextAction, TextPart, TextParts, collapse_fused, extends_run, normalize_special_text,
+    rebuild_source,
+};
 use crate::lower::cx::Cx;
 use crate::lower::expr::{desc, opaque_at, trimmed};
 
@@ -163,6 +166,13 @@ pub(crate) fn lower_text_run<'a>(
             collapse_fused(&mut part.text);
         }
     }
+    if cx.ignore_newline_at.is_some() || cx.normalize_pre_newlines() {
+        for part in parts.iter_mut().filter(|part| !part.dynamic) {
+            if let Some(content) = normalize_special_text(cx, part.text.as_str(), part.span.start) {
+                part.text = content;
+            }
+        }
+    }
 
     if members == 1 {
         // A lone node never merges (the legacy run grouping's own rule);
@@ -240,10 +250,13 @@ fn lower_single_text<'a>(
 ) {
     match child {
         SurfaceChild::Text(token) => {
-            let content = match action {
+            let mut content = match action {
                 TextAction::Content(content) => content,
                 _ => token.text,
             };
+            if let Some(normalized) = normalize_special_text(cx, content, cx.offset(token.text)) {
+                content = cx.allocator.alloc_str(normalized.as_str());
+            }
             if content != token.text {
                 let span = cx.token_span(token);
                 cx.record(
@@ -312,6 +325,9 @@ pub(crate) fn lower_v_pre_text_run<'a>(
         .get(span.start as usize..span.end as usize)
         .unwrap_or_default();
     let mut content = String::from(raw);
+    if let Some(normalized) = normalize_special_text(cx, content.as_str(), start_offset) {
+        content = normalized;
+    }
     if !cx.condense_suppressed() {
         collapse_fused(&mut content);
     }
