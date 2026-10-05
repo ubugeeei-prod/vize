@@ -1031,6 +1031,8 @@ linter	Linter	source	crates/vize_patina/src/visitor/branches.rs	4	old_ast	old AS
 linter	Linter	source	crates/vize_patina/src/visitor/root.rs	5	l0	L0	stage	vize_l0	preferred	3
 linter	Linter	source	crates/vize_patina/src/visitor/root.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	test/dev	crates/vize_patina/tests/accessible_content.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/aria_hidden_static_focus.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/aria_hidden_static_focus.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
 linter	Linter	test/dev	crates/vize_patina/tests/content_directives_history.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/davinci_authored_markup_budget.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/davinci_authored_markup_budget.rs	6	l1	L1	stage	vize_l1	preferred	2
