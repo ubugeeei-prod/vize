@@ -28,3 +28,7 @@ All 16 initial inputs remain exact. The descendant-repeat vector respects the
 unchanged rightmost-compound iterator scope; the additional complete same-
 compound SFC requires four distinct spans including two repeated IDs. Both
 suites require all 17 complete cases, with no failure or scope waiver.
+
+Every case explicitly registers its complete CLI expected path. The new
+same-compound case retains the distinct API iterator and CLI source-position
+orders in separate full report vectors; no actual output is sorted by tests.

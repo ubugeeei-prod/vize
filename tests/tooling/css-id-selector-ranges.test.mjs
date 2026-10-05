@@ -38,7 +38,7 @@ await test("source-built CLI locates every original and authored CSS ID selector
       const source = fs.readFileSync(path.join(fixture, entry.source));
       assert.equal(source.length, entry.bytes);
       assert.equal(sha256(source), entry.sha256);
-      const expected = JSON.parse(fs.readFileSync(path.join(fixture, entry.expected), "utf8"));
+      const expected = JSON.parse(fs.readFileSync(path.join(fixture, entry.cliExpected), "utf8"));
       fs.writeFileSync(path.join(directory, entry.filename), source);
       for (const format of entry.id === "original-7981"
         ? ["json", "plain", "json"]

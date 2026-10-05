@@ -6,6 +6,7 @@ Byte custody: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#
 CI repair: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994214970).
 Help authority: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994391973).
 Accepted compound scope: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994624115).
+API/CLI ordering: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7981#issuecomment-5994988278).
 Prior reports: [#7055](https://github.com/ubugeeei-prod/vize/issues/7055)
 and [#7171](https://github.com/ubugeeei-prod/vize/issues/7171).
 
@@ -71,6 +72,16 @@ same-compound repeated-ID SFC requiring four distinct original ranges. Both
 existing suites must execute the full 17-case/35-attempt inventory; production
 traversal and strict whole assertions stay exact. The earlier partial capture
 through the failed authored expectation does not qualify the complete inventory.
+
+Current source-built observations establish another consumer distinction:
+all 17 complete API rows pass, and all prior 16 CLI cases/33 attempts pass.
+The new compound has four correct spans but API formatter iterator order and
+CLI source-position order differ. The unchanged CLI accumulator sorts start/end
+before rendering. Require an explicit `cliExpected` path for every case; prior
+16 complete shared vectors remain exact, while the new compound has its own
+complete JSON/plain CLI vector. API expectations and all source/config bytes
+stay exact. Tests compare each full ordered output without normalization or an
+optional-path fallback. Fresh successor execution remains mandatory.
 
 TODO: frozen independent source review, fresh exact-source ordinary Actions,
 all 17 API and 35 CLI observations, protected full Rust/all104, actual signed
