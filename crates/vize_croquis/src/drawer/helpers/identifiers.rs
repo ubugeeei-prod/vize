@@ -30,8 +30,7 @@ use vize_carton::{CompactString, profile};
 use vize_relief::JsExpression;
 
 use ast::{
-    extract_identifier_refs_oxc_ast, extract_identifier_refs_retained_ast,
-    extract_identifiers_oxc_ast, extract_identifiers_retained_ast,
+    extract_identifier_refs_oxc_ast, extract_identifiers_oxc_ast, extract_identifiers_retained_ast,
 };
 
 /// Root identifier reference extracted from a template expression.
@@ -155,11 +154,9 @@ pub(in crate::drawer) fn extract_identifier_refs_retained(
     retained: Option<&JsExpression<'_>>,
 ) -> (Vec<CompactString>, Option<Vec<IdentifierRef>>) {
     let (stripped, mapping) = comments::strip_comments_with_offsets(expr);
-    let references = match retained {
-        Some(js) if mapping.is_none() && js.raw == expr => {
-            extract_identifier_refs_retained_ast(js.ast)
-        }
-        _ => extract_identifier_refs_oxc_ast(stripped.as_ref()),
+    let (references, complete) = match retained {
+        Some(js) if mapping.is_none() && js.raw == expr => ast::retained_references(js.ast, true),
+        _ => ast::parsed_references(stripped.as_ref(), true),
     };
     // Preserve the ordinary names from precisely the same legacy analysis view.
     let names: Vec<_> = references
@@ -191,5 +188,5 @@ pub(in crate::drawer) fn extract_identifier_refs_retained(
             (expr.get(start..end) == Some(reference.name.as_str())).then_some(reference)
         })
         .collect();
-    (names, references)
+    (names, if complete { references } else { None })
 }

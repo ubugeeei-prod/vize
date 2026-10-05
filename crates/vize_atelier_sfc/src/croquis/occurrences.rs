@@ -28,13 +28,21 @@ pub fn analyze_sfc_descriptor_with_occurrences(
         None,
         Some(&mut packet),
     );
-    if descriptor.script.as_ref().is_some_and(|block| {
-        block.src.is_some()
-            || block
-                .lang
-                .as_deref()
-                .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
-    }) {
+    if options.template_is_derived
+        || root.is_some_and(|root| {
+            descriptor
+                .template
+                .as_ref()
+                .is_none_or(|template| root.source != template.content.as_ref())
+        })
+        || descriptor.script.as_ref().is_some_and(|block| {
+            block.src.is_some()
+                || block
+                    .lang
+                    .as_deref()
+                    .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
+        })
+    {
         packet = None;
     }
     (analysis, packet)
@@ -42,3 +50,6 @@ pub fn analyze_sfc_descriptor_with_occurrences(
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod refusal_tests;

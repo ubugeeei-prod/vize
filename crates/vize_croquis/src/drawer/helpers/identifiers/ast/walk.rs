@@ -1,13 +1,15 @@
 mod assignment_target;
+pub(super) mod facts;
 mod scopes;
 
 use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectPropertyKind, PropertyKey};
 
 use super::super::IdentifierRef;
 use assignment_target::{walk_assignment_target, walk_simple_assignment_target};
+use facts::IdentifierWalk;
 use scopes::{walk_function_body, walk_parameters};
 
-pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierRef>) {
+pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut IdentifierWalk) {
     match expr {
         Expression::Identifier(id) => {
             identifiers.push(IdentifierRef::new(id.name.as_str(), id.span.start));
@@ -81,10 +83,15 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierR
             walk_simple_assignment_target(&update.argument, identifiers);
         }
         Expression::CallExpression(call) => {
+            if matches!(&call.callee, Expression::Identifier(id) if id.name == "eval") {
+                identifiers.refuse();
+            }
             walk_expr(&call.callee, identifiers);
             for arg in call.arguments.iter() {
                 if let Some(e) = arg.as_expression() {
                     walk_expr(e, identifiers);
+                } else {
+                    identifiers.refuse();
                 }
             }
         }
@@ -93,6 +100,8 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierR
             for arg in new_expr.arguments.iter() {
                 if let Some(e) = arg.as_expression() {
                     walk_expr(e, identifiers);
+                } else {
+                    identifiers.refuse();
                 }
             }
         }
@@ -144,10 +153,15 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierR
         }
         Expression::ChainExpression(chain) => match &chain.expression {
             oxc_ast::ast::ChainElement::CallExpression(call) => {
+                if matches!(&call.callee, Expression::Identifier(id) if id.name == "eval") {
+                    identifiers.refuse();
+                }
                 walk_expr(&call.callee, identifiers);
                 for arg in call.arguments.iter() {
                     if let Some(e) = arg.as_expression() {
                         walk_expr(e, identifiers);
+                    } else {
+                        identifiers.refuse();
                     }
                 }
             }
@@ -186,6 +200,6 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierR
         | Expression::BigIntLiteral(_)
         | Expression::StringLiteral(_)
         | Expression::RegExpLiteral(_) => {}
-        _ => {}
+        _ => identifiers.refuse(),
     }
 }

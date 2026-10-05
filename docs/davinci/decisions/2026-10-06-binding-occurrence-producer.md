@@ -58,18 +58,36 @@ and comments. The ordinary names-only style consumer remains unchanged.
 Split scripts use the existing joined script view and its existing physical
 mapper. Original scope IDs remain qualified by their originating block and exact
 declaration spans; setup offsets shift by precisely the existing script seam.
+Unknown setup references are retained with exact AST/source spans until the
+actual plain/setup declaration packets and existing summary are joined. Only a
+known merged declaration's exact span and identity can own such a read; implicit
+globals remain unowned. The split-source law covers the setup read of `plain` as
+well as its template use.
 No source clamping, global counter, native IPC or per-node type query is added.
 
 ## Qualification and remaining work
 
 The orchestration extraction is a separate move-only commit; all source behavior
-changes follow it. Ten prepared producer laws cover the entire original,
+changes follow it. Fourteen prepared producer laws cover the entire original,
 script/template shadows, property/string/comment negatives, repeat-cache locations,
 Unicode/CRLF, both CSS blocks, joined script offsets and whole snapshot/VIR
 conservation. External or unsupported regular scripts, malformed/external styles,
 parser failures, unsupported fact forms,
 unwitnessed identifiers and default initializer patterns refuse the whole packet.
 These refusals do not rewrite the ordinary analysis output.
+
+The initial private `0a5c3585` source review refused admission for concrete
+completeness/ownership gaps. The successor adds demand-only refusals for unwalked
+runtime forms, classes, unsupported `var` hoisting and named-function owners;
+invalid demand combinations and mismatched/derived template roots also refuse.
+The same existing template recursion carries a closed completeness bit. Parser
+or semantic errors, direct eval, unsupported nodes, omitted spread arguments and
+unsupported function statements cannot produce a complete empty packet. The
+ordinary compatibility names and diagnostics retain their existing traversal.
+Four adversarial laws preserve whole ordinary outputs while refusing each case.
+Occurrence facts promise lexical ownership and exact authored uses; they do not
+claim read/write access classification. UI consumers retain the existing explicit
+declaration WRITE/use READ styling, including updates, as a separate contract.
 
 At source preparation, only configured rustfmt and diff hygiene have run. Rust
 producer execution, unchanged differential corpus and fixed 104 instruction

@@ -37,9 +37,13 @@ impl Drawer {
 
     /// Continue an already-owned packet through the existing template walk.
     #[doc(hidden)]
-    pub fn with_binding_occurrence_packet(mut self, packet: BindingOccurrences) -> Self {
+    pub fn with_binding_occurrence_packet(mut self, mut packet: BindingOccurrences) -> Self {
+        let valid = packet
+            .resolve_script_globals(&self.croquis.binding_spans)
+            .is_some();
         self.occurrence_capture = Some(OccurrenceCapture {
             packet,
+            valid,
             ..Default::default()
         });
         self
@@ -48,9 +52,30 @@ impl Drawer {
     /// Return the ordinary Croquis and the separately-owned editor fact packet.
     #[doc(hidden)]
     pub fn finish_with_binding_occurrences(self) -> (crate::Croquis, Option<BindingOccurrences>) {
-        let packet = self
-            .occurrence_capture
-            .and_then(|capture| capture.valid.then_some(capture.packet));
+        self.finish_occurrence_packet(true)
+    }
+
+    /// Preserve source-witnessed setup reads until the actual split-script join.
+    #[doc(hidden)]
+    pub fn finish_script_occurrences(self) -> (crate::Croquis, Option<BindingOccurrences>) {
+        self.finish_occurrence_packet(false)
+    }
+
+    fn finish_occurrence_packet(
+        self,
+        resolve: bool,
+    ) -> (crate::Croquis, Option<BindingOccurrences>) {
+        let packet = self.occurrence_capture.and_then(|mut capture| {
+            if !capture.valid {
+                return None;
+            }
+            if resolve {
+                capture
+                    .packet
+                    .resolve_script_globals(&self.croquis.binding_spans)?;
+            }
+            Some(capture.packet)
+        });
         (self.croquis, packet)
     }
 
@@ -143,7 +168,7 @@ impl Drawer {
             };
             capture
                 .packet
-                .note_reference(binding, start, end, OccurrenceBlock::Template, false);
+                .note_reference(binding, start, end, OccurrenceBlock::Template);
         }
     }
 }

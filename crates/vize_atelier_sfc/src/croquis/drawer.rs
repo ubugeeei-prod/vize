@@ -120,7 +120,7 @@ fn occurrence_demand(drawer: Drawer, capture: bool) -> Drawer {
 
 fn finish(drawer: Drawer, capture: bool) -> (Croquis, Option<BindingOccurrences>) {
     if capture {
-        drawer.finish_with_binding_occurrences()
+        drawer.finish_script_occurrences()
     } else {
         (drawer.finish(), None)
     }

@@ -66,6 +66,11 @@ pub(in crate::script_parser) fn walk_expression(
 
         // Function expressions create closure scopes
         Expression::FunctionExpression(func) => {
+            if func.id.is_some()
+                && let Some(capture) = result.occurrence_capture.as_mut()
+            {
+                capture.refuse();
+            }
             let params = extract_function_params_with_occurrences(result, &func.params);
             let name = func
                 .id

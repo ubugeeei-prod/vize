@@ -182,6 +182,15 @@ fn split_scripts_use_the_existing_joined_script_space_and_original_blocks() {
             let physical = analysis.script_source_offset(descriptor, identity.start) as usize;
             assert_eq!(&source[physical..physical + name.len()], name);
         }
+        let plain = binding(packet, "plain");
+        assert_eq!(
+            packet
+                .occurrences()
+                .iter()
+                .filter(|reference| reference.binding == plain)
+                .count(),
+            2
+        );
         let id = binding(packet, "id");
         assert_eq!(
             packet

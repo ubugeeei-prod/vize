@@ -4,11 +4,11 @@ use oxc_ast::ast::{
 };
 
 use super::super::super::IdentifierRef;
-use super::walk_expr;
+use super::{facts::IdentifierWalk, walk_expr};
 
 pub(super) fn walk_assignment_target(
     target: &AssignmentTarget<'_>,
-    identifiers: &mut Vec<IdentifierRef>,
+    identifiers: &mut IdentifierWalk,
 ) {
     match target {
         AssignmentTarget::AssignmentTargetIdentifier(id) => {
@@ -52,7 +52,7 @@ pub(super) fn walk_assignment_target(
 
 fn walk_assignment_target_maybe_default(
     target: &AssignmentTargetMaybeDefault<'_>,
-    identifiers: &mut Vec<IdentifierRef>,
+    identifiers: &mut IdentifierWalk,
 ) {
     match target {
         AssignmentTargetMaybeDefault::AssignmentTargetWithDefault(default) => {
@@ -100,7 +100,7 @@ fn walk_assignment_target_maybe_default(
 
 fn walk_object_assignment_target(
     obj: &oxc_ast::ast::ObjectAssignmentTarget<'_>,
-    identifiers: &mut Vec<IdentifierRef>,
+    identifiers: &mut IdentifierWalk,
 ) {
     for prop in obj.properties.iter() {
         match prop {
@@ -130,7 +130,7 @@ fn walk_object_assignment_target(
 
 pub(super) fn walk_simple_assignment_target(
     target: &SimpleAssignmentTarget<'_>,
-    identifiers: &mut Vec<IdentifierRef>,
+    identifiers: &mut IdentifierWalk,
 ) {
     match target {
         SimpleAssignmentTarget::AssignmentTargetIdentifier(id) => {

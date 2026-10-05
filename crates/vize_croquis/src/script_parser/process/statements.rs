@@ -166,7 +166,11 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
             result.scopes.exit_scope();
         }
 
-        _ => {}
+        _ => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
+        }
     }
 }
 
@@ -224,6 +228,9 @@ fn process_function_declaration(result: &mut ScriptParseResult, func: &Function<
 }
 
 fn process_class_declaration(result: &mut ScriptParseResult, class: &Class<'_>) {
+    if let Some(capture) = result.occurrence_capture.as_mut() {
+        capture.refuse();
+    }
     if let Some(id) = &class.id {
         let name = id.name.as_str();
         result.bindings.add(name, BindingType::SetupConst);

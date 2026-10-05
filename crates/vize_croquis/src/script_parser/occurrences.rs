@@ -85,6 +85,7 @@ impl ScriptOccurrenceCapture {
             }
             let mut queue = SmallVec::<[ScopeId; 8]>::from_slice(&[reference.scope]);
             let mut visited = SmallVec::<[ScopeId; 8]>::new();
+            let mut owned = false;
             while let Some(scope_id) = queue.pop() {
                 if visited.contains(&scope_id) {
                     continue;
@@ -100,16 +101,29 @@ impl ScriptOccurrenceCapture {
                         reference.span.start,
                         reference.span.end,
                         OccurrenceBlock::Script,
-                        false,
                     );
+                    owned = true;
                     break;
                 }
                 // A lexical owner without an exact authored declaration is not
                 // a same-spelled setup declaration. Never escape to that global.
                 if scope.get_binding(&reference.name).is_some() {
+                    if matches!(
+                        scope.kind,
+                        ScopeKind::Closure
+                            | ScopeKind::Block
+                            | ScopeKind::Callback
+                            | ScopeKind::EventHandler
+                    ) {
+                        return None;
+                    }
+                    owned = true;
                     break;
                 }
                 queue.extend(scope.parents.iter().copied());
+            }
+            if !owned && scopes.get_scope(global_scope)?.kind == ScopeKind::ScriptSetup {
+                packet.defer_setup_read(reference.name, reference.span.start, reference.span.end);
             }
         }
         Some(())

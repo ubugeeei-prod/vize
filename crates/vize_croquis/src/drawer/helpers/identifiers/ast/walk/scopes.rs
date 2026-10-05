@@ -1,5 +1,4 @@
-use super::super::super::IdentifierRef;
-use super::walk_expr;
+use super::{facts::IdentifierWalk, walk_expr};
 use oxc_ast::ast::{BindingPattern, Expression, FormalParameters, FunctionBody, Statement};
 
 /// Bind a parameter list, the rest parameter included, and report the
@@ -7,7 +6,7 @@ use oxc_ast::ast::{BindingPattern, Expression, FormalParameters, FunctionBody, S
 pub(super) fn walk_parameters<'a>(
     params: &'a FormalParameters<'a>,
     locals: &mut Vec<&'a str>,
-    identifiers: &mut Vec<IdentifierRef>,
+    identifiers: &mut IdentifierWalk,
 ) {
     for param in params.items.iter() {
         collect_binding_names(&param.pattern, locals);
@@ -15,7 +14,7 @@ pub(super) fn walk_parameters<'a>(
     if let Some(rest) = &params.rest {
         collect_binding_names(&rest.rest.argument, locals);
     }
-    let mut found = Vec::new();
+    let mut found = identifiers.child();
     for param in params.items.iter() {
         walk_binding_pattern_expressions(&param.pattern, &mut found);
         if let Some(initializer) = &param.initializer {
@@ -40,7 +39,7 @@ pub(super) fn walk_parameters<'a>(
 pub(super) fn walk_function_body<'a>(
     body: &'a FunctionBody<'a>,
     locals: &mut Vec<&'a str>,
-    identifiers: &mut Vec<IdentifierRef>,
+    identifiers: &mut IdentifierWalk,
 ) {
     for statement in body.statements.iter() {
         collect_var_declarations(statement, locals);
@@ -53,7 +52,7 @@ pub(super) fn walk_function_body<'a>(
 fn walk_block<'a>(
     statements: &'a [Statement<'a>],
     locals: &mut Vec<&'a str>,
-    identifiers: &mut Vec<IdentifierRef>,
+    identifiers: &mut IdentifierWalk,
 ) {
     let depth = locals.len();
     collect_lexical_declarations(statements, locals);
@@ -118,7 +117,7 @@ fn collect_lexical_declarations<'a>(statements: &'a [Statement<'a>], locals: &mu
 fn walk_statement<'a>(
     statement: &'a Statement<'a>,
     locals: &mut Vec<&'a str>,
-    identifiers: &mut Vec<IdentifierRef>,
+    identifiers: &mut IdentifierWalk,
 ) {
     match statement {
         Statement::ExpressionStatement(expression) => {
@@ -133,7 +132,7 @@ fn walk_statement<'a>(
             walk_scoped_expr(&throw.argument, locals, identifiers);
         }
         Statement::VariableDeclaration(declaration) => {
-            let mut found = Vec::new();
+            let mut found = identifiers.child();
             for declarator in declaration.declarations.iter() {
                 walk_binding_pattern_expressions(&declarator.id, &mut found);
                 if let Some(init) = &declarator.init {
@@ -152,21 +151,23 @@ fn walk_statement<'a>(
         Statement::BlockStatement(block) => {
             walk_block(&block.body, locals, identifiers);
         }
-        _ => {}
+        _ => identifiers.refuse(),
     }
 }
 
 /// Walk one expression and keep the references no enclosing scope declares.
-fn walk_scoped_expr(expr: &Expression<'_>, locals: &[&str], identifiers: &mut Vec<IdentifierRef>) {
-    let mut found = Vec::new();
+fn walk_scoped_expr(expr: &Expression<'_>, locals: &[&str], identifiers: &mut IdentifierWalk) {
+    let mut found = identifiers.child();
     walk_expr(expr, &mut found);
     push_escaping(found, locals, identifiers);
 }
 
 /// Keep the references that name no local of the enclosing scopes.
-fn push_escaping(found: Vec<IdentifierRef>, locals: &[&str], identifiers: &mut Vec<IdentifierRef>) {
+fn push_escaping(found: IdentifierWalk, locals: &[&str], identifiers: &mut IdentifierWalk) {
+    identifiers.complete &= found.complete;
     identifiers.extend(
         found
+            .values
             .into_iter()
             .filter(|identifier| !locals.contains(&identifier.name.as_str())),
     );
@@ -176,7 +177,7 @@ fn push_escaping(found: Vec<IdentifierRef>, locals: &[&str], identifiers: &mut V
 /// default values and computed keys read the surrounding scope.
 fn walk_binding_pattern_expressions(
     pattern: &BindingPattern<'_>,
-    identifiers: &mut Vec<IdentifierRef>,
+    identifiers: &mut IdentifierWalk,
 ) {
     match pattern {
         BindingPattern::BindingIdentifier(_) => {}

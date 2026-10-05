@@ -26,6 +26,11 @@ pub(in crate::script_parser) fn walk_statement(
             walk_expression(result, &expr_stmt.expression, source);
         }
         Statement::VariableDeclaration(var_decl) => {
+            if var_decl.kind.is_var()
+                && let Some(capture) = result.occurrence_capture.as_mut()
+            {
+                capture.refuse();
+            }
             // Add variable bindings to current scope and check for reactivity losses
             for decl in var_decl.declarations.iter() {
                 add_binding_pattern_to_scope(result, &decl.id, decl.span.start);
@@ -57,6 +62,9 @@ pub(in crate::script_parser) fn walk_statement(
         Statement::FunctionDeclaration(func) => {
             // Add function name as binding
             if let Some(id) = &func.id {
+                if let Some(capture) = result.occurrence_capture.as_mut() {
+                    capture.declaration(result.scopes.current_id(), id.name.as_str(), id.span);
+                }
                 result.scopes.add_binding(
                     CompactString::new(id.name.as_str()),
                     ScopeBinding::new(BindingType::SetupConst, func.span.start),
@@ -93,6 +101,9 @@ pub(in crate::script_parser) fn walk_statement(
         }
         // Nested class declarations
         Statement::ClassDeclaration(class) => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             classes::walk_nested_class(result, class, source);
         }
         Statement::ReturnStatement(ret) => {
@@ -141,6 +152,9 @@ pub(in crate::script_parser) fn walk_statement(
             }
         }
         Statement::ForStatement(for_stmt) => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             result.scopes.enter_block_scope(
                 BlockScopeData {
                     kind: BlockKind::For,
@@ -177,6 +191,9 @@ pub(in crate::script_parser) fn walk_statement(
             result.scopes.exit_scope();
         }
         Statement::ForInStatement(for_in) => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             result.scopes.enter_block_scope(
                 BlockScopeData {
                     kind: BlockKind::ForIn,
@@ -195,6 +212,9 @@ pub(in crate::script_parser) fn walk_statement(
             result.scopes.exit_scope();
         }
         Statement::ForOfStatement(for_of) => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             result.scopes.enter_block_scope(
                 BlockScopeData {
                     kind: BlockKind::ForOf,
@@ -237,6 +257,9 @@ pub(in crate::script_parser) fn walk_statement(
             result.scopes.exit_scope();
         }
         Statement::SwitchStatement(switch_stmt) => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             walk_expression(result, &switch_stmt.discriminant, source);
             result.scopes.enter_block_scope(
                 BlockScopeData {
@@ -256,6 +279,9 @@ pub(in crate::script_parser) fn walk_statement(
             result.scopes.exit_scope();
         }
         Statement::TryStatement(try_stmt) => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             // try block
             result.scopes.enter_block_scope(
                 BlockScopeData {

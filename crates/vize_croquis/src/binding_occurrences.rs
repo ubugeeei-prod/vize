@@ -28,7 +28,6 @@ pub struct BindingOccurrence {
     pub start: u32,
     pub end: u32,
     pub block: OccurrenceBlock,
-    pub write: bool,
 }
 
 /// An authored declaration. The name is a source witness, not a lookup proxy.
@@ -46,6 +45,7 @@ pub struct BindingOccurrences {
     bindings: FxHashMap<BindingIdentity, AuthoredBinding>,
     occurrences: Vec<BindingOccurrence>,
     seen: FxHashSet<BindingOccurrence>,
+    deferred_setup_reads: Vec<(CompactString, u32, u32)>,
 }
 
 impl BindingOccurrences {
@@ -130,6 +130,10 @@ impl BindingOccurrences {
                 occurrence.end = occurrence.end.checked_add(delta)?;
             }
         }
+        for (_, start, end) in &mut self.deferred_setup_reads {
+            *start = start.checked_add(delta)?;
+            *end = end.checked_add(delta)?;
+        }
         self.bindings = shifted;
         self.seen = self.occurrences.iter().cloned().collect();
         Some(())
@@ -139,11 +143,32 @@ impl BindingOccurrences {
     #[doc(hidden)]
     pub fn merge(&mut self, other: Self) {
         self.bindings.extend(other.bindings);
+        self.deferred_setup_reads.extend(other.deferred_setup_reads);
         for occurrence in other.occurrences {
             if self.seen.insert(occurrence.clone()) {
                 self.occurrences.push(occurrence);
             }
         }
+    }
+
+    pub(crate) fn defer_setup_read(&mut self, name: CompactString, start: u32, end: u32) {
+        self.deferred_setup_reads.push((name, start, end));
+    }
+
+    /// Join exact setup reads to the existing merged-script declaration relation.
+    /// Unknown globals stay unowned; a known declaration without a packet refuses.
+    #[doc(hidden)]
+    pub fn resolve_script_globals(
+        &mut self,
+        globals: &FxHashMap<CompactString, (u32, u32)>,
+    ) -> Option<()> {
+        for (name, start, end) in std::mem::take(&mut self.deferred_setup_reads) {
+            if let Some(&(declaration_start, declaration_end)) = globals.get(&name) {
+                let binding = self.declaration(&name, declaration_start, declaration_end)?;
+                self.note_reference(binding, start, end, OccurrenceBlock::Script);
+            }
+        }
+        Some(())
     }
 
     /// Called by the existing demanded CSS expression analysis, not an editor request.
@@ -159,7 +184,7 @@ impl BindingOccurrences {
         let Some(binding) = self.declaration(name, declaration.0, declaration.1) else {
             return None;
         };
-        self.note_reference(binding, start, end, OccurrenceBlock::Style(style), false);
+        self.note_reference(binding, start, end, OccurrenceBlock::Style(style));
         Some(())
     }
 
@@ -169,14 +194,12 @@ impl BindingOccurrences {
         start: u32,
         end: u32,
         block: OccurrenceBlock,
-        write: bool,
     ) {
         let occurrence = BindingOccurrence {
             binding,
             start,
             end,
             block,
-            write,
         };
         if self.seen.insert(occurrence.clone()) {
             self.occurrences.push(occurrence);
