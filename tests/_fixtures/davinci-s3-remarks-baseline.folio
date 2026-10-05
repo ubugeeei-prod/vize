@@ -99,6 +99,7 @@
 "tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue"
 "tests/_fixtures/differential/formatter/sfc-plain-style-nested-comments/App.vue"
 "tests/_fixtures/differential/formatter/sfc-split-v-pre-indentation/App.vue"
+"tests/_fixtures/differential/lsp/binding-occurrences-original/Field.vue"
 "tests/_fixtures/differential/nuxt/explicit-page-meta/App.vue"
 "tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/src/Counter.vue"
 "tests/_fixtures/pattern-reference/upstream/language-tools/extensions/vscode/tests/embeddedGrammarFixtures/patterned-templates.vue"
