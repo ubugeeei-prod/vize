@@ -119,7 +119,11 @@ pub(crate) fn analyze_script_setup_program_skipping<const BUILTIN_TYPES: bool>(
     // Process all statements
     profile!("croquis.script_setup.walk_statements", {
         for stmt in program.body.iter() {
-            process::process_statement_with_builtin::<BUILTIN_TYPES>(&mut result, stmt, source);
+            if BUILTIN_TYPES {
+                process::process_statement_with_builtin(&mut result, stmt, source);
+            } else {
+                process::process_statement(&mut result, stmt, source);
+            }
         }
     });
 

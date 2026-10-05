@@ -119,3 +119,18 @@ the original Scorecard command. Save each complete session family before
 propagating either actual failure status. Native successful empty results keep
 sole authority. No new output-vector acceptance or performance credit precedes
 fresh exact-source Actions and protected qualification.
+
+The exact `009ed0e` repair's existing instruction workflow retained one remaining
+failure: `croquis_analyze_full_large` was 2,789,812 against the unchanged
+2,786,473 ceiling. Authenticated original/current routine-return profiles
+reconcile the 4,904 increase: script analysis +3,518 (ordinary statement
+subtree +3,489), template analysis +1,392, and parent self work -6. Copy and
+None-table drop costs increased only 14 and 3; they do not explain the total.
+Restore the ordinary public statement dispatcher and variable loop byte-for-byte
+from literal `f83e26d`. Only the demanded editor wrapper intercepts a top-level
+variable declaration, retaining invalidation and per-declarator record-before-macro
+ordering; it delegates every other statement to the original dispatcher. The
+false parse specialization calls that original function directly. All old inputs,
+whole controls, caps and native successful-empty authority remain intact. Fresh
+source/native and original 100+4 instruction qualification are still required;
+the static attribution and restoration give no new performance acceptance.

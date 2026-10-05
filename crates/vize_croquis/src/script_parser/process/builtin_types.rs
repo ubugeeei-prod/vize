@@ -13,6 +13,24 @@ use vize_carton::CompactString;
 #[cfg(test)]
 mod tests;
 
+/// Add editor facts only to demanded top-level variables in the existing walk.
+pub(in crate::script_parser) fn process_statement_with_builtin(
+    result: &mut ScriptParseResult,
+    stmt: &Statement<'_>,
+    source: &str,
+) {
+    let Statement::VariableDeclaration(decl) = stmt else {
+        super::statements::process_statement(result, stmt, source);
+        return;
+    };
+    super::super::extract::invalidate_default_objects(result, stmt);
+    for declarator in decl.declarations.iter() {
+        super::super::extract::invalidate_default_expression(result, declarator.init.as_ref());
+        record(result, declarator, decl.kind);
+        super::macros::process_variable_declarator(result, declarator, decl.kind, source);
+    }
+}
+
 pub(super) fn record(
     result: &mut ScriptParseResult,
     declarator: &VariableDeclarator<'_>,
