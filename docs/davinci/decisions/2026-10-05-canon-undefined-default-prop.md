@@ -120,3 +120,12 @@ common helper stays unchanged; required execution now fails on absent snapshots,
 and the receipt independently asserts every complete empty vector. The harness
 source hash changes explicitly; original input/config/golden bytes remain exact.
 Fresh source/native proof is required before admission, with no skip waiver.
+
+Actual586 source Check37273533198 and native37273532707 both succeed.
+Artifact11329513840 independently retains 199 verified raw hashes, all 14
+original authored strings, three complete non-null empty runtime snapshots,
+three complete CLI JSON/native text expectations and the original full optional
+editor hover with exact source/config bytes. Replay onto signed main7c87
+repairs only canonical composition, preserving all 13 owned non-document files
+and every incoming350-line prefix. The replay requires its own fresh Actions;
+no historical runtime receipt transfers to protected admission.
