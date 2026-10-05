@@ -38,3 +38,5 @@ comparator in the test-only expected path sort under the zero-warning rule.
 Add an ordinal comparator to both path sorts; all project inputs, complete
 file maps, path memberships and production bytes remain unchanged. Preserve
 the original red run and require new exact-head acceptance.
+
+The actual-main replay on `a2712e78968e9112c89cbc2111b108bd0e51959c` preserves every incoming decision, every original author/trailer and all owned production, corpus, runtime/helper and strict witness bytes. The earlier source failure/success receipts remain retained; fresh exact-head Actions and protected delivery are required before requeue.
