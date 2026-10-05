@@ -16,7 +16,7 @@ use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChild
 /// Reserved-looking authored static tags must still receive registry checks.
 pub(crate) fn is_owned_dynamic_component_alias(
     template_ast: Option<&RootNode<'_>>,
-    usage: &vize_croquis::ComponentUsage,
+    usage: &vize_croquis::croquis::ComponentUsage,
 ) -> bool {
     is_dynamic_component_alias(usage.name.as_str())
         && usage.name == vize_croquis::drawer::dynamic_component_alias(usage.start)

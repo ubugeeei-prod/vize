@@ -59,3 +59,14 @@ The same decision is recorded on #8003 and in the canonical record in this
 slice. Include the verified reporter as a Co-authored-by trailer. Independent
 technical peer review qualifies only the frozen source; it does not transfer
 historical CPU, runtime, merge or release acceptance.
+
+The first hosted source `a5988e0402e42d7b3d9a3e8e963313588a076f16`
+failed before native execution: the new usage type named the crate root rather
+than the existing public `vize_croquis::croquis::ComponentUsage`; the scope
+re-export required sorting, and repository formatting rejected original App.vue.
+The successor fixes the public path/sort and adds only this exact fixture folder
+to the existing formatter-sensitive source policy. All original fixture bytes
+and all 21 assertions remain unchanged. The raw logs and failed source identity
+are retained; they prove no native/unit result. Full-source dispatch waits for
+the separate #7857 `stable_revision` native-feature repair to actually merge,
+then requires a fresh actual-main rebase and all hosted runtime checks.
