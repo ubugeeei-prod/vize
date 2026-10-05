@@ -6,6 +6,9 @@ use crate::virtual_ts::{
 };
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
+#[path = "global_components_tests/dynamic_props_tests.rs"]
+mod dynamic_props;
+
 fn generate(script: &str, template: &str, check_unknown_components: bool) -> VirtualTsOutput {
     let allocator = vize_carton::Allocator::new();
     let (root, errors) = vize_armature::parse_with_options(

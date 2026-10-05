@@ -18,20 +18,25 @@ pub(crate) fn is_owned_named_dynamic_component(
     template_ast: Option<&RootNode<'_>>,
     usage: &vize_croquis::croquis::ComponentUsage,
 ) -> bool {
-    template_ast.is_some_and(|root| {
-        let Some(ExpressionNode::Simple(expression)) = is_expression_node(root, usage.start) else {
-            return false;
-        };
-        expression.js_ast.is_some_and(|js| {
-            js.raw == expression.content
-                && usage.name == expression.content.trim()
-                && matches!(
-                    js.ast,
-                    oxc_ast::ast::Expression::Identifier(_)
-                        | oxc_ast::ast::Expression::StaticMemberExpression(_)
-                )
-        })
-    })
+    owned_named_dynamic_component_ast(template_ast, usage).is_some()
+}
+
+pub(super) fn owned_named_dynamic_component_ast<'a>(
+    template_ast: Option<&'a RootNode<'a>>,
+    usage: &vize_croquis::croquis::ComponentUsage,
+) -> Option<&'a oxc_ast::ast::Expression<'a>> {
+    let ExpressionNode::Simple(expression) = is_expression_node(template_ast?, usage.start)? else {
+        return None;
+    };
+    let js = expression.js_ast?;
+    (js.raw == expression.content
+        && usage.name == expression.content.trim()
+        && matches!(
+            js.ast,
+            oxc_ast::ast::Expression::Identifier(_)
+                | oxc_ast::ast::Expression::StaticMemberExpression(_)
+        ))
+    .then_some(js.ast)
 }
 
 /// Prove the usage is the generated alias of its authored `<component :is>`.

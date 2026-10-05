@@ -174,3 +174,88 @@ remain mandatory. The source/workflow mismatch requires this fresh-main
 composition, a new independent exact-source review, source/native Actions and
 full native runtime execution. Prior passed affected laws and failed native
 receipts stay historical; the first433 hold, open Issue and Draft status remain.
+
+Exact named-owner source `19d2d4fe0884392a0484325fcae5e41683401a73`
+passes PR Check `37320325580` at virtual checkout `5672c7dd3de406371a3ccd2d634a4d24f41124e3`;
+its tree equals source tree `98b9986c28ea06efe9723baee9dbee098b3120ee`.
+All four affected Rust workers pass 16,179 tests, including the seven generator
+laws. NativePhase `37320324574` also succeeds with `profile:none`, retaining
+official artifact `11349688661` (81,698,833 bytes, SHA256
+`402ca4c1f8fc1ac94374ff7f483e8c38525137b0bd58f42ed61d494bd1132d6b`).
+These are source/default observation gates, not the 33-state or protected gate.
+
+The required full Check `37322063497`, source/driver `19d`, is terminal FAILURE:
+only `test-scripts` fails, while source coverage, full Rust and Vue parity pass.
+The unchanged native control emits no CLI or LSP diagnostics for
+`<component :is="registry.Choice" count="wrong" />`, where `Choice` requires a
+numeric `count`; its independent expected TS2322 remains at line 6, character 43.
+The complete failed log is 1,814,638 bytes, SHA256
+`7e8a125da7575d6d01021de9c60169f77344a91951c5a57b54b1f553eb2e448f`.
+Official artifact `11351119302` is 58,655,096 bytes, SHA256
+`ed1ae8a1f1e84692f0939e84727ee9779d228cae1291f80aa0f0e5059eb7a2fb`.
+Its original dynamic-component receipt has 11 true-option observations: the
+first ten pass and the namespace-prop state fails; false/absent and the remaining
+22 states are unexecuted. The source-built binary has SHA256
+`e7cf038e4259e6f0f35d6a411502a840a42f27635291cfd842d7854682cbd6dd`.
+No 33-state success, complete Issue fix or release credit is granted.
+
+This actual failure authorizes a separate private typed-path follow-on. The
+props declaration currently sanitizes `registry.Choice` to `registry_Choice`,
+losing the constructor type; default props eligibility can also omit it.
+Only those two props boundaries gain the existing, fresh offset/name-owned
+bound-is AST reference. The Identifier root resolves by its exact script/import
+or external value binding, preserving Props aliases and rejecting type-only
+names; markup Pascal/camel candidates cannot replace that root. Static member
+properties use retained decoded AST identifiers; unsupported roots decline.
+No per-query parse, global, `any` fallback, provider change or new stage is added.
+Independent source review finds that the new OR would broaden legacy Vue 2
+props eligibility and exact-root reference choice. The new private reference
+therefore declines legacy Vue 2 and plain Identifier names at entry, preserving
+both unrelated old boundaries. The negative-only dot gate avoids the existing
+whole-template locator for ordinary plain names; it grants no ownership and
+every admitted member still requires the fresh AST proof. Recursive exact
+Identifier root resolution applies only inside members. No measured cost or
+performance claim is granted. A
+whole generated-code/map law compares actual fresh named-value ASTs against
+the same source/summary with the new-reference route declined by missing
+retained AST, including a lowercase/uppercase binding collision in both modern plain-name
+and legacy modes. This is
+unexecuted source coverage, not a native Vue 2 behavior claim. Ordinary tags
+retain their old markup reference. Mapped laws require exact count/value sub-spans and generated check/literal
+bytes (broad parent-range containment is insufficient), and cover namespace,
+case collision, nested/supported escaped roots, Props aliases and exact
+import/external/type-only authority. All original fixtures and 33 native states
+remain unchanged; fresh independent peer, exact source/native/full Actions,
+protected ceilings, actual signed merge and release remain required. This
+private follow-on has no Rust/native execution or measured performance claim.
+#8003 stays open, PR8040 stays Draft/unqueued and the first433 hold persists.
+
+Before freezing the typed follow-on, all four existing source commits are
+replayed cleanly onto actual main `8a8521d6897bbe3fd0af0cbfaebd83f4fc933933`
+(the first433 release commit). Incoming version/lock/workflow/decision changes
+remain intact. The original `19d` failed binary and receipts stay historical;
+new source/native/full gates must use the newly published source. The refreshed
+consumer inventory labels the new mapped unit module as test/dev. No release
+publication or Ready/queue authorization is inferred from the main advance.
+
+Static producer trace also corrects the new escaped-root positive premise:
+lowercase raw `regis\u0074ry` is not the decoded `registry` binding and does not
+pass Croquis's existing uppercase-or-binding target selection. The positive
+uses actual supported uppercase `Regis\u0074ry.Choice`/`Registry`, proving the
+retained AST's decoded reference. The lower escaped input is retained as a real
+no-usage, complete-output/map unchanged control. No ComponentUsage is fabricated,
+Croquis widened or original fixture changed; this is an unexecuted source
+assumption correction, not a reported native failure or success.
+
+The same source trace finds that `(registry).Choice` is also not admitted:
+Croquis's raw root is `(registry)`, not the declared binding, and starts with
+`(` rather than an uppercase letter. Its original bytes therefore move from
+the new positive table to the same actual no-usage whole-output/map control.
+The projector's parenthesized recursion remains defensive without actual
+producer/native coverage credit. All remaining positive premises are traced
+through the real root-binding/uppercase selector and implicit Props producer.
+
+A final static API check uses ProjectionMapping's actual public `spans()`
+accessor in the new mapped law; the initial private `.iter()` premise is
+corrected before hosted compilation. Expected spans/bytes, original controls
+and all production blobs remain unchanged; no failed runtime is inferred.
