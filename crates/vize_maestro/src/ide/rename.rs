@@ -89,6 +89,9 @@ impl RenameService {
     ) -> Option<PrepareRenameResponse> {
         match canonical::prepare(ctx, corsa_bridge.as_deref()).await {
             canonical::Answer::Available(response) => return response,
+            canonical::Answer::Unavailable if corsa::is_component_attribute_query(ctx) => {
+                return None;
+            }
             canonical::Answer::Unavailable => {}
         }
         let corsa_result = match ctx.block_type? {

@@ -23,6 +23,9 @@ impl RenameService {
                     Self::rename(ctx, new_name),
                 );
             }
+            canonical::Answer::Unavailable if corsa::is_component_attribute_query(ctx) => {
+                return None;
+            }
             canonical::Answer::Unavailable => {}
         }
         let corsa_result = match ctx.block_type? {

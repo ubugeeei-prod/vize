@@ -202,6 +202,9 @@ impl super::DefinitionService {
             });
         }
 
+        if corsa_support::is_component_attribute_query(ctx) {
+            return None;
+        }
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
         if word.is_empty() {

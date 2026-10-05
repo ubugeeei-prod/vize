@@ -13,8 +13,7 @@ pub(crate) fn component_attribute_position(
     ctx: &IdeContext<'_>,
     document: &CanonicalVirtualDocument,
 ) -> Option<Option<(u32, u32)>> {
-    let (_, component) = crate::ide::definition::helpers::get_non_model_attribute_at_offset(ctx)?;
-    if !crate::ide::is_component_tag(&component) {
+    if !is_component_attribute_query(ctx) {
         return None;
     }
     let result = &document.virtual_result;
@@ -22,6 +21,17 @@ pub(crate) fn component_attribute_position(
         copied_position(&ctx.content, result, ctx.offset)
             .or_else(|| prop_key::source_position(&ctx.content, result, ctx.offset)),
     )
+}
+
+/// A failed/unavailable typed attribute route cannot authorize a block-local
+/// fallback at a different symbol. Art/model/event/native DOM policies remain
+/// on their existing routes, which do not use this canonical Vue document.
+pub(crate) fn is_component_attribute_query(ctx: &IdeContext<'_>) -> bool {
+    ctx.is_in_template()
+        && ctx.uri.path().ends_with(".vue")
+        && !ctx.uri.path().ends_with(".art.vue")
+        && crate::ide::definition::helpers::get_non_model_attribute_at_offset(ctx)
+            .is_some_and(|(_, component)| crate::ide::is_component_tag(&component))
 }
 
 fn copied_position(source: &str, result: &VirtualTsResult, offset: usize) -> Option<(u32, u32)> {

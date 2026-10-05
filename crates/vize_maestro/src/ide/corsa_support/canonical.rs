@@ -16,7 +16,7 @@ mod project;
 pub(super) mod rename;
 mod script;
 mod semantic_links;
-pub(crate) use attribute_query::component_attribute_position;
+pub(crate) use attribute_query::{component_attribute_position, is_component_attribute_query};
 pub(crate) use script::open_canonical_script_document;
 
 pub(crate) use component_completion::canonical_component_prop_position;

@@ -13,8 +13,8 @@ VueComponentPropNavigation key and both import-map endpoint roundtrips. The
 component source endpoint establishes owner identity; it never becomes an alias.
 Ordinary expression, event and native DOM query policy retains its current path.
 Initialized attribute refusal is authoritative for rename/references/definition;
-bridge absence/errors retain existing fallback. A mapped prepare range must cover
-the authored cursor. Unknown component attributes no longer jump to the entire
+ordinary bridge absence/errors retain existing fallback. A mapped prepare range
+must cover the authored cursor. Unknown component attributes no longer jump to the entire
 child defineProps call; known members, model and Options API routes remain.
 
 Merged class values retain actual append ranges for each dynamic value and
@@ -32,7 +32,8 @@ LF/CRLF, astral inline positions and unsaved shift/revert retain full vectors.
 
 ## Outstanding qualification
 
-Source review, actual compile and native execution are still pending. Existing
+Complete current source/native qualification remains pending; the first genuine
+compiled execution is recorded below. Existing
 full native positives must pass; do not skip or weaken them on a failure. Normal
 source Actions validate the conventional Draft before readiness. Protected full
 Rust/instruction suites, signed delivery and supported public release proof remain
@@ -60,3 +61,23 @@ shared prepare cursor check and successful native-null authority also affect
 ordinary canonical answers. Full old native positives remain mandatory. Public
 history has a move-only dispatch extraction followed by the safety change; its
 final source tree matches frozen f969 exactly before this documentation receipt.
+
+## First actual source execution and unavailable-route repair
+
+[Paired observed failure](https://github.com/ubugeeei-prod/vize/issues/8009#issuecomment-5996455122)
+records source f2e/Check37321712456. Four authenticated JUnit artifacts execute
+16,185 cases: 16,184 pass and exactly the original static-style law fails. Three
+whole driver laws qualify five complete sessions; three transport helper cases
+are separate. The LF style session reaches native2322/repair/full publication,
+then prepare returns unrelated Child import1:7..12; CRLF style is not reached.
+Raw job111804863898 is907289B/SHA9d377fac9dd375c46b4712e14d3a325817d196679b6ab4f6ce45883f553d5710;
+artifact11350092837 is127017B/SHA5497d8a5ef6ccee8ef3db78a80b9c80f517f21215977ab71a5cdaa46214c4144.
+
+Source tracing shows that primary unavailable/error falls through to the old
+block-local route even after the canonical cursor check; the exact hidden backend
+exception stays UNKNOWN. The successor refuses that fallback only for plain Vue
+component attribute names. Healthy typed answers, known member/model/Options
+lookup, ordinary bindings, Art/events/models/native DOM retain their routes.
+Every original/full wire expectation and probe remains byte-identical. Fresh
+source/native execution must qualify all seven sessions and old positives; no
+Ready, queue, private Event/library/epoch or public-release credit is transferred.
