@@ -1,9 +1,31 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { EventEmitter } from "node:events";
-import { appendFileSync } from "node:fs";
+import { appendFileSync, writeSync } from "node:fs";
 
 const hookKey = "__VUE_DEVTOOLS_GLOBAL_HOOK__";
+
+/** Report an unfinished runtime synchronously, including an unsettled top-level await. */
+export function runtimeProcessEvidence() {
+  let phase = "input";
+  let details: Record<string, unknown> = {};
+  const onExit = (exitCode: number) => {
+    writeSync(
+      2,
+      `${JSON.stringify({ event: "runtime-incomplete", exitCode, phase, ...details })}\n`,
+    );
+  };
+  process.on("exit", onExit);
+  return {
+    phase(next: string, context: Record<string, unknown> = {}) {
+      phase = next;
+      details = { ...details, ...context };
+    },
+    complete() {
+      process.removeListener("exit", onExit);
+    },
+  };
+}
 
 /** Close each trace once and restore its observer without masking its error. */
 export async function withMountedRuntimeDevtools<T>(

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import test from "node:test";
 import {
   mountedRuntimeDevtools,
@@ -6,6 +7,61 @@ import {
 } from "./support/mounted-runtime-devtools.ts";
 
 const key = "__VUE_DEVTOOLS_GLOBAL_HOOK__";
+
+test("an unsettled runtime child retains its last phase without claiming a cause", () => {
+  const support = new URL("./support/mounted-runtime-devtools.ts", import.meta.url).href;
+  const child = spawnSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "--eval",
+      `import { runtimeProcessEvidence } from ${JSON.stringify(support)};
+const evidence = runtimeProcessEvidence();
+evidence.phase("close mounted DOM", { backend: "vdom", fixtureIndex: 0 });
+await new Promise(() => {});`,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(child.error, undefined);
+  assert.equal(child.status, 13);
+  assert.equal(child.signal, null);
+  assert.equal(child.stdout, "");
+  const lines = child.stderr.split("\n").filter((line) => line.startsWith('{"event":'));
+  assert.deepEqual(
+    lines.map((line) => JSON.parse(line)),
+    [
+      {
+        event: "runtime-incomplete",
+        exitCode: 13,
+        phase: "close mounted DOM",
+        backend: "vdom",
+        fixtureIndex: 0,
+      },
+    ],
+  );
+});
+
+test("completed runtime children retain the exact success protocol and emit no exit evidence", () => {
+  const support = new URL("./support/mounted-runtime-devtools.ts", import.meta.url).href;
+  const child = spawnSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "--eval",
+      `import { runtimeProcessEvidence } from ${JSON.stringify(support)};
+const evidence = runtimeProcessEvidence();
+evidence.phase("assert fixture observations");
+process.stdout.write('{"passed":1}');
+evidence.complete();`,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(child.error, undefined);
+  assert.equal(child.status, 0);
+  assert.equal(child.signal, null);
+  assert.equal(child.stdout, '{"passed":1}');
+  assert.equal(child.stderr, "");
+});
 
 test("successful completed traces close once before releasing the observer", async () => {
   const target = {};

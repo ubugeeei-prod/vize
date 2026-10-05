@@ -21,6 +21,7 @@ export async function traceMountedBackend({
   components = {},
   externalTargets = [],
   production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
+  onPhase = (_phase) => {},
 }) {
   assert.ok(backend === "vdom" || backend === "vapor", `unknown backend: ${backend}`);
   if (slots !== null) validateSuppliedSlots(slots);
@@ -44,9 +45,12 @@ export async function traceMountedBackend({
 
   return withMountedRuntimeDevtools(
     production,
-    () => window.happyDOM.close(),
+    () => {
+      onPhase("close mounted DOM");
+      return window.happyDOM.close();
+    },
     async (devtools) => {
-      const vue = await loadRuntime({ production });
+      const vue = await loadRuntime({ production, onPhase });
       devtools.attach(vue);
       const render = await evaluateCompiledRender(code, vue);
       const events = [];
@@ -130,6 +134,7 @@ export async function traceMountedBackend({
 
       try {
         app.mount(host);
+        onPhase("mounted nextTick");
         await vue.nextTick();
         snapshot();
         for (const step of steps) {
@@ -192,10 +197,12 @@ export async function traceMountedBackend({
           } else {
             throw new Error(`unknown interaction step: ${JSON.stringify(step)}`);
           }
+          onPhase("updated nextTick");
           await vue.nextTick();
           snapshot();
         }
         app.unmount();
+        onPhase("unmounted nextTick");
         await vue.nextTick();
         assert.equal(host.childNodes.length, 0, "unmount left DOM nodes behind");
         scope.assertUnmounted();
@@ -261,8 +268,10 @@ export function validateLoopScenario(context, steps) {
 
 export async function loadRuntime({
   production = process.env.VIZE_VUE_RUNTIME_PRODUCTION === "1",
+  onPhase = (_phase) => {},
 } = {}) {
   assert.equal(typeof production, "boolean", "production runtime mode must be explicit");
+  onPhase("build mounted runtime");
   const result = await build({
     configFile: false,
     logLevel: "silent",
@@ -284,6 +293,7 @@ export async function loadRuntime({
   const outputs = Array.isArray(result) ? result : [result];
   const chunks = outputs.flatMap((output) => output.output.filter((item) => item.type === "chunk"));
   assert.equal(chunks.length, 1, "Vue runtime must bundle into one self-contained module");
+  onPhase("import mounted runtime");
   return import(`data:text/javascript;base64,${Buffer.from(chunks[0].code).toString("base64")}`);
 }
 
