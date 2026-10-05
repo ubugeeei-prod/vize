@@ -214,3 +214,29 @@ entry or old source success cannot substitute for that terminal proof.
 TODO: whole Glyph consuming integration, original full-SFC AST/output/runtime
 after owner drop, historical File/registry/default completion, #6882 closure
 and measured speed/10x remain unfinished. No product legacy path is replaced.
+
+## Protected instruction refusal and bounded correction
+
+The [paired failure/removal receipt](https://github.com/ubugeeei-prod/vize/issues/6842#issuecomment-5990877862)
+retains the actual failed candidates692b and43c5, both5,340,170 against the
+unchanged Vapor stress-interpolation ceiling5,340,048. Only the owned failed
+entry was removed; source1624 remains qualified but unmerged. The successful
+preceding886c candidate measures5,339,463 in all three repetitions. Independent
+ZIP digest/CRC and complete raw profiles locate +707 exclusive instructions
+only in the two existing element_core instances (+7/+700). Source positions
+are zero and executable bytes are absent, so detailed code-generation cause
+remains unknown; no inherited failure or retained-ownership defect is claimed.
+
+Genuine replay onto actually merged69b2 preserves all fifteen original owning
+implementation/law/scanner blobs, author dates/full messages, inputs/maps and
+all incoming canonical/storage clauses. The bounded correction reuses the
+already computed element span start for the opening provenance slice. That
+start is exactly the same authored opening-token offset in every close state.
+It removes duplicate offset/range validation without changing end recovery,
+options, diagnostics, provenance, output or the pipeline. The separate first-
+newline owner retains its mode-restoration hunk; no unmerged source is imported.
+
+This source equivalence grants no measured recovery. Fresh automatic source
+Actions and actual unchanged104x3 gates, whole48Vue2/64Vue1 captures and full
+Rust must qualify the genuine composition before actual signed delivery.
+No budget, golden, input, measurement window or product-default waiver applies.

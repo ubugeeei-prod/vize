@@ -216,7 +216,7 @@ pub(crate) fn element_core<'a>(
     let open_end = cx.token_span(&element.open.gt).end;
     let open_slice = cx
         .source
-        .get(cx.offset(element.open.lt_name.text) as usize..open_end as usize)
+        .get(span.start as usize..open_end as usize)
         .unwrap_or(tag);
     if component {
         cx.observe(OpFamily::SlotCarrier);
