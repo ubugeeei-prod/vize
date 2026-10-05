@@ -219,7 +219,10 @@ fn type_config_anchor_does_not_expose_app_modules_to_sibling_sources() {
         cli_diagnostics(&app, &corsa, &[]),
         vec![
             (
-                "../shared/data.ts".into(),
+                case.path()
+                    .join("shared/data.ts")
+                    .to_string_lossy()
+                    .replace('\\', "/"),
                 json!([
                     "error:1:16 [TS2307] Cannot find module 'only-in-app' or its corresponding type declarations."
                 ])

@@ -48,3 +48,9 @@ orders the app diagnostic before the imported source, so the full native stdout
 expectation now follows that ordering without changing any code, input or
 diagnostic. Refresh the generated consumer surface inventory for the added
 source module; require fresh complete three-case execution before acceptance.
+
+The second native run reaches the sibling CLI comparison and matches both full
+diagnostic vectors. The CLI's established convention renders files outside the
+governing app root as absolute paths, so assert the exact authored sibling path
+from the isolated case root. Native stdout remains config-relative. No runtime
+source, input, diagnostic or output convention is changed by this test repair.
