@@ -58,7 +58,8 @@ async function runProbe(fixture, artifacts) {
   const temporaryFiles = [];
   try {
     assert.equal(nuxt.constructor.version, "v2.17.3");
-    const generated = path.join(nuxt.options.buildDir, "oxlint.config.json");
+    const generated = path.join(fixture, ".oxlint.vize.json");
+    temporaryFiles.push(generated);
     const artifact = JSON.parse(fs.readFileSync(generated, "utf8"));
     assert.equal(artifact.settings.vize.preset, "incremental");
     assert.equal(artifact.rules?.["vize/nuxt/prefer-import-meta"], undefined);
@@ -70,16 +71,8 @@ async function runProbe(fixture, artifacts) {
 
     const lintEntry = path.join(fixture, "node_modules/@vizejs/nuxt/dist/lint/index.mjs");
     const api = await import(pathToFileURL(lintEntry).href);
-    // Preserve the default module artifact, then use the public root-config
-    // option for CLI execution: oxlint 1.78 rejects parent-relative ignores.
-    const rootConfig = path.join(fixture, "issue-7828-oxlint.config.json");
-    assert.equal(fs.existsSync(rootConfig), false);
-    temporaryFiles.push(rootConfig);
-    const generation = await api.setupNuxtLintConfigGeneration(
-      { autoInit: false, configFile: rootConfig },
-      nuxt,
-    );
-    assert.equal(generation.configFile, rootConfig);
+    // Execute the actual corrected default; no root-placement workaround.
+    const rootConfig = generated;
     const lintArtifact = JSON.parse(fs.readFileSync(rootConfig, "utf8"));
     fs.copyFileSync(rootConfig, path.join(artifacts, "nuxt2-root-oxlint.config.json"));
     const dirs = api.collectNuxtLintDirs(api.toNuxtLintProjectState(nuxt.options));

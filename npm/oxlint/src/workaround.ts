@@ -1,4 +1,4 @@
-import { extractSfcBlocks } from "./sfc-blocks.js";
+import { extractSfcBlocks } from "./sfc-blocks.ts";
 import type { LineColumn } from "./model.js";
 
 const SCRIPTLESS_WORKAROUND_MARKER = "oxlint-plugin-vize-scriptless";

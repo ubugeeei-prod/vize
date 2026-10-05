@@ -19,7 +19,7 @@ interface OxlintOverride {
 interface NuxtOxlintConfig {
   plugins: ["vue"];
   jsPlugins: [{ name: "vize"; specifier: string }];
-  settings: { vize: { preset: "incremental" } };
+  settings: { vize: { preset: "incremental"; generatedBy?: "@vizejs/nuxt" } };
   ignorePatterns?: string[];
   globals?: Record<string, "readonly" | "writable">;
   rules?: Record<string, NuxtLintSeverity>;
@@ -85,12 +85,14 @@ function mergeRules(
 
 /**
  * Plan globs are relative to the Nuxt root. Oxlint resolves `overrides` and
- * `ignorePatterns` from the generated config's directory, so the emitter
- * rebases them when it knows both directories.
+ * `ignorePatterns` from the generated config's directory. That directory
+ * must contain the plan root: Oxlint cannot ignore files outside it.
  */
 export interface NuxtOxlintGlobBase {
   rootDir: string;
   configDir: string;
+  /** Mark the module's reserved generated file; custom artifacts remain unmarked. */
+  owner?: "@vizejs/nuxt";
 }
 
 /** Render the complete generated oxlint config, including its trailing newline. */
@@ -99,8 +101,14 @@ export function renderNuxtOxlintConfig(
   pluginSpecifier: string,
   globBase?: NuxtOxlintGlobBase,
 ): string {
-  const rebase = (glob: string) =>
-    globBase ? rebaseGlob(glob, globBase.rootDir, globBase.configDir) : glob;
+  if (globBase) {
+    const root = path.relative(globBase.configDir, globBase.rootDir);
+    if (root === ".." || root.startsWith(`..${path.sep}`) || path.isAbsolute(root)) {
+      throw new Error("Generated oxlint config must be in the lint root or an ancestor directory");
+    }
+  }
+  const rebase = (glob: string, ignore = false) =>
+    globBase ? rebaseGlob(glob, globBase, ignore) : glob;
   const ignorePatterns: string[] = [];
   const globals: Record<string, "readonly" | "writable"> = {};
   const rules: Record<string, NuxtLintSeverity> = {};
@@ -108,15 +116,15 @@ export function renderNuxtOxlintConfig(
 
   for (const item of items) {
     if (item.files) {
-      const override: OxlintOverride = { files: item.files.map(rebase) };
-      if (item.ignores) override.excludeFiles = item.ignores.map(rebase);
+      const override: OxlintOverride = { files: item.files.map((glob) => rebase(glob)) };
+      if (item.ignores) override.excludeFiles = item.ignores.map((glob) => rebase(glob));
       if (item.globals) override.globals = { ...item.globals };
       if (item.rules) override.rules = prefixVizeRules(item.rules);
       overrides.push(override);
       continue;
     }
 
-    if (item.ignores) ignorePatterns.push(...item.ignores.map(rebase));
+    if (item.ignores) ignorePatterns.push(...item.ignores.map((glob) => rebase(glob, true)));
     mergeGlobals(globals, item.globals);
     mergeRules(rules, item.rules);
   }
@@ -124,7 +132,9 @@ export function renderNuxtOxlintConfig(
   const config: NuxtOxlintConfig = {
     plugins: ["vue"],
     jsPlugins: [{ name: "vize", specifier: pluginSpecifier }],
-    settings: { vize: { preset: "incremental" } },
+    settings: {
+      vize: { preset: "incremental", ...(globBase?.owner ? { generatedBy: globBase.owner } : {}) },
+    },
   };
   if (ignorePatterns.length > 0) config.ignorePatterns = ignorePatterns;
   if (Object.keys(globals).length > 0) config.globals = globals;
@@ -134,14 +144,18 @@ export function renderNuxtOxlintConfig(
   return `${JSON.stringify(config, null, 2)}\n`;
 }
 
-function rebaseGlob(glob: string, rootDir: string, configDir: string): string {
+function rebaseGlob(glob: string, base: NuxtOxlintGlobBase, ignore: boolean): string {
   const negated = glob.startsWith("!");
   const body = negated ? glob.slice(1) : glob;
-  if (path.isAbsolute(body)) return glob;
-
-  let relative = path.relative(configDir, path.resolve(rootDir, body));
-  relative = relative.split(path.sep).join("/");
-  if (relative.length === 0) relative = ".";
-  else if (!relative.startsWith(".")) relative = `./${relative}`;
-  return negated ? `!${relative}` : relative;
+  const target = path.resolve(base.rootDir, body);
+  let relative = path.relative(base.configDir, target);
+  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    if (ignore)
+      throw new Error(`Oxlint cannot ignore a path outside its config directory: ${glob}`);
+    // Overrides receive an absolute path for files outside the config directory.
+    // Oxlint uses that same absolute path when it cannot strip the config root.
+    relative = target;
+  }
+  const pattern = relative.split(path.sep).join("/") || ".";
+  return negated ? `!${pattern}` : pattern;
 }

@@ -44,7 +44,7 @@ void test("Nuxt module regenerates lint globals from live registries before late
   });
 
   await nuxtModule({ compiler: false, lint: { autoInit: false }, musea: false }, nuxt);
-  const generated = path.join(rootDir, ".nuxt", "oxlint.config.json");
+  const generated = path.join(rootDir, ".oxlint.vize.json");
   const initial = JSON.parse(fs.readFileSync(generated, "utf8")) as {
     globals: Record<string, string>;
   };

@@ -13,8 +13,10 @@ export interface VizeNuxtLintOptions extends NuxtLintFeatures {
   /**
    * File path for the generated oxlint config.
    *
-   * Relative paths are resolved from the Nuxt project root.
-   * @default ".nuxt/oxlint.config.json"
+   * Relative paths are resolved from the Nuxt project root. The config must
+   * live in the lint root or an ancestor so Oxlint can apply its ignores.
+   * Add the generated file to the project's .gitignore.
+   * @default ".oxlint.vize.json"
    */
   configFile?: string;
 
