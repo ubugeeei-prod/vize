@@ -102,3 +102,10 @@ with #7861 exposed two separately added artifact hidden-input flags at different
 positions. Use one shared trailing flag, preserving all raw hidden captures and
 commands; no source/native acceptance transfers from the previous head. The
 original runtime/CLI/native/editor contracts remain mandatory before admission.
+
+The unchanged Canon runtime test helper and production resolver read CORSA_PATH,
+whereas the editor control reads VIZE_TEST_TSGO_PATH. Bind both to the already
+verified official oracle binary in this qualifier and retain the runtime source
+SHA/binary path in its hashed capture. Existing test helpers, fixture bytes and
+whole vectors are unchanged; only fresh corrected-head execution can qualify
+the explicit binding.

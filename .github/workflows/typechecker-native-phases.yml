@@ -239,6 +239,8 @@ jobs:
             --config 'profile.ci-opt.codegen-units=16' \
             --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
           export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync,readdirSync} from "node:fs";import {join} from "node:path";const root=process.env.VIZE_DEFAULT_PROP_CAPTURE;const name=readdirSync(root,{withFileTypes:true}).find(e=>e.isDirectory()).name;process.stdout.write(JSON.parse(readFileSync(join(root,name,"oracle.json"),"utf8")).nativeBinary)')"
+          export CORSA_PATH="$VIZE_TEST_TSGO_PATH"
+          node --input-type=module -e 'import {writeFileSync} from "node:fs";import {join} from "node:path";writeFileSync(join(process.env.VIZE_DEFAULT_PROP_CAPTURE,"imported-runtime-props.runtime.json"),JSON.stringify({sourceSha:process.env.SOURCE_SHA,nativeBinary:process.env.CORSA_PATH})+"\n")'
           cp crates/vize_canon/src/batch/type_checker/tests/recent_issues/imported_runtime_props.rs "$VIZE_DEFAULT_PROP_CAPTURE/imported-runtime-props.fixture.rs"
           set +e
           cargo test --locked --profile ci-opt -p vize_canon --lib \
@@ -272,6 +274,9 @@ jobs:
           const hash = file => createHash('sha256').update(readFileSync(file)).digest('hex');
           assert.equal(hash(join(root, 'imported-runtime-props.fixture.rs')), 'f588f6b9e3f706011ad32431008032808e2bda0ae4ac4f364c03846efe809687');
           assert.equal(readFileSync(join(root, 'imported-runtime-props.status.txt'), 'utf8'), '0\n');
+          const importedRuntime = JSON.parse(readFileSync(join(root, 'imported-runtime-props.runtime.json'), 'utf8'));
+          assert.equal(importedRuntime.sourceSha, process.env.SOURCE_SHA);
+          assert.equal(realpathSync(importedRuntime.nativeBinary), realpathSync(editorRuntime.nativeBinary));
           const runtimeOutput = readFileSync(join(root, 'imported-runtime-props.stdout.txt'), 'utf8');
           for (const name of ['imported_runtime_define_props_reach_script_and_template', 'type_based_with_defaults_omit_imported_defaults', 'imported_runtime_props_cache_rebinds_local_define_props_name']) assert(runtimeOutput.includes(`test batch::type_checker::tests::recent_issues::imported_runtime_props::${name} ... ok`));
           assert(runtimeOutput.includes('test result: ok. 3 passed; 0 failed;'));
