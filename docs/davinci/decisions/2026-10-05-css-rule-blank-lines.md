@@ -60,3 +60,19 @@ TODO: post-source/protected terminal receipts and actual signed merge here and
 on the issue. Publication/public installed-CLI proof follows the release owner's
 first-cut fence and explicit thaw. Broader style/dialect/native history remains
 unfinished under the existing roadmap.
+
+Initial source Check37255950703 at1239803014 passes actual Clippy/build and
+all four Rust workers; the27-case full-output law executes in111594105881
+and the defensive comment law in111594105808. Tooling1–4 reject the stale
+complete style current-owner pin; tooling1 also rejects the owned import shard.
+Refresh only exact current-source transitions for the added module/helper
+visibility, retain every original captured asset/function/golden/default, and
+regenerate the formatter shard through the actual existing Node producer behind
+the Rust wrapper. The original CSS escape law remains byte-identical; eleven pure
+validator controls and all19 generator artifacts pass locally. Fresh complete
+source acceptance remains required, and no protected runtime/cap credit transfers.
+
+Paired [custody correction](https://github.com/ubugeeei-prod/vize/issues/7826#issuecomment-5987225634)
+retains old denominator controls and adds original-pin/revision/function/current-
+source forgery negatives. Executed e7e052d837 has parents d1a25/123980 and
+tree25817aba4278e9c5a7149641f61bd10ab8fcec51 equal to literal123980.
