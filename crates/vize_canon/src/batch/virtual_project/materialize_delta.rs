@@ -54,7 +54,7 @@ impl VirtualProject {
 
     pub(super) fn mark_incremental_config_file(&mut self) {
         self.incremental_materialized_candidates
-            .insert(self.virtual_root.join("tsconfig.json"));
+            .insert(self.generated_tsconfig_path());
     }
 
     pub(super) fn mark_incremental_stub_files(&mut self) {
@@ -137,8 +137,8 @@ impl VirtualProject {
         {
             self.write_shared_helpers()?;
         }
-        if candidates.contains(&self.virtual_root.join("tsconfig.json")) {
-            self.write_tsconfig_file(&self.virtual_root.join("tsconfig.json"), None, false)?;
+        if candidates.contains(&self.generated_tsconfig_path()) {
+            self.write_tsconfig_file(&self.generated_tsconfig_path(), None, false)?;
         }
 
         for path in &candidates {
@@ -219,7 +219,7 @@ impl VirtualProject {
 
     fn is_current_generated_path(&self, path: &Path) -> bool {
         path == self.virtual_root.join(PACKAGE_BOUNDARY_FILE)
-            || path == self.virtual_root.join("tsconfig.json")
+            || path == self.generated_tsconfig_path()
             || path == self.virtual_root.join(VUE_MODULE_STUBS_FILE)
             || (path == self.virtual_root.join(SHARED_HELPERS_FILE) && self.uses_shared_helpers())
             || (path == self.virtual_root.join(AUTO_IMPORT_STUBS_FILE)

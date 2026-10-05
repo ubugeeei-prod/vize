@@ -144,7 +144,7 @@ pub(super) fn permits_sharing(
 fn permits_compiler_options(project: &VirtualProject) -> bool {
     // The executor materializes this authoritative flattened config before
     // partitioning, while retaining the existing MaterializeLock.
-    let Ok(source) = std::fs::read_to_string(project.virtual_root().join("tsconfig.json")) else {
+    let Ok(source) = std::fs::read_to_string(project.generated_tsconfig_path()) else {
         return false;
     };
     let Ok(config) = serde_json::from_str::<serde_json::Value>(&source) else {
