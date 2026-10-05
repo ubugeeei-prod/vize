@@ -215,7 +215,6 @@ remain equal, with every incoming canonical clause and both genuine inventories.
 Publish the same Draft with fresh exact source/native Actions. No old658 execution
 credit transfers to this changed required-surface producer.
 
-
 ## Protected failure and explicit unknown-prop scope
 
 Candidate `c48c590c`, Check `37351946080`, fails six unchanged compatibility
@@ -243,7 +242,6 @@ all unchanged compatibility cases and protected full/all104 delivery. The old
 failed candidate stays failed; no stdio-RPC, history/default, global strict policy
 or 10x completion is claimed. See the [paired issue record](https://github.com/ubugeeei-prod/vize/issues/7874#issuecomment-5997806537).
 
-
 ## Required compatibility snapshots cannot silently skip
 
 Independent source-only review seals private543d; runtime remains pending. The
@@ -265,7 +263,6 @@ extra campaign, pipeline or cap change. This separate private successor requires
 independent review and fresh actual source/native/full protected qualification.
 Old passes/failedc48 remain historical; merge and release stay pending.
 
-
 ## Reviewed required qualifier and genuine actual-main replay
 
 The separate fail-closed qualifier `0f95d3fc54a3e255806b72c93c858a2e1506c597` received independent SOURCE_ONLY_CLEAR (receipt SHA256 `4d64085d9f73e4d3114cd2cb1c7525b86a31834b40d022b3cedf643eef94993e`). Required setup/scan/check errors cannot hide as None; complete typed Batch fields, both declaration contents and original CLI streams precede unchanged comparisons. Optional no-SDK behavior, all original inputs/configs/goldens/timeouts and the causal543d production remain exact. This review provides no execution or admission credit.
@@ -273,3 +270,5 @@ The separate fail-closed qualifier `0f95d3fc54a3e255806b72c93c858a2e1506c597` re
 All eleven owned commits were genuinely replayed onto actual signed main `6f17283b88b986cf7eda38bd3cd97964a775933f` as source `28ebc09f28cc0724a6c936dc246f96d08a3f199f` / tree `f4ff41a40053b9619238ff5b55efbee8fb836a4b`, exactly the independent merge projection. Every one of the38 noncomposition owned blobs and all eleven full author/date/body/footer records are retained. The only source-inventory difference is the exact ten incoming8052 LSP rows; all incoming non-owned entries and full350-line canonical bytes are preserved. Replay receipt SHA256 `89c62deda17346b023e5cd8179108fbd7c1c8391e7570a6cfb4e058de68f0006`.
 
 Publish this reviewed correction to the SAME Draft #8056 after a literal remote24e/off-queue fence, then qualify fresh exact-head Actions. The existing native lane must actually execute all six unchanged protected-regression vectors, plus seven complete CLI cases, fourteen direct-service vectors and the original native oracle. Fresh full source/corpus, protected suites/all104, signed reporter-credited actual merge and public release remain required. Failed protectedc48 remains failed; no old-source pass, raw-native-wire, stdio RPC, history/default replacement or global10x credit is transferred.
+
+Source a4347d5 Check 37360344358 has a real early check-js formatter failure in this companion (job 111933083081). The pinned formatter removes only three surplus blank lines; this changes no production, input, vector or qualifier. The failed run remains failed. The formatted same-PR successor requires fresh exact-head Actions before readiness; no pending native result is transferred as current acceptance.
