@@ -366,7 +366,7 @@
       },
       "case": {
         "path": "document-link-module-resolution-original/case.json",
-        "sha256": "3149551ba260c9ffa94c48cac0f114a06c5f2a09c7ebb995e8cc8fa2a21d6f64"
+        "sha256": "d9b40c4cd036cd14480838f4cde8e8fa7d1e670d1b9d22ee38715babebfd8690"
       },
       "requestCount": 1,
       "initializationOptions": {
