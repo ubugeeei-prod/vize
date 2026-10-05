@@ -105,6 +105,7 @@ const expectedHover = {
 function expectedCodeActions(uri) {
   return [
     {
+      diagnostics: [expectedDiagnostics[0]],
       edit: {
         changes: {
           [uri]: [
@@ -123,6 +124,7 @@ function expectedCodeActions(uri) {
       title: "Fix: Replace multiple spaces with single space",
     },
     {
+      diagnostics: [expectedDiagnostics[0]],
       edit: {
         changes: {
           [uri]: [

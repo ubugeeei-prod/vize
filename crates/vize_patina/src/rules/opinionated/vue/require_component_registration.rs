@@ -296,7 +296,7 @@ impl Rule for RequireComponentRegistration {
 /// Collect all element tags from the template
 fn collect_components<'a>(root: &RootNode<'a>, result: &mut Vec<(String, u32, u32)>) {
     fn visit_element<'a>(element: &ElementNode<'a>, result: &mut Vec<(String, u32, u32)>) {
-        let start = element.loc.span.start;
+        let start = element.loc.span.start + 1;
         let tag_str = element.tag;
         result.push((
             tag_str.to_compact_string(),

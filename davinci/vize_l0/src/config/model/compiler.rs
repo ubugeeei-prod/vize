@@ -89,6 +89,8 @@ pub(crate) struct RawCompilerConfig {
     /// Explicit SFC Vapor mode switch from `compiler.vapor`.
     pub(crate) vapor: Option<bool>,
     pub(crate) template_syntax: Option<RawTemplateSyntaxConfig>,
+    #[serde(deserialize_with = "deserialize_whitespace")]
+    pub(crate) whitespace: Option<String>,
     /// Default JSX output mode (`compiler.jsxMode`); `None` when absent, which
     /// the JSX entry points treat as VDOM.
     pub(crate) jsx_mode: Option<JsxMode>,
@@ -98,4 +100,16 @@ pub(crate) struct RawCompilerConfig {
     /// Tag patterns that compile as custom elements instead of Vue components.
     pub(crate) custom_elements: Vec<crate::String>,
     pub(crate) compatibility: RawCompilerCompatibilityConfig,
+}
+
+/// Retain the old ignored-field behavior for every non-string JSON value.
+/// RawValue validates syntax without converting numbers such as `1e400`.
+fn deserialize_whitespace<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let raw = Option::<Box<serde_json::value::RawValue>>::deserialize(deserializer)?;
+    raw.filter(|value| value.get().starts_with('"'))
+        .map(|value| serde_json::from_str(value.get()).map_err(serde::de::Error::custom))
+        .transpose()
 }

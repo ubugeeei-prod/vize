@@ -141,3 +141,62 @@ whole replies, complete raw framing/source/build/PID/exit custody, full Rust
 and unchanged 104 instruction ceilings are required before actual merge.
 Actual signed delivery and supported publication remain pending. Native,
 default, Pug element and full #6883 history completion remain unclaimed.
+
+## Complete create-vue consumer contract
+
+The [paired #8006 consumer decision](https://github.com/ubugeeei-prod/vize/issues/8006#issuecomment-6000978399)
+repairs the existing #8064 child in native Stack #8065 above #8059. The
+unchanged pinned create-vue App.vue has upstream SHA256
+`bdafe70baf73a040d432b574108ce0e11823a3c1c1cc8bdfe01d118d6ff7d35a`;
+the complete original authored patch has SHA256
+`1f763acdf1e64ad0bef203e2c3e495c528eee932336c2c75fe4dcc008396a13b`.
+Keep every parent field/range and the complete three-entry folding vector.
+Require exactly h1, button, p with nested a, and visitCount/doubled const
+children, with whole authored kind/range/selection fields. The original outline
+owner independently derived this literal hierarchy from the actual producer
+and original tokens; it equals authenticated artifact 11364862052, old94a RPC
+id16. The two original #8006 whole outline corpus arrays stay unchanged.
+
+A move-only commit extracts the existing whole symbol/folding literals into a
+bounded helper before the child additions. Its exact inverse recovers the old
+complete test. Preserve the original input, requests, options, all other editor
+assertions, timeout/retry policy, production and ceilings. This correction
+uses the producer contract, not snapshot recapture or child filtering.
+
+Old94a full 37356286971/job111919421349 remains failed, with raw SHA256
+`b97bb913541e6fa51ca369dd11f2f9b169561de2ccc3ba09b754bd8374006149`.
+Current b82b full 37357485998/job111923482024 also failed the same old symbol
+expectation, with raw SHA256
+`8c77c53368ba260e08f772a30e7c6e1c08539c1f6684f3ed3a118845cdaaa90c`.
+Folding was not requested after either failed symbol assertion, so its retained
+vector is source-derived without runtime credit. B82b ordinary Check
+37357491035 succeeded; that separate green cannot qualify the failed full run.
+
+Keep both Stack layers Draft/off queue. The literal-e5 child needs independent
+source review, fresh ordinary and full whole editor Actions, then protected
+full Rust/all104, signed actual merges and supported publication. No old
+execution, native-stage/history completion or release credit transfers.
+
+The [paired unused-import correction](https://github.com/ubugeeei-prod/vize/issues/8006#issuecomment-6001256829)
+retains d72 Check 37360927155/check-js111935033092, raw SHA256
+`daccd335a737a72c0e2f819f6313f6a1ddbfb82e678e81493e7218fcc8d84d6d`.
+All 7,837 files formatted successfully; the zero-warning gate rejected only the
+old runner's now-unused authoredPosition alias. Remove that import, preserving
+the helper, complete hierarchy/folding/parents, all input/setup/other assertions
+and every budget. Restoring the import then reversing the recorded extraction
+still recovers the whole original runner. The independent d72 source receipt
+`a2d74342b0a0416d1effeadd900ea527ab0d2c43376cfa12cc8257ba7b067052`
+and separate full 37361011907 remain historical scope. Fresh exact successor
+ordinary/full Stack gates and protected actual delivery are required.
+
+The [paired support-location correction](https://github.com/ubugeeei-prod/vize/issues/8006#issuecomment-6001603927)
+retains 10f ordinary PRtooling1/4 job111939628478, raw SHA256
+`cc4e4866b416b739288fd61b3b9c4790fab7a2c3d32afa0690e38405ead04ebf`.
+The existing snapshot-baselines law requires every check-directory TypeScript
+file to be a declared runner. Move the expectation-only helper byte-for-byte
+into the existing tests/_helpers directory before adjusting its two relative
+imports. Keep every declaration and the strict inventory law unchanged; add
+no fixture phase or checker filter. Full vectors/input/setup/other laws and
+e5 parent remain exact. The successful 10f Vue/editor observations retain only
+that source's scope; fresh successor ordinary/full/protected execution is
+required before actual Stack delivery.

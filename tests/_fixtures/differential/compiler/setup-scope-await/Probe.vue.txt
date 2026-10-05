@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { getCurrentInstance } from "vue";
+
+const { wait = true } = defineProps<{ wait?: boolean }>();
+
+if (wait) {
+  await Promise.resolve();
+}
+const hasInstance = getCurrentInstance() !== null;
+</script>
+
+<template>
+  <p>instance after await: {{ hasInstance }}</p>
+</template>

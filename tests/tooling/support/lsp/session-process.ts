@@ -3,6 +3,20 @@ import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import path from "node:path";
 import { resolveVizeLaunchCommand, type VerifiedLspLaunch } from "./launch.ts";
 import { root } from "./paths.ts";
+import { verifyPublishedLaunch, type VerifiedPublishedLspLaunch } from "./published-launch.ts";
+
+export type BoundLspSession = {
+  repoRoot: string;
+  binary: string;
+  published?: PublishedSessionBinding;
+};
+
+export type PublishedSessionBinding = {
+  authority: "published-release";
+  receiptPath: string;
+  receiptSha256: string;
+  captureRoot: string;
+};
 import { LspSessionCapture } from "./session-capture.ts";
 import {
   newBaselineObserver,
@@ -12,32 +26,54 @@ import {
 const captures = new WeakMap<ChildProcessWithoutNullStreams, LspSessionCapture>();
 const baselines = new WeakMap<ChildProcessWithoutNullStreams, BaselineObserver>();
 
+export function spawnBoundLspSessionProcess(
+  binding: BoundLspSession,
+): ChildProcessWithoutNullStreams {
+  return spawnLspSessionProcess(binding.repoRoot, true, binding.binary, binding.published);
+}
+
 /** Reuse the existing launch and version probe; capture never starts another server. */
 export function spawnLspSessionProcess(
   repoRoot = root,
   sourceRequired = process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD === "1",
   envBinary = process.env.VIZE_LSP_BIN,
+  published?: PublishedSessionBinding,
 ): ChildProcessWithoutNullStreams {
-  let verified: VerifiedLspLaunch | undefined;
+  let verified: VerifiedLspLaunch | VerifiedPublishedLspLaunch | undefined;
   const resolveStarted = process.hrtime.bigint();
-  const [command, ...args] = resolveVizeLaunchCommand(undefined, envBinary, {
-    required: sourceRequired,
-    repoRoot,
-    onVerifiedLaunch: (launch) => {
-      verified = launch;
-    },
-  });
+  if (published) {
+    assert.equal(sourceRequired, true, "published sessions require whole raw capture");
+    assert.equal(published.authority, "published-release");
+    verified = verifyPublishedLaunch(published.receiptPath, published.receiptSha256);
+    assert.equal(
+      envBinary,
+      verified.binary,
+      "the public caller cannot select a fallback executable",
+    );
+  }
+  const [command, ...args] = published
+    ? [verified!.binary, "lsp"]
+    : resolveVizeLaunchCommand(undefined, envBinary, {
+        required: sourceRequired,
+        repoRoot,
+        onVerifiedLaunch: (launch) => {
+          verified = launch;
+        },
+      });
   const resolveLaunchMs = Number(process.hrtime.bigint() - resolveStarted) / 1e6;
   const capture = sourceRequired
     ? new LspSessionCapture({
         repoRoot,
-        outputRoot: path.join(repoRoot, "target/differential/lsp-sessions"),
+        outputRoot:
+          published?.captureRoot ?? path.join(repoRoot, "target/differential/lsp-sessions"),
         launch: verified!,
         callerStack: new Error().stack ?? "",
       })
     : undefined;
   assert.ok(!sourceRequired || capture, "source-built sessions require raw observations");
-  const baseline = newBaselineObserver(repoRoot, verified, resolveLaunchMs);
+  const baseline = published
+    ? undefined
+    : newBaselineObserver(repoRoot, verified as VerifiedLspLaunch | undefined, resolveLaunchMs);
   baseline?.beforeSpawn();
   const child = spawn(command, args, { cwd: repoRoot, stdio: ["pipe", "pipe", "pipe"] });
   if (baseline) {

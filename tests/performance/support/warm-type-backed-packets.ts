@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { hoverToText, offsetToPosition } from "../../tooling/support/lsp/assertions.ts";
 import type { LspSession } from "../../tooling/support/lsp/session.ts";
+import type { JsonRpcMessage } from "../../tooling/support/lsp/protocol.ts";
 
 export type RequestSpec = { name: string; method: string; params: unknown };
 export type Packet = { name: string; method: string; result: unknown };
@@ -16,6 +17,40 @@ export function object(value: unknown): Record<string, unknown> {
 }
 
 export const hoverText = (value: unknown): string => hoverToText(object(value));
+
+export function assertOriginalFrames(
+  client: JsonRpcMessage[],
+  server: JsonRpcMessage[],
+  initialization: unknown,
+) {
+  const responses = server.filter(
+    (message) => typeof message.id === "number" && message.method == null,
+  );
+  assert.equal(client.length, 89, "every original client frame remains present");
+  assert.equal(server.length, 89, "every original server frame remains present");
+  assert.equal(responses.length, 76, "every original complete response remains present");
+  const initialize = client.filter((message) => message.method === "initialize");
+  const shutdown = client.filter((message) => message.method === "shutdown");
+  assert.equal(initialize.length, 1);
+  assert.equal(shutdown.length, 1);
+  assert.deepEqual(
+    responses.find((message) => message.id === initialize[0].id),
+    {
+      jsonrpc: "2.0",
+      id: initialize[0].id,
+      result: initialization,
+    },
+  );
+  assert.deepEqual(
+    responses.find((message) => message.id === shutdown[0].id),
+    {
+      jsonrpc: "2.0",
+      id: shutdown[0].id,
+      result: null,
+    },
+  );
+  return responses;
+}
 
 export function requests(uri: string, source: string): RequestSpec[] {
   const position = (needle: string, inside: number, last = false) => {
@@ -145,8 +180,11 @@ export async function waitForInitialTypes(session: LspSession, uri: string): Pro
   await new Promise((resolve) => setTimeout(resolve, 10_000));
 }
 
-export async function finishWire(repoRoot: string, previous: string[]) {
-  const directory = path.join(repoRoot, "target/differential/lsp-sessions");
+export async function finishWire(
+  repoRoot: string,
+  previous: string[],
+  directory = path.join(repoRoot, "target/differential/lsp-sessions"),
+) {
   const created = fs.readdirSync(directory).filter((name) => !previous.includes(name));
   assert.equal(created.length, 1, "each side owns exactly one actual server capture");
   const capture = path.join(directory, created[0]);

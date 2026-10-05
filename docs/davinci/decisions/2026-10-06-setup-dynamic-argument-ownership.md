@@ -299,3 +299,11 @@ All original fixtures, nineteen pins, 132 phase oracles, four approved goldens
 and budgets remain unchanged. Source inspection proves no measured saving;
 fresh exact-source suites and protected all100+4-by-three/full Rust/runtime/
 actual signed merge are still required.
+
+The exact eight-line repair is committed as49c47190b4 overa02 with the verified
+reporter trailer. Compose genuine verified signed maind43e764ad9233ea40a162a7a49d1a84db54ac591
+(parent8e6dabfb66), including actual8058/8044/8057 and both LSP Stack layers,
+without conflict. All reviewed production/test objects, original fixtures,
+goldens and strict oracles stay unchanged; all incoming non-owned source and
+canonical whole-line clauses are retained. Fresh automatic source Actions
+own execution of this successor; no old source/protected acceptance transfers.
