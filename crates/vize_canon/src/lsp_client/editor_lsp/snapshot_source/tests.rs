@@ -88,6 +88,7 @@ fn source_root_kind_sentinel_span_and_extended_references_are_checked() {
         (root + 12, 1),
         (root + 16, 1),
         (root + 20, 0x40000000),
+        (root + 20, 0x81000000),
         (root + 20, 0x80000004),
         (extended + 44, 2),
     ] {

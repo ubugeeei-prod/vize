@@ -53,8 +53,7 @@ pub(super) fn source_text<'a>(
         || word(bytes, root + 4)? != 0
         || word(bytes, root + 12)? != 0
         || word(bytes, root + 16)? != 0
-        || data & 0xc000_0000 != 0x8000_0000
-        || data & 0x00ff_ffff != 0
+        || data != 0x8000_0000
         || structured - extended < SOURCE_FILE_EXTENDED
     {
         return Err(Refuse::Root);

@@ -46,9 +46,26 @@ pub struct SnapshotSourceProject<'owner> {
     owner: &'owner SnapshotSourceOwner<'owner>,
     descriptor: &'owner ProjectResponse,
     sources: FxHashMap<String, String>,
+    source_names: Vec<String>,
 }
 
 /// Complete source text cannot outlive its project, snapshot or API owner.
+///
+/// ```
+/// use corsa::api::ApiClient;
+/// use std::path::Path;
+/// use vize_canon::lsp_client::snapshot_source::{SnapshotSourceOwner, SourceTextOutcome};
+/// fn scoped(client: &ApiClient) {
+///     let mut owner = SnapshotSourceOwner::create(client).unwrap();
+///     {
+///         let project = owner.project(Path::new("/project/tsconfig.json")).unwrap().unwrap();
+///         if let SourceTextOutcome::Complete(text) = project.read("file:///project/source.ts").unwrap() {
+///             println!("{}", text.text());
+///         }
+///     }
+///     owner.release().unwrap();
+/// }
+/// ```
 ///
 /// ```compile_fail
 /// use corsa::api::ApiClient;
@@ -141,6 +158,7 @@ impl<'client> SnapshotSourceOwner<'client> {
             owner: self,
             descriptor,
             sources,
+            source_names: names,
         }))
     }
 
@@ -159,6 +177,11 @@ impl SnapshotSourceProject<'_> {
 
     pub fn contains_uri(&self, uri: &str) -> bool {
         self.sources.contains_key(uri)
+    }
+
+    /// Preserve the native response's original order without another query.
+    pub fn source_names(&self) -> &[String] {
+        &self.source_names
     }
 
     /// Fetch from this same snapshot/project, then verify the encoded root's

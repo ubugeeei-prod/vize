@@ -166,6 +166,7 @@ fn actual_native_snapshot_retains_complete_stdlib_and_overlay_text_with_owner_re
                 "nativeBinarySha256":binary_sha,
                 "nativePackage":metadata,"nativePackageSha256":hash(&package_bytes),
                 "snapshot":owner.handle(),"project":project.descriptor(),"rows":rows,
+                "sourceFileNames":project.source_names(),
                 "foreignConfig":foreign_config,"foreignSource":foreign_source,
                 "refusalControls":["foreign-config","foreign-source","absent-source","unsupported-version","foreign-root"],
                 "refusals":refusals,
