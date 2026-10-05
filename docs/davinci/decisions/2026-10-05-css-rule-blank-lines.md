@@ -40,8 +40,8 @@ partial failures. No extra observer build or CI stage is introduced. Four
 standalone style controls retain the existing no-final-newline API contract
 for reindentation or comment-aware chunks; this repair does not alter it.
 
-Original differential packs, defaults and all 104 instruction ceilings remain
-unchanged. The protected SFC input includes ordinary CSS and its separate
+Original differential inputs/captured assets, other current references, defaults
+and all 104 instruction ceilings remain unchanged. The protected SFC input includes ordinary CSS and its separate
 between-rule blank line: actual unchanged-budget acceptance must prove this
 repair has no regression; do not infer acceptance from source checks.
 
@@ -98,3 +98,28 @@ earlier canonical line, retain all other decisions/350 lines and production/
 golden bytes, prove the prospective merge-tree clean and require fresh source
 Actions before re-entry. ProtectedAPI27/CLI9/full suites/all104 remain required.
 Paired [composition receipt](https://github.com/ubugeeei-prod/vize/issues/7826#issuecomment-5987672767).
+
+Exact ba928 source Check37260303796 passes all source/Rust/tooling gates. Its
+signed protected candidate621d43bb at Check37262614184 passes the unchanged
+100+4 instruction ceilings with three identical runs, but tooling3 job111613103972
+rejects exactly `capture/style-block-keeps-box-values-and-implicit-nested-selectors/sfc/0`.
+The source-built complete output185 bytes equals the original input
+`c6532257a2cfa6bf988ced53ccc1cbc208a04a775b3efd81102ac52c4bd964ef`;
+the historical184-byte output `83a16896ba2557fb7d502b60a384e513cde36104ff8d0641c56f2b6df4ab4d39`
+removes the authored LF before `.item` at byte142. Remove the known-red queue
+entry; keep that strict historical mismatch and all300 original inputs/output
+assets/source pins immutable. A reviewed literal authority qualifies only this
+whole SFC/current-owner/default-option coordinate. Three complete current
+passes must equal the explicit185-byte reference; the historical comparison
+must remain different. Its pack reports23 historical matches, one separately
+qualified current match and one internal observation, never24 historical matches.
+Forged source/API/options/value/omitted-LF/refinement metadata are rejected.
+The compact `style/1` #7866 proposal remains separate and unpublished. Old27/9
+runtime observations were not reached after this assertion, so fresh exact source,
+protected104/API27/CLI9/full Rust and signed merge remain required.
+Paired [current-reference decision](https://github.com/ubugeeei-prod/vize/issues/7826#issuecomment-5988258080).
+Independent source review rehashes all seven files, proves deleting current
+byte142 yields the entire historical184-byte output, and clears the strict
+single-coordinate qualification/counter scope. Its ten pure controls and the
+owner's thirteen pure controls pass; no local formatter/native execution occurs.
+Fresh source adoption and complete protected execution remain required.
