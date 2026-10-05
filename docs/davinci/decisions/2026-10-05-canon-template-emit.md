@@ -66,3 +66,14 @@ CLI renderer retains every line without the native text printer indentation.
 Keep separate explicit full CLI and native TS2769 expectations; neither output
 is filtered and no production source or diagnostic range changes. Exact-nine
 CLI plus complete editor acceptance must pass again on the successor head.
+
+At 61465 all nine native/CLI full vectors pass, including the mixed model
+positive and negative calls. The original complete editor diagnostics and
+range pass, but native QuickInfo at the invalid call prints a union event and
+never[] rest instead of the independently authored overload presentation.
+Retain that failing assertion while adding an independent actual-Vue native
+LSP oracle with both valid calls and the complete two bad-call diagnostics.
+Capture its full invalid/valid QuickInfo, source/config, runtime identity and
+pinned Vue declaration bytes. Compare original and oracle presentation before
+any expectation decision; never[] is not unconditionally accepted. Refresh
+official generated consumption inventories for new source inputs.

@@ -9,6 +9,9 @@ use super::editor_typecheck_fixture::{
 };
 use crate::ide::{HoverService, IdeContext};
 
+#[path = "editor_typecheck_emit_tests/native_oracle.rs"]
+mod native_oracle;
+
 const ORIGINAL: &str = include_str!(
     "../../../../../tests/_fixtures/differential/typechecker/template-dollar-emit/App.vue.txt"
 );
@@ -109,6 +112,8 @@ fn original_emit_preserves_complete_editor_diagnostics_and_typed_hover() {
             panic!("unexpected hover: {hover:?}");
         };
         assert_eq!(contents.kind, MarkupKind::Markdown);
+        let oracle_hover = native_oracle::hover(&corsa).await;
+        assert_eq!(hover.contents, oracle_hover.contents);
         assert_eq!(
             contents.value,
             "```typescript\nconst $emit: ((event: \"click\") => void) & ((event: \"change\", value: number) => void)\n```"
