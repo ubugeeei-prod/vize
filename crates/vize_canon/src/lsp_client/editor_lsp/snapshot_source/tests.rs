@@ -140,21 +140,26 @@ fn selected_utf8_is_strict_and_foreign_root_names_do_not_acquire_ownership() {
 
 #[test]
 fn exact_native_uri_membership_refuses_dot_slash_percent_and_foreign_aliases() {
-    let sources = source_members(&[String::from(NAME)]).unwrap();
+    let (name, prefix) = if cfg!(windows) {
+        ("C:/workspace/a #.ts", "file://C:/")
+    } else {
+        (NAME, "file:///")
+    };
+    let sources = source_members(&[String::from(name)]).unwrap();
     assert_eq!(
-        sources.get("file:///workspace/a%20%23.ts"),
-        Some(&String::from(NAME))
+        sources.get(vize_l0::cstr!("{prefix}workspace/a%20%23.ts").as_str()),
+        Some(&String::from(name))
     );
-    for uri in [
-        "file:///workspace/./a%20%23.ts",
-        "file:///workspace//a%20%23.ts",
-        "file:///workspace/%61%20%23.ts",
-        "file:///foreign/a%20%23.ts",
+    for path in [
+        "workspace/./a%20%23.ts",
+        "workspace//a%20%23.ts",
+        "workspace/%61%20%23.ts",
+        "foreign/a%20%23.ts",
     ] {
-        assert_eq!(sources.get(uri), None);
+        assert_eq!(sources.get(vize_l0::cstr!("{prefix}{path}").as_str()), None);
     }
     assert_eq!(
-        source_members(&[String::from(NAME), String::from(NAME)]),
+        source_members(&[String::from(name), String::from(name)]),
         None
     );
     assert_eq!(source_members(&[String::from("relative.ts")]), None);
