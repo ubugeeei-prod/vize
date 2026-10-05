@@ -12,6 +12,7 @@ mod attributes;
 mod directives;
 mod formatter;
 pub(crate) mod helpers;
+pub(crate) mod literal_lines;
 mod vue_filters;
 
 /// Native HTML elements whose authored text is whitespace-significant.

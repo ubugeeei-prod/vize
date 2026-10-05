@@ -5,7 +5,7 @@ use crate::{
 use vize_l0::String;
 
 use super::directives::should_format_expression;
-use super::helpers::template_literal_state_after_line_from;
+use super::literal_lines::LiteralLineState;
 
 /// Parsed attribute with structured information for sorting and rendering.
 #[derive(Debug, Clone)]
@@ -302,18 +302,18 @@ fn write_rendered_attribute(
     indent_continuation: bool,
 ) {
     let mut lines = attr.split('\n');
-    let mut in_template_literal = false;
+    let mut literal = LiteralLineState::default();
     if let Some(first) = lines.next() {
         let first = first.trim_end_matches('\r');
         output.extend_from_slice(first.as_bytes());
-        in_template_literal = template_literal_state_after_line_from(false, first);
+        literal = LiteralLineState::from_attribute(first);
     }
 
     for line in lines {
         output.extend_from_slice(newline);
         let line = line.trim_end_matches('\r');
-        // Every byte between the backticks is part of the string's runtime
-        // value, so a line that *starts* inside a template literal is emitted
+        // Quasi and legally continued quoted-string bytes are runtime value,
+        // so a line that starts inside either kind of string is emitted
         // exactly as the expression formatter produced it — no attribute
         // indent in front of it, no leading whitespace stripped off it.
         //
@@ -323,11 +323,11 @@ fn write_rendered_attribute(
         // column, so the next `vize fmt` pass — reading back the re-indented
         // literal — made a different wrap decision and produced a different
         // file. (#3379)
-        if indent_continuation && !in_template_literal {
+        if indent_continuation && !literal.line_is_raw() {
             write_indent(output, indent, continuation_depth);
         }
         output.extend_from_slice(line.as_bytes());
-        in_template_literal = template_literal_state_after_line_from(in_template_literal, line);
+        literal.advance_line(line);
     }
 }
 
