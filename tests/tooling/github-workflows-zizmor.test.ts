@@ -98,7 +98,7 @@ test("zizmor workflow audits GitHub Actions with pinned security scanning", () =
 test("zizmor plans with read-only API calls and no candidate checkout", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "zizmor.yml"));
   const plan = workflow.jobs.plan;
-  assert.equal(plan["runs-on"], "ubuntu-24.04");
+  assert.equal(plan["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
   assert.equal(plan["timeout-minutes"], 5);
   assert.deepEqual(plan.permissions, { "pull-requests": "read" });
   assert.deepEqual(plan.outputs, { audit: "${{ steps.plan.outputs.audit }}" });
