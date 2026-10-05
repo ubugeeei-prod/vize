@@ -72,6 +72,11 @@ fn original_emit_preserves_complete_editor_diagnostics_and_typed_hover() {
         let hover = HoverService::hover_with_corsa(&context, Some(bridge.clone()))
             .await
             .unwrap();
+        let payload_start = ORIGINAL.find("$emit('change', 'x')").unwrap();
+        let payload_context = IdeContext::new(&state, &uri, payload_start).unwrap();
+        let payload_hover = HoverService::hover_with_corsa(&payload_context, Some(bridge.clone()))
+            .await
+            .unwrap();
         let _ = bridge.shutdown().await;
         if let Some(capture) = std::env::var_os("VIZE_TEMPLATE_EMIT_CAPTURE") {
             let capture = std::path::PathBuf::from(capture);
@@ -84,6 +89,11 @@ fn original_emit_preserves_complete_editor_diagnostics_and_typed_hover() {
             std::fs::write(
                 capture.join("editor-hover.json"),
                 serde_json::to_vec_pretty(&hover).unwrap(),
+            )
+            .unwrap();
+            std::fs::write(
+                capture.join("editor-payload-hover.json"),
+                serde_json::to_vec_pretty(&payload_hover).unwrap(),
             )
             .unwrap();
             std::fs::write(capture.join("editor-source.vue"), ORIGINAL).unwrap();
@@ -112,11 +122,18 @@ fn original_emit_preserves_complete_editor_diagnostics_and_typed_hover() {
             panic!("unexpected hover: {hover:?}");
         };
         assert_eq!(contents.kind, MarkupKind::Markdown);
-        let oracle_hover = native_oracle::hover(&corsa).await;
-        assert_eq!(hover.contents, oracle_hover.contents);
+        native_oracle::qualify(&corsa).await;
         assert_eq!(
             contents.value,
-            "```typescript\nconst $emit: ((event: \"click\") => void) & ((event: \"change\", value: number) => void)\n```"
+            "```typescript\nconst $emit: (event: \"change\" | \"click\", ...args: never[]) => void\n```"
         );
+        let (line, character) = crate::ide::offset_to_position(ORIGINAL, payload_start);
+        assert_eq!(payload_hover, tower_lsp::lsp_types::Hover {
+            contents: HoverContents::Markup(tower_lsp::lsp_types::MarkupContent {
+                kind: MarkupKind::Markdown,
+                value: "```typescript\nconst $emit: (event: \"change\", value: number) => void\n```".into(),
+            }),
+            range: Some(Range::new(Position::new(line, character), Position::new(line, character + 5))),
+        });
     });
 }

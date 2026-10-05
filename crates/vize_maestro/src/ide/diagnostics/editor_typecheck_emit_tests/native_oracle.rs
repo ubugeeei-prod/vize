@@ -2,15 +2,12 @@
 
 use std::path::Path;
 
-use tower_lsp::lsp_types::Hover;
 use vize_canon::{CorsaBridge, CorsaBridgeConfig, CorsaScriptVirtualDocumentRequest};
-
-use crate::ide::HoverService;
 
 const SOURCE: &str = "import { defineEmits } from 'vue';\nconst $emit = defineEmits<{ click: []; change: [value: number] }>();\n$emit('click');\n$emit('change', 1);\n$emit('clik');\n$emit('change', 'x');\n";
 const CONFIG: &str = r#"{"compilerOptions":{"strict":true,"module":"ESNext","moduleResolution":"Bundler","target":"ESNext","skipLibCheck":true,"noEmit":true,"types":[]},"files":["oracle.ts"]}"#;
 
-pub(super) async fn hover(corsa: &Path) -> Hover {
+pub(super) async fn qualify(corsa: &Path) {
     let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .and_then(Path::parent)
@@ -108,7 +105,20 @@ pub(super) async fn hover(corsa: &Path) -> Hover {
             { "range": {"start": {"line": 5, "character": 16}, "end": {"line": 5, "character": 19}}, "severity": 1, "code": 2345, "source": "ts", "message": "Argument of type 'string' is not assignable to parameter of type 'number'.", "relatedInformation": null }
         ])
     );
-    HoverService::convert_lsp_hover(hover)
+    assert_eq!(
+        hover_response(&hover),
+        serde_json::json!({
+            "contents": {"kind": "markdown", "value": "```typescript\nconst $emit: (evt: \"change\" | \"click\", ...args: never[]) => void\n```\n"},
+            "range": {"start": {"line": 4, "character": 0}, "end": {"line": 4, "character": 5}}
+        })
+    );
+    assert_eq!(
+        hover_response(&valid_hover),
+        serde_json::json!({
+            "contents": {"kind": "markdown", "value": "```typescript\nconst $emit: (evt: \"change\", value: number) => void\n```\n"},
+            "range": {"start": {"line": 3, "character": 0}, "end": {"line": 3, "character": 5}}
+        })
+    );
 }
 
 fn hover_response(hover: &vize_canon::LspHover) -> serde_json::Value {

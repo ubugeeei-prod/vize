@@ -116,3 +116,24 @@ ceiling. Rust formatting and both genuine generated-inventory checks pass;
 fresh source Actions must confirm the exact correction. Runtime oracles,
 original inputs, instruction budgets and all independently authored vectors
 stay unchanged.
+
+The authentic 83647 native run 37263494144 passes all ten complete CLI/official
+7.0.2 cases, including no-options model string/undefined positives and its sole
+numeric TS2769. Artifact 11325483219 retains all 130 raw source/input/output
+files, exact original CLI/editor bytes, source/tree custody and the same official
+native binary. The actual Vue 3.5.35 oracle retains seven complete declaration
+packages, both original TS2345 responses and valid-call positives. Invalid-call
+QuickInfo prints `(evt: "change" | "click", ...args: never[]) => void`, while
+valid numeric-change QuickInfo prints `(evt: "change", value: number) => void`.
+The original template prints the same contextual invalid-call form with its
+helper parameter named `event`; its two full diagnostics and range already pass.
+The equality failure is parameter naming, and the earlier intersection-only
+expectation did not model native contextual QuickInfo. Author both whole raw
+oracle hovers/ranges independently, retain every full diagnostic/positive case,
+and assert the complete original contextual hover. Add a second original
+change-call whole numeric-payload hover/range, preserving every original byte.
+Required capture binds both editor and independent oracle runtimes to the same
+official binary; all complete declarations and raw hovers remain in the hashed
+manifest. Fresh corrected-head native/source Actions must qualify the additional
+original payload hover before queue admission. No diagnostic filtering, source
+semantic weakening or generic-any fallback is introduced.
