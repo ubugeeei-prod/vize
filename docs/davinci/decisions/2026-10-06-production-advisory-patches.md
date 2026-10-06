@@ -136,3 +136,14 @@ without changing any original provider guard, README, input or whole native
 oracle. Fresh installed physical package.version41 and all original semantic,
 alias/UTF16/protocol vectors remain mandatory. Every old renderer stays outside
 complete production reachability; unchanged whole audit policy still applies.
+
+Actual725f passed the pinned parser characterization and complete authored SSR
+selected attributes but failed the unchanged done state AFTER synchronous
+hydration; all3806 original assertions and the new empty control passed. Its
+existing default-pre DOM effect sees a null ref before render, then waits for a
+subsequent pre job after the post-render ref assignment. Change only that
+existing `watchEffect(syncNativeValue)` to post timing: Vue35/42 assign template
+refs at post priority-1 and synchronously flush post effects before hydration
+returns. No new DOM write/hook/tick or expected/input change is introduced.
+Fresh whole35/42/native41/current audit and protected delivery remain unknown.
+Paired decision: [6008321749](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6008321749).

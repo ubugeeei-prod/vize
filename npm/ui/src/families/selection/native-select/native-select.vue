@@ -116,7 +116,7 @@ function syncNativeSingleValue(select: HTMLSelectElement): void {
   if (select.value !== singleValue.value) select.value = singleValue.value;
 }
 
-watchEffect(syncNativeValue);
+watchEffect(syncNativeValue, { flush: "post" });
 
 watch(
   element,
