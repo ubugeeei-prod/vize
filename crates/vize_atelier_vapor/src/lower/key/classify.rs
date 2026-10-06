@@ -59,19 +59,25 @@ fn classify_role<'a, 'b, const READ_KEY: bool>(
         && (has_control_flow_children || has_dynamic_element_children || el.tag != "component");
     let mut template_attributes = RootAttributes::new(el, inherited);
     for prop in el.props.iter() {
-        if needs_writer {
-            template_attributes.observe(prop);
-        }
-        let PropNode::Directive(dir) = prop else {
-            continue;
-        };
-        scope.observe(dir);
-        if READ_KEY {
-            match dir.name {
-                "for" => has_for = true,
-                "bind" if key.is_none() => key = super::binding_value(dir),
-                _ => {}
+        match prop {
+            PropNode::Attribute(_) => {
+                if needs_writer {
+                    template_attributes.observe_attribute();
+                }
             }
+            PropNode::Directive(dir) => match dir.name {
+                "bind" => {
+                    if needs_writer {
+                        template_attributes.observe_binding(dir);
+                    }
+                    if READ_KEY && key.is_none() {
+                        key = super::binding_value(dir);
+                    }
+                }
+                "once" | "memo" => scope.observe(dir),
+                "for" if READ_KEY => has_for = true,
+                _ => {}
+            },
         }
     }
     let (should_lower_as_once, memo_error, key_non_reactive) = scope.finish();

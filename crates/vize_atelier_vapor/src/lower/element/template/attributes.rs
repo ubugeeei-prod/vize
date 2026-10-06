@@ -1,7 +1,7 @@
 //! Existing attribute walk also retains key-only nonreactive ownership.
 
 use super::writer::TemplateWriter;
-use vize_atelier_core::{ElementNode, ExpressionNode, PropNode};
+use vize_atelier_core::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 use vize_carton::FxHashSet;
 
 /// Owned facts for exactly one original element writer root, consumed once.
@@ -22,15 +22,14 @@ impl<'a, 'b> RootAttributes<'a, 'b> {
         }
     }
 
-    pub(in crate::lower) fn observe(&mut self, prop: &PropNode<'a>) {
-        match prop {
-            PropNode::Attribute(_) => self.has_static_attr = true,
-            PropNode::Directive(dir) if dir.name == "bind" => {
-                if let Some(ExpressionNode::Simple(key)) = dir.arg.as_ref() {
-                    self.dynamic_attrs.insert(key.content);
-                }
-            }
-            _ => {}
+    pub(in crate::lower) fn observe_attribute(&mut self) {
+        self.has_static_attr = true;
+    }
+
+    /// The original property walk has already matched this directive's bind name.
+    pub(in crate::lower) fn observe_binding(&mut self, dir: &DirectiveNode<'a>) {
+        if let Some(ExpressionNode::Simple(key)) = dir.arg.as_ref() {
+            self.dynamic_attrs.insert(key.content);
         }
     }
 

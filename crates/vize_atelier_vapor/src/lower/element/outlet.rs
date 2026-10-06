@@ -69,9 +69,6 @@ fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
     let mut props = Vec::new_in(&ctx.allocator);
 
     for prop in el.props.iter() {
-        if CLASSIFY && let PropNode::Directive(dir) = prop {
-            scope.observe(dir);
-        }
         match prop {
             PropNode::Attribute(attr) => {
                 if attr.name == "name" {
@@ -94,6 +91,9 @@ fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
             }
             PropNode::Directive(dir) => {
                 if dir.name != "bind" {
+                    if CLASSIFY {
+                        scope.observe(dir);
+                    }
                     continue;
                 }
 
