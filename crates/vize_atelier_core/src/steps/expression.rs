@@ -182,6 +182,9 @@ pub fn process_expression<'a>(
         if result.used_unref {
             ctx.helper(crate::RuntimeHelper::Unref);
         }
+        if result.used_is_ref {
+            ctx.helper(crate::RuntimeHelper::IsRef);
+        }
         // The expression failed to parse entirely and was passed through
         // raw — report it instead of silently emitting broken render code.
         // Matches `@vue/compiler-core`'s `X_INVALID_EXPRESSION`.

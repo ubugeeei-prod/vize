@@ -1,0 +1,7 @@
+<script setup>
+import { ref } from "vue";
+const evt = ref("mouseup");
+const attr = ref("data-note");
+const n = ref(0);
+</script>
+<template><button @click="n++" title="tip">{{ n }}</button></template>

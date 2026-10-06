@@ -189,3 +189,9 @@ the peer-cleared `52906ee0` union; the still-queued #8060 history is not copied
 into this parent. All incoming source and decision clauses remain preserved.
 The original sixteen laws, new combined control and full protected acceptance
 still require fresh exact-head Actions; old `a19007c0` green is not transferred.
+
+Before publication, #8060 also actually merged as signed main `143c1d4a`
+at 2026-10-06 01:13:40 UTC. Incorporate that actual commit in a genuine merge,
+retaining all four reviewed union code/test blobs and every incoming source
+and decision. The former queued-prefix proof is now historical preparation,
+not reused execution credit. Fresh current-head Actions remain mandatory.

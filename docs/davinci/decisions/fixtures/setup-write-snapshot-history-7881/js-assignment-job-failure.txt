@@ -1,0 +1,48 @@
+2026-10-05T19:35:18.9960519Z         FAIL [   0.171s] ( 848/4116) vize_atelier_sfc snapshot_tests::test_patches_js_snapshots
+2026-10-05T19:35:18.9961641Z   stdout ───
+2026-10-05T19:35:18.9961813Z 
+2026-10-05T19:35:18.9961896Z     running 1 test
+2026-10-05T19:35:18.9962246Z     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Snapshot Summary ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-10-05T19:35:18.9962683Z     Snapshot file: tests/snapshots/sfc/js/patches__setuplet_assignment_in_click_handler.snap
+2026-10-05T19:35:18.9963106Z     Snapshot: patches__setuplet_assignment_in_click_handler
+2026-10-05T19:35:18.9963433Z     Source: crates/vize_atelier_sfc/src/snapshot_tests.rs:210
+2026-10-05T19:35:18.9963853Z     ────────────────────────────────────────────────────────────────────────────────
+2026-10-05T19:35:18.9964138Z     Expression: output.as_str()
+2026-10-05T19:35:18.9964500Z     ────────────────────────────────────────────────────────────────────────────────
+2026-10-05T19:35:18.9965185Z     -old snapshot
+2026-10-05T19:35:18.9965423Z     +new results
+2026-10-05T19:35:18.9965668Z     ────────────┬───────────────────────────────────────────────────────────────────
+2026-10-05T19:35:18.9966162Z         1       │-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref } from "vue"
+2026-10-05T19:35:18.9966758Z               1 │+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref, isRef as _isRef } from "vue"
+2026-10-05T19:35:18.9967116Z         2     2 │ 
+2026-10-05T19:35:18.9967245Z         3     3 │ 
+2026-10-05T19:35:18.9967391Z         4     4 │ export default {
+2026-10-05T19:35:18.9967561Z         5     5 │   __name: 'test',
+2026-10-05T19:35:18.9967802Z     ┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+2026-10-05T19:35:18.9968008Z         8     8 │ let count = $ref(0)
+2026-10-05T19:35:18.9968168Z         9     9 │ 
+2026-10-05T19:35:18.9968322Z        10    10 │ return (_ctx, _cache) => {
+2026-10-05T19:35:18.9968568Z        11    11 │   return (_openBlock(), _createElementBlock("button", {
+2026-10-05T19:35:18.9968869Z        12       │-    onClick: _cache[0] || (_cache[0] = $event => (count.value = _unref(count) + 1))
+2026-10-05T19:35:18.9969262Z              12 │+    onClick: _cache[0] || (_cache[0] = $event => ((_isRef(count) ? count.value = _unref(count) + 1 : count = _unref(count) + 1)))
+2026-10-05T19:35:18.9969598Z        13    13 │   }, _toDisplayString(_unref(count)), 1 /* TEXT */))
+2026-10-05T19:35:18.9969782Z        14    14 │ }
+2026-10-05T19:35:18.9969909Z        15    15 │ }
+2026-10-05T19:35:18.9970029Z        16    16 │ 
+2026-10-05T19:35:18.9970231Z     ────────────┴───────────────────────────────────────────────────────────────────
+2026-10-05T19:35:18.9970474Z     Stopped on the first failure. Run `cargo insta test` to run all snapshots.
+2026-10-05T19:35:18.9970726Z     test snapshot_tests::test_patches_js_snapshots ... FAILED
+2026-10-05T19:35:18.9970861Z 
+2026-10-05T19:35:18.9970908Z     failures:
+2026-10-05T19:35:18.9970975Z 
+2026-10-05T19:35:18.9971018Z     failures:
+2026-10-05T19:35:18.9971152Z         snapshot_tests::test_patches_js_snapshots
+2026-10-05T19:35:18.9971264Z 
+2026-10-05T19:35:18.9971407Z     test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 755 filtered out; finished in 0.17s
+2026-10-05T19:35:18.9971646Z     
+2026-10-05T19:35:18.9971790Z   stderr ───
+2026-10-05T19:35:18.9971895Z 
+2026-10-05T19:35:18.9972299Z     thread 'snapshot_tests::test_patches_js_snapshots' (15144) panicked at /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/insta-1.48.0/src/runtime.rs:719:13:
+2026-10-05T19:35:18.9972808Z     snapshot assertion for 'patches__setuplet_assignment_in_click_handler' failed in line 210
+2026-10-05T19:35:18.9973157Z     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-10-05T19:35:18.9973324Z 

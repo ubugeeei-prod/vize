@@ -1,0 +1,80 @@
+[
+  {
+    "phase": "initial",
+    "tree": [
+      {
+        "type": 1,
+        "tag": "button",
+        "namespace": "http://www.w3.org/1999/xhtml",
+        "attributes": [
+          [
+            "title",
+            "tip"
+          ]
+        ],
+        "children": [
+          {
+            "type": 3,
+            "data": "0"
+          }
+        ]
+      }
+    ],
+    "diagnostics": [],
+    "sameButton": true
+  },
+  {
+    "phase": "click",
+    "tree": [
+      {
+        "type": 1,
+        "tag": "button",
+        "namespace": "http://www.w3.org/1999/xhtml",
+        "attributes": [
+          [
+            "title",
+            "tip"
+          ]
+        ],
+        "children": [
+          {
+            "type": 3,
+            "data": "1"
+          }
+        ]
+      }
+    ],
+    "diagnostics": [],
+    "sameButton": true
+  },
+  {
+    "phase": "click-again",
+    "tree": [
+      {
+        "type": 1,
+        "tag": "button",
+        "namespace": "http://www.w3.org/1999/xhtml",
+        "attributes": [
+          [
+            "title",
+            "tip"
+          ]
+        ],
+        "children": [
+          {
+            "type": 3,
+            "data": "2"
+          }
+        ]
+      }
+    ],
+    "diagnostics": [],
+    "sameButton": true
+  },
+  {
+    "phase": "unmount",
+    "tree": [],
+    "diagnostics": [],
+    "detachedButton": true
+  }
+]

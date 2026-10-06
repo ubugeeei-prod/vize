@@ -1,0 +1,10 @@
+{
+  "App": "expected/App.json",
+  "Const": "expected/Const.json",
+  "Maybe": "expected/Maybe.json",
+  "Mutable": "expected/Mutable.json",
+  "Names": "expected/Names.json",
+  "For": "expected/For.json",
+  "Slot": "expected/Slot.json",
+  "Static": "expected/Static.json"
+}
