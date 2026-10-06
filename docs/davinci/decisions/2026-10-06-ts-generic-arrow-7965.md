@@ -137,3 +137,15 @@ merge before genuine main incorporation and fresh exact source qualification.
 There is no further report retry, waiver, queue/protected/merge/release credit.
 These docs checkpoints remain local until that incorporation; the current
 seven/twelve source-scoped evidence does not transfer to a future composition.
+
+#8080 actually merged to signed main `48cb1d4` at 2026-10-06 05:04:12 UTC.
+Replay only our five commits onto that genuine main. Intermediate `2d227db`
+retains all 13 owned noncanonical objects, all 22,227 incoming nonowned entries
+and every full author, date, message and reporter trailer. Removing only the
+owned canonical appendix recovers all incoming bytes at 350 lines.
+Preserve the `ee01e11` backup and the old head's 7/12 execution proof;
+no runtime credit transfers to the replay. Fresh exact-head Actions and
+complete affected results must precede admission. Full protected suites,
+unchanged ceilings, signed merge and installed-public twelve cases remain
+pending; any finite release admission hold remains honored.
+Paired decision: [6009735472](https://github.com/ubugeeei-prod/vize/issues/7965#issuecomment-6009735472).
