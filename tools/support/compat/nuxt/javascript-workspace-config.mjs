@@ -177,5 +177,18 @@ export function projectEvidence(root, context, application) {
         parsed: value.config,
       })),
   });
-  return { original, stockPrograms };
+  return {
+    original,
+    stockPrograms,
+    missingModuleFiles: membership.missingModuleFiles.map(display).sort(lexical),
+  };
+}
+
+export function expectedCheckMembership(original, missingModuleFiles, caseId) {
+  const expected = structuredClone(original);
+  if (caseId === "missing-module") {
+    expected.files = missingModuleFiles.map((file) => ({ file, diagnostics: [] }));
+    expected.fileCount = missingModuleFiles.length;
+  }
+  return expected;
 }

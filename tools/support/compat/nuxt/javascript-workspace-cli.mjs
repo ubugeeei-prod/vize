@@ -9,7 +9,7 @@ import {
   validateBuildReceipt,
 } from "../../../../tests/differential/build-receipt.mjs";
 import { lexical, save, sha } from "./javascript-workspace-project.mjs";
-import { projectEvidence } from "./javascript-workspace-config.mjs";
+import { expectedCheckMembership, projectEvidence } from "./javascript-workspace-config.mjs";
 import { packageDeclarations } from "./javascript-workspace-declarations.mjs";
 
 export function sourceCli(root, artifacts) {
@@ -221,7 +221,7 @@ export async function cliProducts(root, context, provider) {
   }
   save(context.artifacts, "compiled-whole-packets.json", compiled);
   packageDeclarations(root, context, command);
-  const { original, stockPrograms } = projectEvidence(root, context, app);
+  const { original, stockPrograms, missingModuleFiles } = projectEvidence(root, context, app);
   const oldMain = fs.readFileSync(main, "utf8");
   const oldPricing = fs.readFileSync(pricing, "utf8");
   const records = [];
@@ -294,7 +294,7 @@ export async function cliProducts(root, context, provider) {
           context.artifacts,
           `check-${testCase.id}`,
         );
-        const expected = structuredClone(original);
+        const expected = expectedCheckMembership(original, missingModuleFiles, testCase.id);
         if (testCase.code) {
           const at = position(testCase.source, testCase.needle);
           const file = testCase.file.startsWith(app + path.sep)
