@@ -295,3 +295,28 @@ original first locations, generator and baseline/assertions fixed. The
 only added hits/file memberships are the six new Field missed remarks.
 The failed run remains unaccepted; fresh source/native/global-security
 qualification and whole protected delivery are still required.
+
+### Retained 238/06 terminal source qualification
+
+The exact provider `23813949a926e1c5e80812375402c7a625d8b9a6` and child `06b4c10166cf8b161af09d79794b157b47e2912d` each ended with 23 successful jobs, 16 policy skips, and only the actual dependency security-audit plus aggregate test-report failures. Their four Rust workers and canonical corpora passed. Authenticated small JUnit ZIPs contain 16,329 / 16,343 passing cases with zero failure/error/skip; current actual synthetic checkout trees equal the respective source trees. The 17 SFC occurrence laws, five Croquis drawer laws, incoming joint builtin/occurrence law, and both full default-stdio bodies passed. The latter preserve 22 sessions / 168 whole feature replies, LF/CRLF original physical inputs and the exact retained complete authored expectations. Three shared framing guards also passed. Shared full 17/31 corpus still needs protected execution.
+
+Native run37410914479 passed at exact provider238, including the original 451-file / 1,039-remark / 159-applied / 880-missed / zero-change folio and complete generated backlog comparison. Raw SHA-256 is `6abe9b67971626f8bf386739d06ae752c49cbf0c32329b74366affb3dd37731e`. Its 82.6MB artifact was not downloaded and no independent executable rehash is claimed. PR instruction validation checks 100+4 cap tables and ratchet only; 104×3 real measured windows remain protected-gate work. Earlier source/native failures remain failures. See [terminal paired qualification](https://github.com/ubugeeei-prod/vize/issues/7992#issuecomment-6009217699).
+
+Review follow-through: same-parse style witness refusal and unmodeled type-query refusal have actual current-source passing conservation laws. The demanded SFC adjunct mirrors the sole current consumer's old context mode (`false, false, true`, no filename/source resolver) and replaces exactly one existing analysis call; resolved/Options API/Vue 2 entrypoints remain separate. Any future resolved-mode caller must carry its authority through the same existing analysis rather than add a second pass.
+
+TODO (unmeasured, not part of this delivery): declaration lookup currently scans binding metadata per reference. A private span index may reduce revision-time lookup work, but needs exact shift/merge/name-identity laws plus controlled edit-latency/RSS measurement before any speed/lightness claim. No extra parse, pipeline stage, request-time query, favorable subset, cap raise, native migration or fix-history completion follows from current source qualification.
+
+### Genuine security-main incorporation
+
+Actual signed security merge `48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb`
+merged at 2026-10-06 05:04:12 UTC, after protected full security/Rust/instruction
+qualification. Incorporate that actual main, including its complete dependency,
+workflow and UI changes, into this same provider and replay the sole child from
+its literal corrected parent. All previously reviewed binding source, complete
+original/authored inputs, expectations and ceilings remain unchanged. Earlier
+238/06 whole Checks remain failed; their component receipts do not transfer
+fresh source or protected acceptance. Native Stack 8069 still requires exact
+new-head Actions and both actual signed protected deliveries before #7992
+closure or next-release handoff. The existing P0 ledger records dated source
+counts separately from public-release containment; native/history and 10x
+remain unfinished.
