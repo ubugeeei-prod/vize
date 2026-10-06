@@ -87,3 +87,14 @@ one native Stack and enter only an exact-green contiguous prefix with
 `gh stack merge --yes --squash`; do not auto-merge individual layers. Actual
 protected/native/signed delivery and an installed original-case 0.435 replay
 remain unfinished. The preceding private-preparation evidence stays historical.
+
+The [paired initial compilation failure](https://github.com/ubugeeei-prod/vize/issues/7995#issuecomment-6009105778)
+retains native run37411669720/job112101241146: the current sha2 digest Array
+has no LowerHex implementation, so the custody helper failed before any
+#7995 runtime case. Encode each actual digest byte as two lowercase hex digits,
+retaining every product/input/oracle/workflow byte. Fixed whole corpus hashes
+require the canonical SHA256 output during genuine execution. Preserve the
+472262-byte raw failed log, SHA256
+`6dfeb964175890e12a96832d105d7c825238906ec8d7ce3c3f7e5f02a5183089`.
+Fresh successor source/native execution remains pending, with no failed-head
+runtime credit or new assertion/cap waiver.
