@@ -1,5 +1,7 @@
 //! Discovery and caching of workspace declarations used by Vue globals.
 
+mod editor_options;
+
 use std::ffi::OsStr;
 use std::path::{Component, Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};

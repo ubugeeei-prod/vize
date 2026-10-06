@@ -78,3 +78,5 @@ aliased local bindings and all existing shadow/dirty/close controls. The native
 whole-vector, fresh source and protected qualification of this correction remain
 pending; the authentic previous failure is retained. `utilities.go` is pinned to
 Git blob `8dab6bce9b867e6b6fca9d0b197fa5c117feb296` at the same native commit.
+
+The same-PR successor incorporates signed actual main `97d5c26a153944e66439a3108746c19d7bf62220` (#8120) after the real generated Maestro inventory conflict prevented Actions. All incoming shared declaration-option producers and whole controls stay byte-exact; only the composed consumer census is regenerated. All four original sources and the shorthand successor's independently authored whole expectations remain unchanged, with fresh current-source qualification required.

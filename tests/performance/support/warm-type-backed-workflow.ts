@@ -91,6 +91,18 @@ if (process.argv[2] === "prepare") {
     "crates/vize_canon/src/corsa_bridge/vue_document/build.rs",
     "crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs",
     "crates/vize_canon/src/corsa_bridge/vue_document/types.rs",
+    "crates/vize_maestro/src/ide/corsa_support/canonical/open.rs",
+    "crates/vize_maestro/src/ide/diagnostics.rs",
+    "crates/vize_maestro/src/ide/diagnostics/assembly_parity_tests.rs",
+    "crates/vize_maestro/src/ide/diagnostics/assembly_parity_custody.rs",
+    "crates/vize_maestro/src/ide/diagnostics/corsa/collect_virtual.rs",
+    "crates/vize_maestro/src/ide/diagnostics/native.rs",
+    "crates/vize_maestro/src/ide/diagnostics/corsa/collect.rs",
+    "crates/vize_maestro/src/ide/diagnostics/editor_reference_options_tests.rs",
+    "crates/vize_maestro/src/server/state/global_components.rs",
+    "crates/vize_maestro/src/server/state/global_components/editor_options.rs",
+    "crates/vize_maestro/src/server/state/global_components/editor_options/custody.rs",
+    "crates/vize_maestro/src/server/state/global_components/editor_options/tests.rs",
   ]);
   const harnessOnly = !cut && production.length === 0;
   if (harnessOnly) {
@@ -210,7 +222,7 @@ if (process.argv[2] === "prepare") {
           ? "Literal published v0.433 and root-frozen release cut; complete changed Git-entry manifest, independent driver, identical fresh ci builds, original400 and one recorded runtime"
           : harnessOnly
             ? "Same production source; closed reviewed harness-only delta and unchanged original inputs/locks. Qualification only, no performance or source-effect gain."
-            : "Actual common ancestor and current source, only owned prepared-surface or readiness-ack production delta; one worker, identical ci recipe, original400 inputs and current locked runtime",
+            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack or shared editor reference-options delta; one worker, identical release recipe, original400 inputs and current locked runtime",
       },
       null,
       2,

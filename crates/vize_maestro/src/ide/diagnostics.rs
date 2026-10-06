@@ -16,6 +16,8 @@ mod art_dependency_typecheck_tests;
 #[cfg(all(test, feature = "native"))]
 mod art_variant_typecheck_tests;
 #[cfg(all(test, feature = "native"))]
+mod assembly_parity_custody;
+#[cfg(all(test, feature = "native"))]
 mod assembly_parity_tests;
 mod builder;
 mod cached_descriptor;
@@ -29,6 +31,8 @@ mod configured_lint_tests;
 pub(in crate::ide) mod corsa;
 #[cfg(test)]
 mod default_lint_correctness_tests;
+#[cfg(all(test, feature = "native"))]
+mod editor_reference_options_tests;
 #[cfg(all(test, feature = "native"))]
 mod editor_typecheck_defaults_tests;
 #[cfg(all(test, feature = "native"))]
