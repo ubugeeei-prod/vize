@@ -121,3 +121,27 @@ entries. Every other full filesystem entry, original input, diagnostic array,
 wait, open order and production byte stays exact. No allowlist/subtree filter,
 protocol fallback or runtime credit is introduced; fresh complete Actions,
 actual security-main replay, protected gates and installed acceptance remain.
+
+## Signed security-main incorporation
+
+Paired decision: [6009733609](https://github.com/ubugeeei-prod/vize/issues/7990#issuecomment-6009733609).
+
+Actual8080 merged as signed48cb1d4f on2026-10-06T05:04:12Z, soleparent143c.
+Genuinely replay the three owned source commits once on that literal main.
+All source authors/date/full bodies/reporters, all18 noncanonical owned blobs
+and every incoming canonical byte are exact; no unmerged source is adopted.
+
+Historical135 all4 affected Rust workers passed16313 unique executed JUnit
+cases with zero failure/error/skip, including all3 filesystem laws and both
+whole wrappers executing original3 plus authored6 stdio sessions. Tooling,
+actual native-phase and canonical checks passed; the aggregate failed only
+inherited143c production dependency audit. The compiled temporary host0b58
+has literal143c+135 parents and the exact135 tree. Full successful wire stdout
+was not emitted. These observations do not qualify the replayed source.
+
+The separate old8008 ordinary source-pair guard correctly refused the new
+staging/test scope before builds. Preserve that UNQUALIFIED result and its
+closed guard/original inputs/caps; no speed or400 execution is claimed. Root's
+existing literal finite-cut authority owns a complete changed-manifest pair
+after delivery. Current source/native/all9stdio/legacy/required checks, then
+protected full104/fullRust and installed release acceptance remain mandatory.
