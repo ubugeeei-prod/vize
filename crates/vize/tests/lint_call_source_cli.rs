@@ -61,7 +61,7 @@ fn original_argv_and_complete_comment_string_real_call_vectors_are_checked() {
     unchanged(root, "MyNotes.vue", ORIGINAL);
     fs::remove_file(root.join("MyNotes.vue")).unwrap();
     let cases = corpus["cases"].as_array().unwrap();
-    assert_eq!(cases.len(), 37);
+    assert_eq!(cases.len(), 41);
     assert_eq!(cases[0]["source"].as_str().unwrap(), ORIGINAL);
     for case in cases {
         let filename = case["filename"].as_str().unwrap();

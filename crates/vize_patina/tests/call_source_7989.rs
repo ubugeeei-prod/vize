@@ -51,7 +51,7 @@ fn original_and_controls_keep_complete_configured_service_results() {
     ];
     let linter = configured(&rules);
     let cases = corpus["cases"].as_array().unwrap();
-    assert_eq!(cases.len(), 37);
+    assert_eq!(cases.len(), 41);
     for case in cases {
         let source = case["source"].as_str().unwrap();
         let filename = case["filename"].as_str().unwrap();

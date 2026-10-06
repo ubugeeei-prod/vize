@@ -22,7 +22,8 @@ advisory and does not prove the call's Vue import identity.
 
 The ID rule visits actual zero-argument `Math.random`, `Date.now` and
 `crypto.randomUUID` calls. ID-bearing identifier bindings, assignment targets
-and noncomputed property values own the inference; comments, string values
+literal property assignments, named ID functions and noncomputed property
+values own the inference; comments, string values
 and neighboring bindings cannot supply that context. Retain the previous
 advisory ID-name heuristic (case-insensitive `id` or lowercase `unique`) on those AST
 names, restore context after each owner, and report the complete call span.
@@ -30,7 +31,7 @@ The rule does not prove global symbol identity or SSR intent. Existing tests'
 raw inputs, counts and reactive snapshot are preserved; this correction
 changes syntax authority without enabling a default rule.
 
-The independently authored corpus has 37 complete configured service and CLI
+The independently authored corpus has 41 complete configured service and CLI
 vectors. It covers the whole original with LF/CRLF/Unicode framing; quoted,
 template and regex text; actual calls/interpolations, member/generic calls and
 multiline trivia; ID bindings/properties/assignments, context restoration and
@@ -54,3 +55,15 @@ merge govern delivery. No extra parse, provider query, stage, dependency or
 instruction-budget change is introduced. Native handled cases remain zero;
 no native migration, performance or separate LSP acceptance is claimed. Root
 remains the sole release publisher and owns later installed verification.
+
+The [paired positive-control correction and retained audit rejection](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6019730327)
+conserves real ID functions and literal property assignments, which the old
+same-line heuristic already reported. Four whole controls are appended; the
+initial 37 source/result vectors remain exact. Current `2aae5016` has actual
+Check37487267761/job112351566807 security red for the new unreviewed critical
+GHSA-pqg4-j6r4-53mv in Nuxt's transitive shell-quote1.9.0. Preserve all three
+original attempts, 82,372 raw bytes, SHA-256
+`5672e53b763f99b2a20079aa00dfc2888ebbaecfc59052c7c69b192a68aaaae4`.
+PR8135 is Draft/offqueue; healthy product workers continue. The security owner
+must supply a genuine correction and current exact-source green before queue
+admission; no allowlist, budget or rerun waiver is offered.

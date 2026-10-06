@@ -32,10 +32,14 @@
 //! - Accessible: Perfect for aria-labelledby, aria-describedby
 
 use oxc_ast::ast::{
-    AssignmentExpression, AssignmentTarget, BindingPattern, CallExpression, Expression,
+    AssignmentExpression, AssignmentTarget, BindingPattern, CallExpression, Expression, Function,
     ObjectProperty, Program, PropertyKey, VariableDeclarator,
 };
-use oxc_ast_visit::{Visit, walk::walk_call_expression};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_call_expression, walk_function},
+};
+use oxc_syntax::scope::ScopeFlags;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -82,6 +86,16 @@ struct PreferUseIdVisitor<'result> {
 }
 
 impl<'a> Visit<'a> for PreferUseIdVisitor<'_> {
+    fn visit_function(&mut self, function: &Function<'a>, flags: ScopeFlags) {
+        let previous = self.id_context;
+        self.id_context |= function
+            .id
+            .as_ref()
+            .is_some_and(|identifier| is_id_name(identifier.name.as_str()));
+        walk_function(self, function, flags);
+        self.id_context = previous;
+    }
+
     fn visit_variable_declarator(&mut self, declarator: &VariableDeclarator<'a>) {
         self.visit_binding_pattern(&declarator.id);
         let previous = self.id_context;
@@ -102,6 +116,10 @@ impl<'a> Visit<'a> for PreferUseIdVisitor<'_> {
             }
             AssignmentTarget::StaticMemberExpression(member) => {
                 is_id_name(member.property.name.as_str())
+            }
+            AssignmentTarget::ComputedMemberExpression(member) => {
+                matches!(member.expression.get_inner_expression(),
+                    Expression::StringLiteral(string) if is_id_name(string.value.as_str()))
             }
             _ => false,
         };
