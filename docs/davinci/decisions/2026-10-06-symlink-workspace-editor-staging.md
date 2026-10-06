@@ -75,3 +75,27 @@ on current signed main, then require the existing protected full suites and
 unchanged 100+4 instruction ceilings before actual merge. Public installed
 replay and issue closure remain separate. No native migration, performance,
 fix-history closure, published payload or current-runtime success is claimed.
+
+## Default logger custody from the first real run
+
+Paired decision: [6009236264](https://github.com/ubugeeei-prod/vize/issues/7990#issuecomment-6009236264).
+
+Current47a Check37412151174/Rust4 job112104158982 reached the original queued
+Vue publications, then failed the newly authored whole-filesystem comparison.
+All14 previous entries, complete file bytes and link targets were identical;
+only `app/node_modules/.vize` and its regular `lsp.log` were created. The full
+raw SHA2c5a30c3 and logger10,391B/SHA0444784a are retained. No authored UiButton
+companions appeared in this first attempt. The failure occurs before the
+plainTS probe and repeats2/3, so it qualifies neither all9 sessions nor native
+availability. Historical leak-versus-current-refusal remains unknown.
+
+Unchanged `vize_maestro::serve` initializes this exact default append logger.
+The observer now requires that exact cache directory and regular UTF8 log
+with the source startup marker, removes exactly these two new generated
+entries from the comparison, and checks every other complete path/directory,
+file byte and symlink target against the original snapshot. It does not exclude
+a directory subtree or arbitrary generated file. Default config/transport,
+all6 original398B files, all3 filesystem/all9 stdio assertions, nativeTS2322
+repair, production code and waits/retries remain unchanged. Fresh exact-head
+execution and actual security-main/protected/public qualification remain
+required; the initial failed head receives no all-session runtime credit.

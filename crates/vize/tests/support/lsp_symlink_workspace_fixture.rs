@@ -172,9 +172,22 @@ impl Fixture {
     }
 
     pub fn assert_authored_unchanged(&self) {
+        let mut observed = snapshot(&self.root);
+        // Default stdio initializes exactly this cache directory and append log
+        // in vize_maestro::serve. Keep every other complete entry comparison.
+        let log_dir = PathBuf::from("app/node_modules/.vize");
+        assert!(!self.before.contains_key(&log_dir));
+        assert_eq!(observed.remove(&log_dir), Some(Entry::Directory));
+        assert!(
+            matches!(
+                observed.remove(&log_dir.join("lsp.log")),
+                Some(Entry::File(bytes)) if std::str::from_utf8(&bytes)
+                    .is_ok_and(|text| text.contains("Starting vize_maestro LSP server"))
+            ),
+            "default stdio must retain its regular known logger"
+        );
         assert_eq!(
-            snapshot(&self.root),
-            self.before,
+            observed, self.before,
             "every authored path, symlink and full file byte must survive generation and cleanup"
         );
     }
