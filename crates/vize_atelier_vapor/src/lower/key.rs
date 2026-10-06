@@ -8,7 +8,9 @@ use super::{context::TransformContext, element::transform_element_unkeyed};
 use crate::ir::{BlockIRNode, InsertionAnchor, KeyIRNode, OperationNode};
 
 mod branch;
+mod classify;
 pub(super) use branch::transform_branch;
+pub(super) use classify::classify_non_reactive_directive;
 
 pub(super) fn is_non_reactive(el: &ElementNode<'_>, inherited: bool) -> bool {
     inherited || el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir)
