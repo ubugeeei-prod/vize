@@ -17,11 +17,11 @@ use vize_atelier_core::{
     ExpressionNode, PropNode, RootNode, TemplateChildNode, lane::transform,
     options::TransformOptions, parser::parse,
 };
-use vize_carton::{Allocator, String, Vec};
+use vize_carton::{Allocator, String, Vec, cstr};
 
 #[derive(Debug, PartialEq, Eq)]
 struct Output {
-    block: std::string::String,
+    block: String,
     diagnostics: std::vec::Vec<String>,
     modules: std::vec::Vec<(String, std::vec::Vec<String>, Option<String>)>,
 }
@@ -32,7 +32,7 @@ fn output<'a>(
     root: &RootNode<'a>,
     source: &'a str,
 ) -> Output {
-    let block_text = format!("{block:?}");
+    let block_text = cstr!("{block:?}");
     let spans = VaporSourceSpans::collect(root, ctx.template_spans.unwrap());
     let ir = RootIRNode {
         node: RootNode::new(ctx.allocator, ""),
