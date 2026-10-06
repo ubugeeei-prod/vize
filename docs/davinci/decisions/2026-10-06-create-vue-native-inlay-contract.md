@@ -63,3 +63,16 @@ each non-unreserved path byte. Derive the expected declaration URI from that
 authenticated primary converter. Keep every actual response byte and compare
 the entire vectors without URI normalization or field removal. Stock terminal
 success and Vize equality still require a fresh meaningful-source full run.
+
+The sole security-based integration branches this unchanged consumer from the
+actual canceled-hover provider #8095 at `6092517cf0634d71c18c8409ba10f6bad61e49bd`,
+whose base is signed security main `48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb`.
+[The paired decision](https://github.com/ubugeeei-prod/vize/issues/8004#issuecomment-6009829331)
+requires one native Stack in provider → consumer order: the provider repairs
+the original complete rich-editor gate, while this consumer supplies the
+independent whole stock inlay oracle. Preserve all four executable/fixture
+blobs, all three author/date/body/footer records and every incoming canonical
+clause. Historical successes and failures remain scoped to their original
+heads; fresh joint full editor-host, Vue, source/native and protected suites
+must qualify this actual composition before signed merge and publication.
+No production path, original input, query, diagnostic or budget changes here.
