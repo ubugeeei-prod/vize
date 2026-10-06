@@ -159,3 +159,15 @@ selected Vue graph. Every original provider/peer, product/test/assertion, full
 SSR/module capture and production lock/audit remains unchanged. Fresh both
 whole suites and all native/protected/actual delivery remain required.
 Paired decision: [6008429840](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6008429840).
+
+Actual76c passed whole35 3808/3808 and real42 3807/3808, including every
+NativeSelect/conformance/SSR and new synchronous single-value assertion. The
+sole original accessibility production-build case resets modules then reloads
+the auditor while retaining its previously imported mount/Probe; inlined Vue
+creates another active-scope state. Resolve all nine actual Node export entries
+and keep them external in the separate42 configuration, preserving the original
+Node provider cache model across resets. Keep only TestUtils ESM inline, routing
+its imports to those exact captured entries. No original test/reset/guard or
+expected outcome changes. Fresh whole35/42/native/installed/protected delivery
+remains required; the failed head receives no whole42 acceptance.
+Paired decision: [6008599049](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6008599049).

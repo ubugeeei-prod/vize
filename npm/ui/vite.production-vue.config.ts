@@ -39,16 +39,8 @@ const packages = names.map((name) => {
   const manifest = JSON.parse(bytes.toString());
   assert.equal(manifest.name, name);
   assert.equal(manifest.version, "3.5.42");
-  const directory = path.dirname(manifestPath);
   scopes.set(name, createRequire(manifestPath));
-  const entry =
-    name === "vue"
-      ? "dist/vue.runtime.esm-bundler.js"
-      : name === "@vue/compiler-sfc"
-        ? manifest.main
-        : manifest.module;
-  assert.equal(typeof entry, "string");
-  const entryPath = fs.realpathSync(path.join(directory, entry));
+  const entryPath = fs.realpathSync(scope.resolve(name));
   return {
     name,
     version: manifest.version,
@@ -83,6 +75,7 @@ console.log(
     scope: "installed-production-vue-ui",
     example,
     packages,
+    entryCondition: "node-require",
     compilerPath,
     compilerSha256: sha256(fs.readFileSync(compilerPath)),
     compilerRegistrationPath,
@@ -134,6 +127,7 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     include: ["src/**/*.test.ts"],
-    server: { deps: { inline: [...names, "@vue/test-utils"] } },
+    // Native Node entries share their cache across the original vi.resetModules law.
+    server: { deps: { inline: ["@vue/test-utils"], external: names } },
   },
 });
