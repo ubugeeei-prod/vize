@@ -1129,6 +1129,118 @@
           "warningCount": 1
         }
       ]
+    },
+    {
+      "id": "farther-flat-deep",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) .header:deep(.inner) + .body { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 131,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-nested-deep",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) { .header:deep(.inner) + .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 135,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-flat-slotted",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) .header:slotted(.inner) + .body { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 134,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-nested-slotted",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) { .header:slotted(.inner) + .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 138,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-flat-is",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) .header:is(:deep(.inner)) + .body { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 136,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-nested-where",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) { .header:where(:deep(.inner)) + .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 143,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-explicit-before-nesting",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n.wrapper { :deep(.outer) & + .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 125,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
     }
   ]
 }

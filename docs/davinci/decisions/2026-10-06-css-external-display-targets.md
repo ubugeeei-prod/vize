@@ -31,7 +31,7 @@ and invalid-CSS fallback are unchanged: this is not expanded support for the
 legacy `>>>` or `/deep/` parser grammar. Parsed `::v-deep` / `::v-slotted` retain
 their existing pseudo-element handling and pass their external nested context.
 
-Add 47 independently authored complete regression vectors: both original SFCs,
+Add 54 independently authored complete regression vectors: both original SFCs,
 local and nested positives, mixed alternatives, descendant and sibling cases,
 relational filters, global/root controls, token lookalikes, legacy functional
 forms, layers, conditional/pseudo controls, ordered findings and UTF-8/CRLF.
@@ -41,7 +41,7 @@ input must actually parse, so an empty oracle cannot pass via parser fallback.
 Every rule-off result is also a whole empty `LintResult`.
 
 The ordinary source-CLI observer requires the authenticated compiled build
-receipt, then makes 190 calls: two literal original plain commands, three full
+receipt, then makes 218 calls: two literal original plain commands, three full
 JSON queries and one off query per case. Keep each whole stdout/stderr/status,
 config, source and expected object before assertions, including failed runs.
 Check unchanged source and config bytes and both original neighboring children.
@@ -67,3 +67,10 @@ fallback. A sibling crossing is uncertain until a child/descendant step proves
 a shared ancestor. Add 14 complete controls for these boundaries; preserve all
 33 prior case objects and both full original reports. This is a source-review
 correction, with no compiled acceptance transferred from the old private tree.
+
+Independent review of private 19b6f55 then found that a blocked inner deep
+marker must not prevent proof from a farther outer ancestor, for example
+`:deep(.outer) .header:deep(.inner) + .body`. Continue through blocked markers;
+accept only an unblocked positive ownership proof, otherwise retain the finding.
+Seven additional whole controls preserve all 47 prior case objects. This source
+correction has no runtime acceptance from either earlier private preparation.

@@ -41,6 +41,13 @@ await test("CSS target corpus retains both distinct originals and whole conserva
     "external-nested-later",
     "external-flat-adjacent",
     "external-flat-child-adjacent",
+    "farther-flat-deep",
+    "farther-nested-deep",
+    "farther-flat-slotted",
+    "farther-nested-slotted",
+    "farther-flat-is",
+    "farther-nested-where",
+    "farther-explicit-before-nesting",
   ])
     assert.deepEqual(row(id).expectedCli[0].messages, []);
   assert.equal(row("ordered-mixed").expectedCli[0].messages.length, 2);

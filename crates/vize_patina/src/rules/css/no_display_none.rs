@@ -148,20 +148,25 @@ fn external_target(selector: &Selector<'_>, inherited: bool) -> bool {
     for component in selector.iter_raw_match_order() {
         match component {
             Component::NonTSPseudoClass(PseudoClass::CustomFunction { name, arguments })
-                if matches!(name.as_ref(), "deep" | "slotted") && !arguments.0.is_empty() =>
+                if !sibling_boundary
+                    && matches!(name.as_ref(), "deep" | "slotted")
+                    && !arguments.0.is_empty() =>
             {
-                return !sibling_boundary;
+                return true;
             }
             Component::PseudoElement(
                 PseudoElement::Custom { name } | PseudoElement::CustomFunction { name, .. },
-            ) if matches!(name.as_ref(), "v-deep" | "v-slotted") => return !sibling_boundary,
-            Component::Slotted(_) => return !sibling_boundary,
+            ) if !sibling_boundary && matches!(name.as_ref(), "v-deep" | "v-slotted") => {
+                return true;
+            }
+            Component::Slotted(_) if !sibling_boundary => return true,
             Component::Is(selectors) | Component::Where(selectors)
-                if selectors
-                    .iter()
-                    .all(|selector| external_target(selector, inherited)) =>
+                if !sibling_boundary
+                    && selectors
+                        .iter()
+                        .all(|selector| external_target(selector, inherited)) =>
             {
-                return !sibling_boundary;
+                return true;
             }
             Component::Combinator(Combinator::NextSibling | Combinator::LaterSibling) => {
                 sibling_boundary = true;
@@ -169,7 +174,7 @@ fn external_target(selector: &Selector<'_>, inherited: bool) -> bool {
             Component::Combinator(Combinator::Child | Combinator::Descendant) => {
                 sibling_boundary = false;
             }
-            Component::Nesting => return inherited && !sibling_boundary,
+            Component::Nesting if inherited && !sibling_boundary => return true,
             _ => {}
         }
     }
