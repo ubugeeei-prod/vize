@@ -23,6 +23,10 @@ use vize_l0::{String as CompactString, cstr, path::canonicalize_non_verbatim};
 mod capture;
 use capture::Capture;
 
+#[path = "lsp_process/evidence.rs"]
+mod evidence;
+use evidence::Evidence;
+
 #[path = "lsp_process/protocol.rs"]
 mod protocol;
 use protocol::read_message;
@@ -39,6 +43,7 @@ pub struct LspProcess {
     stderr: Arc<Mutex<Vec<u8>>>,
     status: Option<ExitStatus>,
     capture: Option<Capture>,
+    evidence: Evidence,
     stdout_joined: Option<bool>,
     stderr_joined: Option<bool>,
 }
@@ -87,17 +92,20 @@ impl LspProcess {
             stderr: Arc::clone(&stderr),
             status: None,
             capture: None,
+            evidence: Evidence::default(),
             stdout_joined: None,
             stderr_joined: None,
         };
         process.capture = Capture::new(process.child.as_ref().unwrap().id(), &command);
 
         let capture = process.capture.clone();
+        let evidence = process.evidence.clone();
         let stdout_reader = std::thread::spawn(move || {
             let mut reader = std::io::BufReader::new(stdout);
             loop {
                 match read_message(&mut reader) {
                     Ok(message) => {
+                        evidence.record("response", &message);
                         if let Some(capture) = &capture {
                             capture.record("response", &message);
                         }
@@ -143,6 +151,7 @@ impl LspProcess {
     }
 
     pub fn send(&mut self, message: Value) {
+        self.evidence.record("request", &message);
         self.trace("request", &message);
         let body = cstr!("{message}");
         let result = self
