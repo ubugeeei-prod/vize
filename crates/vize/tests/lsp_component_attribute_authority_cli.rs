@@ -13,6 +13,10 @@ use vize_carton::corsa_resolver::discover_corsa_in_ancestors;
 
 #[path = "lsp_component_attribute_authority_cli/attribute_controls.rs"]
 mod attribute_controls;
+#[path = "lsp_library_rename_refusal_cli/importer_controls.rs"]
+mod library_importer_controls;
+#[path = "lsp_library_rename_refusal_cli/original.rs"]
+mod library_refusal;
 #[path = "lsp_component_attribute_authority_cli/native_probe.rs"]
 mod native_probe;
 #[path = "lsp_component_attribute_authority_cli/original_reads.rs"]
@@ -40,10 +44,15 @@ struct Fixture {
     id: i64,
     publications: std::collections::HashMap<(String, i64), Value>,
     mismatches: Vec<Value>,
+    runtime: std::path::PathBuf,
 }
 
 impl Fixture {
     fn new(files: &[(&str, &str)]) -> Self {
+        Self::with_config(files, CONFIG)
+    }
+
+    fn with_config(files: &[(&str, &str)], config: &str) -> Self {
         let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .unwrap()
@@ -61,7 +70,7 @@ impl Fixture {
             std::fs::create_dir_all(path.parent().unwrap()).unwrap();
             std::fs::write(path, text).unwrap();
         }
-        std::fs::write(project.path().join("tsconfig.json"), CONFIG).unwrap();
+        std::fs::write(project.path().join("tsconfig.json"), config).unwrap();
         let modules = project.path().join("node_modules");
         std::fs::create_dir_all(&modules).unwrap();
         let vue = workspace
@@ -96,6 +105,7 @@ impl Fixture {
             id: 2,
             publications: Default::default(),
             mismatches: Vec::new(),
+            runtime,
         };
         native_probe::prove(&mut fixture);
         fixture

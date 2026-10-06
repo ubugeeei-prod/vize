@@ -153,6 +153,13 @@ async fn rename_strict_inner(
             })
         })
         .transpose()?;
+    let mut scope = corsa_support::RenameScope::new(ctx);
+    if response
+        .as_ref()
+        .is_some_and(|edit| !scope.admits_native(&document, edit))
+    {
+        return Ok(Answer::Available(None));
+    }
     let had_primary_response = response.is_some();
     let mut linked = response
         .as_ref()
@@ -217,6 +224,9 @@ async fn rename_strict_inner(
                 operation: "linked rename",
                 message: cstr!("{error}"),
             })?;
+        if !scope.admits_native(&document, &extra) {
+            return Ok(Answer::Available(None));
+        }
         let component_prop_query = component_prop_positions.contains(&position);
         if component_prop_query {
             retain_component_prop_edits(
@@ -258,6 +268,7 @@ async fn rename_strict_inner(
             (!ctx.state.patterned_template_enabled()
                 || patterns::rewrite_shorthand_bindings(ctx, &document, &mut edit, new_name))
             .then_some(edit)
+            .filter(|edit| scope.admits_authored(edit))
         }),
     ))
 }

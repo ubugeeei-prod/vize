@@ -67,6 +67,30 @@ pub(crate) fn resolved_component_binding_reference(
     None
 }
 
+/// Resolve an expression identifier exactly, without markup case candidates.
+pub(crate) fn resolved_exact_component_binding_reference(
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    syntactic_type_only_imported_names: &FxHashSet<CompactString>,
+    name: &str,
+) -> Option<String> {
+    if contains_compact_name(syntactic_type_only_imported_names, name) {
+        return None;
+    }
+    if let Some(binding_type) = super::script_facts::binding_type(summary, name) {
+        return Some(component_binding_reference_for_summary_binding(
+            summary,
+            name,
+            binding_type,
+        ));
+    }
+    options
+        .external_template_bindings
+        .iter()
+        .any(|binding| binding.as_str() == name)
+        .then(|| String::from(name))
+}
+
 fn component_binding_reference_for_summary_binding(
     summary: &Croquis,
     candidate: &str,

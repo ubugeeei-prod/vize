@@ -285,7 +285,11 @@ pub(super) fn collect_transitive_local_imports_with_session(
                         continue;
                     }
                     if visited.insert(candidate.clone()) {
-                        authored.push(candidate.clone());
+                        // Synthetic Vue targets preserve native resolution topology;
+                        // only physical sources belong to the reported authored set.
+                        if candidate.is_file() {
+                            authored.push(candidate.clone());
+                        }
                         queue.push((candidate.clone(), true, true));
                     }
                     registered.insert(candidate.clone());
@@ -300,7 +304,9 @@ pub(super) fn collect_transitive_local_imports_with_session(
                         continue;
                     }
                     if visited.insert(candidate.clone()) {
-                        authored.push(candidate.clone());
+                        if candidate.is_file() {
+                            authored.push(candidate.clone());
+                        }
                         queue.push((candidate.clone(), false, true));
                     }
                 }

@@ -4,6 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { inspect } from "node:util";
 import {
   createSandboxRunner,
   SANDBOX_IMAGE,
@@ -87,66 +88,82 @@ test("sandbox rejects malformed manifests and never evaluates callback sources o
 });
 
 test("real Docker sandbox executes every hook family over serialized batches deterministically", () => {
-  const docker = spawnSync("docker", ["image", "inspect", SANDBOX_IMAGE], {
-    encoding: "utf8",
-    timeout: 5000,
-  });
-  assert.equal(docker.status, 0, `real sandbox proof requires the pinned image: ${docker.stderr}`);
-  const report = rule("(ctx, config) => { ctx.report(ctx.nodes[0], config.message); }", {
-    message: "日本語😀",
-  });
-  const expected = [{ rule: "check", node: 0, message: "日本語😀" }];
-  assert.deepEqual(JSON.parse(report.run(batch)), expected);
-  assert.equal(report.run(batch), report.run(batch));
-  const transform = createSandboxRunner({
-    name: "x",
-    version: "1",
-    family: "transform",
-    callback:
-      "batch => batch.nodes.map(node => ({ kind: 'replace-static-attribute', node: node.id, name: 'disabled', value: null }))",
-  });
-  assert.deepEqual(
-    JSON.parse(
-      transform.run(
-        JSON.stringify({
-          schema: 1,
-          stage: "s2-precanonical-static-attributes",
-          nodes: [{ id: 0 }],
-        }),
-      ),
-    ),
-    {
-      schema: 1,
-      edits: [{ kind: "replace-static-attribute", node: 0, name: "disabled", value: null }],
-    },
-  );
-  const provider = createSandboxRunner({
-    name: "x",
-    version: "1",
-    family: "provider",
-    provides: ["x/labels"],
-    callback: "batch => ({ 'x/labels': batch.nodes.map(node => [node.id, 'known']) })",
-  });
-  assert.deepEqual(JSON.parse(provider.run(batch)), { "x/labels": [[0, "known"]] });
-  for (const family of ["formatter", "output"] as const) {
-    const hook = createSandboxRunner({
+  try {
+    const docker = spawnSync("docker", ["image", "inspect", SANDBOX_IMAGE], {
+      encoding: "utf8",
+      timeout: 5000,
+    });
+    assert.equal(
+      docker.status,
+      0,
+      `real sandbox proof requires the pinned image: ${docker.stderr}`,
+    );
+    const report = rule("(ctx, config) => { ctx.report(ctx.nodes[0], config.message); }", {
+      message: "日本語😀",
+    });
+    const expected = [{ rule: "check", node: 0, message: "日本語😀" }];
+    assert.deepEqual(JSON.parse(report.run(batch)), expected);
+    assert.equal(report.run(batch), report.run(batch));
+    const transform = createSandboxRunner({
       name: "x",
       version: "1",
-      family,
+      family: "transform",
       callback:
-        family === "formatter"
-          ? "() => [{start: 0, end: 0, text: '// hi\\n'}]"
-          : "() => [{placement: 'append', comment: 'verified'}]",
+        "batch => batch.nodes.map(node => ({ kind: 'replace-static-attribute', node: node.id, name: 'disabled', value: null }))",
     });
-    const outputBatch = JSON.stringify({
-      schema: 1,
-      family,
-      offsetEncoding: "utf8",
-      compiled: { code: "hello" },
+    assert.deepEqual(
+      JSON.parse(
+        transform.run(
+          JSON.stringify({
+            schema: 1,
+            stage: "s2-precanonical-static-attributes",
+            nodes: [{ id: 0 }],
+          }),
+        ),
+      ),
+      {
+        schema: 1,
+        edits: [{ kind: "replace-static-attribute", node: 0, name: "disabled", value: null }],
+      },
+    );
+    const provider = createSandboxRunner({
+      name: "x",
+      version: "1",
+      family: "provider",
+      provides: ["x/labels"],
+      callback: "batch => ({ 'x/labels': batch.nodes.map(node => [node.id, 'known']) })",
     });
-    assert.equal(JSON.parse(hook.run(outputBatch)).length, 1);
+    assert.deepEqual(JSON.parse(provider.run(batch)), { "x/labels": [[0, "known"]] });
+    for (const family of ["formatter", "output"] as const) {
+      const hook = createSandboxRunner({
+        name: "x",
+        version: "1",
+        family,
+        callback:
+          family === "formatter"
+            ? "() => [{start: 0, end: 0, text: '// hi\\n'}]"
+            : "() => [{placement: 'append', comment: 'verified'}]",
+      });
+      const outputBatch = JSON.stringify({
+        schema: 1,
+        family,
+        offsetEncoding: "utf8",
+        compiled: { code: "hello" },
+      });
+      assert.equal(JSON.parse(hook.run(outputBatch)).length, 1);
+    }
+    assertNoContainers();
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        phase: "plugin-sandbox-hook-families",
+        image: SANDBOX_IMAGE,
+        batch,
+        error: inspect(error, { depth: null, breakLength: Infinity, compact: false }),
+      }),
+    );
+    throw error;
   }
-  assertNoContainers();
 });
 
 test("real sandbox cannot read host secrets, write its root, access Docker or host network", () => {
