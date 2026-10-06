@@ -78,3 +78,22 @@ Probe, four compiled graphs and six original DOM/SSR pairs, with receipt
 
 Resume admission now. This is verified finite publication, not completion of
 all P0 work. Live P0 count after actual #7937 and #8008 closures is 84.
+
+## Protected queue metadata recovery
+
+The [paired CI decision](https://github.com/ubugeeei-prod/vize/issues/6830#issuecomment-6007488125)
+records Check37397199220 at candidate81223. All four Rust workers completed
+successfully, but official job APIs return empty steps for workers1/3/4;
+worker2 retains its complete18 steps. Both supported API versions and the
+attempt-specific inventory reproduce this absence. The strict source report
+and dependent aggregates failed, and PR8074 is outside the queue.
+
+Preserve the source/archive, execution-step, artifact, full-corpus and
+latest-attempt validators. Logs do not substitute for missing step metadata.
+After the separate dependency-advisory repair actually merges, incorporate
+fresh main and require a fresh protected candidate with all four authentic
+workers and the complete aggregate. If that current candidate has the same
+metadata defect, rerun its common Rust build and all dependent workers/reports
+as one closure, retaining the old evidence. A report-only retry cannot repair
+the carried empty workers. The publication above remains complete; this PR's
+actual merge, the next release and unfinished P0 work remain pending.
