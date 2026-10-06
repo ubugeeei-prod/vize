@@ -31,7 +31,11 @@ pub(super) fn has_component_evidence(
             return Ok(None);
         }
         if value.flags & UNION != 0 {
-            let members = block_on(api.get_types_of_type(snapshot.clone(), value.id.clone()));
+            let members = block_on(api.get_types_of_type_in_project(
+                snapshot.clone(),
+                project.clone(),
+                value.id.clone(),
+            ));
             capture.record("componentUnionMembers", || match &members {
                 Ok(result) => json!({"type":value,"result":result}),
                 Err(error) => json!({"type":value,"error":cstr!("{error}")}),
