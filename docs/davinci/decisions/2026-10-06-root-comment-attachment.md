@@ -76,3 +76,9 @@ signal/process error immediately after `spawnSync`; then retain after-file
 bytes/hash or its read error before propagating failure. All original inputs,
 current expectations, process assertions and 20/100 capture laws remain exact.
 This observer correction provides no product execution or performance credit.
+
+The source peer identified unchecked source-derived string slices against the
+existing production Clippy policy. Use checked `get`/`split_at_checked` and
+conservatively retain unchanged classification if a boundary is refused,
+without lint allowances or expected-byte changes. This is a source compile-risk
+correction; fresh hosted Clippy and native results remain required.

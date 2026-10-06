@@ -8,8 +8,11 @@ pub(super) fn is_attached_comment(gap: &str) -> bool {
 // earlier document prologue, but recover the group after its blank separator.
 pub(super) fn split_prologue(gap: &str) -> (&str, Option<&str>) {
     let (attached, group_start) = classify(gap);
-    if attached && let Some(start) = group_start {
-        return (gap[..start].trim(), Some(gap[start..].trim()));
+    if attached
+        && let Some(start) = group_start
+        && let Some((prologue, group)) = gap.split_at_checked(start)
+    {
+        return (prologue.trim(), Some(group.trim()));
     }
     (gap.trim(), None)
 }
@@ -29,7 +32,9 @@ fn classify(gap: &str) -> (bool, Option<usize>) {
         if !before.trim().is_empty() {
             group_start = None;
         }
-        let tail = &before[before.trim_end().len()..];
+        let Some(tail) = before.get(before.trim_end().len()..) else {
+            return (false, None);
+        };
         if has_blank_line(tail) && (offset > 0 || !before.trim().is_empty()) {
             group_start = Some(offset + before.len());
         }
@@ -42,7 +47,10 @@ fn classify(gap: &str) -> (bool, Option<usize>) {
         offset = content.len() - after.len();
         remaining = after;
     }
-    (!has_blank_line(&gap[content.len()..]), group_start)
+    let Some(tail) = gap.get(content.len()..) else {
+        return (false, None);
+    };
+    (!has_blank_line(tail), group_start)
 }
 
 fn has_blank_line(tail: &str) -> bool {
