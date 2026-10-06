@@ -63,10 +63,17 @@ fn classified_root_scope_preserves_full_templates_and_recursive_child_facts() {
         let TemplateChildNode::Element(el) = &root.children[0] else {
             panic!("the complete original control must own its element");
         };
-        let facts = classify(el, inherited, own_key);
-        assert_eq!(facts.key_non_reactive, expected_scope, "{source}");
-        let plain = generate_element_template(el, None, source, facts.key_non_reactive);
-        let mapped = generate_element_template_spanned(el, None, source, facts.key_non_reactive);
+        let attrs = classify(el, inherited, own_key)
+            .template_attributes
+            .expect("the original HTML route");
+        assert!(std::ptr::eq(attrs.owner(), el), "{source}");
+        assert_eq!(attrs.non_reactive(), expected_scope, "{source}");
+        let plain = generate_element_template(attrs, None, source);
+        let attrs = classify(el, inherited, own_key)
+            .template_attributes
+            .expect("the same original mapped route");
+        assert!(std::ptr::eq(attrs.owner(), el), "{source}");
+        let mapped = generate_element_template_spanned(attrs, None, source);
         assert_eq!(plain.as_str(), expected, "{source}");
         assert_eq!(mapped.as_str(), expected, "{source}");
     }

@@ -7,7 +7,7 @@ use vize_carton::Box;
 
 use super::{
     super::{context::TransformContext, transform_children},
-    eligible,
+    eligible, eligible_target,
 };
 use crate::ir::{BlockIRNode, KeyIRNode, OperationNode};
 
@@ -18,6 +18,7 @@ pub(in crate::lower) fn transform_branch<'a>(
     let value = match (branch.children.as_slice(), branch.user_key.as_ref()) {
         ([TemplateChildNode::Element(el)], Some(PropNode::Directive(dir)))
             if !branch.is_template_if
+                && eligible_target(el)
                 && dir.name == "bind"
                 && matches!(dir.arg.as_ref(), Some(ExpressionNode::Simple(arg))
                     if arg.is_static && arg.content == "key") =>

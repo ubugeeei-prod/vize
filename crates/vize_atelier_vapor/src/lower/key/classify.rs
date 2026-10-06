@@ -1,13 +1,28 @@
 //! One existing property walk retains directive facts and the original key.
 
-use vize_atelier_core::{ElementNode, ExpressionNode, PropNode, SimpleExpressionNode};
+use vize_atelier_core::{
+    ElementNode, ElementType, PropNode, SimpleExpressionNode, TemplateChildNode,
+};
+
+use super::super::element::template::{RootAttributes, is_static_element};
+
+mod scope;
+pub(in crate::lower) use scope::ScopeDirectives;
 
 pub(in crate::lower) struct DirectiveAnalysis<'a, 'b> {
     pub(in crate::lower) should_lower_as_once: bool,
     pub(in crate::lower) memo_error: Option<&'static str>,
     pub(in crate::lower) key: Option<&'b SimpleExpressionNode<'a>>,
-    /// ANY once/empty memo for this writer root; FIRST memo still owns errors.
-    pub(in crate::lower) key_non_reactive: bool,
+    pub(in crate::lower) has_control_flow_children: bool,
+    pub(in crate::lower) has_dynamic_element_children: bool,
+    pub(in crate::lower) template_attributes: Option<RootAttributes<'a, 'b>>,
+}
+
+impl<'a, 'b> DirectiveAnalysis<'a, 'b> {
+    pub(in crate::lower) fn into_template(self) -> RootAttributes<'a, 'b> {
+        self.template_attributes
+            .expect("the actual element writer route owns its root facts")
+    }
 }
 
 pub(in crate::lower) fn classify<'a, 'b>(
@@ -28,57 +43,49 @@ fn classify_role<'a, 'b, const READ_KEY: bool>(
     inherited: bool,
 ) -> DirectiveAnalysis<'a, 'b> {
     let mut key = None;
-    let mut has_once = false;
-    let mut first_memo = None;
     let mut has_for = false;
-    let mut key_non_reactive = inherited;
+    let mut scope = ScopeDirectives::new(inherited);
+    let has_control_flow_children = el.tag_type == ElementType::Element
+        && el
+            .children
+            .iter()
+            .any(|c| matches!(c, TemplateChildNode::If(_) | TemplateChildNode::For(_)));
+    let has_dynamic_element_children = el.tag_type == ElementType::Element
+        && !has_control_flow_children
+        && el.children.iter().any(
+            |c| matches!(c, TemplateChildNode::Element(child_el) if !is_static_element(child_el)),
+        );
+
+    let needs_html = el.tag_type == ElementType::Element
+        && (has_control_flow_children || has_dynamic_element_children || el.tag != "component");
+    let mut template_attributes = RootAttributes::new(el, inherited, needs_html);
     for prop in el.props.iter() {
+        if let Some(attrs) = &mut template_attributes {
+            attrs.observe(prop);
+        }
         let PropNode::Directive(dir) = prop else {
             continue;
         };
-        match dir.name {
-            "once" => {
-                has_once = true;
-                key_non_reactive = true;
+        scope.observe(dir);
+        if READ_KEY {
+            match dir.name {
+                "for" => has_for = true,
+                "bind" if key.is_none() => key = super::binding_value(dir),
+                _ => {}
             }
-            "memo" => {
-                if first_memo.is_none() {
-                    first_memo = Some(dir);
-                }
-                key_non_reactive |= matches!(dir.exp.as_ref(), Some(ExpressionNode::Simple(exp))
-                    if exp.content.trim() == "[]");
-            }
-            "for" if READ_KEY => has_for = true,
-            "bind" if READ_KEY && key.is_none() => key = super::binding_value(dir),
-            _ => {}
         }
     }
-    let (should_lower_as_once, memo_error) = if has_once {
-        (true, None)
-    } else if let Some(dir) = first_memo {
-        match dir.exp.as_ref() {
-            Some(ExpressionNode::Simple(exp)) if exp.content.trim() == "[]" => (true, None),
-            Some(ExpressionNode::Simple(_)) => (
-                false,
-                Some(
-                    "v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
-                ),
-            ),
-            _ => (
-                false,
-                Some(
-                    "v-memo is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
-                ),
-            ),
-        }
-    } else {
-        (false, None)
-    };
+    let (should_lower_as_once, memo_error, key_non_reactive) = scope.finish();
+    if let Some(attrs) = &mut template_attributes {
+        attrs.set_non_reactive(key_non_reactive);
+    }
     DirectiveAnalysis {
         should_lower_as_once,
         memo_error,
         key: key.filter(|value| !key_non_reactive && !has_for && super::eligible_value(value)),
-        key_non_reactive,
+        has_control_flow_children,
+        has_dynamic_element_children,
+        template_attributes,
     }
 }
 

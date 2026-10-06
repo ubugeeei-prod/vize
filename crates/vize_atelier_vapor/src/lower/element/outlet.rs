@@ -1,8 +1,9 @@
 //! Outlet selectors and their ordinary props have distinct typed key identities.
 
 use super::{
-    Box, ElementNode, ExpressionNode, IRProp, PropNode, SimpleExpressionNode, SourceLocation,
-    TransformContext, Vec,
+    BlockIRNode, Box, ElementNode, ExpressionNode, IRProp, OperationNode, PropNode,
+    SimpleExpressionNode, SlotOutletIRNode, SourceLocation, String, TransformContext, Vec,
+    transform_children,
 };
 
 pub(super) fn get_slot_outlet_name<'a>(
@@ -44,9 +45,38 @@ pub(super) fn get_slot_outlet_props<'a>(
     ctx: &TransformContext<'a>,
     el: &ElementNode<'a>,
 ) -> Vec<'a, IRProp<'a>> {
+    get_slot_props::<false>(ctx, el).0
+}
+
+pub(super) fn get_slot_outlet_props_and_scope<'a, 'b>(
+    ctx: &TransformContext<'a>,
+    el: &'b ElementNode<'a>,
+) -> (
+    Vec<'a, IRProp<'a>>,
+    super::super::key::ScopeDirectives<'a, 'b>,
+) {
+    let (props, scope) = get_slot_props::<true>(ctx, el);
+    (
+        props,
+        scope.expect("the actual slot property walk retains its directive scope"),
+    )
+}
+
+fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
+    ctx: &TransformContext<'a>,
+    el: &'b ElementNode<'a>,
+) -> (
+    Vec<'a, IRProp<'a>>,
+    Option<super::super::key::ScopeDirectives<'a, 'b>>,
+) {
+    let mut scope =
+        CLASSIFY.then(|| super::super::key::ScopeDirectives::new(ctx.is_key_non_reactive()));
     let mut props = Vec::new_in(&ctx.allocator);
 
     for prop in el.props.iter() {
+        if let (Some(scope), PropNode::Directive(dir)) = (&mut scope, prop) {
+            scope.observe(dir);
+        }
         match prop {
             PropNode::Attribute(attr) => {
                 if attr.name == "name" {
@@ -106,5 +136,38 @@ pub(super) fn get_slot_outlet_props<'a>(
         }
     }
 
-    props
+    (props, scope)
+}
+
+/// Slot props only copy original facts; scope must be applied before fallback effects.
+pub(super) fn transform_slot<'a>(
+    ctx: &mut TransformContext<'a>,
+    el: &ElementNode<'a>,
+    block: &mut BlockIRNode<'a>,
+) {
+    let name = get_slot_outlet_name(ctx, el);
+    let (props, scope) = get_slot_outlet_props_and_scope(ctx, el);
+    let (once, error, _) = scope.finish();
+    if let Some(error) = error {
+        ctx.push_diagnostic(String::from(error));
+    }
+    if once {
+        ctx.enter_non_reactive_scope();
+    }
+    let id = ctx.next_id();
+    let fallback = (!el.children.is_empty()).then(|| transform_children(ctx, &el.children));
+    block
+        .operation
+        .push(OperationNode::SlotOutlet(SlotOutletIRNode {
+            id,
+            name,
+            props,
+            fallback,
+            parent: None,
+            anchor: None,
+        }));
+    block.returns.push(id);
+    if once {
+        ctx.exit_non_reactive_scope();
+    }
 }

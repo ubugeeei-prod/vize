@@ -4,6 +4,53 @@ use super::writer::TemplateWriter;
 use vize_atelier_core::{ElementNode, ExpressionNode, PropNode};
 use vize_carton::{FxHashSet, Span};
 
+/// Owned facts for exactly one original element writer root, consumed once.
+pub(in crate::lower) struct RootAttributes<'a, 'b> {
+    owner: &'b ElementNode<'a>,
+    has_static_attr: bool,
+    dynamic_attrs: FxHashSet<&'a str>,
+    non_reactive: bool,
+}
+
+impl<'a, 'b> RootAttributes<'a, 'b> {
+    pub(in crate::lower) fn new(
+        el: &'b ElementNode<'a>,
+        inherited: bool,
+        needs_html: bool,
+    ) -> Option<Self> {
+        needs_html.then(|| Self {
+            owner: el,
+            has_static_attr: false,
+            dynamic_attrs: FxHashSet::default(),
+            non_reactive: inherited,
+        })
+    }
+
+    pub(in crate::lower) fn observe(&mut self, prop: &PropNode<'a>) {
+        match prop {
+            PropNode::Attribute(_) => self.has_static_attr = true,
+            PropNode::Directive(dir) if dir.name == "bind" => {
+                if let Some(ExpressionNode::Simple(key)) = dir.arg.as_ref() {
+                    self.dynamic_attrs.insert(key.content);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    pub(in crate::lower) fn set_non_reactive(&mut self, non_reactive: bool) {
+        self.non_reactive = non_reactive;
+    }
+
+    pub(in crate::lower) fn owner(&self) -> &'b ElementNode<'a> {
+        self.owner
+    }
+
+    pub(in crate::lower) fn non_reactive(&self) -> bool {
+        self.non_reactive
+    }
+}
+
 pub(super) fn collect_dynamic_attrs<'a>(
     el: &ElementNode<'a>,
     has_static_attr: &mut bool,
@@ -47,12 +94,18 @@ pub(super) fn write_attributes(
     el: &ElementNode<'_>,
     source: &str,
     non_reactive: &mut bool,
-    derive_non_reactive: bool,
+    root: Option<RootAttributes<'_, '_>>,
 ) {
     // Collect dynamic binding names to skip their static counterparts
+    let derived;
     let mut has_static_attr = false;
-    let dynamic_attrs =
-        collect_dynamic_attrs(el, &mut has_static_attr, non_reactive, derive_non_reactive);
+    let dynamic_attrs = if let Some(ref root) = root {
+        has_static_attr = root.has_static_attr;
+        &root.dynamic_attrs
+    } else {
+        derived = collect_dynamic_attrs(el, &mut has_static_attr, non_reactive, true);
+        &derived
+    };
 
     // Add static attributes (skip those overridden by dynamic bindings).
     // This result depends only on the unchanged props. The first pass above

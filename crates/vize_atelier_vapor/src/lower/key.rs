@@ -15,7 +15,7 @@ use crate::ir::{BlockIRNode, InsertionAnchor, KeyIRNode, OperationNode};
 mod branch;
 mod classify;
 pub(super) use branch::transform_branch;
-pub(super) use classify::{DirectiveAnalysis, classify};
+pub(super) use classify::{DirectiveAnalysis, ScopeDirectives, classify};
 
 pub(super) fn is_non_reactive(el: &ElementNode<'_>, inherited: bool) -> bool {
     inherited || el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir)
@@ -117,12 +117,17 @@ pub(super) fn transform<'a>(
     anchor: Option<InsertionAnchor>,
     add_return: bool,
     value: &SimpleExpressionNode<'a>,
+    directives: Option<DirectiveAnalysis<'a, '_>>,
 ) {
     let value = Box::new_in(SimpleExpressionNode::from_node(value), &ctx.allocator);
     let id = id.unwrap_or_else(|| ctx.next_id());
     let mut render = BlockIRNode::new(ctx.allocator);
     // Reuse the same original element; only this consumed key is suppressed.
-    transform_element_unkeyed(ctx, el, &mut render);
+    if let Some(directives) = directives {
+        transform_classified_element(ctx, el, &mut render, directives);
+    } else {
+        transform_element_unkeyed(ctx, el, &mut render);
+    }
     block.operation.push(OperationNode::Key(Box::new_in(
         KeyIRNode {
             id,
@@ -152,9 +157,23 @@ pub(super) fn element<'a>(
     block: &mut BlockIRNode<'a>,
     own_key: bool,
 ) {
+    if el.tag_type == ElementType::Slot {
+        super::element::transform_slot(ctx, el, block);
+        return;
+    }
     let directives = classify(el, ctx.is_key_non_reactive(), own_key);
     if let Some(value) = directives.key {
-        transform(ctx, el, block, None, None, None, true, value);
+        transform(
+            ctx,
+            el,
+            block,
+            None,
+            None,
+            None,
+            true,
+            value,
+            Some(directives),
+        );
     } else {
         transform_classified_element(ctx, el, block, directives);
     }
@@ -162,3 +181,6 @@ pub(super) fn element<'a>(
 
 #[cfg(test)]
 mod target_tests;
+
+#[cfg(test)]
+mod property_tests;

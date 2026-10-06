@@ -4,6 +4,7 @@ mod component;
 mod deferred;
 mod insertion;
 mod outlet;
+pub(super) use outlet::transform_slot;
 use outlet::{get_slot_outlet_name, get_slot_outlet_props};
 pub(super) mod template;
 
@@ -91,21 +92,13 @@ pub(super) fn transform_classified_element<'a>(
 
     // Check if this element has non-static children that require
     // deferred ID allocation (so inner templates/IDs come first).
-    let has_control_flow_children = el.tag_type == ElementType::Element
-        && el
-            .children
-            .iter()
-            .any(|c| matches!(c, TemplateChildNode::If(_) | TemplateChildNode::For(_)));
-    let has_dynamic_element_children = el.tag_type == ElementType::Element
-        && !has_control_flow_children
-        && el.children.iter().any(
-            |c| matches!(c, TemplateChildNode::Element(child_el) if !is_static_element(child_el)),
-        );
+    let has_control_flow_children = non_reactive.has_control_flow_children;
+    let has_dynamic_element_children = non_reactive.has_dynamic_element_children;
 
     if has_dynamic_element_children {
         // Dynamic element children: allocate child IDs first, then parent ID.
         // Use child/next navigation instead of separate templates.
-        transform_element_with_dynamic_children(ctx, el, block, non_reactive.key_non_reactive);
+        transform_element_with_dynamic_children(ctx, el, block, non_reactive.into_template());
         if entered_non_reactive {
             ctx.exit_non_reactive_scope();
         }
@@ -115,7 +108,7 @@ pub(super) fn transform_classified_element<'a>(
     if has_control_flow_children {
         // Control flow children (v-if/v-for): defer parent ID and template
         // allocation until after children, so inner IDs/templates come first.
-        transform_element_with_control_flow_children(ctx, el, block, non_reactive.key_non_reactive);
+        transform_element_with_control_flow_children(ctx, el, block, non_reactive.into_template());
         if entered_non_reactive {
             ctx.exit_non_reactive_scope();
         }
@@ -136,7 +129,7 @@ pub(super) fn transform_classified_element<'a>(
 
     match el.tag_type {
         ElementType::Element => {
-            let template = ctx.element_template(el, non_reactive.key_non_reactive);
+            let template = ctx.element_template(non_reactive.into_template());
 
             // Process props and events
             for prop in el.props.iter() {

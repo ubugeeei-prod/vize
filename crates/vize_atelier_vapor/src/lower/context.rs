@@ -1,7 +1,7 @@
 //! Transform context for tracking state during AST-to-IR transformation.
 
 use crate::ir::{BlockIRNode, IREffect, OperationNode};
-use vize_atelier_core::{ElementNode, TextNode, codegen::document::EmitDocument};
+use vize_atelier_core::{TextNode, codegen::document::EmitDocument};
 use vize_carton::{Allocator, FxHashMap, FxHashSet, String, Vec, interner::Interner};
 
 /// Template anchors, collected only for map-requesting compiles (P3-9).
@@ -78,27 +78,15 @@ impl<'a> TransformContext<'a> {
 
     /// An element's template string, anchored when a map is requested.
     #[inline(always)]
-    pub(crate) fn element_template(
+    pub(in crate::lower) fn element_template(
         &self,
-        el: &ElementNode<'_>,
-        key_non_reactive: bool,
+        root: super::element::template::RootAttributes<'_, '_>,
     ) -> EmitDocument {
         let scope_id = self.scope_id.as_deref();
         if self.template_spans.is_some() {
-            super::element::template::generate_element_template_spanned(
-                el,
-                scope_id,
-                self.source,
-                key_non_reactive,
-            )
+            super::element::template::generate_element_template_spanned(root, scope_id, self.source)
         } else {
-            super::element::template::generate_element_template(
-                el,
-                scope_id,
-                self.source,
-                key_non_reactive,
-            )
-            .into()
+            super::element::template::generate_element_template(root, scope_id, self.source).into()
         }
     }
 

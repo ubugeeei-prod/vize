@@ -4,7 +4,7 @@ use crate::ir::InsertionAnchor;
 use vize_carton::ensure_sufficient_stack;
 
 use super::component::transform_component;
-use super::template::{is_static_element, transform_template_ref};
+use super::template::{RootAttributes, is_static_element, transform_template_ref};
 use super::{
     BlockIRNode, ChildRefIRNode, ElementNode, ElementType, NextRefIRNode, OperationNode, PropNode,
     SlotOutletIRNode, TemplateChildNode, TransformContext, get_slot_outlet_name,
@@ -19,9 +19,9 @@ pub(super) fn transform_element_with_control_flow_children<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
-    key_non_reactive: bool,
+    root: RootAttributes<'a, '_>,
 ) {
-    transform_element_with_dynamic_children(ctx, el, block, key_non_reactive);
+    transform_element_with_dynamic_children(ctx, el, block, root);
 }
 
 /// Transform an element that has dynamic element children.
@@ -32,7 +32,7 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
-    key_non_reactive: bool,
+    root: RootAttributes<'a, '_>,
 ) {
     let dynamic_child_count = count_dynamic_element_children(&el.children);
     let child_ids: std::vec::Vec<usize> = (0..dynamic_child_count).map(|_| ctx.next_id()).collect();
@@ -41,7 +41,7 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     let parent_id = ctx.next_id();
 
     // Generate template (includes all children inline)
-    let template = ctx.element_template(el, key_non_reactive);
+    let template = ctx.element_template(root);
 
     // Process parent props
     for prop in el.props.iter() {
@@ -199,6 +199,7 @@ fn transform_dynamic_children_in_slice<'a>(
                     Some(anchor),
                     false,
                     value,
+                    None,
                 );
             } else if child_el.tag_type == ElementType::Element {
                 let index = *rendered_index;

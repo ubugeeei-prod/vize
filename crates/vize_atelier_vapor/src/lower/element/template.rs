@@ -9,32 +9,49 @@ use vize_carton::Span;
 use vize_carton::ensure_sufficient_stack;
 
 mod attributes;
+pub(in crate::lower) use attributes::RootAttributes;
 mod writer;
 use writer::{LeadingNewlineWriter, TemplateWriter};
 
 /// Generate an element template from its already-classified root key scope.
 #[inline(always)]
-pub(crate) fn generate_element_template(
-    el: &ElementNode<'_>,
+pub(in crate::lower) fn generate_element_template(
+    root: RootAttributes<'_, '_>,
     scope_id: Option<&str>,
     source: &str,
-    non_reactive: bool,
 ) -> String {
     let mut template = String::default();
-    write_element_template(&mut template, el, scope_id, source, non_reactive, true);
+    let el = root.owner();
+    let non_reactive = root.non_reactive();
+    write_element_template(
+        &mut template,
+        el,
+        scope_id,
+        source,
+        non_reactive,
+        Some(root),
+    );
     template
 }
 
 /// [`generate_element_template`] linking the tag names, static attributes and
 /// text it copies to their authored ranges (Davinci P3-9); identical bytes.
-pub(crate) fn generate_element_template_spanned(
-    el: &ElementNode<'_>,
+pub(in crate::lower) fn generate_element_template_spanned(
+    root: RootAttributes<'_, '_>,
     scope_id: Option<&str>,
     source: &str,
-    non_reactive: bool,
 ) -> EmitDocument {
     let mut template = EmitDocument::default();
-    write_element_template(&mut template, el, scope_id, source, non_reactive, true);
+    let el = root.owner();
+    let non_reactive = root.non_reactive();
+    write_element_template(
+        &mut template,
+        el,
+        scope_id,
+        source,
+        non_reactive,
+        Some(root),
+    );
     template
 }
 
@@ -44,7 +61,7 @@ fn write_element_template(
     scope_id: Option<&str>,
     source: &str,
     non_reactive: bool,
-    classified_root: bool,
+    root: Option<RootAttributes<'_, '_>>,
 ) {
     // Root facts came from its actual lowering walk. Recursion still owns
     // each child's once/memo derivation and never broadens the lower's context.
@@ -61,7 +78,7 @@ fn write_element_template(
     }
 
     if !el.props.is_empty() {
-        attributes::write_attributes(template, el, source, &mut non_reactive, !classified_root);
+        attributes::write_attributes(template, el, source, &mut non_reactive, root);
     }
 
     if is_void_element(el.tag) {
@@ -141,14 +158,7 @@ fn append_child_templates(
                 if is_template_backed_element(child_el, non_reactive) =>
             {
                 ensure_sufficient_stack(|| {
-                    write_element_template(
-                        template,
-                        child_el,
-                        scope_id,
-                        source,
-                        non_reactive,
-                        false,
-                    )
+                    write_element_template(template, child_el, scope_id, source, non_reactive, None)
                 });
             }
             // Only a block followed by template-rendered siblings keeps its
