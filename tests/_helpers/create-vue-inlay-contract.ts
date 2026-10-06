@@ -1,17 +1,20 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { repoRoot } from "./realworld-patch.ts";
-
 // Official @vue/reactivity 3.6.0-beta.10 package, authenticated against the
 // frozen lock's SHA512 SRI. These are declaration facts, not a Vize capture.
-export function createVueInlayContract() {
-  const declaration = fs.realpathSync(
-    path.join(repoRoot, "node_modules/@vue/reactivity/dist/reactivity.d.ts"),
-  );
+export function createVueInlayContract(workspace: string) {
+  // Follow the same declared provider chain as the fixture's `vue` import.
+  // Isolated pnpm dependencies need no top-level @vue/reactivity alias.
+  const vue = fs.realpathSync(path.join(workspace, "node_modules/vue/package.json"));
+  const runtimeDom = createRequire(vue).resolve("@vue/runtime-dom/package.json");
+  const runtimeCore = createRequire(runtimeDom).resolve("@vue/runtime-core/package.json");
+  const reactivity = createRequire(runtimeCore).resolve("@vue/reactivity/package.json");
+  const declaration = fs.realpathSync(path.join(path.dirname(reactivity), "dist/reactivity.d.ts"));
   const metadata = JSON.parse(
     fs.readFileSync(path.join(path.dirname(declaration), "../package.json"), "utf8"),
   );
@@ -38,6 +41,10 @@ export function createVueInlayContract() {
   return {
     declaration,
     declarationBytes: bytes,
+    providers: [vue, runtimeDom, runtimeCore, reactivity].map((file) => ({
+      path: fs.realpathSync(file),
+      bytesBase64: fs.readFileSync(file).toString("base64"),
+    })),
     expected: [
       {
         kind: 1,

@@ -46,7 +46,7 @@ export async function createVueStockInlay(
   const file = path.join(workspace, "Oracle.ts");
   fs.writeFileSync(file, script);
   const uri = pathToFileURL(file).href;
-  const contract = createVueInlayContract();
+  const contract = createVueInlayContract(workspace);
   const output = path.join(repoRoot, "target/differential/lsp-sessions");
   fs.mkdirSync(output, { recursive: true });
   const capture = fs.mkdtempSync(path.join(output, "stock-create-vue-inlay-"));
@@ -179,7 +179,7 @@ export async function createVueStockInlay(
       ],
     );
     assert.equal(hash(fs.readFileSync(binary)), identity.sha256);
-    assert.deepEqual(createVueInlayContract().expected, contract.expected);
+    assert.deepEqual(createVueInlayContract(workspace).expected, contract.expected);
     return contract.expected;
   } catch (error) {
     failure = error;
@@ -195,6 +195,7 @@ export async function createVueStockInlay(
           schema: "vize.create-vue.stock-native.inlay",
           source: process.env.GITHUB_SHA ?? null,
           binary: identity,
+          providers: contract.providers,
           version: {
             status: version.status,
             signal: version.signal,

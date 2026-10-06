@@ -48,3 +48,10 @@ control; protected full checks, actual signed merge and publication remain
 required. Keep the earlier full failure and separate the unrelated editor hover
 and bulk diagnostics work. No production paths, benchmark budgets, sampling,
 feature flags, timeouts or disabled-backend behavior change in this correction.
+
+The first 6051121 full run fails before stock process startup because isolated
+pnpm does not expose a top-level `@vue/reactivity` alias. Resolve the declaration
+through the fixture's physical Vue → runtime-dom → runtime-core → reactivity
+provider chain, retaining all four package metadata bytes. Preserve the entire
+expected vector and declaration hash. This is a path-authority correction;
+the first run provides no repaired native equality or later performance credit.
