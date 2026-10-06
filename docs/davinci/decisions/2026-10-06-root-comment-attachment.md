@@ -97,3 +97,8 @@ The intermediate PR conflicted against advancing main and had no normal Check
 for those intermediate heads. Preserve every incoming canonical line and the
 complete owned decision clause while composing fresh signed main; no workflow
 bypass, incoming-source substitution or expected-byte relaxation is permitted.
+
+Keep the incoming UI-tier paragraph byte-exact and place the complete owned
+root-comment decision beside the existing SFC-layout fixture paragraph. This
+removes the observed canonical ownership conflict while preserving every
+incoming line and the350-line cap; production/fixture authority is unchanged.
