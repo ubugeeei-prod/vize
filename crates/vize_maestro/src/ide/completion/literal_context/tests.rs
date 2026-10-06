@@ -2,6 +2,8 @@ use super::{contains_cursor, quoted_token, source_type};
 use crate::{ide::IdeContext, server::ServerState};
 use tower_lsp::lsp_types::Url;
 
+mod cost;
+
 const ORIGINAL: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../tests/_fixtures/differential/lsp/string-literal-completion-original/Page.vue.txt"

@@ -40,8 +40,13 @@ native fixture discovery. Authored dirty Unicode/CRLF and single-quote sources
 and the unconstrained-string dependency are separate complete pinned controls.
 Git explicitly retains the LF/CRLF carrier bytes.
 
-Four Rust laws cover both original positions, lexer/source domains, Unicode
-boundaries and native-unprovided synchronous behavior. The supplemental stdio
+Five Rust laws cover both original positions, lexer/source domains, Unicode
+boundaries, native-unprovided synchronous behavior and classifier-only work.
+The last records sixteen actual classifier calls for each original position and
+an ordinary template identifier after context preparation, retaining whole
+input/projection and individual wall times before assertions. This is a noisy
+test-host observation without provider/hover requests, not CPU/allocation
+attribution, a gain claim or a new performance ceiling. The supplemental stdio
 oracle uses the existing source-built CLI receipt and whole-wire lifecycle
 capture in normal tooling Actions. It prepares two real server sessions and
 37 exact completion/resolve results: ten whole union arrays, twenty whole
@@ -71,10 +76,13 @@ by existing artifact capture before assertions. Elapsed request wall time is
 observational and includes the existing client/capture work; it grants no
 classification-only cost, speed or budget acceptance.
 
-The branch is private and uncompiled. Rust formatting and static JS checks are
+The first source was sealed privately, then genuinely replayed onto signed
+`6b5e6fd8357bc892d2ea9cefe271a13fc08100cb` after #8116 delivered.
+The branch remains uncompiled; the maintainer authorized one conventional
+non-Draft PR for ordinary Actions qualification, with admission pending gates. Rust formatting and static JS checks are
 distinct from real native acceptance. TODO: qualify compilation, all whole
 original/dirty/null/lifecycle results, selected-completion work and unchanged
 protected suites/104 instruction ceilings on the genuinely composed current
 source. Actual signed merge, issue closure and installed release inclusion are
-still required. No PR, local native build/install/run, new workflow, manual
-campaign, budget increase or private project input is authorized by this record.
+still required. No local native build/install/run, new workflow, manual campaign, budget
+increase or private project input is authorized by this record.
