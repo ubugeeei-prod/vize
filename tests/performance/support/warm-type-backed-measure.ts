@@ -42,7 +42,12 @@ export class QueryRecorder {
       started: [...text.matchAll(/starting initial type diagnostics for /gu)].length,
       completed: [...text.matchAll(/finished initial type diagnostics for /gu)].length,
     });
+    const nativeDiagnosticPhase = (text: string) => ({
+      started: [...text.matchAll(/collect_corsa_diagnostics: /gu)].length,
+      assembled: [...text.matchAll(/assembled [0-9]+ Corsa diagnostics in /gu)].length,
+    });
     const phaseBefore = initialTypePhase(this.session.stderrText);
+    const nativeBefore = nativeDiagnosticPhase(this.session.stderrText);
     const started = performance.now();
     let result: unknown = null;
     let requestId: number | undefined;
@@ -118,6 +123,10 @@ export class QueryRecorder {
       startedAtMs: started,
       completedAtMs: started + wallMs,
       initialTypePhase: { before: phaseBefore, after: initialTypePhase(this.session.stderrText) },
+      nativeDiagnosticPhase: {
+        before: nativeBefore,
+        after: nativeDiagnosticPhase(this.session.stderrText),
+      },
       cpuSeconds: after.cpu_seconds - before.cpu_seconds,
       before,
       after,

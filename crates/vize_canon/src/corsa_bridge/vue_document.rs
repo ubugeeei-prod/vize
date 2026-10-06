@@ -168,6 +168,7 @@ impl CorsaBridge {
         session_config_path: Option<PathBuf>,
         materialized_changes: crate::batch::virtual_project::MaterializedFileDelta,
     ) -> Result<(), CorsaBridgeError> {
+        let phase = super::preparation_trace::Phase::start("project_synchronize", documents.len());
         let timer = self.profiler().timer("corsa_project_synchronize");
         if let Some(project_root) = session_project_root {
             self.with_client(move |client| {
@@ -182,6 +183,7 @@ impl CorsaBridge {
             .await?;
         }
         self.open_virtual_documents_batch(documents).await?;
+        phase.finish();
         if let Some(timer) = timer {
             timer.record(self.profiler());
         }

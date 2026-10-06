@@ -43,3 +43,40 @@ held-hover and worker lifetime laws, full native/non-native checks and protected
 instruction ceilings. Publish measured results only after actual execution;
 no gain, 10x, Program-build elimination, or installed-release credit is claimed.
 Broader batch-performance and warm-input-copy work remain separate.
+
+The first exact e608 source pair used development-inheriting profile.ci and
+observed first script hover 19,721.983 → 14,322.078 ms, with warm hover near45 ms.
+All78 complete measured envelopes and all18 complete ordered notifications
+matched; the aggregate failed its historical93-frame server count (actual98).
+Current didChange publishes prompt and complete versioned answers for all five
+awaited edits. Independently authored whole publication vectors retain both
+warnings, URI/version/range/message fields, duplicate publications and ordering;
+93 client frames and80 responses remain required. Historical public sequences
+keep their separate binding. The original failed aggregate is not accepted.
+
+Main-thread observations retain approximately12.05 CPU seconds on both sides.
+Native editor CPU falls15.30 → 3.98 seconds, but this is not adequate hover latency
+or a shipping-profile gain. Add opt-in numeric-only phase begin/end/count/status
+observations for existing preparation and native readiness operations, without
+clocks when disabled, additional queries/stages or payload changes. The same
+source pair now requires actual release-profile builds, exact Cargo profiles,
+fresh required artifacts and byte-exact staged ELF/source/recipe custody.
+Default source-launch CI bindings stay strict; the release recipe is explicit.
+
+Close regressive Draft#8038 after its own measured failures, preserving branch
+and evidence and open#7698. No bulk source or timing is imported here. Delivered
+snapshot-source correctness b034 remains separate. TODO: qualify shipping cold,
+repeated and during-diagnostic hover plus all whole invalidation/lifetime/full
+and protected gates; the remaining14-second observation is unacceptable.
+
+The shipping pair also retains one additional complete script hover after the
+actual `collect_corsa_diagnostics` producer marker and before terminal initial
+diagnostics; it must equal the whole first-hover answer. All74 original requests
+and four cold requests remain, with94 client frames,81 complete responses and
+all18 source-authored notifications for current feedback. Passive stderr/native
+phase counters distinguish actual collection from pre-lock worker scheduling.
+Draft#8038 was actually closed at09:25:17Z; its factual paired closure is
+[recorded on#7698](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6013334183).
+
+[The phase/publication/shipping decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6013356884)
+pairs this same-PR successor; fresh exact execution remains pending.

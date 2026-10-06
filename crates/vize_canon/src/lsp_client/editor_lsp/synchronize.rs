@@ -17,6 +17,8 @@ impl EditorLspSession {
         &mut self,
         documents: &FxHashMap<String, String>,
     ) -> Result<(), String> {
+        let phase =
+            crate::corsa_bridge::preparation_trace::Phase::start("editor_mirror", documents.len());
         let mut desired = documents.iter().collect::<Vec<_>>();
         desired.sort_unstable_by(|left, right| left.0.cmp(right.0));
         for (document_uri, text) in desired {
@@ -57,6 +59,7 @@ impl EditorLspSession {
             self.close_mirrored_document(&document_uri)?;
             self.flush_if_full(None)?;
         }
+        phase.finish();
         Ok(())
     }
 
@@ -80,8 +83,13 @@ impl EditorLspSession {
         let Some(uri) = barrier_uri else {
             return Ok(());
         };
+        let phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "editor_notification_drain",
+            self.unacknowledged_notifications,
+        );
         super::super::diagnostics_lsp::request_lsp_document_readiness_ack(&self.client, uri)
             .map_err(|error| cstr!("Failed to drain editor LSP overlay notifications: {error}"))?;
+        phase.finish();
         self.unacknowledged_notifications = 0;
         Ok(())
     }

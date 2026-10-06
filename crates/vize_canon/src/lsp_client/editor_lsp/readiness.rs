@@ -44,11 +44,16 @@ impl EditorLspSession {
                 })
             })
             .collect::<Result<Vec<_>, _>>()?;
+        let phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "editor_readiness",
+            readiness_uris.len(),
+        );
         super::super::diagnostics_lsp::request_lsp_document_readiness_acks(
             &self.client,
             &readiness_uris,
         )
         .map_err(|error| cstr!("Failed to establish editor LSP generation readiness: {error}"))?;
+        phase.finish();
         self.dirty_documents.clear();
         self.query_barrier_required = false;
         self.unacknowledged_notifications = 0;

@@ -30,6 +30,8 @@ on:
   pull_request:
     paths:
       - ".github/workflows/davinci-canon-scaling.yml"
+      - "crates/vize_canon/src/corsa_bridge/preparation_trace.rs"
+      - "crates/vize_canon/src/lsp_client/editor_lsp/client.rs"
       - "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs"
       - "crates/vize_canon/src/lsp_client/editor_lsp/readiness.rs"
       - "crates/vize_canon/src/lsp_client/editor_lsp/synchronize.rs"
@@ -62,6 +64,9 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     env:
+      VIZE_TRACE_EDITOR_PREPARATION: "1"
+      WARM_REQUEST_BUILD_PROFILE: release
+      VIZE_LSP_BUILD_RECIPE: "cargo build --release -p vize"
       ORIGINAL_CUT_REQUESTED: ${{ inputs.original_control_sha != '' || inputs.original_after_sha != '' || inputs.original_after_tree != '' || inputs.original_manifest_sha256 != '' || inputs.original_public_authority != '' || inputs.original_public_authority_sha256 != '' }}
       ORIGINAL_PUBLIC_REQUESTED: ${{ inputs.original_public_authority != '' || inputs.original_public_authority_sha256 != '' }}
       ORIGINAL_PUBLIC_AUTHORITY: ${{ inputs.original_public_authority }}
@@ -177,10 +182,10 @@ jobs:
           else
             vp exec node tests/performance/support/warm-type-backed-workflow.ts prepare
           fi
-      - name: Build the original baseline with the identical CI recipe
+      - name: Build the original baseline with the identical shipping release recipe
         if: ${{ (github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true') && env.ORIGINAL_PUBLIC_REQUESTED != 'true' }}
         run: vp exec node tests/performance/support/warm-type-backed-build.ts before
-      - name: Build the original warm-request successor with the identical CI recipe
+      - name: Build the original warm-request successor with the identical shipping release recipe
         if: ${{ (github.event_name == 'pull_request' || env.ORIGINAL_CUT_REQUESTED == 'true') && env.ORIGINAL_PUBLIC_REQUESTED != 'true' }}
         run: vp exec node tests/performance/support/warm-type-backed-build.ts after
       - name: Compare every original400 warm packet and invalidation control on this worker

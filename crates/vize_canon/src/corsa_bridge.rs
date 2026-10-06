@@ -10,6 +10,7 @@ mod diagnosing_configuration;
 mod editor_session;
 mod native_vue;
 mod original_program;
+pub(crate) mod preparation_trace;
 #[cfg(test)]
 mod outside_import_editor_tests;
 mod script_document;

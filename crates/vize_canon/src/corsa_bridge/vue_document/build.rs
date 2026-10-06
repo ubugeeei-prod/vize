@@ -27,6 +27,10 @@ pub(super) fn build_vue_virtual_workspace_project(
     requested_sources: &[(PathBuf, &str)],
     environment: CorsaProjectEnvironment<'_>,
 ) -> Result<CorsaVueVirtualProject, CorsaBridgeError> {
+    let project_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+        "vue_project_build",
+        requested_sources.len() + overlays.len() + 1,
+    );
     let rewriter = ImportRewriter::new();
     let overlays = overlays
         .iter()
@@ -68,6 +72,7 @@ pub(super) fn build_vue_virtual_workspace_project(
     // Other hosts can extend the live catalog without replacing this context.
     // Retain the catalog captured by this exact preparation, not the first open.
     host.source_catalog = alias_context.source_catalog.clone();
+    project_phase.finish();
     Ok(CorsaVueVirtualProject {
         session_project_root: host.session_project_root.clone(),
         host,
@@ -88,6 +93,7 @@ fn build_surface(
     rewriter: &ImportRewriter,
     alias_context: &crate::corsa_bridge::vue_dependencies_alias::AliasContext,
 ) -> Result<QuerySurface, CorsaBridgeError> {
+    let surface_phase = crate::corsa_bridge::preparation_trace::Phase::start("query_surface", 1);
     let host = generate_vue_document_with_options(
         source_path,
         content,
@@ -101,6 +107,8 @@ fn build_surface(
     if host.generated.virtual_suffix == ".tsx" {
         documents.push(tsx_vue_import_shim(&host.source_path, &host.virtual_uri));
     }
+    let dependencies_phase =
+        crate::corsa_bridge::preparation_trace::Phase::start("surface_dependency_collection", 1);
     let resolved_dependencies = collect_dependency_documents(
         &mut documents,
         &mut dependencies,
@@ -110,6 +118,9 @@ fn build_surface(
         alias_context,
         overlays,
     );
+    dependencies_phase.finish();
+    let sources_phase =
+        crate::corsa_bridge::preparation_trace::Phase::start("surface_materialized_sources", 1);
     let generated = host.generated;
     let materialized_sources = alias_context.materialized_sources();
     if !requested_sources.is_empty() || !overlays.is_empty() {
@@ -120,7 +131,9 @@ fn build_surface(
             !requested_sources.is_empty(),
         );
     }
+    sources_phase.finish();
     let session_project_root = alias_context.mirror_project_root_for_source(source_path);
+    surface_phase.finish();
     Ok(QuerySurface {
         host: CorsaVueVirtualDocument {
             request_uri: host.virtual_uri,

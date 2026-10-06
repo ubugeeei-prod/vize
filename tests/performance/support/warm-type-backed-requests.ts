@@ -158,7 +158,12 @@ export async function runSide(
         const server = decodeFrames(
           fs.readFileSync(path.join(captured.capture, "server.bin")),
         ).messages;
-        const responses = assertOriginalFrames(client, server, initialization, coldStart ? 4 : 0);
+        const responses = assertOriginalFrames(
+          client,
+          server,
+          initialization,
+          coldStart ? { repoRoot, workspace, source } : 0,
+        );
         assert.deepEqual(
           responses,
           recorder.responses,
@@ -250,8 +255,8 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
     before,
     after,
     protocol: releaseCut
-      ? "original400+134; same worker/workspace/runtime/fresh ci build; exact per-source locks; four immediate cold requests; completed initial types+10s idle; retained prime; all5x4 warm requests"
-      : "original400+134; same worker/workspace/locks/runtime/ci build; four immediate cold requests; completed initial types+10s idle; retained prime; all5x4 warm requests",
+      ? "original400+134; same worker/workspace/runtime/attested shipping build; exact per-source locks; four immediate cold requests+one hover during actual native collection; completed initial types+10s idle; retained prime; all5x4 warm requests"
+      : "original400+134; same worker/workspace/locks/runtime/attested shipping build; four immediate cold requests+one hover during actual native collection; completed initial types+10s idle; retained prime; all5x4 warm requests",
     timingScope:
       "request wall time; inclusive sampled Linux Maestro/native-descendant CPU; observational, no numeric ceiling or Program count",
     pendingDelivery:
@@ -305,11 +310,12 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   // substituted bijectively. No public field, native data or response is dropped.
   const completePackets = publicPackets;
   assert.deepEqual(completePackets(after), completePackets(before));
+  if (!releaseCut) assert.deepEqual(after.notifications, before.notifications);
   for (const side of [before, after]) {
     assert.equal(
       side.rows.length,
-      78,
-      "four cold and all74 original measured whole request rows are required",
+      79,
+      "four cold, one background and all74 original whole rows are required",
     );
     assert.equal(side.rows.filter((row) => /^warm-[1-5]$/u.test(String(row.stage))).length, 20);
   }
@@ -322,6 +328,7 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
         after: after.source,
         wholePacketsEqual: true,
         coldRequestsPerSide: 4,
+        backgroundRequestsPerSide: 1,
         startupTimings: [before.startupTimings, after.startupTimings],
         warmRequestsPerSide: 20,
         observations: [before, after].map((side) =>

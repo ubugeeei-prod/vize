@@ -8,6 +8,8 @@ import { hoverToText, offsetToPosition } from "../../tooling/support/lsp/asserti
 import type { LspSession } from "../../tooling/support/lsp/session.ts";
 import type { JsonRpcMessage } from "../../tooling/support/lsp/protocol.ts";
 
+import { originalPublications } from "./warm-type-backed-publications.ts";
+
 export type RequestSpec = { name: string; method: string; params: unknown };
 export type Packet = { name: string; method: string; result: unknown };
 
@@ -22,13 +24,36 @@ export function assertOriginalFrames(
   client: JsonRpcMessage[],
   server: JsonRpcMessage[],
   initialization: unknown,
-  coldRequests = 0,
+  contract: number | { repoRoot: string; workspace: string; source: string } = 0,
 ) {
+  const coldRequests = typeof contract === "number" ? contract : 5;
+  const publications =
+    typeof contract === "number"
+      ? undefined
+      : originalPublications(
+          contract.workspace,
+          contract.source,
+          fs.existsSync(
+            path.join(
+              contract.repoRoot,
+              "crates/vize_maestro/src/server/diagnostic_publishing/sync_feedback.rs",
+            ),
+          ),
+        );
+  if (publications)
+    assert.deepEqual(
+      server.filter((message) => message.id == null),
+      publications,
+    );
   const responses = server.filter(
     (message) => typeof message.id === "number" && message.method == null,
   );
   assert.equal(client.length, 89 + coldRequests, "every original client frame remains present");
-  assert.equal(server.length, 89 + coldRequests, "every original server frame remains present");
+  assert.equal(
+    server.length,
+    76 + coldRequests + (publications?.length ?? 13),
+    "every complete response and whole publication remains present",
+  );
   assert.equal(
     responses.length,
     76 + coldRequests,
