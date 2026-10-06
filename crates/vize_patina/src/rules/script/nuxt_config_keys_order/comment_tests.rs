@@ -39,12 +39,12 @@ export default defineNuxtConfig({
 }
 
 #[test]
-fn keeps_a_leading_comment_with_the_inserted_trailing_comma() {
+fn moves_a_leading_comment_without_adding_a_final_comma() {
     let source =
         "export default defineNuxtConfig({\n  ssr: true, // ssr\n  // modules\n  modules: []\n})";
     assert_eq!(
         fix_until_stable(source),
-        "export default defineNuxtConfig({\n  // modules\n  modules: [],\n  ssr: true, // ssr\n})"
+        "export default defineNuxtConfig({\n  // modules\n  modules: [],\n  ssr: true // ssr\n})"
     );
 }
 
@@ -121,6 +121,6 @@ fn sorts_a_url_string_without_treating_slashes_as_comments() {
     let source = "export default { ssr: \"https://example.com\", modules: [] }";
     assert_eq!(
         fix_until_stable(source),
-        "export default { modules: [], ssr: \"https://example.com\", }"
+        "export default { modules: [], ssr: \"https://example.com\" }"
     );
 }

@@ -1,0 +1,43 @@
+{
+  "issue": 7963,
+  "reportedVersion": "0.432.0",
+  "author": {
+    "login": "ubugeeei",
+    "id": 71201308,
+    "coAuthor": "ubugeeei <71201308+ubugeeei@users.noreply.github.com>"
+  },
+  "bodySha256": "885103253f13339adde2b5a939abd68be9ae852b1e5f8de6e0aa2d606231f493",
+  "inputs": [
+    {
+      "file": "original-issue.md",
+      "bytes": 1199,
+      "sha256": "885103253f13339adde2b5a939abd68be9ae852b1e5f8de6e0aa2d606231f493"
+    },
+    {
+      "file": "nuxt.config.ts.fixture",
+      "bytes": 79,
+      "sha256": "4352b0d845c0f57fbad10ad79293942dc7a4894c6eec0d1eee6143d3d0d770a1"
+    },
+    {
+      "file": "expected.config.ts.fixture",
+      "bytes": 79,
+      "sha256": "df76ada77401817466a835245502d22f52d7910cc55863a4c9cc5ca4e045c00d"
+    },
+    {
+      "file": "command.txt",
+      "bytes": 57,
+      "sha256": "ec17b92a9bebb4d3c5c00412dd7ab18d7342dca1ae7bc8ae65e4ee292a7c7332"
+    },
+    {
+      "file": "cases.json",
+      "bytes": 5250,
+      "sha256": "dda500aa7308420604dff6494368b734e824261184631c7c9a897ce2c1d4e8bd"
+    },
+    {
+      "file": "original-nuxt-corpus-expected.json",
+      "bytes": 4335,
+      "sha256": "ca347f8df9530f1e0aaacc19c9139bc4882dcbee7b47c2893cc19ac1374c3378"
+    }
+  ],
+  "caseCount": 15
+}
