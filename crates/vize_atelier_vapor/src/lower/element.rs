@@ -24,7 +24,7 @@ use self::{
     deferred::{
         transform_element_with_control_flow_children, transform_element_with_dynamic_children,
     },
-    template::{is_static_element, transform_template_ref},
+    template::transform_template_ref,
 };
 
 use super::{

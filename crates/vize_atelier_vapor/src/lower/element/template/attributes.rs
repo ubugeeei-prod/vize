@@ -2,7 +2,7 @@
 
 use super::writer::TemplateWriter;
 use vize_atelier_core::{ElementNode, ExpressionNode, PropNode};
-use vize_carton::{FxHashSet, Span};
+use vize_carton::FxHashSet;
 
 /// Owned facts for exactly one original element writer root, consumed once.
 pub(in crate::lower) struct RootAttributes<'a, 'b> {
@@ -13,17 +13,13 @@ pub(in crate::lower) struct RootAttributes<'a, 'b> {
 }
 
 impl<'a, 'b> RootAttributes<'a, 'b> {
-    pub(in crate::lower) fn new(
-        el: &'b ElementNode<'a>,
-        inherited: bool,
-        needs_html: bool,
-    ) -> Option<Self> {
-        needs_html.then(|| Self {
+    pub(in crate::lower) fn new(el: &'b ElementNode<'a>, inherited: bool) -> Self {
+        Self {
             owner: el,
             has_static_attr: false,
             dynamic_attrs: FxHashSet::default(),
             non_reactive: inherited,
-        })
+        }
     }
 
     pub(in crate::lower) fn observe(&mut self, prop: &PropNode<'a>) {

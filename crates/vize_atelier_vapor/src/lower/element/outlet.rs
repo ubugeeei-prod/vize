@@ -55,11 +55,7 @@ pub(super) fn get_slot_outlet_props_and_scope<'a, 'b>(
     Vec<'a, IRProp<'a>>,
     super::super::key::ScopeDirectives<'a, 'b>,
 ) {
-    let (props, scope) = get_slot_props::<true>(ctx, el);
-    (
-        props,
-        scope.expect("the actual slot property walk retains its directive scope"),
-    )
+    get_slot_props::<true>(ctx, el)
 }
 
 fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
@@ -67,14 +63,13 @@ fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
     el: &'b ElementNode<'a>,
 ) -> (
     Vec<'a, IRProp<'a>>,
-    Option<super::super::key::ScopeDirectives<'a, 'b>>,
+    super::super::key::ScopeDirectives<'a, 'b>,
 ) {
-    let mut scope =
-        CLASSIFY.then(|| super::super::key::ScopeDirectives::new(ctx.is_key_non_reactive()));
+    let mut scope = super::super::key::ScopeDirectives::new(ctx.is_key_non_reactive());
     let mut props = Vec::new_in(&ctx.allocator);
 
     for prop in el.props.iter() {
-        if let (Some(scope), PropNode::Directive(dir)) = (&mut scope, prop) {
+        if CLASSIFY && let PropNode::Directive(dir) = prop {
             scope.observe(dir);
         }
         match prop {

@@ -15,13 +15,12 @@ pub(in crate::lower) struct DirectiveAnalysis<'a, 'b> {
     pub(in crate::lower) key: Option<&'b SimpleExpressionNode<'a>>,
     pub(in crate::lower) has_control_flow_children: bool,
     pub(in crate::lower) has_dynamic_element_children: bool,
-    pub(in crate::lower) template_attributes: Option<RootAttributes<'a, 'b>>,
+    pub(in crate::lower) template_attributes: RootAttributes<'a, 'b>,
 }
 
 impl<'a, 'b> DirectiveAnalysis<'a, 'b> {
     pub(in crate::lower) fn into_template(self) -> RootAttributes<'a, 'b> {
         self.template_attributes
-            .expect("the actual element writer route owns its root facts")
     }
 }
 
@@ -56,12 +55,12 @@ fn classify_role<'a, 'b, const READ_KEY: bool>(
             |c| matches!(c, TemplateChildNode::Element(child_el) if !is_static_element(child_el)),
         );
 
-    let needs_html = el.tag_type == ElementType::Element
+    let needs_writer = el.tag_type == ElementType::Element
         && (has_control_flow_children || has_dynamic_element_children || el.tag != "component");
-    let mut template_attributes = RootAttributes::new(el, inherited, needs_html);
+    let mut template_attributes = RootAttributes::new(el, inherited);
     for prop in el.props.iter() {
-        if let Some(attrs) = &mut template_attributes {
-            attrs.observe(prop);
+        if needs_writer {
+            template_attributes.observe(prop);
         }
         let PropNode::Directive(dir) = prop else {
             continue;
@@ -76,9 +75,7 @@ fn classify_role<'a, 'b, const READ_KEY: bool>(
         }
     }
     let (should_lower_as_once, memo_error, key_non_reactive) = scope.finish();
-    if let Some(attrs) = &mut template_attributes {
-        attrs.set_non_reactive(key_non_reactive);
-    }
+    template_attributes.set_non_reactive(key_non_reactive);
     DirectiveAnalysis {
         should_lower_as_once,
         memo_error,

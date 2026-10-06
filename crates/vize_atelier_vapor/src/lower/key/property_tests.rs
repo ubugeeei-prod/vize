@@ -33,7 +33,10 @@ fn output<'a>(
     source: &'a str,
 ) -> Output {
     let block_text = cstr!("{block:?}");
-    let spans = VaporSourceSpans::collect(root, ctx.template_spans.unwrap());
+    let Some(templates) = ctx.template_spans else {
+        panic!("the whole output control must retain its original template spans");
+    };
+    let spans = VaporSourceSpans::collect(root, templates);
     let ir = RootIRNode {
         node: RootNode::new(ctx.allocator, ""),
         source,
@@ -164,20 +167,18 @@ fn transferred_branch_keys_keep_ineligible_original_targets_unwrapped() {
         let [TemplateChildNode::Element(el)] = root.children.as_slice() else {
             panic!("the complete original owns the conditional element");
         };
-        let authored_key = el
-            .props
-            .iter()
-            .find_map(|prop| match prop {
-                PropNode::Directive(dir)
-                    if dir.name == "bind"
-                        && matches!(dir.arg.as_ref(), Some(ExpressionNode::Simple(arg))
+        let Some(authored_key) = el.props.iter().find_map(|prop| match prop {
+            PropNode::Directive(dir)
+                if dir.name == "bind"
+                    && matches!(dir.arg.as_ref(), Some(ExpressionNode::Simple(arg))
                     if arg.is_static && arg.content == "key") =>
-                {
-                    dir.exp.as_ref()
-                }
-                _ => None,
-            })
-            .unwrap();
+            {
+                dir.exp.as_ref()
+            }
+            _ => None,
+        }) else {
+            panic!("the original conditional control must own its bind key");
+        };
         let authored_span = authored_key.loc().span;
         assert_eq!(
             &source[authored_span.start as usize..authored_span.end as usize],
