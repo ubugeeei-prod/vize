@@ -163,3 +163,15 @@ as8073→8086→8091 before this incorporation. The Hover provider/inlay consume
 must pass their joint original editor/Vue checks before the next source cut.
 The next release remains v0.435.0; this record assigns no cut, release PR,
 tag or public result and does not wait for unfinished PR8038 or all P0s.
+
+## Decision record composition
+
+PR8074 source5e passed all46 current Actions, but its queue entry was
+UNMERGEABLE behind healthy PR8078 candidate de40. A read-only whole merge
+proved the sole conflict was the shared decision record's line350. Root
+actually dequeued8074 and verified its entry is null. The
+[paired correction](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-6009946818)
+relocates the complete root-owned suffix into the existing release section
+without adopting any prospective production code. All original clauses and
+incoming main lines remain intact. Fresh source qualification and a clean
+whole prospective prefix precede any new protected admission.
