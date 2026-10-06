@@ -8,12 +8,15 @@ use std::{
 };
 use vize_atelier_core::{
     CodegenOptions, TemplateSyntaxMode,
-    steps::expression::{is_event_handler_reference_expression, is_function_expression},
+    steps::expression::{
+        is_event_handler_reference_expression, is_function_expression,
+        is_typescript_function_expression,
+    },
 };
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode, compile_sfc_for_adapter, parse_sfc,
 };
-use vize_l0::{String, cstr};
+use vize_l0::{Allocator, String, cstr};
 
 const ROOT: &str = "../../../tests/_fixtures/differential/compiler/vapor-component-listeners/";
 const APP: &str = include_str!(concat!(
@@ -59,9 +62,16 @@ fn whole_function_shapes_keep_typed_callbacks_and_reject_statement_prefixes() {
         "(a: number => log(a)",
     ];
     assert_eq!(
-        sources.map(is_function_expression),
+        sources.map(is_typescript_function_expression),
         [
             true, true, true, true, true, true, true, false, false, false, false, false, false
+        ]
+    );
+    assert_eq!(
+        sources.map(is_function_expression),
+        [
+            true, false, false, false, false, false, false, false, false, false, false, false,
+            false
         ]
     );
     assert_eq!(
@@ -70,6 +80,38 @@ fn whole_function_shapes_keep_typed_callbacks_and_reject_statement_prefixes() {
             false, false, false, false, false, false, false, true, true, false, false, false, false
         ]
     );
+}
+
+#[test]
+fn selected_component_events_keep_whole_retained_results_and_model_names() {
+    for source in [
+        r#"<Child @typed="(a: number) => log(a)" @update-thing="save" />"#,
+        r#"<Child v-model:some-prop="value" @update-thing="save" />"#,
+        r#"<Transition :css="false" @before-enter="enter"><p>{{ label }}</p></Transition>"#,
+    ] {
+        for prefix_identifiers in [false, true] {
+            let allocator = Allocator::new();
+            let result = |davinci_retained_lane| {
+                let result = vize_atelier_vapor::compile_vapor(
+                    &allocator,
+                    source,
+                    vize_atelier_vapor::VaporCompilerOptions {
+                        davinci_retained_lane,
+                        prefix_identifiers,
+                        ..Default::default()
+                    },
+                );
+                assert_eq!(result.error_messages, Vec::<String>::new());
+                json!({ "code": result.code, "templates": result.templates,
+                    "map": result.map, "errorMessages": result.error_messages })
+            };
+            assert_eq!(
+                result(false),
+                result(true),
+                "{source}: prefix={prefix_identifiers}"
+            );
+        }
+    }
 }
 
 fn compile(
@@ -93,7 +135,6 @@ fn compile(
     };
     options.parse.filename = filename.into();
     options.script.id = Some(filename.into());
-    options.script.is_ts = true;
     options.template.is_prod = production;
     let build = |map| {
         compile_sfc_for_adapter(
@@ -109,17 +150,70 @@ fn compile(
         )
         .expect("compile complete public component result")
     };
-    json!({ "source": source, "filename": filename, "plain": build(false), "mapped": build(true) })
+    json!({ "source": source, "filename": filename, "outputTypeScript": false,
+        "plain": build(false), "mapped": build(true) })
 }
 
-fn git_identity(argument: &str) -> Value {
-    let output = Command::new("git")
-        .args(["rev-parse", argument])
-        .current_dir(env!("CARGO_MANIFEST_DIR"))
-        .output()
-        .expect("capture actual compiled source identity");
-    assert_eq!(output.status.code(), Some(0));
-    json!(String::from_utf8_lossy(&output.stdout).trim())
+fn source_custody(destination: &Path) -> Value {
+    // Actions deliberately checks out depth one. Read literal parent headers
+    // from the current commit object without requiring any ancestor object.
+    let mut commands = Vec::new();
+    let requests: [&[&str]; 2] = [&["rev-parse", "HEAD"], &["cat-file", "-p", "HEAD"]];
+    for args in requests {
+        let output = Command::new("git")
+            .args(args)
+            .current_dir(env!("CARGO_MANIFEST_DIR"))
+            .output()
+            .expect("capture actual compiled source identity");
+        commands.push(json!({ "args": args, "exitCode": output.status.code(),
+            "exitStatus": output.status.to_string(), "stdout": String::from_utf8_lossy(&output.stdout),
+            "stderr": String::from_utf8_lossy(&output.stderr),
+            "stdoutBytes": output.stdout, "stderrBytes": output.stderr }));
+    }
+    std::fs::write(
+        destination.join("vapor-component-listeners-source.json"),
+        serde_json::to_vec(&commands).expect("complete source command custody"),
+    )
+    .expect("retain Git exit and raw streams before identity assertions");
+    assert_eq!(
+        commands
+            .iter()
+            .map(|command| command["exitCode"].clone())
+            .collect::<Vec<_>>(),
+        [json!(0), json!(0)],
+        "{commands:?}"
+    );
+    let head = commands.first().expect("head command")["stdout"]
+        .as_str()
+        .expect("head output")
+        .trim();
+    let headers: Vec<_> = commands.get(1).expect("literal object command")["stdout"]
+        .as_str()
+        .expect("literal commit output")
+        .lines()
+        .take_while(|line| !line.is_empty())
+        .collect();
+    let tree = headers
+        .iter()
+        .find_map(|line| line.strip_prefix("tree "))
+        .expect("literal tree");
+    let parents: Vec<_> = headers
+        .iter()
+        .filter_map(|line| line.strip_prefix("parent "))
+        .collect();
+    assert!(
+        !parents.is_empty(),
+        "original current source has literal parents"
+    );
+    for object in std::iter::once(head)
+        .chain(std::iter::once(tree))
+        .chain(parents.iter().copied())
+    {
+        assert_eq!(object.len(), 40);
+        assert!(object.bytes().all(|byte| byte.is_ascii_hexdigit()));
+    }
+    json!({ "head": head, "tree": tree, "parents": parents, "gitCommands": commands,
+        "fixtureRoot": ROOT })
 }
 
 #[test]
@@ -133,8 +227,7 @@ fn original_component_listeners_mount_in_both_output_modes() {
         .join("../../target/nextest")
         .join(profile);
     std::fs::create_dir_all(&destination).expect("whole runtime evidence directory");
-    let custody = json!({ "head": git_identity("HEAD"), "tree": git_identity("HEAD^{tree}"),
-        "parent": git_identity("HEAD^"), "fixtureRoot": ROOT });
+    let custody = source_custody(&destination);
     let mut receipts = Vec::new();
     for production in [false, true] {
         let mut cases = Vec::new();

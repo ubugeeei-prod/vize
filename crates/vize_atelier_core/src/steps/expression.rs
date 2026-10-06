@@ -28,7 +28,10 @@ pub use nesting::{
 pub use prefix::{is_simple_identifier, prefix_identifiers_in_expression};
 use rewrite::rewrite_expression;
 pub use scope::is_template_global;
-pub use shape_checks::{is_event_handler_reference_node, is_function_expression_node};
+pub use shape_checks::{
+    is_event_handler_reference_node, is_function_expression_node,
+    is_typescript_function_expression_node,
+};
 use shape_checks::{is_function_shape, is_handler_reference_shape};
 pub use typescript::strip_typescript_from_expression;
 pub use vize_relief::{ExpressionScope, for_each_function_var};
@@ -46,6 +49,16 @@ pub fn is_event_handler_reference_expression(content: &str) -> bool {
 
 /// Returns true if the whole expression is a function / arrow function expression.
 pub fn is_function_expression(content: &str) -> bool {
+    with_whole_expression(
+        content,
+        SourceType::default().with_module(true),
+        is_function_shape,
+    )
+    .unwrap_or(false)
+}
+
+/// Classify a complete callback in a TypeScript-capable template handler.
+pub fn is_typescript_function_expression(content: &str) -> bool {
     with_whole_expression(
         content,
         SourceType::ts().with_module(true),

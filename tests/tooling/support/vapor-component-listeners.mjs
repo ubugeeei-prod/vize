@@ -156,6 +156,7 @@ try {
   }
 
   function validate(file) {
+    assert.equal(file.outputTypeScript, false, "reported public default emits JavaScript");
     assert.deepEqual(file.plain.errors, []);
     assert.deepEqual(file.plain.warnings, []);
     assert.equal(file.plain.css, null);
