@@ -1,4 +1,4 @@
-use super::NoExportInScriptSetup;
+use super::{NoExportInScriptSetup, ownership_tests::lint_setup};
 use crate::rules::script::ScriptLinter;
 
 fn create_linter() -> ScriptLinter {
@@ -15,7 +15,7 @@ fn test_invalid_named_export_with_macro() {
 const props = defineProps<{ count: number }>()
 export const helper = () => props.count
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 1);
     insta::with_settings!({ snapshot_path => "../snapshots" }, {
         insta::assert_debug_snapshot!(result.diagnostics);
@@ -28,7 +28,7 @@ fn test_invalid_default_export_with_macro() {
 defineProps<{ count: number }>()
 export default {}
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 1);
 }
 
@@ -38,7 +38,7 @@ fn test_invalid_export_all_with_macro() {
 defineEmits(['change'])
 export * from './helpers'
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 1);
 }
 
@@ -49,7 +49,7 @@ defineExpose({})
 const a = 1
 export { a }
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 1);
 }
 
@@ -61,18 +61,18 @@ export const a = 1
 export function b() {}
 export default {}
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 3);
 }
 
 #[test]
 fn test_invalid_export_detected_via_top_level_await() {
-    // No compiler macro, but a top-level await proves this is <script setup>.
+    // No compiler macro: the caller explicitly identifies this as <script setup>.
     let source = r#"
 const data = await fetch('/api')
 export const cached = data
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 1);
 }
 
@@ -83,7 +83,7 @@ fn test_invalid_export_enum_with_macro() {
 defineProps<{ count: number }>()
 export enum Color { Red, Green }
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 1);
 }
 
@@ -96,7 +96,7 @@ type Foo = { a: number }
 const b = 1
 export { type Foo, b }
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 1);
 }
 
@@ -107,7 +107,7 @@ fn test_invalid_empty_export_braces() {
 defineProps<{ count: number }>()
 export {}
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 1);
 }
 
@@ -118,7 +118,7 @@ fn test_invalid_export_namespace_with_macro() {
 defineProps<{ count: number }>()
 export namespace Config { export const value = 1 }
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 1);
 }
 
@@ -132,7 +132,7 @@ fn test_valid_export_type_alias() {
 export type Foo = { value: string }
 defineProps<{ foo: Foo }>()
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 0);
 }
 
@@ -142,7 +142,7 @@ fn test_valid_export_interface() {
 export interface Props { count: number }
 defineProps<Props>()
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 0);
 }
 
@@ -153,7 +153,7 @@ defineProps<{ count: number }>()
 type Foo = { a: number }
 export type { Foo }
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 0);
 }
 
@@ -165,7 +165,7 @@ type Foo = { a: number }
 type Bar = { b: string }
 export { type Foo, type Bar }
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 0);
 }
 
@@ -175,7 +175,7 @@ fn test_valid_export_type_star() {
 defineProps<{ count: number }>()
 export type * from './types'
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 0);
 }
 
@@ -186,7 +186,7 @@ fn test_valid_export_ambient_declare() {
 defineProps<{ count: number }>()
 export declare const version: string
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 0);
 }
 
@@ -198,7 +198,7 @@ fn test_valid_export_declare_namespace() {
 defineProps<{ count: number }>()
 export declare namespace Config { const value: number }
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 0);
 }
 
@@ -248,7 +248,7 @@ const props = defineProps<{ count: number }>()
 const doubled = ref(props.count * 2)
 defineExpose({ doubled })
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 0);
 }
 
@@ -260,7 +260,7 @@ import Foo from './Foo.vue'
 import { bar } from './bar'
 const props = defineProps<{ count: number }>()
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 0);
 }
 
@@ -271,7 +271,7 @@ fn test_valid_macro_substring_in_string_no_export() {
 const label = 'defineProps demo'
 const x = 1
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 0);
 }
 
@@ -306,6 +306,6 @@ fn test_valid_nested_export_keyword_not_top_level() {
 defineProps<{ count: number }>()
 const code = 'export default {}'
 "#;
-    let result = create_linter().lint(source, 0);
+    let result = lint_setup(source, 0);
     assert_eq!(result.error_count, 0);
 }
