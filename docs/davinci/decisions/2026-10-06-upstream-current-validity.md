@@ -102,3 +102,32 @@ Current corrected full typecheck execution, source/protected validation, signed
 merge, upstream adapter integration and next release inclusion are unfinished.
 The eleven lint judges and remaining compiler/style/ranking surfaces stay
 separate. This record has zero native migration or performance credit.
+
+## First source validation and native expectation correction
+
+Reviewed source tree17b2 is genuinely replayed onto main163d as #8075 head
+3ba131c67a, preserving ten owned noncomposition blobs and every incoming
+canonical byte. Source Check37398185879 compiles and all four Rust workers pass;
+its independently owned security audit remains red for new npm advisories.
+Native run37398184783 fails the prior derivative strict-defaults expectation:
+actual whole output adds the required unknownProp error to its two existing
+component/directive errors. The complete failed log is retained at 373,485 bytes,
+SHA256 `5d17349f1bacbe76cd09fa5f19b40be7821f1b606d479128afbb3f8196f3bc45`.
+
+The [paired correction](https://github.com/ubugeeei-prod/vize/issues/7856#issuecomment-6007406806)
+changes only that case's independent native-oracle indexes from [1,2] to [0,1,2].
+The existing complete Oracle.ts row supplies the message, not captured Vize text.
+The shared vector drives complete CLI/editor-service reports. Every original
+input/oracle, other option case and all six typed/comment/global contracts stay
+exact. Fresh corrected source/native/protected acceptance remains unfinished.
+
+## Reviewable upstream integration
+
+[Upstream Draft83](https://github.com/pikax/vue-benchmarks/pull/83), source
+5c8e6ea/tree327799da, carries the concrete project argv and rich-frame adapter
+corrections against unchanged5489 sources/judges/known failures/locks/results.
+The [paired integration record](https://github.com/ubugeeei-prod/vize/issues/7856#issuecomment-6007498298)
+retains independent source review and five pure original-row regressions. Actual
+upstream Test37399471255 and PR37399471143 run; confirmation/smoke, eventual
+upstream merge, supported release dependency update and ranking remain pending.
+The current upstream Vize pin stays0.429.1; no public credit is inferred.
