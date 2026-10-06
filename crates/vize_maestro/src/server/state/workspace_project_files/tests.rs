@@ -141,8 +141,20 @@ fn failed_project_walk_retains_available_sources_and_retries_without_an_event() 
 
 #[test]
 fn cached_project_read_retries_in_flight_root_folder_and_membership_changes() {
+    #[derive(Debug)]
+    enum Change {
+        Root,
+        Folders,
+        Created,
+        Deleted,
+    }
     crate::runtime::block_on(async {
-        for change in ["root", "folders", "created", "deleted"] {
+        for change in [
+            Change::Root,
+            Change::Folders,
+            Change::Created,
+            Change::Deleted,
+        ] {
             let root = tempfile::tempdir().unwrap();
             let next = tempfile::tempdir().unwrap();
             let path = root.path().join("original.ts");
@@ -164,15 +176,15 @@ fn cached_project_read_retries_in_flight_root_folder_and_membership_changes() {
                 waiting.await.unwrap();
                 let mut expected = vec![(uri.clone(), "original".into())];
                 match change {
-                    "root" => {
+                    Change::Root => {
                         state.set_workspace_root(next.path().to_owned());
                         expected = vec![(added_uri.clone(), "added".into())];
                     }
-                    "folders" => {
+                    Change::Folders => {
                         state.set_workspace_folders(vec![next.path().to_owned()]);
                         expected.push((added_uri.clone(), "added".into()));
                     }
-                    "created" => {
+                    Change::Created => {
                         let created = root.path().join("created.ts");
                         std::fs::write(&created, "created").unwrap();
                         let created_uri = Url::from_file_path(created).unwrap();
@@ -182,7 +194,7 @@ fn cached_project_read_retries_in_flight_root_folder_and_membership_changes() {
                         }]);
                         expected.push((created_uri, "created".into()));
                     }
-                    "deleted" => {
+                    Change::Deleted => {
                         std::fs::remove_file(&path).unwrap();
                         state.observe_workspace_project_file_events(&[FileEvent {
                             uri: uri.clone(),
@@ -190,7 +202,6 @@ fn cached_project_read_retries_in_flight_root_folder_and_membership_changes() {
                         }]);
                         expected.clear();
                     }
-                    _ => unreachable!(),
                 }
                 expected.sort_by(|(left, _), (right, _)| left.as_str().cmp(right.as_str()));
                 resume.send(()).unwrap();
@@ -198,7 +209,7 @@ fn cached_project_read_retries_in_flight_root_folder_and_membership_changes() {
             };
             let (actual, expected) =
                 futures::join!(state.discover_workspace_project_sources(), mutation);
-            assert_eq!(actual, expected, "{change}");
+            assert_eq!(actual, expected, "{change:?}");
         }
     });
 }
