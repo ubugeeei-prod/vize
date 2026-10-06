@@ -79,8 +79,7 @@ void test("original root comments retain whole attachment bytes and CLI fixed po
           timeout: 30000,
           maxBuffer: 1048576,
         });
-        const after = fs.readFileSync(file);
-        row.attempts.push({
+        const attempt = {
           argv,
           status: result.status,
           signal: result.signal,
@@ -88,10 +87,21 @@ void test("original root comments retain whole attachment bytes and CLI fixed po
           stdout: result.stdout?.toString() ?? "",
           stderr: result.stderr?.toString() ?? "",
           before: before.toString(),
-          after: after.toString(),
+          after: null,
           beforeSha256: sha256(before),
-          afterSha256: sha256(after),
-        });
+          afterSha256: null,
+          afterReadError: null,
+        };
+        row.attempts.push(attempt);
+        let after;
+        try {
+          after = fs.readFileSync(file);
+          attempt.after = after.toString();
+          attempt.afterSha256 = sha256(after);
+        } catch (error) {
+          attempt.afterReadError = error.message;
+          throw error;
+        }
         assert.equal(result.error, undefined, fixture.id);
         assert.equal(result.signal, null, fixture.id);
         return { result, before, after };

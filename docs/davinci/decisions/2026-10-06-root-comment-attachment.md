@@ -69,3 +69,10 @@ Actions and the bounded source peer, not these source edits, qualify delivery.
 
 This successor is paired with [comment 6010655474](https://github.com/ubugeeei-prod/vize/issues/7877#issuecomment-6010655474)
 and the central record in the same change.
+
+The independent source peer found that an after-process file read could fail
+before the complete process row was retained. Record stdout/stderr/status/
+signal/process error immediately after `spawnSync`; then retain after-file
+bytes/hash or its read error before propagating failure. All original inputs,
+current expectations, process assertions and 20/100 capture laws remain exact.
+This observer correction provides no product execution or performance credit.
