@@ -35,3 +35,14 @@ The unchanged behavioral source and corpus are composed with signed main
 TODO: fresh exact-head hosted source/full Rust and whole CLI qualification;
 protected merge-queue qualification and actual signed merge; next official
 release inclusion and installed-public original replay.
+
+The preceding PR head `4c514a7cc23ebac44359597cc6b9bf781fe2eb85`
+qualified all ten original API vectors and thirty complete CLI processes. Its
+aggregate stayed red on the shared dependency audit, so it was kept off queue.
+Security PR #8080 actually merged as signed-valid
+`48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb` at 2026-10-06T05:04:12Z.
+Compose that literal main through a normal merge, conserving all owned behavior,
+original inputs/oracles and incoming dependency/workflow/strict UI policy bytes.
+This grants no fresh-head execution credit: rerun ordinary Actions and the full
+protected suites before independent matched squash auto, actual signed merge
+and next installed-public release verification.

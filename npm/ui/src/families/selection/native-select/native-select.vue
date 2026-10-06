@@ -63,7 +63,9 @@ const selectedValues = computed<readonly string[]>(() => nativeSelectSelectedVal
 const selectedCount = computed<number>(() => selectedValues.value.length);
 const selectedSet = computed(() => new Set(selectedValues.value));
 const singleValue = computed(() => (typeof value.value === "string" ? value.value : ""));
-const nativeValue = computed(() => (multiple ? undefined : singleValue.value));
+const nativeValueAttrs = computed<{ value?: string }>(() =>
+  multiple ? {} : { value: singleValue.value },
+);
 const ariaInvalidValue = computed(() => {
   if (ariaInvalid === false) return undefined;
   return ariaInvalid === true ? "true" : ariaInvalid;
@@ -116,7 +118,7 @@ function syncNativeSingleValue(select: HTMLSelectElement): void {
   if (select.value !== singleValue.value) select.value = singleValue.value;
 }
 
-watchEffect(syncNativeValue);
+watchEffect(syncNativeValue, { flush: "post" });
 
 watch(
   element,
@@ -222,7 +224,7 @@ defineExpose(exposed);
     :id="controlId"
     ref="element"
     :name
-    :value="nativeValue"
+    v-bind="nativeValueAttrs"
     :multiple
     :size
     :disabled
