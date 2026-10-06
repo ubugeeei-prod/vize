@@ -11,7 +11,7 @@ use crate::error::FormatError;
 use crate::options::FormatOptions;
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_formatter::{QuoteStyle, format_program, parse_for_format};
-use oxc_span::SourceType;
+use oxc_span::{FileExtension, SourceType};
 use vize_l0::{Allocator, String, ToCompactString};
 
 pub(crate) use block_identity::format_sfc_script_content_stable;
@@ -82,7 +82,6 @@ pub(crate) fn format_script_content_stable(
         current_trimmed_len = next_trimmed.len();
         current = next;
     }
-
     Ok(current)
 }
 
@@ -102,6 +101,7 @@ pub(crate) fn format_ts_script_content_stable(
 
 pub(crate) fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {
     match lang {
+        Some("ts") => SourceType::from(FileExtension::Ts).with_module(true),
         Some("jsx") => SourceType::jsx().with_module(true),
         Some("tsx") => SourceType::tsx().with_module(true),
         _ => SourceType::ts().with_module(true),
