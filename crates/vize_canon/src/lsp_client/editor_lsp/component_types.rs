@@ -26,9 +26,19 @@ impl EditorLspSession {
         positions: &[u32],
     ) -> Result<Option<Vec<Option<bool>>>, String> {
         self.ready_document_uri(uri)?;
-        let Some(api) = self.configured_api.as_ref() else {
-            return Ok(None);
-        };
+        if self.configured_api.is_none() {
+            // Default editor sessions also need the same-process checker API.
+            // Retain it before any fallible query; existing owner-first close
+            // releases this attachment on shutdown, discard, and recovery.
+            self.configured_api = Some(
+                self.attach_api()
+                    .map_err(super::configured_project::configuration_error)?,
+            );
+        }
+        let api = self
+            .configured_api
+            .as_ref()
+            .ok_or_else(|| cstr!("Component type attachment is missing"))?;
         let communication = |error| cstr!("Cannot classify component types: {error}");
         let mut owner = SnapshotSourceOwner::create(&api.client).map_err(communication)?;
         let result = (|| {

@@ -83,7 +83,27 @@ fn original_pins() {
 }
 
 fn caret(source: &str, prefix: &str) -> usize {
-    source.rfind(prefix).unwrap() + prefix.len()
+    [format!("  {prefix}"), format!("  😀 {prefix}")]
+        .into_iter()
+        .filter_map(|marker| source.rfind(&marker).map(|start| start + marker.len()))
+        .max()
+        .expect("the complete authored completion line")
+}
+
+#[test]
+fn authored_bare_caret_precedes_the_later_template_closing_tag() {
+    for newline in ["\n", "\r\n"] {
+        for (source, line, character) in [(ORIGINAL, 14, 3), (CONTROLS, 24, 6)] {
+            let source = source.replace('\n', newline);
+            let before = &source[..caret(&source, "<")];
+            assert_eq!(before.bytes().filter(|byte| *byte == b'\n').count(), line);
+            assert_eq!(
+                before.rsplit('\n').next().unwrap().encode_utf16().count(),
+                character
+            );
+            assert!(source[before.len()..].contains("</template>"));
+        }
+    }
 }
 
 fn item(label: &str, detail: &str, source: &str, prefix: &str, tail: &str) -> Value {

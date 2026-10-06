@@ -66,3 +66,33 @@ Security's owner retains that repair. No current source/native/protected/public
 acceptance follows; keep the running original native/Rust observations before
 publishing this metadata-only successor and incorporate only genuinely signed
 Security main once it is delivered.
+
+## Actual first component execution rejection
+
+Ordinary workers112104932265/112104932297 and required native
+run37412374475/job112103446653 rejected three complete completion responses
+on a593. The native log contains523,034 bytes with SHA-256
+`9d28b8a92433645afbc549a4c91a967b6295d2d58c83c393ea08e09cd3c46482`.
+Its four passes are three existing framing controls and the disabled-typecheck
+law, not four positive component scenarios. The original47/six-session law
+failed; the subsequent old-tag command was never reached.
+
+The original bare query used the last `<` and therefore selected the later
+`</template>` rather than its authored line14:3. Select the complete original
+completion line, with an independent LF/CRLF source-coordinate control. All
+original bytes and whole expectations remain unchanged.
+
+The default editor constructor leaves the retained checker attachment absent,
+so the initial classifier never reaches its native type requests in that
+mode. Attach lazily to that same acknowledged LSP process and retain the API
+before fallible queries. Reuse the explicit Batch attachment when it already
+exists; open no config and preserve default constructors, readiness, project
+and whole-source admission, snapshot release and owner-before-attachment
+shutdown/discard/recovery. There is no extra process or SDK/ABI change. This
+reachability repair is not proof that both candidate failures are resolved.
+
+The [paired decision](https://github.com/ubugeeei-prod/vize/issues/8001#issuecomment-6009369935)
+preserves the failed raw record and the independent Security13/surface
+rejections. Fresh actual-source ordinary/native Actions must run all47 whole
+responses, prior tag laws and protected ceilings before signed delivery and
+public inclusion. No runtime, timing or10x credit transfers.
