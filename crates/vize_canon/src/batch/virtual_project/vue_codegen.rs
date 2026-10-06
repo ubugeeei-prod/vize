@@ -7,9 +7,7 @@ use std::path::Path;
 use vize_carton::config::VueVersion;
 use vize_carton::{Allocator, cstr, profile};
 
-use vize_atelier_core::{
-    ParserOptions, TemplateSyntaxMode, parser::parse_with_options_and_template_syntax,
-};
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{
     SfcDescriptor,
     croquis::{
@@ -36,6 +34,7 @@ use super::{
 };
 
 mod style_modules;
+mod template;
 mod types;
 pub(super) use types::{GeneratedVueFile, VueCodegenOptions};
 #[cfg(test)]
@@ -119,45 +118,19 @@ pub(super) fn generate_vue_virtual_ts(
     //     attributes collapsed the file to the stub and silenced every script
     //     type diagnostic in it (#3323) — the same false-negative shape #3294
     //     fixed in the linter, keyed off the same shared classification.
-    let mut template_hard_error = false;
-    let template_ast = template_text.and_then(|template_content| {
-        profile!("canon.template.parse", {
-            let (root, errors) = parse_with_options_and_template_syntax(
+    let (template_ast, template_hard_error) = template_text
+        .map(|template_content| {
+            template::parse(
                 &allocator,
                 template_content,
-                ParserOptions {
-                    experimental_in_tag_comments: codegen_options.experimental_in_tag_comments,
-                    ..ParserOptions::default()
-                },
-                codegen_options.template_syntax,
-            );
-            for error in errors {
-                if error.code.is_recovery() {
-                    continue;
-                }
-                // A documented recovery still yields a complete tree, so the
-                // defect is reported without suppressing the rest of the file.
-                if !error.code.has_documented_parse_recovery() {
-                    template_hard_error = true;
-                }
-                let start = error
-                    .loc
-                    .as_ref()
-                    .map(|loc| template_offset + loc.span.start)
-                    .unwrap_or(template_offset);
-                diagnostics.push(diagnostic_for_offset(
-                    path,
-                    source,
-                    start,
-                    cstr!("Template parse error: {}", error.message),
-                    SfcBlockType::Template,
-                ));
-            }
-            // Drop the AST only when a hard error occurred; recovery-level
-            // diagnostics leave a fully usable tree.
-            (!template_hard_error).then_some(root)
+                template_offset,
+                path,
+                source,
+                codegen_options,
+                &mut diagnostics,
+            )
         })
-    });
+        .unwrap_or((None, false));
 
     let has_script_projection = !template_hard_error
         || (codegen_options.preserve_script_on_template_error
