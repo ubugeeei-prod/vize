@@ -184,3 +184,50 @@ instruction gates, remove any known-red entry, verify actual signed merge
 and Issue closure, and hand the exact source to the sole root publisher.
 The historical private installed-public helper remains uninvoked and needs
 accepted-source/cut metadata refreeze before any later public execution.
+
+Current d1c Check #37398516400 is a genuine FAILURE only in the shared
+security-audit and dependent test-report jobs. All four Rust workers retain
+16,317 successful JUnit cases and all twelve original laws; NativePhase
+#37398515918 succeeds with profile:none. Its source/driver is d1c and actual
+workflow executor is 835f39a, with parents actual 143c and d1c. No fresh
+whole 33 source campaign is dispatched against this known-red dependency set.
+The failed audit preserves its actual 13 moderate-or-higher findings against
+the two pre-existing source-attested findings, including eleven new findings.
+These facts do not authorize an audit baseline, dependency waiver or a
+transfer of the old 4d whole 33 runtime result.
+
+The independently owned security #8080 actually merges at
+2026-10-06T05:04:12Z as signed valid
+48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb, sole parent 143c1d4,
+source 02a8d8a and tree b6ded852. Official PR, commit and literal main readbacks
+independently agree. The source 98e/candidate 633 attempt remains historical
+and unmerged; its later green source checks never become shipping proof.
+
+Incorporate that actual whole main once into this same #8040. The merge is
+conflict-free. Preserve all incoming compiler/setup ownership, UI, production
+dependencies, development-only original-provider alias, lockfiles, CI and
+canonical clauses. All fifteen owned non-document implementation/test blobs
+remain exact d1c, including the original three fixtures, whole 33 driver and
+twelve laws. Removing the entire owned registry paragraph must recover the
+WHOLE signed48cb canonical 350 bytes; no unowned path or workflow is changed.
+The historical 349-line unique record remains exact d1c. This companion is
+append-only, and every prior failed head, queue attempt and raw artifact stays
+retained. Local source and metadata checks grant no new native runtime credit.
+
+The root now selects one v0.435 minor release, because the already delivered
+#8037 exposes public APIs; its paired release selection is
+[comment6007762330](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-6007762330). The earlier next-patch wording above
+is historical, not the new target. Root remains the sole publisher and the
+actual source cut, public version and installed-public authority remain unset.
+
+Require a new exact-tree source peer, credited conventional same-PR commit,
+fresh automatic source/native checks and the necessary unchanged whole 33
+source qualification. Only then re-admit an independent healthy candidate,
+supervise its full protected Rust/native and 104 instruction gates, verify
+actual signed merge and Issue closure, and hand the source to root's 435 cut.
+The historical c9/private 69 installed-public preparation stays uninvoked and
+must be refrozen against the actual accepted source/cut before public use.
+No CPU/profile campaign, local native build, install, performance or 10x claim
+is added by this incorporation.
+
+[Paired actual-security-main decision](https://github.com/ubugeeei-prod/vize/issues/8003#issuecomment-6009756850) records this same source slice.

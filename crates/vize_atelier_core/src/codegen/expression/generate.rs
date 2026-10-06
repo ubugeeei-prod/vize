@@ -142,6 +142,9 @@ pub fn generate_event_handler(
 }
 
 #[cfg(test)]
+mod reference_tests;
+
+#[cfg(test)]
 #[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
     use super::prefix_identifiers_in_scope;

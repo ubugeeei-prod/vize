@@ -34,10 +34,11 @@ export function assertForgeLock(workspaceValue: unknown, lockValue: unknown): vo
   assert.equal(record(workspace.patchedDependencies)["node-forge@1.4.0"], patchPath);
   const lock = record(lockValue);
   assert.equal(record(lock.overrides)["node-forge"], "1.4.0");
-  assert.deepEqual(record(lock.patchedDependencies)["node-forge@1.4.0"], {
-    hash: patchHash,
-    path: patchPath,
-  });
+  // pnpm 12 installation canonicalizes the old hash/path record to a hash.
+  // The workspace declaration above still binds both forms to the same path.
+  const patch = record(lock.patchedDependencies)["node-forge@1.4.0"];
+  if (typeof patch === "string") assert.equal(patch, patchHash);
+  else assert.deepEqual(patch, { hash: patchHash, path: patchPath });
   const packages = record(lock.packages);
   const forgeKeys = Object.keys(packages).filter((key) => key.startsWith("node-forge@"));
   assert.deepEqual(forgeKeys, ["node-forge@1.4.0"]);
