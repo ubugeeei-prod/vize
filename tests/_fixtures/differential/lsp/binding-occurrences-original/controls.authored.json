@@ -1,0 +1,924 @@
+{
+  "version": 1,
+  "provenance": "authored semantic ownership and physical UTF-16 controls; no historical whole-RPC claim",
+  "sessions": [
+    {
+      "entry": "Shadow.vue",
+      "source": "<script setup>\nconst id=1\nfunction f(id){ return id }\n{const id=2; use(id)}\n</script>\n<template>\n<div v-for=\"id in [1]\">{{ id }}</div>\n<p>{{ id }}</p>\n</template>",
+      "requests": [
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 1,
+              "character": 7
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 6
+                },
+                "end": {
+                  "line": 1,
+                  "character": 8
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 7,
+                  "character": 6
+                },
+                "end": {
+                  "line": 7,
+                  "character": 8
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 2,
+              "character": 12
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 11
+                },
+                "end": {
+                  "line": 2,
+                  "character": 13
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 23
+                },
+                "end": {
+                  "line": 2,
+                  "character": 25
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 3,
+              "character": 8
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 3,
+                  "character": 7
+                },
+                "end": {
+                  "line": 3,
+                  "character": 9
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 3,
+                  "character": 17
+                },
+                "end": {
+                  "line": 3,
+                  "character": 19
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 6,
+              "character": 27
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 6,
+                  "character": 12
+                },
+                "end": {
+                  "line": 6,
+                  "character": 14
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 6,
+                  "character": 26
+                },
+                "end": {
+                  "line": 6,
+                  "character": 28
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/codeLens",
+          "params": {},
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 0
+                },
+                "end": {
+                  "line": 1,
+                  "character": 0
+                }
+              },
+              "command": {
+                "title": "1 template/style reference",
+                "command": "vize.findReferences"
+              }
+            }
+          ]
+        }
+      ],
+      "sourceSha256": "067d90ec4f0791aa21ff9105cda3b1120b94eb41338d8321bc30ba198bfef939"
+    },
+    {
+      "entry": "Unicode.vue",
+      "source": "<script setup>\nconst id=1\nconst label='id'\nconst object={id: 1}\n// id\n</script>\n<template>\n<p title=\"id\">日本語😀 {{ id }} {{ object.id }}</p>\n</template>\n<style>\n#id{ color:v-bind('id'); content:'id'; /* v-bind(id) */ }\n</style>",
+      "requests": [
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 1,
+              "character": 7
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 6
+                },
+                "end": {
+                  "line": 1,
+                  "character": 8
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 7,
+                  "character": 23
+                },
+                "end": {
+                  "line": 7,
+                  "character": 25
+                }
+              },
+              "kind": 2
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 10,
+                  "character": 19
+                },
+                "end": {
+                  "line": 10,
+                  "character": 21
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 10,
+              "character": 20
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 6
+                },
+                "end": {
+                  "line": 1,
+                  "character": 8
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 7,
+                  "character": 23
+                },
+                "end": {
+                  "line": 7,
+                  "character": 25
+                }
+              },
+              "kind": 2
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 10,
+                  "character": 19
+                },
+                "end": {
+                  "line": 10,
+                  "character": 21
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 7,
+              "character": 34
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 3,
+                  "character": 6
+                },
+                "end": {
+                  "line": 3,
+                  "character": 12
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 7,
+                  "character": 32
+                },
+                "end": {
+                  "line": 7,
+                  "character": 38
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 2,
+              "character": 14
+            }
+          },
+          "result": null
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 3,
+              "character": 15
+            }
+          },
+          "result": null
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 4,
+              "character": 4
+            }
+          },
+          "result": null
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 7,
+              "character": 11
+            }
+          },
+          "result": null
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 7,
+              "character": 40
+            }
+          },
+          "result": null
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 10,
+              "character": 2
+            }
+          },
+          "result": null
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 10,
+              "character": 35
+            }
+          },
+          "result": null
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 10,
+              "character": 50
+            }
+          },
+          "result": null
+        },
+        {
+          "method": "textDocument/codeLens",
+          "params": {},
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 0
+                },
+                "end": {
+                  "line": 1,
+                  "character": 0
+                }
+              },
+              "command": {
+                "title": "2 template/style references",
+                "command": "vize.findReferences"
+              }
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 3,
+                  "character": 0
+                },
+                "end": {
+                  "line": 3,
+                  "character": 0
+                }
+              },
+              "command": {
+                "title": "1 template/style reference",
+                "command": "vize.findReferences"
+              }
+            }
+          ]
+        }
+      ],
+      "sourceSha256": "b3ef9e72a8613115ec3a3fa41dd03f82e3a128f518e69c35bdb34a2eb3103643"
+    },
+    {
+      "entry": "Button.art.vue",
+      "source": "<art title=\"Button\">\n  <variant name=\"Primary\">\n    <Button :label=\"label\">{{ label }}</Button>\n  </variant>\n</art>\n\n<script setup lang=\"ts\">\nconst label = \"Primary\"\n</script>",
+      "requests": [
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 2,
+              "character": 21
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 20
+                },
+                "end": {
+                  "line": 2,
+                  "character": 25
+                }
+              },
+              "kind": 2
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 30
+                },
+                "end": {
+                  "line": 2,
+                  "character": 35
+                }
+              },
+              "kind": 2
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 7,
+                  "character": 6
+                },
+                "end": {
+                  "line": 7,
+                  "character": 11
+                }
+              },
+              "kind": 3
+            }
+          ]
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 2,
+              "character": 13
+            }
+          },
+          "result": null
+        },
+        {
+          "method": "textDocument/codeLens",
+          "params": {},
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 7,
+                  "character": 0
+                },
+                "end": {
+                  "line": 7,
+                  "character": 0
+                }
+              },
+              "command": {
+                "title": "2 template/style references",
+                "command": "vize.findReferences"
+              }
+            }
+          ]
+        }
+      ],
+      "sourceSha256": "f0e5ec7146f5ba795fc3fe28e297fb11a79a91bc146bb23a52be38d136f86e92"
+    },
+    {
+      "entry": "Refused.vue",
+      "source": "<script setup>const id=1; function f(){throw id}</script><template>{{ id }}</template>",
+      "requests": [
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 0,
+              "character": 20
+            }
+          },
+          "result": null
+        },
+        {
+          "method": "textDocument/codeLens",
+          "params": {},
+          "result": null
+        }
+      ],
+      "sourceSha256": "ed15578648de946635c464b050880639a02fc5095c7a70a525bfa28974698ed7"
+    },
+    {
+      "entry": "ScriptOnly.vue",
+      "source": "<script setup lang=\"ts\">\nconst value=1\nvalue\nconst text='value'\n// value\n</script>",
+      "requests": [
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 1,
+              "character": 7
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 6
+                },
+                "end": {
+                  "line": 1,
+                  "character": 11
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 0
+                },
+                "end": {
+                  "line": 2,
+                  "character": 5
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 3,
+              "character": 13
+            }
+          },
+          "result": null
+        },
+        {
+          "method": "textDocument/codeLens",
+          "params": {
+            "position": {
+              "line": 0,
+              "character": 0
+            }
+          },
+          "result": null
+        }
+      ],
+      "sourceSha256": "28a763b1a1dff451fd050622437e0dacdabe4bf1c5a9ad45f209b121b7b669f4"
+    },
+    {
+      "entry": "Plain.ts",
+      "source": "const value=1\nvalue\n",
+      "requests": [
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 0,
+              "character": 7
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 6
+                },
+                "end": {
+                  "line": 0,
+                  "character": 11
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 0
+                },
+                "end": {
+                  "line": 1,
+                  "character": 5
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/codeLens",
+          "params": {
+            "position": {
+              "line": 0,
+              "character": 0
+            }
+          },
+          "result": null
+        }
+      ],
+      "sourceSha256": "4a1acfaa5e2488ec6e5cafcadfb342bd3b47acc0374d3fa310fe201e5fb1a906"
+    },
+    {
+      "entry": "Plain.js",
+      "source": "const value=1\nvalue\n",
+      "requests": [
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 0,
+              "character": 7
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 6
+                },
+                "end": {
+                  "line": 0,
+                  "character": 11
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 0
+                },
+                "end": {
+                  "line": 1,
+                  "character": 5
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/codeLens",
+          "params": {
+            "position": {
+              "line": 0,
+              "character": 0
+            }
+          },
+          "result": null
+        }
+      ],
+      "sourceSha256": "4a1acfaa5e2488ec6e5cafcadfb342bd3b47acc0374d3fa310fe201e5fb1a906"
+    },
+    {
+      "entry": "Pug.vue",
+      "source": "<script setup>\nconst value=1\n</script>\n<template lang=\"pug\">\np= value\n</template>",
+      "requests": [
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 1,
+              "character": 7
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 6
+                },
+                "end": {
+                  "line": 1,
+                  "character": 11
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 4,
+                  "character": 3
+                },
+                "end": {
+                  "line": 4,
+                  "character": 8
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/codeLens",
+          "params": {
+            "position": {
+              "line": 0,
+              "character": 0
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 0
+                },
+                "end": {
+                  "line": 1,
+                  "character": 0
+                }
+              },
+              "command": {
+                "title": "1 template/style reference",
+                "command": "vize.findReferences"
+              }
+            }
+          ]
+        }
+      ],
+      "sourceSha256": "006f96d425475fc9b408ed4fb76a81f9ea2fdeefab57574341f4abb5b3163a83"
+    },
+    {
+      "entry": "External.vue",
+      "source": "<script setup>\nconst value=1\n</script>\n<template src=\"./external.html\">\n{{ value }}\n</template>",
+      "requests": [
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 1,
+              "character": 7
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 6
+                },
+                "end": {
+                  "line": 1,
+                  "character": 11
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 4,
+                  "character": 3
+                },
+                "end": {
+                  "line": 4,
+                  "character": 8
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/codeLens",
+          "params": {
+            "position": {
+              "line": 0,
+              "character": 0
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 0
+                },
+                "end": {
+                  "line": 1,
+                  "character": 0
+                }
+              },
+              "command": {
+                "title": "1 template/style reference",
+                "command": "vize.findReferences"
+              }
+            }
+          ]
+        }
+      ],
+      "sourceSha256": "2861638715e5b18db939c73c7dd6774038b1fe80d159710e068112e64941ac91"
+    },
+    {
+      "entry": "NormalScriptOnly.vue",
+      "source": "<script>\nconst value=1\nvalue\n</script>",
+      "requests": [
+        {
+          "method": "textDocument/documentHighlight",
+          "params": {
+            "position": {
+              "line": 1,
+              "character": 7
+            }
+          },
+          "result": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 6
+                },
+                "end": {
+                  "line": 1,
+                  "character": 11
+                }
+              },
+              "kind": 3
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 0
+                },
+                "end": {
+                  "line": 2,
+                  "character": 5
+                }
+              },
+              "kind": 2
+            }
+          ]
+        },
+        {
+          "method": "textDocument/codeLens",
+          "params": {
+            "position": {
+              "line": 0,
+              "character": 0
+            }
+          },
+          "result": null
+        }
+      ],
+      "sourceSha256": "151a004144f70718bfe1c5dd49ff70c669edbe0df4d33ac2467792f2a9375091"
+    }
+  ]
+}

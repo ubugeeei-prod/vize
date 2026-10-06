@@ -34,6 +34,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | item                          | files | sites |
 | ----------------------------- | ----: | ----: |
 | `AlphaSchema`                 |     1 |     1 |
+| `BindingIdentity`             |     2 |     8 |
+| `BindingOccurrences`          |     3 |     5 |
 | `Bindings`                    |     6 |    13 |
 | `BindingsTable`               |     2 |     2 |
 | `BlockLocation`               |     2 |     2 |
@@ -42,9 +44,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `EmitContract`                |     1 |     1 |
 | `FactConsumer`                |     6 |     8 |
 | `FactGroup`                   |     3 |     3 |
+| `OccurrenceBlock`             |     2 |    11 |
 | `PropContract`                |     2 |     3 |
 | `ReactiveKind`                |     6 |    43 |
-| `SfcDescriptor`               |     7 |    25 |
+| `SfcDescriptor`               |     8 |    29 |
 | `SfcScriptBlock`              |     3 |     6 |
 | `SfcStyleBlock`               |     2 |     8 |
 | `SfcTemplateBlock`            |     1 |     1 |
