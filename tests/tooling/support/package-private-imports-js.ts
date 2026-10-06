@@ -5,7 +5,12 @@ import path from "node:path";
 import { diagnostic, save } from "./editor-jsconfig.ts";
 import { original } from "./package-private-imports.ts";
 
-export function vectors(mode: string, native = false, directory = ""): Record<string, unknown[]> {
+export function vectors(
+  mode: string,
+  configName: "jsconfig.json" | "tsconfig.json",
+  native = false,
+  directory = "",
+): Record<string, unknown[]> {
   const argument = "Argument of type 'number' is not assignable to parameter of type 'string'.";
   const missing = "Cannot find module '#lib/util.js' or its corresponding type declarations.";
   const app =
@@ -21,11 +26,13 @@ export function vectors(mode: string, native = false, directory = ""): Record<st
         ? [diagnostic(2307, missing, 0, 22, 36, native)]
         : [];
   if (mode === "ordinary-package") {
-    // Native JS retains a suggestion; the existing checked SFC emits strict TS.
+    // Native loads this external JS at depth one. Own jsconfig defaults admit
+    // it at depth two; the authored tsconfig's omitted maximum remains zero.
+    const severity = configName === "jsconfig.json" ? 4 : 1;
     const packageFile = path.join(directory, "node_modules/ordinary/index.js");
     const message = `Could not find a declaration file for module 'ordinary'. '${packageFile}' implicitly has an 'any' type.`;
-    app.push({ ...diagnostic(7016, message, 1, 22, 32, native), severity: native ? 4 : 1 });
-    main.push({ ...diagnostic(7016, message, 0, 22, 32, native), severity: 4 });
+    app.push({ ...diagnostic(7016, message, 1, 22, 32, native), severity });
+    main.push({ ...diagnostic(7016, message, 0, 22, 32, native), severity });
   }
   if (native)
     app.push(
@@ -96,7 +103,7 @@ export function cliCheck(
     stderrBase64: result.stderr.toString("base64"),
     inputs,
   });
-  const expected = vectors(mode, false, directory);
+  const expected = vectors(mode, "tsconfig.json", false, directory);
   const files = ["src/App.vue", "src/lib/util.js", "src/main.js"];
   const rendered = (file: string) =>
     (expected[file] ?? []).map((value) => {
@@ -105,7 +112,7 @@ export function cliCheck(
       return `${severity}:${item.range.start.line + 1}:${item.range.start.character + 1} [TS${item.code}] ${item.message}`;
     });
   const errors =
-    mode === "bad-call" || mode === "missing-target" ? 2 : mode === "ordinary-package" ? 1 : 0;
+    mode === "bad-call" || mode === "missing-target" || mode === "ordinary-package" ? 2 : 0;
   assert.equal(result.status, errors ? 1 : 0);
   assert.equal(result.signal, null);
   assert.equal(result.error, undefined);

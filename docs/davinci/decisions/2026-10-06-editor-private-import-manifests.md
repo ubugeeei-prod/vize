@@ -91,3 +91,24 @@ not equivalent to the bare-JS stock Hint4. These source-derived whole controls
 preserve existing producer behavior and the original TS7991 regression laws;
 they do not claim general Vue-JS semantic parity. The separate JS-quality
 work must address that language boundary with genuine native authority.
+
+### Native ordinary JavaScript package categories
+
+The preceding a59 run retained Error1 for the plain JS importer where the stock
+jsconfig editor returned Hint4. After the actual #8103 filename-default producer
+merged, source953 returned Hint4 for the same original JS SFC. Both failed full
+wires and original inputs remain retained; neither failure is acceptance.
+
+The independent native source contract now distinguishes the original config
+filenames. Own jsconfig defaults permit external JS depth two; the otherwise
+identical authored tsconfig omits that option and therefore permits zero. The
+ordinary dependency is at depth one. Native emits a suggestion for the loaded
+external JS symbol and a strict error when its source is elided. Both App and
+main consequently require Hint4 under jsconfig and Error1 under tsconfig.
+The original messages, ranges, full vectors, TS cases, private aliases, JSDoc
+type-flow controls and inputs remain unchanged. The complete source identities
+and contiguous primary excerpts are in the original corpus
+`ordinary-js-native-contract.json.txt`. This corrects a config-insensitive test
+assumption; it does not introduce a diagnostic filter or an alias fallback.
+Fresh stock/native and actual source CLI/editor execution is mandatory; broader
+Vue JS projection parity remains unfinished.

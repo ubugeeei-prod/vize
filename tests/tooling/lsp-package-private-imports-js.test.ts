@@ -69,7 +69,7 @@ test(
     const previous = process.env.CORSA_PATH;
     process.env.CORSA_PATH = runtime;
     try {
-      for (const configName of ["jsconfig.json", "tsconfig.json"])
+      for (const configName of ["jsconfig.json", "tsconfig.json"] as const)
         for (const mode of ["original", "bad-call", "missing-target", "ordinary-package"]) {
           const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-private-js-imports-"));
           const name = "javascript-" + configName + "-" + mode;
@@ -87,7 +87,7 @@ test(
               bare,
               "js",
               "src/main.js",
-              vectors(mode, true, directory),
+              vectors(mode, configName, true, directory),
               name,
               runtime,
             );
@@ -105,7 +105,7 @@ test(
                 wire,
                 path.join(directory, file),
                 1,
-                vectors(mode, false, directory)[file],
+                vectors(mode, configName, false, directory)[file],
               );
             await wire.finish();
             for (const file of ["src/App.vue", "src/main.js"]) {
@@ -120,7 +120,7 @@ test(
                 params: {
                   uri: uri(path.join(directory, file)),
                   version: 1,
-                  diagnostics: vectors(mode, false, directory)[file],
+                  diagnostics: vectors(mode, configName, false, directory)[file],
                 },
               });
             }
@@ -132,7 +132,7 @@ test(
               await wire.stop().catch(() => undefined);
               save(name + "-vize-terminal", {
                 inputs,
-                expected: vectors(mode, false, directory),
+                expected: vectors(mode, configName, false, directory),
                 wire: observation(wire),
                 allDecodedMessages: wire.messages,
                 joinedThroughChildClose: wire.exitStatus !== null || wire.signal !== null,
