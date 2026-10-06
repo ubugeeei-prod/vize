@@ -450,6 +450,36 @@
         "lint": false,
         "typecheck": false
       }
+    },
+    {
+      "id": "lsp/regression/binding-occurrences-original",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "binding-occurrences-original",
+        "files": [
+          {
+            "path": "Field.vue",
+            "sha256": "ebc982a69ec9a5ad48156baa36aaf644999aadff6e0b1847630b6c28f63ba6a0"
+          },
+          {
+            "path": "tsconfig.json",
+            "sha256": "3e69f1b19380514b0a42913c6dc21a2fffed65855e4bad30534c3f6a71116b23"
+          }
+        ]
+      },
+      "case": {
+        "path": "binding-occurrences-original/case.json",
+        "sha256": "828d7a19f410c950bcab8cba1f4e4b8d09e0c17a2ff35ea1cb78bb108754eafb"
+      },
+      "requestCount": 7,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }

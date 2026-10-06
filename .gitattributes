@@ -35,6 +35,9 @@ tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/** -text
 # Immutable formatter regressions include literal CRLF/CRCRLF output bytes.
 tests/_fixtures/differential/formatter/sfc-vue*/** -text whitespace=-blank-at-eol
 
+# Complete CSS rule-layout fixtures retain their authored LF/CRLF bytes.
+tests/_fixtures/differential/formatter-regressions/css-rule-layout-7926-7966/*.vue*.txt -text whitespace=cr-at-eol
+
 # Original linter report fixtures retain authored LF/CRLF bytes on every checkout.
 crates/vize_patina/tests/fixtures/issue-7977/** -text whitespace=cr-at-eol
 
@@ -49,3 +52,6 @@ crates/vize_patina/tests/fixtures/issue-7979/** -text whitespace=cr-at-eol
 
 # Preserve whole authored LF/CRLF utility-class regression inputs.
 crates/vize_patina/tests/fixtures/css-utility-literal-tokens/*.vue.txt -text whitespace=cr-at-eol
+
+# Oxlint position laws retain authored source bytes, including CRLF.
+tests/_fixtures/differential/lint/oxlint-original-locations-7904/*.txt -text whitespace=cr-at-eol

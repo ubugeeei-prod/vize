@@ -26,7 +26,21 @@ export function hasScriptLikeBlock(source: string): boolean {
 }
 
 export function appendScriptlessWorkaround(source: string, filename: string): string {
-  return `${createWorkaroundScript(source, filename)}${source}`;
+  return prepareWorkaroundSource(source, filename).source;
+}
+
+/** Bind the bridge's two source regions while emitting the same temporary file. */
+export function prepareWorkaroundSource(source: string, filename: string) {
+  const openTag = `${SCRIPTLESS_WORKAROUND_OPEN_TAG_PREFIX}${encodeWorkaroundFilename(filename)}">`;
+  const script = `${openTag}${createWhitespaceMirror(source)}${LOCATION_BRIDGE_MARKER}</script>\n`;
+  return {
+    source: `${script}${source}`,
+    locations: {
+      source,
+      scriptStart: openTag.length,
+      originalStart: Buffer.byteLength(script, "utf8"),
+    },
+  };
 }
 
 export function isLocationBridgeProgram(extractedScript: string): boolean {
@@ -139,12 +153,10 @@ function encodedFilenameFromWorkaroundOpenTag(openTag: string): string | null {
   return openTag.slice(encodedFilenameStart, encodedFilenameEnd);
 }
 
-function createWorkaroundScript(source: string, filename: string): string {
-  return `${SCRIPTLESS_WORKAROUND_OPEN_TAG_PREFIX}${encodeWorkaroundFilename(filename)}">${createWhitespaceMirror(source)}${LOCATION_BRIDGE_MARKER}</script>\n`;
-}
-
 function createWhitespaceMirror(source: string): string {
-  return source.replaceAll(/[^\r\n]/gu, " ");
+  // Oxlint loc columns and Patina's NAPI locations both count UTF-16 units.
+  // Keep both halves of an astral character, rather than collapsing it to one space.
+  return source.replaceAll(/[^\r\n]/gu, (character) => (character.length === 2 ? "  " : " "));
 }
 
 function encodeWorkaroundFilename(filename: string): string {

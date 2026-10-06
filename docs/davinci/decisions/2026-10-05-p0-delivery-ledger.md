@@ -238,3 +238,44 @@ existing fixes and original fixtures before starting another implementation.
 - [#3952](https://github.com/ubugeeei-prod/vize/issues/3952) — test(tooling): exercise authored LSP features across real-project fixtures. **State:** Pending live-body and existing-fix triage.
 - [#3864](https://github.com/ubugeeei-prod/vize/issues/3864) — chore(deps): drop the RUSTSEC-2026-0235 audit waiver once lightningcss stops pinning rkyv 0.7. **State:** Pending live-body and existing-fix triage.
 - [#3295](https://github.com/ubugeeei-prod/vize/issues/3295) — chore(atelier): retire the CSS engine panic boundary once upstream lightningcss fixes land. **State:** Pending live-body and existing-fix triage.
+
+## 2026-10-06 current-source P0 census
+
+- Literal main at this snapshot is `143c1d4a9fbe6530cdd06f1f001b816f39c1d00a`.
+- Direct repository pagination observes 175 open issues; every primary author
+  is `ubugeeei`, verified public user ID `71201308`. Independent external-author
+  search also returns zero. Relayed external real-project reports retain their
+  own input/provenance priority; no third-party reporter identity is invented.
+- The live label-filtered census is 84 open P0 issues: 82 original rows remain
+  open, while 26 original rows independently report `CLOSED`. The two additional
+  existing P0 reports are [#8079](https://github.com/ubugeeei-prod/vize/issues/8079)
+  and [#8085](https://github.com/ubugeeei-prod/vize/issues/8085). No labels, issue
+  states, or original 108 historical row bytes were changed for this census.
+- Complete retained current set (IDs, sorted):
+  #3295, #3864, #3952, #3957, #3984, #4075, #6100, #6239, #6258, #6826, #6830, #7866,
+  #7868, #7871, #7876, #7877, #7882, #7883, #7884, #7885, #7886, #7888, #7893, #7895,
+  #7896, #7898, #7899, #7900, #7901, #7902, #7903, #7904, #7905, #7906, #7907, #7908,
+  #7912, #7915, #7924, #7926, #7927, #7928, #7929, #7932, #7934, #7935, #7938, #7940,
+  #7942, #7945, #7950, #7951, #7963, #7965, #7966, #7968, #7969, #7970, #7976, #7978,
+  #7980, #7982, #7984, #7985, #7987, #7988, #7989, #7990, #7991, #7992, #7994, #7995,
+  #7996, #7997, #7998, #8001, #8002, #8003, #8010, #8011, #8013, #8015, #8079, #8085.
+- Published v0.434.0 peels to `40a1243f54ee7a95fe593d0504448d957adc227b`,
+  an actual Git ancestor of the current source main. Closed source reports are
+  not all declared present in that published ancestor; later fixes retain
+  their own signed merge and next-release receipts.
+- Root selects a finite v0.435.0 cut from qualified actual deliveries, rather
+  than waiting for all 84 P0 or unfinished performance work. Native Stack
+  #8069 remains Draft/off queue: its current runtime/native/canonical components
+  passed but full source Checks fail the actual security audit and aggregate.
+  Actual #8080 security-main incorporation, fresh source qualification and both
+  protected signed merges remain required. Existing authority resumes that
+  delivery first; no new issue, PR, campaign, cap waiver or native credit follows.
+- P0 zero, global 10x, benchmark ranking, complete fix history and native-default
+  remain unfinished. This is a dated census, not release or acceptance proof.
+
+At the later literal security-main fence `48cb1d4f`, #8079 actually closed
+at 05:04:13 UTC after its signed protected merge. A fresh direct P0 query
+observes 83 open reports, all by the same verified primary author.
+This later source closure does not rewrite the retained 84-report snapshot
+or infer publication in v0.434.0. Exact remaining set relative to that
+snapshot is unchanged except for #8079; no labels/states were mutated by this audit.

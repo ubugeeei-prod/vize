@@ -10,6 +10,7 @@ mod chunk;
 mod color;
 mod comment_scan;
 mod number;
+mod rule_layout;
 mod stabilization;
 
 use chunk::{contains_comment, format_chunk};

@@ -167,7 +167,8 @@ impl super::CompletionService {
         }
 
         if matches!(block_type, BlockType::Template)
-            && let Some(items) = template::complete_tag_names_with_globals(ctx).await
+            && let Some(items) =
+                template::complete_tag_names_with_globals(ctx, corsa_bridge.as_deref()).await
         {
             return Some(CompletionResponse::Array(items));
         }

@@ -1,0 +1,26 @@
+<script setup lang="ts">
+import { defineComponent as build, defineAsyncComponent as deferred, h, ref } from "vue";
+import type { Component, FunctionalComponent } from "vue";
+import child from "./MyButton.vue";
+import { ImportedCount } from "./constants";
+
+const LocalCard = build({ render: () => h("div") });
+const AsyncCard = deferred(() => import("./MyButton.vue"));
+const FunctionalCard: FunctionalComponent = () => h("button");
+const TypedCard: Component = LocalCard;
+const DynamicCard = LocalCard;
+const UnknownCard: unknown = LocalCard;
+const AnyCard: any = LocalCard;
+const SORT_OPTIONS = ["asc", "desc"] as const;
+const DialogState = { None: "None", Open: "Open" } as const;
+const RefData = ref(1);
+const defineComponent = (_options: object) => ({ None: "None" });
+const ShadowCard = defineComponent({});
+function VoidFunction(): void {}
+function NumberFunction(): number { return 1; }
+</script>
+
+<template>
+  <component :is="TypedCard" />
+  😀 <
+</template>

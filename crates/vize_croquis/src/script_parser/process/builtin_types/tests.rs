@@ -1,5 +1,62 @@
 fn parse_builtin(source: &str) -> crate::script_parser::ScriptParseResult {
-    crate::script_parser::parse_script_setup_for_unused::<true>(source, None, false, false, false)
+    crate::script_parser::parse_script_setup_for_unused::<true>(
+        source, None, false, false, false, false,
+    )
+}
+
+#[test]
+fn builtin_hints_and_authored_occurrences_share_the_existing_walk() {
+    let source = "import { ref } from 'vue'; const count = ref(0); count;";
+    let mut ordinary = crate::Drawer::with_options(crate::DrawerOptions::for_lint());
+    ordinary.draw_script_setup_with_builtin_types(source);
+    let ordinary = ordinary.finish();
+    let mut demanded =
+        crate::Drawer::with_options(crate::DrawerOptions::for_lint()).with_binding_occurrences();
+    demanded.draw_script_setup_with_builtin_types(source);
+    let (demanded, packet) = demanded.finish_with_binding_occurrences();
+    assert_eq!(
+        serde_json::to_value(demanded.semantic_snapshot()).unwrap(),
+        serde_json::to_value(ordinary.semantic_snapshot()).unwrap()
+    );
+    let fact = demanded.types.builtin_reactive_types().next().unwrap();
+    assert_eq!((fact.name(), fact.value_type()), ("count", "number"));
+    assert_eq!(
+        fact.span(),
+        ordinary
+            .types
+            .builtin_reactive_types()
+            .next()
+            .unwrap()
+            .span()
+    );
+    let packet = packet.unwrap();
+    let binding = packet
+        .bindings()
+        .find(|binding| binding.name == "count")
+        .unwrap();
+    let reads: Vec<_> = packet
+        .occurrences()
+        .iter()
+        .filter(|occurrence| occurrence.binding == binding.identity)
+        .map(|occurrence| (occurrence.block, occurrence.start, occurrence.end))
+        .collect();
+    let start = source.rfind("count;").unwrap() as u32;
+    assert_eq!(
+        reads,
+        vec![(
+            crate::binding_occurrences::OccurrenceBlock::Script,
+            start,
+            start + 5
+        )]
+    );
+
+    let malformed = format!("{source} const broken = ;");
+    let mut drawer =
+        crate::Drawer::with_options(crate::DrawerOptions::for_lint()).with_binding_occurrences();
+    drawer.draw_script_setup_with_builtin_types(&malformed);
+    let (croquis, packet) = drawer.finish_with_binding_occurrences();
+    assert!(packet.is_none());
+    assert_eq!(croquis.types.builtin_reactive_types().count(), 0);
 }
 
 fn facts(source: &str) -> Vec<(String, String, String, String)> {

@@ -1,0 +1,60 @@
+{
+  "issue": 7904,
+  "reporter": "ubugeeei",
+  "reportedOxlint": "1.86.0",
+  "sourcePinnedOxlint": "1.78.0",
+  "originalBodySha256": "47da30560c635b61c059549c5b5b29f29009bc225a4ede03ab7d6f7a74d800fb",
+  "oracleAuthority": "Original exact four ranges; remaining spans/UTF16 coordinates derived from complete authored source and fixed English messages/help/bridge serializer. No runtime result capture. CRLF bytes retained. Native and JSON diagnostics complete; comparison uses full multisets because Oxlint runs files concurrently. Operational envelope retained and validated, not a frozen timing/count claim.",
+  "files": [
+    {
+      "file": "Panel.vue.txt",
+      "bytes": 108,
+      "sha256": "f5db0a2e942f06a6e8a9e32652fd8f35860792459ac0d40effb3e7c373beafe8"
+    },
+    {
+      "file": "Static.vue.txt",
+      "bytes": 44,
+      "sha256": "b6e4ad158c06a158afe0d275cb7466cba076509c5b363dbaa1d9842915d6594c"
+    },
+    {
+      "file": "Unicode.vue.txt",
+      "bytes": 60,
+      "sha256": "8bfb2941b34d3b1150d24ee91b005e1dab5806ff8beb3e52080f15ed925a3f77"
+    },
+    {
+      "file": "CrLf.vue.txt",
+      "bytes": 47,
+      "sha256": "3485d0ca21629372a0145def836bd730acb8b221a40e7346ac45fbbf4e41f5ac"
+    },
+    {
+      "file": "Inline.vue.txt",
+      "bytes": 98,
+      "sha256": "3f64882920407c9facf139eea15a11ac18077ddf1592a86a8f0e9be841bfcee9"
+    },
+    {
+      "file": "Empty.vue.txt",
+      "bytes": 67,
+      "sha256": "4f00c9525fa674d75fabfdea4f2a7320db5b16b361148598761ea1d1aaa632c4"
+    },
+    {
+      "file": "example.html.txt",
+      "bytes": 26,
+      "sha256": "8527ce525c2e7dcfdc583244f997f523bb51c13d71ca74cd0e05b4b210d394e7"
+    },
+    {
+      "file": "original-issue.md",
+      "bytes": 3004,
+      "sha256": "47da30560c635b61c059549c5b5b29f29009bc225a4ede03ab7d6f7a74d800fb"
+    },
+    {
+      "file": ".oxlintrc.json",
+      "bytes": 198,
+      "sha256": "9d3733270ad383720e7a3b90c10ec1e4e14530fa9f4ef116797e724fa03e0c0f"
+    },
+    {
+      "file": "expected.json",
+      "bytes": 16057,
+      "sha256": "f1c48d32ceb6be1022e647348134b7c39b4bb30c474f044d713081da1cdf803c"
+    }
+  ]
+}

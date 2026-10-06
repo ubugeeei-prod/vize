@@ -212,6 +212,13 @@ fn corpus_remarks_match_the_committed_baseline() {
         changes.len()
     );
 
+    if current.files != committed.files || !changes.is_empty() {
+        eprintln!(
+            "ts-32 complete observed current corpus:\n{}",
+            current.print_to_string(DumpMode::Full)
+        );
+    }
+
     if std::env::var_os(UPDATE_ENV).is_some() {
         let unexplained = unexplained_regressions(&changes, &committed);
         assert!(

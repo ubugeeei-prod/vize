@@ -13,19 +13,20 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Analyzer`                     | type  | `analyzer`          |     3 |     3 |
 | `AnalyzerOptions`              | type  | `analyzer`          |     3 |     3 |
 | `ComponentShape`               | type  | `croquis`           |     1 |     1 |
-| `Croquis`                      | type  | `croquis`           |     7 |    11 |
+| `Croquis`                      | type  | `croquis`           |     9 |    13 |
 | `Drawer`                       | type  | `drawer`            |    20 |    23 |
 | `DrawerOptions`                | type  | `drawer`            |    20 |    23 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     4 |
 | `ScopeBinding`                 | type  | `scope`             |     1 |     1 |
-| `ScopeData`                    | type  | `scope`             |     3 |     8 |
+| `ScopeData`                    | type  | `scope`             |     4 |     9 |
 | `ScopeKind`                    | type  | `scope`             |     9 |    65 |
 | `SlotUsage`                    | type  | `croquis::template` |     1 |     1 |
-| `Croquis.binding_spans`        | field | `croquis`           |     1 |     1 |
+| `Croquis.binding_spans`        | field | `croquis`           |     2 |     2 |
+| `Croquis.bindings`             | field | `croquis`           |     1 |     2 |
 | `Croquis.component_shape`      | field | `croquis`           |     1 |     1 |
 | `Croquis.macros`               | field | `croquis`           |     7 |    14 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     3 |
-| `Croquis.scopes`               | field | `croquis`           |     9 |    16 |
+| `Croquis.scopes`               | field | `croquis`           |    10 |    17 |
 | `Croquis.template_expressions` | field | `croquis`           |     1 |     2 |
 | `Croquis.types`                | field | `croquis`           |     1 |     1 |
 
@@ -34,6 +35,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | item                          | files | sites |
 | ----------------------------- | ----: | ----: |
 | `AlphaSchema`                 |     1 |     1 |
+| `BindingIdentity`             |     2 |     8 |
+| `BindingOccurrences`          |     3 |     5 |
 | `Bindings`                    |     6 |    13 |
 | `BindingsTable`               |     2 |     2 |
 | `BlockLocation`               |     2 |     2 |
@@ -42,9 +45,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `EmitContract`                |     1 |     1 |
 | `FactConsumer`                |     6 |     8 |
 | `FactGroup`                   |     3 |     3 |
+| `OccurrenceBlock`             |     2 |    11 |
 | `PropContract`                |     2 |     3 |
 | `ReactiveKind`                |     6 |    43 |
-| `SfcDescriptor`               |     7 |    25 |
+| `SfcDescriptor`               |     8 |    29 |
 | `SfcScriptBlock`              |     3 |     6 |
 | `SfcStyleBlock`               |     2 |     8 |
 | `SfcTemplateBlock`            |     1 |     1 |

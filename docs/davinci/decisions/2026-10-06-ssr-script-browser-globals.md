@@ -260,3 +260,47 @@ TODO: exact new source Actions and necessary existing full Check, fresh healthy
 protected projection with all 104 measurements/full suites, actual signed merge
 and an included future published version. Published v0.435.0 excludes this PR;
 no public-inclusion, native typechecker, whole-CLI gain or 10x credit is claimed.
+
+## Pinned native shutdown completion before the original EOF
+
+Paired [same-PR repair decision](https://github.com/ubugeeei-prod/vize/issues/7982#issuecomment-6013976412).
+
+Source `97d04ccc11` passes all 23 owned ordinary Rust laws. Native run
+37443394660 fails before phase capture at the stock `tsconfig.json-missing-target`
+terminal: exit 0, null signal/process error, exact requested diagnostic vectors
+and empty config diagnostics, but 44 stderr bytes instead of the required zero.
+Those bytes are `handled method 'shutdown' (4) in 318.288µs` plus LF, not 44
+native diagnostics. All six reached native cases retain complete raw streams and
+12 requested full responses. The sixth Vize case and final implicit-config trio
+are unexecuted; ordinary law success does not qualify this failed native lane.
+
+Official artifact 11402443317 is 5,076,285 bytes, SHA-256
+`bdb108cf95f72cff48cb86ab0b213e534e9f6e86e0bd843ad21b32d86c537afd`.
+Its 1,598 unique members pass CRC. The failing whole terminal has SHA-256
+`137c943cafd7829872bd76c654c676ec202b02a8371579966d0a5a20d7adea27`;
+the independent raw custody audit is
+`6dce8ff1dd1b84e6e4d5bc734f1406fe5b07b0c14428d7d2b1dd2c1e2e37925d`.
+Reported runtime hashes do not provide independently archived executable bytes.
+
+Pinned native 7.0.2 source `2bd066d87f` defaults to INFO and queues the shutdown
+response before its completion log. If EOF cancels the outgoing queue first,
+[the logger](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/lsp/logger.go#L66)
+writes that same log to stderr. This scheduling mechanism is source-supported,
+not measured from the failed trace. The primary-source receipt has SHA-256
+`9bce5eaf0c3f06c0db19db844f6957356ec695947350bdd718462c8cafe200bb`.
+
+After the unchanged null shutdown assertion, await the existing complete
+`window/logMessage` envelope: JSON-RPC 2.0, no id, type 3, exact shutdown ID
+and the canonical [Go duration](https://go.dev/src/time/time.go#L947) suffix.
+Retain that full notification before the original EOF/`stop(false)`. Preserve
+all raw vectors, limits, zero stderr and zero exit assertions. No new query,
+sleep, filtering, log disablement or provider change is introduced. The pinned
+SDK's notify-exit path can return a cancellation error; this is an explicit
+pinned transport qualification, not proof of normative shutdown/exit behavior.
+
+Incorporate actual signed healthy main `a11f4f02d1` in the same correction,
+preserving its complete incoming tree and every original SSR input/assertion.
+Unmerged failed Vapor #8101 remains excluded. TODO: fresh exact source/native
+Actions, necessary full Check, fresh protected 104/full qualification, actual
+signed merge and a future included public cut. No CPU, cold-CLI or 10x gain is
+claimed from this fixture repair.

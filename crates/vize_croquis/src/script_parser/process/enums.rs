@@ -13,6 +13,8 @@ pub(super) fn process_enum_declaration(
     if enumeration.r#const || enumeration.declare {
         return;
     }
+    // This existing processor records a declaration but never visits initializers.
+    result.refuse_occurrences();
 
     let name = enumeration.id.name.as_str();
     result.bindings.add(name, BindingType::SetupConst);
