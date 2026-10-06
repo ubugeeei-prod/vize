@@ -22,6 +22,9 @@
 mod battery;
 mod runner;
 
+#[path = "generic_reads.rs"]
+mod generic_reads;
+
 use std::path::{Path, PathBuf};
 
 use runner::{Planes, collect_vue_files, run_source};
