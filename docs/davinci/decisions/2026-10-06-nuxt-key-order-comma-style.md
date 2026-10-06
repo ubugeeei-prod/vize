@@ -15,6 +15,8 @@ property had one. Removing the separator at that offset preserves inline,
 leading and block comments, including a comma after a block comment. The parser,
 rule dispatch, ordering comparator, diagnostic range/message, spread barriers,
 Nuxt 2 compatibility refusal and ambiguous-comment refusal stay unchanged.
+The same newline-ownership branch also carries an authored CRLF together,
+rather than leaving its CRLF at the next piece and moving it to the first slot.
 
 `crates/vize_patina/tests/fixtures/issue-7963` retains the complete original issue,
 command, 79-byte input and independently authored 79-byte expected output with
@@ -32,7 +34,8 @@ correction, not a re-recording of upstream output or a weakening of key order.
 A source-built CLI law authenticates the existing build receipt, retained input
 catalog and all fixture hashes, then compares complete JSON/stdout/stderr/status
 and full file bytes over lint, fix, check and a second fix (60 original-command
-and control runs). It saves each complete process result before assertions.
+and control runs). It saves each complete process result before reading rewritten output and
+before assertions, then retains full output bytes/length/hash.
 Hosted source Actions and the protected full queue must pass on the delivered
 head; prepared assertions alone provide no runtime or merge acceptance.
 
@@ -45,3 +48,10 @@ can omit a literal footer and must be reported honestly.
 This is a legacy Patina bug fix. Davinci native/history/default migration and
 performance acceptance remain separate. Publication belongs to the coordinated
 release owner after actual protected merge and installed-release verification.
+
+The first source Action passed production Clippy but could not compile the new
+whole-diagnostic test: `LintDiagnostic` has Debug, not Serialize. Compare the
+same complete original/expected Debug values without changing public types or
+fields. That failed build is not test execution. Source review also established
+the old LF-only piece boundary misplaced CRLF; carry the exact CRLF in that
+same branch while preserving the existing LF path and original expectations.

@@ -99,7 +99,6 @@ await test("source CLI preserves Nuxt comma style through full lint/fix/check/id
           timeout: 60_000,
           maxBuffer: 4 * 1024 * 1024,
         });
-        const output = fs.readFileSync(path.join(directory, entry.filename));
         const observation = {
           id: entry.id,
           mode,
@@ -109,10 +108,16 @@ await test("source CLI preserves Nuxt comma style through full lint/fix/check/id
           error: run.error ? { name: run.error.name, message: run.error.message } : null,
           stdout: run.stdout ?? "",
           stderr: run.stderr ?? "",
-          output: { text: output.toString("utf8"), sha256: sha256(output) },
-          expected: expectedJson(entry, mode !== "lint"),
         };
         evidence.runs.push(observation);
+        persist();
+        const output = fs.readFileSync(path.join(directory, entry.filename));
+        observation.output = {
+          text: output.toString("utf8"),
+          bytes: output.length,
+          sha256: sha256(output),
+        };
+        observation.expected = expectedJson(entry, mode !== "lint");
         persist();
         assert.equal(observation.error, null, entry.id);
         assert.equal(run.signal, null, entry.id);

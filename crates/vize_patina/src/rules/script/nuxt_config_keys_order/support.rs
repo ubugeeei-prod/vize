@@ -292,7 +292,10 @@ pub(super) fn legacy_property_text_ranges(
         if !has_comma && next_token == close_brace {
             text.push(',');
         }
-        if source.as_bytes().get(last_range) == Some(&b'\n') {
+        if source.get(last_range..)?.starts_with("\r\n") {
+            last_range += 2;
+            text.push_str("\r\n");
+        } else if source.as_bytes().get(last_range) == Some(&b'\n') {
             last_range += 1;
             text.push('\n');
         }

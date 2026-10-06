@@ -43,8 +43,8 @@ fn original_report_keeps_whole_diagnostic_and_edit_contract() {
         ),
     ));
     assert_eq!(
-        serde_json::to_value(&result.diagnostics).unwrap(),
-        serde_json::to_value([expected]).unwrap()
+        format!("{:?}", result.diagnostics),
+        format!("{:?}", [expected])
     );
 }
 
