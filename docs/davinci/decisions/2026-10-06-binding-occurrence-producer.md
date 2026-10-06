@@ -263,3 +263,11 @@ them. The existing automatic test now prints the complete observed corpus
 only on mismatch while every original assertion/ledger remains strict. Fresh
 source Actions must capture it before any narrow fixture-only registration.
 Original failed logs and old baseline/explanations remain preserved.
+
+The current hidden facade serves the existing non-resolving lint-demand
+analysis; it does not replace Options API, Vue 2 or filename-resolved provider
+entry points. The child retains legacy paths for those outside-domain modes.
+A declaration span index is a recorded efficiency TODO: the current lookup
+scans owned bindings, and no latency or complexity improvement is claimed.
+Any index must preserve exact binding identities across offset shifts/merges
+and qualify current counters; it is outside this correctness correction.
