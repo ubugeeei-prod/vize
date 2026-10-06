@@ -17,6 +17,15 @@ fn fallthrough_type_with(
     template: &str,
     check_required: bool,
 ) -> Option<vize_carton::String> {
+    fallthrough_type_with_checks(script, template, check_required, false)
+}
+
+fn fallthrough_type_with_checks(
+    script: &str,
+    template: &str,
+    check_required: bool,
+    check_unknown_fallthrough_props: bool,
+) -> Option<vize_carton::String> {
     let allocator = Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -29,7 +38,10 @@ fn fallthrough_type_with(
         syntactic_type_only_imported_names: &Default::default(),
         resolve_component_roots: true,
         check_required,
-        checks: Default::default(),
+        checks: crate::virtual_ts::types::VirtualTsCheckOptions {
+            check_unknown_fallthrough_props,
+            ..Default::default()
+        },
     };
     fallthrough_props_type_ref(&scope, Some(&root), false)
 }
@@ -146,6 +158,32 @@ fn check_required_forwards_declared_props_minus_the_roots_own_bindings() {
         .expect("single native root should forward its attributes");
 
     assert_eq!(native, "__VizeNativeElement<\"input\">");
+}
+
+// A template-less root has an open fallback in addition to declared props.
+// Strip that index before Omit so the parent still receives the unbound names.
+#[test]
+fn strict_required_forwarding_removes_the_index_before_omitting_bound_props() {
+    let script = "import Basic from './basic.vue'";
+    let template = r#"<Basic foo="..." />"#;
+    assert_eq!(
+        fallthrough_type_with_checks(script, template, true, true).as_deref(),
+        Some(
+            "Omit<{ [K in keyof (__VizeComponentFallthroughSurface<typeof Basic>) as string extends K ? never : K]: (__VizeComponentFallthroughSurface<typeof Basic>)[K] }, \"foo\">"
+        )
+    );
+    assert_eq!(
+        fallthrough_type_with_checks(script, template, true, false).as_deref(),
+        Some("Omit<__VizeComponentFallthroughSurface<typeof Basic>, \"foo\">")
+    );
+    assert_eq!(
+        fallthrough_type_with_checks(script, template, false, true).as_deref(),
+        Some("Partial<__VizeComponentFallthroughProps<typeof Basic>>")
+    );
+    assert_eq!(
+        fallthrough_type_with_checks("", "<input />", true, true).as_deref(),
+        Some("__VizeNativeElement<\"input\">")
+    );
 }
 
 #[test]

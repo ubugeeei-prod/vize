@@ -29,6 +29,14 @@ on:
       - "crates/vize/tests/check_outside_import_types_cli.rs"
       - "tests/_fixtures/differential/typechecker/**"
       - "crates/vize_canon/**"
+      - ".github/actions/check-reference-path/**"
+      - ".github/actions/check-computed-inlay/**"
+      - "crates/vize_maestro/src/ide/inlay_hint/**"
+      - "crates/vize_maestro/src/ide/inlay_hint.rs"
+      - "crates/vize_croquis/src/**"
+      - "crates/vize/tests/lsp_computed_inlay_cli.rs"
+      - "crates/vize/tests/support/**"
+      - "tests/_fixtures/differential/lsp/computed-inlay-hints/**"
       - "crates/vize/src/**"
       - "crates/vize/tests/check_undefined_default_props_cli.rs"
       - "crates/vize_croquis/src/macros/defaults.rs"
@@ -37,10 +45,8 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "pnpm-lock.yaml"
-
 permissions:
   contents: read
-
 concurrency:
   group: typechecker-native-phases-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
@@ -147,6 +153,7 @@ jobs:
           node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs
           node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs
           node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs
+          bash tools/benchmarks/scripts/typechecker-native-unknown-options.sh
       - name: Check exact neutral inputs, strict phase parser and projection probe
         run: |
           node tools/benchmarks/scripts/typechecker-native-phases.mjs --self-test
@@ -232,15 +239,7 @@ jobs:
         env:
           VIZE_TEST_REQUIRE_TSGO: "1"
           VIZE_REFERENCE_PATH_CAPTURE_DIR: ${{ runner.temp }}/reference-path-module
-        run: |
-          set +e
-          cargo test --locked --profile ci-opt -p vize --test check_reference_path_cli
-          cli_exit=$?
-          cargo test --locked --profile ci-opt -p vize_canon --lib reference_paths::
-          native_exit=$?
-          cargo test --locked --profile ci-opt -p vize_canon --lib css_side_effect_import::
-          assets_exit=$?
-          [[ "$cli_exit" == 0 && "$native_exit" == 0 && "$assets_exit" == 0 ]] && VIZE_NESTED_BATCH_CAPTURE_DIR="$RUNNER_TEMP/outside-import-types/nested-batch-config" bash .github/actions/check-batch-generated-config/run.sh
+        run: bash .github/actions/check-reference-path/run.sh
       - name: Capture every actual shard with byte, map, diagnostic and freshness gates
         env:
           RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
@@ -336,6 +335,7 @@ jobs:
             ${{ runner.temp }}/typechecker-native-phases.json.samples/provenance.json
             ${{ runner.temp }}/template-dollar-emit/
             ${{ runner.temp }}/config-scoped-vue-helpers/
+            ${{ runner.temp }}/unknown-template-options/
             ${{ runner.temp }}/template-emit-ts40-projection/
             ${{ runner.temp }}/typechecker-native-phases.json.samples/failure.json
             ${{ runner.temp }}/typechecker-native-phases.json.samples/inputs/

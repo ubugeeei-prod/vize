@@ -95,9 +95,10 @@ const OWNERS: Record<
         "aeb192094f63391b90c1c078b0c17e49e85702af5daa9122e77c8edcacdff928",
     },
   },
+  // #7880 stabilization cost changes retain all ten complete original script laws.
   "crates/vize_glyph/src/script.rs": {
     originalSha256: "a205174795bb6d993e84b0cc29dfc5d10c36602dfb6216f1db2278a982b2e0ab",
-    actualMainSha256: "023ab800f9c09e13baa254f5074a0e945c05ee5a27d04c8706eb2bd4b03c6a53",
+    actualMainSha256: "3015e8840d1c76bdcc68c6eccc6e2a767a528243a2f1856c3eececb0be6c2b97",
     functions: {
       test_format_tsx_component_script:
         "d108e897e74d4289b8fdf44555eed4b7ad551aff2ac7673b5a80ca8601220d9b",

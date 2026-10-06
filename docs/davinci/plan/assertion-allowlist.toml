@@ -114,7 +114,6 @@ paths = [
   "crates/vize/tests/musea_static_build_cli.rs",
   "crates/vize/tests/plain_script_cli.rs",
   "crates/vize/tests/source_write_atomic_cli.rs",
-  "crates/vize/tests/support/lsp_process.rs",
   "crates/vize_atelier_core/src/runtime_helpers.rs",
   "crates/vize_atelier_core/src/steps/legacy/tests.rs",
   "crates/vize_atelier_core/src/steps/expression/tests.rs",

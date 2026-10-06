@@ -40,6 +40,20 @@ impl Drawer {
         generic: Option<&str>,
         jsx: bool,
     ) -> &mut Self {
+        self.draw_script_setup_with_builtin::<false>(source, generic, jsx)
+    }
+
+    /// Collect source-owned primitive hints during the existing editor AST walk.
+    pub fn draw_script_setup_with_builtin_types(&mut self, source: &str) -> &mut Self {
+        self.draw_script_setup_with_builtin::<true>(source, None, false)
+    }
+
+    fn draw_script_setup_with_builtin<const BUILTIN_TYPES: bool>(
+        &mut self,
+        source: &str,
+        generic: Option<&str>,
+        jsx: bool,
+    ) -> &mut Self {
         if !self.options.analyze_script {
             return self;
         }
@@ -49,7 +63,7 @@ impl Drawer {
         // Use OXC-based parser for accurate AST drawing
         let result = profile!(
             "croquis.drawer.script_setup",
-            crate::script_parser::parse_script_setup_for_unused(
+            crate::script_parser::parse_script_setup_for_unused::<BUILTIN_TYPES>(
                 source,
                 generic,
                 jsx,
@@ -85,7 +99,7 @@ impl Drawer {
 
         let result = profile!(
             "croquis.drawer.script_setup_program",
-            crate::script_parser::analyze_script_setup_program_demand(
+            crate::script_parser::analyze_script_setup_program_demand::<false>(
                 program,
                 source,
                 generic,

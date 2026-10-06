@@ -110,6 +110,11 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
     if let Some(value) = unknown_props.or(strict) {
         options.check_unknown_props = value;
     }
+    if let Some(value) = unknown_props {
+        options.check_unknown_fallthrough_props = value;
+    } else if strict == Some(false) {
+        options.check_unknown_fallthrough_props = false;
+    }
     if let Some(value) = unknown_components.or(strict) {
         options.check_unknown_components = value;
     }
@@ -129,6 +134,57 @@ pub(super) fn apply(source: &str, mut options: VirtualTsCheckOptions) -> Virtual
 mod tests {
     use super::apply;
     use crate::virtual_ts::VirtualTsCheckOptions;
+
+    #[test]
+    fn fallthrough_tightening_requires_an_explicit_prop_option() {
+        for (source, configured, public, fallthrough) in [
+            ("<template><div /></template>", false, false, false),
+            (
+                "<!-- @strictTemplates true --><template><div /></template>",
+                false,
+                true,
+                false,
+            ),
+            (
+                "<!-- @strictTemplates true --><template><div /></template>",
+                true,
+                true,
+                true,
+            ),
+            (
+                "<!-- @strictTemplates false --><template><div /></template>",
+                true,
+                false,
+                false,
+            ),
+            (
+                "<!-- @checkUnknownProps false --><!-- @strictTemplates true --><template><div /></template>",
+                true,
+                false,
+                false,
+            ),
+            (
+                "<!-- @checkUnknownProps true --><!-- @strictTemplates false --><template><div /></template>",
+                false,
+                true,
+                true,
+            ),
+        ] {
+            let options = apply(
+                source,
+                VirtualTsCheckOptions {
+                    check_unknown_props: configured,
+                    check_unknown_fallthrough_props: configured,
+                    ..Default::default()
+                },
+            );
+            assert_eq!(options.check_unknown_props, public, "{source}");
+            assert_eq!(
+                options.check_unknown_fallthrough_props, fallthrough,
+                "{source}"
+            );
+        }
+    }
 
     #[test]
     fn check_required_fallthrough_attributes_is_a_per_file_option() {

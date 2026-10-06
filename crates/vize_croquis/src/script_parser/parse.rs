@@ -31,10 +31,10 @@ pub fn parse_script_setup_with_generic_and_jsx(
     generic: Option<&str>,
     jsx: bool,
 ) -> ScriptParseResult {
-    parse_script_setup_for_unused(source, generic, jsx, false, false, false)
+    parse_script_setup_for_unused::<false>(source, generic, jsx, false, false, false)
 }
 
-pub(crate) fn parse_script_setup_for_unused(
+pub(crate) fn parse_script_setup_for_unused<const BUILTIN_TYPES: bool>(
     source: &str,
     generic: Option<&str>,
     jsx: bool,
@@ -55,7 +55,7 @@ pub(crate) fn parse_script_setup_for_unused(
         return ScriptParseResult::default();
     }
 
-    let mut result = analyze_script_setup_program_demand(
+    let mut result = analyze_script_setup_program_demand::<BUILTIN_TYPES>(
         &ret.program,
         source,
         generic,
@@ -64,6 +64,9 @@ pub(crate) fn parse_script_setup_for_unused(
     );
     if !ret.diagnostics.is_empty() {
         result.occurrence_capture = None;
+        if BUILTIN_TYPES {
+            result.types.clear_builtin_reactive_types();
+        }
     }
     if unused && ret.diagnostics.is_empty() {
         result.unused_bindings = super::unused_setup_bindings(&ret.program, &result);
@@ -83,19 +86,25 @@ pub fn analyze_script_setup_program(
     source: &str,
     generic: Option<&str>,
 ) -> ScriptParseResult {
-    analyze_script_setup_program_skipping(program, source, generic, false)
+    analyze_script_setup_program_skipping::<false>(program, source, generic, false)
 }
 
-pub(crate) fn analyze_script_setup_program_skipping(
+pub(crate) fn analyze_script_setup_program_skipping<const BUILTIN_TYPES: bool>(
     program: &Program<'_>,
     source: &str,
     generic: Option<&str>,
     skip_diagnostics: bool,
 ) -> ScriptParseResult {
-    analyze_script_setup_program_demand(program, source, generic, skip_diagnostics, false)
+    analyze_script_setup_program_demand::<BUILTIN_TYPES>(
+        program,
+        source,
+        generic,
+        skip_diagnostics,
+        false,
+    )
 }
 
-pub(crate) fn analyze_script_setup_program_demand(
+pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     program: &Program<'_>,
     source: &str,
     generic: Option<&str>,
@@ -132,7 +141,11 @@ pub(crate) fn analyze_script_setup_program_demand(
     // Process all statements
     profile!("croquis.script_setup.walk_statements", {
         for stmt in program.body.iter() {
-            process::process_statement(&mut result, stmt, source);
+            if BUILTIN_TYPES {
+                process::process_statement_with_builtin(&mut result, stmt, source);
+            } else {
+                process::process_statement(&mut result, stmt, source);
+            }
         }
     });
 

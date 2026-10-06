@@ -1,0 +1,32 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+import { computed, ref } from 'vue'
+import { useThing } from './useThing'
+
+const count = ref(0)
+const doubled = computed(() => count.value * 2)
+const message = ref('hello')
+const items = [1, 2]
+
+function submitMessage() {
+  return useThing() + count.value
+}
+</script>
+
+<template>
+  <Child  :label="message"
+    @click="
+      () => {
+        cou
+      }
+    "
+  />
+  <button :class="$style.primary">{{ message }}</button>
+  <ul>
+    <li v-for="item in items">{{ item }}</li>
+  </ul>
+</template>
+
+<style module>
+.primary {}
+</style>
