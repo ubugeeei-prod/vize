@@ -80,7 +80,7 @@
     "id": "block-before-comma",
     "filename": "nuxt.config.ts",
     "source": "export default { ssr: false /* client */, modules: [] /* registered */ };\n",
-    "fixed": "export default { modules: [], /* registered */ ssr: false /* client */ };\n",
+    "fixed": "export default { modules: [], /* registered */  ssr: false /* client */};\n",
     "finding": {
       "target": "ssr: false",
       "left": "ssr",
@@ -91,7 +91,7 @@
     "id": "block-after-comma",
     "filename": "nuxt.config.ts",
     "source": "export default { ssr: false, /* client */ modules: [] /* registered */ };\n",
-    "fixed": "export default { modules: [], /* registered */ ssr: false /* client */ };\n",
+    "fixed": "export default { modules: [], /* registered */  ssr: false /* client */};\n",
     "finding": {
       "target": "ssr: false",
       "left": "ssr",
@@ -102,7 +102,7 @@
     "id": "block-with-authored-trailing",
     "filename": "nuxt.config.ts",
     "source": "export default { ssr: false /* client */, modules: [] /* registered */, };\n",
-    "fixed": "export default { modules: [] /* registered */, ssr: false /* client */, };\n",
+    "fixed": "export default { modules: [] /* registered */,  ssr: false /* client */,};\n",
     "finding": {
       "target": "ssr: false",
       "left": "ssr",

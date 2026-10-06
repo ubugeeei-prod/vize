@@ -31,7 +31,7 @@
     {
       "file": "cases.json",
       "bytes": 5250,
-      "sha256": "dda500aa7308420604dff6494368b734e824261184631c7c9a897ce2c1d4e8bd"
+      "sha256": "887fc5b942af13969a403f18d0e9e9719f8f0fc961858af70d68e649ea5b0399"
     },
     {
       "file": "original-nuxt-corpus-expected.json",

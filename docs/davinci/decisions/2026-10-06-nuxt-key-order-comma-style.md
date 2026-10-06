@@ -65,3 +65,14 @@ The first compact-macro import attempt was rejected by hosted compilation:
 actual L0 exports `cstr`, not `format`. Bind the verified existing `cstr` export
 and keep the same complete Debug comparison. That failed test build remains
 historical; no runtime result transfers to the corrected source.
+
+First actual CLI execution at `eec24` confirms the original report, CRLF and
+preceding controls, then rejects an incorrectly normalized new inline-block
+reference. Independent review of immutable `de40` ownership established that
+both leading and final horizontal spaces travel with their respective pieces:
+the three inline-block controls therefore retain two spaces between moved
+pieces and none before the closing brace. Correct only those new expected
+trivia strings and their catalog hashes. All authored inputs, the original
+79-byte expectation, old Nuxt recording and every strict whole comparison stay
+unchanged; no production whitespace normalization is introduced. The failed
+run remains historical and does not establish all 60 calls passed.
