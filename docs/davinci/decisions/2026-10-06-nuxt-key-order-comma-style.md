@@ -76,3 +76,10 @@ trivia strings and their catalog hashes. All authored inputs, the original
 79-byte expectation, old Nuxt recording and every strict whole comparison stay
 unchanged; no production whitespace normalization is introduced. The failed
 run remains historical and does not establish all 60 calls passed.
+
+The same genuine source run also reached the existing NAPI overlap-convergence
+law: its original outer and `$test` objects both omit a final comma. Change
+only that law's complete expected output to preserve both omissions, retaining
+the original input, convergence path, diagnostics and on-disk equality checks.
+No NAPI production code changes. The failed old expectation remains recorded;
+current complete consumer and source Actions are still required.
