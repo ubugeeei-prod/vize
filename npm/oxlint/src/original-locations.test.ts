@@ -171,7 +171,10 @@ try {
   for (const row of rows) checkJson([row.filename], row.jsonDiagnostics);
   const graphical = run(["Static.vue"]);
   const ansi = String.raw`\u001B\[[0-9;]*m`;
-  assert.match(graphical, new RegExp(`╭─\\[(?:${ansi})*Static\\.vue(?:${ansi})*:1:11\\]`, "u"));
+  assert.match(
+    graphical,
+    new RegExp(String.raw`╭─\[(?:${ansi})*Static\.vue(?:${ansi})*:1:11\]`, "u"),
+  );
   const plain = run(["-f", "unix", "Static.vue"]);
   assert.match(plain, /^Static\.vue:1:11: Component name "Static" should be multi-word/mu);
   const stylish = run(["-f", "stylish", "Unicode.vue"]);
