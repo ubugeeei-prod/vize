@@ -124,7 +124,7 @@ fn escaped_style_names_refuse_only_the_packet_and_preserve_ordinary_unused() {
     let (root, errors) =
         vize_armature::parse(&allocator, &descriptor.template.as_ref().unwrap().content);
     assert!(errors.is_empty());
-    let options = SfcCroquisOptions::lint_demand();
+    let options = SfcCroquisOptions::lint_demand().with_unused_bindings();
     let ordinary = analyze_sfc_descriptor_with_context(&descriptor, Some(&root), options);
     let (captured, packet) =
         analyze_sfc_descriptor_with_occurrences(&descriptor, Some(&root), options);

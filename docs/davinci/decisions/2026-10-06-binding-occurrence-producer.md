@@ -263,3 +263,25 @@ them. The existing automatic test now prints the complete observed corpus
 only on mismatch while every original assertion/ledger remains strict. Fresh
 source Actions must capture it before any narrow fixture-only registration.
 Original failed logs and old baseline/explanations remain preserved.
+
+Actual `4dae6fd8` reaches the escaped-style control after the HTML repair,
+but its ordinary unused assertion fails: the authored test used lint_demand
+without enabling unused_bindings. Only that new control explicitly opts into
+the existing with_unused_bindings option. Its full source, escaped identity,
+expected untouched name and complete comparisons remain fixed; every
+production/default option and prior positive remains unchanged. Fresh
+configured runtime must prove the law; the failed whole job is retained.
+
+The actual `4dae6fd8` automatic native run `37406968349` now provides the
+complete folio (raw SHA256
+`5aefa1ebe2a74214925138f89d6576fbf6228db3b624f19597a271f683901c30`).
+All six differences are new Field missed static-props/static-subtree pairs
+at original byte spans 129:165 (label), 168:186 (input), and 189:225 (p),
+with binding/non-constant reasons. Register only the single sorted Field
+path and these six complete observed entries, 450/1,033 to 451/1,039.
+Deleting exactly those seven new lines restores the whole old baseline
+bytes, including every original explanation. No existing applied/missed
+entry, argument, span or explanation changes; no UPDATE environment is
+used and all original strict assertions remain fixed. This fixture-only
+registration does not supply native product migration/history completion.
+Fresh exact-source native and whole protected gates must accept it.
