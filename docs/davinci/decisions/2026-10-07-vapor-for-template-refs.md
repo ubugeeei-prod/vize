@@ -96,3 +96,11 @@ and `Vec::new_in`, not a nonexistent allocator-free constructor. Correct only
 that test setup using the actual exported allocator/Vec API; retain the complete
 240420-byte compiler log and its original E0599 outcome. This adds no product
 allocator or pipeline change and supplies no execution credit.
+
+The bfdea test compilation then exposed the exact allocator argument trait:
+OXC Vec::new_in accepts `&impl GetAllocator`, while L0 implements that trait
+for `&Allocator`. Both test buffers therefore pass `&&allocator`, exactly as
+the current SFC CSS tests do; the earlier single-borrow source inference is
+withdrawn. Preserve the 240803-byte E0277 log/SHA256
+7d6352cfd40651a5ad4e5cf44074343a068b855df50a0944e54245a230dae73b.
+Every product byte, mounted vector, fixture, allocator API and budget is unchanged.
