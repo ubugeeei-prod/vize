@@ -82,3 +82,14 @@ This meaningful same-PR correction is paired in
 [the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6018409224).
 The authentic red caused Draft/offqueue containment. Fresh corrected source
 Actions must own qualification; no earlier or unrelated green is transferred.
+
+Fresh exact-8280 production Clippy passed, but its test archive compilation
+failed E0277 because the locked SHA-256 digest array has no LowerHex formatter
+(run 37478986162, job 112322964211). No whole CLI case executed in this attempt.
+The custody helper now writes every digest byte as two lowercase hexadecimal
+digits, retaining the SHA-256 algorithm and every frozen expected hash. There
+is no production, dependency, input, expectation, assertion or budget change.
+The full failed log remains historical. The same-PR source compatibility repair
+is paired in
+[the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6018596538);
+fresh corrected Actions remain required, with no old execution transfer.
