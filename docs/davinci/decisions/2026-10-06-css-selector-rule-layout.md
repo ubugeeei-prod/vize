@@ -14,7 +14,10 @@ an entirely matching original/printed token stream may commit whitespace edits.
 Print each actual top-level selector separator on a new rule-indented line.
 Preserve zero or one authored blank line before a sibling block-rule prelude
 when the preceding brace already occupies its own authored line. Compact source
-blocks retain the historical printer gaps. A complete owned nested style prelude
+blocks retain the historical printer gaps before single/at-rule preludes. A
+complete actual multi-selector prelude also owns its preceding gap when its
+compact selector list is corrected; the immutable Unicode/color-offset control
+exercises this precise boundary. A complete owned nested style prelude
 also guards the gap after an authored declaration terminator.
 Declaration values, strings, escapes, functions, attributes, custom-property
 blocks and keyframe selector commas do not acquire style-selector ownership.

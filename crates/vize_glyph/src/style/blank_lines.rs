@@ -29,6 +29,7 @@ pub(super) fn preserve_rule_layout(
     let mut pending = Vec::new();
     let mut previous_boundary = false;
     let mut previous_close = false;
+    let mut previous_close_line = false;
     let mut previous_declaration = false;
     let mut previous_comma = false;
     let mut brace = 0;
@@ -52,20 +53,19 @@ pub(super) fn preserve_rule_layout(
                     adjustments.push(Adjustment::new(&authored, &target, 2, false));
                 }
                 if previous_comma
-                    || ((previous_close || previous_declaration)
-                        && authored.gap.contains(['\r', '\n']))
+                    || previous_close
+                    || (previous_declaration && authored.gap.contains(['\r', '\n']))
                 {
                     let newlines = if previous_close && has_blank_line(authored.gap) {
                         2
                     } else {
                         1
                     };
-                    pending.push(Adjustment::new(
-                        &authored,
-                        &target,
-                        newlines,
-                        previous_comma,
-                    ));
+                    let mut adjustment =
+                        Adjustment::new(&authored, &target, newlines, previous_comma);
+                    adjustment.authored_rule_gap = authored.gap.contains(['\r', '\n'])
+                        && (previous_close_line || previous_declaration);
+                    pending.push(adjustment);
                 }
                 if authored.parens == 0 && authored.brackets == 0 {
                     if authored.text == "{" {
@@ -97,6 +97,8 @@ pub(super) fn preserve_rule_layout(
                                                     && adjustment.source_start > start
                                             } else {
                                                 adjustment.source_start == start
+                                                    && (adjustment.authored_rule_gap
+                                                        || prelude.selector_list)
                                             }
                                         })
                                         .cloned(),
@@ -111,10 +113,10 @@ pub(super) fn preserve_rule_layout(
                 }
                 if !authored.text.starts_with("/*") {
                     previous_boundary = matches!(authored.text, ";" | "}");
-                    // Compact authored blocks retain the existing printer's gaps.
-                    previous_close = authored.text == "}"
-                        && authored.parens == 0
-                        && authored.brackets == 0
+                    previous_close =
+                        authored.text == "}" && authored.parens == 0 && authored.brackets == 0;
+                    // Compact blocks retain gaps unless an actual selector list owns them.
+                    previous_close_line = previous_close
                         && source
                             .get(..authored.start)
                             .and_then(|prefix| prefix.rsplit(['\r', '\n']).next())
@@ -176,6 +178,7 @@ struct Adjustment {
     depth: usize,
     newlines: usize,
     selector: bool,
+    authored_rule_gap: bool,
 }
 
 impl Adjustment {
@@ -187,6 +190,7 @@ impl Adjustment {
             depth: source.depth,
             newlines,
             selector,
+            authored_rule_gap: false,
         }
     }
 }
