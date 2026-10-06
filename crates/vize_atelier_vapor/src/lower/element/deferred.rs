@@ -95,7 +95,8 @@ fn transform_dynamic_children_with_ids<'a>(
         .filter(|child| !matches!(child, TemplateChildNode::Comment(_)))
         .count()
         == 1;
-    let mut placeholders = super::insertion::block_placeholders(&el.children).into_iter();
+    let mut placeholders =
+        super::insertion::block_placeholders(&el.children, ctx.is_key_non_reactive()).into_iter();
     transform_dynamic_children_in_slice(
         ctx,
         &el.children,
@@ -157,6 +158,8 @@ fn transform_dynamic_children_in_slice<'a>(
         };
 
         if child_el.tag_type == ElementType::Template {
+            let previous = ctx.non_reactive_keys;
+            ctx.non_reactive_keys = super::super::key::is_non_reactive(child_el, previous);
             ensure_sufficient_stack(|| {
                 transform_dynamic_children_in_slice(
                     ctx,
@@ -172,6 +175,7 @@ fn transform_dynamic_children_in_slice<'a>(
                     placeholders,
                 );
             });
+            ctx.non_reactive_keys = previous;
             continue;
         }
 
@@ -182,7 +186,18 @@ fn transform_dynamic_children_in_slice<'a>(
             };
             *child_id_index += 1;
 
-            if is_template_backed_element(child_el) {
+            if super::super::key::value(child_el, ctx.is_key_non_reactive()).is_some() {
+                let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index, placeholders);
+                super::super::key::transform(
+                    ctx,
+                    child_el,
+                    block,
+                    Some(child_id),
+                    Some(parent_id),
+                    Some(anchor),
+                    false,
+                );
+            } else if is_template_backed_element(child_el, ctx.is_key_non_reactive()) {
                 let index = *rendered_index;
                 if let Some((prev_child_id, prev_index)) = *prev_template_backed_child {
                     block.operation.push(OperationNode::NextRef(NextRefIRNode {
@@ -278,6 +293,8 @@ fn transform_existing_element<'a>(
     element_id: usize,
     block: &mut BlockIRNode<'a>,
 ) {
+    let previous = ctx.non_reactive_keys;
+    ctx.non_reactive_keys = super::super::key::is_non_reactive(el, previous);
     let dynamic_child_count = count_dynamic_element_children(&el.children);
 
     for prop in el.props.iter() {
@@ -292,4 +309,5 @@ fn transform_existing_element<'a>(
 
     let child_ids: std::vec::Vec<usize> = (0..dynamic_child_count).map(|_| ctx.next_id()).collect();
     transform_dynamic_children_with_ids(ctx, el, element_id, block, &child_ids);
+    ctx.non_reactive_keys = previous;
 }

@@ -22,6 +22,8 @@ pub(crate) struct TransformContext<'a> {
     pub(crate) element_template_map: FxHashMap<usize, usize>,
     pub(crate) standalone_text_elements: FxHashSet<usize>,
     non_reactive_scopes: usize,
+    /// Inline native/template descendants retain key-only once ownership.
+    pub(crate) non_reactive_keys: bool,
     /// Preserve authored text anchors in structural slot bodies.
     pub(crate) structural_slot_spans: bool,
     pub(crate) diagnostics: std::vec::Vec<String>,
@@ -41,6 +43,7 @@ impl<'a> TransformContext<'a> {
             element_template_map: FxHashMap::default(),
             standalone_text_elements: FxHashSet::default(),
             non_reactive_scopes: 0,
+            non_reactive_keys: false,
             structural_slot_spans: false,
             diagnostics: std::vec::Vec::new(),
             template_spans: None,
@@ -78,9 +81,20 @@ impl<'a> TransformContext<'a> {
     pub(crate) fn element_template(&self, el: &ElementNode<'_>) -> EmitDocument {
         let scope_id = self.scope_id.as_deref();
         if self.template_spans.is_some() {
-            super::element::template::generate_element_template_spanned(el, scope_id, self.source)
+            super::element::template::generate_element_template_spanned(
+                el,
+                scope_id,
+                self.source,
+                self.is_key_non_reactive(),
+            )
         } else {
-            super::element::template::generate_element_template(el, scope_id, self.source).into()
+            super::element::template::generate_element_template(
+                el,
+                scope_id,
+                self.source,
+                self.is_key_non_reactive(),
+            )
+            .into()
         }
     }
 
@@ -102,6 +116,10 @@ impl<'a> TransformContext<'a> {
 
     pub(crate) fn is_non_reactive(&self) -> bool {
         self.non_reactive_scopes > 0
+    }
+
+    pub(crate) fn is_key_non_reactive(&self) -> bool {
+        self.is_non_reactive() || self.non_reactive_keys
     }
 
     pub(crate) fn push_dynamic_operation(

@@ -128,6 +128,15 @@ pub(crate) fn generate_vapor_with_spans(
         }
     }
 
+    for op in &ir.block.operation {
+        if let OperationNode::Key(node) = op
+            && let [element] = node.render.returns.as_slice()
+            && let Some(&template) = ir.element_template_map.get(element)
+        {
+            root_template_indices.insert(template);
+        }
+    }
+
     // Template strings keep the links lowering gave them through escaping.
     let mut template_code = EmitDocument::new(spans.is_some());
     for (i, template) in ir.templates.iter().enumerate() {

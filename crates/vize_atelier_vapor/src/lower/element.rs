@@ -1,5 +1,8 @@
 //! Element transformation dispatch for Vapor IR lowering.
 
+pub(super) use super::key::element as transform_element_with_key;
+pub(crate) use super::key::transform_element;
+
 mod component;
 mod deferred;
 mod insertion;
@@ -38,7 +41,7 @@ use super::{
 };
 
 /// Lower an element-like AST node into Vapor IR operations.
-pub(crate) fn transform_element<'a>(
+pub(super) fn transform_element_unkeyed<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,

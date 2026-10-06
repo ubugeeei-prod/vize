@@ -18,16 +18,26 @@ enum Unit {
     Block,
 }
 
-fn collect_units(children: &[TemplateChildNode<'_>], units: &mut std::vec::Vec<Unit>) {
+fn collect_units(
+    children: &[TemplateChildNode<'_>],
+    units: &mut std::vec::Vec<Unit>,
+    non_reactive: bool,
+) {
     for child in children {
         match child {
             TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_) => {
                 units.push(Unit::Rendered);
             }
             TemplateChildNode::Element(el) if el.tag_type == ElementType::Template => {
-                ensure_sufficient_stack(|| collect_units(&el.children, units));
+                ensure_sufficient_stack(|| {
+                    collect_units(
+                        &el.children,
+                        units,
+                        super::super::key::is_non_reactive(el, non_reactive),
+                    )
+                });
             }
-            TemplateChildNode::Element(el) if is_template_backed_element(el) => {
+            TemplateChildNode::Element(el) if is_template_backed_element(el, non_reactive) => {
                 units.push(Unit::Rendered);
             }
             TemplateChildNode::Element(_)
@@ -41,9 +51,12 @@ fn collect_units(children: &[TemplateChildNode<'_>], units: &mut std::vec::Vec<U
 /// For each block among `children` (template wrappers flattened, document
 /// order), whether it keeps a template placeholder because a
 /// template-rendered sibling follows it.
-pub(crate) fn block_placeholders(children: &[TemplateChildNode<'_>]) -> std::vec::Vec<bool> {
+pub(crate) fn block_placeholders(
+    children: &[TemplateChildNode<'_>],
+    non_reactive: bool,
+) -> std::vec::Vec<bool> {
     let mut units = std::vec::Vec::new();
-    collect_units(children, &mut units);
+    collect_units(children, &mut units, non_reactive);
     let mut rendered_after = false;
     let mut flags = std::vec::Vec::new();
     for unit in units.iter().rev() {

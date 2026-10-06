@@ -232,7 +232,11 @@ fn transform_for_node_with_options<'a>(
     let _render_block_id = ctx.next_id();
 
     // Transform children as render block
-    let render = transform_children(ctx, &for_node.children);
+    let render = super::transform_children_with_keys(
+        ctx,
+        &for_node.children,
+        for_node.parse_result.match_scope,
+    );
 
     let ir_for = ForIRNode {
         id: for_id,

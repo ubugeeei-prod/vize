@@ -11,15 +11,16 @@ use vize_carton::ensure_sufficient_stack;
 mod writer;
 use writer::{LeadingNewlineWriter, TemplateWriter};
 
-/// Generate element template string (recursively includes static children)
+/// Generate element template string.
 #[inline(always)]
 pub(crate) fn generate_element_template(
     el: &ElementNode<'_>,
     scope_id: Option<&str>,
     source: &str,
+    non_reactive: bool,
 ) -> String {
     let mut template = String::default();
-    write_element_template(&mut template, el, scope_id, source);
+    write_element_template(&mut template, el, scope_id, source, non_reactive);
     template
 }
 
@@ -29,9 +30,10 @@ pub(crate) fn generate_element_template_spanned(
     el: &ElementNode<'_>,
     scope_id: Option<&str>,
     source: &str,
+    non_reactive: bool,
 ) -> EmitDocument {
     let mut template = EmitDocument::default();
-    write_element_template(&mut template, el, scope_id, source);
+    write_element_template(&mut template, el, scope_id, source, non_reactive);
     template
 }
 
@@ -40,7 +42,9 @@ fn write_element_template(
     el: &ElementNode<'_>,
     scope_id: Option<&str>,
     source: &str,
+    non_reactive: bool,
 ) {
+    let non_reactive = super::super::key::is_non_reactive(el, non_reactive);
     template.push_str("<");
     let tag_start = el.loc.span.start + 1;
     template.push_linked(
@@ -125,7 +129,7 @@ fn write_element_template(
         // transparent wrapper in Vapor just as it is in the main element
         // dispatcher, so its children contribute directly to the enclosing
         // element's static template instead of producing a component lookup.
-        let placeholders = super::insertion::block_placeholders(&el.children);
+        let placeholders = super::insertion::block_placeholders(&el.children, non_reactive);
         let mut placeholders = placeholders.into_iter();
         if el.ns == vize_atelier_core::Namespace::Html && matches!(el.tag, "pre" | "textarea") {
             let mut children = LeadingNewlineWriter {
@@ -137,10 +141,18 @@ fn write_element_template(
                 &el.children,
                 scope_id,
                 source,
+                non_reactive,
                 &mut placeholders,
             );
         } else {
-            append_child_templates(template, &el.children, scope_id, source, &mut placeholders);
+            append_child_templates(
+                template,
+                &el.children,
+                scope_id,
+                source,
+                non_reactive,
+                &mut placeholders,
+            );
         }
 
         template.push_str("</");
@@ -154,6 +166,7 @@ fn append_child_templates(
     children: &[TemplateChildNode<'_>],
     scope_id: Option<&str>,
     source: &str,
+    non_reactive: bool,
     placeholders: &mut std::vec::IntoIter<bool>,
 ) {
     for child in children {
@@ -171,13 +184,16 @@ fn append_child_templates(
                         &child_el.children,
                         scope_id,
                         source,
+                        super::super::key::is_non_reactive(child_el, non_reactive),
                         placeholders,
                     )
                 });
             }
-            TemplateChildNode::Element(child_el) if is_template_backed_element(child_el) => {
+            TemplateChildNode::Element(child_el)
+                if is_template_backed_element(child_el, non_reactive) =>
+            {
                 ensure_sufficient_stack(|| {
-                    write_element_template(template, child_el, scope_id, source)
+                    write_element_template(template, child_el, scope_id, source, non_reactive)
                 });
             }
             // Only a block followed by template-rendered siblings keeps its
@@ -226,7 +242,6 @@ pub(crate) fn is_static_element(el: &ElementNode<'_>) -> bool {
         }
     }
 
-    // Check if any child is dynamic
     for child in el.children.iter() {
         match child {
             TemplateChildNode::Interpolation(_) => return false,
@@ -243,8 +258,9 @@ pub(crate) fn is_static_element(el: &ElementNode<'_>) -> bool {
     true
 }
 
-pub(super) fn is_template_backed_element(el: &ElementNode<'_>) -> bool {
+pub(super) fn is_template_backed_element(el: &ElementNode<'_>, non_reactive: bool) -> bool {
     matches!(el.tag_type, ElementType::Element)
+        && super::super::key::value(el, non_reactive).is_none()
 }
 
 pub(super) fn transform_template_ref<'a>(
