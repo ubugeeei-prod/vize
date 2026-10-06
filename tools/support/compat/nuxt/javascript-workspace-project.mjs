@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { nuxt3TypeProviders } from "./javascript-workspace-providers.mjs";
 
 export const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 export const lexical = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
@@ -75,10 +76,12 @@ export function prepareProject(root, output, cohort, custody) {
     "vite-main.js.txt": "apps/vite/src/main.js",
     "vite-ssr.mjs.txt": "apps/vite/src/ssr.mjs",
     "ViteApp.vue.txt": "apps/vite/src/App.vue",
-    "nuxt-package.json.txt": "apps/nuxt/package.json",
+    [cohort.id === "nuxt3" ? "nuxt3-package-typed.json.txt" : "nuxt-package.json.txt"]:
+      "apps/nuxt/package.json",
     [cohort.id === "nuxt4" ? "nuxt-reference-tsconfig.json.txt" : "nuxt-tsconfig.json.txt"]:
       "apps/nuxt/tsconfig.json",
-    "nuxt.config.js.txt": "apps/nuxt/nuxt.config.js",
+    [cohort.id === "nuxt3" ? "nuxt3-typed.config.js.txt" : "nuxt.config.js.txt"]:
+      "apps/nuxt/nuxt.config.js",
     "NuxtApp.vue.txt": "apps/nuxt/src/app.vue",
     "NuxtIndex.vue.txt": "apps/nuxt/src/pages/index.vue",
     "useWorkspaceLabel.js.txt": "apps/nuxt/src/composables/useWorkspaceLabel.js",
@@ -92,6 +95,7 @@ export function prepareProject(root, output, cohort, custody) {
     fs.mkdirSync(path.dirname(path.join(project, target)), { recursive: true });
     fs.copyFileSync(path.join(directory, source), path.join(project, target));
   }
+  const verifyTypes = nuxt3TypeProviders(root, project, artifacts, cohort, corpus);
   const originalDist = {},
     candidateDist = {};
   const packages = [["@vizejs/vite-plugin", "npm/builder/vite"]];
@@ -157,6 +161,7 @@ export function prepareProject(root, output, cohort, custody) {
         `${process.env.NODE_OPTIONS ?? ""} --require=${JSON.stringify(path.join(root, "tools/support/compat/nuxt/source-binding-preload.cjs"))}`.trim(),
     },
     finish() {
+      verifyTypes?.();
       for (const [name, source] of Object.entries(sources))
         assert.deepEqual(
           fs.readFileSync(path.join(project, source)),

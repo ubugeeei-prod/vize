@@ -160,6 +160,18 @@
     "public-input-contract.json": {
       "bytes": 4794,
       "sha256": "4215693d70ae44d822bbc2905a12a5ad6cb76f5b96f6824c10b82e7400ac3959"
+    },
+    "nuxt3-typed.config.js.txt": {
+      "bytes": 575,
+      "sha256": "9cc29b016283da93b44d02a82411aa6f48d2eafa0aa026879f0ffc04ac651262"
+    },
+    "nuxt3-package-typed.json.txt": {
+      "bytes": 253,
+      "sha256": "1f4ec4658c9a89329d43fa1aecdade6eabfb951e8ab8c69434ee50617555142b"
+    },
+    "native-editor-authority.json": {
+      "bytes": 2330,
+      "sha256": "1e8b46880dfb72133152a8f4e93dd68ff31ca1513260642284744320ca506fd0"
     }
   },
   "scope": {
@@ -176,5 +188,10 @@
       "initial": "<main data-test=\"workspace\"><h1>JavaScript workspace</h1><output>$12.00</output><aside data-test=\"shared\">Shared: workspace exports</aside><p>Nuxt: workspace exports</p><button type=\"button\" data-test=\"counter\">Count: 2</button></main>",
       "clicked": "<main data-test=\"workspace\"><h1>JavaScript workspace</h1><output>$18.00</output><aside data-test=\"shared\">Shared: workspace exports</aside><p>Nuxt: workspace exports</p><button type=\"button\" data-test=\"counter\">Count: 3</button></main>"
     }
+  },
+  "nodeTypes": {
+    "authority": "actual independently locked driver package graph staged into the owned Nuxt3 consumer; original cohort locks remain unchanged",
+    "node": "25.9.2",
+    "undici": "7.24.6"
   }
 }

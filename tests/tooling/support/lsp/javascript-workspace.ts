@@ -15,6 +15,26 @@ import { save, sha } from "../../../../tools/support/compat/nuxt/javascript-work
 type Context = { project: string; artifacts: string; cohort: { nuxt?: string } };
 const lintHelp =
   "props, data, computed, methods, setup, and inject share the component instance namespace; give each member a unique name.";
+function nativeSuggestions(context: Context, source: string) {
+  if (context.cohort.nuxt) return [];
+  // Pinned native checker emits suggestions for loaded external-library JS symbols;
+  // ls includes them and maps Suggestion to Hint. CLI noEmit excludes this category.
+  return [
+    ["@workspace/pricing", "index.js"],
+    ["@workspace/pricing/label", "label.mjs"],
+  ].map(([name, filename]) => {
+    const needle = JSON.stringify(name);
+    const start = position(source, needle);
+    const physical = fs.realpathSync(path.join(context.project, "packages/pricing/src", filename));
+    return {
+      range: { start, end: { line: start.line, character: start.character + needle.length } },
+      severity: 4,
+      code: 7016,
+      source: "vize/types",
+      message: `Could not find a declaration file for module '${name}'. '${physical}' implicitly has an 'any' type.`,
+    };
+  });
+}
 export async function editorProducts(root: string, context: Context, binary: string) {
   const main = path.join(
     context.project,
@@ -106,7 +126,11 @@ export async function editorProducts(root: string, context: Context, binary: str
         const expected = {
           uri,
           version,
-          diagnostics: diagnostic ? [diagnostic] : !native && index === 1 ? [lintDiagnostic] : [],
+          diagnostics: native
+            ? [...(diagnostic ? [diagnostic] : []), ...nativeSuggestions(context, testCase.source)]
+            : index === 1
+              ? [lintDiagnostic]
+              : [],
         };
         const started = performance.now();
         if (index === 0)
