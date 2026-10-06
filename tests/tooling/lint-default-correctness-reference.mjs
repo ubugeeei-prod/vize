@@ -17,15 +17,25 @@ export function loadCorpus(root) {
     );
     for (const finding of entry.diagnostics) {
       assert.ok(finding.start < finding.end && finding.end <= Buffer.byteLength(entry.source));
-      assert.equal(finding.severity, "error");
+      assert.equal(finding.severity, finding.rule_name === "vue/v-on-style" ? "warning" : "error");
       assert.equal(
         finding.help,
         finding.rule_name === "script/no-import-compiler-macros"
           ? "Remove the macro from the import statement. Compiler macros are auto-imported."
-          : null,
+          : finding.rule_name === "vue/v-on-style"
+            ? 'Use `@event="handler"` instead of `v-on:event="handler"`'
+            : null,
       );
       assert.deepEqual(finding.labels, []);
-      assert.equal(finding.fix, null);
+      if (finding.rule_name === "vue/v-on-style") {
+        assert.equal(entry.id, "full-modifiers");
+        assert.deepEqual(finding.fix, {
+          message: "Use shorthand syntax",
+          edits: [{ start: 50, end: 88, new_text: '@activate.native.stop="onActivate"' }],
+        });
+      } else {
+        assert.equal(finding.fix, null);
+      }
     }
   }
   return corpus;
@@ -49,17 +59,17 @@ export function wholeJson(entry, findings = entry.diagnostics) {
           ruleDocsPath: finding.rule_name.startsWith("script/")
             ? "docs/content/rules/type-and-script.md"
             : "docs/content/rules/vue.md",
-          severity: 2,
+          severity: finding.severity === "error" ? 2 : 1,
           message: `[vize:${finding.rule_name}] ${finding.message}`,
           line,
           column,
           endLine,
           endColumn,
-          ...(finding.help === null ? {} : { help: finding.help }),
+          ...(finding.help === null ? {} : { help: finding.help.replaceAll("`", "") }),
         };
       }),
-      errorCount: findings.length,
-      warningCount: 0,
+      errorCount: findings.filter((finding) => finding.severity === "error").length,
+      warningCount: findings.filter((finding) => finding.severity === "warning").length,
     },
   ];
 }

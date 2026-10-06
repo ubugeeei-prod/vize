@@ -51,7 +51,7 @@ fn configless_ecosystem_and_recommended_editor_lint_share_complete_defaults() {
 }
 
 #[test]
-fn editor_explicit_off_preserves_the_complete_empty_control() {
+fn editor_explicit_off_preserves_the_complete_existing_baseline() {
     let data = corpus();
     let root = tempfile::tempdir().unwrap();
     let rules: serde_json::Map<_, _> = data["promotedRules"]
@@ -79,7 +79,7 @@ fn editor_explicit_off_preserves_the_complete_empty_control() {
         );
         assert_eq!(
             serde_json::to_value(DiagnosticService::collect_lint_only(&state, &uri)).unwrap(),
-            json!([]),
+            case["baselineLspDiagnostics"],
             "{}",
             case["id"]
         );

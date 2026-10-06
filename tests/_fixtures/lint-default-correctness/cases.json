@@ -72,7 +72,9 @@
           "source": "vize/lint",
           "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead\n\nHelp: Vue 3 removed the .sync modifier and folded its two-way binding into argumented v-model. Replace it with v-model:<prop> (e.g. :title.sync=\"title\" -> v-model:title=\"title\")."
         }
-      ]
+      ],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "native",
@@ -111,7 +113,9 @@
           "source": "vize/lint",
           "message": ".native modifier on v-on is deprecated and was removed in Vue 3\n\nHelp: Vue 3 removed the .native modifier: listeners that are not declared component events fall through to the root element automatically. Remove .native (e.g. @click.native -> @click)."
         }
-      ]
+      ],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "slot-scope",
@@ -150,7 +154,9 @@
           "source": "vize/lint",
           "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3\n\nHelp: Use v-slot instead (e.g. <template v-slot=\"props\">)."
         }
-      ]
+      ],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "scope",
@@ -189,7 +195,9 @@
           "source": "vize/lint",
           "message": "the `scope` attribute on <template> was deprecated in Vue 2.5 and removed in Vue 3\n\nHelp: Use v-slot instead (e.g. <template v-slot=\"props\">)."
         }
-      ]
+      ],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "full-modifiers",
@@ -206,6 +214,25 @@
           "help": null,
           "labels": [],
           "fix": null
+        },
+        {
+          "rule_name": "vue/v-on-style",
+          "severity": "warning",
+          "message": "Prefer shorthand `@` over `v-on:`",
+          "start": 50,
+          "end": 88,
+          "help": "Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`",
+          "labels": [],
+          "fix": {
+            "message": "Use shorthand syntax",
+            "edits": [
+              {
+                "start": 50,
+                "end": 88,
+                "new_text": "@activate.native.stop=\"onActivate\""
+              }
+            ]
+          }
         },
         {
           "rule_name": "vue/no-deprecated-v-on-native-modifier",
@@ -242,6 +269,25 @@
           "range": {
             "start": {
               "line": 0,
+              "character": 50
+            },
+            "end": {
+              "line": 0,
+              "character": 88
+            }
+          },
+          "severity": 2,
+          "code": "vue/v-on-style",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/v-on-style.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer shorthand `@` over `v-on:`\n\nHelp: Use @event=\"handler\" instead of v-on:event=\"handler\""
+        },
+        {
+          "range": {
+            "start": {
+              "line": 0,
               "character": 64
             },
             "end": {
@@ -256,6 +302,48 @@
           },
           "source": "vize/lint",
           "message": ".native modifier on v-on is deprecated and was removed in Vue 3\n\nHelp: Vue 3 removed the .native modifier: listeners that are not declared component events fall through to the root element automatically. Remove .native (e.g. @click.native -> @click)."
+        }
+      ],
+      "baselineDiagnostics": [
+        {
+          "rule_name": "vue/v-on-style",
+          "severity": "warning",
+          "message": "Prefer shorthand `@` over `v-on:`",
+          "start": 50,
+          "end": 88,
+          "help": "Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`",
+          "labels": [],
+          "fix": {
+            "message": "Use shorthand syntax",
+            "edits": [
+              {
+                "start": 50,
+                "end": 88,
+                "new_text": "@activate.native.stop=\"onActivate\""
+              }
+            ]
+          }
+        }
+      ],
+      "baselineLspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 50
+            },
+            "end": {
+              "line": 0,
+              "character": 88
+            }
+          },
+          "severity": 2,
+          "code": "vue/v-on-style",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/v-on-style.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer shorthand `@` over `v-on:`\n\nHelp: Use @event=\"handler\" instead of v-on:event=\"handler\""
         }
       ]
     },
@@ -296,7 +384,9 @@
           "source": "vize/lint",
           "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead\n\nHelp: Vue 3 removed the .sync modifier and folded its two-way binding into argumented v-model. Replace it with v-model:<prop> (e.g. :title.sync=\"title\" -> v-model:title=\"title\")."
         }
-      ]
+      ],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "valid-model",
@@ -304,7 +394,9 @@
       "kind": "vue",
       "source": "<template><Widget v-model:title=\"title\" /></template>\n",
       "diagnostics": [],
-      "lspDiagnostics": []
+      "lspDiagnostics": [],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "valid-event",
@@ -312,7 +404,9 @@
       "kind": "vue",
       "source": "<template><Widget @activate.stop=\"onActivate\" /></template>\n",
       "diagnostics": [],
-      "lspDiagnostics": []
+      "lspDiagnostics": [],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "valid-slots",
@@ -320,7 +414,9 @@
       "kind": "vue",
       "source": "<template><Widget><template #default=\"slotProps\">{{ slotProps.label }}</template></Widget></template>\n",
       "diagnostics": [],
-      "lspDiagnostics": []
+      "lspDiagnostics": [],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "html-scope",
@@ -328,7 +424,9 @@
       "kind": "vue",
       "source": "<template><table><thead><tr><th scope=\"col\">Label</th></tr></thead></table></template>\n",
       "diagnostics": [],
-      "lspDiagnostics": []
+      "lspDiagnostics": [],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "comments",
@@ -336,7 +434,9 @@
       "kind": "vue",
       "source": "<template><!-- :title.sync=\"title\" @activate.native=\"run\" slot-scope=\"props\" scope=\"props\" --><p>ok</p></template>\n",
       "diagnostics": [],
-      "lspDiagnostics": []
+      "lspDiagnostics": [],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "macro-import",
@@ -375,7 +475,9 @@
           "source": "vize/lint",
           "message": "Do not import 'defineProps' - compiler macros are automatically available in <script setup>\n\nHelp: Remove the macro from the import statement. Compiler macros are auto-imported."
         }
-      ]
+      ],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "macro-valid",
@@ -383,7 +485,9 @@
       "kind": "vue",
       "source": "<script setup lang=\"ts\">\ndefineProps<{ title: string }>()\n</script>\n<template><p>{{ title }}</p></template>\n",
       "diagnostics": [],
-      "lspDiagnostics": []
+      "lspDiagnostics": [],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "macro-comment",
@@ -391,7 +495,9 @@
       "kind": "vue",
       "source": "<script setup lang=\"ts\">\n// import { defineProps } from 'vue'\ndefineProps<{ title: string }>()\n</script>\n<template><p>{{ title }}</p></template>\n",
       "diagnostics": [],
-      "lspDiagnostics": []
+      "lspDiagnostics": [],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     },
     {
       "id": "petite-removed",
@@ -399,7 +505,15 @@
       "kind": "html",
       "source": "<!DOCTYPE html><html><body><div v-scope=\"{ title: 'ok' }\"><Widget :title.sync=\"title\" @activate.native=\"run\"><template slot-scope=\"props\">ok</template><template scope=\"props\">ok</template></Widget></div><script src=\"https://unpkg.com/petite-vue\" init></script></body></html>\n",
       "diagnostics": [],
-      "lspDiagnostics": []
+      "lspDiagnostics": [],
+      "baselineDiagnostics": [],
+      "baselineLspDiagnostics": []
     }
-  ]
+  ],
+  "baselineAuthority": {
+    "revision": "143c1d4a9fbe6530cdd06f1f001b816f39c1d00a",
+    "path": "crates/vize_patina/src/rules/vue/v_on_style.rs",
+    "sha256": "0e5efb4ea4d06462604f7d0d5289ead67bca744ff1f7921fd670cae1ca30cc93",
+    "reason": "full longform v-on control retains existing default warning/help/safe fix; not newly enabled by this policy"
+  }
 }

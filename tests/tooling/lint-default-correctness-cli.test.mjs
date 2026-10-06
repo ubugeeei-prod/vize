@@ -37,7 +37,7 @@ await test("configless CLI defaults retain whole correctness findings and explic
       scenarios.push({
         entry,
         preset: null,
-        findings: [],
+        findings: entry.baselineDiagnostics,
         config:
           JSON.stringify({
             linter: {
@@ -80,7 +80,7 @@ await test("configless CLI defaults retain whole correctness findings and explic
         stderr: run.stderr ?? "",
         expected: wholeJson(entry, findings),
         expectedStderr: "",
-        expectedStatus: findings.length ? 1 : 0,
+        expectedStatus: findings.some((finding) => finding.severity === "error") ? 1 : 0,
       };
       evidence.runs.push(observation);
       persist();
