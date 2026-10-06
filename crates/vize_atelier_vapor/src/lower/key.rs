@@ -42,6 +42,11 @@ fn binding<'a, 'b>(dir: &'b DirectiveNode<'a>) -> Option<&'b SimpleExpressionNod
     if dir.name != "bind" {
         return None;
     }
+    binding_value(dir)
+}
+
+/// The caller has already matched this original directive's `bind` name.
+fn binding_value<'a, 'b>(dir: &'b DirectiveNode<'a>) -> Option<&'b SimpleExpressionNode<'a>> {
     let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
         return None;
     };

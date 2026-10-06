@@ -53,8 +53,8 @@ pub(super) fn transform_classified_element<'a>(
     block: &mut BlockIRNode<'a>,
     non_reactive: super::key::DirectiveAnalysis<'a, '_>,
 ) {
-    if let Some(ref memo_error) = non_reactive.memo_error {
-        ctx.push_diagnostic(memo_error.clone());
+    if let Some(memo_error) = non_reactive.memo_error {
+        ctx.push_diagnostic(String::from(memo_error));
     }
     let entered_non_reactive = non_reactive.should_lower_as_once;
     if entered_non_reactive {

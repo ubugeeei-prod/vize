@@ -1,11 +1,10 @@
 //! One existing property walk retains directive facts and the original key.
 
 use vize_atelier_core::{ElementNode, ExpressionNode, PropNode, SimpleExpressionNode};
-use vize_carton::String;
 
 pub(in crate::lower) struct DirectiveAnalysis<'a, 'b> {
     pub(in crate::lower) should_lower_as_once: bool,
-    pub(in crate::lower) memo_error: Option<String>,
+    pub(in crate::lower) memo_error: Option<&'static str>,
     pub(in crate::lower) key: Option<&'b SimpleExpressionNode<'a>>,
 }
 
@@ -37,7 +36,7 @@ pub(in crate::lower) fn classify<'a, 'b>(
                     if exp.content.trim() == "[]");
             }
             "for" if read_key => has_for = true,
-            "bind" if read_key && key.is_none() => key = super::binding(dir),
+            "bind" if read_key && key.is_none() => key = super::binding_value(dir),
             _ => {}
         }
     }
@@ -48,15 +47,15 @@ pub(in crate::lower) fn classify<'a, 'b>(
             Some(ExpressionNode::Simple(exp)) if exp.content.trim() == "[]" => (true, None),
             Some(ExpressionNode::Simple(_)) => (
                 false,
-                Some(String::from(
+                Some(
                     "v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
-                )),
+                ),
             ),
             _ => (
                 false,
-                Some(String::from(
+                Some(
                     "v-memo is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
-                )),
+                ),
             ),
         }
     } else {
@@ -307,7 +306,7 @@ mod tests {
             };
             let facts = classify(el, inherited, own_key);
             assert_eq!(facts.should_lower_as_once, expected_once, "{source}");
-            assert_eq!(facts.memo_error.as_deref(), expected_error, "{source}");
+            assert_eq!(facts.memo_error, expected_error, "{source}");
             assert_eq!(facts.key.map(|key| key.content), expected_key, "{source}");
             if let Some(key) = facts.key {
                 assert_eq!(key.loc.span.slice(source), key.content, "{source}");

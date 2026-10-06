@@ -8,10 +8,15 @@ pub(super) fn collect_root_key_templates(
     templates: &FxHashMap<usize, usize>,
     roots: &mut FxHashSet<usize>,
 ) {
+    let [returned] = block.returns.as_slice() else {
+        return;
+    };
+    // An existing native return already owns its root flag. Unique IR ids
+    // cannot simultaneously identify the returned Key or conditional owner.
+    if templates.contains_key(returned) {
+        return;
+    }
     ensure_sufficient_stack(|| {
-        let [returned] = block.returns.as_slice() else {
-            return;
-        };
         for op in &block.operation {
             match op {
                 OperationNode::Key(node) if node.parent.is_none() && node.id == *returned => {
