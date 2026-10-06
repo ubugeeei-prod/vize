@@ -11,13 +11,15 @@ fn refused_packet_still_removes_reads_in_the_same_and_later_style_blocks() {
                   <style>.b{height:v-bind(last)}</style>";
     let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
     let mut ordinary = Croquis::default();
-    for (index, name) in ["first", "later", "last"].into_iter().enumerate() {
-        ordinary.unused_bindings.push(CompactString::new(name));
-        ordinary
-            .binding_spans
-            .insert(CompactString::new(name), (index as u32, index as u32 + 1));
+    let mut captured = Croquis::default();
+    for croquis in [&mut ordinary, &mut captured] {
+        for (index, name) in ["first", "later", "last"].into_iter().enumerate() {
+            croquis.unused_bindings.push(CompactString::new(name));
+            croquis
+                .binding_spans
+                .insert(CompactString::new(name), (index as u32, index as u32 + 1));
+        }
     }
-    let mut captured = ordinary.clone();
     let mut packet = BindingOccurrences::default();
     assert!(apply_style_reads(&mut ordinary, &descriptor, false, None));
     assert!(!apply_style_reads(

@@ -11,17 +11,17 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | product                     | kind  | module    | files | sites |
 | --------------------------- | ----- | --------- | ----: | ----: |
 | `BindingMetadata`           | type  | `croquis` |    12 |    31 |
-| `Croquis`                   | type  | `croquis` |    11 |    25 |
+| `Croquis`                   | type  | `croquis` |    11 |    26 |
 | `Drawer`                    | type  | `drawer`  |     2 |    12 |
 | `DrawerOptions`             | type  | `drawer`  |     1 |     5 |
 | `ScopeKind`                 | type  | `scope`   |     1 |     2 |
-| `Croquis.binding_spans`     | field | `croquis` |     3 |     3 |
+| `Croquis.binding_spans`     | field | `croquis` |     2 |     2 |
 | `Croquis.bindings`          | field | `croquis` |     7 |    23 |
 | `Croquis.import_statements` | field | `croquis` |     1 |     2 |
 | `Croquis.macros`            | field | `croquis` |     6 |    17 |
 | `Croquis.scopes`            | field | `croquis` |     1 |     2 |
 | `Croquis.types`             | field | `croquis` |     4 |    16 |
-| `Croquis.unused_bindings`   | field | `croquis` |     3 |     8 |
+| `Croquis.unused_bindings`   | field | `croquis` |     3 |     7 |
 
 ## Non-product `vize_croquis` imports
 

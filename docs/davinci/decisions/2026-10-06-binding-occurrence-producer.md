@@ -236,3 +236,11 @@ style read and the retained unused `untouched` finding, comparing the entire
 ordinary VIR and semantic snapshot. Syntax or dynamic-eval refusal still
 uses the unchanged ordinary conservative result. This is source preparation;
 no correction execution or current security acceptance is inferred.
+
+Fresh `3e35940f` / `453356d4` source builds failed before any new guard
+execution: the direct style law called `Croquis::clone`, which does not exist.
+Retain the original E0599 logs/jobs `112073781713` / `112073939971`.
+Initialize two independent identical Croquis inputs instead; the full source,
+ordinary/captured comparison, refusal and later-block assertions remain fixed.
+No production type or Clone implementation changes. This mechanical test-only
+repair needs fresh configured Actions; the audit failures remain separate.
