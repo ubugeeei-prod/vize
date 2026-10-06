@@ -16,7 +16,7 @@ const ORIGINAL_STREAM: &str = include_str!(
     "../../../../../../tests/_fixtures/differential/lsp-regressions/diagnostic-publication-8012/b899-publish-stream.json"
 );
 
-fn drain(socket: &mut ClientSocket, work: impl Future<Output = ()>) -> Vec<Value> {
+pub(super) fn drain(socket: &mut ClientSocket, work: impl Future<Output = ()>) -> Vec<Value> {
     futures::executor::block_on(async {
         futures::pin_mut!(work);
         let mut messages = Vec::new();
@@ -35,14 +35,14 @@ fn drain(socket: &mut ClientSocket, work: impl Future<Output = ()>) -> Vec<Value
     })
 }
 
-fn diagnostics(messages: Vec<Value>) -> Vec<Value> {
+pub(super) fn diagnostics(messages: Vec<Value>) -> Vec<Value> {
     messages
         .into_iter()
         .filter(|message| message["method"] == "textDocument/publishDiagnostics")
         .collect()
 }
 
-fn notification(fixture: &Fixture, collected: &CollectedDiagnostics) -> Value {
+pub(super) fn notification(fixture: &Fixture, collected: &CollectedDiagnostics) -> Value {
     json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":whole(fixture, collected)})
 }
 

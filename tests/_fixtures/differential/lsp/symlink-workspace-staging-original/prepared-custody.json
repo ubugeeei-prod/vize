@@ -1,0 +1,80 @@
+{
+  "schema": "vize.lsp.symlink-workspace-original-custody-v1",
+  "issue": 7990,
+  "state": "PREPARED_UNEXECUTED",
+  "sourceBase": "143c1d4a9fbe6530cdd06f1f001b816f39c1d00a",
+  "files": [
+    {
+      "fixture": "package.json",
+      "authoredPath": "package.json",
+      "bytes": 38,
+      "sha256": "ad91c9ac9136396f5249a45e093bab863e9a23646620d911af827986f6180283"
+    },
+    {
+      "fixture": "ui/package.json",
+      "authoredPath": "ui/package.json",
+      "bytes": 52,
+      "sha256": "208456c11c3b5e907a92c1ea6231ced60385ea1dfc3dd12a1fec570c5cb95872"
+    },
+    {
+      "fixture": "ui/UiButton.vue.txt",
+      "authoredPath": "ui/UiButton.vue",
+      "bytes": 50,
+      "sha256": "99a299afb8b77b8a9cd48f9d6a321eb79fb7c47f3ba231196792072d40a28d22"
+    },
+    {
+      "fixture": "app/tsconfig.json",
+      "authoredPath": "app/tsconfig.json",
+      "bytes": 111,
+      "sha256": "3e69f1b19380514b0a42913c6dc21a2fffed65855e4bad30534c3f6a71116b23"
+    },
+    {
+      "fixture": "app/Other.vue.txt",
+      "authoredPath": "app/Other.vue",
+      "bytes": 33,
+      "sha256": "acc43dd168ab619a55bc1ef7fc708c685a2e2eed9474d6bf4e27261fafbb1c75"
+    },
+    {
+      "fixture": "app/App.vue.txt",
+      "authoredPath": "app/App.vue",
+      "bytes": 114,
+      "sha256": "d7f58e2e535e38357b2a78f8ba6b27f498cfd0119cc55deea8d0173bc1c9a448"
+    }
+  ],
+  "symlinks": [
+    {
+      "path": "app/node_modules/ui",
+      "target": "../../ui"
+    }
+  ],
+  "originalIssueSha256": "9ea302858cbb06d0ee4f433e3804de9fb4b20eb6534e86193a79ed03e2e4b545",
+  "original": {
+    "openOrder": [
+      "app/Other.vue",
+      "app/App.vue"
+    ],
+    "waitMs": 15000,
+    "repeats": 3,
+    "capabilities": {},
+    "initializationOptions": "absent",
+    "shutdownParams": null,
+    "exitParams": null
+  },
+  "transportAdaptation": {
+    "currentSourceCli": [
+      "lsp"
+    ],
+    "reportedNpmCli": [
+      "lsp",
+      "--stdio"
+    ],
+    "stderr": "retained by existing LspProcess helper"
+  },
+  "qualification": {
+    "rustSyntaxFormat": "PASS",
+    "authoredOriginalInputCustody": "PASS",
+    "rustCompile": null,
+    "filesystemLaws": null,
+    "stdioNativeLaws": null
+  }
+}

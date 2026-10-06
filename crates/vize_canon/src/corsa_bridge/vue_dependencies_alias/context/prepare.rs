@@ -57,7 +57,7 @@ impl AliasContext {
             });
         }
         let mut resolver = environment.package_routes.clone();
-        let context = build::build(
+        let mut context = build::build(
             source_path,
             content,
             overlays,
@@ -85,12 +85,15 @@ impl AliasContext {
         }
         let mut materialized_changes = Default::default();
         let mut source_catalog = Default::default();
-        if let Some(mirror) = context.mirror.as_ref() {
+        let materialized_sources = context.materialized_sources();
+        if let Some(mirror) = context.mirror.as_mut() {
+            let previous = cache.materialized_snapshot(mirror.virtual_root());
+            mirror.restore_editor_package_links(&previous);
             let previous_catalog = cache.source_catalog(mirror.virtual_root());
             source_catalog = cache.include_source_catalog(
                 mirror.virtual_root(),
                 fingerprint.overlay_identity(),
-                context.materialized_sources(),
+                materialized_sources,
             );
             let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
             let expected_files = mirror.expected_materialized_files();
@@ -108,7 +111,6 @@ impl AliasContext {
             }
             query_paths.sort();
             query_paths.dedup();
-            let previous = cache.materialized_snapshot(mirror.virtual_root());
             let current = mirror
                 .materialize_editor_union(&preserved_files, &preserved_package_links, &query_paths)
                 .map_err(|error| {
