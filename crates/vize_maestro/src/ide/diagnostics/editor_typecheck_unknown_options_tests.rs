@@ -31,18 +31,32 @@ fn original_unknown_options_preserve_complete_editor_vectors() {
             ..Default::default()
         })
         .collect();
+    let strict_full: Vec<_> = full
+        .iter()
+        .zip(fixture::strict_messages(&corsa).unwrap())
+        .map(|(diagnostic, message)| Diagnostic {
+            message,
+            ..diagnostic.clone()
+        })
+        .collect();
     for (name, config, indexes) in fixture::cases().unwrap() {
         let directory = tempfile::tempdir().unwrap();
         let root = directory.path().canonicalize().unwrap();
         fixture::project(&root, &config).unwrap();
         write_corsa_config(&root, &corsa);
+        let selected = if name == "strict-component-attrs" {
+            &strict_full
+        } else {
+            &full
+        };
         // Existing generation emits binding/directive checks before prop calls.
         // Preserve that native response order; never sort the actual vector.
         let expected: Vec<_> = [1, 2, 0]
             .into_iter()
             .filter(|index| indexes.contains(index))
             .map(|index| {
-                full.get(index)
+                selected
+                    .get(index)
                     .cloned()
                     .ok_or("unknown diagnostic case index")
             })

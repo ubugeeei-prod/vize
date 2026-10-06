@@ -143,3 +143,35 @@ Add the generic raw vueCompilerOptions.strictComponentAttrs boolean, default fal
 The adapter translates authored standard strictTemplates through an isolated extends config using the supported --tsconfig CLI. Authored explicit boolean checkUnknownProps, fallthroughAttributes and strictComponentAttrs options take precedence, including inherited options; original benchmark configs/SFCs/judges stay byte-exact. Apply the same translation to the registered six-native/two-reference 154-case recipe and upstream confirmation/timing/work gates. References still use their original configs. This is an opt-in policy translation, not an exception or diagnostic filter.
 
 Keep the same Draft #8075, pair this decision in the canonical record and companion, and obtain fresh exact-source/native/protected qualification before actual merge and release. The original seven native CLI and fourteen service vectors remain unchanged; one added complete opt-in case checks the new policy. The previous 143/154 replay, both failed native histories and all raw observations remain visible. #7856 stays open until actual public integration and upstream ranking are confirmed; no throughput/ranking or current runtime success is inferred from source preparation.
+
+## Hosted Node test registration correction
+
+Source aeea9d4be4 Check 37403355777 job 112075297944 found exactly three
+`no-floating-promises` warnings on the new Node test registrations. Formatting
+passed. The complete 81,131-byte raw log remains at SHA-256
+`394bab640ae8684b58ee32466389b406c464895dfacff98bad88ecff1024115a`; the narrower
+local preflight did not expose this hosted type-aware result. Awaiting the three
+registrations preserves every callback and complete assertion, input, producer,
+adapter, native vector and budget. Fresh exact-head Actions remain required.
+
+[Paired correction](https://github.com/ubugeeei-prod/vize/issues/7856#issuecomment-6008002631).
+
+## Separate native authority for the opt-in case
+
+Current native 37403355347 at aeea9d4be4 compiled the production library and
+failed the added opt-in whole CLI vector: the old direct TS Oracle includes the
+legacy global HTML intersection; the declared/public-only new policy does not.
+The complete 237,921-byte failed log remains at SHA-256
+`da3fad5e0ed5428ea43520c7ad647766de889621bbaf41dd6f929c1c8d836849`. Six preceding
+config cases passed; subsequent original/root controls were unexecuted.
+
+A separate authored TypeScript Oracle derives its complete strict contract from
+the original child's label prop and Vue's public interfaces, with no inferred
+root keys when fallthroughAttributes is false. Both CLI and direct service use
+its three complete pinned-native message rows only for the new opt-in case. The
+original Oracle/input bytes, seven old vectors, full comparison fields, ranges,
+ordering and production stay unchanged. Retain both native Oracle sources and
+outputs before assertions. This is independent native authority, not recorded
+Vize output. Fresh source/native/full154/protected qualification remains pending.
+
+[Paired oracle correction](https://github.com/ubugeeei-prod/vize/issues/7856#issuecomment-6008050438).

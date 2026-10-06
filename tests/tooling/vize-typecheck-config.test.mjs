@@ -20,7 +20,7 @@ function translated(root, config = "tsconfig.json") {
   return JSON.parse(readFileSync(join(root, vizeTypecheckConfig(root, config)), "utf8"));
 }
 
-test("standard strict and explicit boolean options translate without changing original JSON", () => {
+await test("standard strict and explicit boolean options translate without changing original JSON", () => {
   for (const [options, expected] of [
     [
       { strictTemplates: true },
@@ -63,7 +63,7 @@ test("standard strict and explicit boolean options translate without changing or
     });
 });
 
-test("later extends entries and then local explicit false win in a nested generated config", () =>
+await test("later extends entries and then local explicit false win in a nested generated config", () =>
   withProject((root) => {
     write(root, "early.json", {
       vueCompilerOptions: {
@@ -95,7 +95,7 @@ test("later extends entries and then local explicit false win in a nested genera
       assert.deepEqual(readFileSync(join(root, name)), originals[index]);
   }));
 
-test("missing or cyclic configs fail before invoking a checker", () =>
+await test("missing or cyclic configs fail before invoking a checker", () =>
   withProject((root) => {
     assert.throws(() => vizeTypecheckConfig(root), /ENOENT/);
     write(root, "tsconfig.json", { extends: "./parent.json" });
