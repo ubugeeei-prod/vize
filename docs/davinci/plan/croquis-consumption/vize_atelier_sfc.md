@@ -11,8 +11,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | product                     | kind  | module    | files | sites |
 | --------------------------- | ----- | --------- | ----: | ----: |
 | `BindingMetadata`           | type  | `croquis` |    12 |    31 |
-| `Croquis`                   | type  | `croquis` |    11 |    26 |
-| `Drawer`                    | type  | `drawer`  |     2 |    12 |
+| `Croquis`                   | type  | `croquis` |    12 |    35 |
+| `Drawer`                    | type  | `drawer`  |     3 |    18 |
 | `DrawerOptions`             | type  | `drawer`  |     1 |     5 |
 | `ScopeKind`                 | type  | `scope`   |     1 |     2 |
 | `Croquis.binding_spans`     | field | `croquis` |     2 |     2 |
@@ -21,14 +21,14 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis.macros`            | field | `croquis` |     6 |    17 |
 | `Croquis.scopes`            | field | `croquis` |     1 |     2 |
 | `Croquis.types`             | field | `croquis` |     4 |    16 |
-| `Croquis.unused_bindings`   | field | `croquis` |     3 |     7 |
+| `Croquis.unused_bindings`   | field | `croquis` |     4 |     8 |
 
 ## Non-product `vize_croquis` imports
 
 | item                                      | files | sites |
 | ----------------------------------------- | ----: | ----: |
 | `BindingIdentity`                         |     1 |     1 |
-| `BindingOccurrences`                      |     5 |     7 |
+| `BindingOccurrences`                      |     6 |     7 |
 | `BindingType`                             |    17 |   133 |
 | `BlockLocation`                           |     5 |     7 |
 | `DEFINE_EMITS`                            |     1 |     2 |
@@ -46,9 +46,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScriptParseResult`                       |     1 |     1 |
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcCustomBlock`                          |     2 |     2 |
-| `SfcDescriptor`                           |    20 |    48 |
+| `SfcDescriptor`                           |    20 |    49 |
 | `SfcError`                                |    22 |    65 |
-| `SfcParseOptions`                         |    25 |   133 |
+| `SfcParseOptions`                         |    26 |   134 |
 | `SfcScriptBlock`                          |     2 |     2 |
 | `SfcStyleBlock`                           |     5 |     8 |
 | `SfcTemplateBlock`                        |     7 |     9 |

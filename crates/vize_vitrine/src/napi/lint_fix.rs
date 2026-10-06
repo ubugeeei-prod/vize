@@ -177,7 +177,7 @@ mod tests {
         let (_, source, result) = lint_file_with_optional_fix(&linter, &path, true).unwrap();
         assert_eq!(
             source,
-            "export default { modules: [], $test: { modules: [], ssr: true, }, ssr: true, }"
+            "export default { modules: [], $test: { modules: [], ssr: true }, ssr: true }"
         );
         assert!(
             result

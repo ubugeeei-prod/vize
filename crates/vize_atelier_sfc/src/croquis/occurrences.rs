@@ -15,7 +15,7 @@ pub fn analyze_sfc_descriptor_with_occurrences(
     options: SfcCroquisOptions,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
     let mut packet = None;
-    let analysis = analyze_sfc_descriptor_resolved_impl(
+    let analysis = analyze_sfc_descriptor_resolved_impl::<true>(
         descriptor,
         root,
         options,

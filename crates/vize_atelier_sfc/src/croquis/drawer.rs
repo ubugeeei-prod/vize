@@ -1,4 +1,5 @@
 use super::SfcCroquisOptions;
+use super::script_demand::{CapturedScript, OrdinaryScript, ScriptDemand};
 use crate::types::SfcDescriptor;
 use vize_carton::profile;
 use vize_croquis::binding_occurrences::BindingOccurrences;
@@ -24,7 +25,7 @@ pub(super) fn analyze_scripts(
     options_api: bool,
     legacy_vue2: bool,
 ) -> Croquis {
-    analyze_scripts_with_occurrences(descriptor, options, options_api, legacy_vue2, false).0
+    analyze_scripts_impl::<OrdinaryScript>(descriptor, options, options_api, legacy_vue2)
 }
 
 pub(super) fn analyze_scripts_with_occurrences(
@@ -32,15 +33,23 @@ pub(super) fn analyze_scripts_with_occurrences(
     options: SfcCroquisOptions,
     options_api: bool,
     legacy_vue2: bool,
-    capture: bool,
 ) -> (Croquis, Option<BindingOccurrences>) {
+    analyze_scripts_impl::<CapturedScript>(descriptor, options, options_api, legacy_vue2)
+}
+
+fn analyze_scripts_impl<D: ScriptDemand>(
+    descriptor: &SfcDescriptor<'_>,
+    options: SfcCroquisOptions,
+    options_api: bool,
+    legacy_vue2: bool,
+) -> D::Output {
     let drawer_options = options.analyzer_options;
     if !drawer_options.analyze_script {
-        return (Croquis::new(), None);
+        return D::disabled();
     }
     match (descriptor.script.as_ref(), descriptor.script_setup.as_ref()) {
         (Some(script), Some(script_setup)) if options.merge_scripts => {
-            let plain_drawer = occurrence_demand(Drawer::with_options(drawer_options), capture);
+            let plain_drawer = D::prepare(Drawer::with_options(drawer_options));
             let mut plain_drawer = apply_options_api_mode(plain_drawer, options_api, legacy_vue2);
             profile!(
                 "atelier.sfc.croquis.script_plain",
@@ -49,8 +58,8 @@ pub(super) fn analyze_scripts_with_occurrences(
                     script_lang_is_jsx(script.lang.as_deref()),
                 )
             );
-            let (plain, plain_packet) = finish(plain_drawer, capture);
-            let setup_drawer = occurrence_demand(Drawer::with_options(drawer_options), capture);
+            let plain = D::finish(plain_drawer);
+            let setup_drawer = D::prepare(Drawer::with_options(drawer_options));
             let setup_drawer = demand_unused(setup_drawer, options);
             let mut setup_drawer = apply_options_api_mode(setup_drawer, options_api, legacy_vue2);
             let generic = script_setup
@@ -65,19 +74,12 @@ pub(super) fn analyze_scripts_with_occurrences(
                     script_lang_is_jsx(script_setup.lang.as_deref()),
                 )
             );
-            let (mut summary, setup_packet) = finish(setup_drawer, capture);
+            let setup = D::finish(setup_drawer);
             let setup_offset = script.content.len() as u32 + 1;
-            summary.shift_script_offsets(setup_offset);
-            summary.merge_plain_script(plain);
-            let packet = setup_packet.and_then(|mut setup| {
-                setup.shift_script_offsets(setup_offset)?;
-                setup.merge(plain_packet?);
-                Some(setup)
-            });
-            (summary, packet)
+            D::merge(plain, setup, setup_offset)
         }
         (_, Some(script_setup)) => {
-            let drawer = occurrence_demand(Drawer::with_options(drawer_options), capture);
+            let drawer = D::prepare(Drawer::with_options(drawer_options));
             let drawer = demand_unused(drawer, options);
             let mut drawer = apply_options_api_mode(drawer, options_api, legacy_vue2);
             let generic = script_setup
@@ -92,10 +94,10 @@ pub(super) fn analyze_scripts_with_occurrences(
                     script_lang_is_jsx(script_setup.lang.as_deref()),
                 )
             );
-            finish(drawer, capture)
+            D::finish(drawer)
         }
         (Some(script), None) => {
-            let drawer = occurrence_demand(Drawer::with_options(drawer_options), capture);
+            let drawer = D::prepare(Drawer::with_options(drawer_options));
             let mut drawer = apply_options_api_mode(drawer, options_api, legacy_vue2);
             profile!(
                 "atelier.sfc.croquis.script_plain",
@@ -104,25 +106,9 @@ pub(super) fn analyze_scripts_with_occurrences(
                     script_lang_is_jsx(script.lang.as_deref()),
                 )
             );
-            finish(drawer, capture)
+            D::finish(drawer)
         }
-        (None, None) => (Croquis::new(), capture.then(BindingOccurrences::default)),
-    }
-}
-
-fn occurrence_demand(drawer: Drawer, capture: bool) -> Drawer {
-    if capture {
-        drawer.with_binding_occurrences()
-    } else {
-        drawer
-    }
-}
-
-fn finish(drawer: Drawer, capture: bool) -> (Croquis, Option<BindingOccurrences>) {
-    if capture {
-        drawer.finish_script_occurrences()
-    } else {
-        (drawer.finish(), None)
+        (None, None) => D::empty(),
     }
 }
 
