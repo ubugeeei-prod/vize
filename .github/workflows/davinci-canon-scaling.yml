@@ -30,6 +30,9 @@ on:
   pull_request:
     paths:
       - ".github/workflows/davinci-canon-scaling.yml"
+      - "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs"
+      - "crates/vize_canon/src/lsp_client/editor_lsp/readiness.rs"
+      - "crates/vize_canon/src/lsp_client/editor_lsp/synchronize.rs"
       - "crates/vize_canon/src/corsa_bridge/vue_document.rs"
       - "crates/vize_canon/src/corsa_bridge/vue_document/**"
       - "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context.rs"

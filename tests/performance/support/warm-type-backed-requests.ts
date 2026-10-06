@@ -13,6 +13,7 @@ import {
 } from "./warm-type-backed-processes.ts";
 import { controls } from "./warm-type-backed-controls.ts";
 import { assertQueryFrames } from "./warm-type-backed-query-frames.ts";
+import { startup } from "./warm-type-backed-startup.ts";
 import { QueryRecorder } from "./warm-type-backed-measure.ts";
 import {
   assertOriginalFrames,
@@ -37,6 +38,7 @@ export async function runSide(
   runtime: ReturnType<typeof runtimeIdentity>,
   output: string,
   published?: PublishedSessionBinding & { binary: string },
+  coldStart = false,
 ) {
   const binary = published?.binary ?? path.join(repoRoot, "target/ci/vize");
   const captureRoot =
@@ -53,6 +55,7 @@ export async function runSide(
   const natives = new Map<string, ProcessIdentity>();
   const failures: string[] = [];
   let initialization: unknown;
+  let startupTimings: unknown;
   let changedInputs: unknown;
   let resource: unknown;
   let wire: unknown;
@@ -62,10 +65,13 @@ export async function runSide(
     session = new LspSession({ repoRoot, binary, ...(published ? { published } : {}) });
     processId = session.processId;
     recorder = new QueryRecorder(session, runtime.executable, binary);
-    initialization = await session.initialize(workspace, { editor: true, typecheck: true });
-    session.notify("textDocument/didOpen", {
-      textDocument: { uri, languageId: "vue", version: 1, text: source },
-    });
+    ({ initialization, startupTimings } = await startup(
+      recorder,
+      workspace,
+      uri,
+      source,
+      coldStart,
+    ));
     await waitForInitialTypes(session, uri);
     // One complete priming sweep is retained separately, then every one of
     // the five reported four-request rounds is measured without case selection.
@@ -152,7 +158,7 @@ export async function runSide(
         const server = decodeFrames(
           fs.readFileSync(path.join(captured.capture, "server.bin")),
         ).messages;
-        const responses = assertOriginalFrames(client, server, initialization);
+        const responses = assertOriginalFrames(client, server, initialization, coldStart ? 4 : 0);
         assert.deepEqual(
           responses,
           recorder.responses,
@@ -181,6 +187,7 @@ export async function runSide(
     inputs,
     changedInputs,
     initialization,
+    startupTimings,
     processId,
     rows: recorder?.rows ?? [],
     failures: [...failures, ...(recorder?.failures ?? [])],
@@ -229,9 +236,11 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   const originals = inputAuthority();
   const workspace = path.join(outputRoot, "workspace");
   fs.mkdirSync(outputRoot, { recursive: true });
-  const before = await runSide(beforeRoot, workspace, runtime, path.join(outputRoot, "before"));
+  const run = (root: string, side: string) =>
+    runSide(root, workspace, runtime, path.join(outputRoot, side), undefined, true);
+  const before = await run(beforeRoot, "before");
   fs.writeFileSync(path.join(outputRoot, "before.json"), `${JSON.stringify(before, null, 2)}\n`);
-  const after = await runSide(afterRoot, workspace, runtime, path.join(outputRoot, "after"));
+  const after = await run(afterRoot, "after");
   fs.writeFileSync(path.join(outputRoot, "after.json"), `${JSON.stringify(after, null, 2)}\n`);
   const packet = {
     buildCustody,
@@ -241,8 +250,8 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
     before,
     after,
     protocol: releaseCut
-      ? "original400+134; same worker/workspace/runtime/fresh ci build; exact per-source locks; completed initial types+10s idle; retained prime; all5x4 warm requests"
-      : "original400+134; same worker/workspace/locks/runtime/ci build; completed initial types+10s idle; retained prime; all5x4 warm requests",
+      ? "original400+134; same worker/workspace/runtime/fresh ci build; exact per-source locks; four immediate cold requests; completed initial types+10s idle; retained prime; all5x4 warm requests"
+      : "original400+134; same worker/workspace/locks/runtime/ci build; four immediate cold requests; completed initial types+10s idle; retained prime; all5x4 warm requests",
     timingScope:
       "request wall time; inclusive sampled Linux Maestro/native-descendant CPU; observational, no numeric ceiling or Program count",
     pendingDelivery:
@@ -297,7 +306,11 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
   const completePackets = publicPackets;
   assert.deepEqual(completePackets(after), completePackets(before));
   for (const side of [before, after]) {
-    assert.equal(side.rows.length, 74, "all original measured whole request rows are required");
+    assert.equal(
+      side.rows.length,
+      78,
+      "four cold and all74 original measured whole request rows are required",
+    );
     assert.equal(side.rows.filter((row) => /^warm-[1-5]$/u.test(String(row.stage))).length, 20);
   }
   assert.notEqual(before.processId, after.processId, "two source builds own two real processes");
@@ -308,6 +321,8 @@ export async function pairedWarmRequests(beforeRoot: string, outputRoot: string)
         before: before.source,
         after: after.source,
         wholePacketsEqual: true,
+        coldRequestsPerSide: 4,
+        startupTimings: [before.startupTimings, after.startupTimings],
         warmRequestsPerSide: 20,
         observations: [before, after].map((side) =>
           side.rows.filter((row) => /^warm-[1-5]$/u.test(String(row.stage))),

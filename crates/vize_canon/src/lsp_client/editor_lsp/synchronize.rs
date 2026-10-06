@@ -7,7 +7,7 @@ use vize_l0::{FxHashMap, String, cstr};
 use super::EditorLspSession;
 
 /// Stay comfortably below the transport's bounded outbound notification queue.
-/// A response-backed diagnostic drains every notification sent before it.
+/// A response-backed symbol request drains preceding notifications.
 const NOTIFICATIONS_PER_BARRIER: usize = 128;
 
 impl EditorLspSession {
@@ -80,7 +80,7 @@ impl EditorLspSession {
         let Some(uri) = barrier_uri else {
             return Ok(());
         };
-        super::super::diagnostics_lsp::request_lsp_document_diagnostic_ack(&self.client, uri)
+        super::super::diagnostics_lsp::request_lsp_document_readiness_ack(&self.client, uri)
             .map_err(|error| cstr!("Failed to drain editor LSP overlay notifications: {error}"))?;
         self.unacknowledged_notifications = 0;
         Ok(())

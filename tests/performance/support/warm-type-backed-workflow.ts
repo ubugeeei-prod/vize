@@ -74,6 +74,9 @@ if (process.argv[2] === "prepare") {
     .split("\n")
     .filter(Boolean);
   const allowed = new Set([
+    "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/readiness.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/synchronize.rs",
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context.rs",
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/build.rs",
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs",
@@ -202,7 +205,7 @@ if (process.argv[2] === "prepare") {
           ? "Literal published v0.433 and root-frozen release cut; complete changed Git-entry manifest, independent driver, identical fresh ci builds, original400 and one recorded runtime"
           : harnessOnly
             ? "Same production source; closed reviewed harness-only delta and unchanged original inputs/locks. Qualification only, no performance or source-effect gain."
-            : "Actual common ancestor and current source, only owned prepared-surface production delta; one worker, identical ci recipe, original400 inputs and current locked runtime",
+            : "Actual common ancestor and current source, only owned prepared-surface or readiness-ack production delta; one worker, identical ci recipe, original400 inputs and current locked runtime",
       },
       null,
       2,

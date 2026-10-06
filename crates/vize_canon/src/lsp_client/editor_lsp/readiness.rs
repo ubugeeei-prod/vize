@@ -23,11 +23,11 @@ impl EditorLspSession {
         }
 
         // didOpen/didChange/didClose are notifications: a successful write
-        // only proves transport delivery. A diagnostic response for one query
+        // only proves transport delivery. A symbol response for one query
         // document does not prove that the server has installed the other
         // changed documents in the same semantic project, so acknowledge every
         // dirty identity before accepting the generation. A close has no live
-        // identity to diagnose and instead uses the current query URI, or a
+        // identity to query and instead uses the current query URI, or a
         // stable live project document for workspace requests, as the
         // response-backed topology barrier.
         let readiness_documents = readiness_documents(
@@ -44,7 +44,7 @@ impl EditorLspSession {
                 })
             })
             .collect::<Result<Vec<_>, _>>()?;
-        super::super::diagnostics_lsp::request_lsp_document_diagnostic_acks(
+        super::super::diagnostics_lsp::request_lsp_document_readiness_acks(
             &self.client,
             &readiness_uris,
         )

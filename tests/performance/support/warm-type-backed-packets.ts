@@ -22,13 +22,18 @@ export function assertOriginalFrames(
   client: JsonRpcMessage[],
   server: JsonRpcMessage[],
   initialization: unknown,
+  coldRequests = 0,
 ) {
   const responses = server.filter(
     (message) => typeof message.id === "number" && message.method == null,
   );
-  assert.equal(client.length, 89, "every original client frame remains present");
-  assert.equal(server.length, 89, "every original server frame remains present");
-  assert.equal(responses.length, 76, "every original complete response remains present");
+  assert.equal(client.length, 89 + coldRequests, "every original client frame remains present");
+  assert.equal(server.length, 89 + coldRequests, "every original server frame remains present");
+  assert.equal(
+    responses.length,
+    76 + coldRequests,
+    "every original complete response remains present",
+  );
   const initialize = client.filter((message) => message.method === "initialize");
   const shutdown = client.filter((message) => message.method === "shutdown");
   assert.equal(initialize.length, 1);
