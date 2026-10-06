@@ -149,3 +149,38 @@ The old private c9 helper remains unchanged and uninvoked. P0 closure and
 speed/public-runtime claims are not granted by this source qualification.
 
 [Paired complete-source decision](https://github.com/ubugeeei-prod/vize/issues/8003#issuecomment-6005899716) records the exact receipt and remaining delivery gates.
+
+The actual v0.434.0 public verification subsequently lifts the admission
+hold. This fix remains outside that published cut and still needs its own
+actual signed delivery and a later patch release.
+
+Exact a4d source Check #37391890909 succeeds at real PR executor 0ee22ae,
+whose parents are actual main 40a1243 and a4d. All four Rust workers retain
+16,282 successful JUnit cases and all 12 original laws. NativePhase #37391890083
+also succeeds with profile:none and source/driver a4d; its actual workflow is
+0ee22ae. The original whole 33 proof remains the unchanged 4d source result,
+with the previously recorded complete-message/end and executable-byte limits.
+
+The first standing-authorized independent admission is then unmergeable
+behind #8037 and #8060, at projected base 143c1d4. The queue entry has no head
+candidate, so no #8040 protected test runs or fails. Remove only this entry
+immediately; the live readback has queueEntry=null and autoMergeRequest=null.
+Immutable merge-tree identifies only the shared canonical line 344 conflict;
+all 15 owned implementation/test blobs in the prospective composition are
+byte-exact a4d. #8060's line 154 and release-doc #8074's line 350 are independent.
+
+#8037 actually merges at 2026-10-06T01:08:21Z as signed valid 163d113,
+sole parent 40a1243. Incorporate that literal actual main in this same PR,
+retaining every incoming decision/source and all original three fixtures,
+33 ordered CLI/LSP states, twelve laws and unchanged instruction ceilings.
+Removing the complete owned registry paragraph must recover the whole
+incoming canonical 350 bytes. This incorporation does not transfer any old
+runtime result to the new source or claim a speed improvement.
+
+Require an exact-tree source peer and fresh source/native qualification,
+then the necessary full unchanged33 source qualification and a healthy
+independent queue entry. Supervise its own complete protected suites and 104
+instruction gates, remove any known-red entry, verify actual signed merge
+and Issue closure, and hand the exact source to the sole root publisher.
+The historical private installed-public helper remains uninvoked and needs
+accepted-source/cut metadata refreeze before any later public execution.

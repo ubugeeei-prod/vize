@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { ref, watch } from "vue";
+
+const lang = ref("en");
+const title = ref("");
+watch(lang, () => { title.value = document.title; });
+</script>
+
+<template>
+  <p>{{ lang }} {{ title }}</p>
+</template>

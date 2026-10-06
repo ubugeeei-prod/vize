@@ -18,6 +18,10 @@ pub struct Fixture {
 }
 
 impl Fixture {
+    pub fn project_root(&self) -> &Path {
+        self._project.path()
+    }
+
     pub fn new(source: &str, enabled: bool) -> Self {
         Self::new_with_cross_file(source, enabled, false)
     }
@@ -55,7 +59,7 @@ impl Fixture {
             cross_file,
             real_vue,
             options_api,
-            ("App.vue", &[]),
+            ("App.vue", &[], None),
         )
     }
 
@@ -64,7 +68,23 @@ impl Fixture {
         name: &str,
         files: &[(&str, &str)],
     ) -> Self {
-        Self::new_with_options_and_files(source, false, false, true, false, (name, files))
+        Self::new_with_options_and_files(source, false, false, true, false, (name, files, None))
+    }
+
+    pub fn new_with_pinned_vue_project(
+        source: &str,
+        name: &str,
+        files: &[(&str, &str)],
+        vue: &Path,
+    ) -> Self {
+        Self::new_with_options_and_files(
+            source,
+            false,
+            false,
+            true,
+            false,
+            (name, files, Some(vue)),
+        )
     }
 
     fn new_with_options_and_files(
@@ -73,7 +93,7 @@ impl Fixture {
         cross_file: bool,
         real_vue: bool,
         options_api: bool,
-        files: (&str, &[(&str, &str)]),
+        files: (&str, &[(&str, &str)], Option<&Path>),
     ) -> Self {
         let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
@@ -89,10 +109,12 @@ impl Fixture {
             .tempdir_in(cases)
             .unwrap();
         if real_vue {
-            let vue = workspace
-                .join("playground/node_modules/vue")
-                .canonicalize()
-                .expect("Vue editor tests require the frozen Playground Vue dependency");
+            let vue = files.2.map(Path::to_path_buf).unwrap_or_else(|| {
+                workspace
+                    .join("playground/node_modules/vue")
+                    .canonicalize()
+                    .expect("Vue editor tests require the frozen Playground Vue dependency")
+            });
             let modules = project.path().join("node_modules");
             std::fs::create_dir_all(&modules).unwrap();
             #[cfg(unix)]
@@ -148,9 +170,13 @@ impl Fixture {
     }
 
     pub fn open_file(&mut self, uri: &str, source: &str) -> Value {
+        self.open_file_as(uri, source, "vue")
+    }
+
+    pub fn open_file_as(&mut self, uri: &str, source: &str, language: &str) -> Value {
         self.lsp.send(
             json!({ "jsonrpc": "2.0", "method": "textDocument/didOpen", "params": {
-                "textDocument": { "uri": uri, "languageId": "vue", "version": 1, "text": source }
+                "textDocument": { "uri": uri, "languageId": language, "version": 1, "text": source }
             }}),
         );
         self.lsp.recv_matching(|message| {
@@ -220,6 +246,10 @@ impl Fixture {
             .send(json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params }));
         let response = self.lsp.recv_response(id);
         assert!(response.get("error").is_none(), "{response:#}");
+        assert_eq!(
+            response,
+            json!({"jsonrpc":"2.0","id":id,"result":response["result"]})
+        );
         response["result"].clone()
     }
 
