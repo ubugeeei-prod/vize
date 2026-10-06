@@ -1,10 +1,16 @@
+use super::script_symbols;
 use oxc_ast::ast::Expression;
+use oxc_semantic::Semantic;
 use oxc_syntax::operator::BinaryOperator;
 use vize_l0::String;
 
 /// Only the exact `typeof name [!== / ===] "undefined"` witness establishes
 /// browser presence. Other conditions do not change execution assumptions.
-pub(super) fn defined_name(expression: &Expression<'_>, truthy: bool) -> Option<String> {
+pub(super) fn defined_name(
+    expression: &Expression<'_>,
+    truthy: bool,
+    semantic: &Semantic<'_>,
+) -> Option<String> {
     let Expression::BinaryExpression(binary) = expression.get_inner_expression() else {
         return None;
     };
@@ -22,6 +28,12 @@ pub(super) fn defined_name(expression: &Expression<'_>, truthy: bool) -> Option<
             && let Expression::UnaryExpression(probe) = probe.get_inner_expression()
             && probe.operator == oxc_syntax::operator::UnaryOperator::Typeof
             && let Expression::Identifier(id) = probe.argument.get_inner_expression()
+            && let Some(reference) = id.reference_id.get()
+            && !semantic
+                .scoping()
+                .get_reference(reference)
+                .symbol_id()
+                .is_some_and(|symbol| script_symbols::runtime_shadow(semantic, symbol))
         {
             return Some(String::from(id.name.as_str()));
         }

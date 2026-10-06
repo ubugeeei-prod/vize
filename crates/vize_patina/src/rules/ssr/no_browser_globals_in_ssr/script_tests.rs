@@ -13,7 +13,7 @@ const GOOD: &str = include_str!(
     "../../../../../../tests/_fixtures/differential/linter/ssr-script-setup-7982/DocsGood.vue.txt"
 );
 
-fn linter() -> Linter {
+pub(super) fn linter() -> Linter {
     let mut registry = RuleRegistry::new();
     registry.add(Box::new(NoBrowserGlobalsInSsr));
     Linter::with_registry(registry).with_help_level(HelpLevel::None)

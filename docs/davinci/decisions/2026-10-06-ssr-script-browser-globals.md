@@ -29,20 +29,27 @@ no default speed or typechecker improvement is claimed. Template scanning was
 moved into a private module in a separate move-only commit; its logic and
 existing template messages, directive behavior and snapshots remain intact.
 
-Both authored script blocks occupy their original physical byte ranges in
-one padded Program. This preserves normal-script bindings visible to setup,
-including reverse physical block order. Block/source equality, language and
-external-source guards refuse an unsupported Program rather than guess spans.
-JS, TS, JSX and TSX use their authored parser mode. Malformed syntax or semantic
-diagnostics produce no additional script-rule findings; ordinary diagnostics
-remain owned by their existing paths.
+Both authored script blocks retain their original physical byte ranges in
+one padded parse. Before building semantics, the private setup statements move
+into an anonymous child function scope; actual setup imports stay in the module,
+and repeated imported source/local/name bindings preserve Vue's first import.
+Normal-script bindings remain visible to setup in either physical order, while
+setup locals cannot shadow module reads or leak into a called module function.
+No authored reference span or public AST changes. Block/source equality, language,
+external-source and cross-block statement guards refuse an unsupported Program.
+JS, TS, JSX and TSX use their authored parser mode. Mismatched script languages,
+setup exports and experimental import attributes/phases are not traced. Malformed
+syntax or semantic diagnostics produce no additional script-rule findings;
+ordinary diagnostics remain owned by their existing paths.
 
-Only unresolved value references to the rule's existing browser-global list
+Only value references without a runtime binding to the rule's existing browser-global list
 are reported. Lexical bindings, parameters, hoisted declarations, property
 names, strings, comments, regexes and type-only queries remain quiet. Direct
 `typeof name` is safe. Exact equality/inequality with the string `"undefined"`
 protects the branch where that global exists, including conditional/logical
-expressions; a member probe or the opposite branch remains reportable.
+expressions. The probe must resolve to that runtime global; a block-local same-name
+probe cannot suppress an outer function's global read. A member probe or the
+opposite branch remains reportable.
 
 Function bodies are deferred unless directly called, called as a witnessed
 local function or passed to a named Vue import of `onServerPrefetch`,
@@ -84,3 +91,24 @@ it lands before protected admission. Keep any failed receipt separate from
 successor qualification. Published original verification belongs to the next
 finite existing-product release; Davinci, fix-history closure and 10x remain
 unfinished.
+
+## First-source rejection and narrow successor
+
+Paired [issue correction](https://github.com/ubugeeei-prod/vize/issues/7982#issuecomment-6009449929).
+
+Draft source `4d11de9c34` is rejected, not an accepted fix. Independent source
+review found two lexical ownership defects: a bound local `typeof window` probe
+incorrectly protected a called outer function's global, and flattened script
+blocks let setup locals hide module globals. The successor retains semantic probe
+identity and the private module/setup frame relation described above, with complete
+positive/negative diagnostic controls in both physical orders.
+
+Actual [Check 37412867906](https://github.com/ubugeeei-prod/vize/actions/runs/37412867906)
+then exposed an OXC declaration-node panic in authored source lint and the hydrated
+glyph corpus. This consumer now explicitly requests the AST node store its symbol
+and ancestor lookups require. The same run rejected wildcard/unwrap Clippy usage
+and stale generated linter import inventory; explicit imports, fallible language
+selection and regenerated inventory preserve existing policies. The separate
+security failure belongs to the still-pending security repair baseline. All raw
+failed job logs remain retained; none qualifies the successor or a runtime result.
+The original whole CLI/LSP/SSR assertions and all instruction budgets stay intact.

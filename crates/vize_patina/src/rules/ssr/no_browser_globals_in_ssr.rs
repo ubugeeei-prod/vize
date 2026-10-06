@@ -47,6 +47,7 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::BindingType;
 
+mod script_layout;
 mod script_reads;
 mod script_symbols;
 mod template_identifiers;
@@ -282,6 +283,8 @@ impl Rule for NoBrowserGlobalsInSsr {
     }
 }
 
+#[cfg(test)]
+mod script_scope_tests;
 #[cfg(test)]
 mod script_tests;
 #[cfg(test)]

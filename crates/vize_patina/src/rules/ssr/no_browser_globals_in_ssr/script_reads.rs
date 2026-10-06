@@ -3,10 +3,17 @@
 //! witnessed Vue server/initial synchronous-effect API. This is a bounded SSR
 //! heuristic, not interprocedural analysis of external calls or Options API.
 
-use super::{BROWSER_GLOBALS, META, NoBrowserGlobalsInSsr, script_symbols, typeof_guard};
+use super::{META, NoBrowserGlobalsInSsr, script_layout, script_symbols, typeof_guard};
 use crate::{context::LintContext, diagnostic::LintDiagnostic};
 use oxc_allocator::Allocator;
-use oxc_ast::{AstKind, ast::*};
+use oxc_ast::{
+    AstKind,
+    ast::{
+        Argument, ArrowFunctionExpression, CallExpression, ConditionalExpression, Expression,
+        Function, FunctionBody, IdentifierReference, IfStatement, ImportDeclarationSpecifier,
+        LogicalExpression, PropertyDefinition, Statement, TSType, UnaryExpression,
+    },
+};
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_parser::Parser;
 use oxc_semantic::{Semantic, SemanticBuilder};
@@ -22,60 +29,10 @@ pub(super) fn check(ctx: &mut LintContext<'_>) {
         let Some(descriptor) = ctx.sfc_descriptor() else {
             return;
         };
-        let blocks: Vec<_> = descriptor
-            .script
-            .iter()
-            .chain(descriptor.script_setup.iter())
-            .collect();
-        if blocks
-            .iter()
-            .all(|block| !might_read_browser_global(&block.content))
-        {
-            return;
-        }
-        // Keep both authored scripts in one lexical Program: normal-script
-        // imports/declarations are visible to setup. Padding preserves exact
-        // physical SFC byte offsets without exposing template/style as JS.
-        let mut bytes = vec![b' '; descriptor.source.len()];
-        let mut extension = "js";
-        for block in blocks {
-            if block.src.is_some() {
-                return;
-            }
-            let lang = block.lang.as_deref().unwrap_or("js");
-            if !matches!(lang, "js" | "ts" | "jsx" | "tsx") {
-                return;
-            }
-            extension = match (extension, lang) {
-                ("tsx", _) | (_, "tsx") | ("ts", "jsx") | ("jsx", "ts") => "tsx",
-                (_, "ts") | ("ts", _) => "ts",
-                (_, "jsx") | ("jsx", _) => "jsx",
-                _ => "js",
-            };
-            let start = block.loc.start;
-            let Some(end) = start.checked_add(block.content.len()) else {
-                return;
-            };
-            if end != block.loc.end
-                || descriptor.source.get(start..end) != Some(block.content.as_ref())
-            {
-                return;
-            }
-            let Some(target) = bytes.get_mut(start..end) else {
-                return;
-            };
-            target.copy_from_slice(block.content.as_bytes());
-        }
-        let Ok(source) = String::from_utf8(bytes) else {
+        let Some(source) = script_layout::prepare(descriptor) else {
             return;
         };
-        let path = match extension {
-            "ts" => "component.ts",
-            "tsx" => "component.tsx",
-            "jsx" => "component.jsx",
-            _ => "component.js",
-        };
-        find_reads(&source, SourceType::from_path(path).unwrap())
+        analyze(&source.text, source.source_type, Some(&source))
     };
     for (name, span) in reads {
         let mut diagnostic = LintDiagnostic::warn(
@@ -94,20 +51,34 @@ pub(super) fn check(ctx: &mut LintContext<'_>) {
     }
 }
 
-fn might_read_browser_global(source: &str) -> bool {
-    source.contains('\\') || BROWSER_GLOBALS.iter().any(|name| source.contains(name))
+#[cfg(test)]
+pub(super) fn find_reads(source: &str, source_type: SourceType) -> Vec<(String, Span)> {
+    analyze(source, source_type, None)
 }
 
-pub(super) fn find_reads(source: &str, source_type: SourceType) -> Vec<(String, Span)> {
-    if !might_read_browser_global(source) {
+fn analyze(
+    source: &str,
+    source_type: SourceType,
+    layout: Option<&script_layout::Source>,
+) -> Vec<(String, Span)> {
+    if !script_layout::candidate(source) {
         return Vec::new();
     }
     let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, source, source_type).parse();
+    let mut parsed = Parser::new(&allocator, source, source_type).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return Vec::new();
     }
-    let result = SemanticBuilder::new().build(&parsed.program);
+    if let Some(layout) = layout
+        && layout.apply(&mut parsed.program, &allocator).is_none()
+    {
+        return Vec::new();
+    }
+    // This consumer dereferences symbol declaration/ancestor AST nodes. The
+    // default compiler builder deliberately omits that store.
+    let result = SemanticBuilder::new()
+        .with_build_nodes(true)
+        .build(&parsed.program);
     if !result.diagnostics.is_empty() {
         return Vec::new();
     }
@@ -289,13 +260,19 @@ impl<'a> Visit<'a> for RuntimeReads<'_, 'a> {
     fn visit_if_statement(&mut self, statement: &IfStatement<'a>) {
         self.visit_expression(&statement.test);
         let depth = self.guarded.len();
-        self.guarded
-            .extend(typeof_guard::defined_name(&statement.test, true));
+        self.guarded.extend(typeof_guard::defined_name(
+            &statement.test,
+            true,
+            self.semantic,
+        ));
         self.visit_statement(&statement.consequent);
         self.guarded.truncate(depth);
         if let Some(alternate) = &statement.alternate {
-            self.guarded
-                .extend(typeof_guard::defined_name(&statement.test, false));
+            self.guarded.extend(typeof_guard::defined_name(
+                &statement.test,
+                false,
+                self.semantic,
+            ));
             self.visit_statement(alternate);
             self.guarded.truncate(depth);
         }
@@ -304,12 +281,18 @@ impl<'a> Visit<'a> for RuntimeReads<'_, 'a> {
     fn visit_conditional_expression(&mut self, expression: &ConditionalExpression<'a>) {
         self.visit_expression(&expression.test);
         let depth = self.guarded.len();
-        self.guarded
-            .extend(typeof_guard::defined_name(&expression.test, true));
+        self.guarded.extend(typeof_guard::defined_name(
+            &expression.test,
+            true,
+            self.semantic,
+        ));
         self.visit_expression(&expression.consequent);
         self.guarded.truncate(depth);
-        self.guarded
-            .extend(typeof_guard::defined_name(&expression.test, false));
+        self.guarded.extend(typeof_guard::defined_name(
+            &expression.test,
+            false,
+            self.semantic,
+        ));
         self.visit_expression(&expression.alternate);
         self.guarded.truncate(depth);
     }
@@ -318,12 +301,12 @@ impl<'a> Visit<'a> for RuntimeReads<'_, 'a> {
         self.visit_expression(&expression.left);
         let depth = self.guarded.len();
         match expression.operator {
-            oxc_syntax::operator::LogicalOperator::And => self
-                .guarded
-                .extend(typeof_guard::defined_name(&expression.left, true)),
-            oxc_syntax::operator::LogicalOperator::Or => self
-                .guarded
-                .extend(typeof_guard::defined_name(&expression.left, false)),
+            oxc_syntax::operator::LogicalOperator::And => self.guarded.extend(
+                typeof_guard::defined_name(&expression.left, true, self.semantic),
+            ),
+            oxc_syntax::operator::LogicalOperator::Or => self.guarded.extend(
+                typeof_guard::defined_name(&expression.left, false, self.semantic),
+            ),
             _ => {}
         }
         self.visit_expression(&expression.right);

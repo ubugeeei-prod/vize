@@ -46,7 +46,10 @@ Script function bodies remain deferred unless directly invoked or passed to a na
 `onServerPrefetch`, `watchSyncEffect`, or `watchEffect` with its default options from `vue`. Import
 aliases keep that identity; unrelated functions with the same name do not. Mounted and event
 callbacks are not executed by SSR. Script branches guarded by an exact `typeof name` comparison
-with `"undefined"` may use that global on the branch where it exists.
+with `"undefined"` may use that global on the branch where it exists. The probe must
+refer to the runtime global; a local variable with the same name does not protect an outer
+function's browser access. Normal script and setup keep separate local scopes while setup
+imports remain visible in the module.
 
 This is a bounded heuristic: external callback implementations, namespace-imported hooks,
 reassigned functions, generator iteration, parameter default evaluation, instance construction
