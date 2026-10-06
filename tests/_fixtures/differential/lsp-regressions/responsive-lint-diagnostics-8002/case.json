@@ -52,5 +52,20 @@
     "Historical reported versions retained; current locked runtime recorded separately.",
     "Authored tsconfig wraps only the exact options/include supplied in prose.",
     "No native API/Program-reuse or universal timing claim."
-  ]
+  ],
+  "authoredFiles": [
+    {
+      "path": "AuthoredTypeError.vue.txt",
+      "sha256": "adffa54d2192a601367f7c8dfcdebccfcd61faba4a8dec9119c13ab3b3aeb8e1"
+    },
+    {
+      "path": "authored-type-error.expected.json",
+      "sha256": "0999cc1f0447cec560f2dbf2c93aad9009fadc8bd9ae052442e4cd0fdbad323a"
+    }
+  ],
+  "positiveNativeControl": {
+    "source": "AuthoredTypeError.vue.txt",
+    "expected": "authored-type-error.expected.json",
+    "authority": "Authored complete vector from TypeScript TS2322 assignment ownership; existing complete lsp-authored-script-diagnostics.test.ts response contract and unchanged collect_virtual.rs rendering fields. No observed recapture."
+  }
 }

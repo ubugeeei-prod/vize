@@ -23,10 +23,9 @@ const fixtureRoot = path.join(
 );
 const corpus = JSON.parse(fs.readFileSync(path.join(fixtureRoot, "case.json"), "utf8"));
 const files = new Map<string, Buffer>(
-  corpus.originalFiles.map((pin: { path: string; sha256: string }) => [
-    pin.path,
-    readPinnedArtifact(fixtureRoot, pin),
-  ]),
+  [...corpus.originalFiles, ...corpus.authoredFiles].map(
+    (pin: { path: string; sha256: string }) => [pin.path, readPinnedArtifact(fixtureRoot, pin)],
+  ),
 );
 const original = files.get(corpus.originalSource)!.toString("utf8");
 const removed = original.replace(' alt=""', "");
@@ -141,9 +140,9 @@ async function run(typecheck: boolean, corsaPath: string) {
     }
     // Authored positive: a real TS2322 must arrive in the second publication.
     if (typecheck) {
-      const typed = original.replace(
-        "const count = ref(0);",
-        "const count = ref(0);\nconst text: string = 1;\nconsole.log(text);",
+      const typed = files.get(corpus.positiveNativeControl.source)!.toString("utf8");
+      const expected = JSON.parse(
+        files.get(corpus.positiveNativeControl.expected)!.toString("utf8"),
       );
       gate = new NativeDiagnosticsGate(session.processId, fs.realpathSync(corsaPath));
       gates.push(gate);
@@ -153,14 +152,13 @@ async function run(typecheck: boolean, corsaPath: string) {
       const early = await wait(session, uri, undefined);
       const typeEarlyElapsedMs = performance.now() - started;
       gate.assertStopped();
-      assert.ok(!early.diagnostics.some((diagnostic) => diagnostic.code === 2322));
+      assert.deepEqual(early, { uri, diagnostics: expected.early }, "whole authored early packet");
       gate.resume();
       const terminal = await wait(session, uri, 8);
-      assert.ok(
-        terminal.diagnostics.some(
-          (diagnostic) => diagnostic.code === 2322 && diagnostic.source === "vize/types",
-        ),
-        "genuine native type diagnostics must merge",
+      assert.deepEqual(
+        terminal,
+        { uri, version: 8, diagnostics: expected.terminal },
+        "entire independently authored native packet must merge",
       );
       rows.push({
         version: 8,

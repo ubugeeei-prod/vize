@@ -9,3 +9,9 @@ The corpus retains this entire original report, exact SFC and JSON config fences
 This is private implementation/design custody, not runtime, speedup, merge, or release acceptance. Fresh exact-head Actions, independent source review, protected full suites/current instruction gates, actual signed merge and the next installed release replay remain pending. The historical reporter versions and timings remain original evidence; current runtime identity and observed latencies will be recorded separately.
 
 Decision receipt: [6007581977](https://github.com/ubugeeei-prod/vize/issues/8002#issuecomment-6007581977).
+
+Independent source review found that the authored native-positive control accepted only the presence of TS2322, which could miss extra/duplicate diagnostics or wrong range/message fields. The same private source now pins its complete authored SFC and entire early/final diagnostic vectors: early empty; terminal exactly TS2322 at the `text` declaration on line4/characters6–10, error severity, full TypeScript assignment message and `vize/types` source. The range and wire fields follow the existing complete authored-script diagnostic contract and unchanged native diagnostic renderer; no observed result was recaptured. The runtime test compares the entire packet, including URI and terminal version8.
+
+All production paths, original issue/SFC/config/prose pins, original three-cycle controls, native gate and previous ownership assertions remain byte-exact. This corrects only the new oracle weakness; genuine current Actions/native execution and protected/actual delivery remain pending.
+
+Decision receipt: [6007649209](https://github.com/ubugeeei-prod/vize/issues/8002#issuecomment-6007649209).
