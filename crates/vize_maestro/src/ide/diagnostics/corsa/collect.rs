@@ -296,7 +296,7 @@ impl DiagnosticService {
 /// (#3376). This diagnostic is how the enforcement reaches the client — the
 /// publish arriving promptly, and saying why the types are missing, is the
 /// observable difference from a frozen server.
-fn typecheck_timed_out_hint() -> Diagnostic {
+pub(in crate::ide::diagnostics) fn typecheck_timed_out_hint() -> Diagnostic {
     Diagnostic {
         range: Range::default(),
         severity: Some(DiagnosticSeverity::WARNING),
