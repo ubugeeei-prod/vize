@@ -101,3 +101,21 @@ encoding and paired qualification docs in successor
 onto that exact parent before initial publication, preserving every incoming
 byte, all reviewed source/reference objects, and the original 4317 witness.
 Current source/native execution remains pending; no old-parent pass transfers.
+
+Initial CSS #8091 source Check37412533455 is terminal failure. Both its Rust
+whole-report law and strict CLI JSON comparison reject the newly authored
+ruleDocsPath on the first local control; unchanged output/shared.rs maps the css
+namespace to docs/content/rules/musea-and-css.md, and output/json.rs uses that
+function directly. Independent primary-source review authenticates those two
+complete files at signed143, parent5d0 and CSS74940; css.md does not exist.
+Correct only those 27 authored scalar paths. Retain all 54 before vectors,
+including the original 33/47 objects, byte-for-byte in
+cases.before-docs-path.json with their original hash. A pure delta law permits
+only these fields, retaining all sources, spans, order and other whole-report
+values; source.json pins both references and the unchanged source authority.
+This is a reference authoring correction, not re-recording runtime output or
+changing production documentation metadata. Retain the authentic failed raw
+job logs and require new exact-head full54 API/218 CLI Actions. The source build
+compiled, but no whole54/218 acceptance, protected gate or delivery transfers.
+The Stack remains Draft/offqueue until actual security-main incorporation and
+fresh whole-chain qualification; both Issues remain open and root publishes.

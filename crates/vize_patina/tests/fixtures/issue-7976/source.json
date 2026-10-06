@@ -63,10 +63,34 @@
   "authored": [
     {
       "file": "cases.json",
+      "bytes": 41080,
+      "sha256": "1aa4e88765c66a7872f53ad8b7f29f9f62aceae02ffe65514bb6493ccb061c53"
+    },
+    {
+      "file": "cases.before-docs-path.json",
       "bytes": 40810,
       "sha256": "c4834478fbd88f3bea8c19abfdab55efcf8e9803fd51542e506c012eb6b446cf"
     }
   ],
   "caseCount": 54,
-  "scope": "Existing parsed subject/deep/slotted ownership only. Mixed/local/relational/sibling/global subjects and existing parser flags/conditional/pseudo behavior stay conservative. No generic custom-directive exemption."
+  "scope": "Existing parsed subject/deep/slotted ownership only. Mixed/local/relational/sibling/global subjects and existing parser flags/conditional/pseudo behavior stay conservative. No generic custom-directive exemption.",
+  "referenceCorrections": [
+    {
+      "kind": "authored-rule-docs-path",
+      "scalarCount": 27,
+      "before": "cases.before-docs-path.json",
+      "after": "cases.json",
+      "authority": [
+        {
+          "file": "crates/vize_patina/src/output/shared.rs",
+          "sha256": "5c41a5fb774e5acdeff210a2620abb727bdadcbcaafd0ae9ea0f35fd4b299e43"
+        },
+        {
+          "file": "crates/vize_patina/src/output/json.rs",
+          "sha256": "32937f0714c101c226814a2fe3c3a3ae7aadab54a289aafcbe84809b7f146fdc"
+        }
+      ],
+      "reason": "The unchanged source-defined css namespace maps to musea-and-css.md; css.md was a newly authored reference mistake, not runtime output authority."
+    }
+  ]
 }

@@ -1,6 +1,34 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
-import { frozenCorpus } from "./css-external-target-reference.mjs";
+import { fixture, frozenCorpus } from "./css-external-target-reference.mjs";
+
+await test("authored docs-path correction preserves all other complete reference bytes", () => {
+  const { source } = frozenCorpus();
+  const beforeBytes = fs.readFileSync(path.join(fixture, "cases.before-docs-path.json"), "utf8");
+  const afterBytes = fs.readFileSync(path.join(fixture, "cases.json"), "utf8");
+  assert.equal(
+    afterBytes.replaceAll(
+      '"ruleDocsPath": "docs/content/rules/musea-and-css.md"',
+      '"ruleDocsPath": "docs/content/rules/css.md"',
+    ),
+    beforeBytes,
+  );
+  const before = JSON.parse(beforeBytes);
+  const after = JSON.parse(afterBytes);
+  let changed = 0;
+  for (const row of before.cases)
+    for (const report of row.expectedCli)
+      for (const message of report.messages) {
+        assert.equal(message.ruleDocsPath, "docs/content/rules/css.md");
+        message.ruleDocsPath = "docs/content/rules/musea-and-css.md";
+        changed++;
+      }
+  assert.equal(changed, 27);
+  assert.equal(source.referenceCorrections[0].scalarCount, changed);
+  assert.deepEqual(after, before);
+});
 
 await test("CSS target corpus retains both distinct originals and whole conservative controls", () => {
   const { cases } = frozenCorpus();
