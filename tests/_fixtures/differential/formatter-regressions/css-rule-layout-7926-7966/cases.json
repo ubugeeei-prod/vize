@@ -29,6 +29,38 @@
           "message": "At least one <template> or <script> is required in a single file component. App.vue",
           "loc": null
         }
+      ],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
       ]
     },
     {
@@ -49,6 +81,38 @@
           "message": "At least one <template> or <script> is required in a single file component. Insert.vue",
           "loc": null
         }
+      ],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
       ]
     },
     {
@@ -63,7 +127,39 @@
       "expected": "Rules.vue.expected.txt",
       "expectedBytes": 138,
       "expectedSha256": "48e65917d0a9de6490674527f5a6383ee551a01f9ac3c01e1b2ece39c3928dda",
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-inline-selectors",
@@ -81,7 +177,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: inline-selectors.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: inline-selectors.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-one-authored-gap",
@@ -99,7 +227,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-many-authored-gaps",
@@ -117,7 +277,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: many-authored-gaps.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: many-authored-gaps.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-selector-functions-strings-escape",
@@ -135,7 +327,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-declaration-commas",
@@ -153,7 +377,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-nested-media",
@@ -171,7 +427,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-nested-rules",
@@ -189,7 +477,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-keyframe-comma",
@@ -208,7 +528,39 @@
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
       "controlAuthority": "Independently authored keyframe comma exclusion; animation is disabled so complete computed-style observations have no clock-dependent value.",
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-unicode-color-before-header",
@@ -226,7 +578,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: unicode-color-before-header.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: unicode-color-before-header.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-authored-value-fallback",
@@ -244,7 +628,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-custom-property-braces",
@@ -262,7 +678,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-tabs-nested",
@@ -282,7 +730,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-nested-comment-raw",
@@ -300,7 +780,39 @@
       "html": [
         "<div class=\"a b c 次\" data-label=\"a,b\"></div>"
       ],
-      "expectedParseErrors": []
+      "expectedParseErrors": [],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "control-original-app-crlf",
@@ -319,6 +831,38 @@
           "code": null,
           "message": "At least one <template> or <script> is required in a single file component. App-crlf.vue",
           "loc": null
+        }
+      ],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
         }
       ]
     }
@@ -339,5 +883,6 @@
       "sha256": "a626b06fbf6c506a1d86be606abdcbd3c16a30d9796239bcdf2c9ea986ebcecd"
     }
   ],
-  "diagnosticAuthority": "Original-only Vue 3.5.35 complete parse vectors independently qualify the style-only negative inputs; no missing template/script is added to original files. Every formatted pass must retain the same complete vector."
+  "diagnosticAuthority": "Original-only Vue 3.5.35 complete parse vectors independently qualify the style-only negative inputs; no missing template/script is added to original files. Every formatted pass must retain the same complete vector.",
+  "cliProtocolAuthority": "Independently authored complete stdout/stderr/status outcomes from unchanged commands/fmt.rs run/process_file (143 actual main): one explicit filename, no profile, original-to-authored-output change decision. No stream/message normalization and no formatter execution used to generate these vectors."
 }

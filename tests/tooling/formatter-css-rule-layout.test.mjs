@@ -8,7 +8,11 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
 import { sha256 } from "../differential/manifest.mjs";
-import { diagnostics, observeCss } from "./support/css-rule-layout-semantics.mjs";
+import {
+  diagnostics,
+  observeCss,
+  validateDiagnostics,
+} from "./support/css-rule-layout-semantics.mjs";
 import { observeSemantics } from "./support/formatter-template-semantics.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -96,6 +100,8 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
         const observe = async (source, pass) => {
           const complete = diagnostics(source, fixture);
           row.diagnostics.push({ pass, ...complete });
+          persist(); // Complete unexpected compiler vectors survive validation failures.
+          validateDiagnostics(complete, fixture);
           row.css.push({ pass, ...(await observeCss(browser, complete)) });
           persist();
         };
@@ -119,7 +125,6 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
             timeout: 60_000,
             maxBuffer: 8 * 1024 * 1024,
           });
-          const after = fs.readFileSync(file);
           const capture = {
             args,
             status: result.status,
@@ -128,13 +133,40 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
             stdoutBase64: (result.stdout ?? Buffer.alloc(0)).toString("base64"),
             stderrBase64: (result.stderr ?? Buffer.alloc(0)).toString("base64"),
             before: before.toString(),
-            after: after.toString(),
+            after: null,
+            afterReadError: null,
           };
           row.attempts.push(capture);
+          persist(); // Raw process custody survives a missing/unreadable output file.
+          let after;
+          try {
+            after = fs.readFileSync(file);
+          } catch (error) {
+            capture.afterReadError = {
+              name: error.name,
+              message: error.message,
+              code: error.code ?? null,
+            };
+            persist();
+            throw error;
+          }
+          capture.after = after.toString();
           persist();
           assert.equal(capture.error, null);
           assert.equal(capture.signal, null);
-          assert.equal(capture.stderrBase64, "");
+          const oracle = fixture.cliExpected[row.attempts.length - 1];
+          assert.equal(mode, oracle.mode);
+          assert.equal(capture.status, oracle.status);
+          assert.deepEqual(
+            Buffer.from(capture.stdoutBase64, "base64"),
+            Buffer.from(oracle.stdout),
+            "complete stdout",
+          );
+          assert.deepEqual(
+            Buffer.from(capture.stderrBase64, "base64"),
+            Buffer.from(oracle.stderr),
+            "complete stderr",
+          );
           assert.deepEqual(fs.readFileSync(path.join(temporary, "vize.config.json")), config);
           return { capture, before, after };
         };

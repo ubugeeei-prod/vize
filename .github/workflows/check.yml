@@ -304,6 +304,8 @@ jobs:
         uses: ./.github/actions/test-native-js-setup
       - name: Capture original native attribute values and fixed fresh mounts
         uses: ./.github/actions/test-native-attribute-values-7502
+      - name: Install CSS formatter reference browser
+        uses: ./.github/actions/install-formatter-css-browser
       - name: Test release scripts
         env:
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize

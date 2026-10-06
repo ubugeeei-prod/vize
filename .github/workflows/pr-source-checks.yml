@@ -184,6 +184,17 @@ jobs:
           VIZE_TOOLING_TEST_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
           VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
         run: node tools/support/compat/github/prepare-pkl-schema.mjs && node tools/support/compat/github/prepare-vue-benchmarks.mjs
+      - name: Plan CSS formatter browser dependency
+        id: formatter-css-browser
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        env:
+          VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+          VIZE_TOOLING_TEST_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
+          VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
+        run: node tools/support/compat/github/formatter-css-browser-plan.mjs
+      - name: Install selected CSS formatter reference browser
+        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && steps.formatter-css-browser.outputs.required == 'true' }}
+        uses: ./.github/actions/install-formatter-css-browser
       - name: Test fresh native SSR modules in the merge queue
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
         uses: ./.github/actions/test-native-ssr

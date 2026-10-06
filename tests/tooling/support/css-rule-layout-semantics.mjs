@@ -39,6 +39,11 @@ export function diagnostics(source, fixture) {
     ssr = compile(true);
   }
   const result = { vue: vue.version, parse: parsed.errors.map(serialize), styles, dom, ssr };
+  return result;
+}
+
+export function validateDiagnostics(result, fixture) {
+  const { styles, dom, ssr } = result;
   assert.deepEqual(
     result.parse,
     fixture.expectedParseErrors,
@@ -47,7 +52,6 @@ export function diagnostics(source, fixture) {
   for (const style of styles) assert.deepEqual(style.errors, [], `${fixture.id}: style compile`);
   if (dom) assert.deepEqual(dom.errors, [], `${fixture.id}: whole DOM compile`);
   if (ssr) assert.deepEqual(ssr.errors, [], `${fixture.id}: whole SSR compile`);
-  return result;
 }
 
 export async function observeCss(browser, compiled) {

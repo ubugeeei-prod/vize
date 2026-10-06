@@ -1,0 +1,9 @@
+name: Install CSS formatter reference browser
+description: Provision the Chromium owned by the selected tests package
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-ubuntu-archive
+    - name: Install the actual tests-package Chromium
+      shell: bash
+      run: vize-ci-apt-retry vp exec --filter './tests' -- playwright install --with-deps chromium

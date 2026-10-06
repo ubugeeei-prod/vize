@@ -12,7 +12,10 @@ ordinals, rather than reusing byte offsets moved by existing color protection.
 A prelude must equal the original whole bytes at its corresponding brace. Only
 an entirely matching original/printed token stream may commit whitespace edits.
 Print each actual top-level selector separator on a new rule-indented line.
-Preserve zero or one authored blank line before a sibling block-rule prelude.
+Preserve zero or one authored blank line before a sibling block-rule prelude
+when the preceding brace already occupies its own authored line. Compact source
+blocks retain the historical printer gaps. A complete owned nested style prelude
+also guards the gap after an authored declaration terminator.
 Declaration values, strings, escapes, functions, attributes, custom-property
 blocks and keyframe selector commas do not acquire style-selector ownership.
 The existing authored-syntax fallback, comment policy, options, selective fixed
@@ -37,3 +40,22 @@ execution, history, full Rust and instruction gates are still unknown. Bounded
 source review runs alongside Actions; genuine failures must be resolved before
 Ready/auto/queue admission. Actual merge and installed-release replay remain
 TODO. PR #8076 delivery has priority when the security fix actually merges.
+
+Source peer found that `fmt` always prints its unchanged progress/summary to
+stderr. Each fixture now pins all five complete stdout/stderr/status outcomes
+from the unchanged public CLI producer; no messages are normalized. Raw process
+results are persisted before reading output files, and read failures are retained
+without losing streams. This observer repair grants no formatter execution credit.
+Compiler observations are also persisted in full before unchanged diagnostic
+assertions, so an unexpected parse/style/DOM/SSR vector remains inspectable.
+
+The first real source Check 37411815094 failed: nested-rule leading whitespace,
+legacy compact-block and vendor-keyframe whole outputs, one stale generated line
+number, and missing Chromium in the actually selected tooling shard. The current
+correction preserves every original source/expected file and old snapshot, retains
+compact-source normalization, and covers the declaration-to-nested-rule gap only
+with the same full parse-prelude/token authority. Regenerate genuine inventory
+positions. Provision the tests-package Chromium for the exact selected browser
+test using the existing complete tier/shard selector and stable apt path, and
+for full unsharded Check. No test is skipped, no ceiling rises, and no old
+snapshot is updated. New source execution and protected acceptance remain TODO.

@@ -29,6 +29,7 @@ pub(super) fn preserve_rule_layout(
     let mut pending = Vec::new();
     let mut previous_boundary = false;
     let mut previous_close = false;
+    let mut previous_declaration = false;
     let mut previous_comma = false;
     let mut brace = 0;
     let mut preludes = layout
@@ -50,7 +51,10 @@ pub(super) fn preserve_rule_layout(
                 {
                     adjustments.push(Adjustment::new(&authored, &target, 2, false));
                 }
-                if previous_comma || previous_close {
+                if previous_comma
+                    || ((previous_close || previous_declaration)
+                        && authored.gap.contains(['\r', '\n']))
+                {
                     let newlines = if previous_close && has_blank_line(authored.gap) {
                         2
                     } else {
@@ -107,8 +111,16 @@ pub(super) fn preserve_rule_layout(
                 }
                 if !authored.text.starts_with("/*") {
                     previous_boundary = matches!(authored.text, ";" | "}");
-                    previous_close =
-                        authored.text == "}" && authored.parens == 0 && authored.brackets == 0;
+                    // Compact authored blocks retain the existing printer's gaps.
+                    previous_close = authored.text == "}"
+                        && authored.parens == 0
+                        && authored.brackets == 0
+                        && source
+                            .get(..authored.start)
+                            .and_then(|prefix| prefix.rsplit(['\r', '\n']).next())
+                            .is_some_and(|line| line.trim().is_empty());
+                    previous_declaration =
+                        authored.text == ";" && authored.parens == 0 && authored.brackets == 0;
                     previous_comma =
                         authored.text == "," && authored.parens == 0 && authored.brackets == 0;
                 }
