@@ -28,14 +28,14 @@ pub(super) fn value<'a, 'b>(
     el: &'b ElementNode<'a>,
     non_reactive: bool,
 ) -> Option<&'b SimpleExpressionNode<'a>> {
-    if non_reactive || !eligible_target(el) {
+    if non_reactive {
         return None;
     }
     let value = el.props.iter().find_map(|prop| match prop {
         PropNode::Directive(dir) => binding(dir),
         _ => None,
     })?;
-    eligible(el, value, non_reactive).then_some(value)
+    (eligible_target(el) && eligible(el, value, non_reactive)).then_some(value)
 }
 
 fn binding<'a, 'b>(dir: &'b DirectiveNode<'a>) -> Option<&'b SimpleExpressionNode<'a>> {

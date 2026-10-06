@@ -229,3 +229,56 @@ fn transferred_branch_keys_keep_ineligible_original_targets_unwrapped() {
         );
     }
 }
+
+#[test]
+fn original_slot_name_order_keeps_complete_props_fallback_modules_and_maps() {
+    let cases = [
+        (
+            "<slot name=\"static\" :name=\"later\" :value=\"value\"><input :key=\"epoch\" /></slot>",
+            "static",
+            true,
+        ),
+        (
+            "<slot :name=\"first\" name=\"later\" :value=\"value\"><input :key=\"epoch\" /></slot>",
+            "first",
+            false,
+        ),
+        (
+            "<slot name :name=\"chosen\" v-bind=\"spread\"><input :key=\"epoch\" /></slot>",
+            "chosen",
+            false,
+        ),
+        (
+            "<slot :[field]=\"dynamic\" :name=\"chosen\" plain=\"retained\"><input :key=\"epoch\" /></slot>",
+            "chosen",
+            false,
+        ),
+    ];
+    for (source, expected_name, expected_static) in cases {
+        let allocator = Allocator::new();
+        let (root, errors) = parse(&allocator, source);
+        assert_eq!(errors.len(), 0, "{source}: {errors:?}");
+        let [TemplateChildNode::Element(el)] = root.children.as_slice() else {
+            panic!("the original complete source must own exactly one slot");
+        };
+        let mut actual = TransformContext::new(&allocator, source);
+        actual.template_spans = Some(TemplateSpans::default());
+        let mut original = TransformContext::new(&allocator, source);
+        original.template_spans = Some(TemplateSpans::default());
+        let mut actual_block = BlockIRNode::new(&allocator);
+        let mut original_block = BlockIRNode::new(&allocator);
+        transform_slot(&mut actual, el, &mut actual_block);
+        let [OperationNode::SlotOutlet(outlet)] = actual_block.operation.as_slice() else {
+            panic!("the source must produce its one original slot outlet");
+        };
+        assert_eq!(outlet.name.content, expected_name, "{source}");
+        assert_eq!(outlet.name.is_static, expected_static, "{source}");
+        let facts = classify(el, false, false);
+        transform_classified_element(&mut original, el, &mut original_block, facts);
+        assert_eq!(
+            output(actual, actual_block, &root, source),
+            output(original, original_block, &root, source),
+            "{source}",
+        );
+    }
+}

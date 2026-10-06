@@ -29,14 +29,14 @@ pub(in crate::lower) fn classify<'a, 'b>(
     inherited: bool,
     own_key: bool,
 ) -> DirectiveAnalysis<'a, 'b> {
-    if own_key && !inherited && super::eligible_target(el) {
+    if own_key && !inherited {
         classify_role::<true>(el, inherited)
     } else {
         classify_role::<false>(el, inherited)
     }
 }
 
-// Hoist the actual target/scope role once; both paths retain the same property walk.
+// The original key must exist before its complete target policy is needed.
 fn classify_role<'a, 'b, const READ_KEY: bool>(
     el: &'b ElementNode<'a>,
     inherited: bool,
@@ -85,7 +85,12 @@ fn classify_role<'a, 'b, const READ_KEY: bool>(
     DirectiveAnalysis {
         should_lower_as_once,
         memo_error,
-        key: key.filter(|value| !key_non_reactive && !has_for && super::eligible_value(value)),
+        key: key.filter(|value| {
+            !key_non_reactive
+                && !has_for
+                && super::eligible_target(el)
+                && super::eligible_value(value)
+        }),
         has_control_flow_children,
         has_dynamic_element_children,
         template_attributes,
