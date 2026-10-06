@@ -27,6 +27,7 @@ fn generate(source: &str, editor: bool) -> GeneratedVueFile {
             options_api: false,
             preserve_authored_component: false,
             preserve_script_on_template_error: editor,
+            component_type_witness: editor,
             component_name: None,
             preserve_event_navigation: true,
             legacy_vue2: false,
@@ -149,6 +150,23 @@ fn complete_malformed_ts40_template_preserves_the_whole_original_fallback() {
         let batch = generate(&source, false);
         assert_eq!(editor.code, invalid_sfc_fallback_virtual_ts());
         assert_eq!(editor.code, batch.code);
+        assert_eq!(editor.mappings, batch.mappings);
+        assert_eq!(editor.semantic_links, batch.semantic_links);
+        assert_eq!(editor.typed_router_import, batch.typed_router_import);
+        assert_eq!(diagnostics(&editor), diagnostics(&batch));
+    }
+}
+
+#[test]
+fn component_reference_is_editor_only_and_preserves_whole_projection() {
+    for newline in ["\n", "\r\n"] {
+        let source = CONTROLS[..CONTROLS.find("<template>").unwrap()].replace('\n', newline);
+        let batch = generate(&source, false);
+        let editor = generate(&source, true);
+        let witness = crate::virtual_ts::COMPONENT_TYPE_WITNESS;
+        assert_eq!(editor.code.as_str(), format!("{}{witness}", batch.code));
+        assert!(!batch.code.contains("__VizeTagComponent"));
+        assert_eq!(editor.code.matches(witness).count(), 1);
         assert_eq!(editor.mappings, batch.mappings);
         assert_eq!(editor.semantic_links, batch.semantic_links);
         assert_eq!(editor.typed_router_import, batch.typed_router_import);

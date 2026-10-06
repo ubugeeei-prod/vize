@@ -128,6 +128,7 @@ pub(super) fn build_vue_registered_file(
                 // `InstanceType<typeof Component>` (#4010).
                 preserve_authored_component: context.editor_document_options.is_none(),
                 preserve_script_on_template_error: context.editor_document_options.is_some(),
+                component_type_witness: context.editor_document_options.is_some(),
                 component_name: None,
                 preserve_event_navigation: context
                     .editor_document_options

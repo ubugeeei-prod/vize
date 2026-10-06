@@ -233,3 +233,29 @@ unchanged. The raw2961 failure is retained, and fresh same-PR source Actions
 must execute the repaired source. Current2961 native observations stay separate;
 residual completion failures remain unqualified, with no warning allowance or
 budget change.
+
+## Actual generic declaration contract and same-program reference
+
+Current a7fd native37426090418/job112145960712 fails three complete response
+laws. Retained source/project/query records now resolve 361 actual Vue exports
+including Component, with exact source equality and correct UTF16 identifiers.
+The generic declared Component target admits data and excludes valid controls;
+those complete failures remain evidence, and all original whole47 vectors stay
+unchanged. The decoded query observer is not a raw native framing transcript.
+
+Pinned native7.0.2 getDeclaredTypeOfTypeAlias retains its type parameters;
+getTypeAliasInstantiation applies default type arguments to a type reference.
+[The paired decision](https://github.com/ubugeeei-prod/vize/issues/8001#issuecomment-6011414201)
+adds an editor-only nongeneric import("vue").Component alias during the existing
+virtual-source generation and resolves it in the same acknowledged program.
+One full LF/CRLF projection law compares entire output, mappings, semantic links
+and diagnostics: batch output is exact, editor output appends only the reference.
+Script-less/unusable fallback, content mapper, disabled native fallback and all
+previous item/source/request bytes remain unchanged. No additional parser,
+process, SDK adapter or level stage is added. Vue2 excludes the reference.
+
+The corrected target's actual runtime effect remains unexecuted. Fresh current
+ordinary/native Actions must pass all original47 responses and existing native
+completion laws before Ready/protected delivery/public inclusion. Ordinary
+function intent remains unfinished because Vue FunctionalComponent returns any;
+no function blacklist or expected-vector change is introduced.

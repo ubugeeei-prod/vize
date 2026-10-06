@@ -78,6 +78,9 @@ pub use semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
 pub(crate) use types::{CSS_MODULE_GLOBAL_MARKER, TYPED_ROUTE_GLOBAL_MARKER};
 pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput};
 
+/// An editor-only, nongeneric type reference applies Vue Component defaults.
+pub(crate) const COMPONENT_TYPE_WITNESS: &str = "\n// @ts-ignore: projects without Vue retain unavailable type evidence.\nexport type __VizeTagComponent = import(\"vue\").Component;\n";
+
 /// Shared type-only component contract for plain-TS JSX lowering in batch and
 /// editor paths. Keep one declaration source so the two consumers cannot drift.
 ///
