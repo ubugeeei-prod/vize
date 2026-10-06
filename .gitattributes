@@ -27,6 +27,9 @@ tests/_fixtures/differential/lsp/on-type-crlf/App.vue.txt -text whitespace=cr-at
 tests/_fixtures/differential/lsp/highlight-original-crlf/Crlf.vue.txt -text whitespace=cr-at-eol
 tests/_fixtures/differential/lsp/highlight-original/witness.test.ts.txt -text
 
+# Literal completion inputs retain original LF and authored dirty CRLF bytes.
+tests/_fixtures/differential/lsp/string-literal-completion-original/*.vue.txt -text whitespace=cr-at-eol
+
 # Original type-checker sources and diff context keep their pinned bytes.
 tests/_fixtures/differential/typechecker/split-script-original/**/*.txt -text whitespace=-blank-at-eol
 tests/_fixtures/differential/typechecker/v-for-source-original/**/*.txt -text whitespace=-blank-at-eol
@@ -59,3 +62,6 @@ tests/_fixtures/differential/lint/oxlint-original-locations-7904/*.txt -text whi
 # Pinned public root-comment source and authored corpus keep complete checkout bytes.
 tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/** -text whitespace=cr-at-eol
 tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/habitica/** whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
+
+# Preserve full authored LF/CRLF CSS continuation originals and references.
+tests/_fixtures/differential/formatter-regressions/css-continuation-indent-7915/** -text whitespace=cr-at-eol

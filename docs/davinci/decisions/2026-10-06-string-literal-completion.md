@@ -1,0 +1,223 @@
+# String literal completion ownership
+
+Issue: [#7997](https://github.com/ubugeeei-prod/vize/issues/7997).
+Paired [source preparation decision](https://github.com/ubugeeei-prod/vize/issues/7997#issuecomment-6014880361).
+
+The original public `Page.vue` calls an imported function whose argument is
+`"form.name" | "form.help"`. At zero-based template position `8:11`, the old
+route offers `t` and `title`; script position `3:17` appends Vue API identifiers
+to the native literal candidates. Both positions are independently derived
+from the unchanged 178-byte source. The expected values are `form.help` and
+`form.name` without unrelated identifiers.
+
+The prepared correction routes an ordinary Vue literal to the existing native
+completion request and returns its whole result. It neither appends structural
+items nor supplies a fallback when native values are absent. The existing
+current-source revision, cancellation/deadline, canonical project/options,
+whole opaque native item and resolve guards remain the authority. Art/dialect,
+nonliteral, member, markup, comment and regex routes retain their old dispatch.
+
+The classifier borrows the current cached SFC block or template projection.
+A conservative quote-candidate guard precedes one existing OXC token-parser
+invocation; its lexer owns positive quoted tokens. Template routing additionally
+requires the entire generated token to map to byte-identical authored text.
+Comments, regex literals, template substitutions and cursor positions after the
+closing quote cannot grant the new route. Incomplete quoted tokens can suppress
+unrelated identifiers, while the native provider decides their values.
+
+This is additional completion-local classification work, not a hover change.
+The negative guard can admit ordinary cursors after earlier multiline template
+or continued-string syntax; it does not claim that every parse has a positive
+literal result. There is no unconditional document parse, new pipeline stage,
+cache, backend query or intermediate serialization. Selected-completion cost
+is unmeasured and must be qualified before publication; no speed gain is claimed.
+
+The original full issue, commands, `lsp-req.mjs`, `messages.ts`, `Page.vue` and
+tsconfig are pinned in the differential corpus. The SFC carrier is named
+`Page.vue.txt`; the native fixture writes its identical bytes to `Page.vue`.
+This prevents an unregistered standalone corpus SFC from changing unrelated
+native fixture discovery. Authored dirty Unicode/CRLF and single-quote sources
+and the unconstrained-string dependency are separate complete pinned controls.
+Git explicitly retains the LF/CRLF carrier bytes.
+
+Five Rust laws cover both original positions, lexer/source domains, Unicode
+boundaries, native-unprovided synchronous behavior and classifier-only work.
+The last records sixteen actual classifier calls for each original position and
+an ordinary template identifier after context preparation, retaining whole
+input/projection and individual wall times before assertions. This is a noisy
+test-host observation without provider/hover requests, not CPU/allocation
+attribution, a gain claim or a new performance ceiling. The supplemental stdio
+oracle uses the existing source-built CLI receipt and whole-wire lifecycle
+capture in normal tooling Actions. It prepares two real server sessions and
+37 exact completion/resolve results: ten whole union arrays, twenty whole
+resolved items, five stale/closed/reopened resolves and two null plain-string
+controls. Six current publications must retain their complete empty diagnostic
+arrays. The original ten-second labels-only client is preserved and is not the
+supplemental observer's execution contract.
+
+The complete native item oracle is authored from the pinned Microsoft
+typescript-go [string completion implementation](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/ls/string_completions.go)
+and [item converter](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/ls/completions.go).
+Constant kind `21`, sort text `11`, full replacement edits, data/name and
+resolved detail/documentation remain explicit. The fixed Vize outer item retains
+the existing absence of an authored `textEdit`; its whole native edit remains
+in `data.vizeCompletion.item`. `oracle-source.json` pins whole primary files
+and the unchanged local converter/resolve/mirror/revision/options bodies.
+
+Before reading each response, an unreferenced bootstrap marker identifies one
+physical fixture-owned mirror. The observer retains full generated/authored
+sources and config, then derives the native file, URI, UTF8 opaque byte offset
+and entire UTF16 inner-literal replacement range from the unique complete
+current literal. The pinned native converter explicitly translates negotiated
+LSP coordinates to a UTF8 byte offset before creating completion data.
+Only these independently witnessed ephemeral coordinates plus explicit
+authored URI/revision substitute into the complete fixed oracle. No response
+field supplies its own expected value. Complete requests, responses, raw wires,
+publications, failures, source/runtime hashes and shutdown evidence are retained
+by existing artifact capture before assertions. Elapsed request wall time is
+observational and includes the existing client/capture work; it grants no
+classification-only cost, speed or budget acceptance.
+
+The first source was sealed privately, then genuinely replayed onto signed
+`6b5e6fd8357bc892d2ea9cefe271a13fc08100cb` after #8116 delivered.
+The maintainer authorized one conventional non-Draft PR, #8119, for ordinary
+Actions qualification, with admission pending gates. Initial source compilation,
+Clippy, formatting and static JS checks passed; they remain distinct from full
+native acceptance. TODO: qualify compilation, all whole
+original/dirty/null/lifecycle results, selected-completion work and unchanged
+protected suites/104 instruction ceilings on the genuinely composed current
+source. Actual signed merge, issue closure and installed release inclusion are
+still required. No local native build/install/run, new workflow, manual campaign, budget
+increase or private project input is authorized by this record.
+
+The [first failure decision](https://github.com/ubugeeei-prod/vize/issues/7997#issuecomment-6015525186)
+retains real failures rather than accepting partial output.
+Both original LF completion arrays, four complete resolves and the first stale
+revision guard passed. The first dirty CRLF/Unicode array differed only in opaque
+`data.position`: its independently owned generated prefix is 14,580 UTF16 code
+units and 14,584 UTF8 bytes. The native converter's exact-revision source, not
+the observed item, determines the corrected witness calculation. Every fixed
+item field and every complete original/dirty source remains unchanged.
+
+Two new Rust controls exposed real classifier gaps. The existing coarse
+projection caret method ignores an attribute value's exact sub-spans; the
+completion-local lookup now prefers the producer's narrowest sub-span and uses
+the existing diagnostic range mapper to prove the entire authored token. Fatal
+OXC parsing clears token output for an unfinished string, but the same lexer
+retains its exact `Unterminated string` range. Only an EOF-ended quote diagnostic
+containing the cursor can recover that route, without another parse or source
+scan. Existing lexer/domain expectations stay fixed; additional unfinished
+comment/regex and directive controls remain independently authored.
+
+The initial generator check also requires exactly two new raw-OXC inventory
+rows. Deleting those two rows recovers the complete prior TSV. The classifier
+observation test passed initially, but its JSON was outside the existing shard
+artifact directory, so no duration evidence is accepted from that run. Its
+output now lives under the actual `NEXTEST_PROFILE` shard envelope; the existing
+upload and all workflow commands remain unchanged. The necessary successor
+needs fresh complete source/runtime gates and retained classifier observations
+before admission. No initial failure or partial proof qualifies its execution.
+
+The necessary successor genuinely incorporates delivered literal main
+`c30f1a02da763e0086c489b8e17b9aa558187cff` (#8094 SSR browser globals).
+All private correction source/corpus/oracle/helper bytes and incoming history
+are conserved. Initial Check 37455831891 is terminal failure, including a
+completed successful canonical corpus; it cannot qualify the new source.
+The same PR is temporarily Draft and off queue while fresh automatic Actions
+validate the concrete repair. No additional approval or campaign is required.
+
+The maintainer explicitly authorizes this concrete successor to return to
+non-Draft review during ordinary automatic qualification. A pending new head
+has no inherited failure or success credit; queue admission still requires
+its own complete current gates. No extra PR or optional approval is introduced.
+
+Successor `fe0a5ff` failed its genuine hosted build before native execution:
+the pinned diagnostic label API returns `u32` offsets and lengths. The EOF
+recovery path now converts both values to `usize`, matching token positions
+and the authored byte-range API. These two casts are the complete production
+correction; all routing conditions, original inputs and full payload oracles
+remain fixed. Check 37458862366 and both authentic failed build logs are
+retained. Pending jobs on that head may be superseded without waiting; their
+unknown or cancelled state grants no execution credit. The same PR remains
+off queue until fresh exact-source qualification completes.
+
+Current `e9046f4` compiled successfully. Its source-built stdio test passed all
+35 first-session full arrays, resolves and stale/closed responses, plus six full
+diagnostic publications. The second plain-string session then failed the strict
+marker witness: the previous shutdown session's physical mirror still exists.
+That observer incorrectly called both filesystem namespaces live. The plain
+session now creates its own unreferenced marker after the first shutdown and
+passes that explicit marker identity to the unchanged one-owner check. No old
+namespace is removed or ignored, and no completion response supplies ownership.
+The original marker, complete sources/configs, fixed whole item oracle and all
+37 expected response values stay unchanged. The full failed log and official
+API-digest-matched artifact are retained; complete current runtime qualification
+still requires the fresh successor. No product code changes in this repair.
+
+The same e904 Rust shard also retained a separate pre-existing plain-CJS
+diagnostic failure: `javascript_variants_keep_plain_script_ownership_with_misleading_vue_language_id`
+received an empty publication. The diagnostic provider/test and inputs are
+unchanged by this completion repair; ownership diagnosis is pending. No old
+expected diagnostic is changed or waived, and full current Rust acceptance
+remains required.
+
+Exact `fa570dad` hosted qualification completed all 37 full response assertions
+and six strict diagnostic publications. Every recorded response/notification
+was independently reconciled against both original stdio session logs. Four
+official Rust shards executed 16,491 tests with zero failures, errors or skips,
+including all five completion laws and the unchanged original plain-CJS law.
+That later success does not establish the cause of the retained e904 failure.
+The native backend workflow also succeeded at the exact fa570 source.
+
+The captured completion-local classifier performed 16 calls per prepared
+context: observed medians were 11.0405 microseconds for the original script
+literal, 1.6221385 milliseconds for the original template literal and 0.641
+microseconds for an ordinary template identifier. Complete authored source,
+generated projection and classifier bytes/hashes are retained. These are noisy
+debug test-host wall observations after context preparation, with no provider
+or hover request; they grant no CPU, allocation, release-speed or gain claim.
+
+The maintainer requires a separate passive failure-custody change in this same
+PR for the unchanged plain-script diagnostic law. It records complete decoded
+messages only after that driver opts in before initialize, and attaches full
+original configuration, stderr and terminal state only after the original
+successful shutdown/exit/readers when a mismatch exists. No production query,
+logging, timeout, deadline, original input, expected publication, lifecycle
+ordering or completion payload changes. The shared helper allocates one
+`Arc<OnceLock>` per process; message cloning/storage stays disabled before
+opt-in. Complete decoded objects are not raw wire frames. The narrow status
+formatting uses the existing compact-string macro without a lint waiver.
+
+All fa570 completion production, original sources, fixed payloads, 37 response
+values and six publications remain exact in this observer-only successor.
+Fresh automatic exact-head source/native gates and protected suites/104 still
+qualify the joined source; none of fa570's execution transfers to it.
+
+Current review identified one further negative-guard omission: backslash followed
+by a bare carriage return was rejected before reaching the existing lexer. The
+locked OXC revision `fc702c1fa9f0412d06ec6908b58cd395b826cf7f`,
+`lexer/unicode.rs:344-351`, explicitly handles CR with an optional following LF.
+The sole production correction replaces the CRLF-only guard with CR, which
+also covers CRLF. Every positive still requires the same lexer-owned token;
+there is no additional parse, cache, provider path or hover work.
+
+Six appended lexer controls cover double/single quotes, CRLF and comment/regex
+refusals. A separately authored 180-byte whole original-derived SFC contains
+only one added backslash/CR continuation and retains the template expression.
+Its catalog hash and both selected script/template classifier checks are fixed
+before hosted execution. The six original carrier objects, three prior controls
+and every native item/37 stdio response/six publication expectation stay exact.
+Removing the added catalog object restores the entire previous manifest. This
+is a supplemental classifier control; no whole native CR-only replay is claimed.
+
+The remaining review scope preserves the measured selected-completion design:
+out-of-range offsets already fail before lexing, and no unreviewed per-revision
+token cache or statement lexer is introduced. Cost capture deliberately uses
+the existing workspace/nextest upload authority; arbitrary read-only external
+Cargo target configurations are not claimed. The observer retains both old and
+current mirrors and uses an independently named second-session marker, with the
+same strict one-owner assertion. It makes no new bridge-cleanup claim.
+
+This necessary same-PR successor preserves the passive original-CJS capture and
+requires fresh exact-head hosted qualification. Any unfinished or cancelled
+preceding job remains historical, with no transferred runtime acceptance.
