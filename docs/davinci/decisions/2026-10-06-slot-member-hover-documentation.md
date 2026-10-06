@@ -30,3 +30,55 @@ This integration observation is recorded on LSP fix-history issue #6883 and
 must not be attributed to the inlay or compiler change from ancestry alone.
 
 The paired issue record is [comment 6008430599](https://github.com/ubugeeei-prod/vize/issues/6883#issuecomment-6008430599).
+
+
+The next meaningful diagnostic source `f5861bc29e` on literal production
+`143c1d4a` reproduced the original failure in editor job 112093850238,
+full Check 37409279893. The complete native stage trace records an abandoned
+request draining, bridge unavailability at original SlotAuthoring byte offset
+860, and the complete generic v-slot provider Hover at UTF-16 37:22–29.
+No Slot native hover was attempted in that failing call. This proves that
+session's drain/unavailability/fallback chain; the earlier cancelled request
+identity and unrelated snapshot warnings are not established causes.
+Official artifact 11388058709 (27,391 bytes) has SHA256
+`f32f16720c1a0258d53bf3262c41b96229d18f0bced11456db151b7c1a2ec563`;
+whole native trace SHA256 is
+`9a52c8781c4629164c74d5c251e53b0f6f902e1cfcb87368102fc7cff2154754`.
+
+Issue [#8085](https://github.com/ubugeeei-prod/vize/issues/8085) owns the real
+bounded repair. Move-only helper extraction precedes the functional change.
+An initialized bridge's semantic operation queues its actual existing job
+behind the retained FIFO worker owner. Drain time consumes the same original
+per-call deadline; the exact cancellation lease skips an unentered cancelled
+job. No retry, extra native query, new stage, document/world lock across await
+or budget increase is introduced. Synchronous calls, cancelled startup and
+shutdown retain fail-fast behavior, and existing whole source/epoch refusal
+stays intact. Dynamic argument bodies reuse the existing expression selector
+and cannot inherit syntax-only directive cards; native empty stays authoritative.
+
+The complete original SlotAuthoring/config is preserved in the legacy corpus.
+Four prepared real stdio sessions cover LF/CRLF and retained/unsaved astral
+revisions. A transparent test proxy holds one already-produced actual native
+Hover response without changing any bytes, then requires full cancellation,
+next original Hover pending while syntax-only folding answers, full current
+property Markdown/range or complete stale ContentModified, complete updated
+unsaved Hover, unchanged disk source and exact shutdown/exit with stdin open.
+Three worker laws retain the single deadline, cancellation and FIFO/current
+state; all existing startup/lifetime controls stay unchanged. Fresh source
+compilation/native/full original Rich/protected104/current Rust/plain/signed
+merge/release remain required. These prepared controls are not runtime proof.
+The paired record is [comment 6009010925](https://github.com/ubugeeei-prod/vize/issues/8085#issuecomment-6009010925).
+
+
+The a25 source-only peer preserved the production/body authority but its new
+shutdown helper emitted `params: null`, which pinned tower-lsp rejects for unit
+params. The successor reuses the existing #8012 helper's omitted-null policy,
+retaining every non-null request and full successful shutdown envelope. It
+also strengthens only the derived unsaved variant with a closed same-line
+astral comment so full position/range equality exercises UTF-16 characters,
+and compares every terminal retained publication against independently
+specified complete document/version envelopes. The original fixture and all
+production bytes stay exact. These prepared controls have no execution credit.
+[Same-line qualification](https://github.com/ubugeeei-prod/vize/issues/8085#issuecomment-6009129661)
+and [null-params/publication correction](https://github.com/ubugeeei-prod/vize/issues/8085#issuecomment-6009169942) are paired on #8085; all fresh
+source/native/full/protected/signed/release gates remain mandatory.

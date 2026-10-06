@@ -51,7 +51,8 @@ impl HoverService {
             return Some(hover);
         }
 
-        if let Some(hover) = Self::hover_template_directive_attribute(ctx) {
+        let in_expression = crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset);
+        if !in_expression && let Some(hover) = Self::hover_template_directive_attribute(ctx) {
             return Some(hover);
         }
 
@@ -59,7 +60,7 @@ impl HoverService {
             return Some(hover);
         }
 
-        if !crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset) {
+        if !in_expression {
             return None;
         }
 
