@@ -76,3 +76,7 @@ clause. Historical successes and failures remain scoped to their original
 heads; fresh joint full editor-host, Vue, source/native and protected suites
 must qualify this actual composition before signed merge and publication.
 No production path, original input, query, diagnostic or budget changes here.
+
+## Live protected prefix documentation composition
+
+The current qualified consumer source375 preserves every original input, expected vector, helper and three author records. Its canonical appendix shared line344 with the actual admitted8075→8073→8076→8084 prefix, so this successor relocates the complete1371-character appendix to unchanged line328. Removing that appendix reproduces every canonical byte of the actual609 provider; no unmerged queue source is imported. Current375 joint full editor-host and Vue suites passed, including the whole stock/Vize inlay vector and process custody; the full Rust fan-in remains separate. Fresh successor source checks and the actual protected native Stack, signed merges and future public release remain required.
