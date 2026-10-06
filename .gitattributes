@@ -38,6 +38,9 @@ tests/_fixtures/differential/formatter/sfc-vue*/** -text whitespace=-blank-at-eo
 # Original linter report fixtures retain authored LF/CRLF bytes on every checkout.
 crates/vize_patina/tests/fixtures/issue-7977/** -text whitespace=cr-at-eol
 
+# Original generic setup import inputs retain authored bytes on every checkout.
+tests/_fixtures/differential/linter/generic-type-reads-7938/** -text whitespace=cr-at-eol
+
 # Macro ownership laws retain pinned LF, Unicode and authored CRLF bytes.
 tests/_fixtures/differential/lint-with-defaults/** -text whitespace=cr-at-eol
 
