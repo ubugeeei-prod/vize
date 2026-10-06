@@ -38,6 +38,7 @@ pub(in crate::emit) struct PrefixScope<'b> {
     prefix_identifiers: bool,
     is_ts: bool,
     inline: bool,
+    vdom_setup_writes: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -66,6 +67,25 @@ impl<'b> PrefixScope<'b> {
     /// Whether the render function is inlined into `setup()`.
     pub(in crate::emit) fn inline(&self) -> bool {
         self.inline
+    }
+
+    pub(in crate::emit) fn is_script_setup(&self) -> bool {
+        self.bindings.is_some_and(BindingTable::is_script_setup)
+    }
+
+    /// Enable source-owned mutable writes only for the actual VDOM emitter.
+    /// Shared SSR/Vapor/string expression consumers retain their prior route.
+    pub(in crate::emit) fn enable_vdom_setup_writes(&mut self) {
+        self.vdom_setup_writes = true;
+    }
+
+    pub(super) fn guards_setup_let_write(&self, name: &str) -> bool {
+        self.vdom_setup_writes
+            && self.inline
+            && self.is_script_setup()
+            && !self.is_slot_param(name)
+            && !self.is_in_transform_scope(name)
+            && self.bindings.and_then(|table| table.kind(name)) == Some(BindingKind::SetupLet)
     }
 
     /// The transform's `is_ref_binding`: an inline-mode ref is read

@@ -1,0 +1,13 @@
+  new {
+    name = "SetupLet assignment in click handler"
+    input = """
+    <script setup>
+    let count = $ref(0)
+    </script>
+
+    <template>
+      <button @click="count = count + 1">{{ count }}</button>
+    </template>
+
+    """
+  }

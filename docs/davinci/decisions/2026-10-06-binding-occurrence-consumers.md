@@ -185,3 +185,10 @@ exactly `5a098434`; no queued rehearsal history was copied. The unchanged
 census generators reflect this actual-parent source. New exact-head Actions
 and full protected Stack qualification remain required, without old green
 transfer or native/history/performance completion credit.
+
+The final source parent also incorporates signed actual #8060 main
+`143c1d4a` through `214bf05a`, after its real 01:13:40 UTC merge. The child
+genuinely joins that parent while preserving all thirty owned source/oracle
+paths and both source-qualified census shards. Old source/protected results
+remain historical; current exact-head Actions and actual native Stack delivery
+are still required for this complete source composition.

@@ -63,6 +63,9 @@ pub fn process_inline_handler<'a>(
             if result.used_unref {
                 ctx.helper(crate::RuntimeHelper::Unref);
             }
+            if result.used_is_ref {
+                ctx.helper(crate::RuntimeHelper::IsRef);
+            }
             if let Some(detail) = &result.parse_error {
                 report_invalid_expression(ctx, detail, &normalized.loc);
             }
@@ -118,6 +121,9 @@ pub fn process_inline_handler<'a>(
                 if result.used_unref {
                     ctx.helper(crate::RuntimeHelper::Unref);
                 }
+                if result.used_is_ref {
+                    ctx.helper(crate::RuntimeHelper::IsRef);
+                }
                 if let Some(detail) = &result.parse_error {
                     report_invalid_expression(ctx, detail, &normalized.loc);
                 }
@@ -157,6 +163,9 @@ pub fn process_inline_handler<'a>(
         ctx.exit_scope();
         if result.used_unref {
             ctx.helper(crate::RuntimeHelper::Unref);
+        }
+        if result.used_is_ref {
+            ctx.helper(crate::RuntimeHelper::IsRef);
         }
         if let Some(detail) = &result.parse_error {
             report_invalid_expression(ctx, detail, &normalized.loc);

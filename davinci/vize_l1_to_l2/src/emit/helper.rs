@@ -50,10 +50,11 @@ pub(super) enum Helper {
     Transition,
     TransitionGroup,
     Unref,
+    IsRef,
 }
 
 impl Helper {
-    pub(super) const ALL: [Self; 43] = [
+    pub(super) const ALL: [Self; 44] = [
         Self::ResolveComponent,
         Self::ResolveDynamicComponent,
         Self::ResolveDirective,
@@ -97,6 +98,7 @@ impl Helper {
         Self::Transition,
         Self::TransitionGroup,
         Self::Unref,
+        Self::IsRef,
     ];
 
     pub(super) const fn rank(self) -> u8 {
@@ -134,7 +136,8 @@ impl Helper {
             | Self::BaseTransition
             | Self::Transition
             | Self::TransitionGroup
-            | Self::Unref => 10,
+            | Self::Unref
+            | Self::IsRef => 10,
         }
     }
 
@@ -183,6 +186,7 @@ impl Helper {
             Self::WithMemo => 549755813888,
             Self::IsMemoSame => 1099511627776,
             Self::Unref => 4398046511104,
+            Self::IsRef => 8796093022208,
         }
     }
 
@@ -231,6 +235,7 @@ impl Helper {
             Self::Transition => "Transition",
             Self::TransitionGroup => "TransitionGroup",
             Self::Unref => "unref",
+            Self::IsRef => "isRef",
         }
     }
 
@@ -279,6 +284,7 @@ impl Helper {
             Self::Transition => "_Transition",
             Self::TransitionGroup => "_TransitionGroup",
             Self::Unref => "_unref",
+            Self::IsRef => "_isRef",
         }
     }
 }

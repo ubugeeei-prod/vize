@@ -1,0 +1,131 @@
+{
+  "schema": "vize.setup-write-snapshot-history",
+  "version": 1,
+  "issue": 7881,
+  "originalSourceHead": "8065f19b080fe39334bb1c01d9c12862f257a5bf",
+  "run": 37362139186,
+  "producer": "3cb96e46028b74e794e6776e56fcc06a9def5d5c",
+  "producerTree": "f35cd9fa6a069240c510c2b5d3ce46b97c573d70",
+  "fixture": {
+    "path": "tests/fixtures/sfc/patches.pkl",
+    "sha256": "3c260ceab865cf04c46c90974b3824cd912bd8dc8a051a6c8e40bd45f36e528f",
+    "bytes": 20428,
+    "unchanged": true
+  },
+  "cases": [
+    {
+      "name": "SetupLet assignment in click handler",
+      "source": "tests/fixtures/sfc/patches.pkl",
+      "originalCaseArchive": "setuplet_assignment_in_click_handler.pkl.txt",
+      "originalCaseSha256": "2679b606ba790efcbbe8853136c8e559fd897c432d8c4491e55dea01d8bcc3fc",
+      "classification": "SetupLet: original let declaration plus unknown $ref CallExpression",
+      "operator": "=",
+      "observedFirstMismatch": true
+    },
+    {
+      "name": "let variable increment in handler",
+      "source": "tests/fixtures/sfc/patches.pkl",
+      "originalCaseArchive": "let_variable_increment_in_handler.pkl.txt",
+      "originalCaseSha256": "bafc9bd52f197cb7841a3c84e183399e8b22d182eac2991fb661bd79174329a0",
+      "classification": "SetupLet: original let declaration plus unknown $ref CallExpression",
+      "operator": "postfix ++",
+      "observedFirstMismatch": false
+    }
+  ],
+  "goldens": [
+    {
+      "case": "SetupLet assignment in click handler",
+      "flavor": "js",
+      "activePath": "tests/snapshots/sfc/js/patches__setuplet_assignment_in_click_handler.snap",
+      "oldArchive": "js__setuplet_assignment_in_click_handler.snap",
+      "oldSha256": "d5e3c80fbce95f7b401b6a7201134d983b4f87f14bb1eb2e6dc5d78acf93a7c5",
+      "currentSha256": "09ddd055860555275236dda1df9a0e4ba705e46b66030f06ded31117215ea9fb",
+      "oldBytes": 541,
+      "currentBytes": 604,
+      "currentHandlerExpression": "((_isRef(count) ? count.value = _unref(count) + 1 : count = _unref(count) + 1))",
+      "helperOrder": ["unref", "isRef"]
+    },
+    {
+      "case": "SetupLet assignment in click handler",
+      "flavor": "ts",
+      "activePath": "tests/snapshots/sfc/ts/patches__setuplet_assignment_in_click_handler.snap",
+      "oldArchive": "ts__setuplet_assignment_in_click_handler.snap",
+      "oldSha256": "1cae29316233adbcb8781d190201b0c4faf53d13363ed6497c3988641cb5eed4",
+      "currentSha256": "6a28f5f6b4510ff707329b1d2c46d3ced3b6af7fbb2fb8ffff35ec5291b6cd8d",
+      "oldBytes": 646,
+      "currentBytes": 709,
+      "currentHandlerExpression": "((_isRef(count) ? count.value = _unref(count) + 1 : count = _unref(count) + 1))",
+      "helperOrder": ["unref", "isRef"]
+    },
+    {
+      "case": "let variable increment in handler",
+      "flavor": "js",
+      "activePath": "tests/snapshots/sfc/js/patches__let_variable_increment_in_handler.snap",
+      "oldArchive": "js__let_variable_increment_in_handler.snap",
+      "oldSha256": "91e9ed844aa2626284ebaa5c1b194fbd592ab3ee24e3e8ff713efeaf274f9104",
+      "currentSha256": "707836c25056492d9a84de36e1e1257eec33adc800430a1943ea98a7c45016a9",
+      "oldBytes": 524,
+      "currentBytes": 569,
+      "currentHandlerExpression": "((_isRef(value) ? value.value++ : value++))",
+      "helperOrder": ["isRef", "unref"]
+    },
+    {
+      "case": "let variable increment in handler",
+      "flavor": "ts",
+      "activePath": "tests/snapshots/sfc/ts/patches__let_variable_increment_in_handler.snap",
+      "oldArchive": "ts__let_variable_increment_in_handler.snap",
+      "oldSha256": "a9c15653c6a8daeb353429358c11007e7b3d93a68ea8e3cd15d17d2cbff5063c",
+      "currentSha256": "8f7cecf6eb12aa8265bc519dec5b24af9f7b1d1602291e8fa1fea3a8f7beadfa",
+      "oldBytes": 629,
+      "currentBytes": 674,
+      "currentHandlerExpression": "((_isRef(value) ? value.value++ : value++))",
+      "helperOrder": ["isRef", "unref"]
+    }
+  ],
+  "otherSnapshots": {
+    "files": 282,
+    "orderedPathSha256PairsSha256": "fb113544dcc6962c914b15e73c582c4b0843e55508592f5de0cc80a3db5d2275",
+    "unchanged": true
+  },
+  "observedFailures": {
+    "js": {
+      "job": 111945366668,
+      "test": "snapshot_tests::test_patches_js_snapshots",
+      "archive": "js-assignment-failure.txt",
+      "sha256": "c7749caa70c81e9480ceb840a7883478c773e8b2a61f35fb8f00faf567445473",
+      "rawJobLogSha256": "c4c5d839ffd00a490c90142ca24baa4a999469021c331c1ba0a8f0890e0acdf9",
+      "fullFailureBlockArchive": "js-assignment-job-failure.txt",
+      "fullFailureBlockSha256": "8678715a179232e0a9bd20cf871e155c91ccd4889e54279509e700415ce6b0b8",
+      "derivation": "Complete original timestamped job failure block after ANSI removal; original complete raw log SHA retained",
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/37362139186/job/111945366668"
+    },
+    "ts": {
+      "job": 111945366588,
+      "test": "snapshot_tests::test_patches_ts_snapshots",
+      "archive": "ts-assignment-failure.txt",
+      "sha256": "43b5ee1a992675f55660a1140ad9f8b83831ee353da793da9113d770aa849edf",
+      "rawJobLogSha256": "42aa7d3c3be1cf389d13be7c52a8e863c5d1cdbb4e21e84e70aeda50d02848e6",
+      "fullFailureBlockArchive": "ts-assignment-job-failure.txt",
+      "fullFailureBlockSha256": "87d481684525acecc8cb77e19e6ec63da4cdbc7413d80c3bd73fc0bd89477990",
+      "derivation": "Complete original timestamped job failure block after ANSI removal; original complete raw log SHA retained",
+      "url": "https://github.com/ubugeeei-prod/vize/actions/runs/37362139186/job/111945366588"
+    }
+  },
+  "authority": {
+    "binding": "helpers::infer_binding_type retains unknown $ref calls; original let/var becomes SetupLet",
+    "assignment": "Original simple target chooses ref.value or variable; exclusive RHS preserves original assignment result and one branch only",
+    "update": "Original postfix ++ chooses ref.value++ or variable++; preserves original previous result",
+    "helperOrder": "Actual registration is Unref then IsRef for assignment RHS; IsRef first for postfix update before interpolation read",
+    "expectedOrigin": "Independently authored literal expression and import insertion; every other original full-snapshot byte preserved",
+    "scope": "Only these two original PKL inputs in JS/TS; no classifier, snapshot engine, comparator, instruction budget or original corpus change"
+  },
+  "sourceRuntimeReceiptSha256": "e8634399fda97f16604d512b718ab3f92ca38e95d307562c5d4d614730b379b6",
+  "successorExecution": "UNEXECUTED; source-wide and protected acceptance still required",
+  "sourceProof": {
+    "crates/vize_atelier_sfc/src/script/context/helpers.rs": "c67de7d5d60551183c1d05e51215b8adbd30650251f4245c34c0a22c95d9b75f",
+    "crates/vize_atelier_sfc/src/script/context/parse.rs": "532ea01cbf079cd6ecd78b07621e198b199012e4293eda192e5d80d98444d3fc",
+    "crates/vize_atelier_core/src/steps/expression/collector/setup_write.rs": "42c2005b5d01582d10029391dcfe26ed703382de09eda32ba0925c2baf6f8d09",
+    "crates/vize_atelier_core/src/steps/expression.rs": "ef0c0a16858acc57e09dbee77362559fc25f863859f0f0281077f98b362b317f",
+    "crates/vize_atelier_core/src/codegen/emit.rs": "c348a72ff68050b94af5e3eb49e73ae0fc2797a52a0ac200a70ecb57c04b1faa"
+  }
+}

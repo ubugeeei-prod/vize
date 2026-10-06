@@ -66,6 +66,14 @@ pub fn retained_whole_expression<'n, 'a>(
 /// same parse a `SourceType::default().with_module(true)` (JS, module goal)
 /// site would produce — see the module docs for the exact reject classes.
 pub fn js_module_compatible(js: &JsExpression<'_>) -> bool {
+    // Exact lexer-owned identifiers have no comments, TS fields or nested
+    // syntax. Keep their strict/module refusal without raw scans or a walk.
+    // Escaped spellings and trivia retain the complete gate below.
+    if let oxc_ast_types::Expression::Identifier(identifier) = js.ast
+        && js.raw == identifier.name.as_str()
+    {
+        return !strict_mode_divergent_identifier(identifier.name.as_str());
+    }
     // Lexer-level divergence: outside a module goal the lexer treats
     // `<!--`/`-->` as HTML-like comments, so token boundaries themselves can
     // differ. Reject on the raw bytes before trusting the AST at all.

@@ -137,13 +137,16 @@ pub(super) fn generate_with_sections_and_options(
 
     // Now generate preamble after we know all used helpers
     // Only include specific helpers from root.helpers that are known to be
-    // added during transform but not tracked during codegen (like Unref)
+    // added during transform but not tracked during codegen (Unref and IsRef)
     // We don't merge ALL root.helpers because transform may add helpers that
     // get optimized away during codegen (e.g., createElementVNode -> createElementBlock)
     let mut all_helpers: Vec<RuntimeHelper> = ctx.used_helpers.iter().collect();
     let mut all_helper_bits = retain_unique_helpers(&mut all_helpers);
     if root.helpers.contains(&RuntimeHelper::Unref) {
         push_unique_helper(RuntimeHelper::Unref, &mut all_helpers, &mut all_helper_bits);
+    }
+    if root.helpers.contains(&RuntimeHelper::IsRef) {
+        push_unique_helper(RuntimeHelper::IsRef, &mut all_helpers, &mut all_helper_bits);
     }
     // Collect helpers from hoisted nodes - generate_hoists() takes &CodegenContext (immutable)
     // so helpers used in hoisted VNodes aren't tracked via use_helper(). Pre-scan them here.
