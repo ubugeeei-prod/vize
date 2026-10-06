@@ -12,6 +12,10 @@ use super::MaestroServer;
 
 #[cfg(all(test, feature = "native", unix))]
 mod retry_tests;
+#[cfg(feature = "native")]
+mod sync_feedback;
+#[cfg(feature = "native")]
+use sync_feedback::SyncDiagnostics;
 
 pub(super) struct CollectedDiagnostics {
     version: i32,
@@ -71,6 +75,21 @@ impl MaestroServer {
         uri: &Url,
         expected: Option<i32>,
     ) -> Option<CollectedDiagnostics> {
+        self.collect_diagnostics_with_sync_unlocked(
+            uri,
+            expected,
+            #[cfg(feature = "native")]
+            None,
+        )
+        .await
+    }
+
+    pub(super) async fn collect_diagnostics_with_sync_unlocked(
+        &self,
+        uri: &Url,
+        expected: Option<i32>,
+        #[cfg(feature = "native")] prepared: Option<SyncDiagnostics>,
+    ) -> Option<CollectedDiagnostics> {
         #[cfg(feature = "native")]
         let scope = if self.state.is_lsp_typecheck_enabled() {
             Some(self.state.corsa_request_scope().await)
@@ -108,7 +127,14 @@ impl MaestroServer {
 
         // Use async version when native feature is enabled (includes Corsa diagnostics)
         #[cfg(feature = "native")]
-        let diagnostics = DiagnosticService::collect_async(&self.state, uri).await;
+        let diagnostics = match prepared
+            .filter(|sync| sync.version == version && sync.stamp.is_current(&self.state))
+        {
+            Some(sync) => {
+                DiagnosticService::collect_async_from_sync(&self.state, uri, sync.diagnostics).await
+            }
+            None => DiagnosticService::collect_async(&self.state, uri).await,
+        };
 
         #[cfg(not(feature = "native"))]
         let diagnostics = DiagnosticService::collect(&self.state, uri);

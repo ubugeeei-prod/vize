@@ -157,10 +157,16 @@ impl SpecCache {
         }
 
         let compiler_options = config.get("compilerOptions").and_then(Value::as_object);
-        if let Some(allow_js) = compiler_options
-            .and_then(|options| options.get("allowJs"))
-            .and_then(Value::as_bool)
+        let own_allow_js = compiler_options.and_then(|options| options.get("allowJs"));
+        if config_path
+            .file_name()
+            .is_some_and(|name| name == "jsconfig.json")
         {
+            effective.allow_js = match own_allow_js {
+                None => Some(true),
+                Some(value) => value.as_bool(),
+            };
+        } else if let Some(allow_js) = own_allow_js.and_then(Value::as_bool) {
             effective.allow_js = Some(allow_js);
         }
         for (name, target) in [

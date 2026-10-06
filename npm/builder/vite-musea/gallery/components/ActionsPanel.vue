@@ -123,7 +123,10 @@ function formatRawEvent(event: ActionEvent): string {
         </button>
         <div v-if="expandedId === id" class="action-detail">
           <pre
-            class="action-raw hljs"
+            class="action-raw musea-code-block"
+            tabindex="0"
+            role="region"
+            aria-label="Action event JSON"
           ><HighlightedCode :code="formatRawEvent(event)" language="json" /></pre>
         </div>
       </div>
@@ -338,14 +341,6 @@ function formatRawEvent(event: ActionEvent): string {
   background: var(--musea-bg-tertiary);
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-sm);
-  padding: 0.375rem 0.5rem;
-  font-family: var(--musea-font-mono, monospace);
-  font-size: 0.5625rem;
-  color: var(--musea-text-secondary);
-  overflow-x: auto;
-  white-space: pre;
-  margin: 0;
   max-height: 150px;
-  overflow-y: auto;
 }
 </style>

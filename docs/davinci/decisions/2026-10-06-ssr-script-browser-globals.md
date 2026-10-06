@@ -204,3 +204,23 @@ passes all three cases, retaining complete graphs/maps and the original actual
 setup ReferenceError, render warning and TypeError rather than claiming a clean
 original render. These are partial product/execution receipts, not whole-source,
 protected instruction, native typechecker, merge, release or performance proof.
+
+## Actual rich/inlay repair-prefix incorporation
+
+Paired [issue decision](https://github.com/ubugeeei-prod/vize/issues/7982#issuecomment-6010840948).
+
+The native Stack prefix actually merges both layers as signed valid commits:
+`a344f3d32f` for #8095 and `29724e2952` for #8082. Incorporate signed actual
+main `890c3ce480` once, whose sole parent is `29724e2952`; it also contains
+the delivered #8093 default-preset correction. Preserve every incoming source,
+workflow, lock, provider and default-rule byte. The only merge conflict is the
+shared canonical line: keep the whole incoming file and append the owned SSR
+entry, retaining 350 lines. Regenerated inventories preserve incoming rows.
+
+The private Nuxt input correction and all original 23 rule/parser laws, issue
+bytes and complete original/empty/restore expectations remain intact. Fresh
+automatic source Actions and one necessary existing full Check must qualify this
+new composition; historical `229c` failures and ordinary green remain separate.
+Protected 100+4 measurements, full suites, signed merge and an actually included
+finite published cut stay pending. Root's v0.435 release work is separate from
+this unqualified source; no inclusion, public or performance credit is assumed.

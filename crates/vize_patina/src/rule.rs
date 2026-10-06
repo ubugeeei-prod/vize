@@ -284,6 +284,10 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::RequireComponentIs));
         registry.register(Box::new(crate::rules::vue::NoUselessTemplateAttributes));
         registry.register(Box::new(crate::rules::vue::NoDeprecatedSlotAttribute));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedVBindSync));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedVOnNativeModifier));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedSlotScopeAttribute));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedScopeAttribute));
         crate::rules::vue::register_valid_directives(&mut registry);
         registry.register(Box::new(crate::rules::vue::UseVOnExact));
 

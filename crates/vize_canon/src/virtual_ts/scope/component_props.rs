@@ -66,6 +66,7 @@ pub(super) fn generate_component_props(
         checkable_usages,
         ctx.check_unknown_props,
         ctx.check_unknown_fallthrough_props,
+        ctx.strict_component_attrs,
     );
     append_component_slot_check_helpers(ts, ctx.experimental_strict_slot_children);
 

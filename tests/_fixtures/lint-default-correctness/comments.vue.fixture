@@ -1,0 +1,1 @@
+<template><!-- :title.sync="title" @activate.native="run" slot-scope="props" scope="props" --><p>ok</p></template>

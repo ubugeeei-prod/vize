@@ -21,6 +21,7 @@ use tower_lsp::{
 use super::{CollectedDiagnostics, MaestroServer};
 
 mod publication_tests;
+mod sync_feedback_tests;
 
 const APP: &str =
     include_str!("../../../../../tests/_fixtures/lsp-corsa-responsiveness-8012/App.vue.txt");

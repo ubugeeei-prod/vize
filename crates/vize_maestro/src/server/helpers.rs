@@ -43,6 +43,8 @@ impl MaestroServer {
         let retained = super::initial_diagnostics::RetainedDiagnostics::new(self, uri);
         #[cfg(feature = "native")]
         super::workspace_files::invalidate_changed_document_disk_project_state(self, uri).await;
+        #[cfg(feature = "native")]
+        let sync = self.publish_changed_sync_diagnostics(uri, version).await;
         // Apply editor text before waiting for type diagnostics. Their lock
         // cannot delay didChange or hide the new revision from pending replies.
         #[cfg(feature = "native")]
@@ -50,7 +52,14 @@ impl MaestroServer {
         #[cfg(feature = "native")]
         let diagnostic_guard = diagnostic_lock.lock().await;
 
-        let diagnostics = self.collect_diagnostics_unlocked(uri, Some(version)).await;
+        let diagnostics = self
+            .collect_diagnostics_with_sync_unlocked(
+                uri,
+                Some(version),
+                #[cfg(feature = "native")]
+                sync,
+            )
+            .await;
 
         #[cfg(feature = "native")]
         drop(diagnostic_guard);

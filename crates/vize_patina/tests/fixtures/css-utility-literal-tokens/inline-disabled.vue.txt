@@ -1,0 +1,9 @@
+<template>
+  <p class="my-note">note</p>
+</template>
+
+<style scoped>
+/* vize-disable-next-line css/no-utility-classes; .pl-3 is old */
+.flex { display: flex; }
+.pl-3 { padding-left: 12px; }
+</style>

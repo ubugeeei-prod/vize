@@ -31,6 +31,29 @@ impl DiagnosticDocument {
         self.collection.lock().await
     }
 
+    /// Order the first transport poll against complete publication claims.
+    /// A partial result cannot clear an already queued complete same-world
+    /// result, and no ownership lock survives a backpressured flush.
+    pub(crate) fn enqueue_sync<R>(
+        &self,
+        state: &ServerState,
+        uri: &Url,
+        version: i32,
+        stamp: CorsaRequestStamp,
+        enqueue: impl FnOnce() -> R,
+    ) -> Option<R> {
+        let slot = self.publication.lock();
+        if !stamp.is_current(state)
+            || state.documents.version(uri) != Some(version)
+            || slot.as_ref().is_some_and(|publication| {
+                publication.version == version && publication.stamp == stamp
+            })
+        {
+            return None;
+        }
+        Some(enqueue())
+    }
+
     /// Retain one complete payload in the existing per-document lock entry.
     /// No synchronous guard survives transport backpressure. A cancelled
     /// sender removes only its own claim; a newer source world's claim wins.

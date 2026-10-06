@@ -1,0 +1,10 @@
+<template>
+  <p class="my-note">note</p>
+</template>
+
+<style scoped>
+/* .pl-3 is removed */
+.my-note::before { content: "escaped \" .flex /* literal comment */"; }
+.my-note::after { content: 'escaped \' .mt-2 /* literal comment */'; }
+.pl-3 { padding-left: 12px; }
+</style>
