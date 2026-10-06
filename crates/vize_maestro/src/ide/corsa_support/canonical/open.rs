@@ -53,7 +53,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
     let Some(source_path) = ctx.uri.to_file_path().ok() else {
         return Ok(None);
     };
-    let virtual_ts_options = ctx.state.virtual_ts_options();
+    let virtual_ts_options = ctx.state.editor_virtual_ts_options().await;
     let opened = bridge
         .open_vue_virtual_workspace_document(
             &source_path,
@@ -71,6 +71,9 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
             requested_sources,
         )
         .await?;
+    #[cfg(test)]
+    ctx.state
+        .record_editor_project_open("canonical", ctx.uri, &ctx.content, &opened);
 
     let dependencies = opened
         .dependencies
