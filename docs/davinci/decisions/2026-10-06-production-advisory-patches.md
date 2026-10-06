@@ -67,3 +67,14 @@ Initial Check37400254814 failed installation with ERR_PNPM_INVALID_PATCH;
 the unified diff lacked the Git header required by pnpm. The successor adds
 only that header/blob identity and updates exact patch hashes. The authenticated
 consumer change remains one import; initial audit/consumer execution did not run.
+
+Corrected-head Node22/24 installed and initialized genuine Devtools but then
+failed Nuxt4 server initialization: the framework's intentionally direct Kit3
+loader was selected. Preserve that product dependency; resolve and verify
+Nuxt4.5.1's own Kit4.5.1 through its import path for qualification. No schema
+workaround, mocked handler or whole expected output change is introduced.
+
+The resolver bootstrap uses Nuxt's public package.json export and its own
+declared exsolve dependency, preserving the framework Kit3 bridge without
+borrowing an undeclared hoisted resolver. Actual runtime and Kit4 manifests
+are checked before the genuine load/whole-control execution.

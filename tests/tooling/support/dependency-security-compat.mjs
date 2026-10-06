@@ -10,11 +10,13 @@ const fixture = process.argv[2];
 assert.ok(fixture);
 const nuxtPackage = path.join(root, "npm/framework/nuxt/package.json");
 const requireNuxt = createRequire(nuxtPackage);
-const kitEntry = requireNuxt.resolve("@nuxt/kit");
-const requireKit = createRequire(kitEntry);
-const { resolveModulePath } = await import(pathToFileURL(requireKit.resolve("exsolve")).href);
+const runtimeManifest = requireNuxt.resolve("nuxt/package.json");
+assert.equal(JSON.parse(fs.readFileSync(runtimeManifest)).version, "4.5.1");
+const requireRuntime = createRequire(runtimeManifest);
+const { resolveModulePath } = await import(pathToFileURL(requireRuntime.resolve("exsolve")).href);
 const esm = (name, from) => resolveModulePath(name, { from, conditions: ["node", "import"] });
 const nuxtEntry = esm("nuxt", nuxtPackage);
+const kitEntry = esm("@nuxt/kit", nuxtEntry);
 const devtoolsEntry = esm("@nuxt/devtools", nuxtEntry);
 const requireDevtools = createRequire(devtoolsEntry);
 const gitEntry = esm("simple-git", devtoolsEntry);
@@ -31,6 +33,7 @@ const manifest = (require, name) => {
   }
   throw new Error(`missing actual package manifest: ${name}`);
 };
+assert.equal(manifest(createRequire(nuxtEntry), "@nuxt/kit").version, "4.5.1");
 assert.equal(manifest(requireDevtools, "simple-git").version, "4.0.1");
 assert.equal(manifest(requireGit, "@simple-git/argv-parser").version, "2.0.1");
 assert.equal(manifest(requireGit, "@simple-git/args-pathspec").version, "1.0.4");
@@ -124,6 +127,7 @@ console.log(
   JSON.stringify({
     node: process.versions.node,
     nuxtEntry,
+    kitEntry,
     devtoolsEntry,
     gitEntry,
     results,
