@@ -15,6 +15,11 @@ pub(super) fn run<T: Sync>(
     items: &[T],
     request: impl Fn(&T) -> Result<(), String> + Sync,
 ) -> Result<(), String> {
+    match items {
+        [] => return Ok(()),
+        [item] => return request(item),
+        _ => {}
+    }
     let next = AtomicUsize::new(0);
     let failed = AtomicBool::new(false);
     let first_error = Mutex::new(None);

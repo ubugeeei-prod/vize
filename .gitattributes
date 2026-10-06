@@ -62,3 +62,6 @@ tests/_fixtures/differential/lint/oxlint-original-locations-7904/*.txt -text whi
 # Pinned public root-comment source and authored corpus keep complete checkout bytes.
 tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/** -text whitespace=cr-at-eol
 tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/habitica/** whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
+
+# Preserve full authored LF/CRLF CSS continuation originals and references.
+tests/_fixtures/differential/formatter-regressions/css-continuation-indent-7915/** -text whitespace=cr-at-eol

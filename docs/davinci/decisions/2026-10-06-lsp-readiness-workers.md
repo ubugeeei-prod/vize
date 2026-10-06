@@ -87,3 +87,26 @@ keeping all incoming bytes and scheduling/control bodies. Only the adjacent
 owned canonical conflict is resolved. The53b9 receipt remains historical;
 fresh current source/native/scaling/protected gates and actual signed delivery
 with the terminal reporter footer remain required.
+
+## Single-document owner scheduling
+
+[The retained c803 failure and correction](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6018198982)
+record one original native configuration timeout among4210 Rust tests. It occurs
+at the second check after an inherited checkJs edit; the precise phase and cause
+remain unknown. Native method-handler `exit: EOF` does not establish transport
+EOF or process death. The actual native CLI, paired400 and DOM gates passed
+separately, without waiving the full-source failure or changing its assertions.
+
+Exactly one dirty URI now requests its complete symbol response directly on the
+owning bridge worker, avoiding an extra OS thread when there is nothing to overlap.
+Empty generations still issue no request. Larger generations retain the exact
+sixteen-worker ceiling, complete per-URI responses and all-started-work drain.
+A whole socket law checks owner ThreadId, both complete request envelopes, full
+symbol result and structured native refusal. Every earlier534/error/drain law,
+generation check, four128 drains, deadline, diagnostic and cleanup stays intact.
+This is a scheduling correction, not a proved timeout fix or measured speedup.
+
+Genuinely incorporate signed main be735f0815ae69f167c31c718b11f41d0bdeee7b,
+preserving all incoming source and decision bytes. Fresh current full Rust,
+original native configuration,534/public400, protected104 and actual signed
+delivery remain required. No retry of the failed head or deadline waiver applies.
