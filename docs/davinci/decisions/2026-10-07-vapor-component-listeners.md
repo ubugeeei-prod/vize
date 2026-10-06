@@ -61,3 +61,22 @@ signed actual merge and released-consumer inclusion remain required. No native
 level, direct Vapor SSR, hydration, Chromium, performance or ranking acceptance
 is claimed. The issue closes only after both complete original event failures
 are actually qualified; source preparation alone does not complete it.
+
+## First source failure and necessary import correction
+
+The first source Check `37485843325` at `04453bc291` stopped before any new
+Rust/runtime law executed. Build job `112345794871` reported E0432: this new
+test requested the string function classifier from `steps`, whose reexports
+include only its node variant. The test now imports both classifiers from the
+existing public `steps::expression` module; no production export or behavior
+changes. The original 225,635-byte log is retained with SHA-256
+`5f904dceb443857c3936248a2d6aa0b5b0cabd86aa956fb56c77ee619ad6828d`.
+
+The same Check's security job `112345505447` independently failed its strict
+advisory-set gate on critical shell-quote `GHSA-pqg4-j6r4-53mv`. Its authentic
+82,369-byte log has SHA-256
+`9e02830cd4dec08f4dd8105793183f7d6686111d8e9128d3af3ac0b0c6133634`.
+Shared dependency remediation is separate; no finding, gate or budget is
+waived here. PR #8133 was kept unqueued and contained as Draft after those
+actual failures. Fresh source qualification is still required; original
+fixtures, references, all runtime cells and both production files are intact.

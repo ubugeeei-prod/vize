@@ -8,7 +8,7 @@ use std::{
 };
 use vize_atelier_core::{
     CodegenOptions, TemplateSyntaxMode,
-    steps::{is_event_handler_reference_expression, is_function_expression},
+    steps::expression::{is_event_handler_reference_expression, is_function_expression},
 };
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode, compile_sfc_for_adapter, parse_sfc,
