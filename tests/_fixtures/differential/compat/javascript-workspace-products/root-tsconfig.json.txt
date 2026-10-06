@@ -1,0 +1,11 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/vite"
+    },
+    {
+      "path": "./apps/nuxt"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+# JavaScript workspace product coverage
+
+This project is authored coverage for #8099, not a transcription of a reporter's unspecified application. Its own runtime source consists of JavaScript SFC scripts without `lang="ts"`, ordinary `.js`/`.mjs`, `nuxt.config.js`, JSDoc contracts, package exports and relative workspace package links. `corpus.json` binds every source carrier and the unchanged package/lock inputs of the existing installed cohorts.
+
+The existing Nuxt build Actions cell stages the same graph for Vite 8.2.2, Nuxt 3.19.3 and Nuxt 4.5.2 with Vue 3.5.43. Actual Nuxt preparation creates the provider declarations, path aliases, Nuxt 3 extends chain and Nuxt 4 split project references. Generated TypeScript declarations belong to the real framework; the authored application is JavaScript. Stock and current-source builds render the complete owned main element and real click update. Full documents, generated bundles and raw compiler calls remain retained.
+
+The same source-receipted CLI runs normal config lookup for lint, formatting, compilation and checking. Whole clean lint and duplicate-key JSON vectors, complete formatted JS/SFC bytes, full compiled JSON packets, executable Vite CLI-produced client/SSR modules, seven whole native diagnostic/repair reports and actual vue-tsc output are mandatory. Program inputs and effective options are derived separately from the installed TypeScript parser and real generated configuration bytes. No checker outcome is accepted from an empty field subset.
+
+Real stdio sessions separately select lint-only and native-only modes, then edit and repair the package-linked JavaScript SFC before shutdown. Every diagnostic is a complete independently authored packet. Passive notifications and complete raw frames, versioned source changes, source build identity, provider executable/package/member hashes and closed process results are retained. Current tiny latency rows are observations, with no speedup or Program-reuse claim.
+
+The genuine jsconfig-only CLI omission/default controls belong to the separate #8100 slice. They must not be replaced with a TypeScript configuration or an explicit `allowJs: true` workaround. Existing editor provider/alias fixes are separate authorities. Current source preparation has not executed these Actions or qualified a release.
