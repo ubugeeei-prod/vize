@@ -43,6 +43,7 @@ impl ServerState {
         let Ok(path) = uri.to_file_path() else {
             return false;
         };
+        self.observe_workspace_project_membership(&path, true);
         if vize_l0::path::is_git_metadata_path(&path) {
             return false;
         }
@@ -72,6 +73,7 @@ impl ServerState {
         let Ok(prefix) = uri.to_file_path() else {
             return false;
         };
+        self.observe_workspace_project_membership(&prefix, false);
         let before = self.workspace_vue_files.len();
         self.workspace_vue_files.retain(|candidate, _| {
             candidate

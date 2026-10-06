@@ -89,3 +89,30 @@ Git blob `8dab6bce9b867e6b6fca9d0b197fa5c117feb296` at the same native commit.
 The same-PR successor incorporates signed actual main `97d5c26a153944e66439a3108746c19d7bf62220` (#8120) after the real generated Maestro inventory conflict prevented Actions. All incoming shared declaration-option producers and whole controls stay byte-exact; only the composed consumer census is regenerated. All four original sources and the shorthand successor's independently authored whole expectations remain unchanged, with fresh current-source qualification required.
 
 At `2a131c68ce12c31449af5d03836f3d7fa8da838e`, all four ordinary Rust workers pass and the mandatory native workflow is terminal successful. Ordinary tooling still rejects the stale Croquis consumption shard: the reused `parse_program_for_analysis` API is now consumed in two Maestro files at two sites. The existing pure underlying generator adds that one authentic row, with all production, four original inputs and whole native/legacy oracles unchanged. Current artifact authentication, fresh successor source/native gates and protected delivery remain separate requirements.
+
+The first current protected candidate `58102a984a78b8c6058451154953fcef6d402067`
+passes all 104 instruction triples but fails two original tooling consumers.
+The old workspace-symbol test's pre-open `null` encoded open-only discovery,
+which #8013 explicitly changes. Its unchanged Vue producer defines the complete
+`myCounter` symbol as VARIABLE 13, container `script setup`, and zero range at
+original line 3:0; the same whole object is now required before and after opening.
+All original source literals, other queries, kinds and negative controls remain.
+Closing an unsaved symbol still removes it and now also proves restoration of
+the complete original on-disk CONSTANT 14 at line 1:0. These structural queries
+remain available with type checking disabled and start no checker process.
+
+The separate original rename consumer is retained byte-exact. Its notification
+moves an open buffer to an unwritten new URI while the old disk file remains.
+Demand discovery must respect that authoritative namespace operation instead of
+resurrecting the retired old URI. The same inventory now records retired path
+prefixes through existing forget/track and file-event hooks; closed-file reads
+exclude them until an explicit creation restores membership. Open buffers remain
+authoritative. No extra walk, content cache, native query, diagnostic filtering,
+filesystem mutation or new pipeline is introduced. A full-state law retains the
+original OldCard source, unsaved moved buffer, unaffected TS/JS neighbors,
+close, file recreation and subtree recreation. The original consumer sources
+are literal corpus carriers. Existing mandatory qualification runs both entire
+legacy consumer suites alongside the original public 8013 native controls, with
+source-built process captures copied before preserving the original exit status.
+Fresh successor source/native and protected qualification are required; the
+current failure is retained, and the PR was promptly dequeued and made Draft.

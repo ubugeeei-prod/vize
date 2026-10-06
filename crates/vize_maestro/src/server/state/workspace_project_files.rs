@@ -15,6 +15,7 @@ use super::{ServerState, global_components::is_excluded_directory};
 pub(super) struct Inventory {
     generation: AtomicU64,
     paths: RwLock<Option<CachedPaths>>,
+    retired: RwLock<Vec<PathBuf>>,
     scan: Mutex<()>,
     #[cfg(test)]
     read_pause: RwLock<Option<(oneshot::Sender<()>, oneshot::Receiver<()>)>>,
@@ -36,10 +37,14 @@ impl Inventory {
     }
 }
 
-fn read_sources(uris: &[Url]) -> Vec<(Url, std::string::String)> {
+fn read_sources(uris: &[Url], retired: &[PathBuf]) -> Vec<(Url, std::string::String)> {
     uris.iter()
         .filter_map(|uri| {
-            let source = std::fs::read_to_string(uri.to_file_path().ok()?).ok()?;
+            let path = uri.to_file_path().ok()?;
+            if retired.iter().any(|prefix| path.starts_with(prefix)) {
+                return None;
+            }
+            let source = std::fs::read_to_string(path).ok()?;
             Some((uri.clone(), source))
         })
         .collect()
@@ -51,12 +56,29 @@ impl ServerState {
     }
 
     pub(crate) fn observe_workspace_project_file_events(&self, events: &[FileEvent]) {
-        if events
-            .iter()
-            .any(|event| event.typ != FileChangeType::CHANGED)
-        {
-            self.invalidate_workspace_project_files();
+        for event in events {
+            if event.typ != FileChangeType::CHANGED
+                && let Ok(path) = event.uri.to_file_path()
+            {
+                self.observe_workspace_project_membership(
+                    &path,
+                    event.typ == FileChangeType::CREATED,
+                );
+            }
         }
+    }
+
+    /// File-operation notifications retire the old namespace even before the
+    /// filesystem view catches up. A later explicit creation restores it.
+    pub(crate) fn observe_workspace_project_membership(&self, path: &Path, created: bool) {
+        let mut retired = self.workspace_project_files.retired.write();
+        if created {
+            retired.retain(|prefix| !path.starts_with(prefix) && !prefix.starts_with(path));
+        } else if !retired.iter().any(|prefix| path.starts_with(prefix)) {
+            retired.retain(|prefix| !prefix.starts_with(path));
+            retired.push(path.to_owned());
+        }
+        self.invalidate_workspace_project_files();
     }
 
     pub(crate) fn invalidate_workspace_project_files(&self) {
@@ -98,9 +120,10 @@ impl ServerState {
                 continue;
             }
             let scan_roots = roots.clone();
+            let retired = inventory.retired.read().clone();
             let Some((uris, sources, complete)) = background(move || {
                 let (uris, complete) = discover_paths(&scan_roots);
-                let sources = read_sources(&uris);
+                let sources = read_sources(&uris, &retired);
                 (uris, sources, complete)
             })
             .await
@@ -155,7 +178,8 @@ impl ServerState {
         roots: &[PathBuf],
         generation: u64,
     ) -> Option<Vec<(Url, std::string::String)>> {
-        let sources = background(move || read_sources(&uris))
+        let retired = self.workspace_project_files.retired.read().clone();
+        let sources = background(move || read_sources(&uris, &retired))
             .await
             .unwrap_or_default();
         #[cfg(test)]
@@ -229,5 +253,7 @@ async fn background<T: Send + 'static>(work: impl FnOnce() -> T + Send + 'static
     receiver.await.ok()
 }
 
+#[cfg(test)]
+mod membership_tests;
 #[cfg(test)]
 mod tests;
