@@ -114,7 +114,6 @@ impl EditorLspSession {
                 project_id,
                 uri,
                 vue_module,
-                source,
                 &mut capture,
             )
             .map_err(communication);
@@ -186,7 +185,6 @@ fn component_target(
     project: &ProjectHandle,
     uri: &str,
     position: u32,
-    source: &str,
     capture: &mut capture::Capture,
 ) -> corsa::Result<Option<TypeResponse>> {
     let module = block_on(api.get_symbol_at_position(
@@ -210,9 +208,7 @@ fn component_target(
         Ok(value) => json!({"result":value}),
         Err(error) => json!({"error":cstr!("{error}")}),
     });
-    let mut exports = exports?
-        .into_iter()
-        .filter(|symbol| symbol.name == "Component");
+    let mut exports = exports?.into_iter().filter(|symbol| symbol.name == "App");
     let Some(mut symbol) = exports.next() else {
         return Ok(None);
     };
@@ -222,7 +218,7 @@ fn component_target(
     if symbol.flags & ALIAS != 0 {
         let resolved =
             block_on(api.get_aliased_symbol(snapshot.clone(), project.clone(), symbol.id));
-        capture.record("componentAlias", || match &resolved {
+        capture.record("appAlias", || match &resolved {
             Ok(value) => json!({"result":value}),
             Err(error) => json!({"error":cstr!("{error}")}),
         });
@@ -231,53 +227,70 @@ fn component_target(
         };
         symbol = resolved;
     }
-    capture.record("componentExport", || json!(symbol));
-    // The exported generic declaration keeps its type parameters unresolved.
-    // This generated nongeneric reference applies Vue's own default arguments.
-    let witness = crate::virtual_ts::COMPONENT_TYPE_WITNESS;
-    let mut offsets = source.match_indices(witness);
-    let Some((offset, _)) = offsets.next() else {
-        return Ok(None);
-    };
-    if offsets.next().is_some() {
-        return Ok(None);
-    }
-    let Some(name_offset) = witness.find("__VizeTagComponent") else {
-        return Ok(None);
-    };
-    let offset = offset + name_offset;
-    let Some(prefix) = source.get(..offset) else {
-        return Ok(None);
-    };
-    let Ok(position) = u32::try_from(prefix.encode_utf16().count()) else {
-        return Ok(None);
-    };
-    let resolved = block_on(api.get_symbol_at_position(
-        snapshot.clone(),
-        project.clone(),
-        uri_document_identifier(uri),
-        position,
-    ));
-    capture.record("componentReferenceSymbol", || match &resolved {
-        Ok(value) => json!({"position":position,"result":value}),
-        Err(error) => json!({"error":cstr!("{error}")}),
-    });
-    let Some(resolved) = resolved? else {
-        return Ok(None);
-    };
-    if resolved.name != "__VizeTagComponent"
-        || resolved.flags & (1 << 19) == 0
-        || resolved.declarations.len() != 1
-    {
-        return Ok(None);
-    }
+    capture.record("appExport", || json!(symbol));
     let declared =
-        block_on(api.get_declared_type_of_symbol(snapshot.clone(), project.clone(), resolved.id));
-    capture.record("declaredComponentType", || match &declared {
+        block_on(api.get_declared_type_of_symbol(snapshot.clone(), project.clone(), symbol.id));
+    capture.record("declaredAppType", || match &declared {
         Ok(value) => json!({"result":value}),
         Err(error) => json!({"error":cstr!("{error}")}),
     });
-    Ok(declared?.filter(known_type))
+    let Some(declared) = declared?.filter(known_type) else {
+        return Ok(None);
+    };
+    let property = block_on(api.get_property_of_type(
+        snapshot.clone(),
+        project.clone(),
+        declared.id,
+        "component",
+    ));
+    capture.record("componentProperty", || match &property {
+        Ok(value) => json!({"result":value}),
+        Err(error) => json!({"error":cstr!("{error}")}),
+    });
+    let Some(property) = property? else {
+        return Ok(None);
+    };
+    let method = block_on(api.get_type_of_symbol(snapshot.clone(), project.clone(), property.id));
+    capture.record("componentMethodType", || match &method {
+        Ok(value) => json!({"result":value}),
+        Err(error) => json!({"error":cstr!("{error}")}),
+    });
+    let Some(method) = method?.filter(known_type) else {
+        return Ok(None);
+    };
+    let signatures =
+        block_on(api.get_signatures_of_type(snapshot.clone(), project.clone(), method.id, 0));
+    capture.record("componentSignatures", || match &signatures {
+        Ok(value) => json!({"result":value}),
+        Err(error) => json!({"error":cstr!("{error}")}),
+    });
+    // The nongeneric getter references Component with Vue's own defaults.
+    // Its generic setter parameter would retain an unresolved type parameter.
+    let mut getters = signatures?.into_iter().filter(|signature| {
+        signature.parameters.len() == 1 && signature.type_parameters.is_empty()
+    });
+    let Some(getter) = getters.next() else {
+        return Ok(None);
+    };
+    if getters.next().is_some() {
+        return Ok(None);
+    }
+    let returned =
+        block_on(api.get_return_type_of_signature(snapshot.clone(), project.clone(), getter.id));
+    capture.record("componentGetterReturnType", || match &returned {
+        Ok(value) => json!({"result":value}),
+        Err(error) => json!({"error":cstr!("{error}")}),
+    });
+    let Some(returned) = returned?.filter(known_type) else {
+        return Ok(None);
+    };
+    let component =
+        block_on(api.get_non_nullable_type(snapshot.clone(), project.clone(), returned.id));
+    capture.record("instantiatedComponentType", || match &component {
+        Ok(value) => json!({"result":value}),
+        Err(error) => json!({"error":cstr!("{error}")}),
+    });
+    Ok(component?.filter(known_type))
 }
 
 impl CorsaProjectClient {

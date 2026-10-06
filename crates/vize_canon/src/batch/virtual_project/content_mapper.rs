@@ -154,7 +154,6 @@ pub fn generate_vue_content_mapper_transform_with_options(
             options_api: transform_options.options_api(),
             preserve_authored_component: true,
             preserve_script_on_template_error: false,
-            component_type_witness: false,
             component_name: Some(component_name.as_str()),
             preserve_event_navigation: true,
             legacy_vue2: false,

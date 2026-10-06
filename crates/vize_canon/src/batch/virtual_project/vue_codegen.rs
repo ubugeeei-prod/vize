@@ -313,13 +313,6 @@ pub(super) fn generate_vue_virtual_ts(
         codegen_options.check_options.strict_css_modules,
     );
 
-    if codegen_options.component_type_witness
-        && !vue2_compat
-        && (descriptor.script.is_some() || descriptor.script_setup.is_some())
-    {
-        code.push_str(crate::virtual_ts::COMPONENT_TYPE_WITNESS);
-    }
-
     Ok(GeneratedVueFile {
         code,
         mappings,
