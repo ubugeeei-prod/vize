@@ -308,3 +308,15 @@ literal changes to that same immutable main; all six drivers, timers, full
 inputs/physical-build/PID guards and original native commands remain intact.
 Publish the existing Draft for fresh ordinary/native20 quality first. No full
 matched dispatch or benefit follows from this source-only reconciliation.
+
+[Current3a native quality and bounded observation](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6008114713)
+authenticate16325 hostedRust/20bulk laws, original72/78 native vectors/calls,
+eight snapshot laws/three lifetimes and actual reader retirement/full fallback.
+Native ZIP11386157748/006e55b2 passes12562 CRC members; proofe783f151
+remains quality-only. Currentwhole681/gain is unknown; old9d stays FAILED.
+Opt into the existing profileOnly hook only on the exact manual branch step:
+one default-feature integration arm, original three generations, preceding full
+681 vectors, all source/build/PID/fixture guards and budgets remain intact.
+Measurements[]/warmGainObservedfalse and numeric operations supply no matched,
+CPU/allocation/group/default/gain credit. Review before one existing Action;
+keep Draft/offqueue and root's release independent without another fair repeat.

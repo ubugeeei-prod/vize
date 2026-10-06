@@ -201,6 +201,7 @@ runs:
       if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/perf/bulk-native-diagnostics-20261005' }}
       shell: bash
       env:
+        VIZE_BULK_COST_PROFILE_ONLY: "1"
         GH_TOKEN: ${{ github.token }}
         VIZE_TIER_L_FIXTURE: tests/_fixtures/_git/vue-vben-admin
         VIZE_TIER_L_CORSA_BIN: node_modules/@typescript/typescript-linux-x64/lib/tsc
