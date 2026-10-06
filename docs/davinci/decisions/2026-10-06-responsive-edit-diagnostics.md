@@ -54,8 +54,10 @@ The separate root caller binds actual driver/run/attempt, delivered fix ancestry
 
 Decision receipt: [6008732610](https://github.com/ubugeeei-prod/vize/issues/8002#issuecomment-6008732610).
 
-The independent security repair #8080 actually merged at 2026-10-06 05:04:12 UTC as signed main48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb. The same #8081 now genuinely replays all eight owned commits onto that actual main; author/email/date/full-body/reporter mappings and all25 owned noncanonical blobs match private0ad exactly. All350 incoming canonical lines survive removal of only the owned suffix. No production, original corpus, whole packet, native gate, default source registration or prepared public-helper change is introduced.
+The independent security repair #8080 actually merged at 2026-10-06 05:04:12 UTC as signed main48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb. The same #8081 now genuinely replays all eight owned commits onto that actual main; author/email/date/full-body/reporter mappings and all24 owned non-doc blobs match private0ad exactly. All350 incoming canonical lines survive removal of only the owned suffix. No production, original corpus, whole packet, native gate, default source registration or prepared public-helper change is introduced.
 
 Require fresh configured source Actions/native/Rust/security for this actual hosted union; old b4/977 runtime and b4's16,310 Rust cases remain historical with the authentic snapshot-release warning. Independent private installed-helper source review grants no runtime or future0.435 identity. Current clean/green source may enter the ordinary protected104/full-Rust queue and must reach an actual signed merge before root's installed original-case release handoff. No general gain, Program reuse or leak-free claim follows.
 
 Decision receipt: [6009728298](https://github.com/ubugeeei-prod/vize/issues/8002#issuecomment-6009728298).
+
+Independent preservation review qualifies all24 unchanged non-doc blobs; the companion itself appends history. Correct the final prose count only, with every production/original/whole oracle/native-gate/default-registration byte unchanged. Current Actions and future installed proof remain separate acceptance. Precision receipt: [6009775731](https://github.com/ubugeeei-prod/vize/issues/8002#issuecomment-6009775731).
