@@ -119,3 +119,19 @@ job logs and require new exact-head full54 API/218 CLI Actions. The source build
 compiled, but no whole54/218 acceptance, protected gate or delivery transfers.
 The Stack remains Draft/offqueue until actual security-main incorporation and
 fresh whole-chain qualification; both Issues remain open and root publishes.
+
+## Genuine delivered-security replay
+
+Paired decisions for [7976](https://github.com/ubugeeei-prod/vize/issues/7976#issuecomment-6009837099)
+and [7984](https://github.com/ubugeeei-prod/vize/issues/7984#issuecomment-6009837400)
+record actual signed8080 main48cb and the true CLI8086/d790 parent on bottom
+8073/38e. The maintainer delegates existing child delivery after its previous
+agent ended. Preserve all five original author/date/message/trailer records,
+all54 cases/218 CLI observations, both originals/configs and the before54
+archive/sole27 documented path corrections. Every source/oracle/helper/census
+body remains exact3cd; incoming objects and canonical350 remain whole.
+Retain the authentic old docs-path/security failures and prior scoped runtime
+receipts, including the complete218 CLI proof
+`e998807ede8193a31e1940f910d6af85fdc4d73c98eac067d1e93ba37915d183`. Fresh automatic whole54/218/source gates,
+same ordered Stack8092/protected budgets/signed delivery/root public release
+remain required; no old execution transfers or production/workflow changes.
