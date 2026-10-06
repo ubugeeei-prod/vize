@@ -3,7 +3,9 @@
 
 mod closure_scopes;
 mod duplicate_listeners;
+mod dynamic_reference;
 use duplicate_listeners::append_duplicate_listener_checks;
+pub(super) use dynamic_reference::named_dynamic_reference;
 
 pub(super) use closure_scopes::generate_closure_component_props_recursive;
 pub(super) use closure_scopes::recurse_child_closure_scopes;
@@ -73,12 +75,14 @@ pub(super) fn generate_component_props(
     for &(idx, usage) in checkable_usages {
         let component_ref = ctx.explicit_generics.usage_reference(
             usage.start,
-            component_binding_reference(
-                summary,
-                ctx.options,
-                ctx.syntactic_type_only_imported_names,
-                usage.name.as_str(),
-            ),
+            named_dynamic_reference(ctx, usage).unwrap_or_else(|| {
+                component_binding_reference(
+                    summary,
+                    ctx.options,
+                    ctx.syntactic_type_only_imported_names,
+                    usage.name.as_str(),
+                )
+            }),
         );
         let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
 
@@ -262,7 +266,7 @@ pub(super) fn collect_checkable_usages(
                 &external_template_bindings,
                 ctx.component_binding_check,
                 ctx.legacy_vue2,
-            )
+            ) || named_dynamic_reference(ctx, usage).is_some()
         })
         .collect()
 }

@@ -1,0 +1,7 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": { "vue/no-inline-styles": "warn", "vue/no-such-rule": "error" }
+  },
+  "entries": [{ "files": ["**/*.vue"], "linter": { "rules": { "a11y/no-autofocuss": "off" } } }]
+}

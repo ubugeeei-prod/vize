@@ -1,0 +1,1 @@
+{"name":"vize-cli-jsconfig-discovery","private":true,"type":"module"}

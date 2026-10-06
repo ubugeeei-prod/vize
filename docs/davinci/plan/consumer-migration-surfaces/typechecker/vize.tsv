@@ -101,6 +101,7 @@ typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output_prof
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/output.rs	5	l0	L0	stage	vize_l0	preferred	3
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/program_inputs.rs	3	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/programs.rs	8	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/runner/programs/tests/jsconfig.rs	3	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/resolve.rs	7	l0	L0	stage	vize_l0	preferred	10
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/socket.rs	8	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/text_style.rs	6	l0	L0	stage	vize_l0	preferred	1

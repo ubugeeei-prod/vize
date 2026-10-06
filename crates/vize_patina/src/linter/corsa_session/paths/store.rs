@@ -231,7 +231,13 @@ fn overlay_user_compiler_options(value: &mut Value, project_root: &Path, tsconfi
     else {
         return;
     };
-    for key in ["paths", "baseUrl", "types", "typeRoots"] {
+    for key in [
+        "paths",
+        "baseUrl",
+        "types",
+        "typeRoots",
+        "noUncheckedIndexedAccess",
+    ] {
         if let Some(option) = snapshot.get(key) {
             options.insert(json_string(key), option.clone());
         }
@@ -261,3 +267,6 @@ pub(super) fn push_u64(buffer: &mut String, value: u64) {
     let rendered = value.to_compact_string();
     buffer.push_str(rendered.as_str());
 }
+
+#[cfg(test)]
+mod compiler_options_tests;

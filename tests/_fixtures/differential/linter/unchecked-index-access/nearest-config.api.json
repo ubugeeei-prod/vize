@@ -1,0 +1,17 @@
+{
+  "filename": "src/nested/MyTouch.vue",
+  "diagnostics": [
+    {
+      "ruleName": "type/strict-boolean-expressions",
+      "severity": "error",
+      "message": "Unexpected nullable string value in conditional. Please handle the nullish and empty string cases explicitly.",
+      "start": 356,
+      "end": 364,
+      "help": null,
+      "labels": [],
+      "fix": null
+    }
+  ],
+  "errorCount": 1,
+  "warningCount": 0
+}

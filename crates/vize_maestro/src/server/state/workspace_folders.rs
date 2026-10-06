@@ -15,7 +15,9 @@ use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{InitializeParams, Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
 use vize_carton::config::matcher::LintPlanScope;
-use vize_l0::config::{ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions};
+use vize_l0::config::{
+    ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions, LinterFeatureFlags,
+};
 
 use super::ServerState;
 
@@ -25,13 +27,14 @@ pub(super) struct WorkspaceFolderConfig {
     plan: LinterConfigPlanWithConfigRuleOptions,
     scopes: Vec<LintPlanScope>,
     global_ignores: Vec<LintPlanScope>,
+    features: LinterFeatureFlags,
 }
 
 impl WorkspaceFolderConfig {
     /// Load the folder's own `vize.config.*`; a folder without a config file
     /// gets the built-in defaults so contexts stay order-independent.
     fn load(root: PathBuf) -> Self {
-        let (loaded, plan, _) = vize_carton::config::
+        let (loaded, plan, features) = vize_carton::config::
             load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source(
                 Some(&root),
             );
@@ -73,10 +76,14 @@ impl WorkspaceFolderConfig {
             plan,
             scopes,
             global_ignores,
+            features,
         }
     }
 
-    fn linter_for_path(&self, path: &Path) -> Option<(LinterConfig, ConfigLintRuleOptions)> {
+    fn linter_for_path(
+        &self,
+        path: &Path,
+    ) -> Option<(LinterConfig, ConfigLintRuleOptions, LinterFeatureFlags)> {
         if self.global_ignores.iter().any(|scope| scope.ignores(path)) {
             return None;
         }
@@ -87,7 +94,7 @@ impl WorkspaceFolderConfig {
             .filter_map(|(index, scope)| scope.matches(path).then_some(index))
             .collect::<Vec<_>>();
         let resolved = self.plan.resolve_matching_entries(&matching);
-        Some((resolved.config, resolved.rule_options))
+        Some((resolved.config, resolved.rule_options, self.features))
     }
 }
 
@@ -119,6 +126,23 @@ impl ServerState {
     #[cfg(feature = "native")]
     pub fn get_workspace_root(&self) -> Option<PathBuf> {
         self.workspace_root.read().clone()
+    }
+
+    /// Capture every registered editor folder without rescanning its sources.
+    #[cfg(feature = "native")]
+    pub(crate) fn workspace_root_paths(&self) -> Vec<PathBuf> {
+        let mut roots = self
+            .workspace_folder_configs
+            .read()
+            .iter()
+            .map(|context| context.root.clone())
+            .collect::<Vec<_>>();
+        if let Some(primary) = self.get_workspace_root()
+            && !roots.contains(&primary)
+        {
+            roots.push(primary);
+        }
+        roots
     }
 
     /// Resolve the primary workspace root from `initialize`: `rootUri` when
@@ -205,14 +229,15 @@ impl ServerState {
     pub(crate) fn linter_settings_for_uri(
         &self,
         uri: &Url,
-    ) -> Option<(LinterConfig, ConfigLintRuleOptions)> {
+    ) -> Option<(LinterConfig, ConfigLintRuleOptions, LinterFeatureFlags)> {
         if let Ok(path) = uri.to_file_path() {
             let contexts = self.workspace_folder_configs.read();
             if let Some(context) = deepest_enclosing_folder(&contexts, &path) {
                 return context.linter_for_path(&path);
             }
         }
-        Some((self.get_linter_config(), self.get_linter_rule_options()))
+        let (config, features) = self.get_linter_config_and_features();
+        Some((config, self.get_linter_rule_options(), features))
     }
 }
 

@@ -102,7 +102,10 @@ impl<'a> RouteDiscovery<'a> {
                     })
                     .clone()
             });
-        let needs_shadow = reachability.requires_shadow()
+        // Private imports need their authored manifest even for plain TS
+        // targets: the mirror's synthetic package boundary has no imports map.
+        let needs_shadow = (specifier.starts_with('#') && route.is_some())
+            || reachability.requires_shadow()
             || route
                 .as_ref()
                 .is_some_and(crate::PackageRoute::requires_workspace_source_shadow);
@@ -180,3 +183,6 @@ mod tests;
 #[cfg(test)]
 #[path = "routes_budget_tests.rs"]
 mod budget_tests;
+
+#[cfg(test)]
+mod private_import_tests;

@@ -2,6 +2,21 @@
 use super::super::{LspFeatureConfig, ServerState};
 
 impl ServerState {
+    pub(super) fn apply_linter_features(&self, features: vize_l0::config::ConfigFeatureFlags) {
+        self.linter_config.write().1 =
+            vize_l0::config::LinterFeatureFlags::from_config_features(features, None, None);
+    }
+
+    pub(crate) fn get_linter_config_and_features(
+        &self,
+    ) -> (
+        vize_l0::config::LinterConfig,
+        vize_l0::config::LinterFeatureFlags,
+    ) {
+        let snapshot = self.linter_config.read();
+        (snapshot.0.clone(), snapshot.1)
+    }
+
     /// Get the enabled LSP feature set.
     #[inline]
     pub(crate) fn lsp_features(&self) -> LspFeatureConfig {

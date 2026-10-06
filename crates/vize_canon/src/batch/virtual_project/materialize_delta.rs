@@ -280,6 +280,10 @@ pub(crate) struct MaterializedFileSnapshot {
 }
 
 impl MaterializedFileSnapshot {
+    pub(crate) fn package_links(&self) -> &FxHashMap<PathBuf, PathBuf> {
+        &self.package_links
+    }
+
     #[cfg(test)]
     pub(crate) fn capture(paths: &FxHashSet<PathBuf>) -> CorsaResult<Self> {
         Self::capture_with_links(paths, &FxHashMap::default())

@@ -1,0 +1,21 @@
+<script setup lang="ts">
+const items: string[] = ["a"];
+const byKey: Record<string, { label: string }> = {};
+
+function first(event: TouchEvent): number {
+  const touch = event.touches[0];
+  if (!touch) return 0;
+  return touch.clientY;
+}
+
+function label(key: string): string {
+  const entry = byKey[key];
+  return entry ? entry.label : "";
+}
+
+const head = items[0] ? items[0].toUpperCase() : "";
+</script>
+
+<template>
+  <p @touchstart="first">{{ label("x") }} {{ head }}</p>
+</template>

@@ -1,0 +1,137 @@
+# Native lint indexed-access options
+
+Issue: [#7995](https://github.com/ubugeeei-prod/vize/issues/7995).
+Paired [source decision](https://github.com/ubugeeei-prod/vize/issues/7995#issuecomment-6008612958).
+Reporter: `ubugeeei` / `71201308`.
+
+## Cause and bounded change
+
+Patina creates its real Corsa project from an existing compiler-option overlay.
+Canon's effective snapshot includes authored `noUncheckedIndexedAccess`, but
+the overlay previously copied only `paths`, `baseUrl`, `types`, and `typeRoots`.
+The native checker consequently sees ordinary object/string indexed-access
+types instead of their authored nullable types. Copy the one additional option
+through that same overlay; keep the actual condition-node queries, classifier,
+strict defaults, option allowances, session lifecycle, and stable schemas.
+
+Absent options add no field. Explicit false remains false. Canon's existing
+effective loader owns `extends`, explicit overrides, and nearest-file lookup.
+There is no new parse, AST walk, pipeline stage, protocol or dependency.
+
+## Whole original custody
+
+The independent corpus is
+`tests/_fixtures/differential/linter/unchecked-index-access`. It retains the
+complete issue body and all four fenced blocks; extracted fenced carriers use
+an explicit trailing LF. The original invocation remains
+`lint -f plain --help-level none src/MyTouch.vue`.
+
+| Original         | Bytes | SHA256                                                             |
+| ---------------- | ----: | ------------------------------------------------------------------ |
+| Whole issue body |  2776 | `32f908615152b6aff047431f2e2e6267db6167275a5b45892fef773e5e2571a6` |
+| SFC              |   487 | `34f1fe869137645c7b49db0a289a6586c33b02471aad6685d440ab61830ae15a` |
+| tsconfig         |   310 | `463c6d61dd2328ea4ef074e7884cd2c803758b6fae8a1bfe882d00c9e898a2df` |
+| lint config      |    93 | `b1ed60fd1f91bcc404fce797e7f3b0ab62457c5c95e8492bf572dac804d78e25` |
+| Reported console |   420 | `143d2e0853386a75732ecb292e28b91aae99e8a0e13821ae8dc763da48277626` |
+
+## Prepared qualification
+
+Seven complete config laws cover absent/true/false, inherited true, explicit
+false override, array-extends precedence, and nearest config ownership. Eleven
+whole native/API/CLI cases preserve the original, false/absent controls,
+inheritance/override/nearest cases, CRLF/Unicode, two allowance controls, and
+known tuple/property indices. Whole outputs are authored before execution.
+The original true flag allows nullable TouchList/Record object guards and
+rejects only the nullable `items[0]` string. False/absent retain the two object
+findings. Known tuple/property objects remain always truthy.
+
+The source-built test requires all public diagnostic fields, full JSON/plain
+stdout, empty complete stderr, status, and unchanged original/config bytes.
+It captures the actual native session's whole config and generated source,
+lossless process results before assertions, and CLI/native binary hashes.
+Only the independently owned temporary root replaces the expected API filename.
+The original lint config is unchanged; `CORSA_PATH` and the frozen Vue symlink
+are explicit test bootstrap. Default help is qualified at the reported `none`
+setting; no whole default/full-help equivalence is claimed.
+
+The existing automatic native source CLI invocation also runs this test and
+uploads its full capture. Ordinary PR Rust shards intentionally disable native
+runtime; only required native/full-queue execution can qualify eleven API and
+twenty-two CLI results. Current Rust compilation and runtime are pending.
+
+## Remaining work and limits
+
+TODO: execute fresh exact-source/native/protected suites before public delivery.
+No local native build, source runtime, workflow campaign, public PR, merge,
+release, or performance credit exists for this private preparation.
+
+TODO: switching governing tsconfigs inside one package with a reused long-lived
+Linter retains the existing project-root-based session cache rule. This change
+does not rekey that cache or qualify parity for every compiler option outside
+the existing whitelist. No additional source lane is started for those bounds.
+
+## Native qualification Stack
+
+The [paired publication decision](https://github.com/ubugeeei-prod/vize/issues/7995#issuecomment-6009031778)
+resumes delivery as a genuine child of #8073, whose strict all-target Clippy
+repair qualifies the Patina config tests. Replay onto the literal parent
+`d836c174f1fe5f1c7b8e12219366e137c129048d`, preserving all 65 owned blobs outside
+the canonical record and parent-derived native workflow. Preserve every parent
+canonical byte at 350 lines and the existing native command's strict capture.
+The initial child remains uncompiled/unexecuted; prior source review gives no
+runtime or admission credit. #8080 remains an independent security delivery.
+
+After its actual merge, replay the bottom on actual main and each child on the
+fresh parent once, preserving all original vectors and incoming history. Verify
+one native Stack and enter only an exact-green contiguous prefix with
+`gh stack merge --yes --squash`; do not auto-merge individual layers. Actual
+protected/native/signed delivery and an installed original-case 0.435 replay
+remain unfinished. The preceding private-preparation evidence stays historical.
+
+The [paired initial compilation failure](https://github.com/ubugeeei-prod/vize/issues/7995#issuecomment-6009105778)
+retains native run37411669720/job112101241146: the current sha2 digest Array
+has no LowerHex implementation, so the custody helper failed before any
+#7995 runtime case. Encode each actual digest byte as two lowercase hex digits,
+retaining every product/input/oracle/workflow byte. Fixed whole corpus hashes
+require the canonical SHA256 output during genuine execution. Preserve the
+472262-byte raw failed log, SHA256
+`6dfeb964175890e12a96832d105d7c825238906ec8d7ce3c3f7e5f02a5183089`.
+Fresh successor source/native execution remains pending, with no failed-head
+runtime credit or new assertion/cap waiver.
+
+## Delivered security and genuine replay
+
+The [paired security-main replay](https://github.com/ubugeeei-prod/vize/issues/7995#issuecomment-6009775363)
+records actual signed #8080 main48cb and genuine child ancestry on #8073/38e.
+All three original author/date/message/trailer records, product/original/oracle
+bytes and every incoming workflow command/canonical byte are preserved.
+Historical5d native37412137083 executed all11 whole API/all22 CLI vectors; its
+16,272 source Rust records and the one seven-config law passed, while only old
+security and the dependent aggregate failed. Preserve the entire failed SHA
+compilation log and all complete archives/receipts. Fresh replayed-source
+ordinary/native Actions, protected full suites/unchanged budgets, same ordered
+Stack8092, actual signed delivery and installed original435 replay remain
+required; no historical runtime or security acceptance transfers.
+
+## Protected workflow composition failure
+
+The [paired protected failure](https://github.com/ubugeeei-prod/vize/issues/7995#issuecomment-6010897762)
+retains candidate `c1aebfc11893f123245d1e353b09e0082e331286`,
+Check37423319431/job112137427627 and the complete first tooling1 log.
+Its shared native workflow has 353 lines after incoming prefix composition,
+above the unchanged 350 ceiling. Both Stack children are Draft and unqueued;
+all104 three-repeat counts passed but cannot override this failure.
+
+Genuinely incorporate actual main `baa427830e0a1b1b50a45582bda418992d5a5ac9`.
+Remove only three literal positive path selectors already wholly covered by
+the retained Canon, Croquis and typechecker fixture globs. The trigger union,
+all other parsed fields and every job/command/body byte remain equal; 353
+becomes 350 with no new helper, source packing, stage, deadline or cap waiver.
+All64 other owned source/original/oracle blobs and original authors remain
+exact; incoming canonical bytes remain complete at350 lines.
+
+Replay the CSS child from this literal parent, preserving54 API/218 CLI
+vectors and its historical27 serializer-path correction. Fresh ordinary and
+native source Actions, protected full suites/all104, actual signed merge and
+installed original0.435 replay remain required. Historical48a/79d successes
+give no successor acceptance; the cache/default-help limits remain unchanged.

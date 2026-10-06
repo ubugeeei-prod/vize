@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import MyInput from "./MyInput.vue";
+</script>
+
+<template>
+  <div class="my-field">
+    <MyInput />
+  </div>
+</template>
+
+<style scoped>
+/* MyInput renders its own message row; this wrapper hides it */
+.my-field :deep(.my-input__messages) {
+  display: none;
+}
+</style>

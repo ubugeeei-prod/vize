@@ -32,7 +32,7 @@ fn nuxt_preset_reports_fixable_config_order() {
     assert_eq!((diagnostic.start, diagnostic.end), (17, 26));
     assert_eq!(
         diagnostic.fix.as_ref().unwrap().apply(source),
-        "export default { modules: [], ssr: true, }"
+        "export default { modules: [], ssr: true }"
     );
 }
 
