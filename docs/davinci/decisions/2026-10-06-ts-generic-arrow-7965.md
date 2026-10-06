@@ -149,3 +149,29 @@ complete affected results must precede admission. Full protected suites,
 unchanged ceilings, signed merge and installed-public twelve cases remain
 pending; any finite release admission hold remains honored.
 Paired decision: [6009735472](https://github.com/ubugeeei-prod/vize/issues/7965#issuecomment-6009735472).
+
+The exact e7dd source passed Check 37417134551 and all four required contexts.
+Its fresh authenticated hosted packet qualified seven Rust laws, the original
+two-file command, twelve whole CLI cases, thirty-six Oxfmt outputs and sixty
+complete CLI attempts. These results remain source-scoped.
+
+After Ready, the whole admitted #8078 → #8075 → #8073 → #8076 prefix at 6278986
+introduced a `.gitattributes` EOF conflict. Auto-merge was not enabled and #8077
+never entered the queue. Relocate only our existing literal generic-arrow block
+beside stable formatter-history rules on actual main 48cb. The projected union
+retains both complete literal controls, without importing unmerged rule or
+production bytes into the owned source. Moving that block back mechanically
+recovers the prior owned attribute file exactly; its semantics stay unchanged.
+
+No producer, original bytes, expected output, timeout or budget changes. The
+queued candidate is prospective, not actual main. [The paired decision](https://github.com/ubugeeei-prod/vize/issues/7965#issuecomment-6010079925)
+requires fresh automatic source checks and full healthy-prefix composition
+before admission. Protected merge and installed-public replay remain pending.
+
+During private preparation, #8078 actually merged at 05:37:19Z to signed-valid
+de40f26cb31b34d3b5e72ddb03f2c0d44b177622. Genuinely replay all seven owned
+commits onto that literal actual main: thirteen noncanonical owned objects and
+all full author/date/body/footer records remain exact. The complete incoming
+canonical prefixes remain at 350 lines. This actual incorporation is distinct
+from later prospective queued candidates; fresh source execution, protected
+merge and public original-case replay are still pending.
