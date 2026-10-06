@@ -1,0 +1,1 @@
+<template><Widget @activate.native="onActivate" /></template>
