@@ -18,7 +18,7 @@
     "test:vrt:update": "playwright test --update-snapshots"
   },
   "dependencies": {
-    "vue": "catalog:vue-stable"
+    "vue": "catalog:vue-production"
   },
   "devDependencies": {
     "@playwright/test": "catalog:testing",

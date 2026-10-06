@@ -145,3 +145,33 @@ inputs and expected findings; add only language/error/diagnostic context to that
 assertion so the next hosted result identifies the failing arm. Whole SFC
 admission for those cases remains unfinished; no local parser/native probe or
 weaker expectation replaces the genuine failure.
+
+## Actual TSX boundary failure and signed-main incorporation
+
+Source `2d7901367b` passes authored app lint, Clippy/build and all four tooling
+workers. Its four Rust workers execute 20 distinct rule laws: 19 pass, including
+the supplied-frame LF control, while the unchanged language loop identifies
+`lang=tsx` and `parser/sfc`: "Malformed <script> block: the closing tag is missing."
+[Actual failed job](https://github.com/ubugeeei-prod/vize/actions/runs/37416588029/job/112117854230)
+retains the complete diagnostic and required warning count 1; no expectation is
+removed. All raw worker logs remain separate from successor qualification.
+
+The existing SFC regex lookahead starts at JSX `</p>` and mistakes the real
+`</script>` slash plus invalid `script` flags for a regex terminator. A private
+wrapper keeps that scanner's original result except for this actual closing-tag
+endpoint in explicitly authored JSX/TSX; rejected lookahead restores its prior
+line state. Normal JS/TS and genuine regex/class contents retain the original
+result. There is no extra parser, AST walk, pipeline stage or public API. Retain
+both exact language inputs in a new SFC differential corpus, preserve the old
+whole language/CLI/LSP assertions, and add full descriptor/content/location,
+comparison-regex and other-language controls. Three new parser laws remain
+unexecuted locally; default instruction cost is unmeasured, with unchanged
+protected ceilings required before admission.
+
+Security #8080 actually merges as signed valid `48cb1d4f35`, sole parent `143c1d4`,
+at 2026-10-06T05:04:12Z. Incorporate that literal whole main once, preserving all
+incoming production/development provider pins, lockfiles, UI fixes, workflows and
+canonical clauses. Old source audit failures do not qualify this new tree; fresh
+source Actions and the unchanged actual CLI/Nuxt/LSP/pinned SSR/full/protected
+qualification remain required. Root's finite release selection is v0.435 minor;
+actual source cut and published verification stay pending.
