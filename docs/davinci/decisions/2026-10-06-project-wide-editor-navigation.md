@@ -71,8 +71,15 @@ its additional App-only `show` oracle incorrectly classified
 project scope; lines 2586–2600 and `utilities.go` lines 372–376, 989–1001 resolve
 its source-property identity. The separate stock process now queries this exact
 original binding and asserts the three complete script endpoints before Vize.
-Vue's existing semantic links recover the two authored template uses; no native
-location is discarded. The classifier reuses its original single analysis parse
+Vue's existing semantic link recovers the queried App local's template use; no
+native location is discarded. The related Banner declaration does not make its
+separate local uses references to App's local. A second same-process stock
+projection retains each whole original script as its literal prefix and appends
+both exact original template call expressions. Its complete four-location oracle
+includes App's call and explicitly excludes Banner's distinct local call, deriving
+the public Vue four-location relation without re-recording Vize output. Pinned
+`provideSymbolsAndEntries` returns the reference entries immediately when not
+requesting implementations; its recursive closure is implementation-only. The classifier reuses its original single analysis parse
 for the AST pattern and Croquis metadata, preserving simple and explicitly
 aliased local bindings and all existing shadow/dirty/close controls. The native
 whole-vector, fresh source and protected qualification of this correction remain

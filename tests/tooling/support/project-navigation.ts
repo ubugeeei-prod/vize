@@ -71,15 +71,21 @@ export async function references(
 }
 // Native 7.0.2 treats a shorthand object binding as its local AND property
 // identity (findallreferences.go getSymbolScope/forEachRelatedSymbol). Exact
-// original script spans supply the three stock endpoints; Vue semantic links
-// add the two authored template uses without a same-spelling text sweep.
-export async function propertyReferences(wire: LspWire, directory: string, stock = false) {
+// original script spans supply the three stock endpoints. The queried local's
+// use belongs to that local; a related binding in another file is not its use.
+export async function propertyReferences(
+  wire: LspWire,
+  directory: string,
+  stock = false,
+  scriptUses = false,
+) {
   const spans: [string, number, number][] = [
     [stock ? "App.ts" : "App.vue", 4, 8],
     [stock ? "Banner.ts" : "Banner.vue", 3, 8],
     ["useToast.ts", 1, 11],
   ];
-  if (!stock) spans.push(["App.vue", 9, 18], ["Banner.vue", 7, 18]);
+  if (!stock) spans.push(["App.vue", 9, 18]);
+  if (stock && scriptUses) spans.push(["App.ts", 5, 0]);
   const expected = spans
     .map(([file, line, character]) => ({
       uri: uri(path.join(directory, "src", file)),
@@ -162,6 +168,27 @@ export async function stock(directory: string, inputs: Record<string, string>, r
     await references(wire, directory, true, true);
     await references(wire, directory, false, true);
     await propertyReferences(wire, directory, true);
+    // A separate authored projection retains every original script byte and
+    // appends the two exact template call expressions. The stock checker must
+    // include App's local use, but not Banner's distinct local use: property
+    // reference relations are not a transitive same-spelling closure.
+    const templateUses = Object.fromEntries(
+      Object.entries(projected).map(([file, source]) => [
+        file,
+        file === "src/App.ts"
+          ? source + "show('app');\n"
+          : file === "src/Banner.ts"
+            ? source + "show('banner');\n"
+            : source,
+      ]),
+    );
+    save("stock-template-use-inputs", { original: projected, authored: templateUses });
+    for (const file of ["App.ts", "Banner.ts"])
+      wire.notify("textDocument/didChange", {
+        textDocument: { uri: uri(path.join(directory, "src", file)), version: 2 },
+        contentChanges: [{ text: templateUses["src/" + file] }],
+      });
+    await propertyReferences(wire, directory, true, true);
     const reply = await wire.request("shutdown");
     assert.deepEqual(reply, { jsonrpc: "2.0", id: wire.nextId, result: null });
     wire.child.stdin.end();
