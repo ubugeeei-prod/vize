@@ -189,22 +189,9 @@ fn validate_explicit_inputs_in_root(root: &Path, files: &[PathBuf]) -> Result<()
     Ok(())
 }
 
-pub(super) fn find_nearest_tsconfig_dir(path: &Path) -> Option<PathBuf> {
-    let mut current = if path.is_dir() {
-        Some(path)
-    } else {
-        path.parent()
-    };
+mod config;
 
-    while let Some(dir) = current {
-        if dir.join("tsconfig.json").exists() {
-            return Some(dir.to_path_buf());
-        }
-        current = dir.parent();
-    }
-
-    None
-}
+pub(super) use config::find_nearest_tsconfig_dir;
 
 fn resolve_project_root_from_files(files: &[PathBuf]) -> Option<PathBuf> {
     let common = common_file_parent(files)?;
