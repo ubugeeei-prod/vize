@@ -145,3 +145,17 @@ closed guard/original inputs/caps; no speed or400 execution is claimed. Root's
 existing literal finite-cut authority owns a complete changed-manifest pair
 after delivery. Current source/native/all9stdio/legacy/required checks, then
 protected full104/fullRust and installed release acceptance remain mandatory.
+
+Canonical composition recovery pairs
+[the issue decision](https://github.com/ubugeeei-prod/vize/issues/7990#issuecomment-6010031756).
+Actual signed48cb plus admitted8078/8075 exposes a final-paragraph conflict.
+Relocate only the full two own clauses to the independent language-toolchain
+paragraph; every incoming canonical byte,350 lines, all17 non-doc blobs and
+all four previous source authors/bodies/footers remain exact. No unmerged
+source is imported and healthy queue entries stay untouched. Retain d74
+Check37417008327/all4 required, native37417007686 and authenticated16313
+source cases/all3 filesystem laws/all9 stdio operations as historical scopes.
+Fresh successor source/native/whole-session Actions and protected104/fullRust,
+actual signed merge and public installed acceptance remain mandatory. The
+old8008 optional prebuild source-pair refusal stays UNQUALIFIED; no guard,
+input, cap or claimed speed result changes.
