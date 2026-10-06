@@ -28,7 +28,11 @@ retained without pretending that its remaining symptom is fixed.
 
 Six laws compare complete independently authored tree/namespace/event/exposed
 vectors under actual DOM and Vapor runtimes in development separate-template,
-production inline-template and production separate-template modes (36 mounts).
+production inline-template and production separate-template modes. The original
+numeric derivative keeps authored `<script setup vapor>`, which forces Vapor
+even when the requested backend is DOM; run that derivative honestly only via
+createVaporApp. The other five ordinary-script sources exercise both actual
+backends (33 total mounts), with no input or oracle weakening.
 The existing SFC runtime helper gains opt-in calls/reads of actual exposed
 methods; every ordinary observation is unchanged when these inputs are absent.
 The new requests retain complete input/modules/source, status, stdout bytes and

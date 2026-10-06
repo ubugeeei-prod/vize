@@ -43,7 +43,7 @@ fn list(items: &[&str]) -> Value {
 }
 
 fn assert_modes(name: &str, source: &str, steps: Value, expected: Value, readers: bool) {
-    for backend in ["vdom", "vapor"] {
+    for &backend in backends {
         for production in [false, true] {
             for separate in [false, true] {
                 if !production && !separate {
@@ -79,6 +79,7 @@ fn upstream_loop_ref_arrays_mount_and_append() {
             snapshot(json!([]), json!(""), 0)
         ]),
         true,
+        &["vdom", "vapor"],
     );
 }
 
@@ -96,6 +97,7 @@ fn loop_ref_arrays_remove_and_clear_without_stale_nodes() {
             snapshot(json!([]), json!(""), 0)
         ]),
         true,
+        &["vdom", "vapor"],
     );
 }
 
@@ -111,6 +113,7 @@ fn bound_loop_ref_arrays_preserve_the_same_values() {
             snapshot(json!([]), json!(""), 0)
         ]),
         true,
+        &["vdom", "vapor"],
     );
 }
 
@@ -129,6 +132,7 @@ fn loop_free_refs_remain_scalar_and_clear_on_unmount() {
             snapshot(json!([]), Value::Null, 0)
         ]),
         true,
+        &["vdom", "vapor"],
     );
 }
 
@@ -158,6 +162,7 @@ fn transparent_nested_loop_refs_keep_all_descendant_nodes() {
             snapshot(json!([]), json!("|null"), 0)
         ]),
         true,
+        &["vdom", "vapor"],
     );
 }
 
@@ -178,5 +183,6 @@ fn original_numeric_loop_clause_has_three_refs_after_mount() {
             {"tree": [], "namespaces": [], "events": []}
         ]),
         false,
+        &["vapor"],
     );
 }
