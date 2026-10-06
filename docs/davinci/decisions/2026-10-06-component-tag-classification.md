@@ -220,3 +220,16 @@ field/job/command byte. All original47/full snapshots remain unchanged. Fresh
 ordinary/native Actions must own this union; the prior Title-only334 source
 had a genuine shared-helper conflict and provides no execution evidence. The
 remaining whole component response failures stay unqualified and mandatory.
+
+## Parser-move import boundary
+
+The [actual configured Clippy finding](https://github.com/ubugeeei-prod/vize/issues/8001#issuecomment-6010988746)
+rejects only the former module's now-unused `cstr` import, before any affected
+Rust tests execute. Remove that production import and import the macro directly
+in the existing projection-law module that still consumes it; the existing
+migration inventory records that test import. Every function body, full47
+completion expectation, original input, snapshot and native command remains
+unchanged. The raw2961 failure is retained, and fresh same-PR source Actions
+must execute the repaired source. Current2961 native observations stay separate;
+residual completion failures remain unqualified, with no warning allowance or
+budget change.

@@ -5,7 +5,7 @@
 
 use std::path::Path;
 use vize_carton::config::VueVersion;
-use vize_carton::{Allocator, cstr, profile};
+use vize_carton::{Allocator, profile};
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{
