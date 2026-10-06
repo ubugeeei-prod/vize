@@ -23,7 +23,7 @@ function inventory(directory: string): Record<string, { bytes: number; sha256: s
   }
   return result;
 }
-function packageRoot(from: string, name: string): string {
+function packageRoot(from: string, name: string, manifestName = name): string {
   const require = createRequire(path.join(from, "package.json"));
   let resolved: string;
   try {
@@ -35,7 +35,10 @@ function packageRoot(from: string, name: string): string {
   let directory = path.dirname(fs.realpathSync(resolved));
   while (true) {
     const manifest = path.join(directory, "package.json");
-    if (fs.existsSync(manifest) && JSON.parse(fs.readFileSync(manifest, "utf8")).name === name)
+    if (
+      fs.existsSync(manifest) &&
+      JSON.parse(fs.readFileSync(manifest, "utf8")).name === manifestName
+    )
       return directory;
     const parent = path.dirname(directory);
     assert.notEqual(parent, directory, `physical provider root missing: ${name}`);
@@ -48,7 +51,7 @@ export function prepareProviders(root: string, project: string, publicScope: boo
   if (publicScope) assert.ok(requested, "public original requires the exact original Vue cohort");
   const vue = requested
     ? fs.realpathSync(requested)
-    : packageRoot(path.join(root, "npm/ui"), "vue");
+    : packageRoot(path.join(root, "tests"), "vue-bind-style-oracle", "vue");
   const packages = new Map<string, { root: string; manifest: unknown; members: unknown }>();
   function add(directory: string) {
     directory = fs.realpathSync(directory);
@@ -64,7 +67,7 @@ export function prepareProviders(root: string, project: string, publicScope: boo
   add(vue);
   const vueManifest = JSON.parse(fs.readFileSync(path.join(vue, "package.json"), "utf8"));
   assert.equal(vueManifest.name, "vue");
-  assert.equal(vueManifest.version, publicScope ? "3.5.43" : "3.5.35");
+  assert.equal(vueManifest.version, "3.5.43");
   for (const [name, value] of packages)
     if (name.startsWith("@vue/"))
       assert.equal((value.manifest as { version: string }).version, vueManifest.version);
