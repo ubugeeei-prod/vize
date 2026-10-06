@@ -42,7 +42,14 @@ fn list(items: &[&str]) -> Value {
     )
 }
 
-fn assert_modes(name: &str, source: &str, steps: Value, expected: Value, readers: bool) {
+fn assert_modes(
+    name: &str,
+    source: &str,
+    steps: Value,
+    expected: Value,
+    readers: bool,
+    backends: &[&str],
+) {
     for &backend in backends {
         for production in [false, true] {
             for separate in [false, true] {
