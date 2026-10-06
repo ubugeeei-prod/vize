@@ -128,3 +128,18 @@ This preservation repair is paired in
 [the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6019401607).
 Fresh successor Actions and actual protected delivery remain required; the
 earlier passing execution does not qualify the new composition.
+
+A concrete review found the new regression's shared per-case artifact paths
+could overwrite raw observations from concurrent invocations in one checkout.
+A unique persistent invocation directory now sits below the same uploaded
+artifact root. All twenty sources, original commands, complete expected
+JSON/stdout/stderr/exit, before/after input bytes and terminal assertions remain
+unchanged; no product behavior or Actions stage changes. This is paired in
+[the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6019748668).
+Current-7f6 also has a genuine strict security failure: the Nuxt dependency
+chain contains shell-quote 1.9.0 with new critical GHSA-pqg4-j6r4-53mv
+(run 37486971326, job 112349976664). Package, lock and audit source bytes are
+unchanged from signed-c804. Exact-head/no-entry containment leaves this PR
+Draft/offqueue while the existing security owner handles real remediation.
+No waiver, retry or passing execution transfers to this private correction;
+fresh same-PR source and protected delivery must qualify its actual composition.

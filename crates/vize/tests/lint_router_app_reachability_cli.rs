@@ -156,11 +156,16 @@ fn cross_file_router_application_reports_are_complete() {
         ]
     );
     let profile = std::env::var("NEXTEST_PROFILE").unwrap_or_else(|_| "full".into());
-    let capture = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+    let captures = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../../target/nextest")
         .join(profile)
         .join("router-app-reachability-7932");
-    fs::create_dir_all(&capture).expect("persistent whole observations");
+    fs::create_dir_all(&captures).expect("persistent whole observations");
+    let capture = tempfile::Builder::new()
+        .prefix("invocation-")
+        .tempdir_in(&captures)
+        .expect("isolated persistent observations")
+        .keep();
     let mut failures = Vec::new();
     for case in corpus.cases {
         failures.extend(check_case(&case, &capture.join(&case.name)));
