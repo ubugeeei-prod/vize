@@ -169,8 +169,11 @@ try {
     rows.slice(0, 2).flatMap((row) => row.jsonDiagnostics),
   );
   for (const row of rows) checkJson([row.filename], row.jsonDiagnostics);
-  const plain = run(["Static.vue"]);
-  assert.match(plain, /^Static\.vue:1:11: error vize\(vue\/multi-word-component-names\)/mu);
+  const graphical = run(["Static.vue"]);
+  const ansi = String.raw`\u001B\[[0-9;]*m`;
+  assert.match(graphical, new RegExp(`╭─\\[(?:${ansi})*Static\\.vue(?:${ansi})*:1:11\\]`, "u"));
+  const plain = run(["-f", "unix", "Static.vue"]);
+  assert.match(plain, /^Static\.vue:1:11: Component name "Static" should be multi-word/mu);
   const stylish = run(["-f", "stylish", "Unicode.vue"]);
   assert.match(stylish, /^\s+1:28\s+warning\s+v-html can lead to XSS attacks\./mu);
   assert.match(stylish, /^\s+1:11\s+error\s+Component name "Unicode" should be multi-word/mu);

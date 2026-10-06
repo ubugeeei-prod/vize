@@ -77,8 +77,8 @@ await test("full JSON keeps all foreign fields and maps every owned mirror/copy 
 await test("plain and stylish zero-width first-line positions use the owning file only", () => {
   const bridge = prepareWorkaroundSource("<template>\n<div />\n</template>\n", "/repo/Static.vue");
   const column = bridge.locations.scriptStart + 11;
-  const raw = `temporary.vue:1:${column}: error vize(vue/multi-word-component-names): whole message\ntemporary.vue\n  1:${column}  error  whole message  vize(vue/multi-word-component-names)\noutside.ts\n  1:${column}  error  whole message  vize(other)\n`;
-  const expected = `temporary.vue:1:11: error vize(vue/multi-word-component-names): whole message\ntemporary.vue\n  1:11  error  whole message  vize(vue/multi-word-component-names)\noutside.ts\n  1:${column}  error  whole message  vize(other)\n`;
+  const raw = `temporary.vue:1:${column}: whole unix message with quoted:8:9: text [Error/vize(vue/multi-word-component-names)]\ntemporary.vue:1:${column}: error vize(vue/multi-word-component-names): whole message\ntemporary.vue\n  1:${column}  error  whole message  vize(vue/multi-word-component-names)\noutside.ts\n  1:${column}  error  whole message  vize(other)\n`;
+  const expected = `temporary.vue:1:11: whole unix message with quoted:8:9: text [Error/vize(vue/multi-word-component-names)]\ntemporary.vue:1:11: error vize(vue/multi-word-component-names): whole message\ntemporary.vue\n  1:11  error  whole message  vize(vue/multi-word-component-names)\noutside.ts\n  1:${column}  error  whole message  vize(other)\n`;
   assert.equal(
     rewriteReportedLocations(raw, new Map([["temporary.vue", bridge.locations]])),
     expected,
@@ -101,4 +101,17 @@ await test("synthetic gaps and half-surrogates retain their exact unowned range"
   };
   const raw = JSON.stringify(report);
   assert.equal(rewriteReportedLocations(raw, new Map([["temporary.vue", bridge.locations]])), raw);
+});
+
+await test("default graphical headers keep exact colored owners and every surrounding frame byte", () => {
+  const bridge = prepareWorkaroundSource("<template>\n<div />\n</template>\n", "/repo/Static.vue");
+  const column = bridge.locations.scriptStart + 11;
+  const color = String.fromCharCode(27);
+  const filename = `${color}[38;2;92;157;255;1mtemporary.vue${color}[0m`;
+  const raw = `whole message\n   ╭─[${filename}:1:${column}]\n 1 │ complete original frame content\n   · exact marker bytes\n   ╰────\n   ╭─[outside.ts:1:${column}]\nsummary bytes\n`;
+  const expected = `whole message\n   ╭─[${filename}:1:11]\n 1 │ complete original frame content\n   · exact marker bytes\n   ╰────\n   ╭─[outside.ts:1:${column}]\nsummary bytes\n`;
+  assert.equal(
+    rewriteReportedLocations(raw, new Map([["temporary.vue", bridge.locations]])),
+    expected,
+  );
 });

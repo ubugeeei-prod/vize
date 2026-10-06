@@ -98,6 +98,15 @@ function rewriteTextLocations(
     .split("\n")
     .map((line) => {
       if (line !== "" && line.trimStart() === line) active = locations.get(line);
+      const frame = /^(.*╭─\[)(.*):(\d+):(\d+)(\].*)$/u.exec(line);
+      if (frame != null) {
+        const owner = frame[2].replace(new RegExp(String.raw`\u001B\[[0-9;]*m`, "gu"), "");
+        const map = locations.get(owner);
+        const mapped =
+          map == null ? undefined : textPosition(Number(frame[3]), Number(frame[4]), map);
+        if (mapped != null)
+          return `${frame[1]}${frame[2]}:${mapped.line}:${mapped.column}${frame[5]}`;
+      }
       // Stylish's file header establishes ownership of following diagnostic rows.
       const stylish = /^(\s+)(\d+):(\d+)(\s+(?:error|warning)\s+.*\bvize\()/u.exec(line);
       if (stylish != null && active != null) {
@@ -105,8 +114,8 @@ function rewriteTextLocations(
         if (mapped != null)
           return line.replace(/^(\s+)\d+:\d+/u, `$1${mapped.line}:${mapped.column}`);
       }
-      // Auto/unix output carries the owning filename on each diagnostic line.
-      const plain = /^(.*):(\d+):(\d+)(: (?:error|warning) vize\()/u.exec(line);
+      // Unix output carries the exact owning filename on each diagnostic line.
+      const plain = /^(.*?):(\d+):(\d+)(: )/u.exec(line);
       const map = plain == null ? undefined : locations.get(plain[1]);
       if (plain != null && map != null) {
         const mapped = textPosition(Number(plain[2]), Number(plain[3]), map);
