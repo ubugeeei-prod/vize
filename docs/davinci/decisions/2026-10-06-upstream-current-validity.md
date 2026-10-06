@@ -175,3 +175,21 @@ outputs before assertions. This is independent native authority, not recorded
 Vize output. Fresh source/native/full154/protected qualification remains pending.
 
 [Paired oracle correction](https://github.com/ubugeeei-prod/vize/issues/7856#issuecomment-6008050438).
+
+## Actual security-main replay
+
+The security prerequisite #8080 actually merged after protected checks passed
+as signed main `48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb` at
+2026-10-06T05:04:12Z. The genuine replay preserves all 28 noncanonical owned
+objects, four complete author/date/body/footer records and every incoming
+canonical byte; proof SHA-256
+`8a998adddde69fc9333cf7d56f4b5d6c38bea07c525886a848d5aa9b4e7de60c`.
+
+Historical 22c compiled eight complete CLI and sixteen complete DiagnosticService
+vectors plus root/fallthrough controls passed; its whole source run failed
+incoming security. None qualifies the replay. Fresh exact-head source/native and
+protected instruction, full Rust and canonical checks must precede actual merge.
+Public release, current full154 and official ranking remain unfinished; #7856
+stays open with all original cases, judges and legacy contracts preserved.
+
+[Paired replay record](https://github.com/ubugeeei-prod/vize/issues/7856#issuecomment-6009725151).
