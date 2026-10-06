@@ -1,4 +1,4 @@
-use crate::virtual_ts::types::AuthoredDefaultKind;
+use crate::virtual_ts::types::{AuthoredDefaultKind, VirtualTsCheckOptions};
 use vize_carton::{String, append};
 
 use super::emits::EmitsInfo;
@@ -102,7 +102,7 @@ pub(super) fn emit_default_export_declaration(
     authored_default: AuthoredDefaultKind,
     static_raw_props_ref: Option<&str>,
     static_slots_ref: Option<&str>,
-    (fallthrough_props_ref, check_unknown_fallthrough_props): (Option<&str>, bool),
+    (fallthrough_props_ref, checks): (Option<&str>, VirtualTsCheckOptions),
 ) {
     emit_vue_component_options_type(ts, generic_component_params.is_some());
     let emit_props_static = emits_info.static_emit_props_field();
@@ -192,7 +192,8 @@ pub(super) fn emit_default_export_declaration(
             generic_names,
             fallthrough_props_ref,
             props_type,
-            check_unknown_fallthrough_props,
+            checks.check_unknown_fallthrough_props,
+            checks.strict_component_attrs(),
         );
         append!(
             *ts,

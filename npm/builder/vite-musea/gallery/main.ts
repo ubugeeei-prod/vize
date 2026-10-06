@@ -8,3 +8,4 @@ import "./styles/hljs-light.css";
 const app = createApp(App);
 app.use(router);
 app.mount("#app");
+import "./styles/code.css";

@@ -110,6 +110,7 @@ impl VirtualProject {
                 .and_then(|options| options.get(name).and_then(Value::as_bool))
                 .unwrap_or(false)
         };
+        self.virtual_ts_check_options.strict_component_attrs = flag("strictComponentAttrs");
         self.virtual_ts_check_options.infer_component_dollar_refs =
             flag("inferComponentDollarRefs");
         self.virtual_ts_check_options.infer_template_dollar_refs = flag("inferTemplateDollarRefs");

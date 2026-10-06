@@ -145,3 +145,15 @@ separator. Append that exact clause to existing prose line279 and restore the
 original blank line280 instead. All350 incoming line prefixes, reviewed source,
 whole inputs and expected vectors remain; fresh successor checks are required.
 The current42 formatter/Rust observations remain scoped to that source.
+
+## Actual admitted-prefix composition
+
+Current b555 passes all four required source checks and its complete17-case
+API/CLI/browser/runtime corpus. Actual signed main8006 composes cleanly, but
+the healthy admitted prefix through candidatec4 has its own clause on the same
+canonical prose line279. Move only this complete clause to existing prose326
+and normally incorporate actual signed8006, conserving all350 incoming line
+prefixes, all reviewed product/corpus bytes, and every original expectation.
+No unmerged prefix production is adopted. Require a clean actual-prefix merge
+tree and fresh successor Actions before independent queue admission; previous
+current checks remain historical evidence, not successor gate credit.
