@@ -285,3 +285,13 @@ entry, argument, span or explanation changes; no UPDATE environment is
 used and all original strict assertions remain fixed. This fixture-only
 registration does not supply native product migration/history completion.
 Fresh exact-source native and whole protected gates must accept it.
+
+Actual `e16612fd` and `d56d7e9c` source Rust workers all pass the new guard
+setup and original controls. Native run `37408953175` passes the full
+registered folio comparison, then rejects the stale generated remarks
+backlog at its unchanged strict assertion. Reflect the complete actual
+5,059-byte derived Markdown from that failed run, keeping all 24 reasons,
+original first locations, generator and baseline/assertions fixed. The
+only added hits/file memberships are the six new Field missed remarks.
+The failed run remains unaccepted; fresh source/native/global-security
+qualification and whole protected delivery are still required.
