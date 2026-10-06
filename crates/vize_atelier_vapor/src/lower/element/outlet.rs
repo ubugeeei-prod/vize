@@ -140,7 +140,7 @@ fn get_slot_props<'a, 'b, const CLASSIFY: bool>(
 }
 
 /// Slot props only copy original facts; scope must be applied before fallback effects.
-pub(super) fn transform_slot<'a>(
+pub(in crate::lower) fn transform_slot<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
