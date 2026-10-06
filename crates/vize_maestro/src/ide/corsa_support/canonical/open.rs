@@ -71,6 +71,9 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
             requested_sources,
         )
         .await?;
+    #[cfg(test)]
+    ctx.state
+        .record_editor_project_open("canonical", ctx.uri, &ctx.content, &opened);
 
     let dependencies = opened
         .dependencies

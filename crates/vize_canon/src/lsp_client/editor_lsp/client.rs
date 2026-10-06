@@ -21,7 +21,13 @@ impl CorsaProjectClient {
         if !self.document_texts.contains_key(uri) {
             return Ok(None);
         }
-        self.request_with_editor_lsp_recovery(|session| session.hover(uri, line, character))
+        let phase = crate::corsa_bridge::preparation_trace::Phase::start("editor_hover", 1);
+        let result =
+            self.request_with_editor_lsp_recovery(|session| session.hover(uri, line, character));
+        if result.is_ok() {
+            phase.finish();
+        }
+        result
     }
 
     pub(in crate::lsp_client) fn completion_via_editor_lsp(

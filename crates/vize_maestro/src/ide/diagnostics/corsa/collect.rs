@@ -202,6 +202,8 @@ impl DiagnosticService {
                 )
                 .await
                 .map_err(|error| classify(&bridge, error))?;
+            #[cfg(test)]
+            state.record_editor_project_open("diagnostics", uri, &content, &opened);
             resolved_dependencies.extend(opened.resolved_dependencies.iter().cloned());
             let (virtual_uri, virtual_result) =
                 Self::virtual_ts_result_from_corsa_vue_document(opened);

@@ -1,7 +1,8 @@
 # Shared editor reference options
 
 Tracked in [#7698](https://github.com/ubugeeei-prod/vize/issues/7698). This
-preparation is private until the urgent #8116 readiness fix actually merges.
+source preparation incorporates the signed #8116 readiness fix
+`6b5e6fd8357bc892d2ea9cefe271a13fc08100cb` after its actual merge.
 The paired issue comment is prepared locally for the owning delivery change;
 it has not been published.
 
@@ -13,22 +14,38 @@ source mechanism can select different mirror projects; it does not establish
 an observed switch, a measured slowdown, or the cause of a user's latency.
 
 Both callers now obtain one owned options value from a shared native-only
-async helper. It awaits the existing generation-cached background declaration
-scan, then clones the configured base options and adds the complete ordered
-paths using the existing conversion. It introduces no cache or native query.
+async helper. It clones the configured base options before awaiting the existing
+generation-cached background declaration scan, preserving the old diagnostic
+read order, then adds the complete ordered paths using the existing conversion.
+It introduces no cache or native query.
 Document flags, overlays, selected project/configuration, source mappings,
 request scopes, cancellation, worker deadlines, and retirement stay intact.
 
-The authored corpus reuses two existing public inputs. Three complete-options
+The authored options corpus reuses two existing public inputs. Three complete-options
 laws cover all declaration suffixes, dependency exclusion, repeated requests,
 create/rename/delete, workspace replacement, and configured-global reload.
 Existing Nuxt UI/no-tsconfig parity, global discovery/event and package
 reference controls remain byte-exact and must execute on the eventual exact
-source alongside whole diagnostics and hover responses.
+source alongside whole diagnostics and hover responses. A new prepared native
+law uses the existing public test-package and native-runtime fixture helpers.
+It compares complete Markdown hover and diagnostic vectors in six generations:
+unchanged declarations, declaration-content change, rename, delete/create, an
+unsaved missing-property error, and its repair. Passive test-only custody records
+the successful mirror root and generated URI, bound to the exact server,
+authored URI, full source, version and revision. Both features must retain one
+root when paths remain fixed and choose the same new root after path changes.
+The retained request scope must reject the declaration mutation. This does not
+claim a process PID, native API project identity or process reaping.
 
-TODO: genuinely incorporate the actual #8116 main, publish the paired issue
-decision, and run the current mandatory source/native/full/protected gates.
-Actual native project continuity and any latency benefit are unexecuted.
+TODO: publish the paired issue decision and run the current mandatory
+source/native/full/protected gates. The existing original400 workflow now
+triggers on the exact changed Maestro leaves and admits only those leaves in
+its closed delta set. Its recipe, fixtures, rows and budgets remain unchanged.
+The first canonical request now awaits declaration discovery; its original400
+first/warm cost must be measured. Actual native mirror continuity and any
+latency benefit remain unexecuted. The small native law uses the existing
+fixture Vue declaration package; it cannot substitute for the original full
+Nuxt/Vue controls or the original400 performance comparison.
 The path list is not proof that every transitive referenced declaration byte
 belongs to the alias context's strong input stamps. Preserve existing watched
 declaration refresh and all known strong config/package/source fingerprints;

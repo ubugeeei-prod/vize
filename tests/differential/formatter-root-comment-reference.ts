@@ -9,7 +9,7 @@ const IDS = [
   "capture/comments-follow-their-block-when-sfc-blocks-are-sorted/sfc/0",
 ];
 const AUTHORITY = "tests/_fixtures/differential/formatter-history/current-references-7877.json";
-const AUTHORITY_SHA256 = "de2e4891b176f95f85c6cba5f7942f28b56c957e097b72c4cf7ed4360e502d53";
+const AUTHORITY_SHA256 = "2b69ec2d44f88a5ca0433833ef01a6b1b6860d44e7dfee74231a4932267e7af8";
 
 export function rootCommentCurrentReference(
   root: string,

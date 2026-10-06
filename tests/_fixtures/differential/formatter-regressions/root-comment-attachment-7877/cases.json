@@ -31,10 +31,12 @@
       "id": "historical-comments-follow-their-block-when-sfc-blocks-are-sorted",
       "file": "historical-comments-follow-their-block-when-sfc-blocks-are-sorted.vue",
       "source": "<!-- template note -->\n<template><div>ok</div></template>\n<!-- script note -->\n<script setup>const ready = true;</script>\n",
-      "expected": "<!-- template note -->\n\n<!-- script note -->\n<script setup>\nconst ready = true;\n</script>\n\n<template>\n  <div>ok</div>\n</template>\n",
+      "expected": "<!-- script note -->\n<script setup>\nconst ready = true;\n</script>\n\n<!-- template note -->\n<template>\n  <div>ok</div>\n</template>\n",
       "historicalId": "capture/comments-follow-their-block-when-sfc-blocks-are-sorted/sfc/0",
       "historicalExpected": "<!-- template note -->\n\n<!-- script note -->\n\n<script setup>\nconst ready = true;\n</script>\n\n<template>\n  <div>ok</div>\n</template>\n",
-      "historicalExpectedSha256": "5bd412a2b3b36c92a5d4378893984a2d06b0a91db8723b01db8fade2413effff"
+      "historicalExpectedSha256": "5bd412a2b3b36c92a5d4378893984a2d06b0a91db8723b01db8fade2413effff",
+      "supersededExpected": "<!-- template note -->\n\n<!-- script note -->\n<script setup>\nconst ready = true;\n</script>\n\n<template>\n  <div>ok</div>\n</template>\n",
+      "refinementIssue": 8117
     },
     {
       "id": "authored-blank-separator",
@@ -82,7 +84,9 @@
       "id": "standalone-prologue",
       "file": "standalone-prologue.vue",
       "source": "<!-- Explains the template below. -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
-      "expected": "<!-- Explains the template below. -->\n\n<template>\n  <p>{{ label }}</p>\n</template>\n"
+      "expected": "<!-- Explains the template below. -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "supersededExpected": "<!-- Explains the template below. -->\n\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "refinementIssue": 8117
     },
     {
       "id": "trailing-comment",
@@ -99,8 +103,8 @@
     {
       "id": "bom-reported",
       "file": "bom-reported.vue",
-      "source": "﻿<script setup lang=\"ts\">\nconst label = \"hello\";\n</script>\n\n<!-- Explains the template below. -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
-      "expected": "﻿<script setup lang=\"ts\">\nconst label = \"hello\";\n</script>\n\n<!-- Explains the template below. -->\n<template>\n  <p>{{ label }}</p>\n</template>\n"
+      "source": "\ufeff<script setup lang=\"ts\">\nconst label = \"hello\";\n</script>\n\n<!-- Explains the template below. -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "expected": "\ufeff<script setup lang=\"ts\">\nconst label = \"hello\";\n</script>\n\n<!-- Explains the template below. -->\n<template>\n  <p>{{ label }}</p>\n</template>\n"
     },
     {
       "id": "crlf-auto",
@@ -127,8 +131,10 @@
       "id": "unsorted-block-control",
       "file": "unsorted-block-control.vue",
       "source": "<!-- template note -->\n<template><div>ok</div></template>\n<!-- script note -->\n<script setup>const ready = true;</script>\n",
-      "expected": "<!-- template note -->\n\n<template>\n  <div>ok</div>\n</template>\n\n<!-- script note -->\n<script setup>\nconst ready = true;\n</script>\n",
-      "sortBlocks": false
+      "expected": "<!-- template note -->\n<template>\n  <div>ok</div>\n</template>\n\n<!-- script note -->\n<script setup>\nconst ready = true;\n</script>\n",
+      "sortBlocks": false,
+      "supersededExpected": "<!-- template note -->\n\n<template>\n  <div>ok</div>\n</template>\n\n<!-- script note -->\n<script setup>\nconst ready = true;\n</script>\n",
+      "refinementIssue": 8117
     },
     {
       "id": "history-6694-own-line-comments",
@@ -177,8 +183,8 @@
     {
       "id": "bom-comment-only-document",
       "file": "BomCommentsOnly.vue",
-      "source": "﻿<!-- license -->\n\n<!-- trailing note -->\n",
-      "expected": "﻿<!-- license -->\n\n<!-- trailing note -->\n"
+      "source": "\ufeff<!-- license -->\n\n<!-- trailing note -->\n",
+      "expected": "\ufeff<!-- license -->\n\n<!-- trailing note -->\n"
     }
   ]
 }

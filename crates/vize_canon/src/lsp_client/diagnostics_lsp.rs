@@ -147,19 +147,21 @@ pub(super) fn request_lsp_document_diagnostics(
     .map_err(|error| cstr!("{error}"))
 }
 
-/// Wait for a document diagnostic response without interpreting its payload.
+/// Acknowledge installed documents without requesting semantic diagnostics.
 ///
-/// Editor readiness only needs the response-backed transport ordering. The
-/// native server's diagnostic payload can contain protocol extensions that are
-/// irrelevant to that ordering and must not make a semantic query fail.
-pub(super) fn request_lsp_document_diagnostic_ack(
+/// The pinned native server flushes pending changes and acquires the requested
+/// project snapshot before dispatching document symbols, just as it does for
+/// diagnostics. Symbol collection then visits the AST without acquiring the
+/// checker. A successful complete response establishes ordering; its payload
+/// is not a diagnostic result and is deliberately left uninterpreted.
+pub(super) fn request_lsp_document_readiness_ack(
     client: &LspClient,
     uri: &Uri,
 ) -> Result<(), String> {
-    block_on(request_lsp_document_diagnostic_ack_async(client, uri))
+    block_on(request_lsp_document_readiness_ack_async(client, uri))
 }
 
-pub(super) fn request_lsp_document_diagnostic_acks(
+pub(super) fn request_lsp_document_readiness_acks(
     client: &LspClient,
     uris: &[Uri],
 ) -> Result<(), String> {
@@ -169,7 +171,7 @@ pub(super) fn request_lsp_document_diagnostic_acks(
     block_on(
         futures::stream::iter(
             uris.iter()
-                .map(|uri| request_lsp_document_diagnostic_ack_async(client, uri)),
+                .map(|uri| request_lsp_document_readiness_ack_async(client, uri)),
         )
         .buffer_unordered(16)
         .try_collect::<Vec<_>>(),
@@ -177,20 +179,20 @@ pub(super) fn request_lsp_document_diagnostic_acks(
     .map(|_| ())
 }
 
-async fn request_lsp_document_diagnostic_ack_async(
+async fn request_lsp_document_readiness_ack_async(
     client: &LspClient,
     uri: &Uri,
 ) -> Result<(), String> {
-    struct RawDocumentDiagnosticAckRequest;
+    struct RawDocumentReadinessAckRequest;
 
-    impl lsp_types::request::Request for RawDocumentDiagnosticAckRequest {
+    impl lsp_types::request::Request for RawDocumentReadinessAckRequest {
         type Params = serde_json::Value;
         type Result = Value;
-        const METHOD: &'static str = "textDocument/diagnostic";
+        const METHOD: &'static str = "textDocument/documentSymbol";
     }
 
     client
-        .request::<RawDocumentDiagnosticAckRequest>(serde_json::json!({
+        .request::<RawDocumentReadinessAckRequest>(serde_json::json!({
             "textDocument": {
                 "uri": uri,
             }
@@ -269,7 +271,7 @@ mod tests {
             let mut reader = BufReader::new(server_reader);
             let request_payload = read_frame(&mut reader).unwrap();
             let request: serde_json::Value = serde_json::from_slice(&request_payload).unwrap();
-            assert_eq!(request["method"], json!("textDocument/diagnostic"));
+            assert_eq!(request["method"], json!("textDocument/documentSymbol"));
             assert_eq!(
                 request["params"]["textDocument"]["uri"],
                 json!("file:///workspace/App.vue.ts")
@@ -288,7 +290,7 @@ mod tests {
         });
 
         let error = block_on(client.request_value(
-            "textDocument/diagnostic",
+            "textDocument/documentSymbol",
             json!({
                 "textDocument": {
                     "uri": "file:///workspace/App.vue.ts",

@@ -37,8 +37,9 @@ export class LspSession {
   }> = [];
   /** Passive notification observers that do not consume waiter/backlog entries. */
   readonly notificationObservers: Array<(method: string, params: unknown) => void> = [];
-  /** Passive complete-response observers; existing dispatch and payloads stay unchanged. */
+  /** Passive response/stderr observers; dispatch and payloads stay unchanged. */
   readonly responseObservers: Array<(message: JsonRpcMessage) => void> = [];
+  readonly stderrObservers: Array<(text: string) => void> = [];
   private buffer = Buffer.alloc(0);
   private nextId = 0;
   private stderr = "";
@@ -55,8 +56,8 @@ export class LspSession {
 
     this.process.stderr.on("data", (chunk: Buffer) => {
       this.stderr += chunk.toString("utf8");
+      for (const observer of this.stderrObservers) observer(this.stderr);
     });
-
     this.process.on("exit", (code, signal) => {
       const error = new Error(
         `vize lsp exited unexpectedly (code=${code ?? "null"}, signal=${signal ?? "null"})\n${this.stderr}`.trim(),

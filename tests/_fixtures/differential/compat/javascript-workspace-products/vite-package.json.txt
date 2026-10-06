@@ -1,0 +1,10 @@
+{
+  "name": "@workspace/vite-app",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@workspace/pricing": "workspace:*",
+    "@workspace/ui": "workspace:*",
+    "vue": "3.5.43"
+  }
+}

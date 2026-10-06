@@ -10,14 +10,8 @@
         "path": "crates/vize_glyph/tests/preserve_authored_content.rs",
         "sourceSha256": "9affca9435fc96cc470bf07840c71ed17844629c3361749484c893269855fa5d",
         "function": "keeps_comments_between_and_after_sfc_blocks",
-        "inputExpressionRangeUtf16": [
-          136,
-          455
-        ],
-        "inputExpressionRangeBytes": [
-          136,
-          455
-        ]
+        "inputExpressionRangeUtf16": [136, 455],
+        "inputExpressionRangeBytes": [136, 455]
       },
       "inputSha256": "f644e85466af630551b53fc2a3ef100c33037509710b3e8092c0fea6774b81d7",
       "historicalExpectedSha256": "3b502c94448cd80c3afaf593504aecf7e247fd238165e3e0ed6115e4b2bf5f67",
@@ -41,29 +35,26 @@
         "path": "crates/vize_glyph/tests/preserve_authored_content.rs",
         "sourceSha256": "9affca9435fc96cc470bf07840c71ed17844629c3361749484c893269855fa5d",
         "function": "comments_follow_their_block_when_sfc_blocks_are_sorted",
-        "inputExpressionRangeUtf16": [
-          770,
-          958
-        ],
-        "inputExpressionRangeBytes": [
-          770,
-          958
-        ]
+        "inputExpressionRangeUtf16": [770, 958],
+        "inputExpressionRangeBytes": [770, 958]
       },
       "inputSha256": "84c5723fe3bd38c72185b43d55821897f748d672f1472e1166c02b5691074574",
       "historicalExpectedSha256": "5bd412a2b3b36c92a5d4378893984a2d06b0a91db8723b01db8fade2413effff",
-      "currentExpected": "<!-- template note -->\n\n<!-- script note -->\n<script setup>\nconst ready = true;\n</script>\n\n<template>\n  <div>ok</div>\n</template>\n",
-      "currentExpectedSha256": "790ad5e8a20bcfba8fbe17464d2a09bb063caf38092f45906a7f664910f94f55",
+      "currentExpected": "<!-- script note -->\n<script setup>\nconst ready = true;\n</script>\n\n<!-- template note -->\n<template>\n  <div>ok</div>\n</template>\n",
+      "currentExpectedSha256": "8a96e286523568c7ca647a287f4bbdf9cb539648158a6158d33d1051eb03b70d",
       "provenance": "independently authored whole SFC attachment reference; original carrier and historical output remain immutable and different",
-      "justification": "Retain only the authored single line between the terminal root HTML comment and its following source-owned block; sorting keys, standalone prologue, trailing comment, all block bodies and other separators remain unchanged.",
+      "justification": "The adjacent first-root template comment belongs to the template just like an inter-block comment. Preserve both attachments through sorting; an authored blank after initial comments still marks a standalone prologue. Only this complete current role is refined for #8117; original carrier and historical output remain immutable.",
       "historicalSnapshot": {
         "path": "tests/_fixtures/differential/formatter-regressions/root-comment-attachment-7877/comments_follow_their_block_when_sfc_blocks_are_sorted.historical.snap.txt",
         "sha256": "dccd8e1e79fdaa03448f4225b7a77d0e669d6faf291eb6e84553141dd689f75d"
       },
       "currentSnapshot": {
         "path": "crates/vize_glyph/tests/snapshots/preserve_authored_content__comments_follow_their_block_when_sfc_blocks_are_sorted.snap",
-        "sha256": "a878e6347375c36905ae54e3a44396660417a6bc1eba4c006b2b95275f115e13"
-      }
+        "sha256": "f9d92daeade32b380af1592d56031f4fa26172ceb3be80aa9eb2b0c169b8ce38"
+      },
+      "supersededCurrentExpected": "<!-- template note -->\n\n<!-- script note -->\n<script setup>\nconst ready = true;\n</script>\n\n<template>\n  <div>ok</div>\n</template>\n",
+      "supersededCurrentExpectedSha256": "790ad5e8a20bcfba8fbe17464d2a09bb063caf38092f45906a7f664910f94f55",
+      "refinementIssue": 8117
     }
   ]
 }

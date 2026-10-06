@@ -12,6 +12,7 @@ mod native_vue;
 mod original_program;
 #[cfg(test)]
 mod outside_import_editor_tests;
+pub(crate) mod preparation_trace;
 mod script_document;
 #[cfg(test)]
 mod script_document_tests;

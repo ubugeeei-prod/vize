@@ -6,11 +6,14 @@ import { fileURLToPath } from "node:url";
 import { sha256 } from "./manifest.mjs";
 
 export const BUILD_RECIPE = "cargo build --profile ci -p vize";
+export const SHIPPING_BUILD_RECIPE = "cargo build --release -p vize";
+// Source launchers retain their owned target/ci staging path; paired build
+// custody attests that this is a byte-exact copy of the actual release ELF.
 export const LEGACY_BUILD_RECIPE = `${BUILD_RECIPE} --features legacy`;
 
 function validateBuildRecipe(recipe) {
   assert.ok(
-    recipe === BUILD_RECIPE || recipe === LEGACY_BUILD_RECIPE,
+    recipe === BUILD_RECIPE || recipe === LEGACY_BUILD_RECIPE || recipe === SHIPPING_BUILD_RECIPE,
     "unknown source-build recipe",
   );
 }
