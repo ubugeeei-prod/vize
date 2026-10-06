@@ -18,6 +18,7 @@ import {
   assertListhenPackage,
   assertNoDirectForge,
   assertRemediatedReport,
+  patchHash,
   patchPath,
   verifyPatchFile,
 } from "../../tools/support/security/node-forge-proof.ts";
@@ -36,6 +37,9 @@ test("patch is bound to its actual bytes and both lock documents retain registry
 });
 
 test("changed registry, patch, version, graph, aliases or direct importer reject recognition", () => {
+  const legacy = structuredClone(lock);
+  legacy.patchedDependencies["node-forge@1.4.0"] = { hash: patchHash, path: patchPath };
+  assertForgeLock(workspace, legacy);
   for (const mutate of [
     (next: typeof lock) => {
       next.packages["node-forge@1.4.0"].resolution.integrity += "x";
@@ -82,11 +86,31 @@ test("changed registry, patch, version, graph, aliases or direct importer reject
       next.packages["node-forge@1.4.1"] = next.packages["node-forge@1.4.0"];
     },
   ]) {
-    const next = structuredClone(lock);
+    const next = structuredClone(legacy);
     mutate(next);
     assert.throws(() => assertForgeLock(workspace, next));
   }
   assert.throws(() => assertForgeLock({ ...workspace, audit: { ignore: [advisoryId] } }, lock));
+});
+
+test("actual pnpm scalar and old record require the identical source hash and path", () => {
+  const scalar = structuredClone(lock);
+  scalar.patchedDependencies["node-forge@1.4.0"] = patchHash;
+  assertForgeLock(workspace, scalar);
+  for (const patch of [
+    "wrong",
+    undefined,
+    { hash: "wrong", path: patchPath },
+    { hash: patchHash, path: "elsewhere" },
+    { hash: patchHash, path: patchPath, extra: true },
+  ]) {
+    const next = structuredClone(lock);
+    next.patchedDependencies["node-forge@1.4.0"] = patch;
+    assert.throws(() => assertForgeLock(workspace, next));
+  }
+  const changedWorkspace = structuredClone(workspace);
+  changedWorkspace.patchedDependencies["node-forge@1.4.0"] = "elsewhere";
+  assert.throws(() => assertForgeLock(changedWorkspace, scalar));
 });
 
 test("missing or changed patch cannot attest remediation", () => {

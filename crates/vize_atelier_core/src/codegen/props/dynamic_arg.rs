@@ -12,9 +12,9 @@ use crate::steps::is_simple_identifier;
 
 /// Emit a dynamic directive argument (`:[expr]`, `@[expr]`).
 ///
-/// Simple identifiers keep the historical `_ctx.` prepend so existing
-/// snapshots and slot-param special cases stay byte-identical. Compound
-/// keys (`prefix+suffix`, `foo.bar`, `keyOf(item)`) walk identifiers the
+/// Transformed arguments carry the same original binding ownership as values.
+/// Untransformed simple identifiers keep the historical `_ctx.` prepend.
+/// Compound keys (`prefix+suffix`, `foo.bar`, `keyOf(item)`) walk identifiers the
 /// same way template-literal keys already do — the previous heuristic
 /// either prepended `_ctx.` to the whole string or emitted the raw text,
 /// which crashes at runtime under SFC `prefix_identifiers`.
@@ -29,6 +29,16 @@ pub(super) fn emit_dynamic_directive_arg(ctx: &mut CodegenContext, exp: &SimpleE
     }
     if ctx.is_slot_param(content) {
         ctx.push(content);
+        return;
+    }
+    if exp.is_ref_transformed {
+        if content.starts_with('`') {
+            ctx.push("(");
+            generate_simple_expression(ctx, exp);
+            ctx.push(")");
+        } else {
+            generate_simple_expression(ctx, exp);
+        }
         return;
     }
     if is_simple_identifier(content) {

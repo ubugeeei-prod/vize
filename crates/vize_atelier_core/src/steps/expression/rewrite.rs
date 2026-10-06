@@ -105,6 +105,7 @@ pub(super) fn rewrite_props_aliases(code: String, ctx: &TransformContext<'_>) ->
 pub(crate) struct RewriteResult {
     pub(crate) code: String,
     pub(crate) used_unref: bool,
+    pub(crate) used_is_ref: bool,
     /// Set when the expression could not be parsed at all and the raw
     /// content was passed through. Holds the parser's error detail so the
     /// caller can emit a compile diagnostic (mirroring `@vue/compiler-core`'s
@@ -185,6 +186,7 @@ pub(crate) fn rewrite_expression(
         return RewriteResult {
             code: String::new(content),
             used_unref: false,
+            used_is_ref: false,
             parse_error: (!overflows).then(|| String::new("mismatched expression delimiters")),
         };
     }
@@ -204,6 +206,7 @@ pub(crate) fn rewrite_expression(
             return RewriteResult {
                 code: js_content,
                 used_unref: false,
+                used_is_ref: false,
                 parse_error: None,
             };
         }
@@ -214,6 +217,7 @@ pub(crate) fn rewrite_expression(
         return RewriteResult {
             code: js_content,
             used_unref: false,
+            used_is_ref: false,
             parse_error: Some(detail),
         };
     }

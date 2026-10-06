@@ -1,0 +1,109 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "b416f850aed501d8bc2f5413a96103710087d173",
+  "product": "compiler",
+  "cases": [
+    {
+      "id": "compiler/sfc/setup-dynamic-args-7881-original",
+      "state": "active",
+      "targets": [
+        "dom"
+      ],
+      "inputs": {
+        "root": "setup-dynamic-args-7881",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "75678454eee82edbb8b2f441c5511db56b58d2bfe17589896b18416b455e5b8a",
+            "role": "entry"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "327bcdac697bac4411a708f264476893141a32321ff500280e413691fa92fbfc",
+            "role": "entry"
+          },
+          {
+            "path": "Const.vue.txt",
+            "sha256": "c89af4fc6d65127cee53fd58493b0b40f2c5e6d04e436ddd3db9304078676fbd",
+            "role": "entry"
+          },
+          {
+            "path": "For.vue.txt",
+            "sha256": "d899811a2e66cf84252242cdf32f25a8a5dbc4976a090857a9cd127b53b44f5d",
+            "role": "entry"
+          },
+          {
+            "path": "Maybe.vue.txt",
+            "sha256": "fb1b07442d2b4897ef92c3ff89f17fcce49bc14eab9ebfeaf00bd163b0f7a816",
+            "role": "entry"
+          },
+          {
+            "path": "Mutable.vue.txt",
+            "sha256": "1cd2ad73eea786ae96e6112da3c860ac3d556351eed4e99aacdbcde3e04e687c",
+            "role": "entry"
+          },
+          {
+            "path": "Names.vue.txt",
+            "sha256": "7b8655dfd0d572049fd709c38fee31fdc6a675df2b7cd54d80ee7d07a23f5a6c",
+            "role": "entry"
+          },
+          {
+            "path": "Slot.vue.txt",
+            "sha256": "90d9122d5eda4278681e8f9141c39e52024880b4bbeb4645150b124cf8132011",
+            "role": "entry"
+          },
+          {
+            "path": "Static.vue.txt",
+            "sha256": "47a7affb417b942bc999ca5c1a6f30f94a573878eaea1bd8886db21965f594ba",
+            "role": "entry"
+          },
+          {
+            "path": "original-issue.md",
+            "sha256": "d699779cdfe91d6178da5807d36a2902ab71ceba4a392aff41ebb890f6381a5b",
+            "role": "reporter-reproduction"
+          }
+        ]
+      },
+      "reference": {
+        "path": "setup-dynamic-args-7881/runtime.expected.json",
+        "sha256": "b7d6b8c3bc2351241a82e22f47d6d0ee1ea5def7902d94192209cb0aeb59179d",
+        "source": "crates/vize_atelier_sfc/tests/setup_dynamic_arguments.rs:whole_original_setup_argument_modules_mount_like_official_vue"
+      },
+      "custody": {
+        "path": "setup-dynamic-args-7881/custody.json",
+        "sha256": "414945c9aadfb687015682dbed75b2f906bb9e56a755a86e283f40ec089ec98e"
+      },
+      "provenance": {
+        "issue": "https://github.com/ubugeeei-prod/vize/issues/7881",
+        "reporter": "ubugeeei",
+        "versions": {
+          "vizeReported": "0.432.0",
+          "vueReported": "3.6.0-rc.10",
+          "vueRuntime": "3.6.0-rc.9"
+        }
+      },
+      "adapters": {
+        "legacy": "compiler-whole-sfc-setup-dynamic-arguments-v1",
+        "native": null,
+        "reasons": {
+          "native": "Existing VDOM expression ownership fix; no native target, browser/hydration, history/default or performance credit."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-whole-setup-argument-ownership-v1",
+        "requiredFacets": [
+          "whole-original-source",
+          "complete-public-results",
+          "full-current-reference-modules",
+          "complete-raw-maps",
+          "actual-inline-and-separate-mounts",
+          "strict-whole-child-tree",
+          "listener-and-attribute-updates",
+          "original-scoped-binding-shadowing",
+          "zero-diagnostics-and-cleanup"
+        ]
+      }
+    }
+  ]
+}

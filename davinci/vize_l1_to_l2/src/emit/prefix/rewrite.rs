@@ -34,6 +34,7 @@ pub(super) struct RewriteResult {
     /// that helper once, after the body, the way the shipped lane appends
     /// it after every used helper.
     pub(super) used_unref: bool,
+    pub(super) used_is_ref: bool,
     /// The shipped lane reports `X_INVALID_EXPRESSION` here; the emit
     /// refuses instead (the diagnostic is not recoverable, so the corpus
     /// lane never compares such a template).
@@ -79,6 +80,7 @@ pub(super) fn rewrite_expression(
         return RewriteResult {
             code: String::from(content),
             used_unref: false,
+            used_is_ref: false,
             parse_error: !overflows,
         };
     }
@@ -95,6 +97,7 @@ pub(super) fn rewrite_expression(
         return RewriteResult {
             code: js_content,
             used_unref: false,
+            used_is_ref: false,
             parse_error: !accepted,
         };
     }
@@ -117,6 +120,7 @@ fn project_aliases(result: RewriteResult, scope: &PrefixScope<'_>) -> RewriteRes
             &["__props", "$props"],
         ),
         used_unref: result.used_unref,
+        used_is_ref: result.used_is_ref,
         parse_error: false,
     }
 }
@@ -129,10 +133,12 @@ fn rewrite_retained(
     let mut collector = IdentifierCollector::new_unwrapped(scope, content, retained.offset);
     collector.visit_expression(retained.ast);
     let used_unref = collector.used_unref;
+    let used_is_ref = collector.used_is_ref;
     let code = splice_insertions(content, collector.rewrites, collector.suffix_rewrites, 0);
     RewriteResult {
         code,
         used_unref,
+        used_is_ref,
         parse_error: false,
     }
 }
@@ -159,10 +165,12 @@ fn rewrite_reparsed(
         let mut collector = IdentifierCollector::new(scope, wrapped.as_str());
         collector.visit_expression(&expr);
         let used_unref = collector.used_unref;
+        let used_is_ref = collector.used_is_ref;
         let code = splice_insertions(content, collector.rewrites, collector.suffix_rewrites, 1);
         return RewriteResult {
             code,
             used_unref,
+            used_is_ref,
             parse_error: false,
         };
     }
@@ -173,10 +181,12 @@ fn rewrite_reparsed(
         let mut collector = IdentifierCollector::new(scope, content);
         collector.visit_program(&parsed.program);
         let used_unref = collector.used_unref;
+        let used_is_ref = collector.used_is_ref;
         let code = splice_insertions(content, collector.rewrites, collector.suffix_rewrites, 0);
         return RewriteResult {
             code,
             used_unref,
+            used_is_ref,
             parse_error: false,
         };
     }
@@ -186,6 +196,7 @@ fn rewrite_reparsed(
             return RewriteResult {
                 code: String::from(content),
                 used_unref: false,
+                used_is_ref: false,
                 parse_error: false,
             };
         }
@@ -217,6 +228,7 @@ fn rewrite_reparsed(
         return RewriteResult {
             code,
             used_unref: needs_unref,
+            used_is_ref: false,
             parse_error: false,
         };
     }
@@ -226,6 +238,7 @@ fn rewrite_reparsed(
     RewriteResult {
         code: js_content,
         used_unref: false,
+        used_is_ref: false,
         parse_error: !ts_accepts,
     }
 }

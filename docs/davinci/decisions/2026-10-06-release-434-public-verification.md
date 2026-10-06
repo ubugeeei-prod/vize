@@ -146,3 +146,20 @@ passed. A typed binding and fresh full qualification remain pending. The
 configless alias and default lint improvements also require original-fixture
 qualification. These preparations do not assign a release cut or prove merge
 or publication; keep the finite v0.435.0 delivery above.
+
+## Actual security delivery
+
+At 2026-10-06T05:04:12Z, PR8080 actually merged through the protected queue
+as signed `48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb`, sole parent143c.
+Protected Check37415076552 and the complete native, UI, canonical, Rust and
+104 instruction fixtures passed; issue8079 then closed. The
+[paired actual-main record](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-6009770988)
+keeps current-head qualification and actual delivery mandatory.
+
+PR8074 incorporates this real main once while preserving every incoming
+production and fixture byte and all prior root authors. Other owners now
+qualify their genuine replays independently; native Stack8092 was registered
+as8073→8086→8091 before this incorporation. The Hover provider/inlay consumer
+must pass their joint original editor/Vue checks before the next source cut.
+The next release remains v0.435.0; this record assigns no cut, release PR,
+tag or public result and does not wait for unfinished PR8038 or all P0s.
