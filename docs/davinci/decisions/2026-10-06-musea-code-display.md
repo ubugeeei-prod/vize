@@ -60,3 +60,20 @@ and capturing a panel. Its first local pictures were taken while Chromium's
 arrow-key scroll animation was still moving; non-keyboard gallery inspection
 confirmed source insets were correct. This repairs screenshot custody, without
 changing the UI, whole-source or scroll-reachability expectations.
+
+## Security-main replay
+
+Historical head `95188afcbc05e5305711ff8b62f16a9489094494` passed the
+whole 8 template / 8 usage Chromium observations in run `37409961772`,
+with official screenshot artifact `11388962023`. Its ordinary source Check
+`37409962074` failed the unchanged production security audit; no source-green
+or protected instruction acceptance is attributed to that run.
+
+The independent security repair #8080 actually merged as signed
+`48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb`. This branch replays onto
+that actual main while preserving all ten non-document blobs, the raw generator
+and original Button, and both original commit author/date/body/footer records.
+Every incoming canonical line remains complete. Fresh configured Actions and
+protected candidate execution must qualify this composition; the previous
+Chromium artifact remains historical. Actual merge and installed published
+gallery verification still own delivery.
