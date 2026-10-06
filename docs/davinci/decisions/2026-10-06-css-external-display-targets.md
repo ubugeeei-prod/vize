@@ -74,3 +74,30 @@ marker must not prevent proof from a farther outer ancestor, for example
 accept only an unblocked positive ownership proof, otherwise retain the finding.
 Seven additional whole controls preserve all 47 prior case objects. This source
 correction has no runtime acceptance from either earlier private preparation.
+
+The maintainer's subsequent explicit scaling decision lifts the earlier private
+publication boundary. Publish this reviewed slice as the genuine child of
+CLI #8086 / Issue #7995 at `4317e5e6fc4b39cf850b2f1c3cf1ab233595b635`,
+which itself descends from CI #8073 at `d836c174f1fe5f1c7b8e12219366e137c129048d`.
+Preserve all incoming source and decision bytes, the prior ab460 source/corpus
+objects, both original bodies/configurations, and the complete 54 API/JSON cases
+and 218-call observer. The source-only peer verdict is not compiled acceptance.
+The bottom owner registers all three PRs as one native Stack after this child's
+PR exists, then verifies the same Stack ID and ordered positions. No individual
+auto-merge is permitted. Current Actions must prove this literal source.
+
+The initial parent predates current main and the security remediation #8080.
+Retain any authentic advisory failures rather than accepting a stale parent
+pass. After #8080 actually merges, the bottom owner replays onto genuine fresh
+main once, then each child replays its owned slice onto that actual parent and
+reruns Actions. Admit only an exact-green contiguous prefix with `gh stack
+merge`, and track protected full suites, original proofs, actual signed merges,
+and root-owned public release. No local native build or extra campaign is added.
+
+The initial #8086 native test compilation rejected its new SHA256 helper's
+LowerHex formatting before runtime. Its owner repaired only byte-wise hash
+encoding and paired qualification docs in successor
+`5d0a8adb32aee33a40004676714796b3512e58ec`. Genuinely replay this CSS child
+onto that exact parent before initial publication, preserving every incoming
+byte, all reviewed source/reference objects, and the original 4317 witness.
+Current source/native execution remains pending; no old-parent pass transfers.
