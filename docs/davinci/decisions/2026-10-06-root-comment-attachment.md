@@ -16,7 +16,10 @@ The existing map still assigns each inter-block gap to the following block
 before sorting. Standalone document prologue, authored blank separation,
 trailing content, all block bodies, style cascade ordering, BOM and configured
 line endings retain their original authority. Prologue remains at document
-start; this repair does not relocate it with a sorted block.
+start. When sorting moves an attached group ahead of the first block, recover
+only the terminal complete group after a blank-separated nonempty earlier
+prologue. The same source-owned group must remain adjacent on subsequent
+passes; a standalone prologue keeps its existing separation.
 
 Two existing root-comment snapshots encode the same extra blank line. Their
 original complete inputs and historical captured outputs remain immutable;
@@ -49,3 +52,20 @@ and installed release verification remain mandatory. No performance claim or
 complete formatter-history adoption is made. The issue decision is paired in
 [comment 6010378576](https://github.com/ubugeeei-prod/vize/issues/7877#issuecomment-6010378576)
 and the central record in this same source change.
+
+The first normal source Check [37422249485](https://github.com/ubugeeei-prod/vize/actions/runs/37422249485)
+at `1b2ef4a5` authentically failed: tooling shard3 found one extra LF on
+the sorted historical input's second full pass, and the preserved-source
+scratch test lacked the new authority/historical files. Shard1 also found
+the generated formatter source inventory stale. Retain both full failed logs
+as historical evidence. The successor recovers only the existing attached
+comment group after the earlier prologue, copies all three exact authority
+assets into the scratch fixture with drift/missing controls, and regenerates
+only the changed formatter inventory shard. The synthetic validator records
+the two complete historical DIFFERENT/current EQUAL comparisons explicitly.
+Every original/current expected
+byte remains unchanged from the independently authored repair. Fresh complete
+Actions and the bounded source peer, not these source edits, qualify delivery.
+
+This successor is paired with [comment 6010655474](https://github.com/ubugeeei-prod/vize/issues/7877#issuecomment-6010655474)
+and the central record in the same change.

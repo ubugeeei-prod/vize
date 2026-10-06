@@ -12,6 +12,10 @@ import {
 import { sha256 } from "../differential/manifest.mjs";
 import { observerSourceIdentity, OBSERVER_SOURCE } from "../differential/formatter-api-build.mjs";
 import { planToolingTests } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
+import {
+  currentFormatterReferenceSummary,
+  formatterReferenceComparisons,
+} from "../differential/formatter-current-reference.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const manifestPath = path.join(
@@ -51,26 +55,28 @@ function syntheticReport(loaded) {
       },
       native: { state: "unsupported", reason: "native formatter adapter unavailable" },
       comparison: { state: "not-compared" },
+      ...(fixture.currentReference ? { currentReference: fixture.currentReference } : {}),
       legacy: {
         state: "matched-reference",
         passes: Array.from({ length: fixture.passCount }, (_, index) => {
-          const input = index ? fixture.expected : fixture.input;
+          const output = fixture.currentExpected ?? fixture.expected;
+          const input = index ? output : fixture.input;
           return {
             pass: index + 1,
             inputBase64: input.toString("base64"),
             inputSha256: sha256(input),
-            stdoutBase64: fixture.expected.toString("base64"),
-            outputSha256: sha256(fixture.expected),
+            stdoutBase64: output.toString("base64"),
+            outputSha256: sha256(output),
             stderrBase64:
               fixture.outcome === "error"
                 ? Buffer.from(`error=${fixture.typedError}\n`).toString("base64")
                 : fixture.api === "format_sfc"
-                  ? Buffer.from(`changed=${!input.equals(fixture.expected)}\n`).toString("base64")
+                  ? Buffer.from(`changed=${!input.equals(output)}\n`).toString("base64")
                   : "",
             exitStatus: fixture.outcome === "error" ? 1 : 0,
             signal: null,
             processError: null,
-            referenceComparison: { state: "equal" },
+            ...formatterReferenceComparisons(fixture, output),
           };
         }),
       },
@@ -90,6 +96,12 @@ function syntheticReport(loaded) {
       nativeHandled: 0,
       nativeEquivalent: 0,
       pairedComparisons: 0,
+      ...currentFormatterReferenceSummary(
+        loaded.cases.map((fixture) => ({
+          currentReference: fixture.currentReference,
+          legacy: { state: "matched-reference" },
+        })),
+      ),
     },
   };
 }
@@ -276,10 +288,16 @@ void test("captured history binds real raw outputs, source and helper wrapper by
     "tests/_fixtures/differential/formatter-history/capture-manifest.json",
   );
   const loaded = loadFormatterApiManifest(sourcePath, root);
-  assert.equal(
-    validateFormatterApiReport(loaded, syntheticReport(loaded), {}).legacyErrorMatches,
-    20,
-  );
+  const report = syntheticReport(loaded);
+  assert.equal(validateFormatterApiReport(loaded, report, {}).legacyErrorMatches, 20);
+  assert.equal(report.summary.currentReferenceMatches, 2);
+  for (const row of report.rows.filter((row) => row.currentReference)) {
+    assert.equal(row.currentReference.issue, 7877);
+    for (const pass of row.legacy.passes) {
+      assert.equal(pass.referenceComparison.state, "different");
+      assert.equal(pass.currentReferenceComparison.state, "equal");
+    }
+  }
   for (const mutate of [
     (manifest) => {
       manifest.source.revision = "0".repeat(40);

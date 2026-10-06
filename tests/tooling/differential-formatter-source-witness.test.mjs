@@ -19,7 +19,20 @@ void test("assertion-only source witness rejects owner, archived source and snap
     .filter((name) => name.startsWith("preserve_authored_content__"))
     .map((name) => `crates/vize_glyph/tests/snapshots/${name}`);
   assert.equal(snapshots.length, 8);
-  for (const relative of [authority.owner, authority.originalAsset, ...snapshots]) {
+  const rootAuthority =
+    "tests/_fixtures/differential/formatter-history/current-references-7877.json";
+  const rootSnapshots = JSON.parse(fs.readFileSync(path.join(root, rootAuthority))).cases.map(
+    (row) => row.historicalSnapshot.path,
+  );
+  assert.equal(rootSnapshots.length, 2);
+  const files = [
+    authority.owner,
+    authority.originalAsset,
+    ...snapshots,
+    rootAuthority,
+    ...rootSnapshots,
+  ];
+  for (const relative of files) {
     const target = path.join(scratch, relative);
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.copyFileSync(path.join(root, relative), target);
@@ -36,7 +49,7 @@ void test("assertion-only source witness rejects owner, archived source and snap
   assert.throws(() =>
     resolvePreservedFormatterSource(scratch, { ...artifact, sha256: authority.currentSha256 }),
   );
-  for (const relative of [authority.owner, authority.originalAsset, ...snapshots]) {
+  for (const relative of files) {
     const target = path.join(scratch, relative);
     const saved = fs.readFileSync(target);
     fs.writeFileSync(target, Buffer.concat([saved, Buffer.from("// drift\n")]));
