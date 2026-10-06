@@ -31,10 +31,12 @@ export class NativeDiagnosticsGate {
   readonly signals: { signal: string; life: NativeLife }[] = [];
   private stopped = new Set<number>();
 
-  constructor(
-    private readonly owner: number,
-    private readonly executable: string,
-  ) {
+  private readonly owner: number;
+  private readonly executable: string;
+
+  constructor(owner: number, executable: string) {
+    this.owner = owner;
+    this.executable = executable;
     const descendants = processTreeRss(owner);
     assert.ok(descendants, "actual server process tree unavailable");
     this.lives = descendants.members

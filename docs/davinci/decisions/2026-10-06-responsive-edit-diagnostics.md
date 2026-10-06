@@ -15,3 +15,9 @@ Independent source review found that the authored native-positive control accept
 All production paths, original issue/SFC/config/prose pins, original three-cycle controls, native gate and previous ownership assertions remain byte-exact. This corrects only the new oracle weakness; genuine current Actions/native execution and protected/actual delivery remain pending.
 
 Decision receipt: [6007649209](https://github.com/ubugeeei-prod/vize/issues/8002#issuecomment-6007649209).
+
+A bounded direct import with the actual installed Node24.14.0 found that the new native gate helper used constructor parameter properties, which Node strip-only execution rejects with ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX. The earlier Node --check passed lexical syntax and did not establish module-load acceptance. Replace those two parameter properties with explicit private readonly fields and identical constructor assignments; the process selection, signal ownership, gate controls and all semantic assertions remain unchanged.
+
+This is a necessary owned harness compatibility correction, not a checker/scheduling change. Every production/original/whole oracle byte remains exact06bf. A cheap corrected module import must pass; fresh automatic same-PR Actions still must compile and actually execute the native controls. Historical06bf Actions/import failure is retained without runtime acceptance transfer.
+
+Decision receipt: [6007705969](https://github.com/ubugeeei-prod/vize/issues/8002#issuecomment-6007705969).
