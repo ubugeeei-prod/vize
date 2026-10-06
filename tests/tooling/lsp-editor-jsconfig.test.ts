@@ -66,9 +66,15 @@ function vectors(mode: string, native = false): Record<string, unknown[]> {
   return { "src/App.vue": app, "src/main.js": main };
 }
 
-function prepare(directory: string, configName: string, mode: string): Record<string, string> {
+function prepare(
+  directory: string,
+  configName: string,
+  mode: string,
+  name: string,
+  implicit: boolean,
+): Record<string, string> {
   const inputs: Record<string, string> = {
-    [configName]: original("jsconfig.json"),
+    [configName]: original(implicit ? "jsconfig-implicit.json" : "jsconfig.json"),
     "package.json": original("package.json"),
     "src/util.js": original("util.js"),
     "src/App.vue": original("App.vue"),
@@ -96,7 +102,7 @@ function prepare(directory: string, configName: string, mode: string): Record<st
   assert.equal(provider.version, "3.5.43");
   fs.mkdirSync(path.join(directory, "node_modules"));
   fs.symlinkSync(vue, path.join(directory, "node_modules/vue"), "dir");
-  save(configName + "-" + mode + "-inputs", {
+  save(name + "-inputs", {
     inputs,
     vue,
     provider,
@@ -152,11 +158,15 @@ test(
     const previous = process.env.CORSA_PATH;
     process.env.CORSA_PATH = runtime;
     try {
-      for (const configName of ["jsconfig.json", "tsconfig.json"])
+      for (const [configName, implicit] of [
+        ["jsconfig.json", false],
+        ["tsconfig.json", false],
+        ["jsconfig.json", true],
+      ] as const)
         for (const mode of ["clean", "wrong-argument", "missing-target"]) {
           const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-editor-jsconfig-"));
-          const inputs = prepare(directory, configName, mode);
-          const name = configName + "-" + mode;
+          const name = configName + (implicit ? "-implicit" : "") + "-" + mode;
+          const inputs = prepare(directory, configName, mode, name, implicit);
           let wire: LspWire | undefined;
           try {
             const source = inputs["src/App.vue"];

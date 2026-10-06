@@ -19,7 +19,9 @@ ordinary `.js`, setup-JS SFC, JSDoc string parameter/return and `checkJs`.
 Pure laws cover a nested `jsconfig.json` beneath a parent TypeScript config,
 same-directory TypeScript precedence and explicit config precedence. Actual
 source-built stdio and pinned native 7.0.2 controls compare complete clean,
-wrong-argument and missing-module vectors under each config name. A conflicting
+wrong-argument and missing-module vectors under each config name, plus a genuine
+JavaScript-config variant omitting `allowJs` to require native implicit-default
+authority rather than infer it from an explicit flag. A conflicting
 same-directory JavaScript config disables `checkJs`; the selected TypeScript
 config must still diagnose the ordinary JS wrong argument. Native bare-script
 suggestions are independently retained and every config publication is checked
