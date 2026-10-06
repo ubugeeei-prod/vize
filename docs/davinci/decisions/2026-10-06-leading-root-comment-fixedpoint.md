@@ -50,3 +50,13 @@ full independent DOM/SSR states before and after formatting. This is not a full
 Habitica application/runtime qualification. Actual hosted/protected tests, signed
 merge and installed-public release remain required; native formatter handling is
 unsupported and no performance claim is made.
+
+The [complete observer successor](https://github.com/ubugeeei-prod/vize/issues/8117#issuecomment-6013559001)
+keeps source8542 and its prepared production/history boundaries as historical
+source evidence. It asserts the full unnormalized default fmt stdout/stderr/status
+for all65 processes using independently authored command-source constants, retaining
+raw bytes before validation, and compares every complete parse/DOM/SSR observation
+and module from passes2/3 to pass1. No product or independent content expectation
+changes. The actual signed756f composition preserves all incoming source, attributes
+and canonical350 records; fresh successor Actions are required, without transferring
+old-head runtime acceptance.

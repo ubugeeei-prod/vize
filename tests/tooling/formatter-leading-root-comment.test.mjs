@@ -116,6 +116,8 @@ void test("whole Habitica input and first-root attachment controls reach strict 
             error: result.error?.message ?? null,
             stdout: result.stdout?.toString() ?? "",
             stderr: result.stderr?.toString() ?? "",
+            stdoutBase64: (result.stdout ?? Buffer.alloc(0)).toString("base64"),
+            stderrBase64: (result.stderr ?? Buffer.alloc(0)).toString("base64"),
             before: before.toString(),
             after: null,
             afterReadError: null,
@@ -131,11 +133,17 @@ void test("whole Habitica input and first-root attachment controls reach strict 
           }
           assert.equal(result.error, undefined, fixture.id);
           assert.equal(result.signal, null, fixture.id);
+          const oracle = fixture.cliExpected[row.attempts.length - 1];
+          assert.equal(mode, oracle.mode);
+          assert.equal(result.status, oracle.status);
+          assert.deepEqual(result.stdout, Buffer.from(oracle.stdout), "complete stdout");
+          assert.deepEqual(result.stderr, Buffer.from(oracle.stderr), "complete stderr");
           return { result, before, after };
         };
         const initial = invoke("--check");
         assert.deepEqual(initial.after, initial.before, `${fixture.id}: check is read-only`);
         let first;
+        let firstDiagnostics;
         for (let pass = 1; pass <= 3; pass++) {
           const { result, after } = invoke("--write");
           assert.equal(result.status, 0, `${fixture.id}: pass ${pass}`);
@@ -147,6 +155,12 @@ void test("whole Habitica input and first-root attachment controls reach strict 
             assert(after.toString().startsWith(fixture.expectedLeadingContent));
           const observation = diagnostics(after.toString(), fixture);
           row.diagnostics.push({ pass, ...observation });
+          if (pass === 1) firstDiagnostics = observation;
+          assert.deepEqual(
+            observation,
+            firstDiagnostics,
+            `${fixture.id}: whole compiler fixedpoint`,
+          );
           if (baseline.dom) {
             assert.deepEqual(baseline.parse, [], `${fixture.id}: original parse diagnostics`);
             assert.deepEqual(baseline.dom.errors, [], `${fixture.id}: original DOM diagnostics`);

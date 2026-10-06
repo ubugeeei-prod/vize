@@ -28,7 +28,39 @@
       "bytes": 497,
       "sha256": "8c6f1ac1119cedda7b98ba65f4ebf6ad681c0fcb9ce1fc56ae7b180850983971"
     },
-    "expectedLeadingContent": "<!-- eslint-enable max-len -->\n<!-- eslint-disable-next-line vue/component-tags-order -->\n<script>\n"
+    "expectedLeadingContent": "<!-- eslint-enable max-len -->\n<!-- eslint-disable-next-line vue/component-tags-order -->\n<script>\n",
+    "cliExpected": [
+      {
+        "mode": "--check",
+        "status": 1,
+        "stdout": "",
+        "stderr": "Found 1 file(s)\nWould reformat: task.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+      },
+      {
+        "mode": "--write",
+        "status": 0,
+        "stdout": "",
+        "stderr": "Found 1 file(s)\nReformatted: task.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+      },
+      {
+        "mode": "--write",
+        "status": 0,
+        "stdout": "",
+        "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+      },
+      {
+        "mode": "--write",
+        "status": 0,
+        "stdout": "",
+        "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+      },
+      {
+        "mode": "--check",
+        "status": 0,
+        "stdout": "",
+        "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+      }
+    ]
   },
   "cases": [
     {
@@ -44,7 +76,39 @@
           "label": "日本語"
         }
       ],
-      "html": ["<p>hello</p>", "<p>日本語</p>"]
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "standalone-authored-blank",
@@ -59,7 +123,39 @@
           "label": "日本語"
         }
       ],
-      "html": ["<p>hello</p>", "<p>日本語</p>"]
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "two-adjacent-comments-sort-first",
@@ -74,7 +170,39 @@
           "label": "日本語"
         }
       ],
-      "html": ["<p>hello</p>", "<p>日本語</p>"]
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: Sorted.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: Sorted.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "each-block-keeps-its-comment",
@@ -89,7 +217,39 @@
           "label": "日本語"
         }
       ],
-      "html": ["<p>hello</p>", "<p>日本語</p>"]
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: EachBlock.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: EachBlock.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "standalone-before-attached-group",
@@ -104,7 +264,39 @@
           "label": "日本語"
         }
       ],
-      "html": ["<p>hello</p>", "<p>日本語</p>"]
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "multiline-utf8-first-comment",
@@ -119,19 +311,115 @@
           "label": "日本語"
         }
       ],
-      "html": ["<p>hello</p>", "<p>日本語</p>"]
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "first-style-group",
       "file": "Style.vue",
       "source": "<!-- style note -->\n<style>\n.note {\n  color: red;\n}\n</style>\n",
-      "expected": "<!-- style note -->\n<style>\n.note {\n  color: red;\n}\n</style>\n"
+      "expected": "<!-- style note -->\n<style>\n.note {\n  color: red;\n}\n</style>\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "first-custom-group",
       "file": "Custom.vue",
       "source": "<!-- docs note -->\n<docs>\nnotes\n</docs>\n",
-      "expected": "<!-- docs note -->\n<docs>\nnotes\n</docs>\n"
+      "expected": "<!-- docs note -->\n<docs>\nnotes\n</docs>\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "bom-first-template",
@@ -146,7 +434,39 @@
           "label": "日本語"
         }
       ],
-      "html": ["<p>hello</p>", "<p>日本語</p>"]
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "crlf-first-template",
@@ -162,13 +482,77 @@
           "label": "日本語"
         }
       ],
-      "html": ["<p>hello</p>", "<p>日本語</p>"]
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "comment-only",
       "file": "CommentOnly.vue",
       "source": "<!-- first -->\n<!-- second -->\n",
-      "expected": "<!-- first -->\n<!-- second -->\n"
+      "expected": "<!-- first -->\n<!-- second -->\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     },
     {
       "id": "text-prologue",
@@ -183,7 +567,44 @@
           "label": "日本語"
         }
       ],
-      "html": ["<p>hello</p>", "<p>日本語</p>"]
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
     }
-  ]
+  ],
+  "cliProtocolAuthority": {
+    "source": "crates/vize/src/commands/fmt.rs",
+    "sourceSha256": "0ec081d5f943f8f9c8940138c18330eabee673eca5cc5c5fe7d9b29917d41a70",
+    "scope": "Independently authored complete default check/write summaries, with profiling disabled. No stream normalization."
+  }
 }
