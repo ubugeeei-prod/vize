@@ -22,8 +22,10 @@ fn original_fixture() -> Fixture {
 }
 
 fn sync_packet(fixture: &Fixture) -> Value {
-    let diagnostics = DiagnosticService::collect(&fixture.service.inner().state, &fixture.app);
-    json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"uri":fixture.app,"diagnostics":diagnostics}})
+    let state = &fixture.service.inner().state;
+    let diagnostics = DiagnosticService::collect(state, &fixture.app);
+    let version = state.documents.version(&fixture.app).unwrap();
+    json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"uri":fixture.app,"version":version,"diagnostics":diagnostics}})
 }
 
 #[test]

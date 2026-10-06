@@ -13,7 +13,7 @@ pub(in crate::server) struct SyncDiagnostics {
 }
 
 impl MaestroServer {
-    /// Reuse the initial notification contract: unversioned means partial.
+    /// The version identifies the edited source, including prompt feedback.
     /// Edits also publish empty sets to clear a repaired lint/parser warning.
     /// This pass does not own or retire the pending complete diagnostic job.
     pub(in crate::server) async fn publish_changed_sync_diagnostics(
@@ -35,9 +35,9 @@ impl MaestroServer {
         }
         self.state
             .cache_lint_hover_diagnostics(uri, version, &diagnostics);
-        let notification = self
-            .client
-            .publish_diagnostics(uri.clone(), diagnostics.clone(), None);
+        let notification =
+            self.client
+                .publish_diagnostics(uri.clone(), diagnostics.clone(), Some(version));
         futures::pin_mut!(notification);
         let document = self.state.diagnostic_lock(uri);
         let mut queued = false;

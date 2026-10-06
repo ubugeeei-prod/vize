@@ -95,20 +95,20 @@ async function run(typecheck: boolean, corsaPath: string) {
       const before = notifications.length;
       started = performance.now();
       change(session, uri, version, removed);
-      const early = await wait(session, uri, typecheck ? undefined : version);
+      const early = await wait(session, uri, version);
       const elapsedMs = performance.now() - started;
       assert.equal(alt(early), true);
       if (typecheck) {
         gate!.assertStopped();
-        assert.ok(
-          !notifications
-            .slice(before)
-            .some(({ params }) => (params as PublishDiagnosticsParams).version === version),
+        assert.deepEqual(
+          notifications.slice(before).map(({ params }) => params),
+          [early],
+          "exact current-version feedback arrives while native remains stopped",
         );
       }
       started = performance.now();
       change(session, uri, version + 1, original);
-      const repaired = await wait(session, uri, typecheck ? undefined : version + 1);
+      const repaired = await wait(session, uri, version + 1);
       const repairElapsedMs = performance.now() - started;
       assert.equal(
         alt(repaired),
@@ -123,11 +123,10 @@ async function run(typecheck: boolean, corsaPath: string) {
       assert.equal(alt(terminal), false);
       assert.deepEqual(terminal.diagnostics, initial.diagnostics, "full restored original result");
       if (typecheck)
-        assert.ok(
-          !notifications
-            .slice(before)
-            .some(({ params }) => (params as PublishDiagnosticsParams).version === version),
-          "superseded native result must never publish",
+        assert.deepEqual(
+          notifications.slice(before).map(({ params }) => params),
+          [early, repaired, terminal],
+          "exactly one partial per edit and one latest complete; no superseded native result",
         );
       rows.push({ version, source: removed, early, elapsedMs, terminal });
       rows.push({
@@ -148,17 +147,27 @@ async function run(typecheck: boolean, corsaPath: string) {
       gates.push(gate);
       await gate.stop();
       started = performance.now();
+      const before = notifications.length;
       change(session, uri, 8, typed);
-      const early = await wait(session, uri, undefined);
+      const early = await wait(session, uri, 8);
       const typeEarlyElapsedMs = performance.now() - started;
       gate.assertStopped();
-      assert.deepEqual(early, { uri, diagnostics: expected.early }, "whole authored early packet");
+      assert.deepEqual(
+        early,
+        { uri, version: 8, diagnostics: expected.early },
+        "whole authored early packet",
+      );
       gate.resume();
       const terminal = await wait(session, uri, 8);
       assert.deepEqual(
         terminal,
         { uri, version: 8, diagnostics: expected.terminal },
         "entire independently authored native packet must merge",
+      );
+      assert.deepEqual(
+        notifications.slice(before).map(({ params }) => params),
+        [early, terminal],
+        "positive native control retains both entire same-version packets",
       );
       rows.push({
         version: 8,
@@ -275,6 +284,7 @@ await test("original edit lint and repairs publish before a gated genuine native
         observed.native.rows[index].early,
         {
           uri: observed.native.uri,
+          version: observed.native.rows[index].version,
           diagnostics: observed.control.rows[index].early.diagnostics,
         },
         "entire early public packet matches the independent typecheck-disabled control",

@@ -45,8 +45,8 @@
   "oracle": {
     "sync": "complete public diagnostics from identical source with typecheck disabled",
     "nativeGate": "actual owned native executable processes stopped after real initial typecheck",
-    "early": "unversioned complete sync set including empty repairs",
-    "terminal": "versioned complete native merge with current source/version; older results refused"
+    "early": "current-version complete sync set including empty repairs; version identifies source, not native completion",
+    "terminal": "complete native merge at same current version; exact per-version publication counts distinguish stages and refuse superseded native results"
   },
   "limitations": [
     "Historical reported versions retained; current locked runtime recorded separately.",
