@@ -1,5 +1,5 @@
 use super::{
-    PseudoFunction, attribute::scope_functional_anchor, find_scope_insert_position,
+    PseudoFunction, add_scope_before_trailing_combinator, find_scope_insert_position,
     trailing_combinator_start,
 };
 use vize_carton::String;
@@ -14,8 +14,7 @@ pub(super) fn scope_slotted_selector(
     let mut scoped = String::with_capacity(body.len() + scope_id.len() * 2 + 4);
 
     if !before.is_empty() {
-        let scoped_before =
-            scope_functional_anchor(before, scope_id).unwrap_or_else(|| String::from(before));
+        let scoped_before = add_scope_before_trailing_combinator(before, scope_id);
         scoped.push_str(scoped_before.as_str());
         if !selector_ends_with_combinator(before) {
             scoped.push(' ');
@@ -33,14 +32,6 @@ fn selector_ends_with_combinator(selector: &str) -> bool {
 
 fn push_slotted_target(output: &mut String, inner: &str, scope_id: &str) {
     let target = strip_slotted_leading_universal(inner.trim());
-    if target.starts_with(":where(") || target.starts_with(":is(") {
-        let mut slotted_id = String::from(scope_id);
-        slotted_id.push_str("-s");
-        if let Some(scoped) = scope_functional_anchor(target, slotted_id.as_str()) {
-            output.push_str(scoped.as_str());
-            return;
-        }
-    }
     let (head, tail) = target
         .split_at_checked(find_scope_insert_position(target))
         .unwrap_or((target, ""));
@@ -101,7 +92,7 @@ mod tests {
     fn scopes_nested_slotted_selector_with_slotted_scope_id() {
         assert_eq!(
             scope_css_for_pipeline(".host { :slotted(.foo) { color: red; } }", "data-v-x").as_str(),
-            " .host .foo[data-v-x-s]{color: red;}"
+            " .host[data-v-x] .foo[data-v-x-s]{color: red;}"
         );
     }
 
@@ -113,7 +104,7 @@ mod tests {
                 "data-v-x"
             )
             .as_str(),
-            " .card >[data-v-x-s]{flex: 1;} .card >.title[data-v-x-s],.card >.subtitle[data-v-x-s]{line-height: 1.2;} .card >[data-v-x-s]:not(:last-child){margin-bottom: 2px;}"
+            " .card[data-v-x] >[data-v-x-s]{flex: 1;} .card[data-v-x] >.title[data-v-x-s],.card[data-v-x] >.subtitle[data-v-x-s]{line-height: 1.2;} .card[data-v-x] >[data-v-x-s]:not(:last-child){margin-bottom: 2px;}"
         );
         assert_eq!(
             scope_css_for_pipeline(
@@ -121,7 +112,7 @@ mod tests {
                 "data-v-x"
             )
             .as_str(),
-            " .card ||[data-v-x-s]{display: table-cell;}"
+            " .card[data-v-x] ||[data-v-x-s]{display: table-cell;}"
         );
     }
 }
