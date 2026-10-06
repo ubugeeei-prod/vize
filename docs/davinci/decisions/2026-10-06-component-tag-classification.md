@@ -41,3 +41,10 @@ Fresh ordinary and native Actions must run the new whole law and all existing
 completion laws on the actual head, with real pinned native/Vue supply and full
 capture. Current runtime, protected instruction ceilings, actual signed merge
 and public inclusion remain unexecuted. No timing or 10x credit is claimed.
+
+The actual dependent CLI7995 native build exposed sha2 0.11's digest array
+without LowerHex. The new private completion test used the same representation,
+so encode each byte as exactly two lowercase hex digits before comparing the
+unchanged complete pins. No source, item, oracle, request or production bytes
+change. That other build failure provides API evidence, not completion runtime
+credit; fresh ordinary/native Actions remain required.

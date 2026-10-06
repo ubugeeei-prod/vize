@@ -26,6 +26,13 @@ const EXPECTED: &str = include_str!(
     "../../../tests/_fixtures/differential/lsp/component-tag-classification/responses.authored.json"
 );
 
+fn digest(source: &str) -> std::string::String {
+    Sha256::digest(source.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
 fn original_pins() {
     let case: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/differential/lsp/component-tag-classification/case.json"
@@ -59,16 +66,16 @@ fn original_pins() {
         ),
     ] {
         assert_eq!(
-            format!("{:x}", Sha256::digest(source.as_bytes())),
+            digest(source),
             case["originalSha256"][name].as_str().unwrap()
         );
     }
     assert_eq!(
-        format!("{:x}", Sha256::digest(CONTROLS.as_bytes())),
+        digest(CONTROLS),
         case["authoredSha256"]["Controls.vue.txt"].as_str().unwrap()
     );
     assert_eq!(
-        format!("{:x}", Sha256::digest(EXPECTED.as_bytes())),
+        digest(EXPECTED),
         case["authoredSha256"]["responses.authored.json"]
             .as_str()
             .unwrap()
