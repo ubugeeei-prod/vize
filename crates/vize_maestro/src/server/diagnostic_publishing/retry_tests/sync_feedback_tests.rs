@@ -128,3 +128,50 @@ fn cancellation_of_a_queued_partial_does_not_retire_the_complete_publication() {
     let filler = json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"uri":fixture.unrelated,"diagnostics":[]}});
     assert_eq!(observed, vec![filler, expected_sync, expected_complete]);
 }
+
+#[test]
+fn typecheck_only_and_plain_scripts_retain_one_complete_publication() {
+    for plain_script in [false, true] {
+        let mut fixture = original_fixture();
+        let server = fixture.service.inner();
+        let uri = if plain_script {
+            let uri = Url::from_file_path(fixture.root.path().join("Plain.ts")).unwrap();
+            let source = "const nativeOnly: number = 'wrong';";
+            server
+                .state
+                .documents
+                .open(uri.clone(), source.into(), 2, "typescript".into());
+            server.state.update_virtual_docs(&uri, source);
+            uri
+        } else {
+            server.state.apply_lsp_initialization_options(Some(
+                &json!({"lint":false,"typecheck":true,"editor":true}),
+            ));
+            fixture.app.clone()
+        };
+        let native = futures::executor::block_on(server.state.corsa_request_scope());
+        let observed = diagnostics(drain(&mut fixture.socket, async {
+            assert!(
+                server
+                    .publish_changed_sync_diagnostics(&uri, 2)
+                    .await
+                    .is_none()
+            );
+        }));
+        assert!(observed.is_empty(), "no extra partial while native is held");
+        drop(native);
+        let collected =
+            futures::executor::block_on(server.collect_diagnostics_unlocked(&uri, Some(2)))
+                .unwrap();
+        let expected = json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"uri":uri,"version":2,"diagnostics":collected.diagnostics}});
+        let observed = diagnostics(drain(
+            &mut fixture.socket,
+            server.publish_collected_diagnostics(&uri, collected),
+        ));
+        assert_eq!(
+            observed,
+            vec![expected],
+            "the existing whole complete packet remains required"
+        );
+    }
+}

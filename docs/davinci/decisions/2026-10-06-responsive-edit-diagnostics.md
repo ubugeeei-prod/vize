@@ -28,3 +28,10 @@ Current977 Rust execution finds a producer compatibility obligation: the existin
 The previous unversioned design and its authentic runtime PASS/Rust failures remain historical. Corrected source needs fresh Actions; security audit13 advisory failures remain separately unwaived, with Draft/offqueue custody. Protected full suites/instruction caps, actual signed delivery and installed replay remain pending.
 
 Decision receipt: [6007907872](https://github.com/ubugeeei-prod/vize/issues/8002#issuecomment-6007907872).
+Independent private ef8 review finds the unchanged native-only Misskey churn session explicitly disables lint and requires its original single-complete stream/count/cancellation behavior. Broad empty prompt feedback would add same-version packets and could be consumed as repair completion. This is a real compatibility blocker, not an oracle waiver.
+
+Decision: eligibility requires existing lint enablement and a non-plain-script synchronous surface. Plain JS/TS synchronous collection is always empty and its existing native-only completion stays unchanged. Preserve all original #8002 lint-enabled SFC controls and empty repairs. No new cache, epoch, Program or scheduling pipeline is introduced. Restore the old #8012 non-lint queued-edit whole vector to its original single current complete packet; only shared test-helper visibility differs. All original Misskey churn and component-authority observer/golden/source bytes remain exact. A held-native control checks no extra partial for both non-lint and plain-script sessions, then requires their entire existing complete packet.
+
+Private ef8 remains compatibility-blocked historical evidence; fresh successor Actions/native/Rust acceptance is required. The provider/runtime version is7.0.2 and the Corsa SDK library is1.14.0. Security13 advisories, protected/actual delivery and installed replay remain pending and unwaived.
+
+Decision receipt: [6007996561](https://github.com/ubugeeei-prod/vize/issues/8002#issuecomment-6007996561).

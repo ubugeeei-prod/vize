@@ -84,14 +84,8 @@ fn queued_old_edits_cannot_adopt_the_latest_version_after_waiting_for_native_sco
     let observed = diagnostics(drain(&mut fixture.socket, async {
         futures::future::join_all(edits).await;
     }));
-    let sync = crate::ide::DiagnosticService::collect(&fixture.service.inner().state, &fixture.app);
-    let mut expected = (84..=87)
-        .map(|version| json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"uri":fixture.app,"version":version,"diagnostics":sync}}))
-        .collect::<Vec<_>>();
-    // Version identifies each authored source; only the final slot is complete.
-    expected.push(notification(&fixture, &current(&fixture)));
-    assert_eq!(observed, expected);
-    assert_eq!(observed[4]["params"]["version"], 87);
+    assert_eq!(observed, vec![notification(&fixture, &current(&fixture))]);
+    assert_eq!(observed[0]["params"]["version"], 87);
 }
 
 #[test]

@@ -4,7 +4,7 @@ use std::{future::Future, task::Poll};
 use tower_lsp::lsp_types::{Diagnostic, Url};
 
 use super::super::{MaestroServer, state::CorsaRequestStamp};
-use crate::ide::DiagnosticService;
+use crate::{ide::DiagnosticService, utils::is_plain_script_path};
 
 pub(in crate::server) struct SyncDiagnostics {
     pub(super) version: i32,
@@ -22,6 +22,8 @@ impl MaestroServer {
         version: i32,
     ) -> Option<SyncDiagnostics> {
         if !self.state.is_lsp_typecheck_enabled()
+            || !self.state.is_lsp_lint_enabled()
+            || is_plain_script_path(uri.path())
             || !self.state.lsp_features().has_diagnostics()
             || self.state.documents.version(uri) != Some(version)
         {
