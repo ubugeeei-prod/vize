@@ -2,6 +2,51 @@ use crate::{Analyzer, AnalyzerOptions, ScopeKind, TemplateExpressionKind};
 use vize_carton::{Allocator, cstr};
 
 #[test]
+fn undefined_reporting_keeps_whole_lexical_read_facts() {
+    const TEMPLATE: &str =
+        "<button @click=\"handler($event, missing, Math, JSON, $attrs)\"></button>";
+    let mut facts = Vec::new();
+    for detect_undefined in [true, false] {
+        let allocator = Allocator::new();
+        let (root, errors) = vize_armature::parse(&allocator, TEMPLATE);
+        assert!(errors.is_empty());
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_unused_bindings();
+        analyzer.draw_script_setup("const handler = () => 1; const Math = 1; const unused = 2;");
+        analyzer.options.detect_undefined = detect_undefined;
+        analyzer.analyze_template(&root);
+        let mut summary = analyzer.finish();
+        assert_eq!(
+            summary
+                .unused_bindings
+                .iter()
+                .map(|name| name.as_str())
+                .collect::<Vec<_>>(),
+            ["unused"]
+        );
+        let diagnostics = summary
+            .undefined_refs
+            .iter()
+            .map(|reference| {
+                (
+                    reference.name.as_str(),
+                    reference.offset,
+                    reference.context.as_str(),
+                )
+            })
+            .collect::<Vec<_>>();
+        let expected = if detect_undefined {
+            vec![("missing", 32, "template expression")]
+        } else {
+            vec![]
+        };
+        assert_eq!(diagnostics, expected);
+        summary.undefined_refs.clear();
+        facts.push(cstr!("{summary:?}"));
+    }
+    assert_eq!(facts[0], facts[1]);
+}
+
+#[test]
 fn implicit_event_reads_are_tracked_even_without_undefined_diagnostics() {
     for detect_undefined in [true, false] {
         for (body, used) in [
