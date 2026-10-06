@@ -58,7 +58,13 @@ impl Owner {
                 "textDocument/documentSymbol",
                 json!({"textDocument":{"uri":uri}}),
             ))
-            .map_err(|error| cstr!("{error}"))?;
+            .map_err(|error| {
+                let corsa::CorsaError::Rpc(ref payload) = error else {
+                    panic!("expected whole controlled native refusal, got {error:?}");
+                };
+                assert_eq!(serde_json::to_value(payload).unwrap(), refusal());
+                cstr!("{error}")
+            })?;
             assert_eq!(result, symbols(uri));
             Ok(())
         })?;
@@ -71,8 +77,26 @@ impl Owner {
     }
 }
 
+fn refusal() -> Value {
+    json!({"code":-32603,"message":"Broken pipe","data":{"phase":"readiness","generation":7}})
+}
+
 #[test]
 fn retired_caller_drains_reversed_window_then_same_owner_rechecks_all_534_and_closes() {
+    retired_readiness_session(DOCUMENTS, false);
+}
+
+#[test]
+fn retired_reversed_window_preserves_completed_native_error_before_live_recovery() {
+    retired_readiness_session(DOCUMENTS, true);
+}
+
+#[test]
+fn retired_single_owner_preserves_completed_native_error_before_live_recovery() {
+    retired_readiness_session(1, true);
+}
+
+fn retired_readiness_session(documents: usize, fail: bool) {
     let source = include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../../tests/_fixtures/differential/lsp-regressions/readiness-after-retirement-7698/Source.ts.txt"
@@ -90,7 +114,7 @@ fn retired_caller_drains_reversed_window_then_same_owner_rechecks_all_534_and_cl
         JsonRpcConnectionOptions::new().with_request_timeout(Some(SETTLE)),
     )
     .unwrap();
-    let uris = (0..DOCUMENTS)
+    let uris = (0..documents)
         .map(|index| format!("file:///workspace/Host{index:03}.vue.ts"))
         .collect::<Vec<_>>();
     let expected = uris.iter().cloned().collect::<BTreeSet<_>>();
@@ -106,23 +130,37 @@ fn retired_caller_drains_reversed_window_then_same_owner_rechecks_all_534_and_cl
     let (release, wait) = mpsc::channel();
     let server = std::thread::spawn(move || {
         let mut reader = BufReader::new(peer.try_clone().unwrap());
-        let requests = (0..MAX_IN_FLIGHT)
+        let requests = (0..documents.min(MAX_IN_FLIGHT))
             .map(|_| frame(&mut reader))
             .collect::<Vec<_>>();
         for request in &requests {
-            assert_eq!(request["method"], "textDocument/documentSymbol");
+            assert_eq!(
+                request,
+                &json!({"jsonrpc":"2.0","id":request["id"],
+                "method":"textDocument/documentSymbol","params":{"textDocument":{"uri":request["params"]["textDocument"]["uri"]}}})
+            );
         }
         held.send(()).unwrap();
         wait.recv_timeout(SETTLE).unwrap();
-        for request in requests.iter().rev() {
+        for (index, request) in requests.iter().rev().enumerate() {
             let uri = request["params"]["textDocument"]["uri"].as_str().unwrap();
-            respond(&mut peer, request, symbols(uri));
+            if fail && index + 1 == requests.len() {
+                let bytes = serde_json::to_vec(
+                    &json!({"jsonrpc":"2.0","id":request["id"],"error":refusal()}),
+                )
+                .unwrap();
+                write!(peer, "Content-Length: {}\r\n\r\n", bytes.len()).unwrap();
+                peer.write_all(&bytes).unwrap();
+                peer.flush().unwrap();
+            } else {
+                respond(&mut peer, request, symbols(uri));
+            }
         }
         // The next live caller must re-ACK the complete generation. There is
         // no abandoned-caller semantic request or partial acceptance frame.
         let mut seen = BTreeSet::new();
-        for start in (0..DOCUMENTS).step_by(MAX_IN_FLIGHT) {
-            let count = (DOCUMENTS - start).min(MAX_IN_FLIGHT);
+        for start in (0..documents).step_by(MAX_IN_FLIGHT) {
+            let count = (documents - start).min(MAX_IN_FLIGHT);
             let requests = (0..count).map(|_| frame(&mut reader)).collect::<Vec<_>>();
             for request in requests.iter().rev() {
                 assert_eq!(request["method"], "textDocument/documentSymbol");
@@ -149,7 +187,7 @@ fn retired_caller_drains_reversed_window_then_same_owner_rechecks_all_534_and_cl
     let (failure, observed) = mpsc::channel();
     let mut first = Box::pin(worker.submit_ready_async(SETTLE, move |owner| {
         let result = owner.query();
-        assert_eq!(owner.dirty.len(), DOCUMENTS);
+        assert_eq!(owner.dirty.len(), documents);
         assert!(!owner.accepted);
         failure.send(result).unwrap();
     }));
@@ -160,7 +198,11 @@ fn retired_caller_drains_reversed_window_then_same_owner_rechecks_all_534_and_cl
     release.send(()).unwrap();
     assert_eq!(
         observed.recv_timeout(SETTLE).unwrap().unwrap_err(),
-        "Native caller retired before completing its operation"
+        if fail {
+            "rpc error -32603: Broken pipe"
+        } else {
+            "Native caller retired before completing its operation"
+        }
     );
     assert_eq!(
         block_on(worker.submit_ready_async(SETTLE, |owner| {

@@ -21,13 +21,14 @@ pub(super) fn run<T: Sync>(
         [] => return Ok(()),
         [item] => {
             let response = request(item);
-            return control.checkpoint().and(response);
+            return response.and_then(|()| control.checkpoint());
         }
         _ => {}
     }
     let next = AtomicUsize::new(0);
     let failed = AtomicBool::new(false);
     let first_error = Mutex::new(None);
+    let retirement_error = Mutex::new(None);
     thread::scope(|scope| {
         let mut workers = Vec::with_capacity(items.len().min(MAX_IN_FLIGHT));
         for _ in 0..items.len().min(MAX_IN_FLIGHT) {
@@ -36,7 +37,7 @@ pub(super) fn run<T: Sync>(
                 .spawn_scoped(scope, || {
                     while !failed.load(Ordering::Acquire) {
                         if let Err(error) = control.checkpoint() {
-                            remember_error(&first_error, error);
+                            remember_error(&retirement_error, error);
                             failed.store(true, Ordering::Release);
                             break;
                         }
@@ -49,8 +50,15 @@ pub(super) fn run<T: Sync>(
                         }
                         // A checkpoint can race with admission: drain every committed RPC.
                         let response = request(item);
-                        if let Err(error) = control.checkpoint().and(response) {
+                        // A completed native error must reach the existing cleanup
+                        // policy even when another worker already observed retirement.
+                        if let Err(error) = response {
                             remember_error(&first_error, error);
+                            failed.store(true, Ordering::Release);
+                            break;
+                        }
+                        if let Err(error) = control.checkpoint() {
+                            remember_error(&retirement_error, error);
                             failed.store(true, Ordering::Release);
                             break;
                         }
@@ -81,7 +89,11 @@ pub(super) fn run<T: Sync>(
         Ok(error) => error,
         Err(poisoned) => poisoned.into_inner(),
     };
-    match error {
+    let retirement = match retirement_error.into_inner() {
+        Ok(error) => error,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+    match error.or(retirement) {
         Some(error) => Err(error),
         None => control.checkpoint(),
     }
