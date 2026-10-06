@@ -97,6 +97,8 @@ if (process.argv[2] === "prepare") {
     "crates/vize_maestro/src/ide/diagnostics/assembly_parity_custody.rs",
     "crates/vize_maestro/src/ide/diagnostics/corsa/collect_virtual.rs",
     "crates/vize_maestro/src/ide/diagnostics/native.rs",
+    "crates/vize_maestro/src/ide/diagnostics/native/timeout.rs",
+    "crates/vize_maestro/src/ide/diagnostics/native/timeout/tests.rs",
     "crates/vize_maestro/src/ide/diagnostics/corsa/collect.rs",
     "crates/vize_maestro/src/ide/diagnostics/editor_reference_options_tests.rs",
     "crates/vize_maestro/src/server/state/global_components.rs",
