@@ -67,3 +67,15 @@ original attempts, 82,372 raw bytes, SHA-256
 PR8135 is Draft/offqueue; healthy product workers continue. The security owner
 must supply a genuine correction and current exact-source green before queue
 admission; no allowlist, budget or rerun waiver is offered.
+
+[Complete success-result custody](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6019945572)
+uses one existing-style default nextest override, filtered to exactly the
+#7989 CLI/API law names, so both inherited PR/full JUnit receipts retain their
+successful output. The actual `2aae` four Rust/tooling workers passed, including
+38 complete CLI invocations and 37 service vectors, but its passing raw output
+was discarded by prior JUnit policy. Do not treat those PASS lines as a raw
+protocol archive. The 41-case successor retains all 42 CLI results and the
+whole separate original script-only service result through the existing
+uploader. A real TOML parse and complete prior configuration inverse pass;
+retry, deadline, threads, selection and all other settings remain exact.
+Fresh hosted execution and extraction must authenticate actual raw retention.

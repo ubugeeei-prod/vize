@@ -71,5 +71,10 @@ fn original_and_controls_keep_complete_configured_service_results() {
         original["source"].as_str().unwrap(),
         original["filename"].as_str().unwrap(),
     );
-    assert_eq!(complete(&actual), corpus["originalScriptOnly"]);
+    let actual = complete(&actual);
+    eprintln!(
+        "{}",
+        json!({"case": "whole-original-script-only", "complete": actual})
+    );
+    assert_eq!(actual, corpus["originalScriptOnly"]);
 }
