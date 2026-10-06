@@ -25,8 +25,13 @@ and thirty complete CLI processes, with raw failure output retained and zero
 unproven native handling credit. Historical goldens and instruction caps stay
 unchanged.
 
-TODO: independent source review; fresh exact-head hosted source/full Rust and
-whole CLI qualification; protected merge-queue qualification and actual signed
-merge; next official release inclusion and installed-public original replay.
-While v0.434 is publishing, preparation stays private and no new PR or queue
-admission is authorized until the release owner explicitly lifts that hold.
+Independent technical source review qualified the private source and all
+original vectors; it did not execute the product. After the verified v0.434
+publication, the release owner lifted the admission hold in
+[#6239](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-6006766624).
+The unchanged behavioral source and corpus are composed with signed main
+`143c1d4a9fbe6530cdd06f1f001b816f39c1d00a` for fresh hosted qualification.
+
+TODO: fresh exact-head hosted source/full Rust and whole CLI qualification;
+protected merge-queue qualification and actual signed merge; next official
+release inclusion and installed-public original replay.
