@@ -15,7 +15,7 @@ const originals = new Map(
   }),
 );
 
-test("whole current value-attribute authority keeps every other original field", () => {
+await test("whole current value-attribute authority keeps every other original field", () => {
   const expected = keyedExpectations(originals);
   assert.deepEqual(expected.element, JSON.parse(originals.get("element.expected-current.json")));
   for (const name of [
@@ -30,7 +30,7 @@ test("whole current value-attribute authority keeps every other original field",
   }
 });
 
-test("value-attribute authority rejects omission, incorrect defaults and other changes", () => {
+await test("value-attribute authority rejects omission, incorrect defaults and other changes", () => {
   for (const change of [
     (rows) => delete rows[0].tree[0].children[2].attributes.value,
     (rows) => {
@@ -49,7 +49,7 @@ test("value-attribute authority rejects omission, incorrect defaults and other c
   }
 });
 
-test("whole TSX reference authority preserves the actual original source and old golden", () => {
+await test("whole TSX reference authority preserves the actual original source and old golden", () => {
   const authority = JSON.parse(
     readFileSync(new URL("tsx-syntax-edges-reference-authority.json", root)),
   );
