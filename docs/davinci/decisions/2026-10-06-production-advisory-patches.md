@@ -114,3 +114,16 @@ value/options/form states for an empty placeholder and a nonfirst value, plus
 all form/select/option node identities and the full empty warning/error vector.
 They run in both35 and42 without changing any original test or adding a tick.
 Paired decision: [6007924307](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6007924307).
+
+Actual0fad passed the installed production npm/cargo audit and Node22/24 genuine
+consumer controls; full JS packages stopped only in the newly authored done
+control before hydration (3807 pass/1 fail, including all original3806). The
+pinned HappyDOM20.11.2 parser selects option index(selected-count minus one)
+instead of the last selected option's actual index. Its auto-selected blank
+plus authored selected third done option therefore produces premount todo.
+Characterize that provider defect separately from standard HTML/product
+semantics; verify the original selected-attribute vector and retain complete
+SSR HTML, parsed option attributes/state, provider/version and actual loaded
+component render functions. The immediate posthydrate whole done/empty states,
+forms, node identities and diagnostics remain unchanged and require actual
+fresh execution. The failed42 second suite never ran; no42 credit transfers.
