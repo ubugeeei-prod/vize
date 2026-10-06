@@ -172,3 +172,18 @@ process custodyc655f658. These additions are uncompiled/unexecuted locally. One
 genuine signed-security-main incorporation and fresh mandatory whole47, old
 native, full source and protected Actions remain required before actual merge
 and public inclusion. No old execution, timing or10x credit transfers.
+
+## One actual signed-main incorporation
+
+The [paired incorporation decision](https://github.com/ubugeeei-prod/vize/issues/8001#issuecomment-6010361812)
+binds signed actual main8006fb8c, including delivered Security8080 and
+compact-Clippy8073. All six complete author/email/date/body/footer records and
+every reviewed7153 non-document source/corpus/helper/native-command byte are
+conserved. Removing only this lane's note restores every incoming canonical
+byte at350 lines. Root independently read all9 correction paths,12 unchanged
+corpus/helper/full47 members and the pinned SDK API, sealing SOURCE_ONLY_CLEAR
+aef8e161. Current source and mandatory native whole47/old tag Actions remain
+unexecuted at publication; old4d failures and capture stay immutable. No
+compilation/native/protected/public or timing credit transfers. The same Draft
+requires actual current green, protected queue, signed merge and coordinated
+next public inclusion.
