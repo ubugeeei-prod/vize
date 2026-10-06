@@ -110,6 +110,22 @@ fn ordinary_type_annotations_keep_the_existing_owned_value_reads() {
 }
 
 #[test]
+fn empty_statements_keep_top_level_and_nested_owned_reads() {
+    let source = "<script setup>;const id=1;function read(){;return id;;};</script><template>{{ id }}</template>";
+    analyze(source, |_, _, packet| {
+        let id = binding(packet, "id");
+        let reads: Vec<_> = packet
+            .occurrences()
+            .iter()
+            .filter(|reference| reference.binding == id)
+            .collect();
+        assert_eq!(reads.len(), 2);
+        assert_eq!(reads[0].block, OccurrenceBlock::Script);
+        assert_eq!(reads[1].block, OccurrenceBlock::Template);
+    });
+}
+
+#[test]
 fn script_closure_declarator_and_template_alias_reads_have_distinct_owners() {
     let source = "<script setup lang=\"ts\">const id = 'outer'; function own(id: string) { return id } const copy = id; { const id = 'block'; consume(id) }</script><template><p>{{ id }}</p><p v-for=\"id in [1]\">{{ id }}</p></template>";
     analyze(source, |descriptor, analysis, packet| {

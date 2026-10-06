@@ -31,6 +31,9 @@ use super::macros;
 pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, source: &str) {
     super::super::extract::invalidate_default_objects(result, stmt);
     match stmt {
+        // An empty statement has no binding or authored read to capture.
+        Statement::EmptyStatement(_) => {}
+
         // Variable declarations: const, let, var
         Statement::VariableDeclaration(decl) => process_variable_declaration(result, decl, source),
 

@@ -244,3 +244,22 @@ Initialize two independent identical Croquis inputs instead; the full source,
 ordinary/captured comparison, refusal and later-block assertions remain fixed.
 No production type or Clone implementation changes. This mechanical test-only
 repair needs fresh configured Actions; the audit failures remain separate.
+
+Actual `93fbd46f` / `119e7eac` Rust workers executed the new controls and
+rejected two: the escaped-style authored input used an invalid nonvoid
+self-closing div, and the normal annotation control's interface-following
+semicolon creates an EmptyStatement that the capture refused. Use an explicit
+div end tag only in the authored style control, keeping its physical escape,
+expected unused name and whole comparisons. Keep the complete annotation
+input/oracle fixed and admit the no-read EmptyStatement in the existing
+top-level/nested statement walk; an additional whole positive pins both scopes.
+Production ordinary analysis remains unchanged; no new parser/stage is added.
+
+Native run `37404118909` independently rejected L1-to-L2's remarks baseline:
+451 actual files versus 450 expected, with only the pinned original Field.vue
+added, and six actual remark changes (1,039 total, 159 applied, 880 missed).
+Those complete six records have not yet been captured; do not invent or bless
+them. The existing automatic test now prints the complete observed corpus
+only on mismatch while every original assertion/ledger remains strict. Fresh
+source Actions must capture it before any narrow fixture-only registration.
+Original failed logs and old baseline/explanations remain preserved.

@@ -118,7 +118,7 @@ fn setup_generic_metadata_refuses_without_an_original_script_identifier_ast() {
 
 #[test]
 fn escaped_style_names_refuse_only_the_packet_and_preserve_ordinary_unused() {
-    let source = r#"<script setup>const id=1;const untouched=2;const last=3</script><template><div/></template><style>.a{width:v-bind('\u0069d')}</style><style>.b{height:v-bind(last)}</style>"#;
+    let source = r#"<script setup>const id=1;const untouched=2;const last=3</script><template><div></div></template><style>.a{width:v-bind('\u0069d')}</style><style>.b{height:v-bind(last)}</style>"#;
     let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
     let allocator = Allocator::default();
     let (root, errors) =

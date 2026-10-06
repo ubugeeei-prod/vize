@@ -22,6 +22,9 @@ pub(in crate::script_parser) fn walk_statement(
     source: &str,
 ) {
     match stmt {
+        // An empty statement has no binding or authored read to capture.
+        Statement::EmptyStatement(_) => {}
+
         Statement::ExpressionStatement(expr_stmt) => {
             walk_expression(result, &expr_stmt.expression, source);
         }

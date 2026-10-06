@@ -39,7 +39,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `DEFINE_SLOTS`                            |     1 |     1 |
 | `EmitDefinition`                          |     1 |     1 |
 | `ModelDefinition`                         |     1 |     1 |
-| `OccurrenceBlock`                         |     1 |    13 |
+| `OccurrenceBlock`                         |     1 |    15 |
 | `PadOption`                               |     1 |     1 |
 | `PropDefinition`                          |     3 |     5 |
 | `ResolvedTypeWorld`                       |     4 |     7 |
