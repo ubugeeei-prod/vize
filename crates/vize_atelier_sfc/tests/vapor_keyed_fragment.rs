@@ -5,12 +5,12 @@ use std::{
     io::Write,
     path::Path,
     process::{Command, Stdio},
+    vec::Vec as StdVec,
 };
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode};
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode, compile_sfc_for_adapter, parse_sfc,
 };
-use vize_l0::StdVec;
 
 const APP: &str =
     include_str!("../../../tests/_fixtures/differential/compiler/vapor-keyed-fragment/App.vue.txt");
@@ -77,7 +77,7 @@ fn compile(source: &str, filename: &str, inline: bool, production: bool) -> Valu
             .expect("whole script module map")
             .get("sources")
             .expect("map sources"),
-        json!([filename])
+        &json!([filename])
     );
     let mut without_map = serde_json::to_value(&mapped).expect("all mapped fields");
     *without_map.get_mut("map").expect("complete map field") = Value::Null;
