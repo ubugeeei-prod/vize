@@ -112,3 +112,26 @@ compilation log and all complete archives/receipts. Fresh replayed-source
 ordinary/native Actions, protected full suites/unchanged budgets, same ordered
 Stack8092, actual signed delivery and installed original435 replay remain
 required; no historical runtime or security acceptance transfers.
+
+## Protected workflow composition failure
+
+The [paired protected failure](https://github.com/ubugeeei-prod/vize/issues/7995#issuecomment-6010897762)
+retains candidate `c1aebfc11893f123245d1e353b09e0082e331286`,
+Check37423319431/job112137427627 and the complete first tooling1 log.
+Its shared native workflow has 353 lines after incoming prefix composition,
+above the unchanged 350 ceiling. Both Stack children are Draft and unqueued;
+all104 three-repeat counts passed but cannot override this failure.
+
+Genuinely incorporate actual main `baa427830e0a1b1b50a45582bda418992d5a5ac9`.
+Remove only three literal positive path selectors already wholly covered by
+the retained Canon, Croquis and typechecker fixture globs. The trigger union,
+all other parsed fields and every job/command/body byte remain equal; 353
+becomes 350 with no new helper, source packing, stage, deadline or cap waiver.
+All64 other owned source/original/oracle blobs and original authors remain
+exact; incoming canonical bytes remain complete at350 lines.
+
+Replay the CSS child from this literal parent, preserving54 API/218 CLI
+vectors and its historical27 serializer-path correction. Fresh ordinary and
+native source Actions, protected full suites/all104, actual signed merge and
+installed original0.435 replay remain required. Historical48a/79d successes
+give no successor acceptance; the cache/default-help limits remain unchanged.

@@ -197,7 +197,7 @@ impl CorsaBridge {
             return Err(CorsaBridgeError::NotInitialized);
         }
 
-        self.submit_async(move |slot| match slot.as_mut() {
+        self.submit_ready_async(move |slot| match slot.as_mut() {
             Some(client) => f(client),
             None => Err(CorsaBridgeError::ProcessTerminated),
         })
@@ -232,6 +232,23 @@ impl CorsaBridge {
     {
         let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
         match self.worker.submit_async(deadline, f).await {
+            Ok(result) => result,
+            Err(WorkerError::TimedOut) => {
+                let bound = self.config.timeout_ms;
+                tracing::warn!("corsa request outran the {bound}ms bridge bound; abandoned it");
+                Err(CorsaBridgeError::Timeout)
+            }
+            Err(WorkerError::Stopped) => Err(CorsaBridgeError::ProcessTerminated),
+        }
+    }
+
+    async fn submit_ready_async<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
+    where
+        F: FnOnce(&mut Option<CorsaProjectClient>) -> Result<R, CorsaBridgeError> + Send + 'static,
+        R: Send + 'static,
+    {
+        let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
+        match self.worker.submit_ready_async(deadline, f).await {
             Ok(result) => result,
             Err(WorkerError::TimedOut) => {
                 let bound = self.config.timeout_ms;

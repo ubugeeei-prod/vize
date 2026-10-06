@@ -1,4 +1,4 @@
-//! Project-root, `tsconfig`, declaration-output, and miscellaneous path
+//! Project-root, TypeScript/JavaScript config, declaration-output, and path
 //! resolution helpers for the `check` runner.
 
 use std::path::{Path, PathBuf};
@@ -92,22 +92,11 @@ pub(super) fn resolve_tsconfig_path(
         return Some(vize_l0::path::canonicalize_non_verbatim(&tsconfig_path));
     }
 
-    let candidate = project_root.join("tsconfig.json");
-    if candidate.exists() {
-        return Some(candidate);
-    }
-
-    for file in files {
-        let Some(root) = find_nearest_tsconfig_dir(file) else {
-            continue;
-        };
-        let candidate = root.join("tsconfig.json");
-        if candidate.exists() {
-            return Some(candidate);
-        }
-    }
-
-    None
+    project_config_path(project_root).or_else(|| {
+        files
+            .iter()
+            .find_map(|file| find_nearest_tsconfig_path(file))
+    })
 }
 
 pub(super) fn explicit_input_root(project_root: &Path, cwd: &Path) -> PathBuf {
@@ -189,22 +178,11 @@ fn validate_explicit_inputs_in_root(root: &Path, files: &[PathBuf]) -> Result<()
     Ok(())
 }
 
-pub(super) fn find_nearest_tsconfig_dir(path: &Path) -> Option<PathBuf> {
-    let mut current = if path.is_dir() {
-        Some(path)
-    } else {
-        path.parent()
-    };
+mod config;
 
-    while let Some(dir) = current {
-        if dir.join("tsconfig.json").exists() {
-            return Some(dir.to_path_buf());
-        }
-        current = dir.parent();
-    }
-
-    None
-}
+pub(super) use config::{
+    find_nearest_tsconfig_dir, find_nearest_tsconfig_path, project_config_path,
+};
 
 fn resolve_project_root_from_files(files: &[PathBuf]) -> Option<PathBuf> {
     let common = common_file_parent(files)?;

@@ -8,7 +8,7 @@ use std::{
 use vize_l0::FxHashSet;
 
 use super::default_imports::canonical_file_set;
-use super::resolve::find_nearest_tsconfig_dir;
+use super::resolve::find_nearest_tsconfig_path;
 use crate::commands::check::{
     path_cache::CanonicalPathCache,
     tsconfig_inputs::{TsconfigInputCache, resolve_tsconfig_program_inputs},
@@ -47,7 +47,7 @@ pub(super) fn split_program_candidates(
     if prefer_source_tsconfig {
         let mut by_shell: BTreeMap<Option<PathBuf>, Vec<PathBuf>> = BTreeMap::new();
         for file in &inputs {
-            let nearest = find_nearest_tsconfig_dir(file).map(|dir| dir.join("tsconfig.json"));
+            let nearest = find_nearest_tsconfig_path(file);
             by_shell.entry(nearest).or_default().push(file.clone());
         }
         let invocation = tsconfig_path.map(Path::to_path_buf);
@@ -126,6 +126,8 @@ pub(super) fn split_program_candidates(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    mod jsconfig;
 
     #[test]
     fn explicit_root_inputs_split_at_nearest_package_configs() {

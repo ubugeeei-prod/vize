@@ -112,7 +112,7 @@ pub(super) fn musea_linter_for_uri(
     state: &crate::server::ServerState,
     uri: &Url,
 ) -> Option<MuseaLintOptions> {
-    let (linter_config, rule_options) = state.linter_settings_for_uri(uri)?;
+    let (linter_config, rule_options, _) = state.linter_settings_for_uri(uri)?;
     if !linter_config.enabled {
         return None;
     }

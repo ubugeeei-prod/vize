@@ -144,7 +144,7 @@ pub struct ServerState {
     type_checker_jsx_typecheck: RwLock<bool>,
     experimental_patterned_template: AtomicBool,
     /// Linter options shared by LSP diagnostics.
-    linter_config: RwLock<LinterConfig>,
+    linter_config: RwLock<(LinterConfig, vize_l0::config::LinterFeatureFlags)>,
     /// Typed per-rule lint options (`linter.ruleOptions`) for configurable
     /// script rules; loaded alongside `linter_config` (#1891).
     linter_rule_options: RwLock<vize_l0::config::ConfigLintRuleOptions>,
@@ -247,7 +247,7 @@ impl ServerState {
             native_linked_editing: AtomicBool::new(false),
             #[cfg(feature = "experimental-source-navigation")]
             native_names: RwLock::new(native_names::Generations::default()),
-            linter_config: RwLock::new(LinterConfig::default()),
+            linter_config: RwLock::default(),
             linter_rule_options: RwLock::new(vize_l0::config::ConfigLintRuleOptions::default()),
             dialect_config: RwLock::new(None),
             workspace_folder_configs: RwLock::new(Vec::new()),

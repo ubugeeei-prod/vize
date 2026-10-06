@@ -82,6 +82,29 @@ impl<T: Send + 'static> BoundedWorker<T> {
         if self.abandoned.load(Ordering::Acquire) > 0 {
             return Err(WorkerError::TimedOut);
         }
+        self.submit_queued(duration, f).await
+    }
+
+    /// Queue the requested semantic operation behind the retained IPC owner.
+    /// Waiting for that owner consumes this operation's original deadline;
+    /// cancellation still skips the operation if it has not entered the worker.
+    pub(in crate::corsa_bridge) async fn submit_ready_async<R, F>(
+        &self,
+        duration: Duration,
+        f: F,
+    ) -> Result<R, WorkerError>
+    where
+        F: FnOnce(&mut T) -> R + Send + 'static,
+        R: Send + 'static,
+    {
+        self.submit_queued(duration, f).await
+    }
+
+    async fn submit_queued<R, F>(&self, duration: Duration, f: F) -> Result<R, WorkerError>
+    where
+        F: FnOnce(&mut T) -> R + Send + 'static,
+        R: Send + 'static,
+    {
         let jobs = self.jobs.as_ref().ok_or(WorkerError::Stopped)?;
         let at = Instant::now()
             .checked_add(duration)
@@ -117,3 +140,6 @@ impl<T: Send + 'static> BoundedWorker<T> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod ready_tests;

@@ -31,15 +31,21 @@ pub(super) fn build(
     // package-private `imports` manifest from its generated source companions.
     let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
     let source_path = source_path.as_path();
-    let discovered_root = source_path
-        .ancestors()
-        .skip(1)
-        .find(|dir| dir.join("tsconfig.json").is_file())
-        .map(Path::to_path_buf);
+    let discovered_config = source_path.ancestors().skip(1).find_map(|dir| {
+        ["tsconfig.json", "jsconfig.json"]
+            .into_iter()
+            .map(|name| dir.join(name))
+            .find(|path| path.is_file())
+    });
     let root = environment
         .project_root
         .map(Path::to_path_buf)
-        .or(discovered_root.clone())
+        .or_else(|| {
+            discovered_config
+                .as_deref()
+                .and_then(Path::parent)
+                .map(Path::to_path_buf)
+        })
         .unwrap_or_else(|| source_path.parent().unwrap_or(source_path).to_path_buf());
     let root = vize_carton::path::canonicalize_non_verbatim(&root);
     let configured_tsconfig = environment.tsconfig_path.map(|path| {
@@ -60,9 +66,7 @@ pub(super) fn build(
     // The workspace root selects the mirror's filesystem scope, not the
     // compiler options for every package beneath it. Anchor the source to its
     // nearest config before resolving a solution-style project's references.
-    if let Some(tsconfig) =
-        configured_tsconfig.or_else(|| discovered_root.map(|dir| dir.join("tsconfig.json")))
-    {
+    if let Some(tsconfig) = configured_tsconfig.or(discovered_config) {
         project.set_tsconfig_path(Some(tsconfig));
     }
     project.use_effective_tsconfig_for_source(source_path);
@@ -242,3 +246,6 @@ pub(super) fn build(
 fn bridge_error(error: impl std::fmt::Display) -> CorsaBridgeError {
     CorsaBridgeError::CommunicationError(vize_carton::cstr!("{error}"))
 }
+
+#[cfg(test)]
+mod jsconfig_tests;
