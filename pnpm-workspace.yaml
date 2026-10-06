@@ -74,8 +74,6 @@ overrides:
   "tinypool@>=2.0.0 <2.1.2": "2.1.2"
   # Stable production Vue only: preserve literal beta/RC and test oracle aliases.
   "vue@3.5.41": "3.5.42"
-  "@vue/server-renderer@3.5.35": "3.5.42"
-  "@vue/server-renderer@3.5.41": "3.5.42"
   srvx: "0.11.15"
   svgo: "4.1.0"
   tar: "7.5.21"
@@ -153,15 +151,19 @@ catalogs:
     vite-plugin-inspect: "11.4.1"
     unplugin: "3.3.0"
 
-  # Stable Vue ecosystem packages used by shipping examples and integrations.
+  # Stable Vue ecosystem packages retained for independent test oracles.
   vue-stable:
-    vue: "3.5.42"
-    "@vue/compiler-dom": "3.5.42"
-    "@vue/compiler-sfc": "3.5.42"
-    "@vue/runtime-core": "3.5.42"
-    "@vue/runtime-dom": "3.5.42"
+    vue: "3.5.35"
+    "@vue/compiler-dom": "3.5.35"
+    "@vue/compiler-sfc": "3.5.35"
+    "@vue/runtime-core": "3.5.35"
+    "@vue/runtime-dom": "3.5.35"
     "@vue/test-utils": "2.4.10"
     vue-router: "4.5.1"
+
+  # Shipping Vue dependencies are separate from the immutable test oracle.
+  vue-production:
+    vue: "3.5.42"
 
   # Vue beta track used by the playground and benchmark harnesses.
   vue-beta:

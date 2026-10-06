@@ -39,9 +39,12 @@ SSR output retains safe attributes and rejects carriage-return attribute names.
 Lock-only resolution generated the patch graph. Its unrelated changes to old
 native publication pins, Nuxt ESLint RC peers and literal Vue 3.5.38 peer
 selection were restored. Every retained same-version package metadata entry is
-unchanged. Stable production catalog entries move together to 3.5.42; literal
-beta/RC and independent test aliases remain. Existing Forge/Braces patches,
-proofs and full-report audit requirements remain unchanged. Existing fixtures,
+unchanged. Four production Vue dependency roots use a separate3.5.42 catalog and Nuxt's
+production3.5.41 Vue resolves to3.5.42. Keep the full original3.5.35 dev/oracle
+provider graph, Test Utils RC9/optionalSSR41 and all literal beta/RC aliases.
+Every production snapshot path must exclude the vulnerable renderer; old
+independently pinned dev oracles supply no production-audit exception. Existing
+Forge/Braces patch bytes, crypto and full-report audit requirements remain. Existing fixtures,
 expected outputs, performance caps and workflow gates remain mandatory.
 
 ## Qualification and delivery
@@ -59,9 +62,9 @@ conditions and actual importer paths. No dependency or oracle relaxation is
 introduced; fresh corrected-head Actions are required.
 
 A second peer check found two remaining Test Utils compiler peer changes.
-Both keep original compiler-dom RC9 and optional SSR peer presence; only the
-vulnerable SSR3.5.41 peer becomes patched3.5.42. Playground Vue RC6 and
-literal3.5.38 remain unchanged. No peer removal masks an audit finding.
+Both retain the entire original compiler-dom RC9/optional SSR41 dev-oracle
+graph. Playground Vue RC6 and literal3.5.38 remain unchanged. No production
+consumer reaches the old renderer; no peer removal masks an audit finding.
 
 Initial Check37400254814 failed installation with ERR_PNPM_INVALID_PATCH;
 the unified diff lacked the Git header required by pnpm. The successor adds
@@ -78,3 +81,36 @@ The resolver bootstrap uses Nuxt's public package.json export and its own
 declared exsolve dependency, preserving the framework Kit3 bridge without
 borrowing an undeclared hoisted resolver. Actual runtime and Kit4 manifests
 are checked before the genuine load/whole-control execution.
+
+Actual07cf production audit removed all11 new advisories (moderate0/critical0,
+high2 retained), then its installed Forge attestation rejected pnpm12's scalar
+patch hash. The reader now recognizes only exact old hash/path or exact new
+scalar hash, both bound to the reviewed workspace path and unchanged patch/RSA
+bytes, registry/source identity, consumer graph and crypto laws. Every old
+rejection remains; new wrong scalar/hash/path/extra-field controls fail closed.
+No audit exception or requirement changes; fresh successor acceptance is required.
+
+Actual7a Node22/24 passed all five genuine Git outcomes and both complete Vue42
+SSR controls. Rust/native/SSR failures stopped at immutable Vue35 identity
+guards; restore their complete original environment instead of changing those
+references. Current whole UI42 execution also exposed two real NativeSelect
+hydration failures: multiple selection lost its selected options. Vue39's
+hydration dynamic-prop fix patches the authored `value: undefined` after option
+hydration. Omit that value key in multiple mode; retain single-value binding,
+option-selected ownership, event/form contracts and every original assertion.
+
+The existing UI test script runs the full unchanged suite first under the
+original35 configuration, then under a separate42 configuration anchored to the
+real installed production example. All nine compiler/runtime/SSR package paths,
+versions and manifest/entry hashes are attested; plugin-vue executes that actual
+compiler, and the complete NativeSelect main/template transformed modules are
+retained in the Actions stream. Whole original synchronous SSR/hydration,
+node-identity, diagnostics, selected-state and interaction assertions remain.
+This is no browser-transport or arbitrary mode-transition claim. Fresh installed
+whole-suite/production audit/crypto/native/full protected delivery is required.
+
+Two independently authored single-select SSR controls retain complete immediate
+value/options/form states for an empty placeholder and a nonfirst value, plus
+all form/select/option node identities and the full empty warning/error vector.
+They run in both35 and42 without changing any original test or adding a tick.
+Paired decision: [6007924307](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6007924307).

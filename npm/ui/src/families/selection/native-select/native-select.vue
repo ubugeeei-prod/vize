@@ -222,7 +222,7 @@ defineExpose(exposed);
     :id="controlId"
     ref="element"
     :name
-    :value="nativeValue"
+    v-bind="multiple ? {} : { value: nativeValue }"
     :multiple
     :size
     :disabled
