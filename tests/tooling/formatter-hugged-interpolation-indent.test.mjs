@@ -32,7 +32,7 @@ await test("sole hugged interpolations share their parent layout on all three pa
   assert.equal(stock.version, "3.8.3");
   assert.deepEqual(
     stock.rows.map((row) => row.id),
-    ["original", "original-crlf", "first-pass-wrapped"],
+    ["original", "original-crlf", "first-pass-wrapped", "prefix-suffix-control"],
   );
   for (const row of stock.rows) {
     const fixture = corpus.cases.find((item) => item.id === row.id);

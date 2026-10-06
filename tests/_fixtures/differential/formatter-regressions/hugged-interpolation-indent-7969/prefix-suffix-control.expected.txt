@@ -1,7 +1,5 @@
 <template>
   <div>
-    <span>prefix{{
-        label
-      }}suffix</span>
+    <span>prefix{{ label }}suffix</span>
   </div>
 </template>

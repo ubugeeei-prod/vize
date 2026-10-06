@@ -375,7 +375,7 @@
     {
       "id": "prefix-suffix-control",
       "input": "<template>\n  <div>\n    <span>prefix{{\n        label\n      }}suffix</span>\n  </div>\n</template>\n",
-      "expected": "<template>\n  <div>\n    <span>prefix{{\n        label\n      }}suffix</span>\n  </div>\n</template>\n",
+      "expected": "<template>\n  <div>\n    <span>prefix{{ label }}suffix</span>\n  </div>\n</template>\n",
       "options": {
         "printWidth": 80,
         "semi": true,
@@ -388,20 +388,20 @@
       "inputFile": "prefix-suffix-control.input.txt",
       "inputSha256": "b0062a54fe78a6b4953c0de096771f3affbc9cc5b18704f75222384c0a6e3dee",
       "expectedFile": "prefix-suffix-control.expected.txt",
-      "expectedSha256": "b0062a54fe78a6b4953c0de096771f3affbc9cc5b18704f75222384c0a6e3dee",
+      "expectedSha256": "22cee8993071d2af94fb853df0d8f09643f9d3bd5da9130bdb02ab300312242a",
       "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"none\",\"arrowParens\":\"avoid\",\"sortAttributes\":false}}\n",
       "cliExpected": [
         {
           "mode": "--check",
-          "status": 0,
+          "status": 1,
           "stdout": "",
-          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+          "stderr": "Found 1 file(s)\nWould reformat: prefix-suffix-control.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
         },
         {
           "mode": "--write",
           "status": 0,
           "stdout": "",
-          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+          "stderr": "Found 1 file(s)\nReformatted: prefix-suffix-control.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
         },
         {
           "mode": "--write",

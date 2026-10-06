@@ -48,6 +48,21 @@
       "output": "<template>\n  <div>\n    <span>{{\n      new Date(version.date).toLocaleDateString(\"en-US\", {\n        year: \"numeric\",\n        month: \"short\",\n        day: \"numeric\",\n      })\n    }}</span>\n  </div>\n</template>\n",
       "again": "<template>\n  <div>\n    <span>{{\n      new Date(version.date).toLocaleDateString(\"en-US\", {\n        year: \"numeric\",\n        month: \"short\",\n        day: \"numeric\",\n      })\n    }}</span>\n  </div>\n</template>\n",
       "equalsAuthoredExpected": true
+    },
+    {
+      "id": "prefix-suffix-control",
+      "input": "<template>\n  <div>\n    <span>prefix{{\n        label\n      }}suffix</span>\n  </div>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "parser": "vue"
+      },
+      "output": "<template>\n  <div>\n    <span>prefix{{ label }}suffix</span>\n  </div>\n</template>\n",
+      "again": "<template>\n  <div>\n    <span>prefix{{ label }}suffix</span>\n  </div>\n</template>\n",
+      "equalsAuthoredExpected": true
     }
   ]
 }

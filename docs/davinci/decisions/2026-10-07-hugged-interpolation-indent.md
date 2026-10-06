@@ -55,3 +55,15 @@ are conserved. Whole incoming source/docs survive the clean normal merge.
 CRLF corpus carriers explicitly retain their bytes and declare cr-at-eol for
 Git whitespace inspection; no output comparison or formatter rule changes.
 Fresh exact composed-source Actions and protected qualification remain required.
+
+[Paired control clarification](https://github.com/ubugeeei-prod/vize/issues/7969#issuecomment-6019573786).
+Pre-execution source inspection corrected one newly authored control: ordinary
+prefix/suffix text is handled by the unchanged inline interpolation printer,
+which collapses its short expression. Its whole expected reference and first
+check/write streams now express that existing behavior. The exact input,
+production, two same-bug historical references and every other new reference
+are unchanged. A fourth separate Prettier observation equals the complete
+corrected prefix/suffix reference and fixed point. A separately retained width30
+SFC stock observation chooses a block layout for p, so it is an alternative
+layout, not an equality oracle; the public template history still qualifies
+its retained hugged layout by the parent-anchor rule.
