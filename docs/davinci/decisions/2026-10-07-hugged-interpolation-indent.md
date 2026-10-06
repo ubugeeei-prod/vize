@@ -93,3 +93,11 @@ legacy300 manifest changes accompany these qualification repairs.
 Security is independently owned in PR8137; keep8134 Draft/offqueue until its
 actual signed main is incorporated and fresh source/native/Rust/history and
 protected instruction gates qualify. No failed-head acceptance transfers.
+
+[Actual security-main incorporation](https://github.com/ubugeeei-prod/vize/issues/7969#issuecomment-6020548319)
+normal-merges signed ef84821d30fa0d8538b2472fef34418e75380523,
+actually merged2026-10-06T16:16:25Z. Preserve all incoming security/dependency
+changes and every reviewed production/corpus/observer blob. The b537
+independent source-only review does not replace fresh composed-source
+65CLI/39API/52compiler/16paired runtime and protected acceptance.
+Ready publication retains auto-merge absent until exact-source gates pass.
