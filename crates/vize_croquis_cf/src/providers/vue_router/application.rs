@@ -62,7 +62,10 @@ pub(super) fn collect(
                 continue;
             };
             unknown_root |= unresolved;
-            edges[module.index()].extend(imported);
+            let Some(children) = edges.get_mut(module.index()) else {
+                return FxHashMap::default();
+            };
+            children.extend(imported);
             applications.extend(installed.into_values());
         }
     }

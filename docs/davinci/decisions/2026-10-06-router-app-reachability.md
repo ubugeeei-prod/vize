@@ -71,3 +71,14 @@ file rows. This source correction is paired in
 [the same issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6018277539).
 Original inputs, expectations and source pins are preserved. Runtime remains
 unqualified until fresh Actions execute this exact successor.
+
+The first hosted exact-0a83 Check failed strict Clippy at the adjacency indexing
+expression before Rust/CLI tests executed (run 37478294823, job 112319688990).
+The complete failed raw log remains retained. Checked mutable access now retains
+the valid project's complete imported edges; an impossible invalid module index
+conservatively refuses all app contexts. Direct router checks are unaffected.
+Every input, expected vector, old golden, budget and provider policy stays exact.
+This meaningful same-PR correction is paired in
+[the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6018409224).
+The authentic red caused Draft/offqueue containment. Fresh corrected source
+Actions must own qualification; no earlier or unrelated green is transferred.
