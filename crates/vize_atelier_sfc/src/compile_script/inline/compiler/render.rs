@@ -95,7 +95,11 @@ pub(super) fn emit_render_return(
                 output.extend_from_slice(name.as_bytes());
             }
             output.extend_from_slice(b" }\n");
-            output.extend_from_slice(b"Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+            if needs_template_ref_setter {
+                output.extend_from_slice(b";({}).constructor.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+            } else {
+                output.extend_from_slice(b"Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+            }
             output.extend_from_slice(b"const __instance = _getCurrentInstance()\n");
             output.extend_from_slice(b"const __ctx = _proxyRefs(__returned__)\n");
             output.extend_from_slice(b"if (__instance) __instance.setupState = __ctx\n");

@@ -14,6 +14,9 @@ const CALLBACK: &str = include_str!(
 const SINGLE: &str = include_str!(
     "../../../../tests/_fixtures/differential/compiler/vapor-for-template-refs-7882/single.vue.txt"
 );
+const OBJECT_SHADOW: &str = include_str!(
+    "../../../../tests/_fixtures/differential/compiler/vapor-for-template-refs-7882/object-shadow.vue.txt"
+);
 const NESTED: &str = include_str!(
     "../../../../tests/_fixtures/differential/compiler/vapor-for-template-refs-7882/nested.vue.txt"
 );
@@ -190,6 +193,25 @@ fn original_numeric_loop_clause_has_three_refs_after_mount() {
             {"tree": [], "namespaces": [], "events": []}
         ]),
         false,
+        &["vapor"],
+    );
+}
+
+#[test]
+fn authored_object_binding_does_not_replace_ref_bootstrap_intrinsics() {
+    assert_modes(
+        "object-shadow",
+        OBJECT_SHADOW,
+        json!([]),
+        json!([
+            snapshot(
+                json!([element("p", json!({}), json!(["single"]))]),
+                json!("single"),
+                1
+            ),
+            snapshot(json!([]), Value::Null, 0)
+        ]),
+        true,
         &["vapor"],
     );
 }

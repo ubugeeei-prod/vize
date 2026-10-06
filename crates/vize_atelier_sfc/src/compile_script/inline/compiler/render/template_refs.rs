@@ -27,9 +27,9 @@ pub(super) fn emit_setter(
     output.extend_from_slice(b"const vaporTemplateRefSetter = ((bindings) => {\n");
     output.extend_from_slice(b"  const setRef = _createTemplateRefSetter()\n");
     output.extend_from_slice(b"  return (element, value, refFor, refKey) => {\n");
-    output.extend_from_slice(b"    const bound = typeof value === 'string' && Object.prototype.hasOwnProperty.call(bindings, value)\n");
+    output.extend_from_slice(b"    const bound = typeof value === 'string' && value in bindings\n");
     output.extend_from_slice(b"    return setRef(element, bound ? bindings[value] : value, refFor, bound ? refKey ?? value : refKey)\n");
-    output.extend_from_slice(b"  }\n})({ ");
+    output.extend_from_slice(b"  }\n})({ __proto__: null, ");
     for (index, name) in refs.into_iter().enumerate() {
         if index > 0 {
             output.extend_from_slice(b", ");
@@ -64,17 +64,19 @@ mod tests {
         ] {
             ctx.bindings.bindings.insert(String::from(name), kind);
         }
-        let mut output = vize_carton::Vec::new();
+        let allocator = vize_carton::Allocator::default();
+        let mut output = vize_carton::Vec::new_in(&allocator);
         emit_setter(&mut output, &bindings, &ctx);
         assert_eq!(
             output.as_slice(),
-            b"const vaporTemplateRefSetter = ((bindings) => {\n  const setRef = _createTemplateRefSetter()\n  return (element, value, refFor, refKey) => {\n    const bound = typeof value === 'string' && Object.prototype.hasOwnProperty.call(bindings, value)\n    return setRef(element, bound ? bindings[value] : value, refFor, bound ? refKey ?? value : refKey)\n  }\n})({ get el() { return el }, get maybe() { return maybe }, get mutable() { return mutable } })\n"
+            b"const vaporTemplateRefSetter = ((bindings) => {\n  const setRef = _createTemplateRefSetter()\n  return (element, value, refFor, refKey) => {\n    const bound = typeof value === 'string' && value in bindings\n    return setRef(element, bound ? bindings[value] : value, refFor, bound ? refKey ?? value : refKey)\n  }\n})({ __proto__: null, get el() { return el }, get maybe() { return maybe }, get mutable() { return mutable } })\n"
         );
     }
 
     #[test]
     fn setter_without_ref_capable_bindings_keeps_the_original_factory() {
-        let mut output = vize_carton::Vec::new();
+        let allocator = vize_carton::Allocator::default();
+        let mut output = vize_carton::Vec::new_in(&allocator);
         emit_setter(&mut output, &[], &ScriptCompileContext::new(""));
         assert_eq!(
             output.as_slice(),

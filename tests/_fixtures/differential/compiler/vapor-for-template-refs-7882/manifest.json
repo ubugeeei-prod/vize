@@ -36,6 +36,10 @@
       "bytes": 628,
       "sha256": "5118fbd6fab685d5556fbd831551278ad5b69b83b0c0eea78b93455da1593ddd"
     },
+    "object-shadow.vue.txt": {
+      "bytes": 248,
+      "sha256": "5fef7847ce5af07bfba572d9288aa5b40ee3f2d300af316e724a31376f724b4d"
+    },
     "removal.vue.txt": {
       "bytes": 518,
       "sha256": "e6c9dfd64435385e7af0cf4b9c0913b7ab1f3e2a3994b9425a5a9db6ace478fb"
@@ -59,6 +63,7 @@
     "dynamic.vue.txt": "retained first failed broad direct-ref control; existing Vize DOM unwraps the Ref; not an admitted positive or universal Vue refusal",
     "single.vue.txt": "independently authored loop-free scalar-ref control",
     "nested.vue.txt": "independently authored transparent/nested-loop + scalar sibling after loop control",
-    "callback.vue.txt": "independently authored function-ref positive; map holds actual mounted elements and each callback removes its own key on null"
+    "callback.vue.txt": "independently authored function-ref positive; map holds actual mounted elements and each callback removes its own key on null",
+    "object-shadow.vue.txt": "exact scalar positive plus authored Object declaration; compiler bootstrap must not resolve the user lexical intrinsic"
   }
 }

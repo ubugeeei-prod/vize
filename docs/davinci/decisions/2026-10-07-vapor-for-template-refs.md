@@ -78,3 +78,21 @@ original issue, original upstream plant, numeric/static/removal/nested/scalar
 sources and expectations remain byte-exact. Thirty-three mounts/108 phases are
 prepared, not claimed executed. Shared security and all current mounted/full
 queue gates remain unresolved until fresh actual Actions and signed delivery.
+
+The bounded source peer found that the first wrapper's global `Object`
+reference could resolve an authored setup declaration. Use a null-prototype
+getter map and exact string `in` membership instead, with no user-shadowable
+intrinsic reference. The same ref-present bootstrap's existing marker definition
+uses a fresh-object constructor; ref-absent and VDOM emission remain unchanged.
+An independently authored Vapor scalar control adds only `const Object = {}`
+to the exact existing scalar source, retaining full mounted-node/ref/unmount
+expectations. Seven mounted laws now prepare 36 mounts/114 phases; two unit
+laws remain prepared, not runtime acceptance. This preserves the first 86ec
+run while repairing the concrete lexical ownership issue.
+
+First 86ec ordinary Actions passed production Clippy but stopped test compilation
+before any new mounts: the two new unit buffers need the existing L0 allocator
+and `Vec::new_in`, not a nonexistent allocator-free constructor. Correct only
+that test setup using the actual exported allocator/Vec API; retain the complete
+240420-byte compiler log and its original E0599 outcome. This adds no product
+allocator or pipeline change and supplies no execution credit.
