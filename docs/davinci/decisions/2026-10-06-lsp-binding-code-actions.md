@@ -74,3 +74,12 @@ unexpected nonempty packet), and retains all live observations. It uses the
 existing30-second deadline and removes only its own observer/timer. No expected
 value, source, server behavior, original client or budget changes. A meaningful
 corrected-helper execution still must qualify the authored positive closure.
+
+The meaningful cursor-corrected run retains exit1 at the final raw-receipt
+assertion: live empty close and valid shutdown passed, but synchronous custody
+read preceded Node's subsequent `close`/pipe-drain callback after process exit.
+The final actual receipt is closed/exit0. The passive observer now exposes its
+already-owned close-event completion, resolving only after raw files are flushed.
+The caller awaits that event with a one-second custody bound, before strict
+closure/hash assertions; no producer wait/request/cap or expected value changes.
+Both prior raw failures remain distinct and no full helper pass is inferred.

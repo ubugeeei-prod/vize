@@ -96,6 +96,7 @@ await test("whole original bind-style diagnostics have configured fixes and supp
   save();
   const savedEnvironment = { ...process.env };
   let stopObservation = () => {};
+  let awaitObservedClosure: (() => Promise<void>) | undefined;
   let session: import("./support/lsp/session.ts").LspSession | undefined;
   try {
     compareCliFixes(binary, fixture, output, rows, save, (project) =>
@@ -177,7 +178,8 @@ await test("whole original bind-style diagnostics have configured fixes and supp
     process.env.VIZE_LSP_REQUIRE_SOURCE_BUILD = publicAuthority ? "0" : "1";
     process.env.VIZE_BIND_STYLE_CAPTURE_ROOT = path.join(output, "authored-positive");
     process.env.VIZE_BIND_STYLE_BINARY = binary;
-    ({ stopObservation } = await import("./support/lsp/bind-style/observe.mjs"));
+    ({ stopObservation, awaitObservedClosure } =
+      await import("./support/lsp/bind-style/observe.mjs"));
     const { LspSession } = await import("./support/lsp/session.ts");
     session = new LspSession();
     rows.push({
@@ -248,6 +250,7 @@ await test("whole original bind-style diagnostics have configured fixes and supp
     assert.deepEqual(closed, { uri, diagnostics: [] });
     await session.shutdown();
     session = undefined;
+    await awaitObservedClosure();
     checkCapture(path.join(output, "authored-positive"));
     record.status = "PASS";
   } catch (error) {
@@ -257,6 +260,7 @@ await test("whole original bind-style diagnostics have configured fixes and supp
   } finally {
     try {
       await session?.shutdown();
+      await awaitObservedClosure?.();
     } catch (error) {
       record.status = "FAIL";
       record.error ??= String(error);

@@ -8,6 +8,20 @@ import { syncBuiltinESMExports } from "node:module";
 const directory = process.env.VIZE_BIND_STYLE_CAPTURE_ROOT;
 const binary = process.env.VIZE_BIND_STYLE_BINARY;
 let restore = () => {};
+const closures = [];
+export async function awaitObservedClosure() {
+  let timer;
+  try {
+    await Promise.race([
+      Promise.all(closures),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("owned stdio close custody timed out")), 1000);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 export function stopObservation() {
   restore();
 }
@@ -22,6 +36,12 @@ if (directory && binary) {
       /* Other processes retain their exact original route. */
     }
     if (!selected) return child;
+    let markClosed;
+    closures.push(
+      new Promise((resolve) => {
+        markClosed = resolve;
+      }),
+    );
     const output = path.join(directory, `process-${child.pid}`);
     fs.mkdirSync(output, { recursive: true });
     const streams = { client: [], server: [], stderr: [] };
@@ -68,6 +88,7 @@ if (directory && binary) {
       record.exitCode = code;
       record.signal = signal;
       save();
+      markClosed();
     });
     save();
     return child;
