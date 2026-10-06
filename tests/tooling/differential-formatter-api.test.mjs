@@ -84,7 +84,7 @@ function syntheticReport(loaded) {
     summary: {
       plannedCases: loaded.cases.length,
       legacyByteMatches: loaded.cases.filter(
-        (item) => item.contract === "full-output-bytes-and-fixed-point",
+        (item) => item.contract === "full-output-bytes-and-fixed-point" && !item.currentReference,
       ).length,
       legacyInternalObservations: loaded.cases.filter(
         (item) => item.contract === "legacy-internal-observation",

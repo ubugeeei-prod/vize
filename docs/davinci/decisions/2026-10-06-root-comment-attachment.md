@@ -102,3 +102,12 @@ Keep the incoming UI-tier paragraph byte-exact and place the complete owned
 root-comment decision beside the existing SFC-layout fixture paragraph. This
 removes the observed canonical ownership conflict while preserving every
 incoming line and the350-line cap; production/fixture authority is unchanged.
+
+Normal Check37424744134 at `a214b197` failed the synthetic captured-history
+summary: the unchanged strict validator computes29 historical full-output
+matches plus2 separately qualified current references, while the test helper
+declared31 historical matches. Exclude qualified current rows from that
+synthetic count and set only the affected T1 capture-pack historical count29.
+Retain all51 rows/20 typed errors/2 current references, original300 bytes,
+whole23/115 laws and nativeUnsupported boundaries. No comparison/validator
+relaxation or old-output acceptance is introduced; fresh Actions remain required.
