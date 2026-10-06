@@ -8,6 +8,7 @@ use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::Span;
 use vize_carton::ensure_sufficient_stack;
 
+mod attributes;
 mod writer;
 use writer::{LeadingNewlineWriter, TemplateWriter};
 
@@ -59,26 +60,7 @@ fn write_element_template(
     if !el.props.is_empty() {
         // Collect dynamic binding names to skip their static counterparts
         let mut has_static_attr = false;
-        let dynamic_attrs: vize_carton::FxHashSet<&str> =
-            if matches!(el.props.as_slice(), [PropNode::Attribute(_)]) {
-                has_static_attr = true;
-                vize_carton::FxHashSet::default()
-            } else {
-                el.props
-                    .iter()
-                    .filter_map(|p| match p {
-                        PropNode::Attribute(_) => {
-                            has_static_attr = true;
-                            None
-                        }
-                        PropNode::Directive(dir) if dir.name == "bind" => match dir.arg.as_ref() {
-                            Some(ExpressionNode::Simple(key)) => Some(key.content),
-                            _ => None,
-                        },
-                        _ => None,
-                    })
-                    .collect()
-            };
+        let dynamic_attrs = attributes::collect_dynamic_attrs(el, &mut has_static_attr);
 
         // Add static attributes (skip those overridden by dynamic bindings).
         // This result depends only on the unchanged props. The first pass above
