@@ -130,13 +130,7 @@ impl DiagnosticService {
         let is_art_file = uri.path().ends_with(".art.vue");
         let options_api = state.options_api_enabled();
         let legacy_vue2 = state.legacy_vue2_enabled();
-        let mut virtual_ts_options = state.virtual_ts_options();
-        virtual_ts_options.reference_paths = state
-            .global_component_reference_paths()
-            .await
-            .iter()
-            .map(|path| path.to_string_lossy().as_ref().into())
-            .collect();
+        let virtual_ts_options = state.editor_virtual_ts_options().await;
         // Incrementally refreshed: documents unchanged since the last pass
         // keep their cached text instead of being copied out of their ropes
         // again, so a keystroke costs one document rather than every open

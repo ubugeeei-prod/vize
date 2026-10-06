@@ -1,0 +1,1 @@
+{"globalTypes":{"currentRoute":{"type":"{ path: string }","defaultValue":"{ path: '/' }"}}}
