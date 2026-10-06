@@ -50,3 +50,5 @@ Issue7698 and its complete responsiveness target remain open.
 Paired decision: https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6018068203.
 
 [Cleanup clarification](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6018281589) preserves mandatory old-session retirement after a completed transient failure, then refuses replacement work for the retired caller and retains whole first/cleanup error text as non-transient incomplete.
+
+The [actual-parent incorporation](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6019490727) retains literal signed064, every incoming source/decision and the qualified child implementation/inputs/author records. The old62bd source/full/native/paired success remains historical; its warm/background comparisons worsened, so no uncancelled gain is claimed. The remaining child is retargeted to main and requires fresh exact-head qualification plus native Stack/protected actual delivery.
