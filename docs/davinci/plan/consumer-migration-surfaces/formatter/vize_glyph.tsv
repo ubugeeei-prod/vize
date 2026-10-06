@@ -141,6 +141,7 @@ formatter	Formatter	test/dev	crates/vize_glyph/src/template/tests.rs	9	l0	L0	sta
 formatter	Formatter	source	crates/vize_glyph/src/template/vue_filters.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/vue_version.rs	4	l0	L0	stage	vize_l0	preferred	2
 formatter	Formatter	test/dev	crates/vize_glyph/tests/authored_tag_forms.rs	5	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/css_continuation_indent.rs	4	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/css_rule_layout.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/document_layout.rs	4	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/fix_history_directive_layout.rs	7	l0	L0	stage	vize_l0	preferred	1

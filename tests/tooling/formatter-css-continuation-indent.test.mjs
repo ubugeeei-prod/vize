@@ -31,6 +31,14 @@ await test("public CSS continuation indentation is a configured-unit fixed point
     assert.equal(row.source, original.toString());
     assert.equal(row.output, row.again, "separate complete stock fixed-point witness");
   }
+  const selectorStock = JSON.parse(
+    fs.readFileSync(path.join(directory, "stock-selector-control.json")),
+  );
+  const selector = corpus.cases.find((row) => row.id === "selector-colons-and-value-parens");
+  assert.equal(selectorStock.input, selector.input);
+  assert.equal(selectorStock.expected, selector.expected);
+  assert.equal(selectorStock.output, selector.expected, "whole independent stock control");
+  assert.equal(selectorStock.again, selectorStock.output);
   const build = expectedBuildIdentity(root);
   const receipt = JSON.parse(
     fs.readFileSync(path.join(root, `${build.binaryPath}.differential-build.json`)),

@@ -49,3 +49,16 @@ Retain the whole failed log (599f3b70b9a7c3f5f3631cc637b5e0e2455d138f2573f06d4a3
 restore the incoming blank and append the exact clause to existing prose.
 All production/originals/references/protocols remain unchanged; fresh exact
 source qualification is required without transferring prior runtime credit.
+
+Current source 93dd24 Check37465930772 built successfully. Tooling shard1
+retains two actual failures: the observational Glyph inventory lacks the new
+test's existing L0 import row, and the new selector/custom-var reference wrongly
+expects a retained newline inside var(). The unchanged printer legitimately
+collapses that value. Independently authored single-line correction now equals
+the whole stock Prettier 3.8.3 output and stock fixed point. Preserve the old
+whole reference/corpus at the immutable a594/93dd Git commits and raw failure
+log e693e58793be9e10767a6fa1105ab4a5588228eabbfce0ebee2157c3705f4b6d.
+Only that new control reference changes; all twelve inputs, eleven other
+references, original/legacy goldens, production and counters remain fixed. Add
+only the exact source-witnessed generated L0 row. Eleven CLI subtests passed,
+but complete new source runtime/Rust/protected qualification remains required.

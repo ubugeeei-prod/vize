@@ -5,7 +5,6 @@
 <style scoped>
 .button:hover,
 .button:focus {
-	--色: var(--one,
-		var(--two));
+	--色: var(--one, var(--two));
 }
 </style>

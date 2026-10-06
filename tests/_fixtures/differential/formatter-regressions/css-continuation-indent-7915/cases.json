@@ -524,7 +524,7 @@
       "id": "selector-colons-and-value-parens",
       "api": "sfc",
       "input": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button:hover,\n.button:focus {\n  --色: var(--one,\n    var(--two));\n}\n</style>\n",
-      "expected": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button:hover,\n.button:focus {\n\t--色: var(--one,\n\t\tvar(--two));\n}\n</style>\n",
+      "expected": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button:hover,\n.button:focus {\n\t--色: var(--one, var(--two));\n}\n</style>\n",
       "options": {
         "useTabs": true
       },
@@ -532,7 +532,7 @@
       "inputFile": "selector-colons-and-value-parens.input.txt",
       "inputSha256": "1018655723e1577e32e385275f7a3b267c754cd07a3aa478ab92380735f7c157",
       "expectedFile": "selector-colons-and-value-parens.expected.txt",
-      "expectedSha256": "5078fa6a862104697af78319cbe0c29ca388fc9d80113f8ff0dbba78009a726f",
+      "expectedSha256": "cf9d6df82d78fcec137c50873b0fcc42862460b38de665fb6ad94b3f430368c3",
       "cliExpected": [
         {
           "mode": "--check",
