@@ -161,6 +161,24 @@
         "path": "tests/_fixtures/differential/formatter-history/literal-inputs/sfc-multiline-directive-statement-continuation-is-anchored-like-a-ternary/0/expected.txt",
         "sha256": "9159835c8614e68bcb302097ac135d48b73e8362e690bc56d6c66aed7d2401ff"
       }
+    },
+    {
+      "id": "comment-only-document",
+      "file": "CommentsOnly.vue",
+      "source": "<!-- license -->\n\n<!-- trailing note -->\n",
+      "expected": "<!-- license -->\n\n<!-- trailing note -->\n"
+    },
+    {
+      "id": "text-only-document",
+      "file": "TextOnly.vue",
+      "source": "license text\n\n<!-- trailing note -->\n",
+      "expected": "license text\n\n<!-- trailing note -->\n"
+    },
+    {
+      "id": "bom-comment-only-document",
+      "file": "BomCommentsOnly.vue",
+      "source": "﻿<!-- license -->\n\n<!-- trailing note -->\n",
+      "expected": "﻿<!-- license -->\n\n<!-- trailing note -->\n"
     }
   ]
 }

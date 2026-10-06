@@ -26,7 +26,7 @@ fn root_comment_corpus_preserves_whole_outputs_and_three_pass_fixed_points() {
         "../../../tests/_fixtures/differential/formatter-regressions/root-comment-attachment-7877/cases.json"
     ))
     .unwrap();
-    assert_eq!(corpus.cases.len(), 20);
+    assert_eq!(corpus.cases.len(), 23);
     for case in corpus.cases {
         let options = FormatOptions {
             end_of_line: match case.eol.as_deref() {

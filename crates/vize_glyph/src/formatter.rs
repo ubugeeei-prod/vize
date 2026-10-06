@@ -171,8 +171,12 @@ impl<'a> GlyphFormatter<'a> {
         let first_tag_start = source_order
             .first()
             .map_or(source.len(), |loc| loc.tag_start);
-        let (prologue, first_attachment) =
-            root_content::split_prologue(source.get(..first_tag_start).unwrap_or_default());
+        let original_prologue = source.get(..first_tag_start).unwrap_or_default();
+        let (prologue, first_attachment) = if blocks.is_empty() {
+            (original_prologue.trim(), None)
+        } else {
+            root_content::split_prologue(original_prologue)
+        };
         let mut leading_content = FxHashMap::default();
         if let Some(content) = first_attachment {
             leading_content.insert(first_tag_start, (content, true));

@@ -37,11 +37,11 @@ historical snapshots retain their original hashes, while the live snapshots
 must match the corrected whole authority and current hashes. Restoring an old
 wrong live snapshot is rejected. Every other source/snapshot guard stays exact.
 
-Twenty whole-file controls retain the original report, two historical inputs,
+Twenty-three whole-file controls retain the original report, two historical inputs,
 sorting, blank separation, multiple/multiline/pseudo-opener comments, raw-text
 negatives, custom blocks, prologue/trailing content, BOM/LF/CRLF/CR and the
 existing #6694/#3346 layout fixtures. Rust compares complete first/second/third
-outputs and actual `changed` truth. The source-built CLI control retains 100
+outputs and actual `changed` truth. The source-built CLI control retains 115
 complete process captures: read-only check, three writes and final read-only
 check. Full current bytes and fixed points are required, without recapture or
 either-output acceptance.
@@ -82,3 +82,18 @@ existing production Clippy policy. Use checked `get`/`split_at_checked` and
 conservatively retain unchanged classification if a boundary is refused,
 without lint allowances or expected-byte changes. This is a source compile-risk
 correction; fresh hosted Clippy and native results remain required.
+
+A comment-only accepted SFC has no following-block consumer. The source peer
+found that extracting its terminal group would drop that complete comment.
+Split the prologue only when a real parsed block exists; otherwise retain the
+entire document prologue. Add complete two-comment/blank, raw-text-plus-comment
+and BOM comment-only inverses while preserving every original first20 input
+and current expected byte. The full current corpus is23 cases/115 process
+captures, with unchanged whole-output/check/three-pass/status/fixedpoint laws.
+Stdout/stderr are whole retained observations; elapsed CLI summaries are not
+asserted as byte-stable output. No execution credit transfers from blocked heads.
+
+The intermediate PR conflicted against advancing main and had no normal Check
+for those intermediate heads. Preserve every incoming canonical line and the
+complete owned decision clause while composing fresh signed main; no workflow
+bypass, incoming-source substitution or expected-byte relaxation is permitted.

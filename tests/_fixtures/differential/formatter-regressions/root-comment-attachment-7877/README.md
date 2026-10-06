@@ -19,3 +19,9 @@ status, three complete writes and a successful final read-only check. Its
 report retains full outputs, stdout/stderr, status and signal for every process.
 Native Davinci formatter handling remains unsupported. Prepared fixtures alone
 grant no execution, performance, protected merge or release credit.
+
+The first twenty complete inputs/current expectations remain exact. Three
+independently authored no-block controls (two comments with a blank separator,
+raw text plus a comment, and BOM comments) retain the complete document with no
+attachment consumer. The current whole corpus is 23 cases/115 CLI captures,
+with the same three-pass/check/process assertions and two historical mismatches.

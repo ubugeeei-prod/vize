@@ -21,7 +21,7 @@ void test("original root comments retain whole attachment bytes and CLI fixed po
   );
   validateBuildReceipt(receipt, identity);
   assert.equal(corpus.issue, 7877);
-  assert.equal(corpus.cases.length, 20);
+  assert.equal(corpus.cases.length, 23);
   assert.equal(sha256(Buffer.from(corpus.cases[0].source)), corpus.source.originalSha256);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-root-comment-"));
   const report = {
@@ -133,7 +133,7 @@ void test("original root comments retain whole attachment bytes and CLI fixed po
       if (fixture.historicalId) report.historicalDifferent++;
       report.currentMatches++;
     }
-    assert.equal(report.currentMatches, 20);
+    assert.equal(report.currentMatches, 23);
     assert.equal(report.historicalDifferent, 2);
   } finally {
     const artifact = path.join(
