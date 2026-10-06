@@ -4,10 +4,10 @@ use super::runner::{Planes, run_source};
 fn authored_generic_type_reads_match_independently_combined_semantics() {
     let mut planes = Planes::default();
     for source in [
-        "<script setup lang=\"ts\" generic=\"T extends Kind.A\">import { Kind } from './kind';</script>",
-        "<script setup lang=\"ts\" generic=\"T extends typeof Kind\">import { Kind } from './kind';</script>",
-        "<script setup lang=\"ts\" generic=\"Kind, T extends Kind\">import { Kind } from './kind';</script>",
-        "<script setup lang=\"ts\" generic=\"T extends { Kind: string }\">import { Kind } from './kind';</script>",
+        "<script setup lang=\"ts\" generic=\"T extends Kind.A\">import { Kind } from './kind';</script><template>{{ missing }}</template>",
+        "<script setup lang=\"ts\" generic=\"T extends typeof Kind\">import { Kind } from './kind';</script><template>{{ missing }}</template>",
+        "<script setup lang=\"ts\" generic=\"Kind, T extends Kind\">import { Kind } from './kind';</script><template>{{ missing }}</template>",
+        "<script setup lang=\"ts\" generic=\"T extends { Kind: string }\">import { Kind } from './kind';</script><template>{{ missing }}</template>",
     ] {
         run_source("authored-generic-read", source, &mut planes);
     }
@@ -24,6 +24,14 @@ fn authored_generic_type_reads_match_independently_combined_semantics() {
                 planes.unused.facts
             ),
             (4, 4, 2)
+        );
+        assert_eq!(
+            (
+                planes.undefined.artifacts,
+                planes.undefined.compared,
+                planes.undefined.facts
+            ),
+            (4, 4, 4)
         );
     }
 }
