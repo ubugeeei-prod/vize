@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { afterAll, afterEach, beforeAll, test } from "vite-plus/test";
+import { afterAll, afterEach, beforeAll, test, vi } from "vite-plus/test";
 import { h, nextTick } from "vue";
 
 import type { WebcamCaptureRootExpose, WebcamCaptureSlotState } from "./webcam-capture.ts";
@@ -87,21 +87,29 @@ test("countdowns announce each second, block the shutter, and cancel on stop", a
   await flush();
   setVideoSize(part<HTMLVideoElement>(root, "video"), 20, 10);
 
-  await handle.click(button(root, "shutter"));
-  assert.equal(handle.getByRole("status").textContent, "Taking photo in 2");
-  assert.equal(button(root, "shutter").getAttribute("data-countdown"), "2");
-  assert.equal(button(root, "shutter").disabled, true);
-  await new Promise((resolve) => setTimeout(resolve, 8));
-  await nextTick();
-  assert.equal(handle.getByRole("status").textContent, "Taking photo in 1");
-  await new Promise((resolve) => setTimeout(resolve, 20));
-  await flush();
-  assert.equal(handle.wrapper.emitted("capture")?.length, 1);
-  assert.equal(button(root, "shutter").hasAttribute("data-countdown"), false);
+  vi.useFakeTimers();
+  try {
+    await handle.click(button(root, "shutter"));
+    assert.equal(handle.getByRole("status").textContent, "Taking photo in 2");
+    assert.equal(button(root, "shutter").getAttribute("data-countdown"), "2");
+    assert.equal(button(root, "shutter").disabled, true);
+    await vi.advanceTimersByTimeAsync(5);
+    await nextTick();
+    assert.equal(handle.getByRole("status").textContent, "Taking photo in 1");
+    assert.equal(button(root, "shutter").getAttribute("data-countdown"), "1");
+    assert.equal(handle.wrapper.emitted("capture"), undefined);
+    await vi.advanceTimersByTimeAsync(5);
+    await Promise.all([flush(), vi.advanceTimersByTimeAsync(0)]);
+    assert.equal(handle.getByRole("status").textContent, "Photo taken");
+    assert.equal(handle.wrapper.emitted("capture")?.length, 1);
+    assert.equal(button(root, "shutter").hasAttribute("data-countdown"), false);
 
-  await handle.click(button(root, "shutter"));
-  handle.exposes<WebcamCaptureRootExpose>().stop();
-  await new Promise((resolve) => setTimeout(resolve, 20));
-  await flush();
-  assert.equal(handle.wrapper.emitted("capture")?.length, 1, "stop cancels the countdown");
+    await handle.click(button(root, "shutter"));
+    handle.exposes<WebcamCaptureRootExpose>().stop();
+    await vi.advanceTimersByTimeAsync(5);
+    await Promise.all([flush(), vi.advanceTimersByTimeAsync(0)]);
+    assert.equal(handle.wrapper.emitted("capture")?.length, 1, "stop cancels the countdown");
+  } finally {
+    vi.useRealTimers();
+  }
 });
