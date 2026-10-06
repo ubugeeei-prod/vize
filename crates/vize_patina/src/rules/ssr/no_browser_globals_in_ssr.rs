@@ -47,8 +47,11 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::BindingType;
 
+mod script_reads;
+mod script_symbols;
 mod template_identifiers;
 mod type_ranges;
+mod typeof_guard;
 use vize_relief::{ElementNode, ExpressionNode, InterpolationNode, RootNode};
 
 /// Browser-only global names that are NOT available in SSR
@@ -204,6 +207,10 @@ impl Rule for NoBrowserGlobalsInSsr {
         &META
     }
 
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        script_reads::check(ctx);
+    }
+
     fn run_on_template<'a>(&self, _ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
         // Template-level checking is done via check_interpolation
     }
@@ -275,5 +282,7 @@ impl Rule for NoBrowserGlobalsInSsr {
     }
 }
 
+#[cfg(test)]
+mod script_tests;
 #[cfg(test)]
 mod tests;

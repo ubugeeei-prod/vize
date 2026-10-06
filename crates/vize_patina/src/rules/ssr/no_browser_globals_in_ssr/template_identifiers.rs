@@ -206,7 +206,7 @@ impl NoBrowserGlobalsInSsr {
         identifiers
     }
 
-    fn runtime_identifiers(expr: &str) -> Vec<&str> {
+    pub(super) fn runtime_identifiers(expr: &str) -> Vec<&str> {
         let identifiers = Self::extract_identifiers(expr);
         if !identifiers
             .iter()

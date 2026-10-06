@@ -1,0 +1,40 @@
+{
+  "schema": "vize.ssr.script-setup-7982",
+  "version": 1,
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/7982",
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "files": {
+    "DocsBad.vue.txt": {
+      "bytes": 68,
+      "sha256": "7fd2b9fcadbabb8a78c8fc8086d7136d1c9c983de0c490f0c766fe0512244849"
+    },
+    "DocsGood.vue.txt": {
+      "bytes": 115,
+      "sha256": "0c737324138726195b98ab70d2239ec92842a4cd8ea4b729e47e29b52c52f10a"
+    },
+    "WidthLabel.vue.txt": {
+      "bytes": 178,
+      "sha256": "aefd78fcdaae88b2a5cfa015f5fd19312bae9705dad496246f080e18b3d5226e"
+    },
+    "issue-body.md": {
+      "bytes": 1743,
+      "sha256": "138a28dc73c10746ed7a1309c091e7a50e2cc8bb7e25d41ce15ceed592410a1d"
+    },
+    "vize.config.json": {
+      "bytes": 96,
+      "sha256": "2964076f824131da3bd8ff33ccd5c955e8ccc95ed00b3de960c1c8074b7fd9af"
+    }
+  },
+  "expectedOriginalBrowserGlobals": [
+    "window",
+    "navigator",
+    "document"
+  ],
+  "expectedDocsBadBrowserGlobals": [
+    "window"
+  ],
+  "expectedDocsGoodBrowserGlobals": []
+}
