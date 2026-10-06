@@ -29,6 +29,10 @@ pub fn analyze_sfc_descriptor_with_occurrences(
         Some(&mut packet),
     );
     if options.template_is_derived
+        || descriptor
+            .script_setup
+            .as_ref()
+            .is_some_and(|block| block.attrs.contains_key("generic"))
         || root.is_some_and(|root| {
             descriptor
                 .template
@@ -43,6 +47,7 @@ pub fn analyze_sfc_descriptor_with_occurrences(
                     .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
         })
     {
+        // Setup generic attributes have no identifier AST in the script view.
         packet = None;
     }
     (analysis, packet)

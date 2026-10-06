@@ -11,6 +11,7 @@ pub(super) fn apply_style_reads(
     derived: bool,
     mut occurrences: Option<&mut BindingOccurrences>,
 ) -> bool {
+    let mut packet_valid = true;
     if descriptor.script_setup.as_ref().is_some_and(|block| {
         block.src.is_some()
             || block
@@ -36,7 +37,8 @@ pub(super) fn apply_style_reads(
         for range in ranges {
             let Some(expression) = style.content.get(range.clone()) else {
                 if occurrences.is_some() {
-                    return false;
+                    packet_valid = false;
+                    occurrences = None;
                 }
                 continue;
             };
@@ -46,13 +48,18 @@ pub(super) fn apply_style_reads(
                     return false;
                 };
                 let mut reads = Vec::with_capacity(references.len());
+                let mut refused = false;
                 for reference in references {
                     if let Some(&declaration) = croquis.binding_spans.get(reference.name.as_str()) {
                         let Some(start) = (range.start as u32).checked_add(reference.offset) else {
-                            return false;
+                            refused = true;
+                            reads.push(reference.name);
+                            continue;
                         };
                         let Some(end) = start.checked_add(reference.name.len() as u32) else {
-                            return false;
+                            refused = true;
+                            reads.push(reference.name);
+                            continue;
                         };
                         if style.content.get(start as usize..end as usize)
                             != Some(reference.name.as_str())
@@ -66,10 +73,14 @@ pub(super) fn apply_style_reads(
                                 )
                                 .is_none()
                         {
-                            return false;
+                            refused = true;
                         }
                     }
                     reads.push(reference.name);
+                }
+                if refused {
+                    packet_valid = false;
+                    occurrences = None;
                 }
                 reads
             } else {
@@ -86,5 +97,8 @@ pub(super) fn apply_style_reads(
             }
         }
     }
-    true
+    packet_valid
 }
+
+#[cfg(test)]
+mod tests;

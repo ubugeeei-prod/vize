@@ -81,6 +81,35 @@ fn full_original_project_has_one_label_one_hint_and_three_id_template_reads() {
 }
 
 #[test]
+fn ordinary_type_annotations_keep_the_existing_owned_value_reads() {
+    let source = "<script setup lang=\"ts\">const id:string='value'; type Label=string; interface Box {value:number}; const read=(arg:number):string=>id</script><template>{{ id as string }}</template>";
+    analyze(source, |descriptor, analysis, packet| {
+        let id = binding(packet, "id");
+        let script = analysis.script_content_ref().unwrap();
+        let template = &descriptor.template.as_ref().unwrap().content;
+        let reads: Vec<_> = packet
+            .occurrences()
+            .iter()
+            .filter(|reference| reference.binding == id)
+            .collect();
+        assert_eq!(reads.len(), 2);
+        assert_eq!(reads[0].block, OccurrenceBlock::Script);
+        assert_eq!(reads[1].block, OccurrenceBlock::Template);
+        for reference in reads {
+            let original = match reference.block {
+                OccurrenceBlock::Script => script,
+                OccurrenceBlock::Template => template.as_ref(),
+                OccurrenceBlock::Style(_) => unreachable!(),
+            };
+            assert_eq!(
+                original.get(reference.start as usize..reference.end as usize),
+                Some("id"),
+            );
+        }
+    });
+}
+
+#[test]
 fn script_closure_declarator_and_template_alias_reads_have_distinct_owners() {
     let source = "<script setup lang=\"ts\">const id = 'outer'; function own(id: string) { return id } const copy = id; { const id = 'block'; consume(id) }</script><template><p>{{ id }}</p><p v-for=\"id in [1]\">{{ id }}</p></template>";
     analyze(source, |descriptor, analysis, packet| {

@@ -136,6 +136,39 @@ pub(crate) fn collect_from_declaration(decl: &oxc_ast::ast::Declaration<'_>) -> 
     }
 }
 
+/// Check only a type subtree reached by the existing demanded value walk.
+pub(crate) fn has_value_type_reads(annotation: &TSType<'_>) -> bool {
+    let mut visitor = TypeofValueRefs::default();
+    visitor.visit_ts_type(annotation);
+    !visitor.refs.typeof_value_refs.is_empty()
+}
+
+pub(crate) fn annotation_has_value_reads(
+    annotation: Option<&oxc_ast::ast::TSTypeAnnotation<'_>>,
+) -> bool {
+    annotation.is_some_and(|annotation| has_value_type_reads(&annotation.type_annotation))
+}
+
+pub(crate) fn parameters_have_value_reads(
+    parameters: Option<&oxc_ast::ast::TSTypeParameterDeclaration<'_>>,
+) -> bool {
+    parameters.is_some_and(|parameters| {
+        parameters.params.iter().any(|parameter| {
+            parameter
+                .constraint
+                .as_ref()
+                .is_some_and(has_value_type_reads)
+                || parameter.default.as_ref().is_some_and(has_value_type_reads)
+        })
+    })
+}
+
+pub(crate) fn arguments_have_value_reads(
+    arguments: Option<&oxc_ast::ast::TSTypeParameterInstantiation<'_>>,
+) -> bool {
+    arguments.is_some_and(|arguments| arguments.params.iter().any(has_value_type_reads))
+}
+
 // `TSType` is re-exported here so the `Visit` impl above type-checks against
 // the AST crate version used by the workspace.
 fn _ts_type_witness(_: &TSType<'_>) {}

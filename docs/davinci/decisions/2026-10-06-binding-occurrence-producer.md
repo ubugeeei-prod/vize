@@ -195,3 +195,34 @@ at 2026-10-06 01:13:40 UTC. Incorporate that actual commit in a genuine merge,
 retaining all four reviewed union code/test blobs and every incoming source
 and decision. The former queued-prefix proof is now historical preparation,
 not reused execution credit. Fresh current-head Actions remain mandatory.
+
+Post-publication review of literal `214bf05a` / `ab366e67` found two
+substantive provider defects, independent of the optional review status. A
+packet-only style-span/declaration refusal could stop the ordinary names and
+later style blocks. The correction drops only that packet while continuing the
+already parsed names and later ordinary expressions; no expression is reparsed.
+A direct refusal law compares the entire ordinary VIR and semantic snapshot.
+
+The script packet also omitted value reads such as `typeof id` in TypeScript
+types. Refuse only the demanded packet for those unmodeled type-query relations,
+using retained type-export references and the existing type visitor on type
+subtrees reached by the existing declaration/parameter/expression walk. No
+second script walk, parser, text matcher, request-time work or diagnostic pass
+is added. Setup generic attributes have no original identifier AST in this
+script view and likewise refuse the packet. Four new whole-analysis controls
+cover script/template query refusals, unprovided setup generic metadata and
+preserve normal annotations with both authored script/template reads. All original sixteen laws and whole fixtures remain
+unchanged; these five new controls are prepared, not yet executed.
+
+Fresh `214bf05a` Check `37398437054` and `ab366e67` Check `37398503305`
+actually executed 16,322 / 16,336 JUnit cases without failure/error/skip,
+including the original sixteen producer laws, the new inlay composition law,
+and the child whole 22-session/168-response CLI bodies. Overall source checks
+are still unaccepted: both security-audit jobs failed on the current npm
+moderate-or-higher advisory set (13 IDs versus the two source-remediated IDs).
+Every dependency manifest, lock and audit helper is byte-identical to signed
+main `143c1d4a`. Retain the authenticated original logs and exact advisory
+subobjects; do not invent a lock regression or waive the security policy. The
+new correction and eventual genuine dependency integration require fresh
+exact-head Actions and both full protected deliveries. Historical failed
+source evidence and native/default/history/performance limits remain intact.

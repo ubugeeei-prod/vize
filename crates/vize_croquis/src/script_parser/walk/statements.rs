@@ -33,6 +33,7 @@ pub(in crate::script_parser) fn walk_statement(
             }
             // Add variable bindings to current scope and check for reactivity losses
             for decl in var_decl.declarations.iter() {
+                result.refuse_declarator_type_reads(decl);
                 add_binding_pattern_to_scope(result, &decl.id, decl.span.start);
                 if let Some(init) = &decl.init {
                     walk_expression(result, init, source);
@@ -60,6 +61,7 @@ pub(in crate::script_parser) fn walk_statement(
         }
         // Nested function declarations
         Statement::FunctionDeclaration(func) => {
+            result.refuse_function_type_reads(func);
             // Add function name as binding
             if let Some(id) = &func.id {
                 if let Some(capture) = result.occurrence_capture.as_mut() {
@@ -340,10 +342,6 @@ pub(in crate::script_parser) fn walk_statement(
             result.refuse_occurrences();
             with_statement::walk_with_statement(result, with_stmt, source);
         }
-        _ => {
-            if let Some(capture) = result.occurrence_capture.as_mut() {
-                capture.refuse();
-            }
-        }
+        _ => result.refuse_occurrences(),
     }
 }

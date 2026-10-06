@@ -131,6 +131,7 @@ pub(in crate::script_parser) fn extract_function_params_with_occurrences(
         return extract_function_params(params);
     };
     let mut names = vize_carton::SmallVec::new();
+    let mut type_read = false;
     let has_default = {
         let mut note = |name: &str, span| {
             names.push(CompactString::new(name));
@@ -138,15 +139,21 @@ pub(in crate::script_parser) fn extract_function_params_with_occurrences(
         };
         let mut has_default = false;
         for param in &params.items {
+            type_read |= param.type_annotation.as_ref().is_some_and(|annotation| {
+                super::typeof_refs::has_value_type_reads(&annotation.type_annotation)
+            });
             has_default |= collect_param_sites(&param.pattern, &mut note);
             has_default |= param.initializer.is_some();
         }
         if let Some(rest) = &params.rest {
+            type_read |= rest.type_annotation.as_ref().is_some_and(|annotation| {
+                super::typeof_refs::has_value_type_reads(&annotation.type_annotation)
+            });
             has_default |= collect_param_sites(&rest.rest.argument, &mut note);
         }
         has_default
     };
-    if has_default {
+    if has_default || type_read {
         capture.refuse();
     }
     names

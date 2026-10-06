@@ -4,6 +4,7 @@
 //! callback arguments, reactivity losses, and client-only lifecycle hooks.
 
 mod calls;
+use super::super::occurrences::refuse_expression_type_reads;
 pub(in crate::script_parser) use calls::walk_call_arguments;
 use calls::{identifier_might_be_browser_global, note_script_browser_global};
 
@@ -25,6 +26,7 @@ pub(in crate::script_parser) fn walk_expression(
     expr: &Expression<'_>,
     source: &str,
 ) {
+    refuse_expression_type_reads(result, expr);
     match expr {
         // Arrow functions create closure scopes (no `arguments`, no `this` binding)
         Expression::ArrowFunctionExpression(arrow) => {

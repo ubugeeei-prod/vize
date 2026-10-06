@@ -180,6 +180,7 @@ fn process_variable_declaration(
     source: &str,
 ) {
     for declarator in decl.declarations.iter() {
+        result.refuse_declarator_type_reads(declarator);
         result.note_lens_pattern(&declarator.id);
         super::super::extract::invalidate_default_expression(result, declarator.init.as_ref());
         macros::process_variable_declarator(result, declarator, decl.kind, source);
@@ -187,6 +188,7 @@ fn process_variable_declaration(
 }
 
 fn process_function_declaration(result: &mut ScriptParseResult, func: &Function<'_>, source: &str) {
+    result.refuse_function_type_reads(func);
     if let Some(id) = &func.id {
         let name = id.name.as_str();
         if let Some(capture) = result.occurrence_capture.as_mut() {

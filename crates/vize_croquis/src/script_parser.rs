@@ -44,6 +44,10 @@ pub use process::{collect_options_descriptor, collect_options_object, process_st
 pub use recovery::parse_program_for_analysis;
 pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjectLiteral};
 pub use result::{ScriptParseResult, ScriptParserOptions};
+pub(crate) use typeof_refs::{
+    annotation_has_value_reads, arguments_have_value_reads, has_value_type_reads,
+    parameters_have_value_reads,
+};
 pub(crate) use unused::unused_setup_bindings;
 
 #[cfg(test)]

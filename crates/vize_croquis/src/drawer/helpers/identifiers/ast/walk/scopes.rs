@@ -16,12 +16,14 @@ pub(super) fn walk_parameters<'a>(
     }
     let mut found = identifiers.child();
     for param in params.items.iter() {
+        super::type_reads::refuse_annotation(param.type_annotation.as_deref(), identifiers);
         walk_binding_pattern_expressions(&param.pattern, &mut found);
         if let Some(initializer) = &param.initializer {
             walk_expr(initializer, &mut found);
         }
     }
     if let Some(rest) = &params.rest {
+        super::type_reads::refuse_annotation(rest.type_annotation.as_deref(), identifiers);
         walk_binding_pattern_expressions(&rest.rest.argument, &mut found);
     }
     push_escaping(found, locals, identifiers);
@@ -134,6 +136,10 @@ fn walk_statement<'a>(
         Statement::VariableDeclaration(declaration) => {
             let mut found = identifiers.child();
             for declarator in declaration.declarations.iter() {
+                super::type_reads::refuse_annotation(
+                    declarator.type_annotation.as_deref(),
+                    &mut found,
+                );
                 walk_binding_pattern_expressions(&declarator.id, &mut found);
                 if let Some(init) = &declarator.init {
                     walk_expr(init, &mut found);

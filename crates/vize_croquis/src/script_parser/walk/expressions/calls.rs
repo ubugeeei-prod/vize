@@ -12,6 +12,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
     call: &CallExpression<'_>,
     source: &str,
 ) {
+    result.refuse_type_arguments(call.type_arguments.as_deref());
     // First, walk the callee (might be a chained call like foo.bar().baz())
     walk_expression(result, &call.callee, source);
 
@@ -51,6 +52,9 @@ pub(in crate::script_parser) fn walk_call_arguments(
                     // If this is a lifecycle hook and the argument is a function,
                     // wrap it in a ClientOnly scope
                     if let Some(name) = hook_name {
+                        super::super::super::occurrences::refuse_expression_type_reads(
+                            result, expr,
+                        );
                         match expr {
                             Expression::ArrowFunctionExpression(arrow) => {
                                 lifecycle_callback_scope_recorded = true;

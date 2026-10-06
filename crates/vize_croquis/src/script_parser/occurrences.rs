@@ -1,5 +1,8 @@
 //! Authored facts emitted inside the existing script statement/expression walk.
 
+mod type_reads;
+pub(crate) use type_reads::refuse_expression_type_reads;
+
 use crate::binding_occurrences::{BindingOccurrences, OccurrenceBlock};
 use crate::scope::{ScopeChain, ScopeId, ScopeKind};
 use oxc_span::Span;
@@ -183,6 +186,7 @@ pub(crate) fn note_expression_only(
     if result.occurrence_capture.is_none() {
         return;
     }
+    refuse_expression_type_reads(result, expression);
     match expression {
         Expression::Identifier(id) => result.note_identifier_occurrence(id.name.as_str(), id.span),
         Expression::StaticMemberExpression(member) => note_expression_only(result, &member.object),
@@ -222,6 +226,7 @@ pub(crate) fn note_expression_only(
             note_expression_only(result, &assertion.expression)
         }
         Expression::CallExpression(call) => {
+            result.refuse_type_arguments(call.type_arguments.as_deref());
             note_expression_only(result, &call.callee);
             for argument in &call.arguments {
                 if let Some(expression) = argument.as_expression() {

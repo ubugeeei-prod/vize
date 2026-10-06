@@ -1,6 +1,7 @@
 mod assignment_target;
 pub(super) mod facts;
 mod scopes;
+mod type_reads;
 
 use oxc_ast::ast::{ArrayExpressionElement, Expression, ObjectPropertyKind, PropertyKey};
 
@@ -10,6 +11,7 @@ use facts::IdentifierWalk;
 use scopes::{walk_function_body, walk_parameters};
 
 pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut IdentifierWalk) {
+    type_reads::refuse_expression_types(expr, identifiers);
     match expr {
         Expression::Identifier(id) => {
             identifiers.push(IdentifierRef::new(id.name.as_str(), id.span.start));

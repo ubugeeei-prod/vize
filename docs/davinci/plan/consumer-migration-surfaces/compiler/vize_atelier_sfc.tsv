@@ -194,7 +194,7 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/croquis/drawer.rs	3	carton	
 compiler	Compiler	source	crates/vize_atelier_sfc/src/croquis/drawer.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/croquis/occurrences.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/refusal_tests.rs	10	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/refusal_tests.rs	10	old_ast	old AST/parser	old	vize_armature	legacy	3
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/refusal_tests.rs	10	old_ast	old AST/parser	old	vize_armature	legacy	4
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/tests.rs	8	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/tests.rs	8	old_ast	old AST/parser	old	vize_armature	legacy	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/tests.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	1
@@ -202,6 +202,8 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/croquis/resolved.rs	3	carto
 compiler	Compiler	source	crates/vize_atelier_sfc/src/croquis/resolved.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/tests.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/croquis/unused.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	4
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/unused/tests.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/unused/tests.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css.rs	13	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/css.rs	32	carton	Carton host/compatibility	old	vize_carton	legacy	3
 compiler	Compiler	source	crates/vize_atelier_sfc/src/css/parser.rs	14	carton	Carton host/compatibility	old	vize_carton	legacy	1

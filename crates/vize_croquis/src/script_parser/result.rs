@@ -162,6 +162,9 @@ impl ScriptParseResult {
     /// `type_exports` so the parallel dependency vectors stay in lockstep for
     /// `resolve_type_export_hoisting`.
     pub(crate) fn record_type_export(&mut self, export: TypeExport, refs: TypeDependencyRefs) {
+        if !refs.typeof_value_refs.is_empty() {
+            self.refuse_occurrences();
+        }
         self.type_exports.push(export);
         self.type_export_typeof_refs.push(refs.typeof_value_refs);
         self.type_export_type_refs.push(refs.type_refs);

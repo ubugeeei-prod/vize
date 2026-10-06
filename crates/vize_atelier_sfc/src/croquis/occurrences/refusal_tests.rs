@@ -61,6 +61,62 @@ fn unsupported_hoisted_var_and_named_function_owners_never_become_outer_reads() 
 }
 
 #[test]
+fn unmodeled_value_type_queries_refuse_without_changing_ordinary_analysis() {
+    for script in [
+        "const id=1; type Value=typeof id",
+        "const id=1; interface Value {value:typeof id}",
+        "const id=1; type Value<T extends typeof id = typeof id> = T",
+        "const id=1; const value:typeof id=id",
+        "const id=1; function f(value:typeof id){return value}",
+        "const id=1; function f(this:typeof id){return id}",
+        "const id=1; function f():typeof id{return id}",
+        "const id=1; const f=(value:typeof id):typeof id=>value",
+        "const id=1; function f<T extends typeof id>(){return id}",
+        "const id=1; const value=id as typeof id",
+        "const id=1; const value=id satisfies typeof id",
+        "const id=1; const value=ref(1) as typeof id",
+        "const id=1; consume<typeof id>(id)",
+        "const id=1; onMounted(():typeof id=>id)",
+        "const id=1; function f(){const value:typeof id=id;return value}",
+    ] {
+        refused(script, "id");
+    }
+}
+
+#[test]
+fn unmodeled_template_value_type_queries_refuse_without_losing_ordinary_names() {
+    for expression in [
+        "id as typeof id",
+        "id satisfies typeof id",
+        "(():typeof id=>id)()",
+        "((value:typeof id)=>value)(id)",
+        "consume<typeof id>(id)",
+    ] {
+        refused("const id=1", expression);
+    }
+}
+
+#[test]
+fn setup_generic_metadata_refuses_without_an_original_script_identifier_ast() {
+    let source = "<script setup lang=\"ts\" generic=\"T extends typeof id\">const id=1</script><template>{{ id }}</template>";
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+    let allocator = Allocator::default();
+    let (root, errors) =
+        vize_armature::parse(&allocator, &descriptor.template.as_ref().unwrap().content);
+    assert!(errors.is_empty());
+    let options = SfcCroquisOptions::lint_demand();
+    let ordinary = analyze_sfc_descriptor_with_context(&descriptor, Some(&root), options);
+    let (captured, packet) =
+        analyze_sfc_descriptor_with_occurrences(&descriptor, Some(&root), options);
+    assert!(packet.is_none());
+    assert_eq!(ordinary.croquis.to_vir(), captured.croquis.to_vir());
+    assert_eq!(
+        serde_json::to_value(ordinary.croquis.semantic_snapshot()).unwrap(),
+        serde_json::to_value(captured.croquis.semantic_snapshot()).unwrap(),
+    );
+}
+
+#[test]
 fn invalid_or_unclosed_template_expression_relations_refuse_as_a_whole() {
     for expression in [
         "id +",
