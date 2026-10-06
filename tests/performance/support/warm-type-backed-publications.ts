@@ -65,12 +65,31 @@ export function originalPublications(workspace: string, source: string, promptCh
       source: "vize/lint",
     }));
   };
-  const publish = (document: string, text: string, version?: number) => ({
+  const nativeAssignment = (text: string) => {
+    const assignment = "open.value = next;";
+    const offset = text.indexOf(assignment);
+    assert.notEqual(offset, -1);
+    assert.equal(text.lastIndexOf(assignment), offset);
+    // The original unsaved control changes ref(false) to ref(0), while the
+    // authored function parameter stays boolean. Native TS2322 owns the full
+    // assignment target, not the template click expression.
+    return {
+      code: 2322,
+      message: "Type 'boolean' is not assignable to type 'number'.",
+      range: {
+        start: offsetToPosition(text, offset),
+        end: offsetToPosition(text, offset + "open.value".length),
+      },
+      severity: 1,
+      source: "vize/types",
+    };
+  };
+  const publish = (document: string, text: string, version?: number, native = false) => ({
     jsonrpc: "2.0",
     method: "textDocument/publishDiagnostics",
     params: {
       uri: document,
-      diagnostics: diagnostics(text),
+      diagnostics: [...diagnostics(text), ...(native ? [nativeAssignment(text)] : [])],
       ...(version == null ? {} : { version }),
     },
   });
@@ -91,10 +110,12 @@ export function originalPublications(workspace: string, source: string, promptCh
     "const open = ref(false);\nconst configProbe = null;",
   );
   assert.notEqual(probe, source);
+  const edit = source.replace("const open = ref(false);", "const open = ref(0);");
+  assert.notEqual(edit, source);
   for (const version of [2, 3, 4, 5]) {
-    const text = version === 4 ? probe : source;
+    const text = version === 2 ? edit : version === 4 ? probe : source;
     if (promptChanges) notifications.push(publish(uri, text, version));
-    notifications.push(publish(uri, text, version));
+    notifications.push(publish(uri, text, version, version === 2));
   }
   notifications.push({
     jsonrpc: "2.0",

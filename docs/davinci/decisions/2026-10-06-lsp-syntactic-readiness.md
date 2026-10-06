@@ -87,3 +87,29 @@ renames reach shutdown; only readiness counts report0 instead of2/3. Align that
 one strict method selector with documentSymbol, preserving every generation,
 ordering, full native rename and twenty shutdown-overlap assertion. Failed
 aggregates remain failed; no production rename, skip or tolerance is changed.
+
+Shipping release pair34fa observes first8185.621 → 1995.194ms, warm roughly19 →
+20ms and hover during actual native collection43.547 → 63.833ms. All79 whole
+comparable request results and18 ordered notifications agree; the aggregate
+remains failed. The original unsaved control changes ref(false) to ref(0), but
+toggle(next: boolean) still assigns open.value = next. Its complete version2
+publication requires native TS2322 on the whole assignment target beside both
+lint warnings. Keep prompt lint-only, restored clean and final epoch-original
+version2 publications distinct, with every range/message/envelope unchanged.
+
+Regenerate the new help carrier's exact two-row natural v-on inventory without
+changing capacities/gates. Correct only the trace declaration's lexical module
+order and disclose the selected release recipe in source identity; separately
+retained actual Cargo profiles/fresh artifacts/staged ELF binding remain strict.
+[The paired correction](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6013828407)
+requires fresh shipping/full/native lifetime/editor/Vue/source and protected
+qualification. These failed aggregates and timings do not qualify delivery.
+
+First shipping phases retain project preparation794ms (alias540ms, dependency
+surface154ms), synchronization209ms, mirror402ms and readiness520ms. The earlier
+development-build12s hotspot is not the shipping cost. TODO: diagnostics adds
+discovered declaration references while canonical queries leave the base list,
+which can select different mirror namespaces. Preserve all references and
+source/configuration fences when unifying that request authority; do not claim
+this400 graph exercised the mismatch or that path-list identity captures every
+referenced declaration's contents.
