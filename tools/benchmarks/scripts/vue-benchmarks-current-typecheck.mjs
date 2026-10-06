@@ -180,7 +180,7 @@ export async function main(argv = process.argv.slice(2)) {
   const pairs = [];
   for (const config of ["tsconfig.json", fixture.fallthroughTsconfig]) {
     const label = config === "tsconfig.json" ? "shared" : "fallthrough";
-    const commandArgs = ["check", ".", "--tsconfig", config, "--corsa-path", corsa];
+    const commandArgs = ["check", "--tsconfig", config, "--corsa-path", corsa];
     const text = capture(`vize-${label}-text`, cli, commandArgs);
     const textRun = decodedRun(fixture, text);
     assert.ok([0, 1].includes(textRun.status), "unexpected native checker exit status");
