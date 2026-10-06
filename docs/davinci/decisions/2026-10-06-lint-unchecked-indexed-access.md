@@ -98,3 +98,17 @@ require the canonical SHA256 output during genuine execution. Preserve the
 `6dfeb964175890e12a96832d105d7c825238906ec8d7ce3c3f7e5f02a5183089`.
 Fresh successor source/native execution remains pending, with no failed-head
 runtime credit or new assertion/cap waiver.
+
+## Delivered security and genuine replay
+
+The [paired security-main replay](https://github.com/ubugeeei-prod/vize/issues/7995#issuecomment-6009775363)
+records actual signed #8080 main48cb and genuine child ancestry on #8073/38e.
+All three original author/date/message/trailer records, product/original/oracle
+bytes and every incoming workflow command/canonical byte are preserved.
+Historical5d native37412137083 executed all11 whole API/all22 CLI vectors; its
+16,272 source Rust records and the one seven-config law passed, while only old
+security and the dependent aggregate failed. Preserve the entire failed SHA
+compilation log and all complete archives/receipts. Fresh replayed-source
+ordinary/native Actions, protected full suites/unchanged budgets, same ordered
+Stack8092, actual signed delivery and installed original435 replay remain
+required; no historical runtime or security acceptance transfers.
