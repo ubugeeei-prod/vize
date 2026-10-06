@@ -172,6 +172,7 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) component_binding_check: ComponentBindingCheck<'a>,
     pub(super) legacy_vue2: bool,
     pub(super) check_unknown_props: bool,
+    pub(super) check_unknown_fallthrough_props: bool,
     pub(super) experimental_strict_slot_children: bool,
     /// Starts of the component usages that are this component's fallthrough
     /// roots under `checkRequiredFallthroughAttributes`: their required props

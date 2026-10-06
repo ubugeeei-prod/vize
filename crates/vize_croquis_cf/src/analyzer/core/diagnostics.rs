@@ -1,9 +1,10 @@
-use crate::diagnostics::{CrossFileDiagnostic, DiagnosticSeverity};
+use crate::diagnostics::{CrossFileDiagnostic, DiagnosticSeverity, DiagnosticSource};
 use crate::registry::FileId;
 use vize_carton::FxHashMap;
 
 pub(super) fn dedupe_diagnostics(diagnostics: &mut Vec<CrossFileDiagnostic>) {
-    let mut seen: FxHashMap<(&'static str, FileId, u32), usize> = FxHashMap::default();
+    let mut seen: FxHashMap<(&'static str, FileId, u32, DiagnosticSource), usize> =
+        FxHashMap::default();
     let mut deduped: Vec<CrossFileDiagnostic> = Vec::with_capacity(diagnostics.len());
 
     for diagnostic in diagnostics.drain(..) {
@@ -11,6 +12,7 @@ pub(super) fn dedupe_diagnostics(diagnostics: &mut Vec<CrossFileDiagnostic>) {
             diagnostic.code(),
             diagnostic.primary_file,
             diagnostic.primary_offset,
+            diagnostic.primary_source,
         );
 
         if let Some(existing) = seen.get(&key).and_then(|&index| deduped.get_mut(index)) {

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const prefix = "保存🙂"; const width = window.innerWidth;
+</script>
+<template><p title="café🙂">{{document.title}}</p></template>

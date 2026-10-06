@@ -1,0 +1,10 @@
+<script setup>
+const a = 1
+</script>
+
+<template>
+  <div>
+    <p>  two  spaces  </p>
+    <p>b</p>
+  </div>
+</template>

@@ -82,6 +82,7 @@
     "vue-property-decorator": "10.0.0-rc.3",
     "vue-router": "catalog:vue-stable",
     "vue-select": "4.0.0-beta.6",
+    "vue-setup-await-oracle": "npm:vue@3.5.38",
     "vue-sfc-compiler-2-6": "catalog:legacy-vue-oracle",
     "vue-sfc-compiler-2-7": "catalog:legacy-vue-oracle",
     "vue-ssr-css-vars-oracle": "npm:vue@3.6.0-rc.10",

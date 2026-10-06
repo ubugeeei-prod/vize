@@ -1,6 +1,7 @@
 //! LSP protocol handler implementations.
 
 mod formatting;
+mod inlay_hint;
 mod linked_editing;
 mod typed;
 
@@ -310,10 +311,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
-        if !self.state.lsp_features().inlay_hints {
-            return Ok(None);
-        }
-        Ok(super::annotations::inlay_hint(&self.state, &params))
+        self.native_request(self.inlay_hint_request(params)).await
     }
 
     /// Colour swatches for the CSS a `.vue` file authors. Rides the

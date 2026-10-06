@@ -251,7 +251,9 @@ impl Drawer {
                     .unused_bindings
                     .retain(|candidate| candidate != ident);
             }
-            let in_scope_chain = self.croquis.scopes.is_defined(ident_str);
+            // Every resolved spelling counts as a read, including lexical
+            // bindings named like globals and the handler's implicit $event.
+            let in_scope_chain = self.croquis.scopes.mark_used_if_defined(ident_str);
 
             let is_builtin = crate::builtins::is_js_global(ident_str)
                 || crate::builtins::is_vue_builtin(ident_str)
@@ -260,11 +262,7 @@ impl Drawer {
 
             let is_defined = in_scope_vars || in_bindings || in_scope_chain || is_builtin;
 
-            // Builtin spellings can resolve to a lexical binding, including
-            // the handler's implicit `$event`; those reads still count.
-            if is_defined && (!is_builtin || in_scope_chain) {
-                self.croquis.scopes.mark_used(ident_str);
-            } else if !is_defined && report_undefined {
+            if !is_defined && report_undefined {
                 let ident_offset_in_content = find_identifier_offset(content, ident_str, 0)
                     .or_else(|| content.find(ident_str))
                     .unwrap_or(0);

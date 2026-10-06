@@ -1,0 +1,450 @@
+{
+  "schema": "vize.cross-file.browser-origin-corpus",
+  "version": 1,
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/7907",
+  "author": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "body_sha256": "f276064bb7abf739c6aee49dbe87b874c2e51fb6d8f62533c9e2e7997f8c967b",
+  "sourceBase": "f83e26d2d1a2c6568445758d789e0f2ff3aed89a",
+  "oracleAuthority": "Authored complete CLI JSON from fixed original input positions and unchanged JSON serializer/rule identity; no runtime capture",
+  "cases": [
+    {
+      "path": "WindowWidth.vue",
+      "file": "WindowWidth.vue.fixture",
+      "bytes": 113,
+      "sha256": "853c840140ca07137187b641d7ee37cb9a6d4e13cf003edf19fc1319a834fcfa",
+      "authority": "Original complete issue heredoc, trailing LF retained",
+      "expected": [
+        {
+          "file": "WindowWidth.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 2,
+              "column": 15,
+              "endLine": 2,
+              "endColumn": 16
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "doctorLocations": [
+        {
+          "start": 39,
+          "end": 39,
+          "line": 2,
+          "column": 15
+        }
+      ]
+    },
+    {
+      "path": "PageTitle.vue",
+      "file": "PageTitle.vue.fixture",
+      "bytes": 227,
+      "sha256": "ad2e63879ce713c8ba7cf24428810472f44c09732625053f72ac54ec64cd4ff9",
+      "authority": "Original complete issue heredoc, trailing LF retained",
+      "expected": [
+        {
+          "file": "PageTitle.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 6,
+              "column": 35,
+              "endLine": 6,
+              "endColumn": 36
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "doctorLocations": [
+        {
+          "start": 141,
+          "end": 141,
+          "line": 6,
+          "column": 35
+        }
+      ]
+    },
+    {
+      "path": "TemplateOnly.vue",
+      "file": "TemplateOnly.vue.fixture",
+      "bytes": 54,
+      "sha256": "a29185dbe4b37c0f85e69013e054d88eead1ef050c62822d3f020680cbcf6365",
+      "authority": "Authored template positive",
+      "expected": [
+        {
+          "file": "TemplateOnly.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 2,
+              "column": 8,
+              "endLine": 2,
+              "endColumn": 9
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "doctorLocations": [
+        {
+          "start": 18,
+          "end": 18,
+          "line": 2,
+          "column": 8
+        }
+      ]
+    },
+    {
+      "path": "Collision.vue",
+      "file": "Collision.vue.fixture",
+      "bytes": 129,
+      "sha256": "cbff385ab288a8539be459d8cd0e439ce590c33bad7f9bb58234254a2dc73848",
+      "authority": "Authored script/template identical relative byte offset 15",
+      "expected": [
+        {
+          "file": "Collision.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 2,
+              "column": 15,
+              "endLine": 2,
+              "endColumn": 16
+            },
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 5,
+              "column": 15,
+              "endLine": 5,
+              "endColumn": 16
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ],
+      "doctorLocations": [
+        {
+          "start": 39,
+          "end": 39,
+          "line": 2,
+          "column": 15
+        },
+        {
+          "start": 93,
+          "end": 93,
+          "line": 5,
+          "column": 15
+        }
+      ]
+    },
+    {
+      "path": "TemplateFirst.vue",
+      "file": "TemplateFirst.vue.fixture",
+      "bytes": 129,
+      "sha256": "9cd528d7754fff0cc7974ac8494aab507dccb3ff9f07669cc3e42beba3b20090",
+      "authority": "Authored reversed block order with origin collision",
+      "expected": [
+        {
+          "file": "TemplateFirst.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 2,
+              "column": 15,
+              "endLine": 2,
+              "endColumn": 16
+            },
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 5,
+              "column": 15,
+              "endLine": 5,
+              "endColumn": 16
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ],
+      "doctorLocations": [
+        {
+          "start": 25,
+          "end": 25,
+          "line": 2,
+          "column": 15
+        },
+        {
+          "start": 100,
+          "end": 100,
+          "line": 5,
+          "column": 15
+        }
+      ]
+    },
+    {
+      "path": "SplitScript.vue",
+      "file": "SplitScript.vue.fixture",
+      "bytes": 169,
+      "sha256": "82275b15ca974e44c494d0be42f4f589fed613b34f48a41b9b829f75705a6fe4",
+      "authority": "Authored joined script coordinate space mapped to separated setup block",
+      "expected": [
+        {
+          "file": "SplitScript.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 4,
+              "column": 16,
+              "endLine": 4,
+              "endColumn": 17
+            },
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 6,
+              "column": 15,
+              "endLine": 6,
+              "endColumn": 16
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ],
+      "doctorLocations": [
+        {
+          "start": 72,
+          "end": 72,
+          "line": 4,
+          "column": 16
+        },
+        {
+          "start": 143,
+          "end": 143,
+          "line": 6,
+          "column": 15
+        }
+      ]
+    },
+    {
+      "path": "SetupFirst.vue",
+      "file": "SetupFirst.vue.fixture",
+      "bytes": 169,
+      "sha256": "4203fc1d726db6bef99cf309dfc034ff027373e1c6feb8324b215b7501c8fcb3",
+      "authority": "Authored setup before normal script; joined normal/setup space remains explicit",
+      "expected": [
+        {
+          "file": "SetupFirst.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 2,
+              "column": 15,
+              "endLine": 2,
+              "endColumn": 16
+            },
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 4,
+              "column": 16,
+              "endLine": 4,
+              "endColumn": 17
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ],
+      "doctorLocations": [
+        {
+          "start": 39,
+          "end": 39,
+          "line": 2,
+          "column": 15
+        },
+        {
+          "start": 80,
+          "end": 80,
+          "line": 4,
+          "column": 16
+        }
+      ]
+    },
+    {
+      "path": "UnicodeCrlf.vue",
+      "file": "UnicodeCrlf.vue.fixture",
+      "bytes": 166,
+      "sha256": "6d5eb97e98dca00eb371af72d09c8d2b2c7bfa18b020e107426a8aafcf56a070",
+      "authority": "Authored CRLF and multibyte physical columns",
+      "expected": [
+        {
+          "file": "UnicodeCrlf.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 2,
+              "column": 37,
+              "endLine": 2,
+              "endColumn": 38
+            },
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 4,
+              "column": 30,
+              "endLine": 4,
+              "endColumn": 31
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ],
+      "doctorLocations": [
+        {
+          "start": 69,
+          "end": 69,
+          "line": 2,
+          "column": 37
+        },
+        {
+          "start": 133,
+          "end": 133,
+          "line": 4,
+          "column": 30
+        }
+      ]
+    },
+    {
+      "path": "MountedCollision.vue",
+      "file": "MountedCollision.vue.fixture",
+      "bytes": 234,
+      "sha256": "4ac33987567844c4f17140c3b4bf747eae5b7c90f9793bfa6893a1d96449ebfd",
+      "authority": "Authored script client-only window stays exempt; colliding template remains positive",
+      "expected": [
+        {
+          "file": "MountedCollision.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 5,
+              "column": 77,
+              "endLine": 5,
+              "endColumn": 78
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "doctorLocations": [
+        {
+          "start": 199,
+          "end": 199,
+          "line": 5,
+          "column": 77
+        }
+      ]
+    },
+    {
+      "path": "IdentifierPrefixes.vue",
+      "file": "IdentifierPrefixes.vue.fixture",
+      "bytes": 163,
+      "sha256": "5ccd10f07987abaaf69b2b0ae718d5908b684ea39f6d3999e7cd788125a2299c",
+      "authority": "Authored unchanged whole-identifier negative",
+      "expected": [
+        {
+          "file": "IdentifierPrefixes.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "doctorLocations": []
+    },
+    {
+      "path": "BoundAttribute.vue",
+      "file": "BoundAttribute.vue.fixture",
+      "bytes": 121,
+      "sha256": "2ac58bd877ed21f1781792f2d3926057dc20b6040434a1a10d7f7c165526776b",
+      "authority": "Authored template binding positive",
+      "expected": [
+        {
+          "file": "BoundAttribute.vue",
+          "messages": [
+            {
+              "ruleId": "cross-file",
+              "ruleDocsPath": "docs/content/rules/cross-file.md",
+              "severity": 1,
+              "message": "[vize:cross-file] vize:croquis/cf/browser-api-ssr: Browser API used in potentially SSR context",
+              "line": 4,
+              "column": 22,
+              "endLine": 4,
+              "endColumn": 23
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "doctorLocations": [
+        {
+          "start": 80,
+          "end": 80,
+          "line": 4,
+          "column": 22
+        }
+      ]
+    }
+  ]
+}

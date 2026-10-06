@@ -11,7 +11,9 @@ use vize_atelier_sfc::{
     parse_sfc,
 };
 use vize_croquis::{EffectGraphScript, build_effect_graph_from_sfc_scripts};
-use vize_croquis_cf::{CrossFileAnalyzer, CrossFileDiagnosticKind, CrossFileOptions, FileId};
+use vize_croquis_cf::{
+    CrossFileAnalyzer, CrossFileDiagnosticKind, CrossFileOptions, DiagnosticSource, FileId,
+};
 use vize_doctor::{
     ContentFingerprint, DoctorFinding, DoctorReport,
     application_analysis::report_from_application_graph,
@@ -285,7 +287,11 @@ fn normalize_sfc_diagnostics(
     source_maps: &FxHashMap<FileId, SfcSourceMap>,
 ) {
     for diagnostic in diagnostics {
-        let primary_coordinates = primary_coordinates(&diagnostic.kind);
+        let primary_coordinates = match diagnostic.primary_source {
+            DiagnosticSource::Script => SfcCoordinates::Script,
+            DiagnosticSource::Template => SfcCoordinates::Template,
+            DiagnosticSource::Unspecified => primary_coordinates(&diagnostic.kind),
+        };
         if let Some(source_map) = source_maps.get(&diagnostic.primary_file).copied() {
             diagnostic.primary_offset =
                 source_map.map(primary_coordinates, diagnostic.primary_offset);

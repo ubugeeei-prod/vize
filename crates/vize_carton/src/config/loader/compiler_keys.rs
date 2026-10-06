@@ -14,6 +14,17 @@ pub fn load_compiler_template_syntax(path: Option<&Path>) -> Option<&'static str
         .compiler_template_syntax()
 }
 
+/// Project syntax and whitespace from one config read and evaluation.
+pub fn load_compiler_template_settings(
+    path: Option<&Path>,
+) -> (Option<&'static str>, Option<&'static str>) {
+    let loaded = load_raw_config_with_source(path);
+    (
+        loaded.config.compiler_template_syntax(),
+        loaded.config.compiler_whitespace(),
+    )
+}
+
 /// Load the configured `vue.version` dialect from a directory or file path.
 ///
 /// Returns `None` when the key is absent (modern Vue 3). Unknown or ambiguous

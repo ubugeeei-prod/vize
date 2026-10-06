@@ -1,0 +1,42 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/7979",
+  "author": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "files": {
+    "original-issue.md": {
+      "bytes": 1397,
+      "sha256": "d13a84845ad0a0599d949d8e85abd02bce03441ecf643c14bd0bc82b6b8cc8c4"
+    },
+    "my-panel.vue.txt": {
+      "bytes": 68,
+      "sha256": "e9f9266aa5e2122b981afb215ae8d97bcc1ccd876f01cd60efc0fde252f557e3"
+    },
+    "vize.config.json": {
+      "bytes": 101,
+      "sha256": "93b7e13dc65939aa33c83a5a1afd49d030b911dc39a18cd5a9e8c309ed22f20d"
+    },
+    "crlf-panel.vue.txt": {
+      "bytes": 73,
+      "sha256": "cde04a066e1f9aee4e2d0e289211b032c51c819833bf6cff26b5d93f7480963e"
+    },
+    "UnicodePanel.vue.txt": {
+      "bytes": 113,
+      "sha256": "05d243cf24f8a89b4192410a4c67d015e88e33c9d0e816c2f2e0c8e1dbb3b021"
+    },
+    "RegisteredPanel.vue.txt": {
+      "bytes": 146,
+      "sha256": "2593cee704abb0d35934adcc8c0bd3f614fd3ed4fb5340933e75c9ea245efcde"
+    }
+  },
+  "originals": ["my-panel.vue.txt", "vize.config.json"],
+  "controls": ["crlf-panel.vue.txt", "UnicodePanel.vue.txt", "RegisteredPanel.vue.txt"],
+  "expectedOriginalRange": {
+    "line": 3,
+    "column": 6,
+    "endLine": 3,
+    "endColumn": 14
+  },
+  "authority": "Complete issue fences; expected tag-name spans are authored from physical source bytes, not observed formatter output."
+}

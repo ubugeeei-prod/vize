@@ -162,3 +162,30 @@ It does not re-bless outputs, exclude a fixture, alter a validator or raise a ca
 These are individual tests from the failed PR-profile run with TSGO disabled,
 not whole source or native acceptance; fresh exact-head and protected full
 qualification remain required for the 451-file membership and consumer RPCs.
+
+The first post-publication Stack admission of unchanged `a19007c0` and
+`5a098434` was unmergeable against the still-unmerged #8037/#8060 prefix
+`143c1d4a`; neither layer generated a protected candidate. Both were removed
+without source changes. A private rehearsal preserves incoming primitive-type
+collection and demand-only occurrences in the same existing const-generic AST
+walk. Both independently refuse malformed parse results, and the incoming
+builtin test helper explicitly disables occurrence capture. All original
+producer laws and incoming whole primitive vectors remain intact; a new combined
+law checks primitive facts, exact authored reads, ordinary semantic output and
+both malformed-result refusals together. This is source preparation only: the
+queued prefix is not actual main, the new law has not executed, and no source
+green is transferred. Genuine signed-main composition, fresh exact-source
+Actions and both full protected Stack deliveries remain required.
+
+The source-only peer rejected private rehearsal `2b369688` solely because the
+incoming Debug compatibility law still called the private parser with five
+arguments. Its successor adds explicit `occurrences=false` to that test-only
+call, preserving its entire other source and whole-output oracles. This was a
+static source finding; no build or runtime failure is inferred from it.
+
+Genuine integration now starts from signed actual #8037 main `163d113a`,
+merged at 2026-10-06 01:08:21 UTC. Its four shared code/test files are exactly
+the peer-cleared `52906ee0` union; the still-queued #8060 history is not copied
+into this parent. All incoming source and decision clauses remain preserved.
+The original sixteen laws, new combined control and full protected acceptance
+still require fresh exact-head Actions; old `a19007c0` green is not transferred.

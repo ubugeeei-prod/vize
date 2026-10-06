@@ -1,0 +1,6 @@
+<template>
+         <p>{{window.innerWidth}}</p>
+</template>
+<script setup lang="ts">
+const width = window.innerWidth;
+</script>

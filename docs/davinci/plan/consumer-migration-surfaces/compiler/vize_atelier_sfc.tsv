@@ -56,7 +56,13 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compi
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/await_transform.rs	1	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/await_transform.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/await_transform.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/await_transform.rs	1	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/await_transform.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/await_transform/collector.rs	2	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/await_transform/collector.rs	2	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/await_transform/collector.rs	2	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/await_transform/collector.rs	2	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/await_transform/emit.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/body.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	3
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/component_output.rs	12	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/hoist.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1

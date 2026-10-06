@@ -1,0 +1,5 @@
+<template>
+  <div>
+    <MyButton>OK</MyButton>
+  </div>
+</template>

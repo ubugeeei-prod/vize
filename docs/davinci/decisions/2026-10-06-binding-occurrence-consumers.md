@@ -166,3 +166,22 @@ parent while preserving every consumer production, control and whole oracle
 byte, including the annotation-only `c2db4a17` correction. Old source failures
 remain failed; fresh exact-head whole RPC/source and protected acceptance remain
 required, and the finite release admission hold keeps this Stack off queue.
+
+The private post-publication child rehearsal incorporates the independently
+source-cleared inlay/occurrence union while the incoming #8037/#8060 prefix is
+still queued, not actual main. All thirty child-owned non-document paths,
+including every complete original/control/RPC oracle, remain byte-exact to
+`5a098434`. Only the central parent paragraph plus complete child clause and
+Croquis consumer census overlap: regenerate that census with the unchanged
+source generator, retaining the incoming inlay sites and the real occurrence
+consumer sites together. Genuine signed-main parent incorporation, fresh
+exact-source Actions and both protected native Stack deliveries are still
+required; neither rehearsal nor historical PR-profile passes qualify them.
+
+The genuine child now incorporates parent `fdf828eb`, which merges signed
+actual #8037 main `163d113a` with the peer-cleared same-walk union. Its thirty
+owned non-document paths and all original/authored control vectors remain
+exactly `5a098434`; no queued rehearsal history was copied. The unchanged
+census generators reflect this actual-parent source. New exact-head Actions
+and full protected Stack qualification remain required, without old green
+transfer or native/history/performance completion credit.

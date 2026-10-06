@@ -1,8 +1,8 @@
 //! Inline annotations the editor renders over an authored document: code
-//! lenses, inlay hints and colour swatches.
+//! lenses and colour swatches.
 //!
-//! All three answer "what should be drawn on top of this text?" from the
-//! authored document alone — no type checking, no corsa — and all three are
+//! These answer "what should be drawn on top of this text?" from the
+//! authored document alone — no type checking, no corsa — and both are
 //! per-document rather than per-position. Keeping them together (and out of
 //! `handlers.rs`, which is already over the per-file length budget) makes that
 //! shared contract explicit, the same way `document_structure` groups folding
@@ -16,32 +16,19 @@ mod document_color;
 
 use tower_lsp::lsp_types::{
     CodeLens, CodeLensParams, ColorInformation, ColorPresentation, ColorPresentationParams,
-    DocumentColorParams, InlayHint, InlayHintParams,
+    DocumentColorParams,
 };
 
 use document_color::DocumentColorService;
 
 use super::ServerState;
-use crate::ide::{CodeLensService, InlayHintService};
+use crate::ide::CodeLensService;
 
 pub(super) fn code_lens(state: &ServerState, params: &CodeLensParams) -> Option<Vec<CodeLens>> {
     let uri = &params.text_document.uri;
     let content = state.documents.text(uri)?;
     let lenses = CodeLensService::get_lenses(state, &content, uri);
     (!lenses.is_empty()).then_some(lenses)
-}
-
-pub(super) fn inlay_hint(state: &ServerState, params: &InlayHintParams) -> Option<Vec<InlayHint>> {
-    let uri = &params.text_document.uri;
-    let content = state.documents.text(uri)?;
-    let hints = InlayHintService::get_hints_with_ecosystem(
-        state,
-        &content,
-        uri,
-        params.range,
-        state.lsp_features().ecosystem,
-    );
-    (!hints.is_empty()).then_some(hints)
 }
 
 /// `textDocument/documentColor` returns an array, not `null`: an empty array is

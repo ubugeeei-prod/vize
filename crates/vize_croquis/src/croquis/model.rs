@@ -47,6 +47,7 @@ impl Croquis {
         self.race_conditions.shift_offsets(delta);
         self.provide_inject.shift_offsets(delta);
         self.setup_context.shift_offsets(delta);
+        self.types.shift_builtin_reactive_types(delta);
 
         for type_export in &mut self.type_exports {
             type_export.start = type_export.start.saturating_add(delta);

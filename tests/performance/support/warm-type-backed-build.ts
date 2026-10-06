@@ -13,8 +13,9 @@ assert.ok(process.env.RUNNER_TEMP && process.env.GITHUB_WORKSPACE);
 assert.equal(fs.realpathSync(process.env.GITHUB_WORKSPACE), driverRoot);
 const output = path.join(process.env.RUNNER_TEMP, "warm-pair");
 const before = path.join(process.env.RUNNER_TEMP, "warm-before");
-const root = side === "before" ? before : driverRoot;
 const binding = JSON.parse(fs.readFileSync(path.join(output, "workflow-source.json"), "utf8"));
+assert.deepEqual(sourceIdentity(driverRoot), binding.driverSource);
+const root = side === "before" ? before : (binding.afterRoot ?? driverRoot);
 assert.equal(git(root, ["rev-parse", "HEAD"]), side === "before" ? binding.baseline : binding.head);
 assert.equal(sourceIdentity(root).dirty, "");
 const sourceBefore = sourceIdentity(root);
@@ -22,8 +23,8 @@ const target = path.join(driverRoot, "target");
 const binary = path.join(target, "ci/vize");
 const environment = { ...process.env, CARGO_TARGET_DIR: target };
 
-function cargo(name: string, args: string[]) {
-  const result = spawnSync("cargo", args, {
+function cargo(name: string, args: string[], command = "cargo") {
+  const result = spawnSync(command, args, {
     cwd: root,
     env: environment,
     maxBuffer: 64 * 1024 * 1024,
@@ -32,7 +33,7 @@ function cargo(name: string, args: string[]) {
   fs.writeFileSync(path.join(output, `${side}-${name}.stderr`), result.stderr ?? "");
   fs.writeFileSync(
     path.join(output, `${side}-${name}.process.json`),
-    `${JSON.stringify({ args, cwd: root, target, status: result.status, signal: result.signal, error: result.error && String(result.error) }, null, 2)}\n`,
+    `${JSON.stringify({ command, args, cwd: root, target, status: result.status, signal: result.signal, error: result.error && String(result.error) }, null, 2)}\n`,
   );
   process.stderr.write(result.stderr ?? "");
   assert.equal(result.error, undefined);
@@ -43,20 +44,27 @@ function cargo(name: string, args: string[]) {
   return stdout;
 }
 
-// The immutable allowlist bounds changed production to Canon. Rebuild it and
-// its Maestro/CLI consumers on both sides; retain other dependency artifacts.
-const clean = [
-  "clean",
-  "--profile",
-  "ci",
-  "--locked",
-  "-p",
-  "vize_canon",
-  "-p",
-  "vize_maestro",
-  "-p",
-  "vize",
-];
+// Finite cuts clean the complete ci profile. The owned-source and harness-only
+// routes rebuild Canon and its Maestro/CLI consumers, retaining other artifacts.
+const clean =
+  binding.authority === "root-frozen-release-cut"
+    ? ["clean", "--profile", "ci", "--locked"]
+    : [
+        "clean",
+        "--profile",
+        "ci",
+        "--locked",
+        "-p",
+        "vize_canon",
+        "-p",
+        "vize_maestro",
+        "-p",
+        "vize",
+      ];
+const toolchain = {
+  cargo: cargo("toolchain-cargo", ["--version"]),
+  rustc: cargo("toolchain-rustc", ["--version", "--verbose"], "rustc"),
+};
 cargo("clean", clean);
 assert.ok(!fs.existsSync(binary), "package clean must remove the previous CLI");
 const build = ["build", "--profile", "ci", "-p", "vize", "--locked", "--message-format=json"];
@@ -67,6 +75,21 @@ const messages = cargo("cargo", build)
 const finished = messages.filter((entry) => entry.reason === "build-finished");
 assert.equal(finished.length, 1);
 assert.equal(finished[0].success, true);
+const localArtifacts = messages
+  .filter((entry) => entry.reason === "compiler-artifact" && entry.profile.test === false)
+  .filter((entry) => entry.manifest_path.startsWith(`${root}${path.sep}`))
+  .map((entry) => {
+    assert.ok(fs.realpathSync(entry.manifest_path).startsWith(`${root}${path.sep}`));
+    assert.ok(fs.realpathSync(entry.target.src_path).startsWith(`${root}${path.sep}`));
+    if (binding.authority === "root-frozen-release-cut")
+      assert.equal(entry.fresh, false, "every linked local artifact must actually compile");
+    return {
+      ...entry,
+      manifestSha256: sha256(fs.readFileSync(entry.manifest_path)),
+      sourceSha256: sha256(fs.readFileSync(entry.target.src_path)),
+    };
+  });
+assert.ok(localArtifacts.length >= 4);
 const required = [
   { name: "vize_canon", kind: "lib", file: "lib.rs", features: ["native"] },
   { name: "vize_maestro", kind: "lib", file: "lib.rs", features: ["default", "glyph", "native"] },
@@ -109,12 +132,18 @@ const artifacts = required.map((expected) => {
   };
 });
 const binarySha256 = sha256(fs.readFileSync(binary));
-if (side === "before") {
-  fs.mkdirSync(path.join(before, "target/ci"), { recursive: true });
-  fs.copyFileSync(binary, path.join(before, "target/ci/vize"));
-} else {
+if (root !== driverRoot) {
+  fs.mkdirSync(path.join(root, "target/ci"), { recursive: true });
+  fs.copyFileSync(binary, path.join(root, "target/ci/vize"));
+}
+if (side === "after") {
   const previous = JSON.parse(
     fs.readFileSync(path.join(output, "before-cargo-custody.json"), "utf8"),
+  );
+  assert.deepEqual(
+    toolchain,
+    previous.toolchain,
+    "both literal sources need the same actual compiler",
   );
   assert.deepEqual(
     artifacts.map((entry) => entry.profile),
@@ -137,5 +166,5 @@ assert.deepEqual(
 fs.copyFileSync(receiptPath, path.join(output, `${side}-build.json`));
 fs.writeFileSync(
   path.join(output, `${side}-cargo-custody.json`),
-  `${JSON.stringify({ side, source: sourceIdentity(root), target, clean, build, artifacts, binary, binarySha256, launchBinary: path.join(root, "target/ci/vize"), dependencyArtifacts: "Other unchanged dependencies reuse the existing Cargo target cache; only the four required Canon/Maestro/CLI compiler artifacts are attested fresh." }, null, 2)}\n`,
+  `${JSON.stringify({ side, source: sourceIdentity(root), toolchain, target, clean, build, artifacts, localArtifacts, binary, binarySha256, cliVersion: receipt.cliVersion, launchBinary: path.join(root, "target/ci/vize"), dependencyArtifacts: binding.authority === "root-frozen-release-cut" ? "The complete ci profile is cleaned identically on both sides; every linked local compiler artifact is attested fresh. Other profile/toolchain artifacts are not attested by this receipt." : "Other unchanged dependencies reuse the existing Cargo target cache; only the four required Canon/Maestro/CLI compiler artifacts are attested fresh." }, null, 2)}\n`,
 );

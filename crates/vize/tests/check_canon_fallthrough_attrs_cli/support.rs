@@ -2,7 +2,8 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use std::path::{Path, PathBuf};
-use std::process::Command;
+#[path = "run.rs"]
+mod run;
 
 use vize_l0::cstr;
 
@@ -193,28 +194,7 @@ pub(super) fn create_case_with_files(
 }
 
 pub(super) fn run_check_json(project_root: &Path, corsa_path: &Path) -> serde_json::Value {
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(project_root)
-        .env("CORSA_PATH", corsa_path)
-        .args([
-            "check",
-            "--tsconfig",
-            "tsconfig.json",
-            "src",
-            "--format",
-            "json",
-        ])
-        .output()
-        .unwrap();
-
-    let stdout = std::str::from_utf8(&output.stdout).unwrap();
-    assert!(
-        output.status.success() || (output.status.code() == Some(1) && !stdout.trim().is_empty()),
-        "check crashed\nstdout:\n{}\nstderr:\n{}",
-        stdout,
-        std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>")
-    );
-    serde_json::from_str(stdout).unwrap()
+    run::run_check_json(project_root, corsa_path)
 }
 
 fn diagnostics(report: &serde_json::Value) -> Vec<String> {

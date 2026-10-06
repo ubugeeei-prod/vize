@@ -743,7 +743,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     }
 
     emit_setup_scope_macro_anchors(&mut ts, summary, &setup_helpers);
-
     let define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
     let mut setup_return_fields: Vec<String> = Vec::new();
     template_record.push_template_return(&mut setup_return_fields, inferred_slots, has_root_el);
@@ -804,7 +803,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let forwards = template_record.forwarded.emit_helpers(&mut ts);
     let event_inference = super::scope::emit_event_inference_helpers(&mut ts, summary, forwards);
     emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble, event_inference);
-
     let generic_component_params = setup_props_plan.generic_component_params(authored_generic);
     let public_component_type = emit_component_constructors(
         &mut ts,
@@ -835,15 +833,17 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .as_deref(),
         ((summary.macros.define_slots().is_some() || inferred_slots) && !slots_is_generic)
             .then_some("__VizeSlots"),
-        self::fallthrough::fallthrough_props_type_ref(
-            &fallthrough_scope,
-            template_ast,
-            legacy_vue2,
-        )
-        .as_deref(),
+        (
+            self::fallthrough::fallthrough_props_type_ref(
+                &fallthrough_scope,
+                template_ast,
+                legacy_vue2,
+            )
+            .as_deref(),
+            check_options.check_unknown_fallthrough_props,
+        ),
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);
-
     super::mapping::publish_virtual_ts(VirtualTsOutput {
         code: ts,
         mapping: super::mapping::ProjectionMapping::from_parts(mappings, semantic_links),
