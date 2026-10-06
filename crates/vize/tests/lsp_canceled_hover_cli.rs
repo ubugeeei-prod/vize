@@ -13,7 +13,7 @@ mod lsp_process;
 mod project;
 
 use lsp_process::{LspProcess, file_uri};
-use project::{ORIGINAL, Project, await_file};
+use project::{ORIGINAL, Project, SYNTAX, await_file};
 use serde_json::{Value, json};
 
 const DOCUMENTATION: &str = "**Primary** invoice slot shown in the summary.";
@@ -80,7 +80,7 @@ fn initialize(project: &Project) -> (LspProcess, String, String) {
         1,
         "initialize",
         json!({"processId":null,"rootUri":file_uri(root),
-        "capabilities":{},"initializationOptions":{"hover":true,"typecheck":true,"lint":false}}),
+        "capabilities":{},"initializationOptions":{"hover":true,"typecheck":true,"lint":false,"foldingRanges":true}}),
     );
     assert!(lsp.recv_response(1)["result"].is_object());
     lsp.send(json!({"jsonrpc":"2.0","method":"initialized","params":{}}));
@@ -107,12 +107,7 @@ fn abandoned_real_native_hover_preserves_original_markdown_and_current_revision(
                 )
                 .unwrap();
             }
-            open(
-                &mut lsp,
-                &syntax_uri,
-                "<template><p>ready</p></template>",
-                1,
-            );
+            open(&mut lsp, &syntax_uri, SYNTAX, 1);
             open(&mut lsp, &uri, &source, 1);
             send(
                 &mut lsp,
@@ -223,7 +218,12 @@ fn abandoned_real_native_hover_preserves_original_markdown_and_current_revision(
                 json!({"textDocument":{"uri":syntax_uri}}),
             );
             let first = lsp.recv_matching(|reply| reply["id"] == 4 || reply["id"] == 6);
-            assert_eq!(first, json!({"jsonrpc":"2.0","id":6,"result":[]}));
+            assert_eq!(
+                first,
+                json!({"jsonrpc":"2.0","id":6,"result":[{
+                    "startLine":0,"endLine":1,"kind":"region","collapsedText":"template"
+                }]}),
+            );
             std::fs::write(project.gate().join("release"), "").unwrap();
             let answer = lsp.recv_response(4);
             let expected_answer = if changed {

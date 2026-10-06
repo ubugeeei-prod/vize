@@ -10,6 +10,7 @@ use vize_carton::corsa_resolver::discover_corsa_in_ancestors;
 pub const ORIGINAL: &str = include_str!(
     "../../../../tests/_fixtures/differential/lsp/canceled-native-hover/SlotAuthoring.vue.txt"
 );
+pub const SYNTAX: &str = "<template>\n  <p>ready</p>\n</template>\n";
 const CONFIG: &str = include_str!(
     "../../../../tests/_fixtures/differential/lsp/canceled-native-hover/tsconfig.json"
 );
@@ -41,11 +42,7 @@ impl Project {
         std::fs::create_dir(root.path().join("node_modules")).unwrap();
         std::os::unix::fs::symlink(vue, root.path().join("node_modules/vue")).unwrap();
         std::fs::write(root.path().join("src/SlotAuthoring.vue"), source).unwrap();
-        std::fs::write(
-            root.path().join("src/Syntax.vue"),
-            "<template><p>ready</p></template>",
-        )
-        .unwrap();
+        std::fs::write(root.path().join("src/Syntax.vue"), SYNTAX).unwrap();
         std::fs::write(root.path().join("tsconfig.json"), CONFIG).unwrap();
         let gate = root.path().join("gate");
         std::fs::create_dir(&gate).unwrap();

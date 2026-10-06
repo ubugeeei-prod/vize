@@ -96,3 +96,17 @@ companion's formatting after the native package build succeeded. Its complete
 The successor applies the existing formatter only to this companion, preserving
 all source, corpus, complete response assertions and canonical clauses; fresh
 exact source/native/full gates remain mandatory.
+
+Fresh 3d source-coverage job112106614694 reached the real native held-answer
+control, then failed syntax reply6: actual full null versus prepared[]. The
+existing folding producer returns None for a one-line source with no regions.
+The initially cited false feature field belongs to the disabled preset; the
+actual default is true, so disabled runtime behavior is not established.
+Strengthen only derived Syntax.vue to a complete three-line template and
+explicitly enable foldingRanges, requiring its whole single range0..1 with
+region/template fields while typed4 remains held. All original Slot, production,
+native-hover/cancel/stale/publication/shutdown oracles and deadlines stay exact.
+Full341851B raw SHA18bc70305d1016ff9a31dc0acadc7b7fc9964b01d2873010fabd908a7fa3dcb1
+is retained; later session assertions were unexecuted and no complete fixture
+acceptance transfers. The [paired correction](https://github.com/ubugeeei-prod/vize/issues/8085#issuecomment-6009434993) requires fresh whole source/native/full/protected
+qualification.
