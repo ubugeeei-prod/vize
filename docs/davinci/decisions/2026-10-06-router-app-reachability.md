@@ -111,3 +111,20 @@ This additive snapshot correction is paired in
 [the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6018998153).
 Draft/offqueue containment and both authentic failures remain historical;
 fresh exact source Actions must qualify the complete corpora and CLI results.
+
+Actual-e2d0 execution then passed all twenty whole CLI cases/ninety-four file
+rows, the unchanged route/witness laws and both whole remarks checks. Four
+authenticated JUnit archives contain 16,501 unique passing Rust cases with
+zero failures, errors or skips; the separate native-phase check also passed.
+These results remain bound to that source execution. Main advanced to signed
+c804 and exposed a real canonical-only conflict with the delivered #7934
+decision; the current healthy queue prefix had the same conflict.
+The five authored commits genuinely replay onto that actual main, preserving
+all 130 other source/corpus/backlog bodies and every author date, full message and
+reporter trailer. The complete owned clause moves after the canonical Linter
+paragraph's first sentence. Removing only that clause restores every incoming
+byte and all 350 physical lines; no unmerged queue parent is incorporated.
+This preservation repair is paired in
+[the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6019401607).
+Fresh successor Actions and actual protected delivery remain required; the
+earlier passing execution does not qualify the new composition.
