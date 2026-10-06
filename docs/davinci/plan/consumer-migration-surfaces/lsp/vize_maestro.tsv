@@ -226,9 +226,12 @@ lsp	LSP	source	crates/vize_maestro/src/ide/musea.rs	31	croquis	Croquis analysis	
 lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/binding_origins.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/binding_origins.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/binding_origins.rs	3	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	l0	L0	stage	vize_l0	preferred	2
-lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	old_ast	old AST/parser	old	vize_relief	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	4	l0	L0	stage	vize_l0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	2
+lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical/local_binding.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/references/canonical/local_binding.rs	50	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/references/canonical/local_binding.rs	50	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/references/corsa_tests.rs	300	carton	Carton host/compatibility	old	vize_carton	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/ide/references/corsa_tests/project_surface.rs	6	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/structural.rs	5	l0	L0	stage	vize_l0	preferred	2

@@ -6,4 +6,5 @@ export VIZE_PROJECT_NAVIGATION_VUE_ROOT="$RUNNER_TEMP/editor-jsconfig-provider/n
 cargo test --locked --profile ci-opt -p vize_maestro --lib workspace_project_files:: -- --nocapture
 cargo test --locked --profile ci-opt -p vize_maestro --lib project::scope:: -- --nocapture
 cargo test --locked --profile ci-opt -p vize_maestro --lib workspace_symbols::script::tests:: -- --nocapture
+cargo test --locked --profile ci-opt -p vize_maestro --lib references::canonical::local_binding::tests:: -- --nocapture
 VIZE_LSP_BIN="$NATIVE_PHASE_SOURCE_ROOT/target/ci/vize" VIZE_LSP_REQUIRE_SOURCE_BUILD=1 VIZE_TEST_REQUIRE_TSGO=1 VIZE_PROJECT_NAVIGATION_REQUIRED=1 vp node --test --test-concurrency=1 tests/tooling/lsp-project-navigation-8013.test.ts

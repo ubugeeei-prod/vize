@@ -69,6 +69,38 @@ export async function references(
   assert.deepEqual([...reply.result].sort(order), expected);
   if (!stock) assert.deepEqual(reply.result, expected);
 }
+// Native 7.0.2 treats a shorthand object binding as its local AND property
+// identity (findallreferences.go getSymbolScope/forEachRelatedSymbol). Exact
+// original script spans supply the three stock endpoints; Vue semantic links
+// add the two authored template uses without a same-spelling text sweep.
+export async function propertyReferences(wire: LspWire, directory: string, stock = false) {
+  const spans: [string, number, number][] = [
+    [stock ? "App.ts" : "App.vue", 4, 8],
+    [stock ? "Banner.ts" : "Banner.vue", 3, 8],
+    ["useToast.ts", 1, 11],
+  ];
+  if (!stock) spans.push(["App.vue", 9, 18], ["Banner.vue", 7, 18]);
+  const expected = spans
+    .map(([file, line, character]) => ({
+      uri: uri(path.join(directory, "src", file)),
+      range: { start: { line, character }, end: { line, character: character + 4 } },
+    }))
+    .sort(order);
+  const reply = await wire.request("textDocument/references", {
+    textDocument: { uri: uri(path.join(directory, "src", stock ? "App.ts" : "App.vue")) },
+    position: { line: 4, character: 10 },
+    context: { includeDeclaration: true },
+  });
+  save(`${stock ? "stock" : "vize"}-property-references-${wire.child.pid}-${wire.nextId}`, {
+    expected,
+    reply,
+    wire: observation(wire),
+  });
+  assert.equal(reply.error, undefined);
+  assert(Array.isArray(reply.result));
+  assert.deepEqual([...reply.result].sort(order), expected);
+  if (!stock) assert.deepEqual(reply.result, expected);
+}
 export async function stock(directory: string, inputs: Record<string, string>, runtime: string) {
   const projected: Record<string, string> = {
     "tsconfig.json": inputs["tsconfig.json"],
@@ -129,6 +161,7 @@ export async function stock(directory: string, inputs: Record<string, string>, r
     }
     await references(wire, directory, true, true);
     await references(wire, directory, false, true);
+    await propertyReferences(wire, directory, true);
     const reply = await wire.request("shutdown");
     assert.deepEqual(reply, { jsonrpc: "2.0", id: wire.nextId, result: null });
     wire.child.stdin.end();

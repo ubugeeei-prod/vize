@@ -1,18 +1,19 @@
+use oxc_span::SourceType;
 use tower_lsp::lsp_types::Location;
 use vize_canon::CorsaBridge;
 use vize_croquis::{Drawer, DrawerOptions};
-use vize_l0::FxHashSet;
+use vize_l0::{Allocator, FxHashSet};
+
 use vize_relief::BindingType;
 
 use super::ReferencesService;
 use crate::ide::{IdeContext, corsa_support};
 
-/// Whether the queried word is a top-level `<script setup>` binding declared
-/// in this SFC. Script-setup declarations cannot be imported by other
-/// modules, so their canonical reference surface is the current document plus
-/// its open importers — never the rest of the workspace. Imported names keep
-/// the workspace surface: croquis classifies them with the same `Setup*`
-/// binding types, so an import lookup separates the two.
+mod local_binding;
+
+/// Keep independent setup locals on the inexpensive existing surface. A
+/// shorthand object binding also names its source property, so its native
+/// references may cross modules even though the setup variable is not exported.
 fn is_script_setup_local_binding(ctx: &IdeContext<'_>) -> bool {
     let Some(word) = ReferencesService::get_word_at_offset(&ctx.content, ctx.offset) else {
         return false;
@@ -26,8 +27,18 @@ fn is_script_setup_local_binding(ctx: &IdeContext<'_>) -> bool {
     let Some(script_setup) = descriptor.script_setup.as_ref() else {
         return false;
     };
+    // Reuse the original analysis parse for the pattern decision and Croquis.
+    let allocator = Allocator::default();
+    let parsed = vize_croquis::script_parser::parse_program_for_analysis(
+        &allocator,
+        &script_setup.content,
+        SourceType::from_path("script.ts").unwrap_or_default(),
+    );
+    if parsed.panicked || local_binding::property_linked(&parsed.program, &word) {
+        return false;
+    }
     let mut analyzer = Drawer::with_options(DrawerOptions::full());
-    analyzer.analyze_script_setup(&script_setup.content);
+    analyzer.analyze_script_setup_program(&parsed.program, &script_setup.content, None);
     matches!(
         analyzer.finish().get_binding_type(&word),
         Some(
@@ -51,7 +62,7 @@ pub(super) async fn references(
     if !bridge.is_initialized() {
         return None;
     }
-    // A top-level `<script setup>` binding is invisible to other modules, so
+    // An independent `<script setup>` local is invisible to other modules, so
     // its references live in this SFC and the already-open project surface;
     // materializing every workspace SFC for it takes minutes on a
     // component-library-sized workspace and cannot add hits.

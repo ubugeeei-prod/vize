@@ -8,8 +8,10 @@ used. This legacy repair does not replace any Davinci provider.
 
 References are semantic project operations, independent of the cross-file
 **lint** switch. Imported bindings use the existing canonical configured
-project. Top-level script-setup bindings keep the existing local/open-importer
-surface because another module cannot import them. The ownership filter still
+project. Independent script-setup locals keep the existing local/open-importer
+surface. Shorthand object bindings also identify their source property and use
+the project surface; their non-exported local declaration alone cannot establish
+namespace isolation. The ownership filter still
 rejects a configured project that excludes the queried document and respects
 nearest-directory TS-before-JS discovery and JavaScript admission.
 
@@ -46,7 +48,7 @@ Hosted qualification retains complete inputs, provider/binary/source identities,
 raw framed protocol, decoded responses, stdout/stderr and terminal status.
 The original references are checked with declarations on/off under both lint
 switch values, with all four files open and with importers unopened. Dirty TS
-importers and close-to-disk restoration, setup-local namespace isolation,
+importers and close-to-disk restoration, original shorthand property linkage,
 unopened component/export symbols and dirty/closed exports are full controls.
 
 The separate stock-native project preserves the complete original script
@@ -61,3 +63,18 @@ The native source authority is pinned at `2bd066d87f5bafd315be9f40889d0a60b9e58e
 Execution, unchanged-budget protected qualification, actual signed merge and
 public release are still pending. Existing corpus expectations are retained;
 no benchmark threshold, optional campaign, SDK or diagnostic filtering changes.
+
+The current cb180 mandatory native failure retains all four original files:
+its additional App-only `show` oracle incorrectly classified
+`const { show } = useToast()` as an independent lexical binding. Pinned native
+`findallreferences.go` lines 426–430 explicitly gives a shorthand object binding
+project scope; lines 2586–2600 and `utilities.go` lines 372–376, 989–1001 resolve
+its source-property identity. The separate stock process now queries this exact
+original binding and asserts the three complete script endpoints before Vize.
+Vue's existing semantic links recover the two authored template uses; no native
+location is discarded. The classifier reuses its original single analysis parse
+for the AST pattern and Croquis metadata, preserving simple and explicitly
+aliased local bindings and all existing shadow/dirty/close controls. The native
+whole-vector, fresh source and protected qualification of this correction remain
+pending; the authentic previous failure is retained. `utilities.go` is pinned to
+Git blob `8dab6bce9b867e6b6fca9d0b197fa5c117feb296` at the same native commit.

@@ -12,7 +12,7 @@ import {
   resolveTypecheckRuntime,
 } from "./support/typecheck-dependency.ts";
 import { hash, observation, open, publication, save, uri } from "./support/editor-jsconfig.ts";
-import { carriers, references, stock } from "./support/project-navigation.ts";
+import { carriers, propertyReferences, references, stock } from "./support/project-navigation.ts";
 
 const corpus = path.join(root, "tests/_fixtures/differential/lsp/project-navigation-8013");
 function prepare(directory: string): Record<string, string> {
@@ -158,24 +158,8 @@ test(
             await publication(wire, path.join(directory, "src", file), 1, []);
           await references(wire, directory, true);
           await references(wire, directory, false);
-          // A same-spelling setup-local binding must retain its local namespace.
-          const local = await wire.request("textDocument/references", {
-            textDocument: { uri: uri(app) },
-            position: { line: 4, character: 10 },
-            context: { includeDeclaration: true },
-          });
-          const expectedLocal = [
-            {
-              uri: uri(app),
-              range: { start: { line: 4, character: 8 }, end: { line: 4, character: 12 } },
-            },
-            {
-              uri: uri(app),
-              range: { start: { line: 9, character: 18 }, end: { line: 9, character: 22 } },
-            },
-          ];
-          events.push({ local, expectedLocal });
-          assert.deepEqual(local, { jsonrpc: "2.0", id: wire.nextId, result: expectedLocal });
+          // The original shorthand binding shares its returned-object property.
+          await propertyReferences(wire, directory);
           const notify = path.join(directory, "src/notify.ts");
           const dirty = inputs["src/notify.ts"].replace(
             "notifier = useToast()",
