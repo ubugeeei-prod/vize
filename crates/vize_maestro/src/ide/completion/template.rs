@@ -32,6 +32,8 @@ mod tag_context;
 #[cfg(test)]
 mod tag_name_tests;
 mod tag_names;
+#[cfg(feature = "native")]
+mod tag_types;
 
 use tower_lsp::lsp_types::{CompletionItem, CompletionTextEdit, Position, Range, TextEdit};
 

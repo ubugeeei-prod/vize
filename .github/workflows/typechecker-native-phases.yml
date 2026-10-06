@@ -31,12 +31,15 @@ on:
       - "crates/vize_canon/**"
       - ".github/actions/check-reference-path/**"
       - ".github/actions/check-computed-inlay/**"
+      - ".github/actions/check-component-tag-types/**"
+      - "crates/vize/tests/lsp_component_tag_types_cli.rs"
+      - "crates/vize_maestro/src/ide/completion**"
       - "crates/vize_maestro/src/ide/inlay_hint/**"
       - "crates/vize_maestro/src/ide/inlay_hint.rs"
       - "crates/vize_croquis/src/**"
       - "crates/vize/tests/lsp_computed_inlay_cli.rs"
       - "crates/vize/tests/support/**"
-      - "tests/_fixtures/differential/lsp/computed-inlay-hints/**"
+      - "tests/_fixtures/differential/lsp/**"
       - "crates/vize/src/**"
       - "crates/vize/tests/check_undefined_default_props_cli.rs"
       - "crates/vize_croquis/src/macros/defaults.rs"
@@ -50,7 +53,6 @@ permissions:
 concurrency:
   group: typechecker-native-phases-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
-
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
@@ -58,7 +60,6 @@ env:
   SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.source_sha || github.event.pull_request.head.sha }}
   DRIVER_SHA: ${{ github.event_name == 'workflow_dispatch' && github.workflow_sha || github.event.pull_request.head.sha }}
   CARGO_TARGET_DIR: ${{ github.workspace }}/target
-
 jobs:
   native-phases:
     name: Actual CLI shard native phase evidence

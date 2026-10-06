@@ -34,6 +34,7 @@ mod call_hierarchy;
 mod client;
 mod code_actions;
 mod completion_resolve;
+mod component_types;
 mod configured_project;
 mod declaration;
 mod file_rename;
@@ -59,7 +60,6 @@ use requests::{
     signature_help_request_params, will_rename_files_request_params,
 };
 use responder::spawn_responder;
-
 /// A reusable `--lsp --stdio` session for standard diagnostics and editor
 /// requests.
 pub(super) struct EditorLspSession {
