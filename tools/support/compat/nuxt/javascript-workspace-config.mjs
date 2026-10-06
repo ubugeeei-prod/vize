@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
-import { lexical, save } from "./javascript-workspace-project.mjs";
+import { lexical, save, sha } from "./javascript-workspace-project.mjs";
 
 export function projectEvidence(root, context, application) {
   const { artifacts, cohort } = context;
@@ -185,14 +185,59 @@ export function projectEvidence(root, context, application) {
       ? path.relative(application, physical).split(path.sep).join("/")
       : physical;
   };
+  let explicitNodeDeclarations;
+  if (cohort.id === "nuxt3") {
+    const provider = JSON.parse(
+      fs.readFileSync(path.join(artifacts, "nuxt3-type-providers.json"), "utf8"),
+    ).graph.find((item) => item.name === "@types/node");
+    const manifest = JSON.parse(provider.manifestBytes);
+    assert.equal(manifest.name, "@types/node");
+    assert.equal(manifest.version, context.corpus.nodeTypes.node);
+    const packageRoot = fs.realpathSync(provider.target);
+    const entry = fs.realpathSync(path.join(packageRoot, manifest.types));
+    const seenDeclarations = new Map();
+    const pending = [entry];
+    while (pending.length) {
+      const file = fs.realpathSync(pending.pop());
+      if (seenDeclarations.has(file)) continue;
+      assert.ok(file.startsWith(packageRoot + path.sep));
+      assert.match(file, /\.d\.(?:ts|mts|cts)$/);
+      const source = fs.readFileSync(file, "utf8");
+      const relative = path.relative(packageRoot, file).split(path.sep).join("/");
+      assert.deepEqual(provider.members[relative], {
+        bytes: Buffer.byteLength(source),
+        sha256: sha(source),
+      });
+      const references = ts.preProcessFile(source, false, false).referencedFiles;
+      seenDeclarations.set(file, { file, source, references });
+      for (const reference of references) {
+        const target = fs.realpathSync(path.resolve(path.dirname(file), reference.fileName));
+        assert.ok(target.startsWith(packageRoot + path.sep));
+        assert.ok(fs.statSync(target).isFile());
+        pending.push(target);
+      }
+    }
+    explicitNodeDeclarations = {
+      name: manifest.name,
+      version: manifest.version,
+      packageRoot,
+      entry,
+      declarations: [...seenDeclarations.values()].sort((a, b) => lexical(a.file, b.file)),
+    };
+  }
   const programs = membership.programs.map((program) => {
     const compilerOptions = loadedPrograms.get(program.tsconfig);
     assert.ok(compilerOptions, "the public program uses an actual generated or authored config");
+    const files = program.files.map(display);
+    if (explicitNodeDeclarations) {
+      assert.deepEqual(compilerOptions.types, ["node"]);
+      files.push(...explicitNodeDeclarations.declarations.map((item) => display(item.file)));
+    }
     return {
       root: program.root,
       tsconfig: program.tsconfig,
       compilerOptions,
-      files: program.files.map(display).sort(lexical),
+      files: [...new Set(files)].sort(lexical),
     };
   });
   const names = membership.files.map(display).sort(lexical);
@@ -210,6 +255,7 @@ export function projectEvidence(root, context, application) {
     publicContract: contract,
     stockPrograms,
     schemaAlias,
+    explicitNodeDeclarations,
     configurations: [...seen]
       .filter(([, value]) => value !== "active")
       .map(([filename, value]) => ({
