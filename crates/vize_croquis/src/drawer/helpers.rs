@@ -87,3 +87,7 @@ pub fn is_valid_identifier_fast(bytes: &[u8]) -> bool {
     rest.iter()
         .all(|&b| b.is_ascii_alphanumeric() || b == b'_' || b == b'$')
 }
+
+pub(in crate::drawer) use identifiers::extract_identifier_refs_retained;
+
+pub use identifiers::{extract_identifier_refs_checked, extract_identifier_refs_with_witness};

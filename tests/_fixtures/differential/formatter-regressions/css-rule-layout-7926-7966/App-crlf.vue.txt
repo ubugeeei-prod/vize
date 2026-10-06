@@ -1,0 +1,14 @@
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s;
+}
+
+.first-state.first-modifier,
+.second-state.second-modifier,
+.third-state.third-modifier,
+.fourth-state.fourth-modifier,
+.fifth-state.fifth-modifier {
+  color: red;
+}
+</style>

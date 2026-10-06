@@ -13,6 +13,8 @@ fn open(state: &ServerState, uri: &Url, source: &str, version: i32) {
     state
         .documents
         .open(uri.clone(), source.into(), version, "vue".into());
+    state.update_virtual_docs(uri, source);
+    let _production = state.resident.take_stats();
 }
 
 fn responses(state: &ServerState, uri: &Url) -> serde_json::Value {
@@ -36,7 +38,7 @@ fn responses(state: &ServerState, uri: &Url) -> serde_json::Value {
 fn stats(state: &ServerState, parses: u32) {
     assert_eq!(
         state.resident.take_stats(),
-        DescriptorStats { lookups: 4, parses }
+        DescriptorStats { lookups: 3, parses }
     );
 }
 
@@ -47,7 +49,7 @@ fn clean(uri: &Url, source: &str) -> serde_json::Value {
 }
 
 #[test]
-fn annotations_and_structure_share_one_descriptor_per_revision() {
+fn annotations_and_structure_reuse_the_open_revision_before_requests() {
     let state = ServerState::new();
     let uri = Url::parse("file:///Counter.vue").unwrap();
     open(&state, &uri, SFC, 1);
@@ -56,7 +58,7 @@ fn annotations_and_structure_share_one_descriptor_per_revision() {
     assert_eq!(first["colors"].as_array().unwrap().len(), 1);
     assert_eq!(first["symbols"].as_array().unwrap().len(), 3);
     assert!(first["folding"].as_array().is_some_and(|v| !v.is_empty()));
-    stats(&state, 1);
+    stats(&state, 0);
     assert_eq!(responses(&state, &uri), first);
     stats(&state, 0);
     let edited = SFC
@@ -64,7 +66,7 @@ fn annotations_and_structure_share_one_descriptor_per_revision() {
         .replace("<script setup>", "\r\n<script setup>");
     open(&state, &uri, &edited, 2);
     let changed = responses(&state, &uri);
-    stats(&state, 1);
+    stats(&state, 0);
     assert_ne!(changed, first);
     assert_eq!(changed, clean(&uri, &edited));
 }
@@ -79,16 +81,16 @@ fn rejected_revision_and_close_invalidate_all_four_providers_together() {
         rejected,
         serde_json::json!({"lenses": null, "colors": [], "symbols": null, "folding": null})
     );
-    stats(&state, 1);
+    stats(&state, 0);
     assert_eq!(responses(&state, &uri), rejected);
     stats(&state, 0);
     open(&state, &uri, SFC, 2);
     let fixed = responses(&state, &uri);
-    stats(&state, 1);
+    stats(&state, 0);
     assert_eq!(fixed, clean(&uri, SFC));
     state.close_document(&uri);
     let _close = state.resident.take_stats();
     open(&state, &uri, SFC, 1);
     assert_eq!(responses(&state, &uri), fixed);
-    stats(&state, 1);
+    stats(&state, 0);
 }

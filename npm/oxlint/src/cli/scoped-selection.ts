@@ -95,6 +95,7 @@ export async function prepareScopedSelection(
       prepared: {
         appendedArgs: [],
         pathReplacements: mirror.pathReplacements,
+        locations: mirror.locations,
         usedScriptlessWorkaround: true,
         cleanup: mirror.cleanup,
       },

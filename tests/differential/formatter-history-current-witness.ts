@@ -32,7 +32,7 @@ const OWNERS: Record<
   // #7704 changes production line endings; complete original law bodies are retained.
   "crates/vize_glyph/src/style.rs": {
     originalSha256: "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61",
-    actualMainSha256: "3867c75b9dfab9a133f5c0605352df3ffd857ac117d9b6bf554f0d4d1b5fbb68",
+    actualMainSha256: "5c99c5fd5c17af14f7ba03482a910d7ec1e55c11fa7b98d279acd81bd48db748",
     functions: {
       test_style_numbers_match_standalone_css_leading_zeroes:
         "768c1b2fee61409a7034b99c2a7a277d7ac19699302a94b36d58dd54912937cb",
@@ -95,10 +95,10 @@ const OWNERS: Record<
         "aeb192094f63391b90c1c078b0c17e49e85702af5daa9122e77c8edcacdff928",
     },
   },
-  // #7880 stabilization cost changes retain all ten complete original script laws.
+  // #7880/#8087 stabilization cost changes retain all ten complete original script laws.
   "crates/vize_glyph/src/script.rs": {
     originalSha256: "a205174795bb6d993e84b0cc29dfc5d10c36602dfb6216f1db2278a982b2e0ab",
-    actualMainSha256: "73371c96e902a55a1b405342a0ee11219fd8e25b8d1f61ee94b91fdd9b1249a5",
+    actualMainSha256: "547b8296f7b21c133331e2f207856a72836cc5d1c214f3735bfb4ec6adf1574e",
     functions: {
       test_format_tsx_component_script:
         "d108e897e74d4289b8fdf44555eed4b7ad551aff2ac7673b5a80ca8601220d9b",

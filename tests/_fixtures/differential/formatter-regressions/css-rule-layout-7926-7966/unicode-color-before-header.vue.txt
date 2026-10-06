@@ -1,0 +1,7 @@
+<template>
+  <div class="a b c 次" data-label="a,b"></div>
+</template>
+
+<style scoped>
+.a { color: red; } .🌟, .次 { color: blue; }
+</style>

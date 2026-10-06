@@ -20,6 +20,18 @@ pub fn extract_identifiers_checked(source: &str) -> Option<Vec<CompactString>> {
     checked::checked_reads(source)
 }
 
+/// The same demanded expression analysis, retaining exact authored offsets.
+#[doc(hidden)]
+pub fn extract_identifier_refs_checked(source: &str) -> Option<Vec<IdentifierRef>> {
+    checked::checked_references(source)
+}
+
+/// Retain cooked names even when their physical authored spans cannot be proved.
+#[doc(hidden)]
+pub fn extract_identifier_refs_with_witness(source: &str) -> Option<(Vec<IdentifierRef>, bool)> {
+    checked::checked_references_with_witness(source)
+}
+
 use vize_carton::{CompactString, profile};
 use vize_relief::JsExpression;
 
@@ -138,4 +150,49 @@ pub fn extract_identifier_refs_oxc(expr: &str) -> Vec<IdentifierRef> {
         "croquis.helpers.identifier_refs.ast",
         extract_identifier_refs_oxc_ast(expr)
     )
+}
+
+/// Read exact authored offsets during the existing expression walk.
+/// The existing comment transform carries an opt-in original-byte witness.
+/// A fallback parses that same view once; it does not follow a name walk.
+pub(in crate::drawer) fn extract_identifier_refs_retained(
+    expr: &str,
+    retained: Option<&JsExpression<'_>>,
+) -> (Vec<CompactString>, Option<Vec<IdentifierRef>>) {
+    let (stripped, mapping) = comments::strip_comments_with_offsets(expr);
+    let (references, complete) = match retained {
+        Some(js) if mapping.is_none() && js.raw == expr => ast::retained_references(js.ast, true),
+        _ => ast::parsed_references(stripped.as_ref(), true),
+    };
+    // Preserve the ordinary names from precisely the same legacy analysis view.
+    let names: Vec<_> = references
+        .iter()
+        .map(|reference| reference.name.clone())
+        .collect();
+    #[cfg(any(test, feature = "legacy-differential"))]
+    if retained.is_some() && mapping.is_none() {
+        assert_retained_identifiers_agree(expr, &names);
+    }
+    let references = references
+        .into_iter()
+        .map(|mut reference| {
+            if let Some(mapping) = mapping.as_ref() {
+                let start = reference.offset as usize;
+                let end = start.checked_add(reference.name.len())?;
+                let mapped = *mapping.get(start)?;
+                if mapped == u32::MAX
+                    || !(start..end).all(|at| {
+                        mapping.get(at).copied() == mapped.checked_add((at - start) as u32)
+                    })
+                {
+                    return None;
+                }
+                reference.offset = mapped;
+            }
+            let start = reference.offset as usize;
+            let end = start.checked_add(reference.name.len())?;
+            (expr.get(start..end) == Some(reference.name.as_str())).then_some(reference)
+        })
+        .collect();
+    (names, if complete { references } else { None })
 }

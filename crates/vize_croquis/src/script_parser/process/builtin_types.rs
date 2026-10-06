@@ -25,6 +25,7 @@ pub(in crate::script_parser) fn process_statement_with_builtin(
     };
     super::super::extract::invalidate_default_objects(result, stmt);
     for declarator in decl.declarations.iter() {
+        result.refuse_declarator_type_reads(declarator);
         super::super::extract::invalidate_default_expression(result, declarator.init.as_ref());
         record(result, declarator, decl.kind);
         super::macros::process_variable_declarator(result, declarator, decl.kind, source);

@@ -17,6 +17,7 @@ use crate::corsa_client::CorsaProjectClient;
 mod call_hierarchy;
 mod code_actions;
 mod completion;
+mod component_types;
 #[path = "bridge/declaration.rs"]
 mod declaration;
 #[path = "bridge/documents.rs"]

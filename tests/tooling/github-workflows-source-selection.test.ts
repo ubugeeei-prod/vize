@@ -85,8 +85,13 @@ test("every isolated tooling runner regenerates its tier and retains the full me
   assert.ok(regenerate >= 0 && regenerate < build && build < selected && selected < full);
   assert.ok(regenerate < dependencies && dependencies < pkl && pkl < build);
   assert.equal(steps[pkl].if, "${{ needs.pr-source-plan.outputs.tooling == 'true' }}");
+  assert.equal(steps[pkl].uses, "./.github/actions/install-formatter-css-browser");
+  const preparation = parse(
+    readRepoFile(".github", "actions", "install-formatter-css-browser", "action.yml"),
+  ) as { runs: { steps: Step[] } };
+  assert.equal(preparation.runs.steps[0].if, "env.VIZE_TOOLING_TEST_PLAN != ''");
   assert.equal(
-    steps[pkl].run,
+    preparation.runs.steps[0].run,
     "node tools/support/compat/github/prepare-pkl-schema.mjs && node tools/support/compat/github/prepare-vue-benchmarks.mjs",
   );
   assert.equal(steps[pkl].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");

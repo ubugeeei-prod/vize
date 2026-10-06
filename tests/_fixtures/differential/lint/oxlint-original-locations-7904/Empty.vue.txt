@@ -1,0 +1,4 @@
+<script setup></script>
+<template>
+  <div v-html="x" />
+</template>
