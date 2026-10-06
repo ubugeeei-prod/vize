@@ -130,3 +130,13 @@ The maintainer explicitly authorizes this concrete successor to return to
 non-Draft review during ordinary automatic qualification. A pending new head
 has no inherited failure or success credit; queue admission still requires
 its own complete current gates. No extra PR or optional approval is introduced.
+
+Successor `fe0a5ff` failed its genuine hosted build before native execution:
+the pinned diagnostic label API returns `u32` offsets and lengths. The EOF
+recovery path now converts both values to `usize`, matching token positions
+and the authored byte-range API. These two casts are the complete production
+correction; all routing conditions, original inputs and full payload oracles
+remain fixed. Check 37458862366 and both authentic failed build logs are
+retained. Pending jobs on that head may be superseded without waiting; their
+unknown or cancelled state grants no execution credit. The same PR remains
+off queue until fresh exact-source qualification completes.

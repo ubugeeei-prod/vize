@@ -153,8 +153,8 @@ fn quoted_token(
                     return None;
                 }
                 let label = diagnostic.labels.first()?;
-                let start = label.offset();
-                let end = start + label.len();
+                let start = label.offset() as usize;
+                let end = start + label.len() as usize;
                 (start < offset
                     && offset <= end
                     && end == source.len()
