@@ -8,11 +8,9 @@
 //! meaningless and the Vue SFC compiler rejects it. To expose bindings to a
 //! parent component use [`defineExpose()`](https://vuejs.org/api/sfc-script-setup.html#defineexpose).
 //!
-//! A normal `<script>` block legitimately uses `export default { ... }`, so the
-//! rule first confirms the block is a `<script setup>` by the presence of a
-//! compiler macro (`defineProps`, `defineEmits`, `defineExpose`, `defineOptions`,
-//! `defineSlots`, `defineModel`, `withDefaults`) or a top-level `await`, both of
-//! which are only valid inside `<script setup>`.
+//! Only the existing parsed SFC context identifies a `<script setup>` block.
+//! Top-level `await` and macro-like names are also legal in standalone modules
+//! and cannot establish that ownership. Normal `<script>` exports stay allowed.
 //!
 //! Type-only exports (`export type`, `export interface`, ambient `export
 //! declare`, all-type specifier lists, and `export type * from`) are erased at
@@ -43,7 +41,7 @@
 //! </script>
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{Declaration, ExportNamedDeclaration, Program, Statement};
 use oxc_span::Span;
@@ -53,19 +51,6 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     description: "Disallow export statements inside <script setup>",
     default_severity: Severity::Error,
 };
-
-/// Compiler macros that are only valid inside `<script setup>`. Their presence
-/// is a reliable marker that a script block is a `<script setup>` rather than a
-/// normal `<script>` (which legitimately exports its component options).
-const SCRIPT_SETUP_MACROS: &[&str] = &[
-    "defineProps",
-    "defineEmits",
-    "defineExpose",
-    "defineOptions",
-    "defineSlots",
-    "defineModel",
-    "withDefaults",
-];
 
 /// Disallow top-level `export` declarations inside `<script setup>`.
 pub struct NoExportInScriptSetup;
@@ -87,9 +72,18 @@ impl ScriptRule for NoExportInScriptSetup {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        // A normal <script> uses `export default { ... }` for its options, so
-        // only flag exports once we are confident this block is a <script setup>.
-        if !is_script_setup_block(program, source) {
+        self.check_program_with_sfc(program, source, offset, SfcScriptContext::default(), result);
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        if !sfc.is_sfc || !sfc.is_script_setup {
             return;
         }
 
@@ -174,129 +168,8 @@ fn report(kind: &str, span: Span, offset: usize, result: &mut ScriptLintResult) 
     );
 }
 
-/// Whether the parsed block is a `<script setup>`.
-///
-/// The script-rule trait does not tell a rule which SFC block it is checking, so
-/// this distinguishes a `<script setup>` from a normal `<script>` by a feature
-/// that is only legal inside `<script setup>`: a compiler-macro call or a
-/// top-level `await`. A normal `<script>` has neither, so its `export default`
-/// component options are never flagged.
-fn is_script_setup_block(program: &Program<'_>, source: &str) -> bool {
-    program_has_top_level_await(program) || source_uses_script_setup_macro(source)
-}
-
-/// Whether the block uses a compiler macro that is exclusive to `<script setup>`.
-///
-/// Only real identifiers count. A comment or string that mentions `defineEmits`
-/// does not make a plain `.ts` module `<script setup>`.
-fn source_uses_script_setup_macro(source: &str) -> bool {
-    let bytes = source.as_bytes();
-    let mut index = 0;
-    while index < bytes.len() {
-        let Some(&byte) = bytes.get(index) else {
-            break;
-        };
-        match byte {
-            b'/' if bytes.get(index + 1) == Some(&b'/') => {
-                index += 2;
-                while index < bytes.len() && bytes.get(index) != Some(&b'\n') {
-                    index += 1;
-                }
-            }
-            b'/' if bytes.get(index + 1) == Some(&b'*') => {
-                index += 2;
-                while index + 1 < bytes.len()
-                    && !(bytes.get(index) == Some(&b'*') && bytes.get(index + 1) == Some(&b'/'))
-                {
-                    index += 1;
-                }
-                index = (index + 2).min(bytes.len());
-            }
-            b'\'' | b'"' => {
-                let quote = byte;
-                index += 1;
-                while let Some(&current) = bytes.get(index) {
-                    if current == b'\\' {
-                        index += 2;
-                        continue;
-                    }
-                    if current == quote {
-                        index += 1;
-                        break;
-                    }
-                    index += 1;
-                }
-            }
-            b'`' => {
-                index += 1;
-                while let Some(&current) = bytes.get(index) {
-                    if current == b'\\' {
-                        index += 2;
-                        continue;
-                    }
-                    if current == b'`' {
-                        index += 1;
-                        break;
-                    }
-                    index += 1;
-                }
-            }
-            byte if is_ident_start(byte) => {
-                let start = index;
-                index += 1;
-                while bytes
-                    .get(index)
-                    .is_some_and(|current| is_ident_continue(*current))
-                {
-                    index += 1;
-                }
-                if let Some(word) = source.get(start..index)
-                    && SCRIPT_SETUP_MACROS.contains(&word)
-                {
-                    return true;
-                }
-            }
-            _ => index += 1,
-        }
-    }
-    false
-}
-
-fn is_ident_start(byte: u8) -> bool {
-    byte.is_ascii_alphabetic() || byte == b'_' || byte == b'$'
-}
-
-fn is_ident_continue(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
-}
-
-/// Whether the program contains a top-level `await`, which is only valid inside
-/// `<script setup>` (a normal `<script>` is not an async context).
-fn program_has_top_level_await(program: &Program<'_>) -> bool {
-    program
-        .body
-        .iter()
-        .any(|statement| statement_has_top_level_await(statement))
-}
-
-fn statement_has_top_level_await(statement: &Statement<'_>) -> bool {
-    use oxc_ast::ast::Expression;
-
-    // Only the directly-awaited forms that can appear as a top-level statement
-    // are needed here; awaits nested inside functions are not "top level".
-    match statement {
-        Statement::ExpressionStatement(stmt) => {
-            matches!(&stmt.expression, Expression::AwaitExpression(_))
-        }
-        Statement::VariableDeclaration(decl) => decl.declarations.iter().any(|declarator| {
-            matches!(
-                declarator.init.as_ref(),
-                Some(Expression::AwaitExpression(_))
-            )
-        }),
-        _ => false,
-    }
-}
-
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod ownership_tests;

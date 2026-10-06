@@ -194,6 +194,68 @@ fn native_error_is_returned_only_after_every_started_request_drains() {
 }
 
 #[test]
+fn single_document_keeps_owner_thread_and_full_success_and_refusal() {
+    const URI: &str = "file:///workspace/Single.vue.ts";
+    let (client, mut peer, _control) = connection();
+    let refusal = json!({
+        "code": -32603,
+        "message": "whole single-document refusal",
+        "data": { "uri": URI, "generation": 7, "retry": false }
+    });
+    let expected_refusal = refusal.clone();
+    let server = thread::spawn(move || {
+        let mut reader = BufReader::new(peer.try_clone().unwrap());
+        for id in 1..=2 {
+            assert_eq!(
+                request(&mut reader),
+                json!({
+                    "jsonrpc": "2.0", "id": id,
+                    "method": "textDocument/documentSymbol",
+                    "params": { "textDocument": { "uri": URI } }
+                })
+            );
+            let response = if id == 1 {
+                json!({ "jsonrpc": "2.0", "id": id, "result": full_result(URI) })
+            } else {
+                json!({ "jsonrpc": "2.0", "id": id, "error": refusal })
+            };
+            respond(&mut peer, response);
+        }
+    });
+    let owner = thread::current().id();
+    run(&[URI], |uri| {
+        assert_eq!(thread::current().id(), owner);
+        let result = block_on(client.request_value(
+            "textDocument/documentSymbol",
+            json!({ "textDocument": { "uri": uri } }),
+        ))
+        .map_err(|error| cstr!("{error}"))?;
+        assert_eq!(result, full_result(URI));
+        Ok(())
+    })
+    .unwrap();
+    let result = run(&[URI], |uri| {
+        assert_eq!(thread::current().id(), owner);
+        let error = block_on(client.request_value(
+            "textDocument/documentSymbol",
+            json!({ "textDocument": { "uri": uri } }),
+        ))
+        .unwrap_err();
+        let corsa::CorsaError::Rpc(ref payload) = error else {
+            panic!("expected complete native refusal, got {error:?}");
+        };
+        assert_eq!(serde_json::to_value(payload).unwrap(), expected_refusal);
+        Err(cstr!("{error}"))
+    });
+    assert_eq!(
+        result.unwrap_err(),
+        "rpc error -32603: whole single-document refusal"
+    );
+    server.join().unwrap();
+    block_on(client.close()).unwrap();
+}
+
+#[test]
 fn empty_generation_starts_no_request() {
     run::<u8>(&[], |_| unreachable!("no URI to acknowledge")).unwrap();
 }

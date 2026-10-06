@@ -106,7 +106,11 @@ pub(super) fn format_layout_only(source: &str, options: &FormatOptions) -> Strin
         &indent,
         newline,
     );
-    output
+    if options.use_tabs || options.tab_width != 2 {
+        reindent_token_gaps(&output, options, false)
+    } else {
+        output
+    }
 }
 
 fn write_css_line(output: &mut String, content: &str, depth: usize, indent: &str, newline: &str) {
@@ -200,6 +204,9 @@ pub(super) fn changes_authored_css(source: &str, printed: &str) -> bool {
 
 /// Re-indent CSS output to match the configured indent style
 pub(super) fn reindent_css(source: &str, options: &FormatOptions) -> String {
+    if options.use_tabs || options.tab_width != 2 {
+        return reindent_token_gaps(source, options, true);
+    }
     let indent = options.indent_string();
     let newline = options.newline_string();
     let mut result: String = String::with_capacity(source.len());
@@ -228,4 +235,77 @@ pub(super) fn reindent_css(source: &str, options: &FormatOptions) -> String {
     }
 
     result
+}
+
+// Unparsed declaration values retain authored whitespace in the CSS printer.
+// Only whitespace gaps may be rebased; quoted/escaped token bytes stay intact.
+fn reindent_token_gaps(source: &str, options: &FormatOptions, printer_indent: bool) -> String {
+    let mut gaps = Vec::new();
+    let mut pending = Vec::new();
+    let mut declaration = None;
+    for token in super::blank_lines::Tokens::new(source) {
+        if token.gap.contains(['\r', '\n']) {
+            let indentation = token.gap.rsplit(['\r', '\n']).next().unwrap_or_default();
+            let level = if printer_indent {
+                indentation.len() / 2
+            } else {
+                0
+            };
+            gaps.push((token.gap_start, token.start, level));
+            if declaration.is_some() && !matches!(token.text, ";" | "}") {
+                pending.push(gaps.len() - 1);
+            }
+        }
+        if token.parens != 0 || token.brackets != 0 {
+            continue;
+        }
+        match token.text {
+            ":" if token.depth > 0 && declaration.is_none() => {
+                declaration = Some(token.depth);
+            }
+            ";" | "}" => {
+                if let Some(depth) = declaration.take() {
+                    for index in pending.drain(..) {
+                        if let Some((_, _, level)) = gaps.get_mut(index) {
+                            *level = depth + 1;
+                        }
+                    }
+                }
+                pending.clear();
+            }
+            "{" => {
+                declaration = None;
+                pending.clear();
+            }
+            _ => {}
+        }
+    }
+    let mut output = String::with_capacity(source.len());
+    let mut cursor = 0;
+    for (start, end, level) in gaps {
+        output.push_str(source.get(cursor..start).unwrap_or_default());
+        let gap = source.get(start..end).unwrap_or_default();
+        let mut bytes = gap.bytes().peekable();
+        while let Some(byte) = bytes.next() {
+            if byte == b'\r' {
+                if bytes.peek() == Some(&b'\n') {
+                    bytes.next();
+                }
+                output.push_str(options.newline_string());
+            } else if byte == b'\n' {
+                output.push_str(options.newline_string());
+            }
+        }
+        if printer_indent || level > 0 {
+            write_css_indent(&mut output, level, &options.indent_string());
+        } else {
+            output.push_str(gap.rsplit(['\r', '\n']).next().unwrap_or_default());
+        }
+        cursor = end;
+    }
+    output.push_str(source.get(cursor..).unwrap_or_default());
+    if printer_indent {
+        output.truncate(output.trim_end_matches(['\r', '\n']).len());
+    }
+    output
 }

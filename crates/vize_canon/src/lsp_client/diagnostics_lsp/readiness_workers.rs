@@ -17,6 +17,14 @@ pub(super) fn run<T: Sync>(
 ) -> Result<(), String> {
     let control = crate::corsa_bridge::native_operation::capture();
     control.checkpoint()?;
+    match items {
+        [] => return Ok(()),
+        [item] => {
+            let response = request(item);
+            return control.checkpoint().and(response);
+        }
+        _ => {}
+    }
     let next = AtomicUsize::new(0);
     let failed = AtomicBool::new(false);
     let first_error = Mutex::new(None);
