@@ -135,3 +135,25 @@ receipts, including the complete218 CLI proof
 `e998807ede8193a31e1940f910d6af85fdc4d73c98eac067d1e93ba37915d183`. Fresh automatic whole54/218/source gates,
 same ordered Stack8092/protected budgets/signed delivery/root public release
 remain required; no old execution transfers or production/workflow changes.
+
+## Corrected native workflow parent
+
+Paired decisions for [7976](https://github.com/ubugeeei-prod/vize/issues/7976#issuecomment-6010936751)
+and [7984](https://github.com/ubugeeei-prod/vize/issues/7984#issuecomment-6010936977)
+retain the parent candidate c1a full tooling failure: incoming shared native
+workflow353 exceeds unchanged350. Both children were Draft and dequeued;
+all104 three-repeat measurements do not override this failure.
+
+Replay all six original commits onto literal corrected CLI parent
+`8f02528d2553e6acc883a2424be47a8ea2075f2c`. It genuinely incorporates mainbaa
+and removes only three selectors covered by retained broader globs, with
+whole trigger/job/command equivalence. Preserve54 API/218 CLI vectors,
+both originals/configs, before54 archive, sole27 serializer-path corrections,
+all author records and incoming canonical350 bytes. The incoming census adds
+only its genuine default-correctness test row; CSS source is unchanged.
+
+Fresh exact-source whole54/218 Actions, protected full suites/all104, actual
+signed merge and installed original0.435 replay remain pending. Historical79d
+source success gives no successor credit. Keep the same ordered Stack8092
+with no individual auto-merge; broad global policy and both Issue closures
+remain separate from the bounded original-case delivery.
