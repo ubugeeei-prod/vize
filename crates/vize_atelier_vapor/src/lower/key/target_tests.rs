@@ -8,7 +8,7 @@ fn refused_key_targets_keep_original_once_and_first_memo_diagnostics() {
     let cases = [
         (
             "<slot :key=\"epoch\"></slot>",
-            ElementType::SlotOutlet,
+            ElementType::Slot,
             false,
             None,
         ),
@@ -32,13 +32,13 @@ fn refused_key_targets_keep_original_once_and_first_memo_diagnostics() {
         ),
         (
             "<slot v-memo=\"deps\" :key=\"epoch\"></slot>",
-            ElementType::SlotOutlet,
+            ElementType::Slot,
             false,
             Some(memo_error),
         ),
         (
             "<slot v-memo=\"deps\" v-once :key=\"epoch\"></slot>",
-            ElementType::SlotOutlet,
+            ElementType::Slot,
             true,
             None,
         ),

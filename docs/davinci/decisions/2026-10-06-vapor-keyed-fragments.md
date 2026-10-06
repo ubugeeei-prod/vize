@@ -73,3 +73,5 @@ The same-PR correction selects the existing negative target/scope role once befo
 Pair this successor with [#7883 comment6014456551](https://github.com/ubugeeei-prod/vize/issues/7883#issuecomment-6014456551); no later source or performance acceptance is implied.
 
 Compose the same-PR role/fact successor with actual signed main 8d4ef4bb9b9b8efb46f8e1c142c74cb2f5b3c8ae (#8102) once. All incoming decision prefixes, reviewed production/new controls and original full code/map/runtime vectors remain exact; fresh normal source Actions and protected 100+4/full Rust/original56/240/64 still own qualification, with saving unknown. Paired #7883 comment6014456551.
+
+The asynchronous source peer found three test-only `ElementType::SlotOutlet` spellings; the original public enum actually exports `Slot`. Correct only those expected-type labels, preserving the six complete source tuples, all production and original oracles. Source 1ada remains unqualified; fresh successor Actions must compile and execute the new laws.
