@@ -55,3 +55,11 @@ through the fixture's physical Vue → runtime-dom → runtime-core → reactivi
 provider chain, retaining all four package metadata bytes. Preserve the entire
 expected vector and declaration hash. This is a path-authority correction;
 the first run provides no repaired native equality or later performance credit.
+
+The physical-provider successor 548fffd reaches the full native diagnostic and
+hint responses. Its sole hint mismatch is expected URI encoding: Node leaves
+`@` and `+` plain, while pinned native `lsconv.FileNameToDocumentURI` escapes
+each non-unreserved path byte. Derive the expected declaration URI from that
+authenticated primary converter. Keep every actual response byte and compare
+the entire vectors without URI normalization or field removal. Stock terminal
+success and Vize equality still require a fresh meaningful-source full run.

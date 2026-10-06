@@ -29,7 +29,19 @@ export function createVueInlayContract(workspace: string) {
   const lines = bytes.toString("utf8").split("\n");
   assert.equal(lines[489], "export interface Ref<T = any, S = T> {");
   assert.equal(lines[187], "export interface ComputedRef<T = any> extends BaseComputedRef<T> {");
-  const uri = pathToFileURL(declaration).href;
+  // Native lsconv/converters.go:85-141 escapes every non-unreserved path
+  // byte, including @/+, which Node's file URL serializer leaves plain.
+  const fileUrl = pathToFileURL(declaration);
+  assert.equal(fileUrl.hostname, "", "the retained local declaration has no remote authority");
+  const uri = `file://${fileUrl.pathname
+    .split("/")
+    .map((segment) =>
+      encodeURIComponent(decodeURIComponent(segment)).replace(
+        /[!'()*]/g,
+        (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
+      ),
+    )
+    .join("/")}`;
   const location = (line: number, width: number) => ({
     uri,
     range: { start: { line, character: 17 }, end: { line, character: 17 + width } },
