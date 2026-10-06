@@ -9,9 +9,11 @@
 mod imports;
 
 use oxc_ast::ast::{
-    CallExpression, ConditionalExpression, Expression, FunctionBody, LogicalExpression, Statement,
+    ArrowFunctionExpression, CallExpression, Class, ConditionalExpression, Expression, Function,
+    LogicalExpression, Statement,
 };
 use oxc_ast_visit::{Visit, walk};
+use oxc_semantic::ScopeFlags;
 use oxc_span::GetSpan;
 use vize_carton::{FxHashMap, FxHashSet, Span};
 
@@ -280,9 +282,21 @@ impl<'a> Visit<'a> for Finder<'_, '_, 'a> {
         self.nested -= usize::from(nested);
     }
 
-    fn visit_function_body(&mut self, body: &FunctionBody<'a>) {
+    fn visit_function(&mut self, function: &Function<'a>, flags: ScopeFlags) {
         self.nested += 1;
-        walk::walk_function_body(self, body);
+        walk::walk_function(self, function, flags);
+        self.nested -= 1;
+    }
+
+    fn visit_arrow_function_expression(&mut self, arrow: &ArrowFunctionExpression<'a>) {
+        self.nested += 1;
+        walk::walk_arrow_function_expression(self, arrow);
+        self.nested -= 1;
+    }
+
+    fn visit_class(&mut self, class: &Class<'a>) {
+        self.nested += 1;
+        walk::walk_class(self, class);
         self.nested -= 1;
     }
 

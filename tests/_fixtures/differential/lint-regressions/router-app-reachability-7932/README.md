@@ -34,3 +34,10 @@ conditional, logical, factory, ambiguous and shadowed bindings remain unknown.
 Distinct roots and separately invoked projects stay independent. A shared
 component reached by two independently proven applications accepts both routers
 and retains each table’s parameter diagnostics.
+
+The complete roster has 20 cases. The final three refuse installation inside an
+arrow/function default parameter or a class instance field: declaring the factory
+does not execute its initializer. They reuse the unchanged app/router/route-view
+carriers from
+`absent-app-install` and add only their own authored entry source. The original
+17 case inputs and complete expected reports remain exact.

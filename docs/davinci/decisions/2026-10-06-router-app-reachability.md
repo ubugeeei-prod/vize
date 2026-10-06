@@ -38,7 +38,7 @@ for all app-context traversals.
 
 The new differential corpus retains the complete public issue, exact component,
 test and command fences, and the inline config. Page bodies were not provided;
-the two minimal page carriers are separately labeled authored. Seventeen whole
+the two minimal page carriers are separately labeled authored. Twenty whole
 CLI cases cover the original report, installed root/component reachability,
 unrelated/orphan routers, direct-router unknown/missing/extra/type findings,
 absent/dynamic/conditional/logical/factory/ambiguous/shadowed refusal, SSR memory
@@ -59,3 +59,15 @@ all existing route laws, full protected suites and instruction gates remain
 required before actual signed delivery. No performance, native-default, Nuxt
 page-provider, installed-public or release result is claimed here. Root owns the
 subsequent supported release and public consumer handoff.
+
+A bounded private source review found that body-only function nesting misses
+default-parameter initializers and that an uninstantiated class expression can
+carry an instance-field initializer. The complete Function, Arrow and Class
+walks now carry the existing nested-context refusal, including parameters and
+fields. The existing semantic ScopeFlags re-export supplies the visitor signature;
+there is no new dependency or traversal pass. Three whole refusal controls join
+the unchanged original seventeen cases, for twenty cases and ninety-four full
+file rows. This source correction is paired in
+[the same issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6018277539).
+Original inputs, expectations and source pins are preserved. Runtime remains
+unqualified until fresh Actions execute this exact successor.

@@ -147,6 +147,9 @@ fn cross_file_router_application_reports_are_complete() {
             "independent-project-alpha",
             "independent-project-beta",
             "shared-component-two-apps",
+            "arrow-default-parameter-install",
+            "function-default-parameter-install",
+            "class-field-app-install",
         ]
     );
     let profile = std::env::var("NEXTEST_PROFILE").unwrap_or_else(|_| "full".into());

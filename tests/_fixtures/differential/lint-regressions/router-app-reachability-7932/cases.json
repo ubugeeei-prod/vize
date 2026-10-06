@@ -793,6 +793,129 @@
       "expected_stdout": "expected/shared-component-two-apps.json",
       "expected_stderr": "",
       "expected_exit": 1
+    },
+    {
+      "name": "arrow-default-parameter-install",
+      "decision": "The arrow/function default parameter or class instance field is deferred; declaring its factory does not prove application installation.",
+      "inputs": [
+        {
+          "source": "supplemental/absent-app-install/project/src/App.vue",
+          "target": "src/App.vue",
+          "sha256": "57fc0b24b1d94677b00f9acd371340e7fcab2fdc3b688acfe368da7c1ff28958",
+          "provenance": "supplemental authored control"
+        },
+        {
+          "source": "supplemental/absent-app-install/project/src/RouteView.vue",
+          "target": "src/RouteView.vue",
+          "sha256": "4f668765bab3d1d658a947c03fd8fcd17e310490c4d10032d520a0ca11ddfc1c",
+          "provenance": "supplemental authored control"
+        },
+        {
+          "source": "supplemental/arrow-default-parameter-install/project/src/main.ts",
+          "target": "src/main.ts",
+          "sha256": "f5f102581c4db034bf64d90f4a692b0fe0a97b66083b9052ae4d5542a36112ae",
+          "provenance": "supplemental authored deferred factory installation"
+        },
+        {
+          "source": "supplemental/absent-app-install/project/src/router.ts",
+          "target": "src/router.ts",
+          "sha256": "9ff9138ce54a264107ed6cb26f0c46b4790115b898b4108e9d3a1410e757187e",
+          "provenance": "supplemental authored control"
+        }
+      ],
+      "args": [
+        "lint",
+        "--cross-file",
+        "src/**/*.vue",
+        "src/**/*.ts",
+        "--format",
+        "json"
+      ],
+      "expected_stdout": "expected/arrow-default-parameter-install.json",
+      "expected_stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "name": "function-default-parameter-install",
+      "decision": "The arrow/function default parameter or class instance field is deferred; declaring its factory does not prove application installation.",
+      "inputs": [
+        {
+          "source": "supplemental/absent-app-install/project/src/App.vue",
+          "target": "src/App.vue",
+          "sha256": "57fc0b24b1d94677b00f9acd371340e7fcab2fdc3b688acfe368da7c1ff28958",
+          "provenance": "supplemental authored control"
+        },
+        {
+          "source": "supplemental/absent-app-install/project/src/RouteView.vue",
+          "target": "src/RouteView.vue",
+          "sha256": "4f668765bab3d1d658a947c03fd8fcd17e310490c4d10032d520a0ca11ddfc1c",
+          "provenance": "supplemental authored control"
+        },
+        {
+          "source": "supplemental/function-default-parameter-install/project/src/main.ts",
+          "target": "src/main.ts",
+          "sha256": "ae7f262df672846fa2c98d48a12d6de5ed4cd75a3a4d755c3f533c886703599b",
+          "provenance": "supplemental authored deferred factory installation"
+        },
+        {
+          "source": "supplemental/absent-app-install/project/src/router.ts",
+          "target": "src/router.ts",
+          "sha256": "9ff9138ce54a264107ed6cb26f0c46b4790115b898b4108e9d3a1410e757187e",
+          "provenance": "supplemental authored control"
+        }
+      ],
+      "args": [
+        "lint",
+        "--cross-file",
+        "src/**/*.vue",
+        "src/**/*.ts",
+        "--format",
+        "json"
+      ],
+      "expected_stdout": "expected/function-default-parameter-install.json",
+      "expected_stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "name": "class-field-app-install",
+      "decision": "The arrow/function default parameter or class instance field is deferred; declaring its factory does not prove application installation.",
+      "inputs": [
+        {
+          "source": "supplemental/absent-app-install/project/src/App.vue",
+          "target": "src/App.vue",
+          "sha256": "57fc0b24b1d94677b00f9acd371340e7fcab2fdc3b688acfe368da7c1ff28958",
+          "provenance": "supplemental authored control"
+        },
+        {
+          "source": "supplemental/absent-app-install/project/src/RouteView.vue",
+          "target": "src/RouteView.vue",
+          "sha256": "4f668765bab3d1d658a947c03fd8fcd17e310490c4d10032d520a0ca11ddfc1c",
+          "provenance": "supplemental authored control"
+        },
+        {
+          "source": "supplemental/class-field-app-install/project/src/main.ts",
+          "target": "src/main.ts",
+          "sha256": "317f1b5c78b438ffd8f8023fd41b67356aee1bd2f8f3c29dccbc8d236e153d33",
+          "provenance": "supplemental authored deferred factory installation"
+        },
+        {
+          "source": "supplemental/absent-app-install/project/src/router.ts",
+          "target": "src/router.ts",
+          "sha256": "9ff9138ce54a264107ed6cb26f0c46b4790115b898b4108e9d3a1410e757187e",
+          "provenance": "supplemental authored control"
+        }
+      ],
+      "args": [
+        "lint",
+        "--cross-file",
+        "src/**/*.vue",
+        "src/**/*.ts",
+        "--format",
+        "json"
+      ],
+      "expected_stdout": "expected/class-field-app-install.json",
+      "expected_stderr": "",
+      "expected_exit": 0
     }
   ]
 }
