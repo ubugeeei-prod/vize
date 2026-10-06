@@ -33,6 +33,8 @@ The existing SFC runtime helper gains opt-in calls/reads of actual exposed
 methods; every ordinary observation is unchanged when these inputs are absent.
 The new requests retain complete input/modules/source, status, stdout bytes and
 stderr bytes beside the existing Nextest JUnit BEFORE process assertions.
+The stdin-write Result is also retained; EPIPE still reaps the child and saves
+its complete process/error witness before failing the original assertion.
 Original compile/ref snapshots and existing mounted tests are not rerecorded.
 
 Source and mounted execution are pending exact-head ordinary Actions; protected

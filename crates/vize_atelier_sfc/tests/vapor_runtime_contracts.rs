@@ -117,12 +117,11 @@ fn trace(source: &str, backend: &str, extra: Value) -> Value {
         .stderr(Stdio::piped())
         .spawn()
         .unwrap();
-    child
+    let stdin_write = child
         .stdin
         .take()
         .unwrap()
-        .write_all(input.to_string().as_bytes())
-        .unwrap();
+        .write_all(input.to_string().as_bytes());
     let output = child.wait_with_output().unwrap();
     if let Some(name) = extra.get("proofName").and_then(Value::as_str) {
         let profile = if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
@@ -139,12 +138,14 @@ fn trace(source: &str, backend: &str, extra: Value) -> Value {
             serde_json::to_vec(&json!({
                 "source": source, "childSource": child_source, "input": input,
                 "exitCode": output.status.code(), "success": output.status.success(),
-                "stdoutBytes": output.stdout, "stderrBytes": output.stderr
+                "stdoutBytes": output.stdout, "stderrBytes": output.stderr,
+                "stdinWriteError": stdin_write.as_ref().err().map(ToString::to_string)
             }))
             .unwrap(),
         )
         .unwrap();
     }
+    assert!(stdin_write.is_ok(), "{backend} stdin: {stdin_write:?}");
     assert!(
         output.status.success(),
         "{backend}: {}\n{code}",
