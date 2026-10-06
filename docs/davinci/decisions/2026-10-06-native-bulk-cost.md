@@ -226,3 +226,15 @@ supported call-count correction. No per-file suggestion expansion, guessed
 combined endpoint, parallelism tuning or new campaign is authorized by this
 design. The earlier all-file route was slower too, so genuine gains remain
 required and #8038 stays Draft/offqueue while the finite0.434 proceeds.
+
+The actual private correction uses the existing3/4 all-file category calls and
+once-built sealed name sets. Decode/admit every main row before stable requested
+projection, retaining full raw category values/errors in test-only custody and
+the unchanged requested/related/span/retirement conversion. Two new whole laws
+and the original five-file native oracle cover malformed/foreign/alias refusals,
+complete ordered vectors and the admitted unrequested error. Old9f already used
+this call shape and skipped unrequested related-text reads; newly moving exact
+main-name validation/filtering before URI grouping supplies no checker/gain
+proof or claim of previously eager text savings. Source compilation/native18/
+whole681/matched gains remain pending. Preserve Draft/offqueue, actual root
+publication hold, unchanged budgets/defaults/fixtures/pins and no new campaign.

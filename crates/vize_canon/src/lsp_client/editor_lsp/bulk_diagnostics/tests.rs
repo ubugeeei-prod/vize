@@ -285,3 +285,5 @@ fn related_provider_refusal_coordinates_and_real_error_never_return_partial_rows
 mod native;
 
 mod selected_semantics;
+
+mod grouped;

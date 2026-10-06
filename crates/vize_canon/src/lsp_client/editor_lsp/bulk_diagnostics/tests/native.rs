@@ -142,6 +142,29 @@ fn compare(
             "{case}/{phase}: {comparison}"
         );
     }
+    let configuration: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(config).unwrap()).unwrap();
+    let mut expected = vec![
+        json!({"method":"getSyntacticDiagnostics","file":null,"acknowledged":true}),
+        json!({"method":"getSemanticDiagnostics","file":null,"acknowledged":true}),
+        json!({"method":"getSuggestionDiagnostics","file":null,"acknowledged":true}),
+    ];
+    if configuration["compilerOptions"]["declaration"] == true
+        || configuration["compilerOptions"]["composite"] == true
+    {
+        expected
+            .push(json!({"method":"getDeclarationDiagnostics","file":null,"acknowledged":true}));
+    }
+    let custody = custody.unwrap();
+    assert_eq!(custody["categoryRequests"], json!(expected));
+    let responses = custody["categoryResponses"].as_array().unwrap();
+    assert_eq!(responses.len(), expected.len());
+    for (response, request) in responses.iter().zip(&expected) {
+        assert_eq!(response["method"], request["method"]);
+        assert_eq!(response["file"], serde_json::Value::Null);
+        assert!(response.get("value").is_some());
+        assert!(response.get("error").is_none());
+    }
 }
 
 mod deep;

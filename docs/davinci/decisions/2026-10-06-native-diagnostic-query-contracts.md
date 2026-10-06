@@ -116,3 +116,46 @@ results are still required for Ready/admission, followed by native Stack
 membership, protected fullRust/unchanged104, actual signed delivery and release.
 No second campaign, default/CLI/LSP/native-product completion, budget change or
 10x claim follows from this source design. #7698 remains open.
+
+## Private source correction
+
+The same private consumer now implements the existing3/4 category calls. Build
+exact native-name and requested-name sets once from the admitted provider;
+decode the entire category and reject empty/foreign main names before stable
+requested-name filtering. A malformed unrequested row also refuses the whole
+batch. Requested spans, nested messages, style and related locations still use
+the existing complete converter and same-snapshot text reads. Unrequested main
+rows do not enter that converter or cause related-text reads. Every actual raw
+category response or real request error is retained before decode in cfg(test)
+custody; ordinary builds add no observation serialization.
+
+Two added pure laws cover complete output/order/related/duplicate/empty behavior
+and atomic foreign/alias/fileless/malformed-unrequested refusals. Preserve the
+two older selected-file laws byte-exact. The existing five-original-file native
+law retains all original source bytes and whole LSP comparisons; its expected
+request array now contains three actual global categories, and its full raw
+semantic witness must contain the independently erroneous unrequested file.
+All original eight profiles, reader retirement, lifetime and whole681 inputs
+remain unchanged. Existing helper commands automatically include the two added
+pure laws; no workflow/driver/pin/budget alteration is required.
+
+Compared with eaa's current loop, this removes681 singleton semantic requests.
+Compared with the old source9f5ee043, the call shape is restored, not new: that
+source already made3/4 calls and already avoided related-text reads for
+unrequested rows inside its URI grouping guard. Genuine new differences are
+exact all-main ownership admission, filtering before unnecessary unrequested
+path-to-URI work, and full raw category failure custody. It does not establish
+cheaper native checking, save previously eager unrequested text decoding or
+prove gains. Returned-row observation counters still count the full validated
+response, with the ordinary observer disabled.
+
+Rust formatting, source census and diff checks may qualify this private source,
+but compilation and all execution remain pending. During the0.434 hold do not
+push it or dispatch the whole681/matched campaign. After thaw and frozen source
+review, existing ordinary Check and native-phase Actions must compile every
+affected feature path and execute18 bulk laws (14 pure/4 native), unchanged
+snapshot/lifetime laws and all original helper commands. Three global requests
+per profile, plus declaration when configured, should replace historical102
+profile acknowledgements with78; the72 whole response comparisons remain.
+These are intended counts, not observed execution. Full681/2043 parity and a
+defensible ONE matched observer0 comparison still gate performance acceptance.

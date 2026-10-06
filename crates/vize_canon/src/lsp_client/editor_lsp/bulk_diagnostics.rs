@@ -8,7 +8,7 @@ use corsa::{CorsaError, runtime::block_on};
 use lsp_types::Diagnostic;
 use serde_json::json;
 use std::path::Path;
-use vize_l0::String;
+use vize_l0::{FxHashSet, String};
 
 mod conversion;
 mod cost;
@@ -104,6 +104,12 @@ impl EditorLspSession {
                 return Ok(None);
             };
             cost.count("semantic-requested-files", selected.len());
+            let requested = FxHashSet::from_iter(selected);
+            let members = project
+                .source_names()
+                .iter()
+                .map(|name| name.as_str())
+                .collect();
             let params = json!({"snapshot": snapshot.handle(), "project": project.descriptor().id});
             let mut categories = Vec::with_capacity(4);
             let methods = diagnostic_methods(&project.descriptor().compiler_options);
@@ -112,42 +118,38 @@ impl EditorLspSession {
                 "snapshot":snapshot.handle(),"snapshotProjects":[project.descriptor()],
                 "project":project.descriptor(),"sourceFileNames":project.source_names(),
                 "categoryMethods":methods,"attachment":api.session,"outcome":"attempted",
-                "relatedSnapshotSources":[],"categoryRequests":[],
+                "relatedSnapshotSources":[],"categoryRequests":[],"categoryResponses":[],
             }));
             for method in &methods {
-                // Native 7.0.2's optional `file` selects one exact SourceFile.
-                // Whole semantics otherwise checks every program source, even
-                // those outside the original requested diagnostic surface.
-                let files: Vec<Option<&str>> = if *method == "getSemanticDiagnostics" {
-                    selected.iter().copied().map(Some).collect()
-                } else {
-                    vec![None]
-                };
-                let mut category = Vec::new();
-                for file in files {
-                    let params = match file {
-                        Some(name) => json!({"snapshot":snapshot.handle(),
-                            "project":project.descriptor().id,"file":name}),
-                        None => params.clone(),
-                    };
-                    let clock = cost.tick();
-                    let response = block_on(api.client.raw_json_request(method, params));
-                    cost.duration(method, clock);
-                    #[cfg(test)]
+                // Use the actual all-file category endpoint on this one
+                // snapshot. Admit every main filename before selecting rows;
+                // no per-file SDK loop or invented grouped method is needed.
+                let clock = cost.tick();
+                let response = block_on(api.client.raw_json_request(method, params.clone()));
+                cost.duration(method, clock);
+                #[cfg(test)]
+                {
                     receipt::category_request(json!({
-                        "method":method,"file":file,"acknowledged":response.is_ok(),
+                        "method":method,"file":null,"acknowledged":response.is_ok(),
                     }));
-                    let value = response?;
-                    let clock = cost.tick();
-                    let Some(diagnostics) = selected_semantics::decode(value, file) else {
-                        #[cfg(test)]
-                        receipt::refusal("diagnostic schema or selected source identity differs");
-                        return Ok(None);
-                    };
-                    cost.duration("category-decode", clock);
-                    cost.count(method, diagnostics.len());
-                    category.extend(diagnostics);
+                    receipt::category_response(match &response {
+                        Ok(value) => json!({"method":method,"file":null,"value":value}),
+                        Err(error) => json!({"method":method,"file":null,
+                            "error":vize_l0::cstr!("{error:?}")}),
+                    });
                 }
+                let value = response?;
+                let returned_count = value.as_array().map_or(0, Vec::len);
+                let clock = cost.tick();
+                let Some(category) =
+                    selected_semantics::decode_project(value, &members, &requested)
+                else {
+                    #[cfg(test)]
+                    receipt::refusal("diagnostic schema or sealed main source identity differs");
+                    return Ok(None);
+                };
+                cost.duration("category-decode", clock);
+                cost.count(method, returned_count);
                 categories.push(category);
             }
             let clock = cost.tick();

@@ -28,6 +28,10 @@ pub(super) struct NativeDiagnostic {
 }
 
 impl NativeDiagnostic {
+    pub(super) fn file_name(&self) -> &str {
+        self.file_name.as_str()
+    }
+
     pub(super) fn belongs_to(&self, name: &str) -> bool {
         self.file_name.as_str() == name
     }

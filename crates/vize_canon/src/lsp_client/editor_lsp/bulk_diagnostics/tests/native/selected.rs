@@ -114,10 +114,22 @@ fn selected_native_semantics_preserves_dependency_related_rows_and_unrequested_s
         packet["custody"]["categoryRequests"],
         json!([
             {"method":"getSyntacticDiagnostics","file":null,"acknowledged":true},
-            {"method":"getSemanticDiagnostics","file":requested.to_str().unwrap(),"acknowledged":true},
-            {"method":"getSemanticDiagnostics","file":empty.to_str().unwrap(),"acknowledged":true},
+            {"method":"getSemanticDiagnostics","file":null,"acknowledged":true},
             {"method":"getSuggestionDiagnostics","file":null,"acknowledged":true},
         ])
+    );
+    let responses = packet["custody"]["categoryResponses"].as_array().unwrap();
+    assert_eq!(responses.len(), 3);
+    assert_eq!(responses[0]["method"], "getSyntacticDiagnostics");
+    assert_eq!(responses[1]["method"], "getSemanticDiagnostics");
+    assert_eq!(responses[2]["method"], "getSuggestionDiagnostics");
+    let unrequested = root.path().join("unrequested.ts");
+    assert!(
+        responses[1]["value"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|row| { row["fileName"] == unrequested.to_str().unwrap() && row["code"] == 2322 })
     );
     assert!(
         packet["custody"]["sourceFileNames"]

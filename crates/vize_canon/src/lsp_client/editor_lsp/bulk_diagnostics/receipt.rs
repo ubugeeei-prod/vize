@@ -36,6 +36,19 @@ pub(super) fn category_request(request: Value) {
     });
 }
 
+pub(super) fn category_response(response: Value) {
+    OBSERVED.with(|value| {
+        if let Some(responses) = value
+            .borrow_mut()
+            .as_mut()
+            .and_then(|receipt| receipt.get_mut("categoryResponses"))
+            .and_then(Value::as_array_mut)
+        {
+            responses.push(response);
+        }
+    });
+}
+
 pub(super) fn related_source(source: Value) {
     OBSERVED.with(|value| {
         if let Some(sources) = value
