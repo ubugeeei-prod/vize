@@ -74,6 +74,7 @@ if (process.argv[2] === "prepare") {
     .split("\n")
     .filter(Boolean);
   const allowed = new Set([
+    "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/readiness.rs",
     "crates/vize_canon/src/corsa_bridge.rs",
     "crates/vize_canon/src/corsa_bridge/preparation_trace.rs",
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/prepare.rs",

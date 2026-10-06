@@ -80,3 +80,10 @@ Draft#8038 was actually closed at09:25:17Z; its factual paired closure is
 
 [The phase/publication/shipping decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6013356884)
 pairs this same-PR successor; fresh exact execution remains pending.
+
+Exact e608 full editor-host/Vue pass, but full Rust and coverage fail three
+rename lifecycle observers that still count literal diagnostic requests. Their
+renames reach shutdown; only readiness counts report0 instead of2/3. Align that
+one strict method selector with documentSymbol, preserving every generation,
+ordering, full native rename and twenty shutdown-overlap assertion. Failed
+aggregates remain failed; no production rename, skip or tolerance is changed.
