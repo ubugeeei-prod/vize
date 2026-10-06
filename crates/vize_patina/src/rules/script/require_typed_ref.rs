@@ -285,5 +285,4 @@ mod tests {
 }
 
 #[cfg(test)]
-#[path = "require_typed_ref/ownership_tests.rs"]
 mod ownership_tests;

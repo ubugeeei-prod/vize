@@ -52,3 +52,16 @@ and enable independent squash auto-merge only after its current checks pass.
 If an actual candidate fails, remove that candidate from the queue and correct
 the same PR before fresh qualification. The root agent remains the sole release
 publisher for the next frequent release.
+
+First head `7003bcbd420c4a89b66be58e0baf8069dc7c70f7` passed affected Clippy,
+compiled test archive, native L1/Program/navigation, doctests and all four Rust
+workers. Tooling shard 3 alone rejected a new path-attributed test module under
+the unchanged ordinary-discovery law. Preserve the complete official failure
+log (758,943 bytes; SHA-256
+`86566c4f1f7e266818ffe3fadd59e9613c5af2e71fc76514d02f2ca23d6867f7`).
+The [paired correction](https://github.com/ubugeeei-prod/vize/issues/7934#issuecomment-6018063689)
+removes only that unnecessary attribute: ordinary `mod ownership_tests;` loads
+the same file. Production logic, all test bodies, original inputs and 33 whole
+vectors remain exact first-head bytes; local execution of the original two
+layout laws passes. No gate/oracle waiver is added, and fresh successor source
+and protected qualification remain required before actual delivery.
