@@ -255,12 +255,13 @@ fn span_text(span: Span, source: &str) -> Option<String> {
         .map(ToCompactString::to_compact_string)
 }
 
+use super::comments::PropertyPiece;
 pub(super) use super::comments::{PropertyText, property_text_ranges};
 
 pub(super) fn legacy_property_text_ranges(
     object: &ObjectExpression<'_>,
     source: &str,
-) -> Option<(usize, usize, Vec<String>)> {
+) -> Option<(usize, usize, Vec<PropertyPiece>, bool)> {
     let first_start = object.properties.first()?.span().start as usize;
     let line_start = source
         .get(..first_start)?
@@ -270,6 +271,7 @@ pub(super) fn legacy_property_text_ranges(
     let close_brace = (object.span.end as usize).checked_sub(1)?;
     let mut range_end = range_start;
     let mut pieces = Vec::with_capacity(object.properties.len());
+    let mut trailing_comma = false;
 
     for property in &object.properties {
         let property_end = property.span().end as usize;
@@ -280,18 +282,27 @@ pub(super) fn legacy_property_text_ranges(
         } else {
             property_end
         };
+        trailing_comma = has_comma;
         let mut text = source.get(range_end..last_range)?.to_compact_string();
+        let comma = if has_comma {
+            next_token.checked_sub(range_end)?
+        } else {
+            text.len()
+        };
         if !has_comma && next_token == close_brace {
             text.push(',');
         }
-        if source.as_bytes().get(last_range) == Some(&b'\n') {
+        if source.get(last_range..)?.starts_with("\r\n") {
+            last_range += 2;
+            text.push_str("\r\n");
+        } else if source.as_bytes().get(last_range) == Some(&b'\n') {
             last_range += 1;
             text.push('\n');
         }
-        pieces.push(text);
+        pieces.push(PropertyPiece { text, comma });
         range_end = last_range;
     }
-    Some((range_start, range_end, pieces))
+    Some((range_start, range_end, pieces, trailing_comma))
 }
 
 pub(super) fn next_token_offset(source: &str, mut offset: usize, limit: usize) -> usize {

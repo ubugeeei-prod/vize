@@ -1,0 +1,250 @@
+{
+  "schema": "vize.lint.unchecked-index-access.v1",
+  "issue": 7995,
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "baseRevision": "143c1d4a9fbe6530cdd06f1f001b816f39c1d00a",
+  "originalBodySha256": "32f908615152b6aff047431f2e2e6267db6167275a5b45892fef773e5e2571a6",
+  "originalCommand": [
+    "lint",
+    "-f",
+    "plain",
+    "--help-level",
+    "none",
+    "src/MyTouch.vue"
+  ],
+  "qualification": "Prepared fixed whole outputs; current native/API/CLI execution pending. Original config/source bytes stay intact; CORSA_PATH and frozen Vue symlink are test bootstrap.",
+  "cases": [
+    {
+      "name": "original",
+      "source": "MyTouch.vue.txt",
+      "filename": "src/MyTouch.vue",
+      "options": {},
+      "status": 1,
+      "api": "original.api.json",
+      "json": "original.json.json",
+      "plain": "original.plain.txt",
+      "vizeConfig": "vize.config.json.txt",
+      "configFiles": [
+        {
+          "path": "tsconfig.json",
+          "input": "tsconfig.json.txt"
+        }
+      ],
+      "expectedFlag": true,
+      "stdout": "original.json.stdout.txt"
+    },
+    {
+      "name": "explicit-false",
+      "source": "MyTouch.vue.txt",
+      "filename": "src/MyTouch.vue",
+      "options": {},
+      "status": 1,
+      "api": "explicit-false.api.json",
+      "json": "explicit-false.json.json",
+      "plain": "explicit-false.plain.txt",
+      "vizeConfig": "vize.config.json.txt",
+      "configFiles": [
+        {
+          "path": "tsconfig.json",
+          "input": "tsconfig.false.json.txt"
+        }
+      ],
+      "expectedFlag": false,
+      "stdout": "explicit-false.json.stdout.txt"
+    },
+    {
+      "name": "absent",
+      "source": "MyTouch.vue.txt",
+      "filename": "src/MyTouch.vue",
+      "options": {},
+      "status": 1,
+      "api": "absent.api.json",
+      "json": "absent.json.json",
+      "plain": "absent.plain.txt",
+      "vizeConfig": "vize.config.json.txt",
+      "configFiles": [
+        {
+          "path": "tsconfig.json",
+          "input": "tsconfig.absent.json.txt"
+        }
+      ],
+      "expectedFlag": null,
+      "stdout": "absent.json.stdout.txt"
+    },
+    {
+      "name": "extended-true",
+      "source": "MyTouch.vue.txt",
+      "filename": "src/MyTouch.vue",
+      "options": {},
+      "status": 1,
+      "api": "extended-true.api.json",
+      "json": "extended-true.json.json",
+      "plain": "extended-true.plain.txt",
+      "vizeConfig": "vize.config.json.txt",
+      "configFiles": [
+        {
+          "path": "tsconfig.json",
+          "input": "tsconfig.extended.json.txt"
+        },
+        {
+          "path": "base.json",
+          "input": "tsconfig.json.txt"
+        }
+      ],
+      "expectedFlag": true,
+      "stdout": "extended-true.json.stdout.txt"
+    },
+    {
+      "name": "child-overrides-false",
+      "source": "MyTouch.vue.txt",
+      "filename": "src/MyTouch.vue",
+      "options": {},
+      "status": 1,
+      "api": "child-overrides-false.api.json",
+      "json": "child-overrides-false.json.json",
+      "plain": "child-overrides-false.plain.txt",
+      "vizeConfig": "vize.config.json.txt",
+      "configFiles": [
+        {
+          "path": "tsconfig.json",
+          "input": "tsconfig.override.json.txt"
+        },
+        {
+          "path": "base.json",
+          "input": "tsconfig.json.txt"
+        }
+      ],
+      "expectedFlag": false,
+      "stdout": "child-overrides-false.json.stdout.txt"
+    },
+    {
+      "name": "nearest-config",
+      "source": "MyTouch.vue.txt",
+      "filename": "src/nested/MyTouch.vue",
+      "options": {},
+      "status": 1,
+      "api": "nearest-config.api.json",
+      "json": "nearest-config.json.json",
+      "plain": "nearest-config.plain.txt",
+      "vizeConfig": "vize.config.json.txt",
+      "configFiles": [
+        {
+          "path": "tsconfig.json",
+          "input": "tsconfig.false.json.txt"
+        },
+        {
+          "path": "src/nested/tsconfig.json",
+          "input": "tsconfig.json.txt"
+        }
+      ],
+      "expectedFlag": true,
+      "stdout": "nearest-config.json.stdout.txt"
+    },
+    {
+      "name": "crlf",
+      "source": "MyTouch.crlf.vue.txt",
+      "filename": "src/MyTouch.vue",
+      "options": {},
+      "status": 1,
+      "api": "crlf.api.json",
+      "json": "crlf.json.json",
+      "plain": "crlf.plain.txt",
+      "vizeConfig": "vize.config.json.txt",
+      "configFiles": [
+        {
+          "path": "tsconfig.json",
+          "input": "tsconfig.json.txt"
+        }
+      ],
+      "expectedFlag": true,
+      "stdout": "crlf.json.stdout.txt"
+    },
+    {
+      "name": "unicode",
+      "source": "MyTouch.unicode.vue.txt",
+      "filename": "src/MyTouch.vue",
+      "options": {},
+      "status": 1,
+      "api": "unicode.api.json",
+      "json": "unicode.json.json",
+      "plain": "unicode.plain.txt",
+      "vizeConfig": "vize.config.json.txt",
+      "configFiles": [
+        {
+          "path": "tsconfig.json",
+          "input": "tsconfig.json.txt"
+        }
+      ],
+      "expectedFlag": true,
+      "stdout": "unicode.json.stdout.txt"
+    },
+    {
+      "name": "nullable-string-allowed",
+      "source": "MyTouch.vue.txt",
+      "filename": "src/MyTouch.vue",
+      "options": {
+        "allowNullableString": true
+      },
+      "status": 0,
+      "api": "nullable-string-allowed.api.json",
+      "json": "nullable-string-allowed.json.json",
+      "plain": "nullable-string-allowed.plain.txt",
+      "vizeConfig": "nullable-string-allowed.vize.config.json.txt",
+      "configFiles": [
+        {
+          "path": "tsconfig.json",
+          "input": "tsconfig.json.txt"
+        }
+      ],
+      "expectedFlag": true,
+      "stdout": "nullable-string-allowed.json.stdout.txt"
+    },
+    {
+      "name": "nullable-object-disallowed",
+      "source": "MyTouch.vue.txt",
+      "filename": "src/MyTouch.vue",
+      "options": {
+        "allowNullableObject": false
+      },
+      "status": 1,
+      "api": "nullable-object-disallowed.api.json",
+      "json": "nullable-object-disallowed.json.json",
+      "plain": "nullable-object-disallowed.plain.txt",
+      "vizeConfig": "nullable-object-disallowed.vize.config.json.txt",
+      "configFiles": [
+        {
+          "path": "tsconfig.json",
+          "input": "tsconfig.json.txt"
+        }
+      ],
+      "expectedFlag": true,
+      "stdout": "nullable-object-disallowed.json.stdout.txt"
+    },
+    {
+      "name": "known-indices",
+      "source": "KnownIndices.vue.txt",
+      "filename": "src/MyTouch.vue",
+      "options": {},
+      "status": 1,
+      "api": "known-indices.api.json",
+      "json": "known-indices.json.json",
+      "plain": "known-indices.plain.txt",
+      "vizeConfig": "vize.config.json.txt",
+      "configFiles": [
+        {
+          "path": "tsconfig.json",
+          "input": "tsconfig.json.txt"
+        }
+      ],
+      "expectedFlag": true,
+      "stdout": "known-indices.json.stdout.txt"
+    }
+  ],
+  "inputCatalog": {
+    "path": "inputs.json",
+    "sha256": "62169457d0572d65ae6cd149161075661e1f596b427ea13e16d8c1dd8585d577"
+  }
+}
