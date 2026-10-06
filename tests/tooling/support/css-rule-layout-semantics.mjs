@@ -3,7 +3,7 @@ import { createRequire } from "node:module";
 
 const fromUi = createRequire(new URL("../../../npm/ui/package.json", import.meta.url));
 const compiler = fromUi("vue/compiler-sfc");
-const vue = fromUi("vue");
+const vue = fromUi("vue/package.json");
 
 const serialize = (error) =>
   typeof error === "string"

@@ -53,10 +53,8 @@ jobs:
     name: Instruction ceilings
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: ./.github/workflows/level-instruction-counts.yml
-
   level-dependency-direction:
     uses: ./.github/workflows/level-dependencies.yml
-
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60

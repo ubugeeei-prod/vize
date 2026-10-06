@@ -36,13 +36,12 @@ The two style-only originals retain their complete missing-template/script
 parse diagnostics; no component is invented to erase those negatives.
 Route handling remains uncredited (`nativeHandled: 0`) without measured evidence.
 
-Current status: the publication hold is lifted and this slice is being sent to
-an independent conventional Draft PR and ordinary source Actions. Static syntax,
-rustfmt and the three original independent references pass. Current formatter
-execution, history, full Rust and instruction gates are still unknown. Bounded
-source review runs alongside Actions; genuine failures must be resolved before
-Ready/auto/queue admission. Actual merge and installed-release replay remain
-TODO. PR #8076 delivery has priority when the security fix actually merges.
+Current status: independent Draft PR #8087 has genuine source Actions failures
+retained below. Static source review and the three independent original references
+pass; they grant no current execution credit. Resolve actual failures before
+Ready/auto/queue admission. Protected instructions, actual merge and installed
+release replay remain TODO. PR #8076 delivery has priority when the security fix
+actually merges.
 
 Source peer found that `fmt` always prints its unchanged progress/summary to
 stderr. Each fixture now pins all five complete stdout/stderr/status outcomes
@@ -69,3 +68,40 @@ promises instead of waiving the zero-warning gate. Their assertions and every
 production/oracle byte remain unchanged; preserve the failed raw check-js log.
 Healthy source formatter/Rust/tooling/browser jobs continue before the next
 necessary source push. This correction grants no runtime or merge acceptance.
+
+The actual c00 tooling worker rejects the expanded PR workflow under three
+unchanged 350-line laws. Keep those exact laws and compact the dependency hook
+into the existing preparation action: retain the original two Pkl/lint commands
+and inherited plan/tier/shard environment, then select the tests-owned browser
+with the same validated selector. The full unsharded caller still installs it.
+The workflow returns to 350 lines; no native guard, selector or ceiling changes.
+The existing source-selection contract still compares the exact original two
+commands inside their action. Its local replay lacks the yaml package and grants
+no acceptance; the other eleven pure checks pass, including all three original
+workflow-cap/guard laws. Genuine hosted execution remains required.
+
+The complete c00 tooling artifact authenticates all 17 original/expected carrier
+bytes. All three original cases and the CRLF original qualify with 20 complete
+CLI captures. The 13 template controls stop before CLI because this diagnostic
+helper loaded Vue runtime before the unchanged shared HappyDOM initializer. Read
+the same pinned Vue package manifest for version identity instead; let the
+existing runtime helper install document before loading Vue. Keep all actual
+DOM/SSR diagnostics and runtime assertions; no consumer is mocked or skipped.
+
+The c00 Rust failure is exactly the existing keyframe-comma control: the printer
+adds one empty line between two frame blocks. Its complete expected bytes remain
+unchanged. Primary Lightning CSS keyframe nodes have no locations. The already
+parsed Keyframes parent may own only its direct token-depth frame headers, after
+the complete observed frame count equals its parsed list. Each retained whole
+header still joins its brace ordinal and full original/printed token equality.
+Frame commas remain non-selector punctuation; compact historical frame gaps stay
+under the existing compact-source policy. Add no parse, printer or format pass.
+The existing compact/vendor-keyframe Rust shard passed at c00; this is distinct
+from the failing new case and does not grant full-history or instruction credit.
+
+The full Check workflow also grew from 690 to 692 lines and was genuinely
+rejected. Remove only two empty YAML separators, conserving its whole parsed
+workflow after removing the new browser caller; it returns to 690. No old step,
+command, environment, gate or ceiling is removed. PR workflow is 350 lines.
+The corrected successor still requires fresh source Actions, all 17 API cases,
+all 85 complete CLI captures, history and protected gates before admission.
