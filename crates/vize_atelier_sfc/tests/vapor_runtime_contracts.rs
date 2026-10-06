@@ -24,6 +24,7 @@ mod vapor_runtime_contracts {
     mod model_arguments;
     mod models;
     mod production;
+    mod template_refs;
 }
 
 const CHILD: &str = r#"<script setup>
@@ -123,6 +124,27 @@ fn trace(source: &str, backend: &str, extra: Value) -> Value {
         .write_all(input.to_string().as_bytes())
         .unwrap();
     let output = child.wait_with_output().unwrap();
+    if let Some(name) = extra.get("proofName").and_then(Value::as_str) {
+        let profile = if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
+            "full"
+        } else {
+            "pr"
+        };
+        let destination = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../target/nextest")
+            .join(profile);
+        std::fs::create_dir_all(&destination).unwrap();
+        std::fs::write(
+            destination.join(format!("vapor-refs-{name}.json")),
+            serde_json::to_vec(&json!({
+                "source": source, "childSource": child_source, "input": input,
+                "exitCode": output.status.code(), "success": output.status.success(),
+                "stdoutBytes": output.stdout, "stderrBytes": output.stderr
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+    }
     assert!(
         output.status.success(),
         "{backend}: {}\n{code}",
