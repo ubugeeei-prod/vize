@@ -171,3 +171,19 @@ its imports to those exact captured entries. No original test/reset/guard or
 expected outcome changes. Fresh whole35/42/native/installed/protected delivery
 remains required; the failed head receives no whole42 acceptance.
 Paired decision: [6008599049](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6008599049).
+
+Protected633 passed both complete35/42 suites494files/3808tests, then the
+existing strict SFC lint rejected conditional NativeSelect value attrs at225:13
+as unsafe template binding. Verified failed run head equals the live queue
+entry before removing only that candidate and restoring Draft. Retain the
+complete failure stream SHA4e19c21a and all successful original outcomes.
+Replace the existing scalar computed with an explicitly typed optional-string
+attrs record: multiple produces an empty object, single the normalized string
+value. Bind that record directly; no additional computed/effect, cast, lint
+suppression, unconditional value key, fixture or expected outcome change.
+The raw stream does not expose the probe type, so no deeper checker cause is
+claimed. Run the exact existing UI conformance command on selected PR JS
+changes as well as merge queue, preserving every strict lint/render check.
+Fresh whole35/42/native41/security and all protected gates must qualify this
+successor before an actual signed merge; prior green receives no transfer.
+Paired decision: [6009110589](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6009110589).
