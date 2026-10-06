@@ -130,3 +130,44 @@ fn ecosystem_inherits_every_default_script_rule_and_presets_register_once() {
         }
     }
 }
+
+#[test]
+fn configured_vue_versions_preserve_complete_supported_syntax_baselines() {
+    use vize_l0::config::VueVersion;
+    let data = corpus();
+    for version in [VueVersion::V2, VueVersion::V2_7, VueVersion::V3] {
+        for case in data["cases"].as_array().unwrap() {
+            if case["kind"] == "html" {
+                continue;
+            }
+            let findings = if version.is_legacy() {
+                &case["baselineDiagnostics"]
+            } else {
+                &case["diagnostics"]
+            };
+            let expected = json!({
+                "filename": case["filename"],
+                "error_count": findings.as_array().unwrap().iter().filter(|d| d["severity"] == "error").count(),
+                "warning_count": findings.as_array().unwrap().iter().filter(|d| d["severity"] == "warning").count(),
+                "diagnostics": findings
+            });
+            for preset in [LintPreset::HappyPath, LintPreset::Ecosystem] {
+                let result = Linter::with_preset(preset)
+                    .with_vue_version(Some(version))
+                    .with_help_level(HelpLevel::None)
+                    .lint_sfc(
+                        case["source"].as_str().unwrap(),
+                        case["filename"].as_str().unwrap(),
+                    );
+                assert_eq!(
+                    whole(&result),
+                    expected,
+                    "{} / {} / {}",
+                    version.as_str(),
+                    case["id"],
+                    preset.as_str()
+                );
+            }
+        }
+    }
+}

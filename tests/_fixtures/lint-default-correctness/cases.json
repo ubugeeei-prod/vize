@@ -546,5 +546,6 @@
     "path": "crates/vize_patina/src/rules/vue/v_on_style.rs",
     "sha256": "0e5efb4ea4d06462604f7d0d5289ead67bca744ff1f7921fd670cae1ca30cc93",
     "reason": "full longform v-on control retains existing default warning/help/safe fix; not newly enabled by this policy"
-  }
+  },
+  "configuredVueVersions": ["2", "2.7", "3"]
 }

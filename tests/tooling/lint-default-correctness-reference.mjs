@@ -10,6 +10,7 @@ export function loadCorpus(root) {
   assert.equal(corpus.schema, "vize.lint.default-correctness");
   assert.equal(corpus.version, 1);
   assert.equal(corpus.cases.length, 15);
+  assert.deepEqual(corpus.configuredVueVersions, ["2", "2.7", "3"]);
   for (const entry of corpus.cases) {
     assert.equal(
       fs.readFileSync(path.join(directory, entry.filename + ".fixture"), "utf8"),

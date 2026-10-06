@@ -46,6 +46,16 @@ await test("configless CLI defaults retain whole correctness findings and explic
           }) + "\n",
       });
     }
+    for (const version of corpus.configuredVueVersions) {
+      for (const entry of corpus.cases.slice(0, 6)) {
+        scenarios.push({
+          entry,
+          preset: null,
+          config: JSON.stringify({ vue: { version } }) + "\n",
+          findings: version === "3" ? entry.diagnostics : entry.baselineDiagnostics,
+        });
+      }
+    }
     for (const { entry, preset, config, findings } of scenarios) {
       const file = path.join(directory, entry.filename);
       fs.writeFileSync(file, entry.source);
@@ -105,7 +115,7 @@ await test("configless CLI defaults retain whole correctness findings and explic
       }
       fs.unlinkSync(file);
     }
-    assert.equal(evidence.runs.length, 62);
+    assert.equal(evidence.runs.length, 80);
     console.log(
       "VIZE_DEFAULT_CORRECTNESS",
       JSON.stringify({ ...build, runs: evidence.runs.length }),
