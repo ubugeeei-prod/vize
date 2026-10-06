@@ -35,3 +35,13 @@ Decision: eligibility requires existing lint enablement and a non-plain-script s
 Private ef8 remains compatibility-blocked historical evidence; fresh successor Actions/native/Rust acceptance is required. The provider/runtime version is7.0.2 and the Corsa SDK library is1.14.0. Security13 advisories, protected/actual delivery and installed replay remain pending and unwaived.
 
 Decision receipt: [6007996561](https://github.com/ubugeeei-prod/vize/issues/8002#issuecomment-6007996561).
+
+Current b4 source qualification executes the complete original control/native stdio sessions on hosted c7e, with four actual owned native gates and all19 whole publications. Current-version early/final packets, exact authored TS2322, original pins, source-build receipts, shutdown and no superseded native finals reconcile independently. All16,310 actual Rust tests pass, including the unchanged component-authority/plain-script observers and the five new ownership laws. This is exact PR-source qualification; protected full suites and actual delivery remain unfinished.
+
+Original-case native-stopped removal observations are24.57–25.42ms and repairs5.62–6.55ms. These small-fixture observations grant no whole-project speedup,10x, Program-reuse, installed-release or full Misskey churn credit. The actual provider/runtime7.0.2, SDK library1.14.0 and Vue3.6.0-beta.10 are distinct from the unchanged historical report.
+
+Audit correction: the first owner counter searched the wrong snapshot-warning substring. Current b4 native stderr contains one authentic failed-snapshot-release/closed-queue warning and zero diagnostic timeouts. The former receipt stays immutable; corrected owner and independent whole-runtime receipts retain that warning. Historical977 stderr has the same one-warning qualification through an additive correction. Whole diagnostic controls pass; there is no leak-free or native-lifetime guarantee.
+
+Keep every original observer and complete/cancel/stale/native-only publication law. No gate is relaxed. Current security still fails on13 moderate-or-higher dependency findings and is independently owned; current canonical corpus remains active. Draft/offqueue custody continues until exact current gates pass. Protected104/full Rust, actual signed merge and the next installed original-case replay remain required.
+
+Decision receipt: [6008197347](https://github.com/ubugeeei-prod/vize/issues/8002#issuecomment-6008197347).
