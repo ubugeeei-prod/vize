@@ -10,11 +10,14 @@ const fixture = process.argv[2];
 assert.ok(fixture);
 const nuxtPackage = path.join(root, "npm/framework/nuxt/package.json");
 const requireNuxt = createRequire(nuxtPackage);
-const nuxtEntry = requireNuxt.resolve("nuxt");
-const requireRuntime = createRequire(nuxtEntry);
-const devtoolsEntry = requireRuntime.resolve("@nuxt/devtools");
+const kitEntry = requireNuxt.resolve("@nuxt/kit");
+const requireKit = createRequire(kitEntry);
+const { resolveModulePath } = await import(pathToFileURL(requireKit.resolve("exsolve")).href);
+const esm = (name, from) => resolveModulePath(name, { from, conditions: ["node", "import"] });
+const nuxtEntry = esm("nuxt", nuxtPackage);
+const devtoolsEntry = esm("@nuxt/devtools", nuxtEntry);
 const requireDevtools = createRequire(devtoolsEntry);
-const gitEntry = requireDevtools.resolve("simple-git");
+const gitEntry = esm("simple-git", devtoolsEntry);
 const requireGit = createRequire(gitEntry);
 const manifest = (require, name) => {
   let directory = path.dirname(fs.realpathSync(require.resolve(name)));
@@ -68,7 +71,7 @@ git(
   "fixture",
 );
 const expected = `security-compat#${git("rev-parse", "--short", "HEAD")}`;
-const { loadNuxt } = await import(pathToFileURL(requireNuxt.resolve("@nuxt/kit")).href);
+const { loadNuxt } = await import(pathToFileURL(kitEntry).href);
 let initialized = false;
 const nuxt = await loadNuxt({
   cwd: fixture,

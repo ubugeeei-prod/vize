@@ -51,3 +51,19 @@ custody are bounded checks, not runtime acceptance. Fresh exact-head Actions
 must prove the installed graph, genuine compatibility controls, unchanged
 production/cargo audits and all protected Rust/corpus/instruction suites.
 Actual signed merge and next release remain unfinished until externally proved.
+
+The initial qualification helper incorrectly used require conditions for the
+import-only Nuxt/Devtools roots. Peer review caught this before acceptance;
+the successor uses existing Nuxt Kit's exsolve with explicit node/import
+conditions and actual importer paths. No dependency or oracle relaxation is
+introduced; fresh corrected-head Actions are required.
+
+A second peer check found two remaining Test Utils compiler peer changes.
+Both keep original compiler-dom RC9 and optional SSR peer presence; only the
+vulnerable SSR3.5.41 peer becomes patched3.5.42. Playground Vue RC6 and
+literal3.5.38 remain unchanged. No peer removal masks an audit finding.
+
+Initial Check37400254814 failed installation with ERR_PNPM_INVALID_PATCH;
+the unified diff lacked the Git header required by pnpm. The successor adds
+only that header/blob identity and updates exact patch hashes. The authenticated
+consumer change remains one import; initial audit/consumer execution did not run.

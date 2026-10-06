@@ -407,7 +407,7 @@ overrides:
   yaml: 2.9.0
 
 patchedDependencies:
-  '@nuxt/devtools@3.4.1': 14308feb5ff9ea74757aaf4abc88137571621484997f8550ccede2c3ac0211a6
+  '@nuxt/devtools@3.4.1': 032cd5ea2326550f2dff6ca6dc4b283faa5bcfb3137e4cffe206c03646b920b0
   braces@3.0.3: 4164fc10a66e95450b372dda14add9e336b8daa6ef49d472caed0f6d9bc28d74
   node-forge@1.4.0: 8877267668e88fba4baeb2b574509e2d13a9cff4170179473cb808be833d2b1b
 
@@ -1257,7 +1257,7 @@ importers:
         version: 3.5.42
       '@vue/test-utils':
         specifier: catalog:vue-stable
-        version: 2.4.10(@vue/compiler-dom@3.6.0-rc.10)(vue@3.5.42(typescript@6.0.3))
+        version: 2.4.10(@vue/compiler-dom@3.6.0-rc.9)(@vue/server-renderer@3.5.42)(vue@3.5.42(typescript@6.0.3))
       happy-dom:
         specifier: catalog:testing
         version: 20.11.2
@@ -1311,7 +1311,7 @@ importers:
         version: link:../npm/builder/vite
       '@vue/test-utils':
         specifier: catalog:vue-stable
-        version: 2.4.10(@vue/compiler-dom@3.6.0-rc.10)(vue@3.6.0-rc.6(typescript@6.0.3))
+        version: 2.4.10(@vue/compiler-dom@3.6.0-rc.9)(@vue/server-renderer@3.5.42)(vue@3.6.0-rc.6(typescript@6.0.3))
       playwright:
         specifier: catalog:testing
         version: 1.62.1
@@ -14828,7 +14828,7 @@ snapshots:
       pkg-types: 2.3.1
       semver: 7.8.5
 
-  '@nuxt/devtools@3.4.1(patch_hash=14308feb5ff9ea74757aaf4abc88137571621484997f8550ccede2c3ac0211a6)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(db0@0.3.4)(ioredis@5.11.1)(magic-string@1.1.0)(rolldown@1.2.3)(unplugin@3.3.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(rolldown@1.2.3)(rollup@4.62.4))(vue@3.5.42(typescript@6.0.3))':
+  '@nuxt/devtools@3.4.1(patch_hash=032cd5ea2326550f2dff6ca6dc4b283faa5bcfb3137e4cffe206c03646b920b0)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(db0@0.3.4)(ioredis@5.11.1)(magic-string@1.1.0)(rolldown@1.2.3)(unplugin@3.3.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(rolldown@1.2.3)(rollup@4.62.4))(vue@3.5.42(typescript@6.0.3))':
     dependencies:
       '@nuxt/devtools-kit': 3.4.1(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(magic-string@1.1.0)(magicast@0.5.4)(rolldown@1.2.3)(unplugin@3.3.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(rolldown@1.2.3)(rollup@4.62.4))
       '@nuxt/devtools-wizard': 3.4.1
@@ -18791,19 +18791,23 @@ snapshots:
 
   '@vue/shared@3.6.0-rc.9': {}
 
-  '@vue/test-utils@2.4.10(@vue/compiler-dom@3.6.0-rc.10)(vue@3.5.42(typescript@6.0.3))':
+  '@vue/test-utils@2.4.10(@vue/compiler-dom@3.6.0-rc.9)(@vue/server-renderer@3.5.42)(vue@3.5.42(typescript@6.0.3))':
     dependencies:
-      '@vue/compiler-dom': 3.6.0-rc.10
+      '@vue/compiler-dom': 3.6.0-rc.9
       js-beautify: 1.15.4
       vue: 3.5.42(typescript@6.0.3)
       vue-component-type-helpers: 3.3.9
+    optionalDependencies:
+      '@vue/server-renderer': 3.5.42
 
-  '@vue/test-utils@2.4.10(@vue/compiler-dom@3.6.0-rc.10)(vue@3.6.0-rc.6(typescript@6.0.3))':
+  '@vue/test-utils@2.4.10(@vue/compiler-dom@3.6.0-rc.9)(@vue/server-renderer@3.5.42)(vue@3.6.0-rc.6(typescript@6.0.3))':
     dependencies:
-      '@vue/compiler-dom': 3.6.0-rc.10
+      '@vue/compiler-dom': 3.6.0-rc.9
       js-beautify: 1.15.4
       vue: 3.6.0-rc.6(typescript@6.0.3)
       vue-component-type-helpers: 3.3.9
+    optionalDependencies:
+      '@vue/server-renderer': 3.5.42
 
   '@vueuse/core@10.11.1(vue@3.6.0-beta.10(typescript@6.0.3))':
     dependencies:
@@ -22123,7 +22127,7 @@ snapshots:
     dependencies:
       '@dxup/nuxt': 0.5.6(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(magicast@0.5.4)(rolldown@1.2.3)(rollup@4.62.4)
       '@nuxt/cli': 3.37.0(@nuxt/schema@4.5.1)(@parcel/watcher@2.5.6)(magicast@0.5.4)
-      '@nuxt/devtools': 3.4.1(patch_hash=14308feb5ff9ea74757aaf4abc88137571621484997f8550ccede2c3ac0211a6)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(db0@0.3.4)(ioredis@5.11.1)(magic-string@1.1.0)(rolldown@1.2.3)(unplugin@3.3.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(rolldown@1.2.3)(rollup@4.62.4))(vue@3.5.42(typescript@6.0.3))
+      '@nuxt/devtools': 3.4.1(patch_hash=032cd5ea2326550f2dff6ca6dc4b283faa5bcfb3137e4cffe206c03646b920b0)(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(db0@0.3.4)(ioredis@5.11.1)(magic-string@1.1.0)(rolldown@1.2.3)(unplugin@3.3.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(rolldown@1.2.3)(rollup@4.62.4))(vue@3.5.42(typescript@6.0.3))
       '@nuxt/kit': 4.5.1(magic-string@1.1.0)(magicast@0.5.4)(rolldown@1.2.3)(unplugin@3.3.0(@voidzero-dev/vite-plus-core@0.1.24(@tsdown/css@0.22.14)(@types/node@25.9.2)(esbuild@0.28.1)(jiti@1.21.7)(terser@5.49.2)(tsx@4.23.12)(typescript@6.0.3)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(rolldown@1.2.3)(rollup@4.62.4))
       '@nuxt/nitro-server': 4.5.1(2f25ae5e32b42eed78d21865bdd7094d)
       '@nuxt/schema': 4.5.1
