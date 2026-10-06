@@ -30,3 +30,9 @@ cargo clippy --locked -p vize_croquis -p vize_croquis_cf --all-targets -- -D war
 ```
 
 The unchanged workflow's following WASM command and ordinary source checks must also pass. Keep the branch private during the hold. Track the protected queue, signed actual merge and a subsequent verified release separately; source preparation is not delivery or performance evidence.
+
+## Current configured formatter correction
+
+The first published source `6c2d5a4748be08cb2e87aad9d4a559654f134443` failed only its ordinary Rust formatter job [112050933715](https://github.com/ubugeeei-prod/vize/actions/runs/37395677645/job/112050933715). The complete raw log is 39,669 bytes, SHA-256 `dfd47462e6979cfce19e7949f818c63aeeb921f6d63c879131fb6a63ef585277`. The workspace uses Rust edition 2024, so the earlier local edition-2021 check was insufficient. Move only the existing `ToCompactString` import before the other L0 imports, preserving all code tokens and every original law. This is paired with [the current issue decision](https://github.com/ubugeeei-prod/vize/issues/6830#issuecomment-6006879717).
+
+Fresh exact-source Actions remain required. The first focused workflow continues without blind cancellation; source-qualified observations remain distinct. No assertion, fixture, policy, cap, production or workflow change is made.
