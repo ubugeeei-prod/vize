@@ -4,8 +4,8 @@ pub(super) fn is_attached_comment(gap: &str) -> bool {
     classify(gap).0
 }
 
-// Sorting can move an attached group before the first block. Retain the
-// earlier document prologue, but recover the group after its blank separator.
+// Initial adjacency has the same meaning as an inter-block attachment. Keep
+// any earlier prologue separate when a blank line precedes the terminal group.
 pub(super) fn split_prologue(gap: &str) -> (&str, Option<&str>) {
     let (attached, group_start) = classify(gap);
     if attached
@@ -29,6 +29,9 @@ fn classify(gap: &str) -> (bool, Option<usize>) {
         let Some((before, body)) = remaining.split_once("<!--") else {
             return (false, None);
         };
+        if offset == 0 && before.trim().is_empty() {
+            group_start = Some(before.len());
+        }
         if !before.trim().is_empty() {
             group_start = None;
         }
