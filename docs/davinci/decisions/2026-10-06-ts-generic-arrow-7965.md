@@ -1,8 +1,8 @@
 # Preserve the declared TypeScript script extension
 
 Issue: [#7965](https://github.com/ubugeeei-prod/vize/issues/7965).
-The paired issue decision is prepared for the same source publication; it is
-not posted during the current private preparation/publication barrier.
+The [paired issue decision](https://github.com/ubugeeei-prod/vize/issues/7965#issuecomment-6007450561)
+records the same source publication and qualification boundaries.
 
 The complete original issue, all four fenced inputs/command/reported output,
 and verified reporter identity are retained with whole-byte hashes. The
@@ -56,3 +56,22 @@ Fresh exact-head source/affected Actions, full protected Rust/current104 gates,
 actual signed merge with literal verified reporter credit, issue closure and
 released public qualification remain required. nativeHandled stays zero; this
 legacy fix does not close formatter fix-history or establish the 10x target.
+
+## Current-main source publication
+
+The original private source `05f4f059` passed independent source-only review
+`3873d193`; preparation receipt `0eba1848` preserves the original input and
+static checks. A genuine rebase onto actual main `143c1d4a` produces
+`ec281f6b` with all thirteen noncanonical owned blobs, original source author,
+date, full message and verified reporter trailer exact. All incoming nonowned
+tree entries and the complete incoming canonical text are retained; removing
+only the owned formatter appendix recovers the original 350-line record.
+
+The conventional Draft and automatic exact-head Actions are now authorized.
+The earlier private/no-execution checkpoint remains historical. No local
+Rust/Oxfmt/CLI execution or hosted result is inferred from source review.
+Fresh whole seven-law/twelve-control and existing historical compatibility,
+protected full Rust/unchanged104, actual signed merge and root-owned public
+release remain required. The issue comment above is paired with this checkpoint;
+`nativeHandled` remains zero and formatter native/default/history completion
+is unfinished.
