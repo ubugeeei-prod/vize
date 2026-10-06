@@ -160,3 +160,35 @@ received an empty publication. The diagnostic provider/test and inputs are
 unchanged by this completion repair; ownership diagnosis is pending. No old
 expected diagnostic is changed or waived, and full current Rust acceptance
 remains required.
+
+Exact `fa570dad` hosted qualification completed all 37 full response assertions
+and six strict diagnostic publications. Every recorded response/notification
+was independently reconciled against both original stdio session logs. Four
+official Rust shards executed 16,491 tests with zero failures, errors or skips,
+including all five completion laws and the unchanged original plain-CJS law.
+That later success does not establish the cause of the retained e904 failure.
+The native backend workflow also succeeded at the exact fa570 source.
+
+The captured completion-local classifier performed 16 calls per prepared
+context: observed medians were 11.0405 microseconds for the original script
+literal, 1.6221385 milliseconds for the original template literal and 0.641
+microseconds for an ordinary template identifier. Complete authored source,
+generated projection and classifier bytes/hashes are retained. These are noisy
+debug test-host wall observations after context preparation, with no provider
+or hover request; they grant no CPU, allocation, release-speed or gain claim.
+
+The maintainer requires a separate passive failure-custody change in this same
+PR for the unchanged plain-script diagnostic law. It records complete decoded
+messages only after that driver opts in before initialize, and attaches full
+original configuration, stderr and terminal state only after the original
+successful shutdown/exit/readers when a mismatch exists. No production query,
+logging, timeout, deadline, original input, expected publication, lifecycle
+ordering or completion payload changes. The shared helper allocates one
+`Arc<OnceLock>` per process; message cloning/storage stays disabled before
+opt-in. Complete decoded objects are not raw wire frames. The narrow status
+formatting uses the existing compact-string macro without a lint waiver.
+
+All fa570 completion production, original sources, fixed payloads, 37 response
+values and six publications remain exact in this observer-only successor.
+Fresh automatic exact-head source/native gates and protected suites/104 still
+qualify the joined source; none of fa570's execution transfers to it.
