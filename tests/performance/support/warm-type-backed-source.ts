@@ -148,6 +148,8 @@ export function generateWorkspace(
 }
 
 export function sourceIdentity(repoRoot: string) {
+  const profile = process.env.WARM_REQUEST_BUILD_PROFILE ?? "ci";
+  assert.ok(profile === "ci" || profile === "release");
   const files = [
     "Cargo.toml",
     "Cargo.lock",
@@ -163,6 +165,7 @@ export function sourceIdentity(repoRoot: string) {
     ),
     production: git(repoRoot, ["rev-parse", "HEAD:crates"]),
     dirty: git(repoRoot, ["diff", "--name-only", "HEAD"]),
-    recipe: "cargo build --profile ci -p vize",
+    recipe:
+      profile === "release" ? "cargo build --release -p vize" : "cargo build --profile ci -p vize",
   };
 }

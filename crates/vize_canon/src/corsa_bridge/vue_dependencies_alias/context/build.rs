@@ -101,6 +101,10 @@ pub(super) fn build(
     let mut package_bindings = Vec::new();
     let mut route_inputs = Vec::new();
 
+    let register_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+        "alias_register_inputs",
+        revision.requested_sources.len() + 1,
+    );
     project
         .register_path_with_content(source_path, content)
         .map_err(bridge_error)?;
@@ -131,6 +135,9 @@ pub(super) fn build(
             .register_path_with_content(&path, source)
             .map_err(bridge_error)?;
     }
+    register_phase.finish();
+    let reachable_phase =
+        crate::corsa_bridge::preparation_trace::Phase::start("alias_reachable_dependencies", 1);
     let virtual_file = project.find_by_original(source_path).ok_or_else(|| {
         CorsaBridgeError::CommunicationError(vize_carton::cstr!(
             "Canon did not retain registered host {}",
@@ -183,6 +190,9 @@ pub(super) fn build(
             .map_err(bridge_error)?;
     }
 
+    reachable_phase.finish();
+    let routes_phase =
+        crate::corsa_bridge::preparation_trace::Phase::start("alias_package_routes", 1);
     let mut scanned_package_sources = FxHashSet::default();
     loop {
         project.set_package_routes(package_bindings.clone());
@@ -225,6 +235,7 @@ pub(super) fn build(
         .register_package_route_targets()
         .map_err(bridge_error)?;
     project.finalize_package_routes().map_err(bridge_error)?;
+    routes_phase.finish();
     route_inputs.sort();
     route_inputs.dedup();
     // A host must retain one session-private identity as dependencies appear

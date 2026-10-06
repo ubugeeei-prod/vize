@@ -1,0 +1,610 @@
+{
+  "schema": "vize.formatter-leading-root-comment-corpus",
+  "version": 1,
+  "issue": 8117,
+  "native": "unsupported",
+  "historicalMatrix": {
+    "sourceRevision": "d309824a07cce6577ef8aad80b61d940b995f6e3",
+    "workflowRunId": 37439069427,
+    "jobId": 112188034936,
+    "originalFiles": 1560,
+    "violations": 1,
+    "waivers": 0,
+    "historicalWholeFormattedOutputsRetained": false
+  },
+  "publicOriginal": {
+    "id": "habitica/task.vue",
+    "repository": "HabitRPG/habitica",
+    "revision": "19b2ce531c3bb1c3f95a75388b1176b345cbbca2",
+    "repositoryPath": "website/client/src/components/tasks/task.vue",
+    "fixture": "tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/habitica/task.vue.txt",
+    "file": "task.vue",
+    "bytes": 34878,
+    "sha256": "58d63662f7743632e532e57f7bf0eb0a61bcb7ca536d975b4a29feeb87a8186b",
+    "gitBlobSha1": "61ea3f95f4dd478df10828ee7d967596784650c6",
+    "license": {
+      "path": "tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/habitica/LICENSE",
+      "name": "GPL-3.0",
+      "bytes": 497,
+      "sha256": "8c6f1ac1119cedda7b98ba65f4ebf6ad681c0fcb9ce1fc56ae7b180850983971"
+    },
+    "expectedLeadingContent": "<!-- eslint-enable max-len -->\n<!-- eslint-disable-next-line vue/component-tags-order -->\n<script>\n",
+    "cliExpected": [
+      {
+        "mode": "--check",
+        "status": 1,
+        "stdout": "",
+        "stderr": "Found 1 file(s)\nWould reformat: task.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+      },
+      {
+        "mode": "--write",
+        "status": 0,
+        "stdout": "",
+        "stderr": "Found 1 file(s)\nReformatted: task.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+      },
+      {
+        "mode": "--write",
+        "status": 0,
+        "stdout": "",
+        "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+      },
+      {
+        "mode": "--write",
+        "status": 0,
+        "stdout": "",
+        "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+      },
+      {
+        "mode": "--check",
+        "status": 0,
+        "stdout": "",
+        "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "adjacent-first-template",
+      "file": "Adjacent.vue",
+      "source": "<!-- template note -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "expected": "<!-- template note -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "states": [
+        {
+          "label": "hello"
+        },
+        {
+          "label": "日本語"
+        }
+      ],
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "standalone-authored-blank",
+      "file": "Standalone.vue",
+      "source": "<!-- license -->\n\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "expected": "<!-- license -->\n\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "states": [
+        {
+          "label": "hello"
+        },
+        {
+          "label": "日本語"
+        }
+      ],
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "two-adjacent-comments-sort-first",
+      "file": "Sorted.vue",
+      "source": "<template>\n  <p>{{ label }}</p>\n</template>\n\n<!-- first note -->\n<!-- next line note -->\n<script setup>\nconst label = \"hello\";\n</script>\n",
+      "expected": "<!-- first note -->\n<!-- next line note -->\n<script setup>\nconst label = \"hello\";\n</script>\n\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "states": [
+        {
+          "label": "hello"
+        },
+        {
+          "label": "日本語"
+        }
+      ],
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: Sorted.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: Sorted.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "each-block-keeps-its-comment",
+      "file": "EachBlock.vue",
+      "source": "<!-- template note -->\n<template>\n  <p>{{ label }}</p>\n</template>\n\n<!-- script note -->\n<script setup>\nconst label = \"hello\";\n</script>\n",
+      "expected": "<!-- script note -->\n<script setup>\nconst label = \"hello\";\n</script>\n\n<!-- template note -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "states": [
+        {
+          "label": "hello"
+        },
+        {
+          "label": "日本語"
+        }
+      ],
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: EachBlock.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: EachBlock.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "standalone-before-attached-group",
+      "file": "Prologue.vue",
+      "source": "<!-- license -->\n\n<!-- attached -->\n<script setup>\nconst label = \"hello\";\n</script>\n\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "expected": "<!-- license -->\n\n<!-- attached -->\n<script setup>\nconst label = \"hello\";\n</script>\n\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "states": [
+        {
+          "label": "hello"
+        },
+        {
+          "label": "日本語"
+        }
+      ],
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "multiline-utf8-first-comment",
+      "file": "Unicode.vue",
+      "source": "<!-- 日本語\nsecond line -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "expected": "<!-- 日本語\nsecond line -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "states": [
+        {
+          "label": "hello"
+        },
+        {
+          "label": "日本語"
+        }
+      ],
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "first-style-group",
+      "file": "Style.vue",
+      "source": "<!-- style note -->\n<style>\n.note {\n  color: red;\n}\n</style>\n",
+      "expected": "<!-- style note -->\n<style>\n.note {\n  color: red;\n}\n</style>\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "first-custom-group",
+      "file": "Custom.vue",
+      "source": "<!-- docs note -->\n<docs>\nnotes\n</docs>\n",
+      "expected": "<!-- docs note -->\n<docs>\nnotes\n</docs>\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "bom-first-template",
+      "file": "Bom.vue",
+      "source": "﻿<!-- template note -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "expected": "﻿<!-- template note -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "states": [
+        {
+          "label": "hello"
+        },
+        {
+          "label": "日本語"
+        }
+      ],
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "crlf-first-template",
+      "file": "Crlf.vue",
+      "source": "<!-- template note -->\r\n<template>\r\n  <p>{{ label }}</p>\r\n</template>\r\n",
+      "expected": "<!-- template note -->\r\n<template>\r\n  <p>{{ label }}</p>\r\n</template>\r\n",
+      "eol": "auto",
+      "states": [
+        {
+          "label": "hello"
+        },
+        {
+          "label": "日本語"
+        }
+      ],
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "comment-only",
+      "file": "CommentOnly.vue",
+      "source": "<!-- first -->\n<!-- second -->\n",
+      "expected": "<!-- first -->\n<!-- second -->\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "text-prologue",
+      "file": "Text.vue",
+      "source": "license text\n\n<!-- attached -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "expected": "license text\n\n<!-- attached -->\n<template>\n  <p>{{ label }}</p>\n</template>\n",
+      "states": [
+        {
+          "label": "hello"
+        },
+        {
+          "label": "日本語"
+        }
+      ],
+      "html": ["<p>hello</p>", "<p>日本語</p>"],
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    }
+  ],
+  "cliProtocolAuthority": {
+    "source": "crates/vize/src/commands/fmt.rs",
+    "sourceSha256": "0ec081d5f943f8f9c8940138c18330eabee673eca5cc5c5fe7d9b29917d41a70",
+    "scope": "Independently authored complete default check/write summaries, with profiling disabled. No stream normalization."
+  }
+}

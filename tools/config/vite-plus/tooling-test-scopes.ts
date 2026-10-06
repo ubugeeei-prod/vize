@@ -2,6 +2,7 @@
 // inventory of real tsgo/LSP scenarios and source-built corpus execution,
 // not a filename-prefix exclusion. Pure helper gates remain in T0.
 export const mergeOnlyToolingTests = [
+  "tests/tooling/lint-ssr-script-setup.test.ts",
   "tests/tooling/canon-external-contracts.test.ts",
   "tests/tooling/canon-functional-slot-contracts.test.ts",
   "tests/tooling/canon-jsx-module-contracts.test.ts",

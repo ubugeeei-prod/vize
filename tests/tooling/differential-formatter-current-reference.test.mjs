@@ -51,7 +51,8 @@ void test("three reviewed current references keep all original300 source and cap
   for (const row of roots) {
     assert.equal(row.api, "format_sfc");
     assert.notDeepEqual(row.expected, row.currentExpected);
-    assert.equal(row.expected.length, row.currentExpected.length + 1);
+    const removedSeparators = row.id.includes("comments-follow-their-block") ? 2 : 1;
+    assert.equal(row.expected.length, row.currentExpected.length + removedSeparators);
   }
 });
 
@@ -186,6 +187,20 @@ void test("both exact root-comment refinements reject forged ownership and old w
           row,
           formatterReferenceComparisons(fixture, output),
           output,
+        ),
+      );
+    }
+    if (fixture.id.includes("comments-follow-their-block")) {
+      const superseded = Buffer.from(
+        "<!-- template note -->\n\n<!-- script note -->\n<script setup>\n" +
+          "const ready = true;\n</script>\n\n<template>\n  <div>ok</div>\n</template>\n",
+      );
+      assert.throws(() =>
+        validateFormatterReferencePass(
+          fixture,
+          row,
+          formatterReferenceComparisons(fixture, superseded),
+          superseded,
         ),
       );
     }

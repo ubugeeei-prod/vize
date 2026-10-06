@@ -3,7 +3,11 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
-import { writeBuildReceipt } from "../../differential/build-receipt.mjs";
+import {
+  SHIPPING_BUILD_RECIPE,
+  BUILD_RECIPE,
+  writeBuildReceipt,
+} from "../../differential/build-receipt.mjs";
 import { driverRoot, git, sha256, sourceIdentity } from "./warm-type-backed-source.ts";
 
 const side = process.argv[2];
@@ -20,7 +24,9 @@ assert.equal(git(root, ["rev-parse", "HEAD"]), side === "before" ? binding.basel
 assert.equal(sourceIdentity(root).dirty, "");
 const sourceBefore = sourceIdentity(root);
 const target = path.join(driverRoot, "target");
-const binary = path.join(target, "ci/vize");
+const profile = process.env.WARM_REQUEST_BUILD_PROFILE ?? "ci";
+assert.ok(profile === "ci" || profile === "release");
+const binary = path.join(target, profile, "vize");
 const environment = { ...process.env, CARGO_TARGET_DIR: target };
 
 function cargo(name: string, args: string[], command = "cargo") {
@@ -44,15 +50,15 @@ function cargo(name: string, args: string[], command = "cargo") {
   return stdout;
 }
 
-// Finite cuts clean the complete ci profile. The owned-source and harness-only
+// Finite cuts clean the complete selected profile. The owned-source and harness-only
 // routes rebuild Canon and its Maestro/CLI consumers, retaining other artifacts.
 const clean =
   binding.authority === "root-frozen-release-cut"
-    ? ["clean", "--profile", "ci", "--locked"]
+    ? ["clean", "--profile", profile, "--locked"]
     : [
         "clean",
         "--profile",
-        "ci",
+        profile,
         "--locked",
         "-p",
         "vize_canon",
@@ -67,7 +73,14 @@ const toolchain = {
 };
 cargo("clean", clean);
 assert.ok(!fs.existsSync(binary), "package clean must remove the previous CLI");
-const build = ["build", "--profile", "ci", "-p", "vize", "--locked", "--message-format=json"];
+const build = [
+  "build",
+  ...(profile === "release" ? ["--release"] : ["--profile", "ci"]),
+  "-p",
+  "vize",
+  "--locked",
+  "--message-format=json",
+];
 const messages = cargo("cargo", build)
   .split("\n")
   .filter((line) => line.startsWith("{"))
@@ -113,12 +126,12 @@ const artifacts = required.map((expected) => {
   assert.equal(artifact.target.src_path, source);
   assert.equal(artifact.fresh, false, "the relevant rustc invocation must actually execute");
   assert.deepEqual(artifact.features.toSorted(), expected.features);
-  assert.equal(artifact.profile.opt_level, "0");
+  assert.equal(artifact.profile.opt_level, profile === "release" ? "3" : "0");
   assert.equal(artifact.profile.debuginfo, 0);
-  assert.equal(artifact.profile.debug_assertions, true);
-  assert.equal(artifact.profile.overflow_checks, true);
+  assert.equal(artifact.profile.debug_assertions, profile !== "release");
+  assert.equal(artifact.profile.overflow_checks, profile !== "release");
   for (const filename of artifact.filenames) {
-    assert.ok(path.relative(target, filename).startsWith("ci/"));
+    assert.ok(path.relative(target, filename).startsWith(`${profile}/`));
     assert.ok(fs.statSync(filename).isFile());
   }
   if (expected.kind === "bin") {
@@ -132,10 +145,12 @@ const artifacts = required.map((expected) => {
   };
 });
 const binarySha256 = sha256(fs.readFileSync(binary));
-if (root !== driverRoot) {
-  fs.mkdirSync(path.join(root, "target/ci"), { recursive: true });
-  fs.copyFileSync(binary, path.join(root, "target/ci/vize"));
+const launchBinary = path.join(root, "target/ci/vize");
+if (binary !== launchBinary) {
+  fs.mkdirSync(path.dirname(launchBinary), { recursive: true });
+  fs.copyFileSync(binary, launchBinary);
 }
+assert.equal(sha256(fs.readFileSync(launchBinary)), binarySha256);
 if (side === "after") {
   const previous = JSON.parse(
     fs.readFileSync(path.join(output, "before-cargo-custody.json"), "utf8"),
@@ -154,7 +169,10 @@ if (side === "after") {
     previous.artifacts.map((entry: { features: unknown }) => entry.features),
   );
 }
-const receiptPath = writeBuildReceipt(root);
+const receiptPath = writeBuildReceipt(
+  root,
+  profile === "release" ? SHIPPING_BUILD_RECIPE : BUILD_RECIPE,
+);
 const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
 assert.equal(receipt.binarySha256, binarySha256);
 assert.equal(receipt.sourceRevision, side === "before" ? binding.baseline : binding.head);
@@ -166,5 +184,5 @@ assert.deepEqual(
 fs.copyFileSync(receiptPath, path.join(output, `${side}-build.json`));
 fs.writeFileSync(
   path.join(output, `${side}-cargo-custody.json`),
-  `${JSON.stringify({ side, source: sourceIdentity(root), toolchain, target, clean, build, artifacts, localArtifacts, binary, binarySha256, cliVersion: receipt.cliVersion, launchBinary: path.join(root, "target/ci/vize"), dependencyArtifacts: binding.authority === "root-frozen-release-cut" ? "The complete ci profile is cleaned identically on both sides; every linked local compiler artifact is attested fresh. Other profile/toolchain artifacts are not attested by this receipt." : "Other unchanged dependencies reuse the existing Cargo target cache; only the four required Canon/Maestro/CLI compiler artifacts are attested fresh." }, null, 2)}\n`,
+  `${JSON.stringify({ side, source: sourceIdentity(root), toolchain, profile, target, clean, build, artifacts, localArtifacts, binary, binarySha256, cliVersion: receipt.cliVersion, launchBinary, dependencyArtifacts: binding.authority === "root-frozen-release-cut" ? "The complete selected profile is cleaned identically on both sides; every linked local compiler artifact is attested fresh. Other profile/toolchain artifacts are not attested by this receipt." : "Other unchanged dependencies reuse the existing Cargo target cache; only the four required Canon/Maestro/CLI compiler artifacts are attested fresh." }, null, 2)}\n`,
 );

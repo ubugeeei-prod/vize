@@ -55,3 +55,7 @@ crates/vize_patina/tests/fixtures/css-utility-literal-tokens/*.vue.txt -text whi
 
 # Oxlint position laws retain authored source bytes, including CRLF.
 tests/_fixtures/differential/lint/oxlint-original-locations-7904/*.txt -text whitespace=cr-at-eol
+
+# Pinned public root-comment source and authored corpus keep complete checkout bytes.
+tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/** -text whitespace=cr-at-eol
+tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/habitica/** whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol

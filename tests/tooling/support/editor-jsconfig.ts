@@ -149,6 +149,28 @@ export async function stockOracle(
     }
     const shutdown = await wire.request("shutdown");
     assert.deepEqual(shutdown, { jsonrpc: "2.0", id: wire.nextId, result: null });
+    // Native 7.0.2 queues this INFO after the response. Keep its transport
+    // alive until the exact completion arrives, before the existing EOF.
+    const prefix = `handled method 'shutdown' (${wire.nextId}) in `;
+    const completion = await wire.waitFor(
+      (message) =>
+        message.method === "window/logMessage" &&
+        message.params?.type === 3 &&
+        typeof message.params?.message === "string" &&
+        message.params.message.startsWith(prefix),
+    );
+    const completionMessage = completion.params?.message;
+    assert.ok(typeof completionMessage === "string");
+    const duration = completionMessage.slice(prefix.length);
+    assert.match(
+      duration,
+      /^(?:0s|-?(?:[1-9]\d{0,2}ns|[1-9]\d{0,2}(?:\.\d{0,2}[1-9])?µs|[1-9]\d{0,2}(?:\.\d{0,5}[1-9])?ms|(?:[1-5]\d|[1-9])(?:\.\d{0,8}[1-9])?s|(?:(?:[1-9]\d*h)?(?:[1-5]\d|[1-9])m|[1-9]\d*h0m)(?:[1-5]\d|\d)(?:\.\d{0,8}[1-9])?s))$/,
+    );
+    assert.deepEqual(completion, {
+      jsonrpc: "2.0",
+      method: "window/logMessage",
+      params: { type: 3, message: prefix + duration },
+    });
     wire.child.stdin.end();
     await wire.stop(false);
     assert.equal(wire.exitStatus, 0);
