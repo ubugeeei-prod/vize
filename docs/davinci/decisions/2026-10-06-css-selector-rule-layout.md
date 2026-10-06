@@ -211,3 +211,28 @@ rename only that identifier and its recursive forwarding to `_allocator`;
 keep the parameter type, callers and Auto behavior. No lint allowance or
 runtime proof is inferred; retain the actual failed build and require fresh
 same-PR source and unchanged protected instruction qualification.
+
+## Fixed-point prefix comparison
+
+Protected current28ac Check37436741062 genuinely fails script929217>929044
+in all three retained windows; all other103 rows pass. Preserve the full312
+raw rows and failed source9fa as historical evidence. PR8087 alone was removed
+from the current failed queue. Complete three-repeat Callgrind comparison to
+old3709 shows net+161 in six exclusive functions, including +118 in the private
+formatter helper and option-drop changes. This establishes the failed cache's
+measured net cost, without disassembly or isolated conversion attribution.
+
+The paired [7926 decision](https://github.com/ubugeeei-prod/vize/issues/7926#issuecomment-6012755046)
+and [7966 decision](https://github.com/ubugeeei-prod/vize/issues/7966#issuecomment-6012755302)
+restore original fresh per-pass settings conversion and the private allocator
+boundary. For each existing fixed-point comparison, retain the trim_end-derived
+current prefix length and require both equal candidate byte length and
+current.starts_with(candidate). This preserves exact checked-prefix equality
+while removing a redundant UTF-8 range-boundary check. Unicode whitespace,
+internal spaces, shorter prefixes, empty strings and whole returns retain their
+original behavior. All ten whole original laws, parser/printer calls, six-pass
+limit, Auto/skip/no-op/error rules, corpus, original instruction inputs and
+ceilings remain exact. Only actual current-owner hash and observed migration
+positions change. Script source remains350 lines; remove only one redundant
+production comment. Fresh source, unchanged protected104x3, actual merge and
+installed release replay remain pending; no speed or native credit is inferred.

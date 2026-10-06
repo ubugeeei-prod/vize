@@ -40,43 +40,43 @@ pub fn format_script_content(
 pub(crate) fn format_script_content_stable(
     source: &str,
     options: &FormatOptions,
-    _allocator: &Allocator,
+    allocator: &Allocator,
     source_type: SourceType,
     sort_imports: Option<&crate::ImportSortOptions>,
 ) -> Result<String, FormatError> {
     if options.end_of_line == crate::EndOfLine::Auto {
         return options.format_with_source_line_ending(source, |options| {
-            format_script_content_stable(source, options, _allocator, source_type, sort_imports)
+            format_script_content_stable(source, options, allocator, source_type, sort_imports)
         });
     }
-    let mut prepared_options = None;
     let mut current = format::format_script_content_with_sort_imports(
         source,
         options,
+        allocator,
         source_type,
         sort_imports,
-        &mut prepared_options,
     )?;
     if options.skip_script_stabilization {
         return Ok(current);
     }
     let mut current_trimmed_len = current.trim_end().len();
-    if current.as_str().get(..current_trimmed_len) == Some(source.trim_end()) {
+    let source_trimmed = source.trim_end();
+    if source_trimmed.len() == current_trimmed_len && current.starts_with(source_trimmed) {
         return Ok(current);
     }
     for _ in 1..MAX_SCRIPT_STABILIZATION_PASSES {
         let next = match format::format_script_content_with_sort_imports(
             current.as_str(),
             options,
+            allocator,
             source_type,
             sort_imports,
-            &mut prepared_options,
         ) {
             Ok(next) => next,
             Err(_) => return Ok(current),
         };
         let next_trimmed = next.trim_end();
-        if current.as_str().get(..current_trimmed_len) == Some(next_trimmed) {
+        if next_trimmed.len() == current_trimmed_len && current.starts_with(next_trimmed) {
             return Ok(next);
         }
         current_trimmed_len = next_trimmed.len();
