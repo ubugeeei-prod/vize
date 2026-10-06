@@ -178,13 +178,14 @@ impl Fixture {
         let log_dir = PathBuf::from("app/node_modules/.vize");
         assert!(!self.before.contains_key(&log_dir));
         assert_eq!(observed.remove(&log_dir), Some(Entry::Directory));
-        assert!(
-            matches!(
-                observed.remove(&log_dir.join("lsp.log")),
-                Some(Entry::File(bytes)) if std::str::from_utf8(&bytes)
-                    .is_ok_and(|text| text.contains("Starting vize_maestro LSP server"))
-            ),
-            "default stdio must retain its regular known logger"
+        let Some(Entry::File(bytes)) = observed.remove(&log_dir.join("lsp.log")) else {
+            panic!("default stdio must retain its regular known logger");
+        };
+        let log = std::str::from_utf8(&bytes).unwrap();
+        let (_, record) = log.lines().next().unwrap().split_once(' ').unwrap();
+        assert_eq!(
+            record.trim_start(),
+            "INFO vize_maestro: Starting vize_maestro LSP server"
         );
         assert_eq!(
             observed, self.before,

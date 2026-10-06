@@ -99,3 +99,25 @@ all6 original398B files, all3 filesystem/all9 stdio assertions, nativeTS2322
 repair, production code and waits/retries remain unchanged. Fresh exact-head
 execution and actual security-main/protected/public qualification remain
 required; the initial failed head receives no all-session runtime credit.
+
+## Exact original protocol and full logger record
+
+Paired decision: [6009461873](https://github.com/ubugeeei-prod/vize/issues/7990#issuecomment-6009461873).
+
+Current4ae Rust3/4 reaches whole Vue publications and native TS2322/repair,
+then fails the newly authored shutdown-success assertion. The original driver
+awaits any reply to literal `params: null` and never asserts success. Pinned
+tower-lsp0.20 `FromParams<()>` rejects a present parameter, producing exactly
+-32602 `Unexpected params: null`. Keep those complete error envelopes and
+original null shutdown/exit in the three original fifteen-second sessions;
+the six authored controls independently retain valid omitted-params shutdown
+with complete result:null success. Production dispatch is unchanged. Current
+raws SHA6f08eab4/a2cbcffb remain failed historical observations, not all9 proof.
+
+Current tooling4 SHAfff39adb rejects the observer's partial logger contains
+assertion. Require the exact first stable level/target/message after its
+variable timestamp, preserving the regular UTF8 file and exact two cache
+entries. Every other full filesystem entry, original input, diagnostic array,
+wait, open order and production byte stays exact. No allowlist/subtree filter,
+protocol fallback or runtime credit is introduced; fresh complete Actions,
+actual security-main replay, protected gates and installed acceptance remain.
