@@ -110,3 +110,23 @@ Full341851B raw SHA18bc70305d1016ff9a31dc0acadc7b7fc9964b01d2873010fabd908a7fa3d
 is retained; later session assertions were unexecuted and no complete fixture
 acceptance transfers. The [paired correction](https://github.com/ubugeeei-prod/vize/issues/8085#issuecomment-6009434993) requires fresh whole source/native/full/protected
 qualification.
+
+## Signed security-main integration
+
+The corrected 2ce source actually executed all four original real-native sessions
+and the three FIFO/deadline/cancellation laws; all four official small JUnit
+artifacts reconstruct 16,312 unique passing cases. The complete assertions cover
+28 public response envelopes, four actual held native responses and every
+retained declared publication. Initialize checks assert success shape only.
+The normal optional-native flag does not bypass this strict fixture. Successful
+whole held-hover protocol and ELF archives were not retained; no wire-archive
+credit is claimed. Independent scoped peer SHA: 5c79a338c06fda43fc0fa12b743d30d4239431291858e6fe7d62501aadf1a2a6.
+
+Security #8080 actually merged as signed 48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb
+at 2026-10-06T05:04:12Z. This is the sole genuine provider incorporation onto
+that literal main, preserving original source/oracles, move-only boundaries and
+five complete author records. Existing #8082 is the real inlay-consumer child;
+its owner will replay and register the ordered native Stack. Fresh joint exact
+ordinary/full native/plain/editor/Vue gates and protected 104/full Rust/each
+actual signed merge remain required. No historical gate transfers or individual
+provider auto-merge. Paired issue receipt: #8085 comment 6009726195.
