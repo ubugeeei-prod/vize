@@ -7,6 +7,7 @@ use crate::script_parser::{
 };
 use oxc_ast::ast::{Expression, TSTypeAnnotation};
 
+#[inline]
 pub(super) fn refuse_annotation(
     annotation: Option<&TSTypeAnnotation<'_>>,
     identifiers: &mut IdentifierWalk,
@@ -16,6 +17,7 @@ pub(super) fn refuse_annotation(
     }
 }
 
+#[inline]
 pub(super) fn refuse_expression_types(
     expression: &Expression<'_>,
     identifiers: &mut IdentifierWalk,

@@ -64,7 +64,7 @@ pub(crate) struct RuntimeObjectLiteral {
 pub struct ScriptParseResult {
     pub bindings: BindingMetadata,
     /// Private demand-only facts, never serialized in Croquis.
-    pub(crate) occurrence_capture: Option<super::occurrences::ScriptOccurrenceCapture>,
+    pub(crate) occurrence_capture: Option<Box<super::occurrences::ScriptOccurrenceCapture>>,
     /// Setup declarations with no resolved script read, when demanded.
     pub unused_bindings: Vec<CompactString>,
     pub macros: MacroTracker,

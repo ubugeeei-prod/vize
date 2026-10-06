@@ -31,7 +31,7 @@ impl Drawer {
             valid: !self.script_drawn,
             ..Default::default()
         };
-        self.occurrence_capture = Some(capture);
+        self.occurrence_capture = Some(Box::new(capture));
         self
     }
 
@@ -41,11 +41,11 @@ impl Drawer {
         let valid = packet
             .resolve_script_globals(&self.croquis.binding_spans)
             .is_some();
-        self.occurrence_capture = Some(OccurrenceCapture {
+        self.occurrence_capture = Some(Box::new(OccurrenceCapture {
             packet,
             valid,
             ..Default::default()
-        });
+        }));
         self
     }
 
@@ -65,7 +65,8 @@ impl Drawer {
         self,
         resolve: bool,
     ) -> (crate::Croquis, Option<BindingOccurrences>) {
-        let packet = self.occurrence_capture.and_then(|mut capture| {
+        let packet = self.occurrence_capture.and_then(|capture| {
+            let mut capture = *capture;
             if !capture.valid {
                 return None;
             }
@@ -79,6 +80,7 @@ impl Drawer {
         (self.croquis, packet)
     }
 
+    #[inline]
     pub(super) fn take_script_occurrences(
         &mut self,
         result: &mut crate::script_parser::ScriptParseResult,
@@ -91,7 +93,7 @@ impl Drawer {
             capture.valid = false;
             return;
         };
-        if script
+        if (*script)
             .finish(
                 &result.scopes,
                 &result.binding_spans,

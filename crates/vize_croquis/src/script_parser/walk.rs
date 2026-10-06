@@ -123,6 +123,7 @@ pub(in crate::script_parser) fn extract_param_names(
 }
 
 /// Replace the existing parameter-name walk only when authored sites are demanded.
+#[inline]
 pub(in crate::script_parser) fn extract_function_params_with_occurrences(
     result: &mut ScriptParseResult,
     params: &oxc_ast::ast::FormalParameters<'_>,

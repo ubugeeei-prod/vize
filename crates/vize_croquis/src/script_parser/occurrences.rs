@@ -135,12 +135,14 @@ impl ScriptOccurrenceCapture {
 }
 
 impl super::ScriptParseResult {
+    #[inline]
     pub(crate) fn refuse_occurrences(&mut self) {
         if let Some(capture) = self.occurrence_capture.as_mut() {
             capture.refuse();
         }
     }
 
+    #[inline]
     pub(crate) fn refuse_direct_eval(&mut self, callee: &oxc_ast::ast::Expression<'_>) {
         if self.occurrence_capture.is_some()
             && matches!(callee, oxc_ast::ast::Expression::Identifier(id) if id.name == "eval")
@@ -149,12 +151,14 @@ impl super::ScriptParseResult {
         }
     }
 
+    #[inline]
     pub(crate) fn note_identifier_occurrence(&mut self, name: &str, span: Span) {
         if let Some(capture) = self.occurrence_capture.as_mut() {
             capture.reference(self.scopes.current_id(), name, span);
         }
     }
 
+    #[inline]
     pub(crate) fn note_lens_pattern(&mut self, pattern: &oxc_ast::ast::BindingPattern<'_>) {
         if let Some(capture) = self.occurrence_capture.as_mut() {
             let has_default = super::walk::collect_param_sites(pattern, &mut |_, span| {
@@ -166,6 +170,7 @@ impl super::ScriptParseResult {
         }
     }
 
+    #[inline]
     pub(crate) fn install_parameter_occurrences(&mut self) {
         if let Some(capture) = self.occurrence_capture.as_mut() {
             let scope = self.scopes.current_id();

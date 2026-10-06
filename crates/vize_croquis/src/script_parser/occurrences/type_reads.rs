@@ -3,7 +3,11 @@
 use super::super::{ScriptParseResult, typeof_refs};
 
 impl ScriptParseResult {
+    #[inline]
     pub(crate) fn refuse_function_type_reads(&mut self, function: &oxc_ast::ast::Function<'_>) {
+        if self.occurrence_capture.is_none() {
+            return;
+        }
         self.refuse_type_reads(function.return_type.as_deref());
         self.refuse_type_parameters(function.type_parameters.as_deref());
         self.refuse_type_reads(
@@ -14,14 +18,15 @@ impl ScriptParseResult {
         );
     }
 
+    #[inline]
     pub(crate) fn refuse_declarator_type_reads(
         &mut self,
         declarator: &oxc_ast::ast::VariableDeclarator<'_>,
     ) {
-        self.refuse_type_reads(declarator.type_annotation.as_deref());
         if self.occurrence_capture.is_none() {
             return;
         }
+        self.refuse_type_reads(declarator.type_annotation.as_deref());
         // Macro dispatch unwraps these existing expression wrappers before its
         // normal call walk. Close their type relation without parsing again.
         if let Some(initializer) = &declarator.init
@@ -43,6 +48,7 @@ impl ScriptParseResult {
         }
     }
 
+    #[inline]
     pub(crate) fn refuse_type_reads(
         &mut self,
         annotation: Option<&oxc_ast::ast::TSTypeAnnotation<'_>>,
@@ -56,6 +62,7 @@ impl ScriptParseResult {
         }
     }
 
+    #[inline]
     pub(crate) fn refuse_type_parameters(
         &mut self,
         parameters: Option<&oxc_ast::ast::TSTypeParameterDeclaration<'_>>,
@@ -78,6 +85,7 @@ impl ScriptParseResult {
         }
     }
 
+    #[inline]
     pub(crate) fn refuse_type_arguments(
         &mut self,
         arguments: Option<&oxc_ast::ast::TSTypeParameterInstantiation<'_>>,
@@ -96,6 +104,7 @@ impl ScriptParseResult {
 }
 
 /// Type subtrees are checked only where the existing value walk reaches them.
+#[inline]
 pub(crate) fn refuse_expression_type_reads(
     result: &mut ScriptParseResult,
     expression: &oxc_ast::ast::Expression<'_>,

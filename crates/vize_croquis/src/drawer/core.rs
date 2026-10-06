@@ -49,7 +49,7 @@ pub struct Drawer {
     /// `Vec` is read by reference (disjoint field borrow), so cache hits avoid
     /// both the parse and any clone.
     pub(crate) ident_cache: FxHashMap<CompactString, Vec<CompactString>>,
-    pub(super) occurrence_capture: Option<super::occurrences::OccurrenceCapture>,
+    pub(super) occurrence_capture: Option<Box<super::occurrences::OccurrenceCapture>>,
 }
 
 impl Drawer {

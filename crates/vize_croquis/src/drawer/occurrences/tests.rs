@@ -138,3 +138,27 @@ fn capture_leaves_ordinary_semantic_snapshot_unchanged() {
     );
     assert_eq!(packet.unwrap().occurrences().len(), 5);
 }
+
+#[test]
+fn ordinary_capture_storage_is_empty_and_pointer_sized() {
+    use crate::script_parser::ScriptParseResult;
+    use std::mem::{size_of, size_of_val};
+
+    assert_eq!(
+        size_of::<Option<Box<super::OccurrenceCapture>>>(),
+        size_of::<usize>()
+    );
+    let parsed = ScriptParseResult::default();
+    assert_eq!(size_of_val(&parsed.occurrence_capture), size_of::<usize>());
+    assert!(parsed.occurrence_capture.is_none());
+    let mut ordinary = Drawer::with_options(DrawerOptions::for_lint());
+    assert!(ordinary.occurrence_capture.is_none());
+    ordinary.draw_script_setup(SCRIPT);
+    assert!(ordinary.occurrence_capture.is_none());
+    assert!(
+        ordinary
+            .with_binding_occurrences()
+            .occurrence_capture
+            .is_some()
+    );
+}
