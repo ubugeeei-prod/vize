@@ -8,6 +8,7 @@ mod analysis;
 mod drawer;
 mod occurrences;
 mod resolved;
+mod script_demand;
 mod source_offsets;
 mod unused;
 
@@ -177,7 +178,7 @@ fn analyze_sfc_descriptor_with_context_impl(
     legacy_vue2: bool,
     include_script_content: bool,
 ) -> SfcCroquisAnalysis {
-    analyze_sfc_descriptor_resolved_impl(
+    analyze_sfc_descriptor_resolved_impl::<false>(
         descriptor,
         template_ast,
         options,
@@ -209,7 +210,7 @@ pub fn analyze_sfc_descriptor_resolved(
     legacy_vue2: bool,
     filename: &str,
 ) -> SfcCroquisAnalysis {
-    analyze_sfc_descriptor_resolved_impl(
+    analyze_sfc_descriptor_resolved_impl::<false>(
         descriptor,
         template_ast,
         options,
@@ -235,7 +236,7 @@ pub fn analyze_sfc_descriptor_resolved_with_sources(
     filename: &str,
     sources: &crate::script::TypeSourceSnapshot,
 ) -> SfcCroquisAnalysis {
-    analyze_sfc_descriptor_resolved_impl(
+    analyze_sfc_descriptor_resolved_impl::<false>(
         descriptor,
         template_ast,
         options,

@@ -17,7 +17,7 @@ pub(super) struct DescriptorAnalysisMode {
     pub(super) include_script_content: bool,
 }
 
-pub(super) fn analyze_sfc_descriptor_resolved_impl(
+pub(super) fn analyze_sfc_descriptor_resolved_impl<const CAPTURE: bool>(
     descriptor: &SfcDescriptor<'_>,
     template_ast: Option<&RootNode<'_>>,
     options: SfcCroquisOptions,
@@ -29,20 +29,18 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl(
     let drawer_options = options.analyzer_options;
     let script_analyzed = drawer_options.analyze_script
         && (descriptor.script.is_some() || descriptor.script_setup.is_some());
-    let capture = occurrences.is_some();
-    let (mut summary, packet) = if capture {
-        analyze_scripts_with_occurrences(
+    let mut packet = None;
+    let mut summary = if CAPTURE {
+        let (summary, captured) = analyze_scripts_with_occurrences(
             descriptor,
             options,
             mode.options_api,
             mode.legacy_vue2,
-            true,
-        )
+        );
+        packet = captured;
+        summary
     } else {
-        (
-            analyze_scripts(descriptor, options, mode.options_api, mode.legacy_vue2),
-            None,
-        )
+        analyze_scripts(descriptor, options, mode.options_api, mode.legacy_vue2)
     };
     if let Some(filename) = resolve_filename {
         match sources {
@@ -56,7 +54,7 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl(
         }
     }
     let drawer = Drawer::with_summary(drawer_options, summary, script_analyzed);
-    let drawer = if let Some(packet) = packet {
+    let drawer = if let Some(packet) = packet.take() {
         drawer.with_binding_occurrence_packet(packet)
     } else {
         drawer
@@ -72,12 +70,14 @@ pub(super) fn analyze_sfc_descriptor_resolved_impl(
         profile!("atelier.sfc.croquis.template", drawer.draw_template(root));
     }
 
-    let (mut croquis, mut packet) = if capture {
-        drawer.finish_with_binding_occurrences()
+    let mut croquis = if CAPTURE {
+        let (croquis, captured) = drawer.finish_with_binding_occurrences();
+        packet = captured;
+        croquis
     } else {
-        (drawer.finish(), None)
+        drawer.finish()
     };
-    if options.unused_bindings || capture {
+    if options.unused_bindings || CAPTURE {
         if descriptor.template.is_some() && template_ast.is_none() {
             croquis.unused_bindings.clear();
             packet = None;
