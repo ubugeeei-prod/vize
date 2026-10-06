@@ -1,0 +1,77 @@
+# Session-owned staging for linked workspace SFCs
+
+Paired decision: [#7990](https://github.com/ubugeeei-prod/vize/issues/7990#issuecomment-6008933960).
+
+The report preserves a six-file workspace with `app/node_modules/ui -> ../../ui`,
+the original default tsconfig and no Vize config. Its minimal stdio client opens
+`Other.vue` and then `App.vue` without waiting between notifications, waits
+fifteen seconds and sends shutdown/exit while stdin remains open. The reported
+0.432.0 npm build leaves two generated UiButton companions in the real package
+in three runs; App-only and a src-only include are reported negative controls.
+The complete report and all six original authored files are retained under
+`tests/_fixtures/differential/lsp/symlink-workspace-staging-original`.
+
+## Concrete current-source path
+
+On signed source `143c1d4a9fbe6530cdd06f1f001b816f39c1d00a`, the first host can
+materialize a private mirror containing an external link to an untouched
+package. A later host in the same complete editor overlay revision registers
+owned package shadows. The materializer calculates dependency links from the
+complete current file union, then reinserts the first host's cached external
+link, allowing it to conflict with those newly owned private paths.
+
+Existing ancestry checks already refuse unknown links. A fresh VirtualProject
+also lacks the previous successful editor union's exact recorded link targets,
+so it cannot safely retire even its own prior link. This is a source-grounded
+plan/ownership defect; the original leak has not yet been reproduced on this
+current revision. Neither the reported historical failure nor a hypothetical
+current refusal is recorded as executed current evidence.
+
+## Narrow repair
+
+Restore only the existing completed editor snapshot's package-link identities
+into the freshly constructed mirror. Existing root-first validation still
+requires the actual on-disk link target to match that retained identity before
+unlinking a session cache entry. A new or retargeted link remains an error.
+
+A preserved external package link yields to the current complete union when
+owned files occur below its path. The current dependency plan remains
+authoritative, including its existing entry-by-entry package dependency lookup.
+Owned internal workspace aliases retain the existing manifest, target and
+overlap checks. Source catalog, import resolution, generated code, request
+paths, native backend selection and snapshot/lifetime rules remain unchanged.
+Cleanup removes only the session owner's private cache. There is no deletion
+or overwrite of authored companions, and no source-tree cleanup fallback.
+
+## Prepared qualification and limits
+
+Three Canon filesystem laws prepare the exact same-revision open order,
+private companion/request paths, original full authored byte conservation,
+existing authored `.vue.ts`/`.d.vue.ts` sentinels and a retargeted-cache-link
+refusal. They check conservation before and after the actual session clear.
+
+The direct current-source CLI stdio test prepares three original fifteen-second
+runs, App-only/broad-include/src-include/reversed-order/CRLF/authored-companion
+controls and whole versioned diagnostic envelopes. It retains the original
+empty client capabilities, default configuration and null server-request
+responses. It uses the existing default stdio `lsp` transport rather than the
+reporter's npm wrapper with explicit `--stdio`, and captures stderr for failure
+diagnosis. An added unsaved plain-TS TS2322/repair pair prevents an unavailable
+native backend from satisfying the empty Vue expectations vacuously.
+
+The test provisions actual already-installed TypeScript 7.0.2 and Playground
+Vue package links outside authored source, without creating a Vize config or
+changing initialization flags. Playground Vue is the current source-test
+dependency, distinct from the reported 3.5.43 and 3.6.0-rc.10 environments.
+All diagnostic arrays are proposed complete source assertions, not observed
+successful output. Only Rust syntax/format, original input custody and existing
+cheap source inventory checks may be run locally at this private stage. The
+local Vite+ format command could not start without a project-local installation;
+no dependency installation or native build was attempted.
+
+TODO: independently review this cohesive private source, qualify the new
+filesystem and genuine default/native stdio laws on exact-head Actions, replay
+on current signed main, then require the existing protected full suites and
+unchanged 100+4 instruction ceilings before actual merge. Public installed
+replay and issue closure remain separate. No native migration, performance,
+fix-history closure, published payload or current-runtime success is claimed.
