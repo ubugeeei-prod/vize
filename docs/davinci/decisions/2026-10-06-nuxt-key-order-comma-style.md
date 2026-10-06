@@ -56,7 +56,12 @@ fields. That failed build is not test execution. Source review also established
 the old LF-only piece boundary misplaced CRLF; carry the exact CRLF in that
 same branch while preserving the existing LF path and original expectations.
 
-The complete Debug comparison uses the existing `vize_l0::format` macro, as
+The complete Debug comparison uses the existing `vize_l0::cstr` macro, as
 required by workspace Clippy; it does not introduce a lint exception or alter
 an expected field. Its added test-only L0 reference is in the generated consumer
 inventory. Fresh successor Actions remain the execution authority.
+
+The first compact-macro import attempt was rejected by hosted compilation:
+actual L0 exports `cstr`, not `format`. Bind the verified existing `cstr` export
+and keep the same complete Debug comparison. That failed test build remains
+historical; no runtime result transfers to the corrected source.

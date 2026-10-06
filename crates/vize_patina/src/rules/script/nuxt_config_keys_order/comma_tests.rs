@@ -1,7 +1,7 @@
 use super::tests::{fix_until_stable, lint};
 use crate::diagnostic::{Fix, LintDiagnostic, TextEdit};
 use serde_json::Value;
-use vize_l0::format;
+use vize_l0::cstr;
 
 const CASES: &str = include_str!("../../../../tests/fixtures/issue-7963/cases.json");
 
@@ -43,10 +43,7 @@ fn original_report_keeps_whole_diagnostic_and_edit_contract() {
             "  modules: [\"@pinia/nuxt\"],\n  ssr: false\n",
         ),
     ));
-    assert_eq!(
-        format!("{:?}", result.diagnostics),
-        format!("{:?}", [expected])
-    );
+    assert_eq!(cstr!("{:?}", result.diagnostics), cstr!("{:?}", [expected]));
 }
 
 #[test]
