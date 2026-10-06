@@ -74,7 +74,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ReactivityLossKind`           |     1 |    11 |
 | `SfcDescriptor`                |    10 |    26 |
 | `SfcError`                     |     2 |     2 |
-| `SfcParseOptions`              |    13 |    19 |
+| `SfcParseOptions`              |    14 |    20 |
 | `SfcTemplateBlock`             |     2 |     2 |
 | `UndefinedRefs`                |     3 |     7 |
 | `ViolationSeverity`            |     1 |     3 |

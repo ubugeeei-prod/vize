@@ -118,7 +118,7 @@ pub(super) fn generate_vue_virtual_ts(
     //     attributes collapsed the file to the stub and silenced every script
     //     type diagnostic in it (#3323) — the same false-negative shape #3294
     //     fixed in the linter, keyed off the same shared classification.
-    let (template_ast, template_hard_error) = template_text
+    let (template_ast, template_hard_error, incomplete_tag) = template_text
         .map(|template_content| {
             template::parse(
                 &allocator,
@@ -130,17 +130,18 @@ pub(super) fn generate_vue_virtual_ts(
                 &mut diagnostics,
             )
         })
-        .unwrap_or((None, false));
+        .unwrap_or((None, false, false));
 
     let has_script_projection = !template_hard_error
         || (codegen_options.preserve_script_on_template_error
+            && incomplete_tag
             && (descriptor.script.is_some() || descriptor.script_setup.is_some()));
     let script_diagnostics =
         collect_script_parse_fallbacks(path, source, descriptor, has_script_projection);
     diagnostics.extend(script_diagnostics.diagnostics);
 
     // Batch/content-mapper fallback stays intact. Editor projections retain
-    // authored scripts and parse diagnostics while the unusable template AST
+    // authored scripts only for unfinished tags while the unusable template AST
     // remains absent; native TypeScript owns syntax diagnostics for that script.
     if !has_script_projection {
         return Ok(GeneratedVueFile {

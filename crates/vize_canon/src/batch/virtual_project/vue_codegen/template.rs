@@ -2,7 +2,9 @@
 
 use std::path::Path;
 
-use vize_atelier_core::{ParserOptions, parser::parse_with_options_and_template_syntax};
+use vize_atelier_core::{
+    CompilerError, ErrorCode, ParserOptions, parser::parse_with_options_and_template_syntax,
+};
 use vize_carton::{Allocator, cstr, profile};
 use vize_relief::RootNode;
 
@@ -17,9 +19,9 @@ pub(super) fn parse<'a>(
     source: &str,
     codegen_options: VueCodegenOptions<'_>,
     diagnostics: &mut Vec<Diagnostic>,
-) -> (Option<RootNode<'a>>, bool) {
+) -> (Option<RootNode<'a>>, bool, bool) {
     let mut template_hard_error = false;
-    let template_ast = profile!("canon.template.parse", {
+    let (template_ast, incomplete_tag) = profile!("canon.template.parse", {
         let (root, errors) = parse_with_options_and_template_syntax(
             allocator,
             template_content,
@@ -29,6 +31,7 @@ pub(super) fn parse<'a>(
             },
             codegen_options.template_syntax,
         );
+        let incomplete_tag = is_incomplete_tag(&errors);
         for error in errors {
             if error.code.is_recovery() {
                 continue;
@@ -53,7 +56,45 @@ pub(super) fn parse<'a>(
         }
         // Drop the AST only when a hard error occurred; recovery-level
         // diagnostics leave a fully usable tree.
-        (!template_hard_error).then_some(root)
+        ((!template_hard_error).then_some(root), incomplete_tag)
     });
-    (template_ast, template_hard_error)
+    (template_ast, template_hard_error, incomplete_tag)
+}
+
+// Preserve scripts only when the parser identified an unfinished tag. A
+// complete but malformed template keeps the existing whole-file fallback.
+fn is_incomplete_tag(errors: &[CompilerError]) -> bool {
+    errors.iter().any(|error| error.code == ErrorCode::EofInTag)
+        && errors.iter().all(|error| {
+            error.code.is_recovery()
+                || error.code.has_documented_parse_recovery()
+                || matches!(error.code, ErrorCode::EofInTag | ErrorCode::MissingEndTag)
+        })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn only_parser_owned_unfinished_tags_admit_script_preservation() {
+        for (codes, expected) in [
+            (vec![], false),
+            (vec![ErrorCode::MissingEndTag], false),
+            (vec![ErrorCode::EofInTag], true),
+            (vec![ErrorCode::EofInTag, ErrorCode::MissingEndTag], true),
+            (vec![ErrorCode::EofInTag, ErrorCode::InvalidEndTag], false),
+            (vec![ErrorCode::EofInTag, ErrorCode::EofInComment], true),
+            (
+                vec![ErrorCode::EofInTag, ErrorCode::MissingEndTagName],
+                false,
+            ),
+        ] {
+            let errors = codes
+                .into_iter()
+                .map(|code| CompilerError::new(code, None))
+                .collect::<Vec<_>>();
+            assert_eq!(is_incomplete_tag(&errors), expected);
+        }
+    }
 }

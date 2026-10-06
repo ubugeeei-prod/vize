@@ -135,3 +135,22 @@ fn unusable_template_without_a_script_keeps_the_complete_fallback() {
     assert_eq!(editor.semantic_links, batch.semantic_links);
     assert_eq!(diagnostics(&editor), diagnostics(&batch));
 }
+
+#[test]
+fn complete_malformed_ts40_template_preserves_the_whole_original_fallback() {
+    let source = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/davinci-ts40-projection/parse-recovery.vue"
+    ));
+    for newline in ["\n", "\r\n"] {
+        let source = source.replace('\n', newline);
+        let editor = generate(&source, true);
+        let batch = generate(&source, false);
+        assert_eq!(editor.code, invalid_sfc_fallback_virtual_ts());
+        assert_eq!(editor.code, batch.code);
+        assert_eq!(editor.mappings, batch.mappings);
+        assert_eq!(editor.semantic_links, batch.semantic_links);
+        assert_eq!(editor.typed_router_import, batch.typed_router_import);
+        assert_eq!(diagnostics(&editor), diagnostics(&batch));
+    }
+}

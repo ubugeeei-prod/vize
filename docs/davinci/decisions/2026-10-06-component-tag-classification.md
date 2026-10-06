@@ -187,3 +187,22 @@ unexecuted at publication; old4d failures and capture stay immutable. No
 compilation/native/protected/public or timing credit transfers. The same Draft
 requires actual current green, protected queue, signed merge and coordinated
 next public inclusion.
+
+## Preserve the original TS40 recovery contract
+
+The [current failure and narrow correction](https://github.com/ubugeeei-prod/vize/issues/8001#issuecomment-6010678187)
+retains native4b's TS40 snapshot failure, ordinary original/control/unsaved full
+completion failures, and tooling2/4 census failures as failed evidence. The
+existing template parse/diagnostic loop first moves intact into a bounded leaf.
+Editor script retention now requires the same parser's EOF-in-tag and no other
+unrecovered defect beyond MissingEndTag. Complete malformed templates retain
+the original whole fallback. The unchanged original TS40 fixture supplies a
+full LF/CRLF code/map/semantic-link/diagnostic conservation law, alongside the
+three existing authored script laws and explicit eligibility/refusal cases.
+Both original report generators update only source-derived inventory rows.
+All twelve corpus/helper members,47 full completion expectations, old snapshots,
+API/attachment/query bodies and native commands stay exact. The remaining
+classification cause is unknown; fresh ordinary and mandatory native Actions
+must reach the original47 and retained full query custody after the TS40 gate.
+No local compilation/native, Ready, protected delivery, public inclusion or
+performance credit is claimed.
