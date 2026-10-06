@@ -11,6 +11,7 @@
 //! Consider using static CSS or computed styles for better performance.
 
 use lightningcss::stylesheet::StyleSheet;
+use memchr::memmem;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -37,6 +38,9 @@ impl CssRule for NoVBindPerformance {
         offset: usize,
         result: &mut CssLintResult,
     ) {
+        if memmem::find(source.as_bytes(), b"v-bind(").is_none() {
+            return;
+        }
         for (start, end) in ValueTokens::new(source).bindings {
             result.add_diagnostic(
                 LintDiagnostic::warn(

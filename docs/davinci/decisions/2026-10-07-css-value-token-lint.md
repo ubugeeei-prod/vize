@@ -33,6 +33,8 @@ mask, generated replacement text or new dependency is introduced. Diagnostic
 message/help/severity and old genuine-call unit bodies remain exact. Existing
 style offsets and disable-comment handling still own the public ranges.
 Instruction budgets remain unchanged and require genuine protected proof.
+Absent `!` or literal `v-bind(` candidates, the corresponding existing check
+returns without a token traversal; these probes never classify or alter CSS.
 
 Seventeen independently authored complete service/CLI vectors cover the
 whole original LF/CRLF/Unicode input, escaped/quoted/comment/URL text, genuine

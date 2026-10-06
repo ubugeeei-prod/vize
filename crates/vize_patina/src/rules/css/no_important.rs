@@ -32,6 +32,9 @@ impl CssRule for NoImportant {
         offset: usize,
         result: &mut CssLintResult,
     ) {
+        if !source.as_bytes().contains(&b'!') {
+            return;
+        }
         for (start, end) in ValueTokens::new(source).important {
             result.add_diagnostic(
                 LintDiagnostic::warn(
