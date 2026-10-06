@@ -29,10 +29,11 @@
 //! ```
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
+mod fix;
 mod position;
 
 use position::{SlotPosition, actual_style, argument_text, slot_argument, slot_position};
@@ -136,7 +137,21 @@ impl Rule for VSlotStyle {
             }
         };
         let help = ctx.t("vue/v-slot-style.help");
-        ctx.warn_with_help(message, &directive.loc, help);
+        let mut diagnostic = LintDiagnostic::warn(
+            ctx.current_rule,
+            message,
+            directive.loc.span.start,
+            directive.loc.span.end,
+        );
+        if let Some(processed) = ctx.help_level().process(help.as_str()) {
+            diagnostic = diagnostic.with_help(processed);
+        }
+        if !ctx.is_petite_vue()
+            && let Some(fix) = fix::slot_fix(ctx.source, directive, actual, expected, help.as_str())
+        {
+            diagnostic = diagnostic.with_fix(fix);
+        }
+        ctx.report(diagnostic);
     }
 }
 
