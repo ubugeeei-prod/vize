@@ -48,3 +48,21 @@ so encode each byte as exactly two lowercase hex digits before comparing the
 unchanged complete pins. No source, item, oracle, request or production bytes
 change. That other build failure provides API evidence, not completion runtime
 credit; fresh ordinary/native Actions remain required.
+
+## Actual first source inventory rejection
+
+Current a593 ordinary run37412374786 Tooling3 job112103547185 rejected
+`davinci-matrices.test.ts:65`: two consumer-migration-surface shards were stale.
+The complete784,516-byte log SHA-256 is
+`1ec6bcd1511c53a2cbc25c4b73b3a832711e277b923fc0bba48401f42c4f7cd2`.
+Regenerate only the existing Canon/Typechecker and Maestro/LSP shards from the
+unchanged generator, preserving every source, item, fixture, whole oracle and
+assertion. This is paired with [the current issue decision](https://github.com/ubugeeei-prod/vize/issues/8001#issuecomment-6009237696).
+
+The same a593 Security job112103448074 separately failed13 moderate-or-higher
+advisories (15 total), retained in191,513 raw bytes with SHA-256
+`ea39b2c621bcbbf24f2964f8abc2f38a08c17dd65c1c13ba0d4fffc273ede587`.
+Security's owner retains that repair. No current source/native/protected/public
+acceptance follows; keep the running original native/Rust observations before
+publishing this metadata-only successor and incorporate only genuinely signed
+Security main once it is delivered.
