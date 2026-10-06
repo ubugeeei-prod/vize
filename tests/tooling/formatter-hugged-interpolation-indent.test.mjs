@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
 import { sha256 } from "../differential/manifest.mjs";
 import { diagnostics, validateDiagnostics } from "./support/css-rule-layout-semantics.mjs";
+import { observeHuggedRuntime } from "./support/hugged-interpolation-runtime.mjs";
 import { test } from "node:test";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -40,6 +41,19 @@ await test("sole hugged interpolations share their parent layout on all three pa
     assert.equal(row.output, fixture.expected, "separate whole stock reference");
     assert.equal(row.again, row.output, "separate stock fixed point");
   }
+  const wrapped = JSON.parse(fs.readFileSync(path.join(directory, "stock-compiler-wrapped.json")));
+  assert.equal(wrapped.version, "3.5.35");
+  assert.deepEqual(
+    wrapped.rows.map((row) => row.id),
+    ["first-pass-wrapped", "first-pass-width-thirty"],
+  );
+  for (const row of wrapped.rows) {
+    const fixture = corpus.cases.find((item) => item.id === row.id);
+    for (const key of ["input", "expected"]) {
+      assert.equal(row[key], fixture[key]);
+      assert.equal(row[`${key}Sha256`], fixture[`${key}Sha256`]);
+    }
+  }
   const build = expectedBuildIdentity(root);
   const receipt = JSON.parse(
     fs.readFileSync(path.join(root, `${build.binaryPath}.differential-build.json`)),
@@ -62,7 +76,7 @@ await test("sole hugged interpolations share their parent layout on all three pa
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-hugged-interpolation-"));
   try {
     for (const fixture of corpus.cases) {
-      await t.test(fixture.id, () => {
+      await t.test(fixture.id, async () => {
         for (const key of ["input", "expected"]) {
           const carrier = fs.readFileSync(path.join(directory, fixture[`${key}File`]));
           assert.equal(carrier.toString(), fixture[key]);
@@ -75,18 +89,27 @@ await test("sole hugged interpolations share their parent layout on all three pa
         fs.writeFileSync(path.join(temporary, "vize.config.json"), config);
         const row = { id: fixture.id, fixture, attempts: [], diagnostics: [], qualified: false };
         report.rows.push(row);
-        const observe = (source, pass) => {
+        const reference = wrapped.rows.find((item) => item.id === fixture.id);
+        const observe = async (source, pass) => {
           const complete = diagnostics(source, fixture);
-          row.diagnostics.push({ pass, ...complete });
+          const observation = { pass, ...complete, runtime: [] };
+          row.diagnostics.push(observation);
           persist();
           assert.equal(complete.vue, "3.5.35");
           validateDiagnostics(complete, { ...fixture, expectedParseErrors: [] });
-          if (pass > 0) {
+          if (reference) {
+            assert.deepEqual(
+              complete,
+              pass === 0 ? reference.original : reference.formatted,
+              "complete separately captured original or authored-reference compiler vector",
+            );
+            await observeHuggedRuntime(complete, reference, observation.runtime, persist);
+          } else if (pass > 0) {
             assert.deepEqual(complete.dom, row.diagnostics[0].dom, "whole DOM compiler output");
             assert.deepEqual(complete.ssr, row.diagnostics[0].ssr, "whole SSR compiler output");
           }
         };
-        observe(fixture.input, 0);
+        await observe(fixture.input, 0);
         for (const [index, oracle] of fixture.cliExpected.entries()) {
           const args = ["fmt", oracle.mode, fixture.filename];
           const before = fs.readFileSync(file);
@@ -128,7 +151,7 @@ await test("sole hugged interpolations share their parent layout on all three pa
           if (oracle.mode === "--check") assert.deepEqual(after, before, "check never writes");
           else {
             assert.equal(after.toString(), fixture.expected, `whole pass ${index}`);
-            observe(after.toString(), index);
+            await observe(after.toString(), index);
           }
         }
         assert.equal(row.attempts.length, 5);
@@ -141,6 +164,16 @@ await test("sole hugged interpolations share their parent layout on all three pa
     assert.equal(
       report.rows.reduce((sum, row) => sum + row.attempts.length, 0),
       65,
+    );
+    assert.equal(
+      report.rows.reduce((sum, row) => sum + row.diagnostics.length, 0),
+      52,
+    );
+    assert.equal(
+      report.rows
+        .flatMap((row) => row.diagnostics)
+        .reduce((sum, item) => sum + item.runtime.length, 0),
+      16,
     );
   } finally {
     persist();

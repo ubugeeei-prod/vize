@@ -66,6 +66,6 @@ fn multiline_literal_attributes_keep_their_authored_lines() {
 fn multiline_template_literals_keep_their_authored_lines() {
     let source = "<template>\r\n  <div>{{ `first\r\nsecond` }}</div>\r\n</template>\r\n";
     let expected =
-        "<template>\r\n  <div>{{\r\n      `first\r\nsecond`\r\n    }}</div>\r\n</template>\r\n";
+        "<template>\r\n  <div>{{\r\n    `first\r\nsecond`\r\n  }}</div>\r\n</template>\r\n";
     assert_fixed_point(source, expected);
 }

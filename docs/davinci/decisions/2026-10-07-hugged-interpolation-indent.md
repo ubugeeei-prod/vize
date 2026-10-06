@@ -67,3 +67,29 @@ corrected prefix/suffix reference and fixed point. A separately retained width30
 SFC stock observation chooses a block layout for p, so it is an alternative
 layout, not an equality oracle; the public template history still qualifies
 its retained hugged layout by the parent-anchor rule.
+
+[Paired observed qualification repair](https://github.com/ubugeeei-prod/vize/issues/7969#issuecomment-6020026087).
+Exact source585 Check37487541685 genuinely failed tooling1 after11 of13
+cases (59 actual CLI calls/48 compiler observations) and one existing Rust
+CRLF law. Preserve both raw failures and the complete old law. The two
+first-wrapped cases passed their complete CLI references; their stock generated
+modules differ because JavaScript expression newlines remain in the emitted
+code. Independently captured original and already-authored reference templates
+now provide separate complete Vue3.5.35 module oracles for only those two IDs.
+All other eleven still require whole original compiler-module equality.
+Two independent states per affected case additionally require actual mounted
+happy-dom DOM and stock SSR HTML, including Unicode/escaping; retain complete
+modules/runtime observations before assertions. The stock-only module capture
+authenticates62 actual loaded files within the unchanged73-file physical
+authority; it executes neither Vize nor these runtime controls. Fresh Actions
+remain necessary for65 CLI/52 compiler/16 paired runtime observations.
+
+The existing CRLF literal law exercises this same parent anchor. Correct only
+its one complete expected syntax string from6/4 spaces to4/2; the entire
+original source, `first\r\nsecond` literal content, all three fixed-point
+assertions and every other law remain unchanged. Historical585 retains the
+whole faulty expectation. No production/corpus input/reference/options or
+legacy300 manifest changes accompany these qualification repairs.
+Security is independently owned in PR8137; keep8134 Draft/offqueue until its
+actual signed main is incorporated and fresh source/native/Rust/history and
+protected instruction gates qualify. No failed-head acceptance transfers.
