@@ -17,6 +17,20 @@ pub(super) fn process_directive_expressions<'a>(
 ) {
     for prop in el.props.iter_mut() {
         if let PropNode::Directive(dir) = prop {
+            if matches!(dir.name, "bind" | "on")
+                && !ctx.options.ssr
+                && !ctx.options.vapor
+                && ctx
+                    .options
+                    .binding_metadata
+                    .as_ref()
+                    .is_some_and(|metadata| metadata.is_script_setup)
+                && let Some(arg @ ExpressionNode::Simple(simple)) = &dir.arg
+                && !simple.is_static
+                && !ctx.is_in_scope(simple.content)
+            {
+                dir.arg = Some(process_expression(ctx, arg, false));
+            }
             match dir.name {
                 "bind" | "show" | "if" | "else-if" | "for" | "memo" => {
                     // Process value expression
@@ -89,3 +103,6 @@ pub(super) fn process_directive_expressions<'a>(
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

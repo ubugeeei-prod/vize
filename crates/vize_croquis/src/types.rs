@@ -6,10 +6,12 @@
 //! - Type references: `defineProps<Props>()`
 //! - External imports (future): `import type { Props } from './types'`
 
+pub(crate) mod builtin_reactive;
 mod declaration_metadata;
 mod props;
 pub mod world;
 
+pub use builtin_reactive::BuiltinReactiveType;
 pub use world::{ResolvedTypeWorld, TypeDeclaration, TypeDeclarationId, TypeLookup};
 
 use vize_carton::{CompactString, FxHashMap, cstr};
@@ -167,6 +169,7 @@ pub struct TypeResolver {
     resolved_world: Option<ResolvedTypeWorld>,
     resolved_props_complete: Option<bool>,
     resolved_prop_modules: FxHashMap<CompactString, CompactString>,
+    builtin_reactive: Option<Box<builtin_reactive::BuiltinReactiveTypes>>,
 }
 
 impl TypeResolver {
@@ -234,6 +237,7 @@ impl TypeResolver {
     #[inline]
     pub fn merge_keep_existing(&mut self, other: TypeResolver) {
         self.definitions.merge_keep_existing(other.definitions);
+        self.merge_builtin_reactive_types(other.builtin_reactive);
     }
 
     /// Extract emit event names from emit type arguments

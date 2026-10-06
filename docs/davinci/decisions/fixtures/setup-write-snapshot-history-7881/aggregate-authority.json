@@ -1,0 +1,284 @@
+{
+  "schema": "vize.setup-write-aggregate-reference-history",
+  "issue": 7881,
+  "activePath": "tests/expected/sfc/patches.snap",
+  "oldHead": "641ea4193de2c2ace3fb127c26d5013a9803e5ca",
+  "oldGitBlob": "49cb6b15f057b2936944943835736d2ffe08dd18",
+  "oldWholeSha256": "76f5bf8ee457136343eb1cba63f0bb055f4e9aef66e5c8d99165efe6baa38960",
+  "currentWholeSha256": "fe088224bbd3abb48a5541f4d664b6bf9fcb61cfec58cbe2724a8d989401248c",
+  "wholeBlocks": 58,
+  "unchangedOtherBlocks": 56,
+  "originalFixture": {
+    "path": "tests/fixtures/sfc/patches.pkl",
+    "sha256": "3c260ceab865cf04c46c90974b3824cd912bd8dc8a051a6c8e40bd45f36e528f"
+  },
+  "failure": {
+    "run": 37378371144,
+    "job": 111993650555,
+    "sourceCommit": "641ea4193de2c2ace3fb127c26d5013a9803e5ca",
+    "SfcPassed": 165,
+    "SfcMinimumUnchanged": 167,
+    "patchesPassed": 56,
+    "patchesTotal": 58,
+    "fullRawLogSha256": "51a38eb4a3fbd7672af4dc46637bc675d9e4886843c5ac69f3df3ebbd3852506",
+    "completeCoverageReport": "aggregate-protected-641-coverage-failure.txt",
+    "coverageReportSha256": "175dd3ef526bc191f38471887cac89395f976098239aa8cd1bc619e67d983e8e",
+    "readableCoverageReportStripsOnlyAnsiSGR": true
+  },
+  "authority": "Same two original unknown $ref let declarations and independently reviewed SetupLet guarded assignment/postfix semantics. Keep prior first-three helper order (existing comparator normalizes imports), add only actual IsRef at authenticated Unref/IsRef registration position; all other module bytes/input/blocks unchanged. This current bugfix reference is qualified; original whole stock-derived aggregate remains immutable at oldGitBlob/oldWholeSha256. No generation from current output or comparator/counter/budget relaxation.",
+  "cases": [
+    {
+      "name": "SetupLet assignment in click handler",
+      "oldArchive": "aggregate-old-setuplet_assignment.snap",
+      "oldFullBlockSha256": "0d0fde70229be912f72d3e5978e9005dae8c5b12553d9f39464414d6a59ee921",
+      "currentFullBlockSha256": "b4649d81bc5815e136781d5caaace4de3e94ca8bad18d4bb23ae62766bed974f",
+      "inputSha256": "49d56287d83ba8a004ba155212e6058ba790bf342c7b65b08315e332d857d683",
+      "oldOutputSha256": "459db783aadfb0e6f013b07dc53b5b01aa652feeca6c10cc8f703249a43a0693",
+      "currentOutputSha256": "62f17005d981aaa34fc8b17c6a3e160057e75f057398f370237e225d9095043d",
+      "currentImportOrder": "unref as _unref, isRef as _isRef }",
+      "currentGuardedHandler": "(_isRef(count) ? count.value = _unref(count) + 1 : count = _unref(count) + 1)",
+      "observedProtectedFailure": true,
+      "inputBytes": 127
+    },
+    {
+      "name": "let variable increment in handler",
+      "oldArchive": "aggregate-old-let_variable_increment.snap",
+      "oldFullBlockSha256": "f5ada24aad46d05ec2221962f9c19294e272a3d38a49e2c25eeca29a9568baa6",
+      "currentFullBlockSha256": "03342849cb34ed84b44b855cc6762a24e39bd486747f94da30a764d6e69479de",
+      "inputSha256": "0f0f6c5ae14417893c9e7f7517864d5bcb5118f9ba6924e165e1bf225831d84e",
+      "oldOutputSha256": "3a2940508e08400016592a47390832ecdb5b58866389db2280d7f78149369ce5",
+      "currentOutputSha256": "fc36fa71348a67ecf9e47bcebe0116d25fdf934abbd65481bbfd9dc277229cbd",
+      "currentImportOrder": "isRef as _isRef, unref as _unref }",
+      "currentGuardedHandler": "(_isRef(value) ? value.value++ : value++)",
+      "observedProtectedFailure": true,
+      "inputBytes": 118
+    }
+  ],
+  "others": [
+    {
+      "name": "ES6 shorthand in event handler object",
+      "sha256": "40e60d4a5074f0b6f036c82009b8d483038264bbddd4303a59b2d57be4ce37c3"
+    },
+    {
+      "name": "ES6 shorthand in computed style",
+      "sha256": "c9b489b2c44a3d814227bd745050811f4b402f1dda2dec50747b094d237c0b04"
+    },
+    {
+      "name": "ES6 shorthand in v-bind object",
+      "sha256": "3aefabc7bbf58ecb5747d567137d0206325d11104ca3705383d2f47895f80840"
+    },
+    {
+      "name": "ES6 shorthand mixed with regular properties",
+      "sha256": "b9510c75f7f66fc98bb0415acaf20f07c943992b9edc5f88b4596a886f5c1354"
+    },
+    {
+      "name": "v-slot with hyphenated name",
+      "sha256": "3f9f560e631d3a496cdbeeb8c9d086539d8809eebd52e9fd910549ed27764c0e"
+    },
+    {
+      "name": "v-slot with multiple hyphenated names",
+      "sha256": "67e634dc788ac6b20b9b42c9a520e65132e8ae9a3270cc42a60f195a8b1e8016"
+    },
+    {
+      "name": "v-slot mixed hyphenated and regular names",
+      "sha256": "8ae3255844da8d876ae65d956c01357eaa82d1b7490c95b8a53684848eea3f96"
+    },
+    {
+      "name": "v-if with v-model on input",
+      "sha256": "3ac002c5378dbd175252f2b636bcf472316bed5bae172c6da68da369fd9b085f"
+    },
+    {
+      "name": "v-if with v-model on component",
+      "sha256": "fa3c380562d0c6f00c54b7ebfecb1819412474f20dedb1cb057ece5e1419cbae"
+    },
+    {
+      "name": "v-if with component props",
+      "sha256": "fb2d3b1658f28753a6b62a87dfc99de64c34b2d3b751bba8843f98b7f1c2061f"
+    },
+    {
+      "name": "v-if with v-bind object spread",
+      "sha256": "15cf071590177759cfe8029251f55b72161d5994df1e0ebe0a8a6f59e074c996"
+    },
+    {
+      "name": "v-else-if with v-bind object spread",
+      "sha256": "ab8088ddeb857ab47cabaf1218e1ba818aea2234beec618ac32b7de9ede24182"
+    },
+    {
+      "name": "v-for with v-click-outside",
+      "sha256": "99642e0c8829992a842f9524838f76d46459927412d8b6ba7dee77e28c9caa90"
+    },
+    {
+      "name": "v-for with custom directive on element",
+      "sha256": "ee55b925564fa06a1218b2a33c422d5a9618e374c16d40af0353b7700176d507"
+    },
+    {
+      "name": "props destructure with type-based defineProps and defaults",
+      "sha256": "8398c37ef9d465e8f2fdbaceab2aa28e5f7fb79b8fd9f6f9279d1c3237bd44da"
+    },
+    {
+      "name": "complex type-based props destructure with defaults",
+      "sha256": "385c8b05b385f54cc68d5681a85719c867681dd7f5d4d4048369bc407e9de760"
+    },
+    {
+      "name": "duplicate imports should be filtered",
+      "sha256": "1e0d9fbcb4241ec3c21089fbff373bb90706bb169cd0fbb51f1c2d36e4f4fd6c"
+    },
+    {
+      "name": "duplicate named imports should be filtered",
+      "sha256": "aafc7dd7278b242d1d316e07f2a3f6b13e038cff8761d00512c6b3bb57d19e0e"
+    },
+    {
+      "name": "top-level await generates async setup",
+      "sha256": "83de6f096967299fdce006d7eb754f308ac161bdd9c372041c80a534250971fc"
+    },
+    {
+      "name": "await in string literal should not trigger async",
+      "sha256": "29a307fbd321170c8cbef406a8bcf7fe79ed9fcad593173b012a226fed9c2b76"
+    },
+    {
+      "name": "default as prop name should not use shorthand",
+      "sha256": "a3a087ba54c0658f43fd2422179303121d24f8bcf63d97bf967519c494108110"
+    },
+    {
+      "name": "type comparison should not be stripped",
+      "sha256": "4b5effc66ec15b3d9f013fa93720a127860955687c2e33a87c16ad167a8cc9f4"
+    },
+    {
+      "name": "type keyword in conditional",
+      "sha256": "fdab453c436b53230306f72ca0f315b540bc1cfe4581ab681ba05f71d8a16190"
+    },
+    {
+      "name": "static string with newline",
+      "sha256": "b527035e500b2b375d92091b999c5a3d853614f1f9a2f77d52900e9e86542411"
+    },
+    {
+      "name": "attribute with special characters",
+      "sha256": "6933caba5e4947de22df541e2082f101c3964440006112e4357e722b16387b53"
+    },
+    {
+      "name": "v-model on native input with ref",
+      "sha256": "cec84ef3df13074c8155c96f5560f5c3afd6e9d6989ebeb53c7d125ddcfbe1fd"
+    },
+    {
+      "name": "v-model on select with ref",
+      "sha256": "1f90db2e2ff2f28dd42d6462abe8d878d5708ecc4c1ef2bc953f3f0d552c46f6"
+    },
+    {
+      "name": "non-script-setup component with export default",
+      "sha256": "ddd415babd4794c12d4e310e67b4742110324827bfce2fbc169e4606d43f7fbd"
+    },
+    {
+      "name": "script with setup function",
+      "sha256": "0903dc9f85a1dd3f9bb0e9aa9ccefc05deea1218a84ac1ae234b783bad2d0b9c"
+    },
+    {
+      "name": "generic function call should be stripped",
+      "sha256": "d6b799e816ecdc29a8cf924ad3ce4e8287f2be57d0c50054dc54553efdd57c36"
+    },
+    {
+      "name": "ref with generic type should be stripped",
+      "sha256": "671d0f864694f02082108bbeb2f0ad36937b25c3d4c58a9b70b663a4c0e6ddb1"
+    },
+    {
+      "name": "arrow function with typed parameters in template",
+      "sha256": "681bc4d9d494ecebda687a96468c1c645bf91a75b5ffb709ac7047acf217917d"
+    },
+    {
+      "name": "callback with typed parameters",
+      "sha256": "9fb2d99e2fff091ad5510cc2824b534840dd206a5bee28e17d52d89821a78455"
+    },
+    {
+      "name": "multiline arrow function in event handler",
+      "sha256": "d8160a97a2ab74a069a49a4ad99217f6b8f166c6b37a7be5d0d397f1e85ed9a1"
+    },
+    {
+      "name": "arrow function with multiple statements in v-for",
+      "sha256": "636219088b53c4a9fce480bec8bb60036efc7e8388911ceb6ccbae1664cf3b03"
+    },
+    {
+      "name": "dynamic component with v-slot destructure",
+      "sha256": "cf6588484d6b5fe5f17173c380b9966bf8661301ee7994ac28dd427f1a80c916"
+    },
+    {
+      "name": "transition inside v-if should use builtin",
+      "sha256": "d454926c3b3df6a824adeec9a3279c0cf895638c3c87099226147052b2ac938d"
+    },
+    {
+      "name": "keep-alive inside v-for should use builtin",
+      "sha256": "dd62b081588122e658b12d3d74c02c00fd35fc5e69d5294c2a80fb48c6f37205"
+    },
+    {
+      "name": "hyphenated component name in v-if",
+      "sha256": "45e9ffedf52ade9ea01afbb7bd7719e1641e2a11e40dcd02b84f0f1408dd4831"
+    },
+    {
+      "name": "hyphenated component in v-if v-else chain",
+      "sha256": "0623a0893566864f0ffc512cc636f0f88c20bb3a15405e94c2a3e7e3b1b185e7"
+    },
+    {
+      "name": "component should not receive scope_id in props",
+      "sha256": "465dbc881c9bf15ae127c1315cebb225f16590fb864d1175315e4893b25a63e4"
+    },
+    {
+      "name": "scoped style does not bake scope attrs into render props",
+      "sha256": "feb48b4a88292c38fd102391db0a818e746be49b5ccaafd230f786a24273e6b4"
+    },
+    {
+      "name": "component event rest params stay local",
+      "sha256": "612e39705a00df7f627ef50db9a79614f2143e223d8763a14c94a22ca6ff0ef8"
+    },
+    {
+      "name": "nullable runtime prop types keep null",
+      "sha256": "d503c6805d0f1ee55151634d12647ca4ed7ffd19dafc50ec5dc0e9c77536c77e"
+    },
+    {
+      "name": "dynamic asset URL with import meta url",
+      "sha256": "9f641f82077dc69ba6ec350a7dbbefef4f23f40756acc336b2d32a02e72de148"
+    },
+    {
+      "name": "v-if slot outlet with v-else",
+      "sha256": "ef67d356245b4b409aa9ad0de1346b9c1bb3f419786cc73e9cee5a405a93927e"
+    },
+    {
+      "name": "dynamic slot outlet name in loop",
+      "sha256": "7e73f359d5c1cc89d366402f9d6fd62104f14eb9fd8e406725cd164d07cdb95a"
+    },
+    {
+      "name": "v for template else interpolation wraps text vnode",
+      "sha256": "3e248dbe2ebc52ec3035f58fb308a6e6f61acacf2f92bb4d8959201343c456f8"
+    },
+    {
+      "name": "v if branch keeps maybe ref style patch flag",
+      "sha256": "fc8f8c790e18b4eb7c44205943c36016d0a91a7bfb2898b28414e9b6f85d2c23"
+    },
+    {
+      "name": "template ref with dynamic props in v if branch",
+      "sha256": "47e0c7fbe2d14ad039f68e504dd709ba2114e707c85107d1a11d12ab01dfce09"
+    },
+    {
+      "name": "options api dynamic style and class keep patch flags",
+      "sha256": "6238e33aedaf0244169a07a1c45fcd02e7d804d6f5dd9edf9b43dd0395284f85"
+    },
+    {
+      "name": "imported custom directive binding in script setup",
+      "sha256": "23e6ab7d9eff57fe9c14b64246b86da175a50533bbf151b40a3d7ef8d8981783"
+    },
+    {
+      "name": "component event member expression handler is invoked",
+      "sha256": "e0b18a74c12b2818fbedf749e3991ac8fef10a1b9c3876735d47af3e9f52cf7a"
+    },
+    {
+      "name": "function typed prop param does not shadow local t",
+      "sha256": "b81602d400fe6c8439d5544be31c543174db1873954fe9dff938992b165492a8"
+    },
+    {
+      "name": "v-if with custom directive on element",
+      "sha256": "461015a4ea15633955fdae6b52d58b0812b6866d4f53988b0b8b05977bd0e1dc"
+    },
+    {
+      "name": "defineEmits binding preserves blank line before setup body",
+      "sha256": "4acd9d8a1da73da37b6c500ec73ffecd37993acaf43f4c0f0ecf0b46a069d790"
+    }
+  ],
+  "inputSha256Encoding": "Exact UTF-8 snapshot bytes after the first --- INPUT ---\\n delimiter and before the first following --- OUTPUT ---\\n delimiter, retaining every intervening LF, with no header/delimiter/trim/PKL evaluation."
+}

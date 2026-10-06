@@ -300,3 +300,11 @@ whole681 and an independently qualified actual benefit are pending. Freeze and
 review source before existing Actions; use the already authorized bounded
 observer only if necessary to diagnose residual operations. No blind matched
 repeat, new RPC/schema/stage, SDK change, cap raise, Ready or closure.
+
+The independently source-cleared raw correction03d3 now genuinely incorporates
+actual main143c1d4a9fbe6530cdd06f1f001b816f39c1d00a, retaining all incoming
+release/source/census/decision clauses. Only the fixed future original-control
+literal changes to that same immutable main; all six drivers, timers, full
+inputs/physical-build/PID guards and original native commands remain intact.
+Publish the existing Draft for fresh ordinary/native20 quality first. No full
+matched dispatch or benefit follows from this source-only reconciliation.

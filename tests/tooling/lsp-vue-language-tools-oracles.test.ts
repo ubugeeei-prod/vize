@@ -168,6 +168,29 @@ test("Maestro scorecard executes representative must-include and must-exclude LS
         assert.ok(hintLabels.includes(": Ref<number>"), hintLabels.join(", "));
         assert.ok(hintLabels.includes(": ComputedRef<number>"), hintLabels.join(", "));
         assert.equal(hintLabels.includes(": Ref<boolean>"), false, hintLabels.join(", "));
+        assert.deepEqual(hints, [
+          {
+            kind: 1,
+            label: ": Ref<number>",
+            paddingLeft: true,
+            position: { character: 11, line: 5 },
+            tooltip: "Vue reactive binding (Ref)",
+          },
+          {
+            kind: 1,
+            label: ": ComputedRef<number>",
+            paddingLeft: true,
+            position: { character: 13, line: 6 },
+            tooltip: "Vue reactive binding (ComputedRef)",
+          },
+          {
+            kind: 1,
+            label: ": Ref<string>",
+            paddingLeft: true,
+            position: { character: 13, line: 7 },
+            tooltip: "Vue reactive binding (Ref)",
+          },
+        ]);
 
         const noiseSource = `<template>
   <p>email dev@example.com and plain text v-if @click :class</p>
