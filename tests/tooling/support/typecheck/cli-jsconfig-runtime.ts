@@ -136,6 +136,7 @@ export class JsconfigOracle {
   }
 
   private capture(label: string, command: string, argv: string[], cwd = this.root): ProcessRow {
+    const beforeInputs = this.inputs();
     const result = spawnSync(command, argv, {
       cwd,
       env: { ...process.env, LANG: "C", LC_ALL: "C", NO_COLOR: "1" },
@@ -154,8 +155,10 @@ export class JsconfigOracle {
       stdoutBase64: result.stdout?.toString("base64") ?? "",
       stderrBase64: result.stderr?.toString("base64") ?? "",
     };
-    this.rows.push({ label, inputs: this.inputs(), process: row });
+    const afterInputs = this.inputs();
+    this.rows.push({ label, beforeInputs, afterInputs, process: row });
     this.save();
+    assert.deepEqual(afterInputs, beforeInputs, `${label}: command changed authored inputs`);
     assert.equal(row.signal, null);
     assert.equal(row.error, null, row.error ?? "");
     return row;
