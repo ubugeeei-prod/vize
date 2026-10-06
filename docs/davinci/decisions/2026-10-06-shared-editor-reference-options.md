@@ -3,8 +3,7 @@
 Tracked in [#7698](https://github.com/ubugeeei-prod/vize/issues/7698). This
 source preparation incorporates the signed #8116 readiness fix
 `6b5e6fd8357bc892d2ea9cefe271a13fc08100cb` after its actual merge.
-The paired issue comment is prepared locally for the owning delivery change;
-it has not been published.
+The paired issue decision is [recorded here](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6015282967).
 
 Native diagnostic collection adds the current workspace declaration paths to
 the configured virtual TypeScript options. Canonical editor requests previously
@@ -37,8 +36,7 @@ root when paths remain fixed and choose the same new root after path changes.
 The retained request scope must reject the declaration mutation. This does not
 claim a process PID, native API project identity or process reaping.
 
-TODO: publish the paired issue decision and run the current mandatory
-source/native/full/protected gates. The existing original400 workflow now
+TODO: run the current mandatory source/native/full/protected gates. The existing original400 workflow now
 triggers on the exact changed Maestro leaves and admits only those leaves in
 its closed delta set. Its recipe, fixtures, rows and budgets remain unchanged.
 The first canonical request now awaits declaration discovery; its original400
