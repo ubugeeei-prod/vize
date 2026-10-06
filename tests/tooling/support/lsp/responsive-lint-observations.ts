@@ -9,6 +9,7 @@ import { isDiagnosticsForUri } from "./assertions.ts";
 import { root } from "./paths.ts";
 import type { PublishDiagnosticsParams } from "./protocol.ts";
 import { LspSession } from "./session.ts";
+import type { BoundLspSession, PublishedSessionBinding } from "./session-process.ts";
 import { NativeDiagnosticsGate } from "./responsive-lint-native-gate.ts";
 
 const fixtureRoot = path.join(
@@ -45,7 +46,14 @@ function alt(params: PublishDiagnosticsParams): boolean {
   return params.diagnostics.some((diagnostic) => diagnostic.code === "a11y/alt-text");
 }
 
-async function run(typecheck: boolean, corsaPath: string) {
+async function run(
+  typecheck: boolean,
+  corsaPath: string,
+  published?: {
+    binding: BoundLspSession & { published: PublishedSessionBinding };
+    failureRoot: string;
+  },
+) {
   const directory = workspace(`responsive-lint-${typecheck}-`);
   const file = path.join(directory, "src/App.vue");
   const uri = pathToFileURL(file).href;
@@ -63,11 +71,12 @@ async function run(typecheck: boolean, corsaPath: string) {
   }[] = [];
   let started = performance.now();
   try {
+    if (published) assert.equal(published.binding.published?.authority, "published-release");
     fs.mkdirSync(path.dirname(file));
     fs.writeFileSync(file, files.get(corpus.originalSource)!);
     fs.writeFileSync(path.join(directory, "vize.config.json"), files.get(corpus.originalConfig)!);
     fs.writeFileSync(path.join(directory, "tsconfig.json"), files.get(corpus.runtimeConfig)!);
-    session = new LspSession();
+    session = new LspSession(published?.binding);
     session.notificationObservers.push((method, params) => {
       if (method === "textDocument/publishDiagnostics" && isDiagnosticsForUri(params, uri)) {
         notifications.push({ elapsedMs: performance.now() - started, params });
@@ -205,8 +214,8 @@ async function run(typecheck: boolean, corsaPath: string) {
     };
   } catch (failure) {
     const output = path.join(
-      root,
-      `target/differential/responsive-lint-diagnostics-8002-${typecheck}-failure.json`,
+      published?.failureRoot ?? path.join(root, "target/differential"),
+      `responsive-lint-diagnostics-8002-${typecheck}-failure.json`,
     );
     fs.mkdirSync(path.dirname(output), { recursive: true });
     fs.writeFileSync(
