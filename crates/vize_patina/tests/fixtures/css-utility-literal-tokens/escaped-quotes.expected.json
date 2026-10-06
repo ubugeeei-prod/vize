@@ -1,0 +1,43 @@
+{
+  "api": {
+    "filename": "EscapedQuotes.vue",
+    "diagnostics": [
+      {
+        "rule": "css/no-utility-classes",
+        "severity": "warning",
+        "message": "Utility class should be in global styles, not component styles",
+        "start": 235,
+        "end": 240,
+        "help": "Use semantic class names in components, or import utility classes from a global stylesheet",
+        "labels": [],
+        "fix": null
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  "json": [
+    {
+      "file": "EscapedQuotes.vue",
+      "messages": [
+        {
+          "ruleId": "css/no-utility-classes",
+          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+          "severity": 1,
+          "message": "[vize:css/no-utility-classes] Utility class should be in global styles, not component styles",
+          "line": 9,
+          "column": 1,
+          "endLine": 9,
+          "endColumn": 6,
+          "help": "Use semantic class names in components, or import utility classes from a global stylesheet"
+        }
+      ],
+      "errorCount": 0,
+      "warningCount": 1
+    }
+  ],
+  "plain": "Patina lint report: 1 warning in 1 file\n\nEscapedQuotes.vue\n  EscapedQuotes.vue:9:1 warning css/no-utility-classes Utility class should be in global styles, not component styles\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Use semantic class names in components, or import utility classes from a global stylesheet\n",
+  "authoredSlices": [
+    ".pl-3"
+  ]
+}
