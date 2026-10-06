@@ -63,7 +63,7 @@ overrides:
   nuxt: "4.5.1"
   qs: "6.16.0"
   "readdir-glob>minimatch": "10.2.5"
-  shell-quote: "1.9.0"
+  shell-quote: "1.11.0"
   # v4 removes unsafe argument forms; Devtools' default import is patched below.
   simple-git: "4.0.1"
   "simple-git>@simple-git/argv-parser": "2.0.1"
