@@ -93,3 +93,20 @@ two complete literal rows. Every old L2 path/remark/explanation remains byte-exa
 The complete 724,241-byte native failure log is retained, with no parser/pass,
 regression explanation or update-mode change. Fresh unchanged gates remain
 mandatory; the first native attempt stays failed.
+
+The `769180f` affected build/Clippy and all four Rust shards passed. Its tooling2
+run then exposed an incorrect new map premise: the original has no script, and
+the unchanged template-only compiler returns no module map. Require both map
+fields absent and whole maps-on/off result equality. The earlier prepared
+authored-map claim does not apply to this original. Every other field, original
+source, CSS reference and repeat comparison remains unchanged. The complete
+871,671-byte failed log is retained; no map producer change is included.
+
+The parallel native run already matched all 1,041 L2 remarks with zero changes.
+Its next gate found the generated backlog stale. Derive the complete document
+from the reviewed baseline using the existing grouping and formatting rules,
+first reproducing the entire old document exactly. Only its summary and the
+existing slot-blocked subtree reason's eight-to-nine hit/file counts change;
+rank, first example and all other bytes remain unchanged. The complete old
+document and 400,489-byte failure log are preserved, without compiler/update
+mode or captured-output authoring. Fresh whole gates remain mandatory.

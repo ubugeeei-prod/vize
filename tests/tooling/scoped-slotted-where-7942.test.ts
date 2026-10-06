@@ -47,7 +47,7 @@ await test("all eight full original and anchor CSS controls cross the real nativ
   }
 });
 
-await test("original two-rule whole SFC keeps full public results and additive authored maps", () => {
+await test("original two-rule whole SFC keeps full public results and the template-only map contract", () => {
   const source = read("App.vue");
   assert.equal(digest(source), pack.originalSfcSha256);
   assert.equal(digest(read("App.pipeline.css")), pack.originalPipelineSha256);
@@ -69,12 +69,10 @@ await test("original two-rule whole SFC keeps full public results and additive a
       assert.equal(plain.styles[0].content, source.split("<style scoped>")[1].split("</style>")[0]);
       assert.deepEqual(compileSfc(source, options), plain);
       const mapped = compileSfc(source, { ...options, sourceMap: true });
-      assert.equal(typeof mapped.map, "string");
-      const map = JSON.parse(mapped.map!);
-      assert.equal(map.version, 3);
-      assert.deepEqual(map.sources, ["App.vue"]);
-      assert.deepEqual(map.sourcesContent, [source]);
-      assert.deepEqual({ ...mapped, map: plain.map }, plain);
+      // The existing template-only SFC route returns no module map.
+      assert.equal(plain.map, undefined);
+      assert.equal(mapped.map, undefined);
+      assert.deepEqual(mapped, plain);
     }
   }
 });
