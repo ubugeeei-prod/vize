@@ -109,7 +109,7 @@ mod tests {
         let source = "import { ref, computed } from 'vue'; const count = ref(0); const doubled = computed(() => count.value * 2);";
         let ordinary = crate::script_parser::parse_script_setup(source);
         let demanded = crate::script_parser::parse_script_setup_for_unused::<true>(
-            source, None, false, false, false,
+            source, None, false, false, false, false,
         );
         assert!(ordinary.types.builtin_reactive.is_none());
         assert!(demanded.types.builtin_reactive.is_some());

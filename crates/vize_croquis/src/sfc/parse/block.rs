@@ -127,7 +127,7 @@ pub(super) fn find_closing_tag_end(
     if pos + 2 + tag_name.len() >= len {
         return None;
     }
-    if bytes.get(pos..pos + 2) != Some(b"</") {
+    if bytes.get(pos..pos + 2) != Some(b"</".as_slice()) {
         return None;
     }
     let name_start = pos + 2;

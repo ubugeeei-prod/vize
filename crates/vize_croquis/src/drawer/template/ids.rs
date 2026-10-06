@@ -11,7 +11,8 @@ use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
 use super::super::Drawer;
 use super::super::helpers::{
-    extract_identifiers_checked, extract_identifiers_retained, is_keyword,
+    extract_identifier_refs_retained, extract_identifiers_checked, extract_identifiers_retained,
+    is_keyword,
 };
 
 /// Attributes that take ID references (not the ID itself).
@@ -202,11 +203,25 @@ impl Drawer {
             }
             let computed = profile!(
                 "croquis.template.expression.extract_identifiers",
-                extract_identifiers_retained(content, retained)
+                if let Some(capture) = self.occurrence_capture.as_mut() {
+                    let (names, references) = extract_identifier_refs_retained(content, retained);
+                    match references {
+                        Some(references) => {
+                            capture
+                                .references
+                                .insert(CompactString::new(content), references);
+                        }
+                        None => capture.valid = false,
+                    }
+                    names
+                } else {
+                    extract_identifiers_retained(content, retained)
+                }
             );
             self.ident_cache
                 .insert(CompactString::new(content), computed);
         }
+        self.note_expression_occurrences(content, base_offset, scope_vars);
         let Some(idents) = self.ident_cache.get(content) else {
             return;
         };
