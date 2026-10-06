@@ -179,3 +179,24 @@ The current a5 six-session/96-response execution remains scoped to identical
 bodies. Fresh source Actions, clean full-tail composition and actual protected
 native/plain/full Rust/unchanged104/signed delivery remain mandatory. #8010
 stays open; paired operational receipt: comment 6010587045.
+
+## Protected attempt and complete failure context
+
+Exact protected candidate f1183c640d3d397b2bb5578827207d3c35dc938d,
+Check 37425391274, is failed. Its unchanged 104 ceilings and complete raw
+three-run windows passed; all four Rust shards, canonical corpus and JS passed.
+Tooling shard 1 failed two original laws: Docker hook-family execution ended
+with an unconfirmed removal timeout, and the fixture tool child emitted no
+start event. The initial nested Docker error and full rust-script streams were
+not exposed by those existing failure messages. Their underlying cause is unknown.
+
+After reauthenticating both source339 and actual matching f118, remove only
+#8071 from the queue. Preserve the whole failed log and actual entry/mutation
+receipt. Add passive failure context to the existing two drivers: retain complete
+argv/status/signal/error/stdout/stderr for the missing tool start, and expose the
+complete nested sandbox cause while rethrowing the original error. Keep every
+original assertion/input and all execution/cleanup limits unchanged. This is
+observability, not a product or timing repair. Fresh automatic same-PR Actions
+and actual protected success remain required; there is no unchanged-head retry,
+new PR, inferred infrastructure cause, or completed #8010 claim.
+Paired #8010 failure-custody decision: comment 6011270548.
