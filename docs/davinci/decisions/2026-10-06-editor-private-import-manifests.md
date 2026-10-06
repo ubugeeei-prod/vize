@@ -70,3 +70,24 @@ for both documents. Preserve every raw JS package byte and the existing Vize
 whole vectors; no package declaration, filtering or production change hides
 this independent stock warning. Fresh execution must establish the remaining
 ordinary JS editor behavior and TypeScript-config JS cases.
+
+Historical355 now proves both stock ordinary-JS complete replies, including
+TS7016 Hint4, before its Vize whole `[]` oracle rejects the SFC's TS7016 Error1.
+That ordinary-route producer is unchanged from incoming143: checked JS SFCs
+use `.vue.ts`, while plain JS mirrors keep `.js`; strict TypeScript reports
+the missing declaration as an error. Preserve this existing language boundary
+in the authored whole vectors: the SFC error and the plain-JS suggestion use
+the same original import ranges and physical package path, with Vize's existing
+source spelling. The batch session retains suggestions, its JSON renderer
+prints `hint` versus `error`, and only severity1 contributes to errorCount.
+The whole CLI oracle therefore retains both fields and one error. Preserve
+all package/source/config bytes and every original private-import positive.
+The failed SFC witness terminates through SIGTERM before main publication;
+it gives no successful terminal, main-vector or remaining-config credit.
+Fresh source/native Actions must establish this source-derived distinction.
+
+JS quality limit and TODO: the checked-JS SFC's legacy virtual-TS Error1 is
+not equivalent to the bare-JS stock Hint4. These source-derived whole controls
+preserve existing producer behavior and the original TS7991 regression laws;
+they do not claim general Vue-JS semantic parity. The separate JS-quality
+work must address that language boundary with genuine native authority.

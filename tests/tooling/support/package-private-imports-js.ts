@@ -20,12 +20,12 @@ export function vectors(mode: string, native = false, directory = ""): Record<st
       : mode === "missing-target"
         ? [diagnostic(2307, missing, 0, 22, 36, native)]
         : [];
-  if (native && mode === "ordinary-package") {
-    // Pinned checker.errorOnImplicitAnyModule retains this untyped JS suggestion.
+  if (mode === "ordinary-package") {
+    // Native JS retains a suggestion; the existing checked SFC emits strict TS.
     const packageFile = path.join(directory, "node_modules/ordinary/index.js");
     const message = `Could not find a declaration file for module 'ordinary'. '${packageFile}' implicitly has an 'any' type.`;
-    app.push({ ...diagnostic(7016, message, 1, 22, 32, true), severity: 4 });
-    main.push({ ...diagnostic(7016, message, 0, 22, 32, true), severity: 4 });
+    app.push({ ...diagnostic(7016, message, 1, 22, 32, native), severity: native ? 4 : 1 });
+    main.push({ ...diagnostic(7016, message, 0, 22, 32, native), severity: 4 });
   }
   if (native)
     app.push(
@@ -96,14 +96,16 @@ export function cliCheck(
     stderrBase64: result.stderr.toString("base64"),
     inputs,
   });
-  const expected = vectors(mode);
+  const expected = vectors(mode, false, directory);
   const files = ["src/App.vue", "src/lib/util.js", "src/main.js"];
   const rendered = (file: string) =>
     (expected[file] ?? []).map((value) => {
       const item = value as ReturnType<typeof diagnostic>;
-      return `error:${item.range.start.line + 1}:${item.range.start.character + 1} [TS${item.code}] ${item.message}`;
+      const severity = item.severity === 4 ? "hint" : "error";
+      return `${severity}:${item.range.start.line + 1}:${item.range.start.character + 1} [TS${item.code}] ${item.message}`;
     });
-  const errors = mode === "bad-call" || mode === "missing-target" ? 2 : 0;
+  const errors =
+    mode === "bad-call" || mode === "missing-target" ? 2 : mode === "ordinary-package" ? 1 : 0;
   assert.equal(result.status, errors ? 1 : 0);
   assert.equal(result.signal, null);
   assert.equal(result.error, undefined);

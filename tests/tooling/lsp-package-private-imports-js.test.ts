@@ -101,7 +101,12 @@ test(
                 file.endsWith(".vue") ? "vue" : "javascript",
               );
             for (const file of ["src/App.vue", "src/main.js"])
-              await publication(wire, path.join(directory, file), 1, vectors(mode)[file]);
+              await publication(
+                wire,
+                path.join(directory, file),
+                1,
+                vectors(mode, false, directory)[file],
+              );
             await wire.finish();
             for (const file of ["src/App.vue", "src/main.js"]) {
               const publications = wire.messages.filter(
@@ -115,7 +120,7 @@ test(
                 params: {
                   uri: uri(path.join(directory, file)),
                   version: 1,
-                  diagnostics: vectors(mode)[file],
+                  diagnostics: vectors(mode, false, directory)[file],
                 },
               });
             }
@@ -127,7 +132,7 @@ test(
               await wire.stop().catch(() => undefined);
               save(name + "-vize-terminal", {
                 inputs,
-                expected: vectors(mode),
+                expected: vectors(mode, false, directory),
                 wire: observation(wire),
                 allDecodedMessages: wire.messages,
                 joinedThroughChildClose: wire.exitStatus !== null || wire.signal !== null,
