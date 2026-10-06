@@ -117,3 +117,16 @@ output now lives under the actual `NEXTEST_PROFILE` shard envelope; the existing
 upload and all workflow commands remain unchanged. The necessary successor
 needs fresh complete source/runtime gates and retained classifier observations
 before admission. No initial failure or partial proof qualifies its execution.
+
+The necessary successor genuinely incorporates delivered literal main
+`c30f1a02da763e0086c489b8e17b9aa558187cff` (#8094 SSR browser globals).
+All private correction source/corpus/oracle/helper bytes and incoming history
+are conserved. Initial Check 37455831891 is terminal failure, including a
+completed successful canonical corpus; it cannot qualify the new source.
+The same PR is temporarily Draft and off queue while fresh automatic Actions
+validate the concrete repair. No additional approval or campaign is required.
+
+The maintainer explicitly authorizes this concrete successor to return to
+non-Draft review during ordinary automatic qualification. A pending new head
+has no inherited failure or success credit; queue admission still requires
+its own complete current gates. No extra PR or optional approval is introduced.
