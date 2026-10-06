@@ -31,7 +31,6 @@ must not be attributed to the inlay or compiler change from ancestry alone.
 
 The paired issue record is [comment 6008430599](https://github.com/ubugeeei-prod/vize/issues/6883#issuecomment-6008430599).
 
-
 The next meaningful diagnostic source `f5861bc29e` on literal production
 `143c1d4a` reproduced the original failure in editor job 112093850238,
 full Check 37409279893. The complete native stage trace records an abandoned
@@ -69,7 +68,6 @@ compilation/native/full original Rich/protected104/current Rust/plain/signed
 merge/release remain required. These prepared controls are not runtime proof.
 The paired record is [comment 6009010925](https://github.com/ubugeeei-prod/vize/issues/8085#issuecomment-6009010925).
 
-
 The a25 source-only peer preserved the production/body authority but its new
 shutdown helper emitted `params: null`, which pinned tower-lsp rejects for unit
 params. The successor reuses the existing #8012 helper's omitted-null policy,
@@ -82,3 +80,19 @@ production bytes stay exact. These prepared controls have no execution credit.
 [Same-line qualification](https://github.com/ubugeeei-prod/vize/issues/8085#issuecomment-6009129661)
 and [null-params/publication correction](https://github.com/ubugeeei-prod/vize/issues/8085#issuecomment-6009169942) are paired on #8085; all fresh
 source/native/full/protected/signed/release gates remain mandatory.
+
+The first published c74 recipe has a concrete pre-native fixture boundary: its
+copied `gate/tsgo.js` inherits repository `type: module` but uses CommonJS
+`require`. The successor writes only a fixed `gate/package.json` with
+`type: commonjs`, preserving the async .js launcher policy, whole proxy and
+all production/original/oracle bytes. First-source Actions remain separately
+unqualified; fresh successor source/native/full/protected delivery is required.
+The paired record is [comment 6009241924](https://github.com/ubugeeei-prod/vize/issues/8085#issuecomment-6009241924).
+
+The authentic first c74 full check-js job 112105231818 failed only this owned
+companion's formatting after the native package build succeeded. Its complete
+610868-byte log is retained with SHA256
+`e04bf1ac56af3a8f7228458c17767114f5d7d7a364f27c682273a79f549e1b95`.
+The successor applies the existing formatter only to this companion, preserving
+all source, corpus, complete response assertions and canonical clauses; fresh
+exact source/native/full gates remain mandatory.

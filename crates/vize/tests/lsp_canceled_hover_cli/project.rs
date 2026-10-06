@@ -49,6 +49,8 @@ impl Project {
         std::fs::write(root.path().join("tsconfig.json"), CONFIG).unwrap();
         let gate = root.path().join("gate");
         std::fs::create_dir(&gate).unwrap();
+        // The repository is ESM; this copied native launcher uses CommonJS.
+        std::fs::write(gate.join("package.json"), r#"{"type":"commonjs"}"#).unwrap();
         let proxy = gate.join("tsgo.js");
         std::fs::write(&proxy, PROXY).unwrap();
         std::fs::set_permissions(&proxy, std::fs::Permissions::from_mode(0o755)).unwrap();
