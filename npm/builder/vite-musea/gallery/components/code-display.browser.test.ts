@@ -53,6 +53,18 @@ async function checkScroll(page: Page, pre: Locator, expected: string) {
   assert.equal(await pre.evaluate((element) => element === document.activeElement), true);
   await page.keyboard.press("ArrowRight");
   await page.waitForFunction(() => document.activeElement!.scrollLeft > 0);
+  // Chromium animates keyboard scrolling even after the first nonzero offset.
+  // Wait for actual stable frames before jumping to the end or taking images.
+  await pre.evaluate(async (element) => {
+    let previous = -1;
+    let stable = 0;
+    for (let frame = 0; frame < 120 && stable < 12; frame++) {
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      stable = element.scrollLeft === previous ? stable + 1 : 0;
+      previous = element.scrollLeft;
+    }
+    if (stable < 12) throw new Error("Keyboard scroll did not settle");
+  });
   const end = await pre.evaluate((element) => {
     element.scrollLeft = element.scrollWidth;
     element.scrollTop = element.scrollHeight;

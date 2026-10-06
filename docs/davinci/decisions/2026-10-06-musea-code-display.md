@@ -54,3 +54,9 @@ renderer changes, editor formatting and native preview integration require their
 own evidence if a separate defect is reported. Native-stage completion, whole
 compiler parity and performance gains receive no credit from this UI law.
 Release and published-package verification remain required after actual merge.
+
+The keyboard control waits for stable native scrolling frames before resetting
+and capturing a panel. Its first local pictures were taken while Chromium's
+arrow-key scroll animation was still moving; non-keyboard gallery inspection
+confirmed source insets were correct. This repairs screenshot custody, without
+changing the UI, whole-source or scroll-reachability expectations.
