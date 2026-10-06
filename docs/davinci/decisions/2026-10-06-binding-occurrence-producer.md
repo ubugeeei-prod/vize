@@ -285,3 +285,11 @@ entry, argument, span or explanation changes; no UPDATE environment is
 used and all original strict assertions remain fixed. This fixture-only
 registration does not supply native product migration/history completion.
 Fresh exact-source native and whole protected gates must accept it.
+
+The current hidden facade serves the existing non-resolving lint-demand
+analysis; it does not replace Options API, Vue 2 or filename-resolved provider
+entry points. The child retains legacy paths for those outside-domain modes.
+A declaration span index is a recorded efficiency TODO: the current lookup
+scans owned bindings, and no latency or complexity improvement is claimed.
+Any index must preserve exact binding identities across offset shifts/merges
+and qualify current counters; it is outside this correctness correction.
