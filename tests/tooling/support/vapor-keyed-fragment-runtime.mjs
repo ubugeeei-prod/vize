@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { loadRuntime, observeChildren } from "./davinci-mounted-trace.mjs";
+import { keyedCases, keyedExpectations } from "./vapor-keyed-fragment-expectations.mjs";
 
 const evidence = { versions: null, stock: [], maps: [], observations: [], stage: "startup" };
 let window;
@@ -20,12 +21,7 @@ try {
     assert.equal(createHash("sha256").update(bytes).digest("hex"), file.sha256);
     originals.set(file.path, bytes.toString("utf8"));
   }
-  const expected = Object.fromEntries(
-    ["component", "element", "stable", "nested-attrs", "root-attrs", "if-attrs"].map((name) => [
-      name,
-      JSON.parse(originals.get(`${name}.expected.json`)),
-    ]),
-  );
+  const expected = keyedExpectations(originals);
   const chunks = [];
   for await (const chunk of process.stdin) chunks.push(chunk);
   const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
@@ -33,7 +29,7 @@ try {
   assert.equal(typeof input.inline, "boolean");
   assert.deepEqual(
     input.cases.map(({ name }) => name),
-    ["component", "element", "stable", "nested-attrs", "root-attrs", "if-attrs"],
+    keyedCases,
   );
   const fromUi = createRequire(new URL("../../../npm/ui/package.json", import.meta.url));
   const fromVue = createRequire(fromUi.resolve("vue-vapor-runtime/package.json"));
@@ -180,7 +176,8 @@ try {
       return setup.apply(this, args);
     };
     const component = await evaluate(module.code, counter);
-    const fallthrough = ["nested-attrs", "root-attrs", "if-attrs"].includes(name);
+    const nestedFallthrough = ["nested-attrs", "nested-if-attrs"].includes(name);
+    const fallthrough = nestedFallthrough || ["root-attrs", "if-attrs"].includes(name);
     const app = fallthrough
       ? vue.createVaporApp(component, { title: "outer" })
       : vue.createVaporApp(component);
@@ -220,14 +217,14 @@ try {
       assert.ok(previous);
       snapshot();
       if (fallthrough) {
-        if (name === "nested-attrs") await click("button:nth-of-type(2)");
+        if (nestedFallthrough) await click("button:nth-of-type(2)");
         else {
           previous.dispatchEvent(new window.Event("dblclick", { bubbles: true }));
           await vue.nextTick();
           snapshot();
         }
         const old = previous;
-        await click(name === "nested-attrs" ? "button" : "input");
+        await click(nestedFallthrough ? "button" : "input");
         assert.equal(old.isConnected, false);
       } else if (name === "element") {
         previous.value = "typed";
@@ -281,6 +278,7 @@ try {
           "nested-attrs": "nested-attrs.vue.txt",
           "root-attrs": "root-attrs.vue.txt",
           "if-attrs": "if-attrs.vue.txt",
+          "nested-if-attrs": "nested-if-attrs.vue.txt",
         }[fixture.name],
       ),
     );

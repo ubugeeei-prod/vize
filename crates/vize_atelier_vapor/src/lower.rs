@@ -136,7 +136,7 @@ fn transform_children_guarded<'a>(
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {
-                element::transform_element_with_key(ctx, el, &mut block, own_keys);
+                key::element(ctx, el, &mut block, own_keys);
             }
             TemplateChildNode::Text(text) => {
                 transform_text(ctx, text, &mut block);

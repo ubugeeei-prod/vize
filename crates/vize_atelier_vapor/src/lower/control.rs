@@ -10,7 +10,7 @@ use vize_atelier_core::{
     TemplateChildNode,
 };
 
-use super::{context::TransformContext, transform_children};
+use super::context::TransformContext;
 
 /// Transform IfNode (from compiler-core v-if transform)
 pub(crate) fn transform_if_node<'a>(
@@ -73,7 +73,7 @@ fn transform_if_node_with_options<'a>(
     let _positive_branch_id = ctx.next_id();
 
     // Transform first branch children
-    let positive = transform_children(ctx, &first_branch.children);
+    let positive = super::key::transform_branch(ctx, first_branch);
 
     // Handle remaining branches (v-else-if, v-else)
     let negative = if rest.is_empty() {
@@ -134,7 +134,7 @@ pub(crate) fn transform_remaining_branches<'a>(
         // Consume ID for positive branch block
         let _positive_branch_id = ctx.next_id();
 
-        let positive = transform_children(ctx, &branch.children);
+        let positive = super::key::transform_branch(ctx, branch);
 
         let negative = if rest.is_empty() {
             None
@@ -158,7 +158,7 @@ pub(crate) fn transform_remaining_branches<'a>(
     } else {
         // v-else: consume ID for the else branch block
         let _else_branch_id = ctx.next_id();
-        NegativeBranch::Block(transform_children(ctx, &branch.children))
+        NegativeBranch::Block(super::key::transform_branch(ctx, branch))
     }
 }
 

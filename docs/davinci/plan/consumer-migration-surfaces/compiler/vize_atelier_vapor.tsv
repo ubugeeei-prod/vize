@@ -163,7 +163,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/lower.rs	222	carton	Car
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/context.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/control.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/directive.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	4
-compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element.rs	13	carton	Carton host/compatibility	old	vize_carton	legacy	3
+compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element.rs	10	carton	Carton host/compatibility	old	vize_carton	legacy	3
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component/implicit_slot.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component/model.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component/slots.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
@@ -174,6 +174,7 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/template.rs
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/template/writer.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/key.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/key.rs	3	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/key/branch.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/merged_props.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/text.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	source	crates/vize_atelier_vapor/src/steps/element.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	3
@@ -258,6 +259,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_vapor_upstrea
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_walk_baseline.rs	31	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/experimental_diagnostics.rs	2	carton	Carton host/compatibility	old	vize_carton	legacy	3
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/keyed_fragment.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/keyed_fragment/branch.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/native_stage_capture.rs	6	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/native_stage_capture.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/native_stage_capture.rs	6	l2	L2	stage	vize_l2	preferred	1

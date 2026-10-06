@@ -10,6 +10,9 @@ use vize_atelier_vapor::{
 };
 use vize_carton::Allocator;
 
+#[path = "keyed_fragment/branch.rs"]
+mod branch;
+
 fn keys(block: &BlockIRNode<'_>) -> usize {
     block
         .operation
@@ -99,15 +102,23 @@ fn keyed_owner_retains_original_expression_span_and_inner_component_scope() {
 }
 
 #[test]
-fn transparent_once_keeps_one_original_input_and_trailing_key_anchor() {
+fn literal_once_template_keeps_one_original_input_and_trailing_key_anchor() {
     let allocator = Allocator::new();
     let source = "<section><template v-once><input :key=\"held\" :value=\"value\" /></template><p>after</p><Counter :key=\"epoch\" /></section>";
     let (root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "{errors:?}");
+    let vize_atelier_core::TemplateChildNode::Element(section) = &root.children[0] else {
+        panic!("original section")
+    };
+    let vize_atelier_core::TemplateChildNode::Element(template) = &section.children[0] else {
+        panic!("original literal template")
+    };
+    assert_eq!(template.tag, "template");
+    assert_eq!(template.tag_type, vize_atelier_core::ElementType::Element);
     let ir = transform_to_ir(&allocator, &root, source);
     assert_eq!(
         ir.templates.as_slice(),
-        &["<section><input><p>after</p></section>"]
+        &["<section><template><input></template><p>after</p></section>"]
     );
     let [parent] = ir.block.returns.as_slice() else {
         panic!("one original native parent")

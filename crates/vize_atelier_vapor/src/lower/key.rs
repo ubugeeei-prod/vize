@@ -7,6 +7,9 @@ use vize_carton::Box;
 use super::{context::TransformContext, element::transform_element_unkeyed};
 use crate::ir::{BlockIRNode, InsertionAnchor, KeyIRNode, OperationNode};
 
+mod branch;
+pub(super) use branch::transform_branch;
+
 pub(super) fn is_non_reactive(el: &ElementNode<'_>, inherited: bool) -> bool {
     inherited || el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir)
         if dir.name == "once" || dir.name == "memo"
@@ -33,7 +36,11 @@ pub(super) fn value<'a, 'b>(
             _ => None,
         }
     })?;
-    if is_non_reactive(el, non_reactive)
+    eligible(el, value, non_reactive).then_some(value)
+}
+
+fn eligible(el: &ElementNode<'_>, value: &SimpleExpressionNode<'_>, non_reactive: bool) -> bool {
+    !(is_non_reactive(el, non_reactive)
         || !matches!(el.tag_type, ElementType::Element | ElementType::Component)
         || matches!(
             el.tag,
@@ -67,11 +74,7 @@ pub(super) fn value<'a, 'b>(
                         | Expression::NullLiteral(_)
                         | Expression::BigIntLiteral(_)
                 )
-        })
-    {
-        return None;
-    }
-    Some(value)
+        }))
 }
 
 pub(super) fn transform<'a>(

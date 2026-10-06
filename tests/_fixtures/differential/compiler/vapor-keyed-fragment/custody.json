@@ -75,6 +75,21 @@
       "path": "if-attrs.expected.json",
       "bytes": 940,
       "sha256": "48825f3167cf00f5dd5d46822e5a4923156d36d79fb5a5fb460b308bed4a08c8"
+    },
+    {
+      "path": "element.expected-current.json",
+      "bytes": 3760,
+      "sha256": "80ea9390c23553d47043f9c91ba706884bcb052784018bcd64420ce92bbe8a68"
+    },
+    {
+      "path": "nested-if-attrs.vue.txt",
+      "bytes": 296,
+      "sha256": "5839927a94a3fb7e35f1d83760924621b97a143cc10baba8604e7ddab56b220d"
+    },
+    {
+      "path": "nested-if-attrs.expected.json",
+      "bytes": 2516,
+      "sha256": "03467bc308b39d543e27ffa78982600e5ef929f280de4a8cb2a81a15aef60d50"
     }
   ]
 }

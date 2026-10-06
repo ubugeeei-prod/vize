@@ -475,7 +475,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/root_patterned_template
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/support/fix_history_map_diagnostic_options.rs	30	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/support/fix_history_options.rs	31	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_css_vars.rs	13	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_keyed_fragment.rs	122	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_keyed_fragment.rs	125	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_refusals/mod.rs	87	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_refusals/mod.rs	87	l1	L1	stage	vize_l1	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_refusals/mod.rs	87	l2	L2	stage	vize_l2	preferred	2

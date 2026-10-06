@@ -1,8 +1,5 @@
 //! Element transformation dispatch for Vapor IR lowering.
 
-pub(super) use super::key::element as transform_element_with_key;
-pub(crate) use super::key::transform_element;
-
 mod component;
 mod deferred;
 mod insertion;
@@ -60,7 +57,7 @@ pub(super) fn transform_element_unkeyed<'a>(
         for child in vize_atelier_core::walk_probe::vapor_children(&el.children) {
             match child {
                 TemplateChildNode::Element(child_el) => {
-                    ensure_sufficient_stack(|| transform_element(ctx, child_el, block));
+                    ensure_sufficient_stack(|| super::key::transform_element(ctx, child_el, block));
                 }
                 TemplateChildNode::Text(text) => {
                     transform_text(ctx, text, block);

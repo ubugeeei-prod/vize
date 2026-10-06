@@ -120,7 +120,10 @@ pub(crate) fn generate_vapor_with_spans(
         root_template_indices.insert(template_index);
     }
     for op in ir.block.operation.iter() {
-        if let OperationNode::If(if_node) = op {
+        if let OperationNode::If(if_node) = op
+            && ir.block.returns.as_slice() == [if_node.id]
+            && if_node.parent.is_none()
+        {
             collect_root_if_templates(
                 if_node,
                 &ir.element_template_map,
