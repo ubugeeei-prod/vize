@@ -1,8 +1,8 @@
 use crate::{error::FormatError, options::FormatOptions};
 use oxc_allocator::Allocator as OxcAllocator;
-use oxc_formatter::{format_program, parse_for_format};
+use oxc_formatter::{JsFormatOptions, format_program, parse_for_format};
 use oxc_span::SourceType;
-use vize_l0::{Allocator, String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 /// Format JavaScript/TypeScript/JSX/TSX content using an explicit OXC source type.
 ///
@@ -14,18 +14,18 @@ use vize_l0::{Allocator, String, ToCompactString};
 pub fn format_script_content_with_source_type(
     source: &str,
     options: &FormatOptions,
-    _allocator: &Allocator,
+    _allocator: &vize_l0::Allocator,
     source_type: SourceType,
 ) -> Result<String, FormatError> {
-    format_script_content_with_sort_imports(source, options, _allocator, source_type, None)
+    format_script_content_with_sort_imports(source, options, source_type, None, &mut None)
 }
 
 pub(super) fn format_script_content_with_sort_imports(
     source: &str,
     options: &FormatOptions,
-    _allocator: &Allocator,
     source_type: SourceType,
     sort_imports: Option<&crate::ImportSortOptions>,
+    prepared_options: &mut Option<JsFormatOptions>,
 ) -> Result<String, FormatError> {
     // Fast path for empty content
     if source.chars().all(char::is_whitespace) {
@@ -52,8 +52,11 @@ pub(super) fn format_script_content_with_sort_imports(
         ));
     }
 
-    // Convert options and format
-    let mut oxc_options = options.to_oxc_format_options();
+    // Every stabilization pass uses the same base settings. Initialize only
+    // after a valid parse, and keep configured import sorting per invocation.
+    let mut oxc_options = prepared_options
+        .get_or_insert_with(|| options.to_oxc_format_options())
+        .clone();
     if let Some(sort_imports) = sort_imports {
         oxc_options.sort_imports = Some(sort_imports.clone());
     }

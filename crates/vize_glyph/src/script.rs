@@ -49,14 +49,14 @@ pub(crate) fn format_script_content_stable(
             format_script_content_stable(source, options, allocator, source_type, sort_imports)
         });
     }
+    let mut prepared_options = None;
     let mut current = format::format_script_content_with_sort_imports(
         source,
         options,
-        allocator,
         source_type,
         sort_imports,
+        &mut prepared_options,
     )?;
-    // Check mode returns the first pass; a no-op already is a fixed point.
     if options.skip_script_stabilization {
         return Ok(current);
     }
@@ -68,9 +68,9 @@ pub(crate) fn format_script_content_stable(
         let next = match format::format_script_content_with_sort_imports(
             current.as_str(),
             options,
-            allocator,
             source_type,
             sort_imports,
+            &mut prepared_options,
         ) {
             Ok(next) => next,
             Err(_) => return Ok(current),

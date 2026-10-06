@@ -179,3 +179,27 @@ All original/expected carriers,17 cases/85 complete CLI captures, runtime states
 options/errors, probes, allocator/window protocol and budget files remain exact.
 Fresh source, protected104x3, actual signed merge and installed release replay
 are still required; the source change grants no new performance or native credit.
+
+
+## Script settings conversion
+
+Actual candidate37095efe Check37428999341 failed all three original windows:
+script929056>929044. Preserve the complete312 raw rows and priorf6b result;
+remove only8087, keeping other deliveries active. The f6b metadata correction
+measures SFC287333/reuse268484 under unchanged ceilings but grants no script
+or final delivery acceptance.
+
+The paired [7926 decision](https://github.com/ubugeeei-prod/vize/issues/7926#issuecomment-6011682120)
+and [7966 decision](https://github.com/ubugeeei-prod/vize/issues/7966#issuecomment-6011682377)
+remove repeated base-settings conversion from the existing script stabilization
+loop. Retain one owned JsFormatOptions cache for that invocation only, initialized
+after a successful parse; clone those same settings for each existing print.
+Configured import sorting still clones separately per invocation, avoiding an
+extra persistent configured-sort copy. Every parse has its original fresh arena;
+all parser/printer calls, six-pass limit, skip/no-op/error/Auto behavior and whole
+outputs remain. Remove only the unused private allocator argument, keeping
+public signatures. The ten complete original/current script laws, all original
+corpus and budgets remain byte-exact; update only actual source-owner hashes and
+observed migration inventory. Fresh source/protected execution must establish
+net cost because cloning may offset conversion savings. No native, speed or
+installed-release credit is inferred.
