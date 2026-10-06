@@ -8,8 +8,8 @@ const UPSTREAM: &str = include_str!(
 const REMOVAL: &str = include_str!(
     "../../../../tests/_fixtures/differential/compiler/vapor-for-template-refs-7882/removal.vue.txt"
 );
-const DYNAMIC: &str = include_str!(
-    "../../../../tests/_fixtures/differential/compiler/vapor-for-template-refs-7882/dynamic.vue.txt"
+const CALLBACK: &str = include_str!(
+    "../../../../tests/_fixtures/differential/compiler/vapor-for-template-refs-7882/callback.vue.txt"
 );
 const SINGLE: &str = include_str!(
     "../../../../tests/_fixtures/differential/compiler/vapor-for-template-refs-7882/single.vue.txt"
@@ -109,10 +109,10 @@ fn loop_ref_arrays_remove_and_clear_without_stale_nodes() {
 }
 
 #[test]
-fn bound_loop_ref_arrays_preserve_the_same_values() {
+fn callback_loop_refs_receive_actual_nodes_and_cleanup() {
     assert_modes(
-        "dynamic",
-        DYNAMIC,
+        "callback",
+        CALLBACK,
         json!([{"call": "add"}]),
         json!([
             list(&["a", "b"]),

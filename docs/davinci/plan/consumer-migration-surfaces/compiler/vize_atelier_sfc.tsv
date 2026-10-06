@@ -76,6 +76,8 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compi
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/props.rs	1	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/render.rs	1	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/render.rs	1	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/render/template_refs.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	2
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_script/inline/compiler/render/template_refs.rs	50	carton	Carton host/compatibility	old	vize_carton	legacy	3
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/setup_emit.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/trace.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/trace.rs	8	raw_oxc	raw OXC	raw	oxc_allocator	raw	1

@@ -16,6 +16,10 @@
       "bytes": 104,
       "sha256": "ae1918329a460b092103a57eb8191720e654ea9d56c5c68fdfb4472607f4436a"
     },
+    "callback.vue.txt": {
+      "bytes": 567,
+      "sha256": "f105446b5d7f907e19dbb2c41c293766a5127127479fd4be838fb753604a6f4c"
+    },
     "dynamic.vue.txt": {
       "bytes": 419,
       "sha256": "05d6932fbd9b4085d1ea2f55a54eb972ff94517cae6a922fb2a8edc3bafede08"
@@ -52,8 +56,9 @@
   "derivatives": {
     "loop-only.vue.txt": "exact App minus component half; preserves numeric For/onMounted/read",
     "removal.vue.txt": "exact upstream plus remove and clear operations/exposure",
-    "dynamic.vue.txt": "exact upstream with bound ref",
+    "dynamic.vue.txt": "retained first failed broad direct-ref control; existing Vize DOM unwraps the Ref; not an admitted positive or universal Vue refusal",
     "single.vue.txt": "independently authored loop-free scalar-ref control",
-    "nested.vue.txt": "independently authored transparent/nested-loop + scalar sibling after loop control"
+    "nested.vue.txt": "independently authored transparent/nested-loop + scalar sibling after loop control",
+    "callback.vue.txt": "independently authored function-ref positive; map holds actual mounted elements and each callback removes its own key on null"
   }
 }
