@@ -153,3 +153,18 @@ After the independently owned security repair actually reaches signed main,
 incorporate that genuine base and rerun current qualification before admission.
 Old source/native success cannot waive this live gate or prove protected merge.
 #8010 stays OPEN; configured distribution-asset authority remains unfinished.
+
+## Actual signed security-main incorporation
+
+Security #8080 actually merged as signed 48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb
+at 2026-10-06T05:04:12Z. The same branch is genuinely replayed onto that literal
+main, conserving all six full source authors and every production/original
+corpus/full response and edit oracle byte, with all incoming decisions retained.
+Original bundled/dependency-layout whole-transaction protection remains partial;
+#8010 stays open for genuine configured in-root runtime-asset authority, Event
+consistency and bare-script exporter-origin routing. Historical d8/9b ordinary,
+96 strict CLI responses, full old native positives and native/plain NoNative
+proof remain retained. They do not qualify this fresh integration. Current exact
+ordinary and necessary full native/plain gates, prospective queue composition,
+protected full Rust/unchanged104 ceilings, actual signed merge and release
+handoff remain mandatory. Paired #8010 receipt: comment 6009767940.
