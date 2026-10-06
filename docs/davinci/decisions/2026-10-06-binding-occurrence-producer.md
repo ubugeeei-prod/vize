@@ -320,3 +320,9 @@ new-head Actions and both actual signed protected deliveries before #7992
 closure or next-release handoff. The existing P0 ledger records dated source
 counts separately from public-release containment; native/history and 10x
 remain unfinished.
+
+Actual signed main `62789861` is incorporated without queued-tail code.
+Only this complete7992 canonical record moves into previously empty row348;
+every other incoming line stays exact, including the shared final row.
+All reviewed producer/original/vector/cap blobs stay fixed; fresh current-head
+Actions and both protected actual merges remain required after this placement.

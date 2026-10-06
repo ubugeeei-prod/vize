@@ -85,7 +85,7 @@ pub(in crate::virtual_ts::generator) fn fallthrough_props_type_ref(
     template_ast: Option<&RootNode<'_>>,
     legacy_vue2: bool,
 ) -> Option<String> {
-    if legacy_vue2 {
+    if legacy_vue2 || (scope.checks.strict_component_attrs() && !scope.resolve_component_roots) {
         return None;
     }
     fallthrough_type_ref(scope.summary, template_ast, false, Some(scope))

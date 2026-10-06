@@ -1,0 +1,127 @@
+{
+  "issue": 7980,
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308,
+    "coauthor": "ubugeeei <71201308+ubugeeei@users.noreply.github.com>"
+  },
+  "originalIssueBodySha256": "1d7d810a73a885e934040e973f5607bc959b8f7c6ad019e2b4939a8b5dd55dca",
+  "authority": "Whole original issue blocks and independently authored complete API/JSON/plain vectors; no product run used to generate expectations",
+  "config": {
+    "file": "vize.config.json.txt",
+    "bytes": 89,
+    "sha256": "496e02a60d18aae01177a3e37cf08b5507e853f6ea9e1461451f2277dedc9e6a"
+  },
+  "cases": [
+    {
+      "id": "original-note",
+      "filename": "MyNote.vue",
+      "source": "original-note.vue.txt",
+      "bytes": 212,
+      "sha256": "4ba9ed25554629172ab50e6e4296fd19f2ed23d96c986cac11e35a041e1c742b",
+      "expected": "original-note.expected.json",
+      "expectedBytes": 332,
+      "expectedSha256": "5f2be8230ac8a4e7b30e7e498137bd2109e3b1da40ab043e1933e94cef3e41c1",
+      "authority": "Original whole MyNote.vue block from issue7980"
+    },
+    {
+      "id": "original-quote",
+      "filename": "MyQuote.vue",
+      "source": "original-quote.vue.txt",
+      "bytes": 124,
+      "sha256": "ae20c354c186d513066a9d69f295cb46526f1c1c340181150fceef8475912f1a",
+      "expected": "original-quote.expected.json",
+      "expectedBytes": 334,
+      "expectedSha256": "c99acaf14b00e409fa84a6dd6bd4854a4383c615b86d37958ec3b2c337d11158",
+      "authority": "Original whole MyQuote.vue block from issue7980"
+    },
+    {
+      "id": "original-note-crlf",
+      "filename": "MyNote.vue",
+      "source": "original-note-crlf.vue.txt",
+      "bytes": 225,
+      "sha256": "16332115e305341b879c99d74a06c200d36323f6e5c89ffdca258b35c90a7c47",
+      "expected": "original-note-crlf.expected.json",
+      "expectedBytes": 332,
+      "expectedSha256": "5f2be8230ac8a4e7b30e7e498137bd2109e3b1da40ab043e1933e94cef3e41c1",
+      "authority": "Whole original note converted only LF to CRLF"
+    },
+    {
+      "id": "literal-before-real",
+      "filename": "LiteralBeforeReal.vue",
+      "source": "literal-before-real.vue.txt",
+      "bytes": 218,
+      "sha256": "8e7262a78ca9e62a5d317e03bf5a243270b7216c3d69114a51a6f925418a6c3e",
+      "expected": "literal-before-real.expected.json",
+      "expectedBytes": 2671,
+      "expectedSha256": "59e949af31cf98942909073197b6816d2ea1ac0c7d6187885be4c3cf76720d7e",
+      "authority": "Same named literals precede genuine unchanged exact/prefix selectors"
+    },
+    {
+      "id": "escaped-quotes",
+      "filename": "EscapedQuotes.vue",
+      "source": "escaped-quotes.vue.txt",
+      "bytes": 274,
+      "sha256": "cfbf0a99c0cc9e3e76c42a77eafdc702c7a6ce99e2b97f07c10da502ecdf9bcf",
+      "expected": "escaped-quotes.expected.json",
+      "expectedBytes": 1509,
+      "expectedSha256": "1b725aaf379820a1361bfbc2229e83f3ec23479aea7c86f1279abd33554e71e4",
+      "authority": "Escaped quote parity and comment markers remain owned by actual CSS strings"
+    },
+    {
+      "id": "nested-literals",
+      "filename": "NestedLiterals.vue",
+      "source": "nested-literals.vue.txt",
+      "bytes": 249,
+      "sha256": "84826758647e4f75194812485354b474f980093bee500f48632702b3328e9791",
+      "expected": "nested-literals.expected.json",
+      "expectedBytes": 2666,
+      "expectedSha256": "c30fed24d42510febebba2208beda5d36abc29d265f0ca78ddf11395602f9b16",
+      "authority": "Comments/strings nested in parsed CSS blocks do not hide real selector-list matches"
+    },
+    {
+      "id": "urls-and-functions",
+      "filename": "UrlsAndFunctions.vue",
+      "source": "urls-and-functions.vue.txt",
+      "bytes": 263,
+      "sha256": "4af330aa162eb231ee89da2e855700458226f400401d44e2148171cd4667df50",
+      "expected": "urls-and-functions.expected.json",
+      "expectedBytes": 2673,
+      "expectedSha256": "dd657a71969d3318e85f8d2f2773e02005823d4fa9a0adb4b6c6a86cdd7a1aaa",
+      "authority": "URL token and function string ownership; old digit-prefix suffix extent remains unchanged"
+    },
+    {
+      "id": "unicode-multiple-styles",
+      "filename": "UnicodeMultipleStyles.vue",
+      "source": "unicode-multiple-styles.vue.txt",
+      "bytes": 203,
+      "sha256": "3a2a5dcd0d487bba204bfd4d7c3db07bb40f74c6af69c1d6820fea17fba81a91",
+      "expected": "unicode-multiple-styles.expected.json",
+      "expectedBytes": 2692,
+      "expectedSha256": "aba1e63bdd0ef3551ce49d3e90d80299c1a3e58d9b1e58d5ee259fe714640212",
+      "authority": "Astral UTF-8 offsets, CRLF and independent multiple inline style blocks"
+    },
+    {
+      "id": "existing-nonmatches",
+      "filename": "ExistingNonmatches.vue",
+      "source": "existing-nonmatches.vue.txt",
+      "bytes": 140,
+      "sha256": "2500e8b9993f1ccc57fa547b79f92e5d82b7f3094bcb85c27692acae92c6eff3",
+      "expected": "existing-nonmatches.expected.json",
+      "expectedBytes": 356,
+      "expectedSha256": "5da89343b4b4cfee534c2afcbd998e66c6e471bdc23ac1d14ee022c011e780bf",
+      "authority": "Existing exact/prefix and selector-start boundary nonmatches are deliberately unchanged"
+    },
+    {
+      "id": "inline-disabled",
+      "filename": "InlineDisabled.vue",
+      "source": "inline-disabled.vue.txt",
+      "bytes": 199,
+      "sha256": "8aec67f12362cccb1ee2a8293db93f5e7db7f2547de529dc14f82a222aae23b3",
+      "expected": "inline-disabled.expected.json",
+      "expectedBytes": 1513,
+      "expectedSha256": "74a5a944ea09a57a41bcd2f956a966894ff0aa4dd9eacdc8f84ff13e53bd77e8",
+      "authority": "Existing CSS next-line disable still suppresses the real exact selector"
+    }
+  ]
+}
