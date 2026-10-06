@@ -245,3 +245,12 @@ eight-profile capture harness. Save full bulk Result/custody and every original
 Result before unwrap/next request while retaining old complete comparisons and
 new actual3/4-call assertions. This necessary test-custody correction supplies
 no execution or speed acceptance; the private source still needs fresh Actions.
+
+After verified0.434 publication, root lifted the hold. The reviewed all-category
+correction6a27 now genuinely incorporates actual40a1243f and fixes the original
+control to that same immutable main, preserving every input, source guard and
+timer. Fresh ordinary/native18 and original eight profiles must qualify first;
+then ONE existing full Check runs whole681 equality before observer0 matched
+pairs. Historical nine slower pairs remain failed, with no current gain or
+Ready credit. The [query decision](./2026-10-06-native-diagnostic-query-contracts.md)
+records exact ownership, counts and remaining protected/delivery gates.

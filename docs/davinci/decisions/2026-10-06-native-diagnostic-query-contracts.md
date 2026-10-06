@@ -168,3 +168,23 @@ Keep prior bulkOutcome/comparison fields, all72 equality checks and the new3/4
 request assertions. This test-only failure-first correction changes no native
 operation, product, fixture or gain claim; fresh compilation/execution remains
 mandatory and the source is still private during the publication hold.
+
+## Publication after verified 0.434 thaw
+
+The source-only reviewed correction6a27f99c now genuinely incorporates actual
+main40a1243f54ee7a95fe593d0504448d957adc227b after root verified the complete
+0.434 publication and lifted its hold. Incoming release authorities remain
+exact main; the fair-control literal now selects that same immutable commit.
+The 6a27 production,18-law inputs and original full681 drivers remain intact.
+The independent source receipt82836589 supplies no runtime or gain acceptance.
+
+Publish the same Draft8038 with fresh ordinary and native-phase Actions first.
+Require18 bulk laws, the original eight profiles/72 whole comparisons, unchanged
+snapshot/lifetime and real reader-failure recovery. After these qualify, ONE
+existing full Check executes original500Vue+181TS whole681/2043 equality before
+its unchanged observer0, three alternating matched pairs on the same host.
+Require fresh=false distinct binaries, physical source/config/body custody,
+full broken/repaired diagnostics, native reaping and unchanged budgets.
+No historic run transfers; keep Draft/offqueue until actual faster full results
+and current protected/native Stack qualification. Root remains sole publisher;
+#7698, default/CLI/LSP/whole-product completion and10x remain unfinished.
