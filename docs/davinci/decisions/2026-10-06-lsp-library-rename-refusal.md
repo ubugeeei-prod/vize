@@ -168,3 +168,14 @@ proof remain retained. They do not qualify this fresh integration. Current exact
 ordinary and necessary full native/plain gates, prospective queue composition,
 protected full Rust/unchanged104 ceilings, actual signed merge and release
 handoff remain mandatory. Paired #8010 receipt: comment 6009767940.
+
+## Canonical-only prospective queue conflict recovery
+
+Actual admitted tail baa427830e0a1b1b50a45582bda418992d5a5ac9 conflicts only
+with the shared edits paragraph. Move the complete owned history byte for byte
+to the existing affected-Rust sentence; keep every incoming decision and 350
+lines, all source/original/full-vector bytes and existing authors unchanged.
+The current a5 six-session/96-response execution remains scoped to identical
+bodies. Fresh source Actions, clean full-tail composition and actual protected
+native/plain/full Rust/unchanged104/signed delivery remain mandatory. #8010
+stays open; paired operational receipt: comment 6010587045.
