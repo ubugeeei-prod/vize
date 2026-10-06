@@ -166,7 +166,7 @@ async fn open_canonical_virtual_project_document_with_scope(
         .collect::<Vec<_>>();
     if include_workspace {
         let sources =
-            same_typescript_project(ctx, ctx.state.discover_workspace_vue_sources().await)
+            same_typescript_project(ctx, ctx.state.discover_workspace_project_sources().await)
                 .into_iter()
                 .filter(|(uri, _)| uri != ctx.uri && !uri.path().ends_with(".art.vue"))
                 .filter_map(|(uri, source)| Some((uri.to_file_path().ok()?, source)))

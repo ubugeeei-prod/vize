@@ -6,9 +6,11 @@
     reason = "tower-lsp SymbolInformation takes std String names built with format!/to_string"
 )]
 
-mod rank;
 #[cfg(feature = "native")]
 mod disk;
+mod rank;
+#[cfg(feature = "native")]
+mod script;
 #[cfg(test)]
 mod tests;
 
@@ -37,6 +39,23 @@ impl WorkspaceSymbolsService {
         disk::collect(state, &query_lower, &mut symbols);
 
         rank::sort(symbols, &query_lower)
+    }
+
+    #[cfg(feature = "native")]
+    pub(crate) fn search_sources(
+        sources: &[(Url, std::string::String)],
+        query: &str,
+    ) -> Vec<SymbolInformation> {
+        let query = query.to_lowercase();
+        let mut symbols = Vec::new();
+        for (uri, source) in sources {
+            if uri.path().ends_with(".vue") {
+                Self::collect_symbols_from_document(uri, source, &query, &mut symbols);
+            } else {
+                script::collect(uri, source, &query, &mut symbols);
+            }
+        }
+        rank::sort(symbols, &query)
     }
 
     /// Collect symbols from a single document.

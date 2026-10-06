@@ -34,6 +34,8 @@ mod global_components;
 #[cfg(feature = "native")]
 mod global_tag_names;
 #[cfg(feature = "native")]
+mod workspace_project_files;
+#[cfg(feature = "native")]
 mod workspace_vue_files;
 
 #[cfg(test)]
@@ -120,12 +122,13 @@ pub struct ServerState {
     component_metadata_cache:
         DashMap<PathBuf, crate::ide::completion::template::CachedComponentMetadata>,
     /// Closed `.vue` files announced through workspace file-operation events.
-    ///
     /// These stay separate from [`Self::documents`]: document features must
     /// only serve editor-open buffers, while workspace symbol search also
     /// needs to follow files created and deleted on disk mid-session.
     #[cfg(feature = "native")]
     workspace_vue_files: DashMap<Url, ()>,
+    #[cfg(feature = "native")]
+    workspace_project_files: workspace_project_files::Inventory,
     /// Enabled LSP feature surface.
     lsp_features: RwLock<LspFeatureConfig>,
     /// Fast path for checking whether type-aware features are enabled.
@@ -233,6 +236,8 @@ impl ServerState {
             component_metadata_cache: DashMap::new(),
             #[cfg(feature = "native")]
             workspace_vue_files: DashMap::new(),
+            #[cfg(feature = "native")]
+            workspace_project_files: workspace_project_files::Inventory::default(),
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new((TypeCheckerConfig::default(), 60_000)),

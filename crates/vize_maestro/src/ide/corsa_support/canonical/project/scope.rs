@@ -16,7 +16,12 @@ pub(in super::super) fn same_typescript_project(
     let Some(tsconfig) = source_path
         .ancestors()
         .skip(1)
-        .map(|directory| directory.join("tsconfig.json"))
+        .flat_map(|directory| {
+            [
+                directory.join("tsconfig.json"),
+                directory.join("jsconfig.json"),
+            ]
+        })
         .find(|candidate| candidate.is_file())
     else {
         return sources;
@@ -29,7 +34,14 @@ pub(in super::super) fn same_typescript_project(
             ownership.project_owns_source(
                 project,
                 path,
-                vize_canon::batch::TsconfigSourceKind::Typed,
+                if matches!(
+                    path.extension().and_then(|ext| ext.to_str()),
+                    Some("js" | "jsx" | "mjs" | "cjs")
+                ) {
+                    vize_canon::batch::TsconfigSourceKind::JavaScript
+                } else {
+                    vize_canon::batch::TsconfigSourceKind::Typed
+                },
             )
         })
     };
@@ -98,5 +110,47 @@ mod tests {
             filtered.is_empty(),
             "a query excluded by the governing tsconfig must not search its workspace surface",
         );
+    }
+}
+
+#[cfg(test)]
+mod javascript_admission_tests {
+    use super::same_typescript_project;
+    use crate::{ide::IdeContext, server::ServerState};
+    use tower_lsp::lsp_types::Url;
+
+    #[test]
+    fn configured_js_sources_honor_authored_allow_js_and_project_boundaries() {
+        let root = tempfile::tempdir().unwrap();
+        let src = root.path().join("src");
+        std::fs::create_dir_all(&src).unwrap();
+        let uri = Url::from_file_path(src.join("App.vue")).unwrap();
+        let script_uri = Url::from_file_path(src.join("importer.js")).unwrap();
+        let outside = Url::from_file_path(root.path().join("outside.ts")).unwrap();
+        let state = ServerState::new();
+        state
+            .documents
+            .open(uri.clone(), "<template />".into(), 1, "vue".into());
+        let ctx = IdeContext::new(&state, &uri, 0).unwrap();
+        for allow_js in [false, true] {
+            std::fs::write(
+                root.path().join("jsconfig.json"),
+                serde_json::json!({
+                    "compilerOptions": { "allowJs": allow_js }, "include": ["src/**/*"]
+                })
+                .to_string(),
+            )
+            .unwrap();
+            let sources = vec![
+                (script_uri.clone(), "export const value = 1;".into()),
+                (outside.clone(), "export const foreign = 2;".into()),
+            ];
+            let expected = if allow_js {
+                vec![(script_uri.clone(), "export const value = 1;".into())]
+            } else {
+                Vec::new()
+            };
+            assert_eq!(same_typescript_project(&ctx, sources), expected);
+        }
     }
 }

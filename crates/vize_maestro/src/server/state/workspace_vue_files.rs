@@ -36,6 +36,7 @@ impl ServerState {
     /// Track newly-created on-disk Vue files without treating them as open
     /// editor documents. Folder events recursively discover nested SFCs.
     pub(crate) fn track_workspace_vue_files(&self, uri: &str) -> bool {
+        self.invalidate_workspace_project_files();
         let Ok(uri) = Url::parse(uri) else {
             return false;
         };
@@ -64,6 +65,7 @@ impl ServerState {
 
     /// Forget a deleted or renamed on-disk Vue file or directory subtree.
     pub(crate) fn forget_workspace_vue_files(&self, uri: &str) -> bool {
+        self.invalidate_workspace_project_files();
         let Ok(uri) = Url::parse(uri) else {
             return false;
         };
