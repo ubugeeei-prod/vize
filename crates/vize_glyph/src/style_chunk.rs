@@ -4,13 +4,21 @@ use super::{
 
 pub(super) fn format_chunk(trimmed: &str, options: &FormatOptions) -> Result<String, FormatError> {
     let colors = super::color::protect(trimmed);
+    let collect_layout = super::rule_layout::RuleLayout::may_need_layout(trimmed);
+    let mut layout = None;
     let formatted =
         super::stabilization::format_to_fixed_point(colors.source.as_str(), |source| {
-            format_chunk_once(source, options)
+            format_chunk_once(source, options, &mut layout, collect_layout)
         })?;
     let formatted = colors.restore(formatted);
     // Complete layout equality also proves authored tokens and groups survived.
-    if formatted.as_str().trim() == trimmed {
+    if formatted.as_str().trim() == trimmed
+        && !layout
+            .as_ref()
+            .is_some_and(|layout: &super::rule_layout::RuleLayout| {
+                layout.preludes.iter().any(|prelude| prelude.selector_list)
+            })
+    {
         return Ok(formatted);
     }
     // The CSS printer also performs syntax and value normalization. A formatter
@@ -21,13 +29,23 @@ pub(super) fn format_chunk(trimmed: &str, options: &FormatOptions) -> Result<Str
     } else {
         formatted
     };
-    Ok(super::blank_lines::preserve(trimmed, formatted, options))
+    Ok(super::blank_lines::preserve_rule_layout(
+        trimmed,
+        formatted,
+        options,
+        layout.as_ref(),
+        colors.source.as_str(),
+    ))
 }
 
-fn format_chunk_once(trimmed: &str, options: &FormatOptions) -> Result<String, FormatError> {
+fn format_chunk_once(
+    trimmed: &str,
+    options: &FormatOptions,
+    layout: &mut Option<super::rule_layout::RuleLayout>,
+    collect_layout: bool,
+) -> Result<String, FormatError> {
     let stylesheet = StyleSheet::parse(trimmed, ParserOptions::default())
         .map_err(|e| FormatError::StyleFormatError(e.to_compact_string()))?;
-
     let indent_width = options.tab_width;
     let printer_options = PrinterOptions {
         minify: false,
@@ -45,6 +63,19 @@ fn format_chunk_once(trimmed: &str, options: &FormatOptions) -> Result<String, F
     // lightningcss uses 2-space indent by default; re-indent if needed
     if options.use_tabs || indent_width != 2 || options.newline_bytes() != b"\n" {
         code = super::authored::reindent_css(&code, options);
+    }
+
+    if collect_layout && layout.is_none() {
+        // Identical bytes without any comma cannot need selector or gap edits.
+        // Retain an empty first-parse marker so later passes never own layout.
+        *layout = Some(
+            if memchr::memchr(b',', trimmed.as_bytes()).is_none() && code.as_str().trim() == trimmed
+            {
+                super::rule_layout::RuleLayout::default()
+            } else {
+                super::rule_layout::RuleLayout::from_parse(trimmed, &stylesheet.rules)
+            },
+        );
     }
 
     Ok(code)

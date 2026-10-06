@@ -1,0 +1,15 @@
+<template>
+	<div class="a b c 次" data-label="a,b"></div>
+</template>
+
+<style scoped>
+@media (width >= 1px) {
+	.a,
+	.b {
+		color: red;
+	}
+	.c {
+		margin: 0;
+	}
+}
+</style>

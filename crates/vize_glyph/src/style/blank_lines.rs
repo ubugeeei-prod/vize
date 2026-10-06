@@ -5,15 +5,38 @@ use super::comment_scan::{consume_css_escape, find_comment_end};
 use crate::options::FormatOptions;
 use vize_l0::String;
 
-pub(super) fn preserve(source: &str, formatted: String, options: &FormatOptions) -> String {
-    if formatted.as_str().trim() == source || !source.lines().any(|line| line.trim().is_empty()) {
+#[cfg(test)]
+fn preserve(source: &str, formatted: String, options: &FormatOptions) -> String {
+    preserve_rule_layout(source, formatted, options, None, source)
+}
+
+pub(super) fn preserve_rule_layout(
+    source: &str,
+    formatted: String,
+    options: &FormatOptions,
+    layout: Option<&super::rule_layout::RuleLayout>,
+    protected: &str,
+) -> String {
+    if layout.is_none()
+        && (formatted.as_str().trim() == source
+            || !source.lines().any(|line| line.trim().is_empty()))
+    {
         return formatted;
     }
     let mut original = Tokens::new(source);
     let mut printed = Tokens::new(&formatted);
-    let mut output = String::default();
-    let mut cursor = 0;
+    let mut adjustments = Vec::new();
+    let mut pending = Vec::new();
     let mut previous_boundary = false;
+    let mut previous_close = false;
+    let mut previous_close_line = false;
+    let mut previous_declaration = false;
+    let mut previous_comma = false;
+    let mut brace = 0;
+    let mut preludes = layout
+        .into_iter()
+        .flat_map(|layout| &layout.preludes)
+        .peekable();
 
     loop {
         match (original.next(), printed.next()) {
@@ -27,18 +50,116 @@ pub(super) fn preserve(source: &str, formatted: String, options: &FormatOptions)
                     && has_blank_line(authored.gap)
                     && target.gap.contains(['\r', '\n'])
                 {
-                    output.push_str(formatted.get(cursor..target.gap_start).unwrap_or_default());
-                    output.push_str(options.newline_string());
-                    output.push_str(options.newline_string());
-                    output.push_str(target.gap.rsplit(['\r', '\n']).next().unwrap_or_default());
-                    cursor = target.start;
+                    adjustments.push(Adjustment::new(&authored, &target, 2, false));
+                }
+                if previous_comma
+                    || previous_close
+                    || (previous_declaration && authored.gap.contains(['\r', '\n']))
+                {
+                    let newlines = if previous_close && has_blank_line(authored.gap) {
+                        2
+                    } else {
+                        1
+                    };
+                    let mut adjustment =
+                        Adjustment::new(&authored, &target, newlines, previous_comma);
+                    adjustment.authored_rule_gap = authored.gap.contains(['\r', '\n'])
+                        && (previous_close_line || previous_declaration);
+                    pending.push(adjustment);
+                }
+                if authored.parens == 0 && authored.brackets == 0 {
+                    if authored.text == "{" {
+                        while preludes
+                            .peek()
+                            .is_some_and(|prelude| prelude.brace <= brace)
+                        {
+                            let Some(prelude) = preludes.next() else {
+                                break;
+                            };
+                            let Some(start) = authored.start.checked_sub(prelude.range.len())
+                            else {
+                                continue;
+                            };
+                            // Color markers can move offsets but cannot establish ownership:
+                            // the complete original prelude must equal the parsed prelude.
+                            if prelude.brace == brace
+                                && source
+                                    .get(start..authored.start)
+                                    .zip(protected.get(prelude.range.clone()))
+                                    .is_some_and(|(original, parsed)| original == parsed)
+                            {
+                                adjustments.extend(
+                                    pending
+                                        .iter()
+                                        .filter(|adjustment: &&Adjustment| {
+                                            if adjustment.selector {
+                                                prelude.selector_list
+                                                    && adjustment.source_start > start
+                                            } else {
+                                                adjustment.source_start == start
+                                                    && (adjustment.authored_rule_gap
+                                                        || prelude.selector_list)
+                                            }
+                                        })
+                                        .cloned(),
+                                );
+                            }
+                        }
+                        brace += 1;
+                    }
+                    if matches!(authored.text, ";" | "{" | "}") {
+                        pending.clear();
+                    }
                 }
                 if !authored.text.starts_with("/*") {
                     previous_boundary = matches!(authored.text, ";" | "}");
+                    previous_close =
+                        authored.text == "}" && authored.parens == 0 && authored.brackets == 0;
+                    // Compact blocks retain gaps unless an actual selector list owns them.
+                    previous_close_line = previous_close
+                        && source
+                            .get(..authored.start)
+                            .and_then(|prefix| prefix.rsplit(['\r', '\n']).next())
+                            .is_some_and(|line| line.trim().is_empty());
+                    previous_declaration =
+                        authored.text == ";" && authored.parens == 0 && authored.brackets == 0;
+                    previous_comma =
+                        authored.text == "," && authored.parens == 0 && authored.brackets == 0;
                 }
             }
-            // Do not invent an anchor when a printer changes an authored token.
+            // No edits are accepted until the entire authored stream matches.
             _ => return formatted,
+        }
+    }
+    adjustments.sort_by_key(|adjustment| adjustment.gap_start);
+    adjustments.dedup_by_key(|adjustment| adjustment.gap_start);
+    let mut output = String::default();
+    let mut cursor = 0;
+    for adjustment in adjustments {
+        let indentation = if adjustment.selector {
+            options.indent_string().repeat(adjustment.depth)
+        } else {
+            formatted
+                .get(adjustment.gap_start..adjustment.start)
+                .unwrap_or_default()
+                .rsplit(['\r', '\n'])
+                .next()
+                .unwrap_or_default()
+                .into()
+        };
+        let mut replacement = String::default();
+        for _ in 0..adjustment.newlines {
+            replacement.push_str(options.newline_string());
+        }
+        replacement.push_str(&indentation);
+        if formatted.get(adjustment.gap_start..adjustment.start) != Some(replacement.as_str()) {
+            output.push_str(
+                formatted
+                    .get(cursor..adjustment.gap_start)
+                    .unwrap_or_default(),
+            );
+            output.push_str(&replacement);
+            cursor = adjustment.start;
         }
     }
     if cursor == 0 {
@@ -46,6 +167,31 @@ pub(super) fn preserve(source: &str, formatted: String, options: &FormatOptions)
     } else {
         output.push_str(formatted.get(cursor..).unwrap_or_default());
         output
+    }
+}
+
+#[derive(Clone)]
+struct Adjustment {
+    source_start: usize,
+    gap_start: usize,
+    start: usize,
+    depth: usize,
+    newlines: usize,
+    selector: bool,
+    authored_rule_gap: bool,
+}
+
+impl Adjustment {
+    fn new(source: &Token<'_>, target: &Token<'_>, newlines: usize, selector: bool) -> Self {
+        Self {
+            source_start: source.start,
+            gap_start: target.gap_start,
+            start: target.start,
+            depth: source.depth,
+            newlines,
+            selector,
+            authored_rule_gap: false,
+        }
     }
 }
 
@@ -64,17 +210,17 @@ fn has_blank_line(gap: &str) -> bool {
     false
 }
 
-struct Token<'a> {
-    text: &'a str,
-    gap: &'a str,
-    gap_start: usize,
-    start: usize,
-    depth: usize,
-    parens: usize,
-    brackets: usize,
+pub(super) struct Token<'a> {
+    pub(super) text: &'a str,
+    pub(super) gap: &'a str,
+    pub(super) gap_start: usize,
+    pub(super) start: usize,
+    pub(super) depth: usize,
+    pub(super) parens: usize,
+    pub(super) brackets: usize,
 }
 
-struct Tokens<'a> {
+pub(super) struct Tokens<'a> {
     source: &'a str,
     index: usize,
     depth: usize,
@@ -83,7 +229,7 @@ struct Tokens<'a> {
 }
 
 impl<'a> Tokens<'a> {
-    fn new(source: &'a str) -> Self {
+    pub(super) fn new(source: &'a str) -> Self {
         Self {
             source,
             index: 0,

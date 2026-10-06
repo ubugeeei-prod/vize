@@ -56,12 +56,12 @@ pub(crate) fn format_script_content_stable(
         source_type,
         sort_imports,
     )?;
-    // Check mode returns the first pass; a no-op already is a fixed point.
     if options.skip_script_stabilization {
         return Ok(current);
     }
     let mut current_trimmed_len = current.trim_end().len();
-    if current.as_str().get(..current_trimmed_len) == Some(source.trim_end()) {
+    let source_trimmed = source.trim_end();
+    if source_trimmed.len() == current_trimmed_len && current.starts_with(source_trimmed) {
         return Ok(current);
     }
     for _ in 1..MAX_SCRIPT_STABILIZATION_PASSES {
@@ -76,7 +76,7 @@ pub(crate) fn format_script_content_stable(
             Err(_) => return Ok(current),
         };
         let next_trimmed = next.trim_end();
-        if current.as_str().get(..current_trimmed_len) == Some(next_trimmed) {
+        if next_trimmed.len() == current_trimmed_len && current.starts_with(next_trimmed) {
             return Ok(next);
         }
         current_trimmed_len = next_trimmed.len();

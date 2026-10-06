@@ -1,0 +1,14 @@
+<template>
+  <div class="a b c 次" data-label="a,b"></div>
+</template>
+
+<style scoped>
+.a,
+.b {
+  /* comma , and braces } { */
+  color: red;
+}
+.c {
+  margin: 0;
+}
+</style>

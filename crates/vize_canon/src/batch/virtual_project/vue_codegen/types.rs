@@ -20,6 +20,8 @@ pub(in crate::batch::virtual_project) struct VueCodegenOptions<'a> {
     pub(in crate::batch::virtual_project) preserve_unused_diagnostics: bool,
     pub(in crate::batch::virtual_project) options_api: bool,
     pub(in crate::batch::virtual_project) preserve_authored_component: bool,
+    /// Editor requests retain script mappings while an unusable template is omitted.
+    pub(in crate::batch::virtual_project) preserve_script_on_template_error: bool,
     pub(in crate::batch::virtual_project) component_name: Option<&'a str>,
     pub(in crate::batch::virtual_project) preserve_event_navigation: bool,
     pub(in crate::batch::virtual_project) legacy_vue2: bool,

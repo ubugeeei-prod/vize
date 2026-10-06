@@ -1,15 +1,13 @@
 //! Generating virtual TypeScript for `.vue` SFCs: parsing the template, running
 //! Croquis analysis, augmenting type-based props, and emitting the `.vue.ts`
 //! source consumed by Corsa. Incomplete scripts retain their authored code and
-//! mappings; unrecoverable SFC/template structure uses a typed fallback module.
+//! mappings; batch or unrecoverable SFC structure uses a typed fallback module.
 
 use std::path::Path;
 use vize_carton::config::VueVersion;
-use vize_carton::{Allocator, cstr, profile};
+use vize_carton::{Allocator, profile};
 
-use vize_atelier_core::{
-    ParserOptions, TemplateSyntaxMode, parser::parse_with_options_and_template_syntax,
-};
+use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_sfc::{
     SfcDescriptor,
     croquis::{
@@ -36,8 +34,11 @@ use super::{
 };
 
 mod style_modules;
+mod template;
 mod types;
 pub(super) use types::{GeneratedVueFile, VueCodegenOptions};
+#[cfg(test)]
+mod editor_script_tests;
 
 pub(super) fn generate_vue_virtual_ts(
     path: &Path,
@@ -106,7 +107,7 @@ pub(super) fn generate_vue_virtual_ts(
     // The native TypeScript parser recovers incomplete expressions and can
     // still answer editor requests against their exact source mappings.
     // Track whether the template produced any *hard* parse error. Only hard
-    // errors abort codegen and collapse the file to the fallback stub.
+    // errors omit the template AST; batch projections use the fallback stub.
     // Recovery-level diagnostics keep the real virtual TS:
     //   - `ErrorCode::ExtendPoint`, pushed by the HTML tree-construction
     //     recovery path for self-closing rewrites, fostered elements,
@@ -117,55 +118,32 @@ pub(super) fn generate_vue_virtual_ts(
     //     attributes collapsed the file to the stub and silenced every script
     //     type diagnostic in it (#3323) — the same false-negative shape #3294
     //     fixed in the linter, keyed off the same shared classification.
-    let mut template_hard_error = false;
-    let template_ast = template_text.and_then(|template_content| {
-        profile!("canon.template.parse", {
-            let (root, errors) = parse_with_options_and_template_syntax(
+    let (template_ast, template_hard_error, incomplete_tag) = template_text
+        .map(|template_content| {
+            template::parse(
                 &allocator,
                 template_content,
-                ParserOptions {
-                    experimental_in_tag_comments: codegen_options.experimental_in_tag_comments,
-                    ..ParserOptions::default()
-                },
-                codegen_options.template_syntax,
-            );
-            for error in errors {
-                if error.code.is_recovery() {
-                    continue;
-                }
-                // A documented recovery still yields a complete tree, so the
-                // defect is reported without suppressing the rest of the file.
-                if !error.code.has_documented_parse_recovery() {
-                    template_hard_error = true;
-                }
-                let start = error
-                    .loc
-                    .as_ref()
-                    .map(|loc| template_offset + loc.span.start)
-                    .unwrap_or(template_offset);
-                diagnostics.push(diagnostic_for_offset(
-                    path,
-                    source,
-                    start,
-                    cstr!("Template parse error: {}", error.message),
-                    SfcBlockType::Template,
-                ));
-            }
-            // Drop the AST only when a hard error occurred; recovery-level
-            // diagnostics leave a fully usable tree.
-            (!template_hard_error).then_some(root)
+                template_offset,
+                path,
+                source,
+                codegen_options,
+                &mut diagnostics,
+            )
         })
-    });
+        .unwrap_or((None, false, false));
 
+    let has_script_projection = !template_hard_error
+        || (codegen_options.preserve_script_on_template_error
+            && incomplete_tag
+            && (descriptor.script.is_some() || descriptor.script_setup.is_some()));
     let script_diagnostics =
-        collect_script_parse_fallbacks(path, source, descriptor, !template_hard_error);
+        collect_script_parse_fallbacks(path, source, descriptor, has_script_projection);
     diagnostics.extend(script_diagnostics.diagnostics);
 
-    // Abort to the fallback stub only on hard template errors. Pure
-    // recovery-level template diagnostics must not suppress real codegen: the
-    // parse diagnostic is still reported, alongside the script's own type
-    // diagnostics, which is what `vize check` and the linter now agree on.
-    if template_hard_error {
+    // Batch/content-mapper fallback stays intact. Editor projections retain
+    // authored scripts only for unfinished tags while the unusable template AST
+    // remains absent; native TypeScript owns syntax diagnostics for that script.
+    if !has_script_projection {
         return Ok(GeneratedVueFile {
             typed_router_import: false,
             code: invalid_sfc_fallback_virtual_ts(),

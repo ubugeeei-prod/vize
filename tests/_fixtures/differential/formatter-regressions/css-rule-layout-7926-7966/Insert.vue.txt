@@ -1,0 +1,8 @@
+<style scoped>
+.a {
+  color: red;
+}
+.b {
+  color: blue;
+}
+</style>
