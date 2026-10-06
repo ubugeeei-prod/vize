@@ -180,7 +180,6 @@ options/errors, probes, allocator/window protocol and budget files remain exact.
 Fresh source, protected104x3, actual signed merge and installed release replay
 are still required; the source change grants no new performance or native credit.
 
-
 ## Script settings conversion
 
 Actual candidate37095efe Check37428999341 failed all three original windows:
