@@ -1,0 +1,11 @@
+--- a/dist/chunks/module-main.mjs
++++ b/dist/chunks/module-main.mjs
+@@ -13,7 +13,7 @@
+ import { createBirpcGroup } from 'birpc';
+ import { parse as parse$1, stringify } from 'structured-clone-es';
+ import { startSubprocess } from '@nuxt/devtools-kit';
+-import Git from 'simple-git';
++import { simpleGit as Git } from 'simple-git';
+ import { glob } from 'tinyglobby';
+ import { imageMeta } from 'image-meta';
+ import { debounce } from 'perfect-debounce';
