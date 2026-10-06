@@ -123,6 +123,24 @@ export function projectEvidence(root, context, application) {
     });
   }
   stockPrograms.sort((a, b) => lexical(a.tsconfig, b.tsconfig));
+  let schemaAlias;
+  if (cohort.id === "nuxt3") {
+    const nuxtManifest = fs.realpathSync(
+      createRequire(path.join(application, "package.json")).resolve("nuxt/package.json"),
+    );
+    const schemaManifest = fs.realpathSync(
+      createRequire(nuxtManifest).resolve("@nuxt/schema/package.json"),
+    );
+    schemaAlias = {
+      nuxtManifest,
+      schemaManifest,
+      package: JSON.parse(fs.readFileSync(schemaManifest, "utf8")),
+      generated: stockPrograms.map((program) => ({
+        tsconfig: program.tsconfig,
+        paths: program.compilerOptions.paths["@nuxt/schema"],
+      })),
+    };
+  }
   const contract = JSON.parse(
     fs.readFileSync(
       path.join(
@@ -169,6 +187,7 @@ export function projectEvidence(root, context, application) {
     original,
     publicContract: contract,
     stockPrograms,
+    schemaAlias,
     configurations: [...seen]
       .filter(([, value]) => value !== "active")
       .map(([filename, value]) => ({
@@ -177,6 +196,13 @@ export function projectEvidence(root, context, application) {
         parsed: value.config,
       })),
   });
+  if (schemaAlias) {
+    assert.equal(schemaAlias.package.name, "@nuxt/schema");
+    assert.equal(schemaAlias.package.version, cohort.nuxt);
+    assert.ok(schemaAlias.generated.length > 0);
+    for (const generated of schemaAlias.generated)
+      assert.deepEqual(generated.paths, [path.dirname(schemaAlias.schemaManifest)]);
+  }
   return {
     original,
     stockPrograms,

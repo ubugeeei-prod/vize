@@ -80,7 +80,7 @@ export function prepareProject(root, output, cohort, custody) {
       "apps/nuxt/package.json",
     [cohort.id === "nuxt4" ? "nuxt-reference-tsconfig.json.txt" : "nuxt-tsconfig.json.txt"]:
       "apps/nuxt/tsconfig.json",
-    [cohort.id === "nuxt3" ? "nuxt3-typed.config.js.txt" : "nuxt.config.js.txt"]:
+    [cohort.id === "nuxt3" ? "nuxt3-owned-schema.config.js.txt" : "nuxt.config.js.txt"]:
       "apps/nuxt/nuxt.config.js",
     "NuxtApp.vue.txt": "apps/nuxt/src/app.vue",
     "NuxtIndex.vue.txt": "apps/nuxt/src/pages/index.vue",

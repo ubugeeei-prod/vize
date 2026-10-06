@@ -172,6 +172,10 @@
     "native-editor-authority.json": {
       "bytes": 2330,
       "sha256": "1e8b46880dfb72133152a8f4e93dd68ff31ca1513260642284744320ca506fd0"
+    },
+    "nuxt3-owned-schema.config.js.txt": {
+      "bytes": 864,
+      "sha256": "15f68404b5bb59d49e66def8282bca01d1a4c55ab1625b74d0e825eaf811635c"
     }
   },
   "scope": {
