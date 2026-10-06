@@ -5,7 +5,7 @@ use std::{
     process::{Command, Output},
 };
 
-const ROOT: &str = "../../../tests/_fixtures/differential/linter/generic-type-reads-7938/";
+const ROOT: &str = "../../tests/_fixtures/differential/linter/generic-type-reads-7938/";
 const CASES: &str =
     include_str!("../../../tests/_fixtures/differential/linter/generic-type-reads-7938/cases.json");
 const CONFIG: &str = include_str!(

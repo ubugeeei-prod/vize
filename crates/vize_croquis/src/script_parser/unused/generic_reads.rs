@@ -7,7 +7,7 @@ use oxc_ast::ast::{Expression, Statement};
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
-use vize_carton::{CompactString, cstr};
+use vize_carton::{CompactString, FxHashSet, cstr};
 
 pub(super) fn free_reads(generic: &str) -> Option<Vec<CompactString>> {
     // An anonymous function gives all type parameters their real lexical
@@ -29,6 +29,16 @@ pub(super) fn free_reads(generic: &str) -> Option<Vec<CompactString>> {
     // Require precisely the authored attribute between the wrapper brackets.
     // Embedded statements or a prematurely closed parameter list are refused.
     if parameters.span.start != 9 || parameters.span.end as usize != 11 + generic.len() {
+        return None;
+    }
+    // OXC permits repeated type-parameter symbols. Their invalid authored scope
+    // cannot prove an import unread, even when the semantic pass has no error.
+    let mut names = FxHashSet::default();
+    if parameters
+        .params
+        .iter()
+        .any(|parameter| !names.insert(parameter.name.name.as_str()))
+    {
         return None;
     }
     let built = SemanticBuilder::new()

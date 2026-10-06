@@ -22,7 +22,6 @@
 mod battery;
 mod runner;
 
-#[path = "generic_reads.rs"]
 mod generic_reads;
 
 use std::path::{Path, PathBuf};

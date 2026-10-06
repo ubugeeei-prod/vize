@@ -1,5 +1,5 @@
-use crate::Drawer;
 use crate::script_parser::parse::{parse_script_setup_for_unused, parse_script_setup_with_generic};
+use crate::{Drawer, DrawerOptions};
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -63,7 +63,7 @@ fn retained_program_entry_keeps_original_binding_spans_and_generic_reads() {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, SOURCE, SourceType::ts()).parse();
     assert_eq!(parsed.diagnostics.len(), 0);
-    let mut drawer = Drawer::new().with_unused_bindings();
+    let mut drawer = Drawer::with_options(DrawerOptions::for_lint()).with_unused_bindings();
     drawer.draw_script_setup_program(&parsed.program, SOURCE, Some("T extends Kind.A"));
     let result = drawer.finish();
     assert_eq!(
