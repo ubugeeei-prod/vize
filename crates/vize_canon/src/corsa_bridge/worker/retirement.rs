@@ -13,6 +13,8 @@ use std::{
 };
 use vize_l0::{String, cstr};
 
+pub(crate) const INCOMPLETE: &str = "Native caller retired before completing its operation";
+
 /// Opaque caller lifetime; absent outside an entered asynchronous worker job.
 #[derive(Clone, Default)]
 pub(crate) struct Control(Option<Arc<AtomicBool>>);
@@ -39,9 +41,7 @@ impl Control {
             .as_ref()
             .is_some_and(|retired| retired.load(Ordering::Acquire))
         {
-            Err(cstr!(
-                "Native caller retired before completing its operation"
-            ))
+            Err(cstr!("{INCOMPLETE}"))
         } else {
             Ok(())
         }

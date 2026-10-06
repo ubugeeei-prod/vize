@@ -8,7 +8,7 @@
   "notificationDrainUnchanged": 128,
   "laws": [
     "retired_caller_drains_reversed_window_then_same_owner_rechecks_all_534_and_closes",
-    "retired_first_failure_starts_no_recovery_and_following_owner_keeps_original_retry",
+    "retired_first_failure_finishes_cleanup_without_replacement_and_next_owner_keeps_retry",
     "retirement_during_cleanup_finishes_cleanup_but_starts_no_retry"
   ],
   "limits": [

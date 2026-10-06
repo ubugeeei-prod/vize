@@ -74,6 +74,7 @@ if (process.argv[2] === "prepare") {
     .split("\n")
     .filter(Boolean);
   const allowed = new Set([
+    "crates/vize_canon/src/lsp_client.rs",
     "crates/vize_canon/src/corsa_bridge/worker.rs",
     "crates/vize_canon/src/corsa_bridge/worker/async_reply.rs",
     "crates/vize_canon/src/corsa_bridge/worker/retirement.rs",

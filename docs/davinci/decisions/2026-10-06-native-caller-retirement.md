@@ -11,8 +11,11 @@ Check retirement before assigning a readiness identity and after its response
 has drained. Join every started worker before returning an explicit non-transient
 incomplete error. A partial barrier retains all dirty documents, topology
 barriers and generation state. Check again before the following semantic request
-and before transport recovery/retry. Cleanup already entered during retirement
-still finishes; synchronization, notification drains, release and shutdown never
+and before replacement session/retry. A completed transient failure still retires
+its old session even when the caller has left; this is mandatory cleanup, not a
+replacement spawn. Its original failure and cleanup error remain in the explicit
+incomplete result, whose marker takes precedence over transport-error text. Cleanup
+already entered during retirement still finishes; synchronization, notification drains, release and shutdown never
 consult this control. The next live caller uses the unchanged synchronization
 and transport-recovery policy.
 
@@ -30,7 +33,7 @@ incomplete error, not a partial projection. This is a controlled owner/generatio
 model, not native Program, source installation or PID/reaping evidence. Existing
 full native lifetime/hover/diagnostic laws supply their own scope of qualification.
 Separate laws retain normal following-owner recovery, prevent a retired caller
-from beginning recovery, complete already-entered cleanup, and restore lexical
+from starting a replacement while completing old-session cleanup, and restore lexical
 ownership after unwind.
 
 The public400+134 whole79-query/18-notification recipe and every old input,
@@ -45,3 +48,5 @@ compile/native/full/paired/protected and actual signed delivery are pending;
 Issue7698 and its complete responsiveness target remain open.
 
 Paired decision: https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6018068203.
+
+[Cleanup clarification](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6018281589) preserves mandatory old-session retirement after a completed transient failure, then refuses replacement work for the retired caller and retains whole first/cleanup error text as non-transient incomplete.

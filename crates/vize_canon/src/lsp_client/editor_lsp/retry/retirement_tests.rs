@@ -7,7 +7,7 @@ use vize_l0::{String, cstr};
 const SETTLE: Duration = Duration::from_secs(10);
 
 #[test]
-fn retired_first_failure_starts_no_recovery_and_following_owner_keeps_original_retry() {
+fn retired_first_failure_finishes_cleanup_without_replacement_and_next_owner_keeps_retry() {
     let worker = BoundedWorker::new("vize-retired-retry-test", (0_u32, 0_u32));
     let (entered, observed) = mpsc::channel();
     let (release, held) = mpsc::channel();
@@ -18,7 +18,10 @@ fn retired_first_failure_starts_no_recovery_and_following_owner_keeps_original_r
         let error = retry_transient_editor_request::<_, ()>(
             state,
             Err(cstr!("Broken pipe")),
-            |_| panic!("retired caller must not begin recovery"),
+            |state| {
+                state.0 += 1;
+                Ok(())
+            },
             |_| panic!("retired caller must not spawn a replacement"),
         )
         .unwrap_err();
@@ -30,7 +33,7 @@ fn retired_first_failure_starts_no_recovery_and_following_owner_keeps_original_r
     release.send(()).unwrap();
     assert_eq!(
         result.recv_timeout(SETTLE).unwrap(),
-        "Native caller retired before completing its operation"
+        "Native caller retired before completing its operation; first editor LSP request failed: Broken pipe"
     );
     assert_eq!(
         block_on(worker.submit_ready_async(SETTLE, |state| {
@@ -47,8 +50,11 @@ fn retired_first_failure_starts_no_recovery_and_following_owner_keeps_original_r
                 },
             )
         })),
-        Ok(Ok((1, 1)))
+        Ok(Ok((2, 1)))
     );
+    assert!(!crate::lsp_client::lsp_transport_error_is_transient(
+        "Native caller retired before completing its operation; first editor LSP request failed: Broken pipe; editor LSP session retirement also failed: broken pipe"
+    ));
     assert!(!worker.is_draining());
 }
 
@@ -66,7 +72,7 @@ fn retirement_during_cleanup_finishes_cleanup_but_starts_no_retry() {
                 entered.send(()).unwrap();
                 held.recv_timeout(SETTLE).unwrap();
                 *state = true;
-                Ok(())
+                Err(cstr!("broken pipe during old-session shutdown"))
             },
             |_| panic!("retired caller must not retry after cleanup"),
         )
@@ -80,7 +86,9 @@ fn retirement_during_cleanup_finishes_cleanup_but_starts_no_retry() {
     assert_eq!(
         result.recv_timeout(SETTLE).unwrap(),
         (
-            String::from("Native caller retired before completing its operation"),
+            String::from(
+                "Native caller retired before completing its operation; first editor LSP request failed: Broken pipe; editor LSP session retirement also failed: broken pipe during old-session shutdown"
+            ),
             true
         )
     );
