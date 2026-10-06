@@ -93,3 +93,21 @@ The full failed log remains historical. The same-PR source compatibility repair
 is paired in
 [the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6018596538);
 fresh corrected Actions remain required, with no old execution transfer.
+
+Exact-10c3's twenty complete CLI cases and ninety-four file-result rows passed,
+including the original report and unchanged old route corpus/witness law.
+Overall source qualification remained red: both remarks corpora sweep every
+`.vue` fixture, and the new app/route carriers added forty-five files.
+The complete failed S2 output authenticates forty-six new remarks (thirty-nine
+applied, seven missed). Removing only those new paths recovers every byte of
+the prior 451-file/1,039-remark snapshot. S3 retains every prior file and its
+150 entries; its one new original click-handler cache expectation derives from
+the unchanged model at the literal 242:258 attribute span: cache overhead 27
+minus effect wrapper 21, one removed reactive edge/update and budget-left 127.
+The C-13 backlog uses the existing grouping/rendering recipe, first reproduced
+byte-exactly on the old corpus. No updater or local product build runs, and no
+old row, production, input, diagnostic expectation, provider or budget changes.
+This additive snapshot correction is paired in
+[the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6018998153).
+Draft/offqueue containment and both authentic failures remain historical;
+fresh exact source Actions must qualify the complete corpora and CLI results.
