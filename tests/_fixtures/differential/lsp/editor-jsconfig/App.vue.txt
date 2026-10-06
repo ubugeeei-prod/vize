@@ -1,0 +1,9 @@
+<script setup>
+import { greet } from "./util.js";
+
+const message = greet("x");
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>

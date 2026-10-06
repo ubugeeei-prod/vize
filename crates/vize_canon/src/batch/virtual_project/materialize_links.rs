@@ -1,6 +1,6 @@
 //! Cold/editor package-link collection shared with affected warm ownership.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use vize_carton::FxHashSet;
 
@@ -8,6 +8,28 @@ use super::VirtualProject;
 use super::package_node_modules::{PackageNodeModulesLink, package_node_modules_links};
 
 impl VirtualProject {
+    pub(super) fn preserved_package_link_overlaps_files(
+        &self,
+        path: &Path,
+        target: &Path,
+        files: &FxHashSet<PathBuf>,
+    ) -> bool {
+        // A live member's former external package link must not override the
+        // complete union's newly owned private files at that same path.
+        !target.starts_with(&self.virtual_root) && files.iter().any(|file| file.starts_with(path))
+    }
+
+    /// Retain the last completed editor union's link identities. Validation
+    /// still compares every existing link to its exact recorded target before
+    /// retiring it; newly discovered disk links never establish ownership.
+    pub(crate) fn restore_editor_package_links(
+        &mut self,
+        snapshot: &super::MaterializedFileSnapshot,
+    ) {
+        self.materialized_package_links
+            .clone_from(snapshot.package_links());
+    }
+
     pub(crate) fn capture_materialized_package_links(&mut self) {
         self.materialized_package_links = self.desired_package_links();
         self.rebuild_materialized_package_link_owners();

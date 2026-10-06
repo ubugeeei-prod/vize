@@ -1,4 +1,4 @@
-//! Unchanged default registry construction.
+//! General-purpose default registry construction.
 
 use super::RuleRegistry;
 
@@ -49,6 +49,10 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::SingleStyleBlock));
         registry.register(Box::new(crate::rules::vue::NoUselessTemplateAttributes));
         registry.register(Box::new(crate::rules::vue::NoDeprecatedSlotAttribute));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedVBindSync));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedVOnNativeModifier));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedSlotScopeAttribute));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedScopeAttribute));
         crate::rules::vue::register_valid_directives(&mut registry);
         registry.register(Box::new(crate::rules::vapor::NoVueLifecycleEvents));
         crate::rules::vue::register_security(&mut registry);

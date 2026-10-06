@@ -6,6 +6,12 @@ import path from "node:path";
 // Never copy node_modules, the editor profile, or installed extensions.
 const files = [
   "node_modules/.vize/lsp.log",
+  "node_modules/.vize/rich-hover.json",
+  "src/RichAuthoring.vue",
+  "src/SlotAuthoring.vue",
+  "src/AttrAuthoring.vue",
+  "src/EventAuthoring.vue",
+  "src/InvoiceCard.vue",
   "src/App.vue",
   "src/Clean.vue",
   "src/Child.vue",

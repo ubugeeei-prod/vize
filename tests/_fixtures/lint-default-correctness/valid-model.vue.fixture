@@ -1,0 +1,1 @@
+<template><Widget v-model:title="title" /></template>

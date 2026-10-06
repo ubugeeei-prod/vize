@@ -84,8 +84,14 @@ pub struct BuiltinScriptRuleMeta {
     pub presets: &'static [&'static str],
 }
 
-const ESSENTIAL_SCRIPT_PRESETS: &[&str] = &["essential", "happy-path", "nuxt", "opinionated"];
-const HAPPY_PATH_SCRIPT_PRESETS: &[&str] = &["happy-path", "nuxt", "opinionated"];
+const ESSENTIAL_SCRIPT_PRESETS: &[&str] = &[
+    "essential",
+    "happy-path",
+    "ecosystem",
+    "nuxt",
+    "opinionated",
+];
+const HAPPY_PATH_SCRIPT_PRESETS: &[&str] = &["happy-path", "ecosystem", "nuxt", "opinionated"];
 const OPINIONATED_ONLY_SCRIPT_PRESETS: &[&str] = &["opinionated"];
 const OPINIONATED_SCRIPT_PRESETS: &[&str] = &["opinionated"];
 const ECOSYSTEM_SCRIPT_PRESETS: &[&str] = &["ecosystem"];

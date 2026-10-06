@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const first = <T>(items: readonly T[]): T | undefined => items[0];
+const pick = <T = unknown>(value: T): T => value;
+
+console.log(first([1]), pick(2));
+</script>
+
+<template>
+  <p>x</p>
+</template>

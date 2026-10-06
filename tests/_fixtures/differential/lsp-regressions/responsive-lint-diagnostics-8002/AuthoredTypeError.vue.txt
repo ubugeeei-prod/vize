@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const count = ref(0);
+const text: string = 1;
+console.log(text);
+</script>
+
+<template>
+  <img src="/logo.png" alt="" />
+  <span>{{ count }}</span>
+</template>

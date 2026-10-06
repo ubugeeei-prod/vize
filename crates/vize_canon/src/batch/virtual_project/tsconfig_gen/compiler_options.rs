@@ -207,6 +207,21 @@ impl VirtualProject {
             .and_then(Value::as_object)
             .cloned()
             .unwrap_or_default();
+        // Native TypeScript applies each jsconfig's filename defaults to its
+        // own options before merging them over inherited options.
+        if normalized
+            .file_name()
+            .is_some_and(|name| name == "jsconfig.json")
+        {
+            for (name, value) in [
+                ("allowJs", Value::Bool(true)),
+                ("maxNodeModuleJsDepth", Value::from(2)),
+                ("skipLibCheck", Value::Bool(true)),
+                ("noEmit", Value::Bool(true)),
+            ] {
+                compiler_options.entry(name).or_insert(value);
+            }
+        }
         let base_dir = normalized.parent().unwrap_or(self.project_root.as_path());
         let mut dirs = DeclarationDirs::default();
         if compiler_options.contains_key("paths") {
