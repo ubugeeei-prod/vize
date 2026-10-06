@@ -69,3 +69,21 @@ TODO: switching governing tsconfigs inside one package with a reused long-lived
 Linter retains the existing project-root-based session cache rule. This change
 does not rekey that cache or qualify parity for every compiler option outside
 the existing whitelist. No additional source lane is started for those bounds.
+
+## Native qualification Stack
+
+The [paired publication decision](https://github.com/ubugeeei-prod/vize/issues/7995#issuecomment-6009031778)
+resumes delivery as a genuine child of #8073, whose strict all-target Clippy
+repair qualifies the Patina config tests. Replay onto the literal parent
+`d836c174f1fe5f1c7b8e12219366e137c129048d`, preserving all 65 owned blobs outside
+the canonical record and parent-derived native workflow. Preserve every parent
+canonical byte at 350 lines and the existing native command's strict capture.
+The initial child remains uncompiled/unexecuted; prior source review gives no
+runtime or admission credit. #8080 remains an independent security delivery.
+
+After its actual merge, replay the bottom on actual main and each child on the
+fresh parent once, preserving all original vectors and incoming history. Verify
+one native Stack and enter only an exact-green contiguous prefix with
+`gh stack merge --yes --squash`; do not auto-merge individual layers. Actual
+protected/native/signed delivery and an installed original-case 0.435 replay
+remain unfinished. The preceding private-preparation evidence stays historical.
