@@ -62,7 +62,10 @@ function noInputs(oracle: JsconfigOracle, name: string): string {
 }
 
 function nativeNoInputs(oracle: JsconfigOracle, name: string): string {
-  return `error TS18003: No inputs were found in config file '${path.join(oracle.root, name)}'. Specified 'include' paths were '["src/**/*"]' and 'exclude' paths were '[]'.\n`;
+  // Pinned native program.go validates checkJs against allowJs. The parser's
+  // ForEachPropertyAssignment selects the first of those two authored keys:
+  // this unchanged inverse places allowJs at line 3, column 5.
+  return `error TS18003: No inputs were found in config file '${path.join(oracle.root, name)}'. Specified 'include' paths were '["src/**/*"]' and 'exclude' paths were '[]'.\n${name}(3,5): error TS5052: Option 'checkJs' cannot be specified without specifying option 'allowJs'.\n`;
 }
 
 void test("configless CLI discovers actual JavaScript project names and native defaults", async (t) => {
@@ -182,6 +185,46 @@ void test("configless CLI discovers actual JavaScript project names and native d
       const result = oracle.check("default-unchecked");
       stock(reference, "src/message.js", true);
       whole(result, 0, report(true, { ...options, checkJs: false }));
+    } catch (error) {
+      failure = error;
+      throw error;
+    } finally {
+      oracle.finish(failure);
+    }
+  });
+
+  await t.test("each jsconfig's own filename defaults override inherited options", () => {
+    const oracle = new JsconfigOracle("inherited-filename-defaults");
+    let failure: unknown = null;
+    try {
+      prepare(oracle);
+      oracle.write(
+        "base.json",
+        JSON.stringify({
+          compilerOptions: {
+            allowJs: false,
+            maxNodeModuleJsDepth: 0,
+            skipLibCheck: false,
+            noEmit: false,
+          },
+        }),
+      );
+      const extend = (source: string): string =>
+        source.replace('  "include"', '  "extends": "./base.json",\n  "include"');
+      oracle.write("jsconfig.json", extend(oracle.carrier("jsconfig.json.txt")));
+      const reference = oracle.stock("native-inherited-defaults", "jsconfig.json");
+      const result = oracle.check("default-inherited-defaults");
+      oracle.write("jsconfig.json", extend(oracle.carrier("jsconfig-deny.json.txt")));
+      const denied = oracle.stock("native-inherited-explicit-false", "jsconfig.json", [
+        "--listFilesOnly",
+      ]);
+      const excluded = oracle.check("default-inherited-explicit-false");
+      stock(reference, "src/message.js", false);
+      whole(result, 1, report(false));
+      assert.equal(denied.status, 1);
+      assert.equal(denied.stderr, "");
+      assert.equal(denied.stdout, nativeNoInputs(oracle, "jsconfig.json"));
+      whole(excluded, 2, emptyReport, noInputs(oracle, "jsconfig.json"));
     } catch (error) {
       failure = error;
       throw error;

@@ -50,6 +50,66 @@
       "sha256": "729fcce1ed4f1bd83860f3d986794584054ff59ed98bd56c115056f525fdcfa4",
       "bytes": 73771,
       "carrier": "native-source/tsconfigparsing.go.txt"
+    },
+    {
+      "carrier": "native-source/merge-compiler-options.go.txt",
+      "bytes": 2149,
+      "sha256": "3073e38f4e1646851ef80389a94ed614a1d1669e5902db3a65471d0159580a0c",
+      "upstreamPath": "internal/tsoptions/parsinghelpers.go",
+      "upstreamCommit": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "upstreamGitBlob": "47a4d476bf4e9bc8676f3a68cb0463b6ca275944",
+      "sourceFileBytes": 21154,
+      "sourceFileSha256": "86ef1a12d0dc4b098a8ec7b02198ded657756ea959f841ed064e366745fe8908",
+      "excerptLines": {
+        "start": 566,
+        "end": 618
+      },
+      "qualification": "authenticated contiguous source excerpt; static authority only, never executed or substituted"
+    },
+    {
+      "carrier": "native-source/option-diagnostic-key.go.txt",
+      "bytes": 2049,
+      "sha256": "10e5f7d629317e00b1575efa8a1a3e9952d59fee6af39420e4a3fd296f11ecc7",
+      "upstreamPath": "internal/compiler/program.go",
+      "upstreamCommit": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "upstreamGitBlob": "74b2504d9ec081f52d0f60c89ae9af2c39aad0aa",
+      "sourceFileBytes": 91525,
+      "sourceFileSha256": "535a2596d7f4c3dc074d546f4e4f4cd5ff4862d50a0c189b0fbb19790fab76ff",
+      "excerptLines": {
+        "start": 762,
+        "end": 803
+      },
+      "qualification": "authenticated contiguous source excerpt; static authority only, never executed or substituted"
+    },
+    {
+      "carrier": "native-source/checkjs-allowjs-validation.go.txt",
+      "bytes": 183,
+      "sha256": "2574f8df5c119959ac2b54b41c8f23223f0b7944bbbbb9be51f7beb0000b2e4b",
+      "upstreamPath": "internal/compiler/program.go",
+      "upstreamCommit": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "upstreamGitBlob": "74b2504d9ec081f52d0f60c89ae9af2c39aad0aa",
+      "sourceFileBytes": 91525,
+      "sourceFileSha256": "535a2596d7f4c3dc074d546f4e4f4cd5ff4862d50a0c189b0fbb19790fab76ff",
+      "excerptLines": {
+        "start": 1088,
+        "end": 1090
+      },
+      "qualification": "authenticated contiguous source excerpt; static authority only, never executed or substituted"
+    },
+    {
+      "carrier": "native-source/diagnostic-5052.go.txt",
+      "bytes": 254,
+      "sha256": "56bc3998c6c74f220c0df9ccc183ab7b9fb6c93b09cf420fa91f4c8334c2fe10",
+      "upstreamPath": "internal/diagnostics/diagnostics_generated.go",
+      "upstreamCommit": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "upstreamGitBlob": "86ffdcea417e6081d3d58bebd55ba1eddc7d0a03",
+      "sourceFileBytes": 898774,
+      "sourceFileSha256": "6695081f1fb5163c17687f09dc9e7aeda8e8f558bcde8b42b7fb274ff172d9e4",
+      "excerptLines": {
+        "start": 2261,
+        "end": 2261
+      },
+      "qualification": "authenticated contiguous source excerpt; static authority only, never executed or substituted"
     }
   ],
   "jsconfigDefaults": {

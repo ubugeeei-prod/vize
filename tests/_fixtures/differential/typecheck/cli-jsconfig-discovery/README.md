@@ -25,3 +25,5 @@ Explicit jsconfig selection, same-directory tsconfig precedence, nearest
 package selection, explicit-false denial, repair, and mixed jsconfig/tsconfig
 program ownership remain separate controls. No runtime credit, performance
 claim, or release credit follows from this source preparation.
+
+The first hosted #8103 source run retains all six original cases and 32 closed commands in artifact11391147865. It fails because source JS eligibility/options omit filename defaults, and its original explicit-false stock expectation omitted5052. The original carriers remain unchanged. Pinned validator, property-order and generated diagnostic source independently establish that complete added diagnostic at3:5. Additional authenticated contiguous excerpts record original line spans and full source-file Git blob/SHA256; they remain static reference evidence. A seventh separate inheritance law observes each child jsconfig default overriding parent false options. Current successor runtime acceptance is pending; the broader TS/checkJs fallback policy is outside this slice.

@@ -131,7 +131,11 @@ export class JsconfigOracle {
   }
 
   finish(error: unknown = null): void {
-    this.rows.push({ kind: "finished", error: error === null ? null : String(error) });
+    const failure =
+      error instanceof Error
+        ? { name: error.name, message: error.message, stack: error.stack ?? null }
+        : error;
+    this.rows.push({ kind: "finished", error: failure });
     this.save();
   }
 
