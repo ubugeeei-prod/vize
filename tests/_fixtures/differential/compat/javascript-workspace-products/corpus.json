@@ -148,6 +148,18 @@
     "lint-options.js.txt": {
       "bytes": 85,
       "sha256": "e01cc23d43397b9eec4482370dc3d09104f618b01b217594a9291223865a9782"
+    },
+    "ui-package-typed.json.txt": {
+      "bytes": 289,
+      "sha256": "6b2afba6266ffe3904b6f6d22bec9942bc516be19fbeae54135ae39e271b9b9d"
+    },
+    "workspace-declarations-tsconfig.json.txt": {
+      "bytes": 454,
+      "sha256": "7571362b3620773b164c92d779958678c7c635e0cf7a098f2fb347cc9fcf29cf"
+    },
+    "public-input-contract.json": {
+      "bytes": 4023,
+      "sha256": "f2170565670abaafa1d315e9bf3c23bac2c2d815fa9ff900d8dd2735d7d3cbee"
     }
   },
   "scope": {

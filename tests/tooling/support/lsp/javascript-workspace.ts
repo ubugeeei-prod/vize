@@ -25,7 +25,7 @@ export async function editorProducts(root: string, context: Context, binary: str
   const original = fs.readFileSync(main, "utf8");
   const captures = path.join(root, "target/differential/lsp-sessions");
   fs.mkdirSync(captures, { recursive: true });
-  for (const native of [false, true]) {
+  async function profile(native: boolean) {
     const before = fs.readdirSync(captures);
     let session: LspSession | undefined;
     let initialization: unknown;
@@ -140,7 +140,11 @@ export async function editorProducts(root: string, context: Context, binary: str
           responses,
           stderr: session.stderrText,
         });
-        assert.deepEqual(packet, expected);
+        try {
+          assert.deepEqual(packet, expected);
+        } catch (error) {
+          remember(error);
+        }
       }
       session.notify("textDocument/didClose", { textDocument: { uri } });
       const closed = await session.waitForNotification(
@@ -221,6 +225,18 @@ export async function editorProducts(root: string, context: Context, binary: str
     assert.deepEqual(errors, []);
     assert.equal(rows.length, cases.length);
   }
+  const failures: string[] = [];
+  for (const native of [false, true]) {
+    try {
+      await profile(native);
+    } catch (error) {
+      failures.push(
+        error instanceof Error ? (error.stack ?? error.message) : JSON.stringify(error),
+      );
+    }
+  }
+  save(context.artifacts, "lsp-profile-failures.json", failures);
+  assert.deepEqual(failures, [], "both complete editor profiles remain mandatory");
   assert.equal(
     fs.readFileSync(main, "utf8"),
     original,

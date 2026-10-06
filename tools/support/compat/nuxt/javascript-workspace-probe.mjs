@@ -64,9 +64,10 @@ try {
 } catch (error) {
   remember("whole-cli-products", error);
 }
-if (context.cohort.id === "vite" && cliResult)
+const compiled = path.join(context.artifacts, "compiled-whole-packets.json");
+if (context.cohort.id === "vite" && fs.existsSync(compiled))
   try {
-    await cliViteRuntime(root, context, cliResult.compiled);
+    await cliViteRuntime(root, context, JSON.parse(fs.readFileSync(compiled, "utf8")));
   } catch (error) {
     remember("cli-executable-runtime", error);
   }

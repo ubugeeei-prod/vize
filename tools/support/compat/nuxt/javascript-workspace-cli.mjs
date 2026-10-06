@@ -10,6 +10,7 @@ import {
 } from "../../../../tests/differential/build-receipt.mjs";
 import { lexical, save, sha } from "./javascript-workspace-project.mjs";
 import { projectEvidence } from "./javascript-workspace-config.mjs";
+import { packageDeclarations } from "./javascript-workspace-declarations.mjs";
 
 export function sourceCli(root, artifacts) {
   const identity = expectedBuildIdentity(root);
@@ -219,7 +220,8 @@ export async function cliProducts(root, context, provider) {
     compiled.push({ backend, packets });
   }
   save(context.artifacts, "compiled-whole-packets.json", compiled);
-  const original = projectEvidence(root, app, context.artifacts);
+  packageDeclarations(root, context, command);
+  const { original, stockPrograms } = projectEvidence(root, context, app);
   const oldMain = fs.readFileSync(main, "utf8");
   const oldPricing = fs.readFileSync(pricing, "utf8");
   const records = [];
@@ -275,7 +277,7 @@ export async function cliProducts(root, context, provider) {
       try {
         fs.writeFileSync(testCase.file, testCase.source);
         const stock = [];
-        for (const [index, program] of original.programs.entries())
+        for (const [index, program] of stockPrograms.entries())
           stock.push(
             command(
               process.execPath,
@@ -314,13 +316,6 @@ export async function cliProducts(root, context, provider) {
           const at = position(testCase.source, testCase.needle);
           stockExpected = `${path.relative(app, testCase.file).split(path.sep).join("/")}(${at.line + 1},${at.character + 1}): error TS${testCase.code}: ${testCase.message}\n`;
         }
-        save(context.artifacts, `stock-${testCase.id}-expectation.json`, { stockExpected, stock });
-        assert.equal(stock.map((row) => row.stdout).join(""), stockExpected);
-        assert.ok(stock.every((row) => row.stderr === ""));
-        assert.equal(
-          stock.reduce((total, row) => total + (row.status === 0 ? 0 : 1), 0),
-          testCase.code ? 1 : 0,
-        );
         records.push({
           id: testCase.id,
           source: testCase.source,
@@ -329,6 +324,13 @@ export async function cliProducts(root, context, provider) {
           status: actual.status,
         });
         save(context.artifacts, "whole-typecheck-rows.json", records);
+        save(context.artifacts, `stock-${testCase.id}-expectation.json`, { stockExpected, stock });
+        assert.equal(stock.map((row) => row.stdout).join(""), stockExpected);
+        assert.ok(stock.every((row) => row.stderr === ""));
+        assert.equal(
+          stock.reduce((total, row) => total + (row.status === 0 ? 0 : 1), 0),
+          testCase.code ? 1 : 0,
+        );
         assert.equal(actual.status, testCase.code ? 1 : 0);
         assert.deepEqual(report, expected);
       } catch (error) {

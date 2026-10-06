@@ -42,16 +42,10 @@ export function inputCorpus(root) {
     }
   return { corpus, directory };
 }
-function linkModules(installed, target) {
-  fs.mkdirSync(target, { recursive: true });
-  for (const name of fs.readdirSync(installed)) {
-    if (name === ".bin") continue;
-    if (name.startsWith("@")) {
-      fs.mkdirSync(path.join(target, name), { recursive: true });
-      for (const child of fs.readdirSync(path.join(installed, name)))
-        fs.symlinkSync(path.join(installed, name, child), path.join(target, name, child));
-    } else fs.symlinkSync(path.join(installed, name), path.join(target, name));
-  }
+function copyModules(installed, target) {
+  // Preserve the installed dependency layout inside this owned workspace. External
+  // absolute links make Nuxt-generated includes escape its node_modules exclusions.
+  fs.cpSync(installed, target, { recursive: true, dereference: false, verbatimSymlinks: true });
 }
 export function prepareProject(root, output, cohort, custody) {
   const { corpus, directory } = inputCorpus(root);
@@ -68,11 +62,12 @@ export function prepareProject(root, output, cohort, custody) {
   fs.mkdirSync(artifacts);
   const project = path.join(artifacts, "project");
   fs.mkdirSync(project);
-  linkModules(installed, path.join(project, "node_modules"));
+  copyModules(installed, path.join(project, "node_modules"));
   const sources = {
     "package.json.txt": "package.json",
     "pnpm-workspace.yaml.txt": "pnpm-workspace.yaml",
     "root-tsconfig.json.txt": "tsconfig.json",
+    "workspace-declarations-tsconfig.json.txt": "workspace-declarations.tsconfig.json",
     "vite-package.json.txt": "apps/vite/package.json",
     "vite-tsconfig.json.txt": "apps/vite/tsconfig.json",
     "vite.config.mjs.txt": "apps/vite/vite.config.mjs",
@@ -90,7 +85,7 @@ export function prepareProject(root, output, cohort, custody) {
     "pricing-package.json.txt": "packages/pricing/package.json",
     "pricing-index.js.txt": "packages/pricing/src/index.js",
     "pricing-label.mjs.txt": "packages/pricing/src/label.mjs",
-    "ui-package.json.txt": "packages/ui/package.json",
+    "ui-package-typed.json.txt": "packages/ui/package.json",
     "BadgeCard.vue.txt": "packages/ui/src/BadgeCard.vue",
   };
   for (const [source, target] of Object.entries(sources)) {
@@ -105,7 +100,7 @@ export function prepareProject(root, output, cohort, custody) {
     originalDist[name] = files(path.join(installed, name, "dist"));
     candidateDist[name] = files(path.join(root, source, "dist"));
     const target = path.join(project, "node_modules", name);
-    fs.unlinkSync(target);
+    fs.rmSync(target, { recursive: true, force: true });
     fs.mkdirSync(target);
     fs.copyFileSync(path.join(installed, name, "package.json"), path.join(target, "package.json"));
     fs.cpSync(path.join(root, source, "dist"), path.join(target, "dist"), { recursive: true });
