@@ -170,6 +170,7 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component/s
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/component/structural_slots.rs	10	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/deferred.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/insertion.rs	10	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/lower/element/insertion.rs	64	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/template.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	4
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/element/template/writer.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/key.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1

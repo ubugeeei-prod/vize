@@ -12,37 +12,33 @@ use vize_carton::ensure_sufficient_stack;
 use super::template::is_template_backed_element;
 use super::{ElementType, TemplateChildNode};
 
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum Unit {
-    Rendered,
-    Block,
-}
-
-fn collect_units(
+fn collect_placeholders(
     children: &[TemplateChildNode<'_>],
-    units: &mut std::vec::Vec<Unit>,
+    flags: &mut std::vec::Vec<bool>,
+    rendered_after: &mut bool,
     non_reactive: bool,
 ) {
-    for child in children {
+    for child in children.iter().rev() {
         match child {
             TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_) => {
-                units.push(Unit::Rendered);
+                *rendered_after = true;
             }
             TemplateChildNode::Element(el) if el.tag_type == ElementType::Template => {
                 ensure_sufficient_stack(|| {
-                    collect_units(
+                    collect_placeholders(
                         &el.children,
-                        units,
+                        flags,
+                        rendered_after,
                         super::super::key::is_non_reactive(el, non_reactive),
                     )
                 });
             }
             TemplateChildNode::Element(el) if is_template_backed_element(el, non_reactive) => {
-                units.push(Unit::Rendered);
+                *rendered_after = true;
             }
             TemplateChildNode::Element(_)
             | TemplateChildNode::If(_)
-            | TemplateChildNode::For(_) => units.push(Unit::Block),
+            | TemplateChildNode::For(_) => flags.push(*rendered_after),
             _ => {}
         }
     }
@@ -55,16 +51,63 @@ pub(crate) fn block_placeholders(
     children: &[TemplateChildNode<'_>],
     non_reactive: bool,
 ) -> std::vec::Vec<bool> {
-    let mut units = std::vec::Vec::new();
-    collect_units(children, &mut units, non_reactive);
-    let mut rendered_after = false;
     let mut flags = std::vec::Vec::new();
-    for unit in units.iter().rev() {
-        match unit {
-            Unit::Rendered => rendered_after = true,
-            Unit::Block => flags.push(rendered_after),
-        }
-    }
+    collect_placeholders(children, &mut flags, &mut false, non_reactive);
     flags.reverse();
     flags
+}
+
+#[cfg(test)]
+mod tests {
+    use super::block_placeholders;
+    use vize_atelier_core::parser::parse;
+    use vize_carton::Allocator;
+
+    #[test]
+    fn original_sibling_order_and_transparent_scopes_keep_exact_block_flags() {
+        let cases: [(&str, bool, &[bool]); 8] = [
+            ("<i>native</i><p>{{ value }}</p>", false, &[]),
+            ("<Counter /><p>after</p><Counter />", false, &[true, false]),
+            (
+                "<template #default><Counter /></template><span>after</span>",
+                false,
+                &[true],
+            ),
+            (
+                "<Counter /><template #default><p>after</p><Counter /></template>",
+                false,
+                &[true, false],
+            ),
+            (
+                "<template #default><Counter /><template #named><Counter /><p>after</p></template></template><Counter />",
+                false,
+                &[true, true, false],
+            ),
+            (
+                "<input :key=\"epoch\" /><i>after</i><!-- ignored --><input :key=\"end\" />",
+                false,
+                &[true, false],
+            ),
+            (
+                "<input :key=\"epoch\" /><i>after</i><input :key=\"end\" />",
+                true,
+                &[],
+            ),
+            (
+                "<Counter /><template #default v-once><input :key=\"held\" /></template><Counter />",
+                false,
+                &[true, false],
+            ),
+        ];
+        for (source, non_reactive, expected) in cases {
+            let allocator = Allocator::new();
+            let (root, errors) = parse(&allocator, source);
+            assert!(errors.is_empty(), "{errors:?}");
+            assert_eq!(
+                block_placeholders(&root.children, non_reactive),
+                expected,
+                "{source}"
+            );
+        }
+    }
 }

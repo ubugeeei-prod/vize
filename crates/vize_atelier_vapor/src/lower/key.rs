@@ -21,14 +21,20 @@ pub(super) fn value<'a, 'b>(
     el: &'b ElementNode<'a>,
     non_reactive: bool,
 ) -> Option<&'b SimpleExpressionNode<'a>> {
+    if non_reactive {
+        return None;
+    }
     let value = el.props.iter().find_map(|prop| {
         let PropNode::Directive(dir) = prop else {
             return None;
         };
+        if dir.name != "bind" {
+            return None;
+        }
         let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
             return None;
         };
-        if dir.name != "bind" || !arg.is_static || arg.content != "key" {
+        if !arg.is_static || arg.content != "key" {
             return None;
         }
         match &dir.exp {
