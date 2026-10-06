@@ -1,0 +1,9 @@
+{
+  "name": "vize-javascript-workspace-products",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

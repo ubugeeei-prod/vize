@@ -14,6 +14,9 @@ on:
       - tools/support/compat/nuxt/prefetch-manifest-*
       - tools/support/compat/nuxt/lint-config-*
       - tools/support/compat/nuxt/compiler-defaults-*
+      - tools/support/compat/nuxt/javascript-workspace-*
+      - tests/_fixtures/differential/compat/javascript-workspace-products/**
+      - tests/tooling/support/lsp/javascript-workspace.ts
       - tools/support/compat/nuxt/relative-glob-*
       - tools/support/compat/nuxt/fixtures/vite-relative-glob/**
       - tests/_fixtures/differential/compiler/vite-relative-glob/**
@@ -46,6 +49,9 @@ on:
       - tools/support/compat/nuxt/prefetch-manifest-*
       - tools/support/compat/nuxt/lint-config-*
       - tools/support/compat/nuxt/compiler-defaults-*
+      - tools/support/compat/nuxt/javascript-workspace-*
+      - tests/_fixtures/differential/compat/javascript-workspace-products/**
+      - tests/tooling/support/lsp/javascript-workspace.ts
       - tools/support/compat/nuxt/relative-glob-*
       - tools/support/compat/nuxt/fixtures/vite-relative-glob/**
       - tests/_fixtures/differential/compiler/vite-relative-glob/**
@@ -144,6 +150,12 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Verify original relative glob keys and outside-root Vite and Nuxt runtime
         run: vp env exec node tools/support/compat/nuxt/relative-glob-build.mjs "$RUNNER_TEMP/vite-relative-glob-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
+      - name: Build the current CLI for the JavaScript workspace consumers
+        run: |
+          cargo build --profile ci -p vize
+          vp env exec node tests/differential/build-receipt.mjs
+      - name: Verify real JavaScript Nuxt and Vite workspace products
+        run: vp env exec node tools/support/compat/nuxt/javascript-workspace-build.mjs "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Upload Nuxt 3 build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -155,4 +167,5 @@ jobs:
             ${{ runner.temp }}/nuxt-lint-config-proof
             ${{ runner.temp }}/nuxt-compiler-defaults-proof
             ${{ runner.temp }}/vite-relative-glob-proof
+            ${{ runner.temp }}/javascript-workspace-proof
           if-no-files-found: ignore

@@ -1,0 +1,143 @@
+{
+  "schema": "vize.compat.javascript-workspace-public-inputs",
+  "version": 1,
+  "authority": "Authored whole consumer membership for the pinned cohorts: configured sources plus authored imports are reported; native program inputs separately include Nuxt ambient support. Stock Program file inventories remain independent evidence, not the Vize public inventory. Every registered path must exist physically; nonexistent export spellings are not accepted.",
+  "cohorts": {
+    "vite": {
+      "files": [
+        "../../packages/pricing/src/index.js",
+        "../../packages/pricing/src/label.mjs",
+        "../../packages/ui/src/BadgeCard.vue",
+        "src/App.vue",
+        "src/main.js",
+        "src/ssr.mjs"
+      ],
+      "programs": [
+        {
+          "root": ".",
+          "tsconfig": "tsconfig.json",
+          "files": [
+            "../../packages/pricing/src/index.js",
+            "../../packages/pricing/src/label.mjs",
+            "../../packages/ui/src/BadgeCard.vue",
+            "src/App.vue",
+            "src/main.js",
+            "src/ssr.mjs"
+          ]
+        }
+      ],
+      "missingModuleFiles": [
+        "../../packages/pricing/src/index.js",
+        "../../packages/pricing/src/label.mjs",
+        "../../packages/ui/src/BadgeCard.vue",
+        "src/App.vue",
+        "src/main.js",
+        "src/ssr.mjs"
+      ]
+    },
+    "nuxt3": {
+      "files": [
+        "../../packages/pricing/src/index.js",
+        "../../packages/pricing/src/label.mjs",
+        "../../packages/ui/src/BadgeCard.vue",
+        "nuxt.config.js",
+        "src/app.vue",
+        "src/composables/useWorkspaceLabel.js",
+        "src/pages/index.vue"
+      ],
+      "programs": [
+        {
+          "root": ".",
+          "tsconfig": "tsconfig.json",
+          "files": [
+            ".nuxt/nuxt.d.ts",
+            ".nuxt/schema/nuxt.schema.d.ts",
+            ".nuxt/types/app-defaults.d.ts",
+            ".nuxt/types/app.config.d.ts",
+            ".nuxt/types/build.d.ts",
+            ".nuxt/types/components.d.ts",
+            ".nuxt/types/layouts.d.ts",
+            ".nuxt/types/middleware.d.ts",
+            ".nuxt/types/nitro-config.d.ts",
+            ".nuxt/types/nitro-imports.d.ts",
+            ".nuxt/types/nitro-middleware.d.ts",
+            ".nuxt/types/nitro-nuxt.d.ts",
+            ".nuxt/types/nitro-routes.d.ts",
+            ".nuxt/types/nitro.d.ts",
+            ".nuxt/types/plugins.d.ts",
+            ".nuxt/types/schema.d.ts",
+            ".nuxt/types/vue-shim.d.ts",
+            "nuxt.config.js",
+            "src/app.vue",
+            "src/composables/useWorkspaceLabel.js",
+            "src/pages/index.vue"
+          ]
+        }
+      ],
+      "missingModuleFiles": [
+        "../../packages/pricing/src/index.js",
+        "../../packages/pricing/src/label.mjs",
+        "nuxt.config.js",
+        "src/app.vue",
+        "src/composables/useWorkspaceLabel.js",
+        "src/pages/index.vue"
+      ]
+    },
+    "nuxt4": {
+      "files": [
+        "../../packages/pricing/src/index.js",
+        "../../packages/pricing/src/label.mjs",
+        "../../packages/ui/src/BadgeCard.vue",
+        "nuxt.config.js",
+        "src/app.vue",
+        "src/composables/useWorkspaceLabel.js",
+        "src/pages/index.vue"
+      ],
+      "programs": [
+        {
+          "root": ".nuxt",
+          "tsconfig": ".nuxt/tsconfig.app.json",
+          "files": [
+            ".nuxt/schema/nuxt.schema.d.ts",
+            ".nuxt/types/app.config.d.ts",
+            ".nuxt/types/build.d.ts",
+            ".nuxt/types/components.d.ts",
+            ".nuxt/types/layouts.d.ts",
+            ".nuxt/types/middleware.d.ts",
+            ".nuxt/types/nitro-config.d.ts",
+            ".nuxt/types/nitro-imports.d.ts",
+            ".nuxt/types/nitro-layouts.d.ts",
+            ".nuxt/types/nitro-middleware.d.ts",
+            ".nuxt/types/nitro-routes.d.ts",
+            ".nuxt/types/plugins.d.ts",
+            ".nuxt/types/runtime-config.d.ts",
+            "src/app.vue",
+            "src/composables/useWorkspaceLabel.js",
+            "src/pages/index.vue"
+          ]
+        },
+        {
+          "root": ".nuxt",
+          "tsconfig": ".nuxt/tsconfig.node.json",
+          "files": [
+            ".nuxt/schema/nuxt.schema.d.ts",
+            ".nuxt/types/modules.d.ts",
+            ".nuxt/types/nitro-layouts.d.ts",
+            ".nuxt/types/nitro-middleware.d.ts",
+            ".nuxt/types/runtime-config.d.ts",
+            ".nuxt/types/shared-app.config.d.ts",
+            "nuxt.config.js"
+          ]
+        }
+      ],
+      "missingModuleFiles": [
+        "../../packages/pricing/src/index.js",
+        "../../packages/pricing/src/label.mjs",
+        "nuxt.config.js",
+        "src/app.vue",
+        "src/composables/useWorkspaceLabel.js",
+        "src/pages/index.vue"
+      ]
+    }
+  }
+}

@@ -1,0 +1,4 @@
+export default {
+  computed: { value() { return 1; } },
+  methods: { value() {} }
+};
