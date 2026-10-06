@@ -483,6 +483,9 @@ importers:
       vscode-languageclient:
         specifier: 9.0.1
         version: 9.0.1
+      vue-computed-inlay-oracle:
+        specifier: npm:vue@3.5.41
+        version: vue@3.5.41(typescript@6.0.3)
       yaml:
         specifier: 2.9.0
         version: 2.9.0
@@ -12694,6 +12697,14 @@ packages:
       typescript:
         optional: true
 
+  vue@3.5.41:
+    resolution: {integrity: sha512-2laE0p+aK+/AOPG/XL/WepOs/GlK755LJ1XECi9kDUrz1FKNw8rb2Xzlw9JS1rqEV55nb0ttsKxVlTCcd+R5cg==}
+    peerDependencies:
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   vue@3.5.42:
     resolution: {integrity: sha512-4RyHQTbQvOPs3MfvUO1Sg0YRrKNnA0mAVtvpd12Tg1fKDN7OHBUl1IqSn8zGJjK9nI3NkNp8cgTpVrSZC5TTcA==}
     peerDependencies:
@@ -18713,7 +18724,6 @@ snapshots:
   '@vue/reactivity@3.5.41':
     dependencies:
       '@vue/shared': 3.5.41
-    optional: true
 
   '@vue/reactivity@3.5.42':
     dependencies:
@@ -18749,7 +18759,6 @@ snapshots:
     dependencies:
       '@vue/reactivity': 3.5.41
       '@vue/shared': 3.5.41
-    optional: true
 
   '@vue/runtime-core@3.5.42':
     dependencies:
@@ -18796,7 +18805,6 @@ snapshots:
       '@vue/runtime-core': 3.5.41
       '@vue/shared': 3.5.41
       csstype: 3.2.3
-    optional: true
 
   '@vue/runtime-dom@3.5.42':
     dependencies:
@@ -18874,7 +18882,6 @@ snapshots:
       '@vue/compiler-ssr': 3.5.41
       '@vue/runtime-dom': 3.5.41
       '@vue/shared': 3.5.41
-    optional: true
 
   '@vue/server-renderer@3.5.42':
     dependencies:
@@ -25381,6 +25388,16 @@ snapshots:
       '@vue/runtime-dom': 3.5.38
       '@vue/server-renderer': 3.5.38(vue@3.5.38(typescript@6.0.3))
       '@vue/shared': 3.5.38
+    optionalDependencies:
+      typescript: 6.0.3
+
+  vue@3.5.41(typescript@6.0.3):
+    dependencies:
+      '@vue/compiler-dom': 3.5.41
+      '@vue/compiler-sfc': 3.5.41
+      '@vue/runtime-dom': 3.5.41
+      '@vue/server-renderer': 3.5.41
+      '@vue/shared': 3.5.41
     optionalDependencies:
       typescript: 6.0.3
 

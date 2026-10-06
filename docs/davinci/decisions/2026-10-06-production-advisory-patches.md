@@ -127,3 +127,12 @@ SSR HTML, parsed option attributes/state, provider/version and actual loaded
 component render functions. The immediate posthydrate whole done/empty states,
 forms, node identities and diagnostics remain unchanged and require actual
 fresh execution. The failed42 second suite never ran; no42 credit transfers.
+
+Current0fad native computed-inlay controls stopped before fixture/oracle/RPC:
+Nuxt's implicit physical Vue41 provider had moved to production42. Declare the
+historical reporter authority explicitly as DEV-only `vue-computed-inlay-oracle`
+(`npm:vue@3.5.41`); the actual pinned resolver selects realVue41/TypeScript6.0.3
+without changing any original provider guard, README, input or whole native
+oracle. Fresh installed physical package.version41 and all original semantic,
+alias/UTF16/protocol vectors remain mandatory. Every old renderer stays outside
+complete production reachability; unchanged whole audit policy still applies.
