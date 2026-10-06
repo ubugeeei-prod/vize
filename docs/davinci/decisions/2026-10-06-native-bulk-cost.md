@@ -216,3 +216,13 @@ Fresh ordinary/native source CI must qualify this integration separately.
 KeepDraft/offqueue with performance acceptance failed. Root's finite0.434
 publication remains independent, #7698 stays open, and no latest-main/default/
 CLI/LSP/10x/native-product completion follows.
+
+The next [pinned diagnostic query design](./2026-10-06-native-diagnostic-query-contracts.md)
+authenticates actual7.0.2 dispatch, project/workgroup ownership and SDK1.14.0
+waiting. Whole suggestions still walk the program after681 selected semantic
+calls; this source fact does not measure their causal cost. Prepare the existing
+all-file category shape with sealed requested-name projection as the smallest
+supported call-count correction. No per-file suggestion expansion, guessed
+combined endpoint, parallelism tuning or new campaign is authorized by this
+design. The earlier all-file route was slower too, so genuine gains remain
+required and #8038 stays Draft/offqueue while the finite0.434 proceeds.
