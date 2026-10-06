@@ -144,6 +144,7 @@ impl Fixture {
         std::fs::write(&path, source).unwrap();
         let uri = file_uri(&path).to_string();
         let mut process = LspProcess::spawn(project.path());
+        process.retain_protocol();
         process.send(
             json!({ "jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
                 "processId": null, "rootUri": file_uri(project.path()), "capabilities": {}
@@ -200,6 +201,14 @@ impl Fixture {
         self.process
             .send(json!({ "jsonrpc": "2.0", "method": "exit" }));
         assert!(self.process.wait_for_exit().success());
+        if !self.mismatches.is_empty() {
+            self.mismatches.push(json!({
+                "processEvidence": self.process.terminal_evidence(),
+                "projectRoot": self._project.path(),
+                "tsconfig": std::fs::read_to_string(self._project.path().join("tsconfig.json")).ok(),
+                "vizeConfig": std::fs::read_to_string(self._project.path().join("vize.config.json")).ok()
+            }));
+        }
         std::mem::take(&mut self.mismatches)
     }
 }
