@@ -83,3 +83,11 @@ only that law's complete expected output to preserve both omissions, retaining
 the original input, convergence path, diagnostics and on-disk equality checks.
 No NAPI production code changes. The failed old expectation remains recorded;
 current complete consumer and source Actions are still required.
+
+The next exact source run at `e3674` passes all 60 complete CLI calls and
+16,329 of 16,330 Rust cases. Its only failure is the existing Nuxt preset law's
+complete expected output, which also added a comma to an originally omitted
+final slot. Remove only that generated terminal comma from its expected string;
+preserve the original source, complete diagnostic message, range and fix
+assertion. All production code remains unchanged. That failed run stays
+historical; the corrected head still requires fresh source and protected checks.
