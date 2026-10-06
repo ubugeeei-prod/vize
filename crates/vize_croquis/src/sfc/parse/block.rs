@@ -9,6 +9,7 @@ use vize_carton::{FxHashMap, String, cstr};
 
 use compat::{can_start_string_literal, is_void_block};
 use end::find_block_end;
+use literals::script_regex_end;
 pub(super) use literals::{can_start_regex_literal, skip_script_string_literal};
 pub(super) use regex::skip_regex_literal;
 
@@ -412,7 +413,6 @@ pub(super) fn parse_block_fast<'a>(
             continue;
         }
 
-        // For script blocks, skip over comments and string literals
         if is_script {
             // Check for single-line comment
             if b == b'/' && pos + 1 < len && bytes.get(pos + 1) == Some(&b'/') {
@@ -453,7 +453,7 @@ pub(super) fn parse_block_fast<'a>(
             if b == b'/'
                 && can_start_regex_literal(prev_significant_char)
                 && let Some(next_pos) =
-                    skip_regex_literal(bytes, pos, len, &mut line, &mut last_newline)
+                    script_regex_end(bytes, pos, len, &mut line, &mut last_newline, &attrs)
             {
                 prev_significant_char = b'/';
                 pos = next_pos;
