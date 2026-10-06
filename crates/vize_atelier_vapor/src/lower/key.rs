@@ -1,16 +1,21 @@
 //! Authored keys outside list carriers introduce an existing block scope.
 
 use oxc_ast::ast::Expression;
-use vize_atelier_core::{ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode};
+use vize_atelier_core::{
+    DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode,
+};
 use vize_carton::Box;
 
-use super::{context::TransformContext, element::transform_element_unkeyed};
+use super::{
+    context::TransformContext,
+    element::{transform_classified_element, transform_element_unkeyed},
+};
 use crate::ir::{BlockIRNode, InsertionAnchor, KeyIRNode, OperationNode};
 
 mod branch;
 mod classify;
 pub(super) use branch::transform_branch;
-pub(super) use classify::classify_non_reactive_directive;
+pub(super) use classify::{DirectiveAnalysis, classify};
 
 pub(super) fn is_non_reactive(el: &ElementNode<'_>, inherited: bool) -> bool {
     inherited || el.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir)
@@ -26,30 +31,40 @@ pub(super) fn value<'a, 'b>(
     if non_reactive {
         return None;
     }
-    let value = el.props.iter().find_map(|prop| {
-        let PropNode::Directive(dir) = prop else {
-            return None;
-        };
-        if dir.name != "bind" {
-            return None;
-        }
-        let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
-            return None;
-        };
-        if !arg.is_static || arg.content != "key" {
-            return None;
-        }
-        match &dir.exp {
-            Some(ExpressionNode::Simple(value)) => Some(value.as_ref()),
-            _ => None,
-        }
+    let value = el.props.iter().find_map(|prop| match prop {
+        PropNode::Directive(dir) => binding(dir),
+        _ => None,
     })?;
     eligible(el, value, non_reactive).then_some(value)
 }
 
+fn binding<'a, 'b>(dir: &'b DirectiveNode<'a>) -> Option<&'b SimpleExpressionNode<'a>> {
+    if dir.name != "bind" {
+        return None;
+    }
+    let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
+        return None;
+    };
+    if !arg.is_static || arg.content != "key" {
+        return None;
+    }
+    match &dir.exp {
+        Some(ExpressionNode::Simple(value)) => Some(value.as_ref()),
+        _ => None,
+    }
+}
+
 fn eligible(el: &ElementNode<'_>, value: &SimpleExpressionNode<'_>, non_reactive: bool) -> bool {
-    !(is_non_reactive(el, non_reactive)
-        || !matches!(el.tag_type, ElementType::Element | ElementType::Component)
+    !is_non_reactive(el, non_reactive)
+        && !el
+            .props
+            .iter()
+            .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "for"))
+        && eligible_value(el, value)
+}
+
+fn eligible_value(el: &ElementNode<'_>, value: &SimpleExpressionNode<'_>) -> bool {
+    !(!matches!(el.tag_type, ElementType::Element | ElementType::Component)
         || matches!(
             el.tag,
             "component"
@@ -65,10 +80,6 @@ fn eligible(el: &ElementNode<'_>, value: &SimpleExpressionNode<'_>, non_reactive
                 | "TransitionGroup"
                 | "transition-group"
         )
-        || el
-            .props
-            .iter()
-            .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "for"))
         || value.is_static
         || value.const_type != vize_atelier_core::ConstantType::NotConstant
         || matches!(value.content.trim(), "true" | "false" | "null")
@@ -85,6 +96,10 @@ fn eligible(el: &ElementNode<'_>, value: &SimpleExpressionNode<'_>, non_reactive
         }))
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "the original value joins its insertion owner"
+)]
 pub(super) fn transform<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
@@ -93,10 +108,8 @@ pub(super) fn transform<'a>(
     parent: Option<usize>,
     anchor: Option<InsertionAnchor>,
     add_return: bool,
-) -> bool {
-    let Some(value) = value(el, ctx.is_key_non_reactive()) else {
-        return false;
-    };
+    value: &SimpleExpressionNode<'a>,
+) {
     let value = Box::new_in(SimpleExpressionNode::from_node(value), &ctx.allocator);
     let id = id.unwrap_or_else(|| ctx.next_id());
     let mut render = BlockIRNode::new(ctx.allocator);
@@ -115,7 +128,6 @@ pub(super) fn transform<'a>(
     if add_return {
         block.returns.push(id);
     }
-    true
 }
 
 pub(crate) fn transform_element<'a>(
@@ -132,7 +144,10 @@ pub(super) fn element<'a>(
     block: &mut BlockIRNode<'a>,
     own_key: bool,
 ) {
-    if !own_key || !transform(ctx, el, block, None, None, None, true) {
-        transform_element_unkeyed(ctx, el, block);
+    let directives = classify(el, ctx.is_key_non_reactive(), own_key);
+    if let Some(value) = directives.key {
+        transform(ctx, el, block, None, None, None, true, value);
+    } else {
+        transform_classified_element(ctx, el, block, directives);
     }
 }

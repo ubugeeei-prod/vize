@@ -4,7 +4,7 @@ use crate::ir::InsertionAnchor;
 use vize_carton::ensure_sufficient_stack;
 
 use super::component::transform_component;
-use super::template::{is_static_element, is_template_backed_element, transform_template_ref};
+use super::template::{is_static_element, transform_template_ref};
 use super::{
     BlockIRNode, ChildRefIRNode, ElementNode, ElementType, NextRefIRNode, OperationNode, PropNode,
     SlotOutletIRNode, TemplateChildNode, TransformContext, get_slot_outlet_name,
@@ -186,7 +186,7 @@ fn transform_dynamic_children_in_slice<'a>(
             };
             *child_id_index += 1;
 
-            if super::super::key::value(child_el, ctx.is_key_non_reactive()).is_some() {
+            if let Some(value) = super::super::key::value(child_el, ctx.is_key_non_reactive()) {
                 let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index, placeholders);
                 super::super::key::transform(
                     ctx,
@@ -196,8 +196,9 @@ fn transform_dynamic_children_in_slice<'a>(
                     Some(parent_id),
                     Some(anchor),
                     false,
+                    value,
                 );
-            } else if is_template_backed_element(child_el, ctx.is_key_non_reactive()) {
+            } else if child_el.tag_type == ElementType::Element {
                 let index = *rendered_index;
                 if let Some((prev_child_id, prev_index)) = *prev_template_backed_child {
                     block.operation.push(OperationNode::NextRef(NextRefIRNode {

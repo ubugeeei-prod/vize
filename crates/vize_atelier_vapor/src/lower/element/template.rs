@@ -45,7 +45,7 @@ fn write_element_template(
     source: &str,
     non_reactive: bool,
 ) {
-    let non_reactive = super::super::key::is_non_reactive(el, non_reactive);
+    let mut non_reactive = non_reactive;
     template.push_str("<");
     let tag_start = el.loc.span.start + 1;
     template.push_linked(
@@ -60,7 +60,8 @@ fn write_element_template(
     if !el.props.is_empty() {
         // Collect dynamic binding names to skip their static counterparts
         let mut has_static_attr = false;
-        let dynamic_attrs = attributes::collect_dynamic_attrs(el, &mut has_static_attr);
+        let dynamic_attrs =
+            attributes::collect_dynamic_attrs(el, &mut has_static_attr, &mut non_reactive);
 
         // Add static attributes (skip those overridden by dynamic bindings).
         // This result depends only on the unchanged props. The first pass above

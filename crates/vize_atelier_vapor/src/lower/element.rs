@@ -43,7 +43,16 @@ pub(super) fn transform_element_unkeyed<'a>(
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
-    let non_reactive = super::key::classify_non_reactive_directive(el);
+    let non_reactive = super::key::classify(el, true, false);
+    transform_classified_element(ctx, el, block, non_reactive);
+}
+
+pub(super) fn transform_classified_element<'a>(
+    ctx: &mut TransformContext<'a>,
+    el: &ElementNode<'a>,
+    block: &mut BlockIRNode<'a>,
+    non_reactive: super::key::DirectiveAnalysis<'a, '_>,
+) {
     if let Some(ref memo_error) = non_reactive.memo_error {
         ctx.push_diagnostic(memo_error.clone());
     }
