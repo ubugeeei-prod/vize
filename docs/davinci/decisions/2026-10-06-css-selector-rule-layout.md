@@ -202,3 +202,12 @@ corpus and budgets remain byte-exact; update only actual source-owner hashes and
 observed migration inventory. Fresh source/protected execution must establish
 net cost because cloning may offset conversion savings. No native, speed or
 installed-release credit is inferred.
+
+Actual source dd452aab Check37432735602 Clippy job112167625956 rejects the
+retained allocator parameter used only by Auto recursion. The paired
+[7926 boundary decision](https://github.com/ubugeeei-prod/vize/issues/7926#issuecomment-6011996050)
+and [7966 boundary decision](https://github.com/ubugeeei-prod/vize/issues/7966#issuecomment-6011996314)
+rename only that identifier and its recursive forwarding to `_allocator`;
+keep the parameter type, callers and Auto behavior. No lint allowance or
+runtime proof is inferred; retain the actual failed build and require fresh
+same-PR source and unchanged protected instruction qualification.
