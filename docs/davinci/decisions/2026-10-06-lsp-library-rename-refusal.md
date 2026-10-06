@@ -137,3 +137,19 @@ records the scope; #8071 uses Refs, not automatic issue closure. Fresh exact
 successor ordinary checks, actual-main/prospective composition, protected full
 Rust/native/unchanged104 ceilings, signed merge and release handoff remain
 required. Prior source/full receipts retain their exact-head scope.
+
+## Current source recovery and protected security failure
+
+The [paired operational receipt](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6007509664)
+retains exact9b source Check37395446949 attempt2 SUCCESS: required4, Rust16279,
+strict native six/96, complete42998/42625 corpus and Pug499/1497. The first
+Cargo-transfer and reduced-acquisition failures remain failed receipts; only
+those failed jobs and dependent reports were recovered without source changes.
+Actual protected candidate7615a407 failed security-audit112061647620 in
+merge-group Check37398994307 on an unreviewed moderate-or-higher npm set.
+Current source+entry+failed-run-head were reauthenticated immediately before
+removing only #8071; queue/auto readback is null. It remains unmerged/offqueue.
+After the independently owned security repair actually reaches signed main,
+incorporate that genuine base and rerun current qualification before admission.
+Old source/native success cannot waive this live gate or prove protected merge.
+#8010 stays OPEN; configured distribution-asset authority remains unfinished.
