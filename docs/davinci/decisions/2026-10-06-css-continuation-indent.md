@@ -62,3 +62,13 @@ Only that new control reference changes; all twelve inputs, eleven other
 references, original/legacy goldens, production and counters remain fixed. Add
 only the exact source-witnessed generated L0 row. Eleven CLI subtests passed,
 but complete new source runtime/Rust/protected qualification remains required.
+
+The independent source reading qualifies the reported declaration/list values:
+selector-colon candidates cannot survive an opening rule brace, and whole
+quoted/escaped tokens remain opaque. Custom-property values containing curly
+component blocks are outside this issue's proven depth+1 scope and retain
+inherited raw-indentation limitations; no blanket custom-value repair is claimed.
+Current bfa source passed the four Rust workers and all four tooling workers.
+Actual signed main 97d5c26a153944e66439a3108746c19d7bf62220 now carries the
+independent LSP option repair, so genuinely incorporate it with whole incoming
+source/docs preserved and require fresh composed-source/protected qualification.

@@ -72,6 +72,10 @@ impl DiagnosticService {
             let corsa_future = Self::collect_corsa_diagnostics(state, uri);
             match crate::runtime::timeout(std::time::Duration::from_secs(10), corsa_future).await {
                 Ok(CorsaDiagnostics::Complete(corsa_diags)) => {
+                    #[cfg(test)]
+                    super::assembly_parity_custody::record(state, uri, "native_complete", || {
+                        serde_json::json!(corsa_diags)
+                    });
                     if native_script_syntax {
                         diagnostics.retain(|diagnostic| {
                             diagnostic.source.as_deref() != Some(sources::SCRIPT_PARSER)
@@ -80,8 +84,24 @@ impl DiagnosticService {
                     tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
                     diagnostics.extend(without_duplicate_required_props(corsa_diags, &diagnostics));
                 }
-                Ok(CorsaDiagnostics::Unavailable(hints)) => diagnostics.extend(hints),
+                Ok(CorsaDiagnostics::Unavailable(hints)) => {
+                    #[cfg(test)]
+                    super::assembly_parity_custody::record(
+                        state,
+                        uri,
+                        "native_unavailable",
+                        || serde_json::json!(hints),
+                    );
+                    diagnostics.extend(hints);
+                }
                 Err(_) => {
+                    #[cfg(test)]
+                    super::assembly_parity_custody::record(
+                        state,
+                        uri,
+                        "outer_timeout",
+                        || serde_json::json!({"bound_seconds":10}),
+                    );
                     tracing::warn!("corsa diagnostics timed out for {}", uri);
                 }
             }

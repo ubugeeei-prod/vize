@@ -6,6 +6,8 @@ use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range
 
 use crate::server::ServerState;
 
+#[cfg(test)]
+use super::super::assembly_parity_custody as custody;
 use super::super::{DiagnosticService, sources};
 use super::collect_variant::{VariantProjectContext, collect_virtual_result_diagnostics};
 use super::collect_virtual::{
@@ -61,12 +63,16 @@ impl DiagnosticService {
                 Ok(diagnostics) => return CorsaDiagnostics::Complete(diagnostics),
                 Err(CollectFailure::Unavailable) => return CorsaDiagnostics::Unavailable(vec![]),
                 Err(CollectFailure::DeadBridge(bridge, error)) if attempt == 0 => {
+                    #[cfg(test)]
+                    custody::error(state, uri, "dead_bridge_retry", attempt, &error);
                     tracing::warn!(
                         "corsa backend unreachable for {uri} ({error}); respawning and retrying"
                     );
                     state.retire_corsa_bridge(&bridge);
                 }
                 Err(CollectFailure::DeadBridge(_, error)) => {
+                    #[cfg(test)]
+                    custody::error(state, uri, "dead_bridge_failed", attempt, &error);
                     tracing::warn!("corsa retry failed for {uri}: {error}");
                     return CorsaDiagnostics::Unavailable(match error {
                         CorsaBridgeError::Timeout => vec![typecheck_timed_out_hint()],
@@ -74,6 +80,8 @@ impl DiagnosticService {
                     });
                 }
                 Err(CollectFailure::Request(error)) => {
+                    #[cfg(test)]
+                    custody::error(state, uri, "collection_request_error", attempt, &error);
                     tracing::warn!("corsa request failed for {uri}: {error}");
                     // A bound that fires has to be visible. Returning an empty
                     // list would make a timed-out pass indistinguishable from a
@@ -130,13 +138,7 @@ impl DiagnosticService {
         let is_art_file = uri.path().ends_with(".art.vue");
         let options_api = state.options_api_enabled();
         let legacy_vue2 = state.legacy_vue2_enabled();
-        let mut virtual_ts_options = state.virtual_ts_options();
-        virtual_ts_options.reference_paths = state
-            .global_component_reference_paths()
-            .await
-            .iter()
-            .map(|path| path.to_string_lossy().as_ref().into())
-            .collect();
+        let virtual_ts_options = state.editor_virtual_ts_options().await;
         // Incrementally refreshed: documents unchanged since the last pass
         // keep their cached text instead of being copied out of their ropes
         // again, so a keystroke costs one document rather than every open
@@ -155,6 +157,13 @@ impl DiagnosticService {
             preserve_event_navigation: true,
             dialect: state.type_checker_vue_version(),
         };
+        #[cfg(test)]
+        custody::record(state, uri, "prepared", || {
+            serde_json::json!({"source":content,"revision":revision,
+                "stamp":vize_l0::cstr!("{:?}",state.corsa_request_stamp()),
+                "document_options":vize_l0::cstr!("{document_options:?}"),
+                "virtual_options":vize_l0::cstr!("{virtual_ts_options:?}")})
+        });
         let mut resolved_dependencies = Vec::new();
         // Every virtual document projecting this SFC is synced first; the one
         // assembly pass then sees the file's complete diagnostic set.
@@ -208,9 +217,20 @@ impl DiagnosticService {
                 )
                 .await
                 .map_err(|error| classify(&bridge, error))?;
+            #[cfg(test)]
+            state.record_editor_project_open("diagnostics", uri, &content, &opened);
+            #[cfg(test)]
+            custody::record(
+                state,
+                uri,
+                "opened",
+                || serde_json::json!({"request_uri":opened.request_uri,"mirror_root":opened.session_project_root}),
+            );
             resolved_dependencies.extend(opened.resolved_dependencies.iter().cloned());
             let (virtual_uri, virtual_result) =
                 Self::virtual_ts_result_from_corsa_vue_document(opened);
+            #[cfg(test)]
+            custody::generated(state, uri, &virtual_uri);
             let document = CorsaDocument::from_result(virtual_result);
             finished.extend(
                 fetch_finished_diagnostics(&bridge, &virtual_uri, &document, documents.len())

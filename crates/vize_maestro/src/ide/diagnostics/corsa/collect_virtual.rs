@@ -49,7 +49,21 @@ pub(super) async fn fetch_finished_diagnostics(
         document.code.len(),
         document.mapping.len()
     );
-    let corsa_diags = bridge.get_diagnostics(virtual_uri).await?;
+    #[cfg(test)]
+    super::super::assembly_parity_custody::native(
+        virtual_uri,
+        "native_query_started",
+        || serde_json::json!({"generated":document.code,"mapping":vize_l0::cstr!("{:?}",document.mapping)}),
+    );
+    let result = bridge.get_diagnostics(virtual_uri).await;
+    #[cfg(test)]
+    super::super::assembly_parity_custody::native(virtual_uri, "native_query_returned", || {
+        match &result {
+            Ok(diagnostics) => serde_json::json!({"Ok":diagnostics}),
+            Err(error) => serde_json::json!({"Err":vize_l0::cstr!("{error:?}")}),
+        }
+    });
+    let corsa_diags = result?;
     tracing::info!(
         "corsa returned {} raw diagnostics for {}",
         corsa_diags.len(),

@@ -1,0 +1,84 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/7698",
+  "baseline": "a11f4f02d1ccad8ee7f5c03ca9c117acef9a9913",
+  "authority": "Authored full options controls from existing public global discovery and configured-global fixtures; not an observed slow-project or native response capture.",
+  "inputs": {
+    "components.d.ts.txt": {
+      "sha256": "9014863b1f39372b8bd437671575598526bba9397f2bd797ba8d29db05c8cccc",
+      "bytes": 74
+    },
+    "vize.config.json.txt": {
+      "sha256": "35dda5aabc87b009ab0673d93810af69c294453c835161572d921eeb55a5b73e",
+      "bytes": 92
+    },
+    "App.vue.txt": {
+      "sha256": "ecec6e3ef4588557eb33720eb0f9adc24c9735da40468f2c5a4b339a4b49bb68",
+      "bytes": 114
+    },
+    "AppBroken.vue.txt": {
+      "sha256": "89751b523ff393e584cf8bfe251ea5dd0f0c985f9e252c14fc118970f4dacb8f",
+      "bytes": 122
+    },
+    "imports-string.d.ts.txt": {
+      "sha256": "ae9e402cc4f3baa7a498023f6c4579312cedea23ed4a7251fde2a50d26506d19",
+      "bytes": 54
+    },
+    "imports-number.d.ts.txt": {
+      "sha256": "ade56321c4aea33b0d53b26f9c48e76801b63584b5ad027bf4682cf199e8f14d",
+      "bytes": 54
+    }
+  },
+  "wholeOptionsFields": [
+    "template_globals",
+    "css_modules",
+    "auto_import_stubs",
+    "auto_import_bindings",
+    "external_template_bindings",
+    "reference_paths",
+    "strict_instance_globals"
+  ],
+  "controls": [
+    "hidden .d.ts/.d.mts/.d.cts ordered paths",
+    "dependency exclusion",
+    "unchanged discovery generation",
+    "declaration create/rename/delete",
+    "workspace replacement",
+    "configured globals reload"
+  ],
+  "execution": "UNEXECUTED",
+  "limitations": [
+    "Prepared native mirror continuity law is unexecuted; no actual namespace/process continuity observed.",
+    "No compiler Program, raw native wire, CPU, latency or published binary qualification."
+  ],
+  "incorporatedMain": "6b5e6fd8357bc892d2ea9cefe271a13fc08100cb",
+  "nativeControls": {
+    "fixtureAuthority": "Existing public editor_typecheck_fixture Vue declaration package and configured native-runtime resolver, not a physical Vue package substitute.",
+    "cycles": [
+      "unchanged string declaration",
+      "number declaration at same path",
+      "rename d.ts to d.mts",
+      "delete d.mts and create string d.cts",
+      "unsaved missing-property version 2",
+      "whole clean repair version 3"
+    ],
+    "wholeFeatureCalls": {
+      "hover": 12,
+      "diagnostics": 12
+    },
+    "passiveRecords": 24,
+    "passiveFields": [
+      "feature",
+      "authored_uri",
+      "source",
+      "version",
+      "revision",
+      "request_uri",
+      "root"
+    ],
+    "expected": "Complete inline authored Markdown and diagnostic objects in editor_reference_options_tests.rs, without projection or filtering.",
+    "authorityLimits": [
+      "Successful synchronized mirror identity only, no process PID/native API project/reaping claim.",
+      "No extra native query for custody; native execution remains UNEXECUTED."
+    ]
+  }
+}
