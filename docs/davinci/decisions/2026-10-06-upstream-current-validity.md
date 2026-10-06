@@ -131,3 +131,15 @@ retains independent source review and five pure original-row regressions. Actual
 upstream Test37399471255 and PR37399471143 run; confirmation/smoke, eventual
 upstream merge, supported release dependency update and ranking remain pending.
 The current upstream Vize pin stays0.429.1; no public credit is inferred.
+
+## Compatible standard-strict adapter policy
+
+The current native qualification proves a real compatibility conflict. Run 37399921022 at source 89b3122145314391ce32456c4afc98aa5591f8ba rejects the unchanged native-root ariaZzz and component-root modelValue controls, while the original unknown-option CLI/direct-service controls pass. The complete 523,808-byte log is retained with SHA-256 f42f565086c43bb6770bf4e8c88bd4d2e4129e5466357872f0b8031c3c126355. This failed run remains failed.
+
+Restore the existing raw strictTemplates fallthrough policy and its complete strict-defaults vector. Preserve every original upstream case, config, judge and legacy compatibility input/expected object. The original benchmark requires standard strict component attributes; that policy cannot be selected by the existing options because HTML attributes are accepted unconditionally and native roots remain inferred with fallthroughAttributes off.
+
+Add the generic raw vueCompilerOptions.strictComponentAttrs boolean, default false. It is effective only when the existing resolved checkUnknownProps policy is true. Enabled mode accepts declared props and Vue public VNode/component attributes; it removes the unconditional native-HTML exemption. fallthroughAttributes independently governs actual inferred root keys: false declines implicit fallthrough; true retains only the existing producer's genuine root surface, respecting inheritAttrs:false and explicit $attrs forwarding. Existing typed constructors, comments, defaults and absent/false raw settings preserve their behavior. An explicit false unknown-prop setting disables this opt-in's checking.
+
+The adapter translates authored standard strictTemplates through an isolated extends config using the supported --tsconfig CLI. Authored explicit boolean checkUnknownProps, fallthroughAttributes and strictComponentAttrs options take precedence, including inherited options; original benchmark configs/SFCs/judges stay byte-exact. Apply the same translation to the registered six-native/two-reference 154-case recipe and upstream confirmation/timing/work gates. References still use their original configs. This is an opt-in policy translation, not an exception or diagnostic filter.
+
+Keep the same Draft #8075, pair this decision in the canonical record and companion, and obtain fresh exact-source/native/protected qualification before actual merge and release. The original seven native CLI and fourteen service vectors remain unchanged; one added complete opt-in case checks the new policy. The previous 143/154 replay, both failed native histories and all raw observations remain visible. #7856 stays open until actual public integration and upstream ranking are confirmed; no throughput/ranking or current runtime success is inferred from source preparation.

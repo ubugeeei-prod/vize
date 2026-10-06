@@ -840,7 +840,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 legacy_vue2,
             )
             .as_deref(),
-            check_options.check_unknown_fallthrough_props,
+            check_options,
         ),
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);

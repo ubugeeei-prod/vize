@@ -96,19 +96,16 @@ fn explicit_prop_comment_keeps_absent_configuration_compatible() {
 }
 
 #[test]
-fn strict_only_configuration_matches_explicit_unknown_props_for_the_original_sfc() {
+fn strict_only_configuration_keeps_the_original_native_root_fallthrough_open() {
     let mut config: Value = serde_json::from_str(CONFIG).unwrap();
     config["vueCompilerOptions"] = json!({"strictTemplates":true});
     let content = source(Some(config), PARENT);
-    let mut explicit: Value = serde_json::from_str(CONFIG).unwrap();
-    explicit["vueCompilerOptions"] = json!({"strictTemplates":true,"checkUnknownProps":true});
-    assert_eq!(content, source(Some(explicit), PARENT));
     assert_eq!(
         content
             .lines()
             .find(|line| line.starts_with("  type __VizeAllowedFallthroughAttrs")),
         Some(
-            "  type __VizeAllowedFallthroughAttrs<C, __K = Exclude<keyof { [K in keyof __VizeFallthroughProps<C> as string extends K ? never : K]: unknown }, keyof __VizePublicComponentAttrs | keyof __VizeGlobalHtmlAttrs>> = [__K] extends [never] ? {} : { [K in __K & PropertyKey]?: unknown };"
+            "  type __VizeAllowedFallthroughAttrs<C> = __VizeHasFallthroughProps<C> extends true ? Record<string, unknown> : {};"
         ),
     );
 }
@@ -126,7 +123,7 @@ fn explicit_unknown_props_false_overrides_strict_without_changing_the_original_p
 }
 
 #[test]
-fn complete_upstream_unknown_prop_plant_uses_raw_strict_fallback_and_explicit_false_precedence() {
+fn complete_upstream_unknown_prop_plant_retains_legacy_strict_and_explicit_false_precedence() {
     const APP: &str = include_str!(
         "../../../../../tests/_fixtures/differential/typechecker/strict-template-fallback/App.vue.txt"
     );
@@ -139,7 +136,7 @@ fn complete_upstream_unknown_prop_plant_uses_raw_strict_fallback_and_explicit_fa
     let mut strict: Value = serde_json::from_str(CONFIG).unwrap();
     let inherited = source_with_child(Some(strict.clone()), APP, CHILD);
     strict["vueCompilerOptions"]["checkUnknownProps"] = json!(true);
-    assert_eq!(
+    assert_ne!(
         inherited,
         source_with_child(Some(strict.clone()), APP, CHILD)
     );
@@ -155,4 +152,20 @@ fn complete_upstream_unknown_prop_plant_uses_raw_strict_fallback_and_explicit_fa
     strict["vueCompilerOptions"]["checkUnknownEvents"] = json!(true);
     strict["vueCompilerOptions"]["strictVModel"] = json!(true);
     assert_eq!(overridden, source_with_child(Some(strict), APP, CHILD));
+}
+
+#[test]
+fn strict_component_attrs_is_opt_in_and_obeys_unknown_props_false() {
+    let mut config: Value = serde_json::from_str(CONFIG).unwrap();
+    config["vueCompilerOptions"] = json!({"strictTemplates":true});
+    let legacy = source(Some(config.clone()), PARENT);
+    config["vueCompilerOptions"]["strictComponentAttrs"] = json!(false);
+    assert_eq!(legacy, source(Some(config.clone()), PARENT));
+    config["vueCompilerOptions"]["strictComponentAttrs"] = json!(true);
+    let strict = source(Some(config.clone()), PARENT);
+    assert_ne!(legacy, strict);
+    config["vueCompilerOptions"]["checkUnknownProps"] = json!(false);
+    let unchecked = source(Some(config.clone()), PARENT);
+    config["vueCompilerOptions"]["strictComponentAttrs"] = json!(false);
+    assert_eq!(unchecked, source(Some(config), PARENT));
 }

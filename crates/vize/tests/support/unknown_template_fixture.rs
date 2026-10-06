@@ -90,6 +90,11 @@ pub fn cases() -> Result<Vec<Case>> {
         (
             "strict-defaults",
             json!({"strictTemplates":true}),
+            vec![1, 2],
+        ),
+        (
+            "strict-component-attrs",
+            json!({"strictTemplates":true,"strictComponentAttrs":true,"fallthroughAttributes":false}),
             vec![0, 1, 2],
         ),
         (
