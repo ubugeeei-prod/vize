@@ -1,5 +1,7 @@
 use super::*;
 
+mod jsconfig;
+
 #[test]
 fn supported_extensions_cover_ts_family_and_reject_js_family() {
     let case_dir = unique_case_dir("tsconfig-ext-family");

@@ -34,7 +34,7 @@ impl ServerState {
         // If already initialized successfully, return it
         let existing_bridge = { self.corsa_bridge.read().clone() };
         if let Some(bridge) = existing_bridge {
-            if bridge.is_draining() {
+            if bridge.is_draining() && !bridge.is_initialized() {
                 return None;
             }
             if bridge.is_initialized() && self.flush_corsa_disk_state_if_dirty(&bridge).await {
@@ -55,7 +55,7 @@ impl ServerState {
         // Another request may have completed initialization while we were waiting.
         let existing_bridge = { self.corsa_bridge.read().clone() };
         if let Some(bridge) = existing_bridge {
-            if bridge.is_draining() {
+            if bridge.is_draining() && !bridge.is_initialized() {
                 return None;
             }
             if bridge.is_initialized() && self.flush_corsa_disk_state_if_dirty(&bridge).await {

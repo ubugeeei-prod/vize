@@ -64,6 +64,9 @@ impl VirtualProject {
         );
         let mut desired_package_links = self.desired_package_links_for_files(&link_claims);
         for (path, target) in preserved_package_links {
+            if self.preserved_package_link_overlaps_files(path, target, &expected_files) {
+                continue;
+            }
             if desired_package_links.get(path).is_some_and(|current| {
                 current != target
                     && (current.starts_with(&self.virtual_root)
@@ -117,7 +120,6 @@ impl VirtualProject {
                 &self.root_package_shadow_scope_entries(),
             )
         )?;
-
         self.ensure_workspace_alias_targets()?;
         profile!(
             "canon.project.package_deps",

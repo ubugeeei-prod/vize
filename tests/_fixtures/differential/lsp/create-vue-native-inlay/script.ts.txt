@@ -1,0 +1,5 @@
+
+import { computed, ref } from 'vue'
+
+const visitCount = ref(0)
+const doubled = computed(() => visitCount.value * 2)
