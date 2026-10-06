@@ -25,7 +25,8 @@
 //! ```
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use crate::ir::ByteRange;
 use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::html::helpers::BOOLEAN_ATTRIBUTES;
@@ -65,7 +66,16 @@ impl NoBooleanAttrValue {
             &[("attr", name), ("value", value)],
         );
         let help = ctx.t_fmt("vue/no-boolean-attr-value.help", &[("attr", name)]);
-        ctx.warn_at_with_help(message, binding.range(), help);
+        let range = binding.range();
+        let mut diagnostic =
+            LintDiagnostic::warn(ctx.current_rule, message, range.start, range.end);
+        if let Some(processed) = ctx.help_level().process(help.as_str()) {
+            diagnostic = diagnostic.with_help(processed);
+        }
+        if let Some(fix) = value_fix(ctx.source, range, name, value, help.as_str()) {
+            diagnostic = diagnostic.with_fix(fix);
+        }
+        ctx.report(diagnostic);
     }
 
     fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
@@ -76,6 +86,33 @@ impl NoBooleanAttrValue {
 
         element.walk_bindings(&mut |binding| Self::check_binding(ctx, &binding));
     }
+}
+
+/// Keep the authored name and surrounding bytes; remove only its assignment.
+fn value_fix(source: &str, range: ByteRange, name: &str, value: &str, help: &str) -> Option<Fix> {
+    // `hidden` is enumerated: dropping `until-found` would disable discovery.
+    if name == "hidden" && value.eq_ignore_ascii_case("until-found") {
+        return None;
+    }
+    let attribute = source.get(range.start as usize..range.end as usize)?;
+    let assignment = attribute.strip_prefix(name)?;
+    if source
+        .as_bytes()
+        .get(range.end as usize)
+        .is_some_and(|next| !matches!(*next, b' ' | b'\t' | b'\r' | b'\n' | 12 | b'/' | b'>'))
+    {
+        return None;
+    }
+    if !assignment
+        .trim_start_matches([' ', '\t', '\r', '\n', '\u{c}'])
+        .starts_with('=')
+    {
+        return None;
+    }
+    Some(Fix::new(
+        help,
+        TextEdit::delete(range.start + name.len() as u32, range.end),
+    ))
 }
 
 impl MarkupRule for NoBooleanAttrValue {
@@ -111,7 +148,8 @@ impl Rule for NoBooleanAttrValue {
 
 #[cfg(test)]
 mod tests {
-    use super::NoBooleanAttrValue;
+    use super::{NoBooleanAttrValue, value_fix};
+    use crate::ir::ByteRange;
     use crate::linter::Linter;
     use crate::rule::RuleRegistry;
 
@@ -195,5 +233,41 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div hidden="hidden">text</div>"#, "test.vue");
         assert_eq!(result.warning_count, 1);
+    }
+
+    #[test]
+    fn fix_refuses_missing_separator_and_unproven_source_ranges() {
+        let source = "disabled=\"disabled\"title=\"keep\"";
+        let end = "disabled=\"disabled\"".len() as u32;
+        assert!(
+            value_fix(
+                source,
+                ByteRange::new(0, end),
+                "disabled",
+                "disabled",
+                "fix"
+            )
+            .is_none()
+        );
+        assert!(
+            value_fix(
+                source,
+                ByteRange::new(1, end),
+                "disabled",
+                "disabled",
+                "fix"
+            )
+            .is_none()
+        );
+        assert!(
+            value_fix(
+                source,
+                ByteRange::new(0, 200),
+                "disabled",
+                "disabled",
+                "fix"
+            )
+            .is_none()
+        );
     }
 }

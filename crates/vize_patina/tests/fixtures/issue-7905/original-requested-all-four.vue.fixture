@@ -1,0 +1,8 @@
+<template>
+  <MyCard />
+  <MyCard />
+  <MyCard>
+    <template #header>Title</template>
+  </MyCard>
+  <input disabled />
+</template>
