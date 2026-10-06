@@ -1,0 +1,49 @@
+2026-10-05T19:35:17.7930158Z         FAIL [   0.145s] ( 860/3974) vize_atelier_sfc snapshot_tests::test_patches_ts_snapshots
+2026-10-05T19:35:17.7931225Z   stdout ───
+2026-10-05T19:35:17.7931355Z 
+2026-10-05T19:35:17.7931447Z     running 1 test
+2026-10-05T19:35:17.7931672Z     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Snapshot Summary ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2026-10-05T19:35:17.7932026Z     Snapshot file: tests/snapshots/sfc/ts/patches__setuplet_assignment_in_click_handler.snap
+2026-10-05T19:35:17.7932323Z     Snapshot: patches__setuplet_assignment_in_click_handler
+2026-10-05T19:35:17.7932547Z     Source: crates/vize_atelier_sfc/src/snapshot_tests.rs:210
+2026-10-05T19:35:17.7932813Z     ────────────────────────────────────────────────────────────────────────────────
+2026-10-05T19:35:17.7933009Z     Expression: output.as_str()
+2026-10-05T19:35:17.7933233Z     ────────────────────────────────────────────────────────────────────────────────
+2026-10-05T19:35:17.7933426Z     -old snapshot
+2026-10-05T19:35:17.7933546Z     +new results
+2026-10-05T19:35:17.7933769Z     ────────────┬───────────────────────────────────────────────────────────────────
+2026-10-05T19:35:17.7934037Z         1     1 │ import { defineComponent as _defineComponent } from 'vue'
+2026-10-05T19:35:17.7934872Z         2       │-import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref } from "vue"
+2026-10-05T19:35:17.7935625Z               2 │+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref, isRef as _isRef } from "vue"
+2026-10-05T19:35:17.7935991Z         3     3 │ 
+2026-10-05T19:35:17.7936127Z         4     4 │ 
+2026-10-05T19:35:17.7936311Z         5     5 │ export default /*@__PURE__*/_defineComponent({
+2026-10-05T19:35:17.7936524Z         6     6 │   __name: 'test',
+2026-10-05T19:35:17.7936764Z     ┈┈┈┈┈┈┈┈┈┈┈┈┼┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+2026-10-05T19:35:17.7936982Z         9     9 │ let count = $ref(0)
+2026-10-05T19:35:17.7937144Z        10    10 │ 
+2026-10-05T19:35:17.7937311Z        11    11 │ return (_ctx: any,_cache: any) => {
+2026-10-05T19:35:17.7937556Z        12    12 │   return (_openBlock(), _createElementBlock("button", {
+2026-10-05T19:35:17.7937874Z        13       │-    onClick: _cache[0] || (_cache[0] = ($event: any) => (count.value = _unref(count) + 1))
+2026-10-05T19:35:17.7938297Z              13 │+    onClick: _cache[0] || (_cache[0] = ($event: any) => ((_isRef(count) ? count.value = _unref(count) + 1 : count = _unref(count) + 1)))
+2026-10-05T19:35:17.7938644Z        14    14 │   }, _toDisplayString(_unref(count)), 1 /* TEXT */))
+2026-10-05T19:35:17.7938831Z        15    15 │ }
+2026-10-05T19:35:17.7938963Z        16    16 │ }
+2026-10-05T19:35:17.7939086Z        17    17 │ 
+2026-10-05T19:35:17.7939290Z     ────────────┴───────────────────────────────────────────────────────────────────
+2026-10-05T19:35:17.7939537Z     Stopped on the first failure. Run `cargo insta test` to run all snapshots.
+2026-10-05T19:35:17.7939803Z     test snapshot_tests::test_patches_ts_snapshots ... FAILED
+2026-10-05T19:35:17.7939931Z 
+2026-10-05T19:35:17.7939982Z     failures:
+2026-10-05T19:35:17.7940050Z 
+2026-10-05T19:35:17.7940098Z     failures:
+2026-10-05T19:35:17.7940230Z         snapshot_tests::test_patches_ts_snapshots
+2026-10-05T19:35:17.7940389Z 
+2026-10-05T19:35:17.7940538Z     test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 755 filtered out; finished in 0.14s
+2026-10-05T19:35:17.7940774Z     
+2026-10-05T19:35:17.7940923Z   stderr ───
+2026-10-05T19:35:17.7941033Z 
+2026-10-05T19:35:17.7941453Z     thread 'snapshot_tests::test_patches_ts_snapshots' (14704) panicked at /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/insta-1.48.0/src/runtime.rs:719:13:
+2026-10-05T19:35:17.7941971Z     snapshot assertion for 'patches__setuplet_assignment_in_click_handler' failed in line 210
+2026-10-05T19:35:17.7942312Z     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-10-05T19:35:17.7942479Z 

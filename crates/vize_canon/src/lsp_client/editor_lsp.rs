@@ -38,6 +38,7 @@ mod configured_project;
 mod declaration;
 mod file_rename;
 mod implementation;
+mod inlay_hint;
 mod materialized;
 mod native_vue;
 mod original_program;
@@ -52,7 +53,6 @@ mod synchronize;
 #[cfg(test)]
 mod tests;
 mod type_definition;
-
 use requests::{
     RawCompletionRequest, RawDefinitionRequest, RawHoverRequest, RawPrepareRenameRequest,
     RawReferencesRequest, RawRenameRequest, RawSignatureHelpRequest, RawWillRenameFilesRequest,

@@ -106,7 +106,8 @@ fn initialize_lsp_params(
         // packages and make diagnostics depend on background downloads.
         initialization_options: Some(serde_json::json!({
             "userPreferences": {
-                "tsserver": { "automaticTypeAcquisition": { "enabled": false } }
+                "tsserver": { "automaticTypeAcquisition": { "enabled": false } },
+                "inlayHints": { "variableTypes": { "enabled": true } }
             }
         })),
         work_done_progress_params: WorkDoneProgressParams::default(),
@@ -243,6 +244,13 @@ mod tests {
                 "relatedDocumentSupport": true,
                 "relatedInformation": true,
             })
+        );
+        assert_eq!(
+            params["initializationOptions"],
+            json!({"userPreferences": {
+                "tsserver": {"automaticTypeAcquisition": {"enabled": false}},
+                "inlayHints": {"variableTypes": {"enabled": true}}
+            }})
         );
     }
 

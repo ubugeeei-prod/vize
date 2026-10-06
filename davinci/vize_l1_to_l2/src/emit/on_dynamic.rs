@@ -41,7 +41,7 @@ pub(super) fn emit_pair(
     cx.buf.push("[");
     cx.buf.push(Buf::to_handler_key_alias());
     cx.buf.push("(");
-    emit_key_source(cx, js);
+    emit_key_source(cx, js)?;
     cx.buf.push(")]: ");
     emit_value(cx, on, is_plain_element)
 }
@@ -73,15 +73,15 @@ fn dynamic_name<'a>(on: &'a OnOp<'a>) -> Result<&'a JsExpr<'a>, EmitError> {
     }
 }
 
-pub(super) fn emit_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
+pub(super) fn emit_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) -> Result<(), EmitError> {
     if cx.prefixing() {
-        let text = cx.prefixed_dynamic_arg(js);
+        let text = cx.prefixed_dynamic_arg(js)?;
         cx.buf.push(text.as_str());
-        return;
+        return Ok(());
     }
     if matches!(js.ast, Expression::TemplateLiteral(_)) {
         emit_template_literal_key_source(cx, js);
-        return;
+        return Ok(());
     }
     let source = js_expr_source(js);
     let original = js.source;
@@ -89,7 +89,7 @@ pub(super) fn emit_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
         && cx.is_scope_name(local)
     {
         cx.buf.push(local);
-        return;
+        return Ok(());
     }
     if cx.is_scope_name(original)
         || original.contains('.')
@@ -97,12 +97,13 @@ pub(super) fn emit_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {
         || original.starts_with('$')
     {
         cx.buf.push(source.as_str());
-        return;
+        return Ok(());
     }
     if is_valid_js_identifier(original) {
         cx.buf.push("_ctx.");
     }
     cx.buf.push(source.as_str());
+    Ok(())
 }
 
 fn emit_template_literal_key_source(cx: &mut EmitCx<'_>, js: &JsExpr<'_>) {

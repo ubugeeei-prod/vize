@@ -1,0 +1,22 @@
+---
+source: crates/vize_atelier_sfc/src/snapshot_tests.rs
+expression: ts_output.as_str()
+---
+import { defineComponent as _defineComponent } from 'vue'
+import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref } from "vue"
+
+
+export default /*@__PURE__*/_defineComponent({
+  __name: 'test',
+  setup(__props) {
+
+let value = $ref(10)
+
+return (_ctx: any,_cache: any) => {
+  return (_openBlock(), _createElementBlock("button", {
+    onClick: _cache[0] || (_cache[0] = ($event: any) => (value.value++))
+  }, _toDisplayString(_unref(value)), 1 /* TEXT */))
+}
+}
+
+})

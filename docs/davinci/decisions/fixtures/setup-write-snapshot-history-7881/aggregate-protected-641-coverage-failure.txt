@@ -1,0 +1,122 @@
+2026-10-05T22:03:33.1506058Z Vue Compiler Coverage Report
+2026-10-05T22:03:33.1506504Z ============================
+2026-10-05T22:03:33.1506744Z 
+2026-10-05T22:03:33.1532590Z ✓ vdom/element               44/ 44 (100.0%)
+2026-10-05T22:03:33.1533519Z ✓ vdom/component             46/ 46 (100.0%)
+2026-10-05T22:03:33.1534134Z ✓ vdom/directives            24/ 24 (100.0%)
+2026-10-05T22:03:33.1534695Z ✓ vdom/hoisting              20/ 20 (100.0%)
+2026-10-05T22:03:33.1535346Z ✓ vdom/patch-flags           32/ 32 (100.0%)
+2026-10-05T22:03:33.1535805Z ✓ vdom/v-if                  25/ 25 (100.0%)
+2026-10-05T22:03:33.1536324Z ✓ vdom/v-for                 28/ 28 (100.0%)
+2026-10-05T22:03:33.1536775Z ✓ vdom/v-bind                56/ 56 (100.0%)
+2026-10-05T22:03:33.1537348Z ✓ vdom/v-on                  62/ 62 (100.0%)
+2026-10-05T22:03:33.1537968Z ✓ vdom/v-model               31/ 31 (100.0%)
+2026-10-05T22:03:33.1538649Z    Compiling htmlize v1.1.0
+2026-10-05T22:03:33.1539580Z    Compiling regex v1.13.1
+2026-10-05T22:03:33.1540225Z    Compiling serde_derive v1.0.228
+2026-10-05T22:03:33.1540717Z    Compiling oxc-miette-derive v3.0.1
+2026-10-05T22:03:33.1541397Z    Compiling phf_macros v0.14.0
+2026-10-05T22:03:33.1541912Z    Compiling phf_macros v0.13.1
+2026-10-05T22:03:33.1542793Z    Compiling vize_l0_derive v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l0_derive)
+2026-10-05T22:03:33.1543813Z    Compiling cssparser-macros v0.7.0
+2026-10-05T22:03:33.1544557Z    Compiling pklrust-derive v0.9.0
+2026-10-05T22:03:33.1545524Z    Compiling thiserror v2.0.20
+2026-10-05T22:03:33.1546415Z    Compiling cobs v0.3.0
+2026-10-05T22:03:33.1547152Z    Compiling phf v0.14.0
+2026-10-05T22:03:33.1547826Z    Compiling phf v0.13.1
+2026-10-05T22:03:33.1548511Z    Compiling ar_archive_writer v0.5.3
+2026-10-05T22:03:33.1549615Z    Compiling oxc-miette v3.0.1
+2026-10-05T22:03:33.1550375Z    Compiling psm v0.1.31
+2026-10-05T22:03:33.1553295Z    Compiling oxc_diagnostics v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1554473Z    Compiling stacker v0.1.25
+2026-10-05T22:03:33.1554884Z    Compiling serde v1.0.228
+2026-10-05T22:03:33.1555338Z    Compiling smallvec v1.15.2
+2026-10-05T22:03:33.1555813Z    Compiling compact_str v0.10.0
+2026-10-05T22:03:33.1556426Z    Compiling oxc_index v5.0.0
+2026-10-05T22:03:33.1557205Z    Compiling postcard v1.1.3
+2026-10-05T22:03:33.1557791Z    Compiling rmp-serde v1.3.1
+2026-10-05T22:03:33.1558515Z    Compiling rmpv v1.3.1
+2026-10-05T22:03:33.1559162Z    Compiling oxc_sourcemap v8.1.2
+2026-10-05T22:03:33.1559786Z    Compiling ropey v1.6.1
+2026-10-05T22:03:33.1560136Z    Compiling cssparser v0.37.0
+2026-10-05T22:03:33.1560449Z    Compiling parking_lot_core v0.9.12
+2026-10-05T22:03:33.1560822Z    Compiling oxc-browserslist v3.0.12
+2026-10-05T22:03:33.1561177Z    Compiling dashmap v6.2.1
+2026-10-05T22:03:33.1561784Z    Compiling pklrust v0.9.0
+2026-10-05T22:03:33.1630194Z    Compiling oxc_data_structures v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1634070Z    Compiling oxc_allocator v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1636766Z    Compiling oxc_str v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1638612Z    Compiling oxc_span v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1640598Z    Compiling oxc_syntax v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1642754Z    Compiling oxc_regular_expression v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1644336Z    Compiling vize_l0 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l0)
+2026-10-05T22:03:33.1646118Z    Compiling oxc_compat v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1647802Z    Compiling oxc_ast v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1649291Z    Compiling vize_carton v0.433.0 (/home/runner/_work/vize/vize/crates/vize_carton)
+2026-10-05T22:03:33.1651291Z    Compiling oxc_ast_visit v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1652918Z    Compiling oxc_ecmascript v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1654705Z    Compiling vize_oxc_parser v0.433.0 (/home/runner/_work/vize/vize/vendor/oxc_parser)
+2026-10-05T22:03:33.1657014Z    Compiling oxc_semantic v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1659095Z    Compiling vize_relief v0.433.0 (/home/runner/_work/vize/vize/crates/vize_relief)
+2026-10-05T22:03:33.1660457Z    Compiling oxc_traverse v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1661634Z    Compiling oxc_codegen v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1662632Z    Compiling vize_l1 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l1)
+2026-10-05T22:03:33.1664941Z    Compiling oxc_transformer v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-05T22:03:33.1666026Z    Compiling vize_l2 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l2)
+2026-10-05T22:03:33.1666728Z    Compiling vize_armature v0.433.0 (/home/runner/_work/vize/vize/crates/vize_armature)
+2026-10-05T22:03:33.1667348Z    Compiling vize_l3 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l3)
+2026-10-05T22:03:33.1668116Z    Compiling vize_croquis v0.433.0 (/home/runner/_work/vize/vize/crates/vize_croquis)
+2026-10-05T22:03:33.1668832Z    Compiling vize_l1_to_l2 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l1_to_l2)
+2026-10-05T22:03:33.1669819Z    Compiling vize_l2_to_l3 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l2_to_l3)
+2026-10-05T22:03:33.1670950Z    Compiling vize_l4 v0.433.0 (/home/runner/_work/vize/vize/davinci/vize_l4)
+2026-10-05T22:03:33.1672452Z    Compiling vize_atelier_core v0.433.0 (/home/runner/_work/vize/vize/crates/vize_atelier_core)
+2026-10-05T22:03:33.1673702Z    Compiling vize_atelier_dom v0.433.0 (/home/runner/_work/vize/vize/crates/vize_atelier_dom)
+2026-10-05T22:03:33.1674796Z    Compiling vize_atelier_ssr v0.433.0 (/home/runner/_work/vize/vize/crates/vize_atelier_ssr)
+2026-10-05T22:03:33.1675914Z    Compiling vize_atelier_vapor v0.433.0 (/home/runner/_work/vize/vize/crates/vize_atelier_vapor)
+2026-10-05T22:03:33.1676818Z    Compiling vize_atelier_sfc v0.433.0 (/home/runner/_work/vize/vize/crates/vize_atelier_sfc)
+2026-10-05T22:03:33.1677780Z    Compiling vize_test_runner v0.433.0 (/home/runner/_work/vize/vize/tests/vize_test_runner)
+2026-10-05T22:03:33.1679021Z     Finished `ci` profile [unoptimized] target(s) in 19.37s
+2026-10-05T22:03:33.1680112Z      Running `target/ci/coverage`
+2026-10-05T22:03:33.1680958Z ✓ vdom/v-slot                30/ 30 (100.0%)
+2026-10-05T22:03:33.1681732Z ✓ vdom/v-show                19/ 19 (100.0%)
+2026-10-05T22:03:33.1682491Z ✓ vdom/v-once                16/ 16 (100.0%)
+2026-10-05T22:03:33.1683144Z ✓ vdom/dynamic-component      9/  9 (100.0%)
+2026-10-05T22:03:33.1684446Z ✓ vdom/html-entities          9/  9 (100.0%)
+2026-10-05T22:03:33.1684971Z ✓ vdom/pure-comment-recovery   2/  2 (100.0%)
+2026-10-05T22:03:33.1685582Z ✓ vdom/parity-core-directives   8/  8 (100.0%)
+2026-10-05T22:03:33.1685946Z ✓ vapor/element              16/ 16 (100.0%)
+2026-10-05T22:03:33.1686515Z ✓ vapor/component            17/ 17 (100.0%)
+2026-10-05T22:03:33.1686985Z ✓ vapor/v-if                  7/  7 (100.0%)
+2026-10-05T22:03:33.1687344Z ✓ vapor/v-for                10/ 10 (100.0%)
+2026-10-05T22:03:33.1687878Z ✓ vapor/v-bind               12/ 12 (100.0%)
+2026-10-05T22:03:33.1688371Z ✓ vapor/v-on                 14/ 14 (100.0%)
+2026-10-05T22:03:33.1688811Z ✓ vapor/v-model              13/ 13 (100.0%)
+2026-10-05T22:03:33.1689151Z ✓ vapor/v-slot               10/ 10 (100.0%)
+2026-10-05T22:03:33.1689520Z ✓ vapor/v-show                6/  6 (100.0%)
+2026-10-05T22:03:33.1690075Z ✓ vapor/edge-cases            4/  4 (100.0%)
+2026-10-05T22:03:33.1690674Z ✓ vapor/parity-core-directives   8/  8 (100.0%)
+2026-10-05T22:03:33.1691069Z ✓ sfc/basic                  13/ 13 (100.0%)
+2026-10-05T22:03:33.1691606Z ✓ sfc/script-setup           69/ 69 (100.0%)
+2026-10-05T22:03:33.1692155Z ✓ sfc/script-setup-advanced   6/  6 (100.0%)
+2026-10-05T22:03:33.1693711Z ◐ sfc/patches                56/ 58 ( 96.6%)
+2026-10-05T22:03:33.1694202Z ✓ sfc/define-model           17/ 17 (100.0%)
+2026-10-05T22:03:33.1694707Z ✓ sfc/props-destructure       4/  4 (100.0%)
+2026-10-05T22:03:33.1694956Z 
+2026-10-05T22:03:33.1695144Z ----------------------------
+2026-10-05T22:03:33.1695531Z VDOM:   461/461 (100.0%)
+2026-10-05T22:03:33.1695757Z Vapor:  117/117 (100.0%)
+2026-10-05T22:03:33.1697386Z SFC:    165/167 ( 98.8%)
+2026-10-05T22:03:33.1697880Z 
+2026-10-05T22:03:33.1698014Z ============================
+2026-10-05T22:03:33.1698258Z TOTAL:  743/745 ( 99.7%)
+2026-10-05T22:03:33.1698437Z 
+2026-10-05T22:03:33.1698568Z 2 tests failed
+2026-10-05T22:03:33.1698818Z 0 known failure(s) tracked for v1 alpha
+2026-10-05T22:03:33.1699120Z 
+2026-10-05T22:03:33.1699342Z Unexpected coverage failures:
+2026-10-05T22:03:33.1699529Z   - sfc/patches: SetupLet assignment in click handler
+2026-10-05T22:03:33.1699904Z   - sfc/patches: let variable increment in handler
+2026-10-05T22:03:33.1700193Z 
+2026-10-05T22:03:33.1700353Z Coverage budget regressions:
+2026-10-05T22:03:33.1700681Z   - SFC passed 165 < 167
+2026-10-05T22:03:33.1728608Z ##[error]Process completed with exit code 1.

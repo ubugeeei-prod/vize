@@ -197,6 +197,22 @@ export async function assertInlayHintsWork(ctx: FeatureContext): Promise<void> {
   const labels = hints.map(inlayLabel);
   assert.ok(labels.includes(": Ref<string>"), labels.join(", "));
   assert.ok(labels.includes(": ComputedRef<number>"), labels.join(", "));
+  assert.deepEqual(hints, [
+    {
+      position: { line: 5, character: 13 },
+      label: ": Ref<string>",
+      kind: 1,
+      tooltip: "Vue reactive binding (Ref)",
+      paddingLeft: true,
+    },
+    {
+      position: { line: 6, character: 13 },
+      label: ": ComputedRef<number>",
+      kind: 1,
+      tooltip: "Vue reactive binding (ComputedRef)",
+      paddingLeft: true,
+    },
+  ]);
 }
 
 export async function assertCodeLensWorks(ctx: FeatureContext): Promise<void> {

@@ -23,6 +23,8 @@ mod declaration;
 mod documents;
 #[path = "bridge/implementation.rs"]
 mod implementation;
+#[path = "bridge/inlay_hint.rs"]
+mod inlay_hint;
 mod language_features;
 pub(super) use documents::normalize_document_uri;
 
