@@ -18,7 +18,12 @@ export function loadCorpus(root) {
     for (const finding of entry.diagnostics) {
       assert.ok(finding.start < finding.end && finding.end <= Buffer.byteLength(entry.source));
       assert.equal(finding.severity, "error");
-      assert.equal(finding.help, null);
+      assert.equal(
+        finding.help,
+        finding.rule_name === "script/no-import-compiler-macros"
+          ? "Remove the macro from the import statement. Compiler macros are auto-imported."
+          : null,
+      );
       assert.deepEqual(finding.labels, []);
       assert.equal(finding.fix, null);
     }
@@ -50,6 +55,7 @@ export function wholeJson(entry, findings = entry.diagnostics) {
           column,
           endLine,
           endColumn,
+          ...(finding.help === null ? {} : { help: finding.help }),
         };
       }),
       errorCount: findings.length,

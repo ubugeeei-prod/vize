@@ -350,7 +350,7 @@
           "message": "Do not import 'defineProps' - compiler macros are automatically available in <script setup>",
           "start": 34,
           "end": 45,
-          "help": null,
+          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
           "labels": [],
           "fix": null
         }
