@@ -74,10 +74,6 @@ pub(super) fn value<'a, 'b>(
     Some(value)
 }
 
-#[expect(
-    clippy::too_many_arguments,
-    reason = "existing authored insertion/return ownership"
-)]
 pub(super) fn transform<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
