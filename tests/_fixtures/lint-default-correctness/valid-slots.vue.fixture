@@ -1,0 +1,1 @@
+<template><Widget><template #default="slotProps">{{ slotProps.label }}</template></Widget></template>

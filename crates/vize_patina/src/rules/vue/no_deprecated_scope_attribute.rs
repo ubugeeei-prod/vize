@@ -9,8 +9,8 @@
 //! HTML on other elements (notably `<th scope="col">`), so flagging it
 //! elsewhere would be a false positive.
 //!
-//! This mirrors eslint-plugin-vue's `vue/no-deprecated-scope-attribute`. It is
-//! an opt-in migration rule and only fires for the default Vue 3 dialect.
+//! This mirrors eslint-plugin-vue's `vue/no-deprecated-scope-attribute` and
+//! only fires for the default Vue 3 dialect.
 //!
 //! ## Examples
 //!

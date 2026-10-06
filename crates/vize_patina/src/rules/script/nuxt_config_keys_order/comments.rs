@@ -2,7 +2,7 @@ use oxc_ast::ast::ObjectExpression;
 use oxc_span::GetSpan;
 use vize_l0::{String, ToCompactString};
 
-use super::support::{legacy_property_text_ranges, next_token_offset};
+use super::support::legacy_property_text_ranges;
 
 mod text;
 
@@ -15,10 +15,29 @@ pub(super) enum PropertyText {
     Fixable {
         start: usize,
         end: usize,
-        pieces: Vec<String>,
+        pieces: Vec<PropertyPiece>,
+        trailing_comma: bool,
         separators: Vec<String>,
     },
     Unfixable,
+}
+
+// A separator belongs to its destination slot; comments stay with the key.
+pub(super) struct PropertyPiece {
+    pub(super) text: String,
+    pub(super) comma: usize,
+}
+
+impl PropertyPiece {
+    pub(super) fn append_to(&self, output: &mut String, has_comma: bool) -> Option<()> {
+        if has_comma {
+            output.push_str(&self.text);
+        } else {
+            output.push_str(self.text.get(..self.comma)?);
+            output.push_str(self.text.get(self.comma.checked_add(1)?..)?);
+        }
+        Some(())
+    }
 }
 
 pub(super) fn property_text_ranges(
@@ -29,12 +48,13 @@ pub(super) fn property_text_ranges(
     if gaps_contain_comment(object, source, close_brace) {
         return comment_aware_ranges(object, source, close_brace);
     }
-    legacy_property_text_ranges(object, source).map(|(start, end, pieces)| {
+    legacy_property_text_ranges(object, source).map(|(start, end, pieces, trailing_comma)| {
         let separators = vec![String::new(""); pieces.len().saturating_sub(1)];
         PropertyText::Fixable {
             start,
             end,
             pieces,
+            trailing_comma,
             separators,
         }
     })
@@ -66,7 +86,7 @@ struct Owned {
     start: usize,
     prop_end: usize,
     end: usize,
-    has_comma: bool,
+    comma: Option<usize>,
 }
 
 fn comment_aware_ranges(
@@ -94,7 +114,7 @@ fn comment_aware_ranges(
             start,
             prop_end,
             end: prop_end,
-            has_comma: false,
+            comma: None,
         });
         cursor = prop_end;
     }
@@ -102,13 +122,13 @@ fn comment_aware_ranges(
     for index in 0..owned.len() {
         let limit = owned.get(index + 1).map_or(close_brace, |next| next.start);
         let prop_end = owned.get(index)?.prop_end;
-        let (end, has_comma) = trailing_owned_end(source, prop_end, limit);
+        let (end, comma) = trailing_owned_end(source, prop_end, limit);
         if end < prop_end || end > limit {
             return None;
         }
         let slot = owned.get_mut(index)?;
         slot.end = end;
-        slot.has_comma = has_comma;
+        slot.comma = comma;
     }
 
     let prefix = source.get(brace + 1..owned.first()?.start)?;
@@ -135,28 +155,31 @@ fn comment_aware_ranges(
         separators.push(gap.to_compact_string());
     }
 
-    let mut pieces = Vec::with_capacity(owned.len());
-    for (index, property_owned) in owned.iter().enumerate() {
-        let insert_comma = index + 1 == owned.len()
-            && !property_owned.has_comma
-            && next_token_offset(source, property_owned.prop_end, close_brace) == close_brace;
-        pieces.push(render_piece(source, property_owned, insert_comma)?);
-    }
+    let trailing_comma = owned.last()?.comma.is_some();
+    let pieces = owned
+        .iter()
+        .map(|property| render_piece(source, property))
+        .collect::<Option<Vec<_>>>()?;
     Some(PropertyText::Fixable {
         start: owned.first()?.start,
         end: owned.last()?.end,
         pieces,
+        trailing_comma,
         separators,
     })
 }
 
-fn render_piece(source: &str, owned: &Owned, insert_comma: bool) -> Option<String> {
+fn render_piece(source: &str, owned: &Owned) -> Option<PropertyPiece> {
     let mut text = source.get(owned.start..owned.prop_end)?.to_compact_string();
-    if insert_comma {
+    let comma = if let Some(comma) = owned.comma {
+        comma.checked_sub(owned.start)?
+    } else {
+        let comma = text.len();
         text.push(',');
-    }
+        comma
+    };
     text.push_str(source.get(owned.prop_end..owned.end)?);
-    Some(text)
+    Some(PropertyPiece { text, comma })
 }
 
 fn leading_owned_start(source: &str, floor: usize, prop_start: usize) -> usize {
@@ -217,13 +240,13 @@ fn leading_owned_start(source: &str, floor: usize, prop_start: usize) -> usize {
     line
 }
 
-fn trailing_owned_end(source: &str, prop_end: usize, limit: usize) -> (usize, bool) {
+fn trailing_owned_end(source: &str, prop_end: usize, limit: usize) -> (usize, Option<usize>) {
     let bytes = source.as_bytes();
     let mut index = prop_end.min(limit);
     index = skip_hspace(source, index, limit);
-    let mut has_comma = false;
+    let mut comma = None;
     if bytes.get(index) == Some(&b',') && index < limit {
-        has_comma = true;
+        comma = Some(index);
         index += 1;
         index = skip_hspace(source, index, limit);
     }
@@ -241,8 +264,8 @@ fn trailing_owned_end(source: &str, prop_end: usize, limit: usize) -> (usize, bo
             .is_some_and(|body| !contains_blank_line(body))
     {
         index = skip_hspace(source, end, limit);
-        if !has_comma && bytes.get(index) == Some(&b',') && index < limit {
-            has_comma = true;
+        if comma.is_none() && bytes.get(index) == Some(&b',') && index < limit {
+            comma = Some(index);
             index += 1;
             index = skip_hspace(source, index, limit);
         }
@@ -253,5 +276,5 @@ fn trailing_owned_end(source: &str, prop_end: usize, limit: usize) -> (usize, bo
     if bytes.get(index) == Some(&b'\n') && index < limit {
         index += 1;
     }
-    (index.min(limit), has_comma)
+    (index.min(limit), comma)
 }

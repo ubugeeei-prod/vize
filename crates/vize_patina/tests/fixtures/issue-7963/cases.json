@@ -1,0 +1,159 @@
+[
+  {
+    "id": "reported-typescript",
+    "filename": "nuxt.config.ts",
+    "source": "export default defineNuxtConfig({\n  ssr: false,\n  modules: [\"@pinia/nuxt\"]\n});\n",
+    "fixed": "export default defineNuxtConfig({\n  modules: [\"@pinia/nuxt\"],\n  ssr: false\n});\n",
+    "finding": {
+      "target": "ssr: false",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "reported-javascript",
+    "filename": "nuxt.config.js",
+    "source": "export default defineNuxtConfig({\n  ssr: false,\n  modules: [\"@pinia/nuxt\"]\n});\n",
+    "fixed": "export default defineNuxtConfig({\n  modules: [\"@pinia/nuxt\"],\n  ssr: false\n});\n",
+    "finding": {
+      "target": "ssr: false",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "authored-trailing-comma",
+    "filename": "nuxt.config.ts",
+    "source": "export default defineNuxtConfig({\n  ssr: false,\n  modules: [\"@pinia/nuxt\"],\n});\n",
+    "fixed": "export default defineNuxtConfig({\n  modules: [\"@pinia/nuxt\"],\n  ssr: false,\n});\n",
+    "finding": {
+      "target": "ssr: false",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "crlf",
+    "filename": "nuxt.config.ts",
+    "source": "export default defineNuxtConfig({\r\n  ssr: false,\r\n  modules: [\"@pinia/nuxt\"]\r\n});\r\n",
+    "fixed": "export default defineNuxtConfig({\r\n  modules: [\"@pinia/nuxt\"],\r\n  ssr: false\r\n});\r\n",
+    "finding": {
+      "target": "ssr: false",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "compact",
+    "filename": "nuxt.config.js",
+    "source": "export default {ssr: false,modules: []};\n",
+    "fixed": "export default {modules: [],ssr: false};\n",
+    "finding": {
+      "target": "ssr: false",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "compact-trailing",
+    "filename": "nuxt.config.js",
+    "source": "export default {ssr: false,modules: [],};\n",
+    "fixed": "export default {modules: [],ssr: false,};\n",
+    "finding": {
+      "target": "ssr: false",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "leading-and-inline-comments",
+    "filename": "nuxt.config.ts",
+    "source": "export default defineNuxtConfig({\n  ssr: false, // client\n  // modules\n  modules: [] // registered\n});\n",
+    "fixed": "export default defineNuxtConfig({\n  // modules\n  modules: [], // registered\n  ssr: false // client\n});\n",
+    "finding": {
+      "target": "ssr: false",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "block-before-comma",
+    "filename": "nuxt.config.ts",
+    "source": "export default { ssr: false /* client */, modules: [] /* registered */ };\n",
+    "fixed": "export default { modules: [], /* registered */  ssr: false /* client */};\n",
+    "finding": {
+      "target": "ssr: false",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "block-after-comma",
+    "filename": "nuxt.config.ts",
+    "source": "export default { ssr: false, /* client */ modules: [] /* registered */ };\n",
+    "fixed": "export default { modules: [], /* registered */  ssr: false /* client */};\n",
+    "finding": {
+      "target": "ssr: false",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "block-with-authored-trailing",
+    "filename": "nuxt.config.ts",
+    "source": "export default { ssr: false /* client */, modules: [] /* registered */, };\n",
+    "fixed": "export default { modules: [] /* registered */,  ssr: false /* client */,};\n",
+    "finding": {
+      "target": "ssr: false",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "string-comment-markers",
+    "filename": "nuxt.config.js",
+    "source": "export default { ssr: \"https://example.com\", modules: [] };\n",
+    "fixed": "export default { modules: [], ssr: \"https://example.com\" };\n",
+    "finding": {
+      "target": "ssr: \"https://example.com\"",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "spread-final",
+    "filename": "nuxt.config.js",
+    "source": "export default { ssr: false, modules: [], ...tail };\n",
+    "fixed": "export default { modules: [], ssr: false, ...tail };\n",
+    "finding": {
+      "target": "ssr: false",
+      "left": "ssr",
+      "right": "modules"
+    }
+  },
+  {
+    "id": "spread-barrier",
+    "filename": "nuxt.config.ts",
+    "source": "export default { modules: [], ssr: false, ...base, css: [], app: {} };\n",
+    "fixed": "export default { modules: [], ssr: false, ...base, app: {}, css: [] };\n",
+    "finding": {
+      "target": "css: []",
+      "left": "css",
+      "right": "app"
+    }
+  },
+  {
+    "id": "already-ordered",
+    "filename": "nuxt.config.ts",
+    "source": "export default defineNuxtConfig({\n  modules: [\"@pinia/nuxt\"],\n  ssr: false\n});\n",
+    "fixed": "export default defineNuxtConfig({\n  modules: [\"@pinia/nuxt\"],\n  ssr: false\n});\n",
+    "finding": null
+  },
+  {
+    "id": "nuxt-two-compatibility",
+    "filename": "nuxt.config.js",
+    "source": "export default { plugins: [], modules: [], vize: { compatibility: { nuxtVersion: 2 } } };\n",
+    "fixed": "export default { plugins: [], modules: [], vize: { compatibility: { nuxtVersion: 2 } } };\n",
+    "finding": null
+  }
+]

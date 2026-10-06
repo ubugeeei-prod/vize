@@ -13,6 +13,14 @@ impl Linter {
                 .insert(String::from("vue/prefer-props-shorthand"));
             self.disabled_rules
                 .insert(String::from("vue/no-deprecated-slot-attribute"));
+            self.disabled_rules
+                .insert(String::from("vue/no-deprecated-v-bind-sync"));
+            self.disabled_rules
+                .insert(String::from("vue/no-deprecated-v-on-native-modifier"));
+            self.disabled_rules
+                .insert(String::from("vue/no-deprecated-slot-scope-attribute"));
+            self.disabled_rules
+                .insert(String::from("vue/no-deprecated-scope-attribute"));
         }
         self
     }
