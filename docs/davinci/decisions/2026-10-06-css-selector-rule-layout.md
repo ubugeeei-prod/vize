@@ -112,3 +112,21 @@ the complete actual log and use the prescribed let-chain with the same option
 binding, observation order and body. No lint allow, ownership relaxation or
 expected-byte change is introduced. Healthy tooling/DOM executions continue
 before this necessary source successor; full Rust remains unqualified.
+
+Security PR #8080 actually merged at signed-valid
+`48cb1d4f35ebd0aa3824817c67752b5e4d0a9dbb`. Normally incorporate this
+literal main before fresh source qualification, retaining its selected-PR and
+queue strict UI policy and all owned production/oracle bytes. The preceding
+6f9 tooling artifact independently qualifies all 17 cases/85 full CLI captures,
+68 complete Chromium CSSOM/computed/HTML observations and 13 full Vue DOM/SSR
+state pairs; Rust remains unqualified because of the retained Clippy failure.
+Those positives do not transfer to the incorporated successor.
+
+A concrete prospective merge with independent PR #8076 conflicts only at the
+shared appended canonical line and attribute-file EOF. Relocate this slice's
+complete owned canonical tail to the existing blank line 295, keeping all 350
+incoming lines/prefixes. Place its exact formatter-only attribute block beside
+the existing formatter block; removing it recovers the entire incoming file.
+No attribute value/order for overlapping patterns, original byte, expectation,
+production path, workflow policy or ceiling changes. Recheck actual prospective
+composition before admission, then require fresh source/protected qualification.

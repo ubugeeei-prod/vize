@@ -211,7 +211,7 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check package engine matrix
-        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts
+        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/dependency-security-compat.test.mjs
 
   check-vize-apps:
     runs-on: blacksmith-32vcpu-ubuntu-2404

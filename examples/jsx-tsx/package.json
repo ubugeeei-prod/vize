@@ -9,7 +9,7 @@
     "fmt": "vp fmt --write src"
   },
   "dependencies": {
-    "vue": "catalog:vue-stable"
+    "vue": "catalog:vue-production"
   },
   "devDependencies": {
     "typescript": "catalog:typescript",

@@ -23,8 +23,6 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const workflow = parse(readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"));
 const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
 const selectedHistory = "${{ always() && needs.pr-source-plan.outputs.js == 'true' }}";
-const selectedMerge =
-  "${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.js == 'true' }}";
 const historyActionPath = "./.github/actions/test-js-packages-with-history";
 const history = parse(readFileSync(join(root, historyActionPath, "action.yml"), "utf8"));
 
@@ -43,11 +41,11 @@ function recordingCli(directory, source = "process.exit(0);") {
   };
 }
 
-void test("PR keeps native declaration/type checks; merge queue preserves the complete JS tail", () => {
+void test("PR and merge queue preserve native declaration, type and complete UI checks", () => {
   const names = [
     "Test JS packages",
     "Check Fresco native declarations and consumer types",
-    "Check UI package conformance in merge queue",
+    "Check UI package conformance",
   ];
   const steps = workflow.jobs["pr-js-packages"].steps.filter((step) => names.includes(step.name));
   assert.deepEqual(
@@ -56,7 +54,7 @@ void test("PR keeps native declaration/type checks; merge queue preserves the co
   );
   assert.deepEqual(
     steps.map((step) => step.if),
-    [selectedHistory, selectedJs, selectedMerge],
+    [selectedHistory, selectedJs, selectedJs],
   );
   assert.equal(steps[0].uses, historyActionPath);
   const testStep = history.runs.steps.find((step) => step.name === "Test JS packages");
@@ -76,26 +74,22 @@ void test("PR keeps native declaration/type checks; merge queue preserves the co
     ]) {
       rmSync(cli.calls, { force: true });
       for (const step of steps) {
-        if (!js || (step.if === selectedMerge && event !== "merge_group")) continue;
+        if (!js) continue;
         const command = step.uses === historyActionPath ? testStep.run : step.run;
         const result = spawnSync("/bin/sh", ["-c", command], {
           cwd: root,
           env: cli.env,
           encoding: "utf8",
         });
-        assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+        assert.equal(result.status, 0, `${event}: ${result.stdout}\n${result.stderr}`);
       }
       const expected = js
         ? [
             ["run", "--workspace-root", "test:js"],
             ["run", "--filter", "./npm/fresco-native", "check:generated"],
             ["run", "--filter", "./npm/fresco-native", "check:types"],
-            ...(event === "merge_group"
-              ? [
-                  ["run", "--filter", "./npm/native", "build:ci"],
-                  ["run", "--filter", "./npm/ui", "check"],
-                ]
-              : []),
+            ["run", "--filter", "./npm/native", "build:ci"],
+            ["run", "--filter", "./npm/ui", "check"],
           ]
         : [];
       assert.deepEqual(
