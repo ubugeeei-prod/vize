@@ -175,3 +175,32 @@ canonical clauses. Old source audit failures do not qualify this new tree; fresh
 source Actions and the unchanged actual CLI/Nuxt/LSP/pinned SSR/full/protected
 qualification remain required. Root's finite release selection is v0.435 minor;
 actual source cut and published verification stay pending.
+
+## Authentic full replay and repair-control correction
+
+Paired [issue correction](https://github.com/ubugeeei-prod/vize/issues/7982#issuecomment-6010621282).
+
+Source `229c254524` passes [ordinary Check 37417967216](https://github.com/ubugeeei-prod/vize/actions/runs/37417967216),
+including all 20 original rule laws and three parser laws. Its existing
+[full Check 37419939190](https://github.com/ubugeeei-prod/vize/actions/runs/37419939190)
+retains two separate incoming rich-hover/inlay failures; their actual signed
+repair-prefix main incorporation remains required before fresh qualification.
+
+The owned full tooling job executes all six exact JSON/plain CLI observations,
+including the Nuxt preset and documented Bad/Good examples. Incremental LSP
+passes the complete original/unsaved-repair/restored publications. Nuxt LSP
+passes the original three browser warnings, then correctly rejects the repair
+control's `{{ 'healthy' }}` with `vue/no-useless-mustaches`; its restore is not
+executed. Replace only this repair input with the existing safe `lang` binding.
+Keep all original inputs and complete empty/restore assertions unchanged: no
+diagnostic filtering, severity change or weaker expected vector repairs the test.
+
+Official artifact `11392794207` is 59,057,643 bytes, SHA-256
+`b6bb7336f73dfd34d688f68ae088c98484ce48bf9490b1aa52a9746cdf13bf7e`.
+The failed setup receipt (`8dd90d585c034fcd1f0de62b84d188ee3f1af4287ccedcc602454efd8aff1641`)
+retains all 13 rows and both graceful bounded sessions (13 client/11 server
+frames). The pinned SSR receipt (`a6a77d5b4303051a067838ac5542ba25005aa786a59e4912b54b9f709d88e4c0`)
+passes all three cases, retaining complete graphs/maps and the original actual
+setup ReferenceError, render warning and TypeError rather than claiming a clean
+original render. These are partial product/execution receipts, not whole-source,
+protected instruction, native typechecker, merge, release or performance proof.

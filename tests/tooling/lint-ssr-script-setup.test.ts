@@ -193,7 +193,7 @@ await test(
         const repaired = original
           .replace("window.innerWidth", "0")
           .replace("navigator.language", "'en'")
-          .replace("document.title", "'healthy'");
+          .replace("document.title", "lang");
         session.notify("textDocument/didChange", {
           textDocument: { uri, version: 2 },
           contentChanges: [{ text: repaired }],
