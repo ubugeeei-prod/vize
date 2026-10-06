@@ -120,3 +120,42 @@ Original logs and all four JUnits remain in the failure packet; the runtime
 row count is zero and no mounted acceptance is transferred. Shared shell-quote
 security failure also remains separate. Every corrected current-head law,
 full protected suite and signed actual delivery still requires fresh evidence.
+
+## Mounted original passes; standalone API expectation correction
+
+Check `37491389615` at `f642aef5a0` actually compiled signed merge
+`34a51bc6d413ec843b7e871cf878e60d8a45c077`, tree `400e1b6a`, with literal
+parents `064ffb3b` and `f642aef5`. Its four authenticated JUnits contain
+16,512 executions: 16,511 pass and one newly authored standalone-template law
+fails. The original full SFC runtime law passes in 4.742 seconds. Both retained
+raw processes exit zero with empty stderr; all 16 development/production and
+requested inline/separate rows preserve 32 actual/reference mounts, 128 whole
+fixed DOM/identity/diagnostic/unmount frames and 32 complete map-on/off pairs.
+The original App/Child, seven input pins and independently authored expectations
+remain byte-exact. This qualifies only the stated pinned rc.9 legacy SFC runtime
+scope, with existing forced-inline production policy still disclosed.
+
+The sole Rust failure incorrectly expected no errors when the original typed
+standalone template enters the default JavaScript API with identifier prefixing.
+That API supplies no TypeScript SFC descriptor and leaves `is_ts=false`;
+its original transform correctly reports the complete colon parse diagnostic.
+The new law retains every full template and selected/retained comparison, pins
+that exact diagnostic only for the prefixed typed standalone case, and requires
+empty errors for the other five cases. The original full TypeScript SFC runtime
+law independently requires all original handlers to execute. No production,
+corpus, expected runtime, comparison, pin or budget changes in this correction.
+
+The same source run's complete canonical job passes: DOM compares 42,609
+of 42,625 templates with 16 old error skips, zero refusals and zero divergences;
+SSR production compares all 42,625 with zero rejected/divergent cases, while
+its separate legacy parity sweep compares 42,606 with 19 old error skips.
+These are scoped legacy differential facts, not native-default completion.
+Raw canonical log SHA-256 is
+`e370c6749d9d07a9a681d25ff5e6ba38fd249a04986f52a4f833e0d8461c9968`.
+
+The original critical shell-quote failure remains recorded. Separate #8137
+actually merged as signed `ef84821d30fa0d8538b2472fef34418e75380523`;
+this listener successor must conserve all reviewed production/corpus bytes on
+that actual main and obtain fresh exact-head Actions before independent queue
+admission. No current source/protected/installed release acceptance is inherited
+from the failed aggregate run, and no gate or ceiling is waived.

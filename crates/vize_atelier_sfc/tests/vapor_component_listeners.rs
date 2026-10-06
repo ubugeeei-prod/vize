@@ -84,12 +84,30 @@ fn whole_function_shapes_keep_typed_callbacks_and_reject_statement_prefixes() {
 
 #[test]
 fn selected_component_events_keep_whole_retained_results_and_model_names() {
-    for source in [
-        r#"<Child @typed="(a: number) => log(a)" @update-thing="save" />"#,
-        r#"<Child v-model:some-prop="value" @update-thing="save" />"#,
-        r#"<Transition :css="false" @before-enter="enter"><p>{{ label }}</p></Transition>"#,
+    for (source, typed) in [
+        (
+            r#"<Child @typed="(a: number) => log(a)" @update-thing="save" />"#,
+            true,
+        ),
+        (
+            r#"<Child v-model:some-prop="value" @update-thing="save" />"#,
+            false,
+        ),
+        (
+            r#"<Transition :css="false" @before-enter="enter"><p>{{ label }}</p></Transition>"#,
+            false,
+        ),
     ] {
         for prefix_identifiers in [false, true] {
+            // This standalone API keeps is_ts=false. Its prefixed transform
+            // rejects the typed source; the full TS SFC succeeds below.
+            let errors = if typed && prefix_identifiers {
+                vec![String::from(
+                    "Error parsing JavaScript expression: Expected `,` or `)` but found `:`",
+                )]
+            } else {
+                Vec::new()
+            };
             let allocator = Allocator::new();
             let result = |davinci_retained_lane| {
                 let result = vize_atelier_vapor::compile_vapor(
@@ -101,7 +119,10 @@ fn selected_component_events_keep_whole_retained_results_and_model_names() {
                         ..Default::default()
                     },
                 );
-                assert_eq!(result.error_messages, Vec::<String>::new());
+                assert_eq!(
+                    result.error_messages, errors,
+                    "{source}: prefix={prefix_identifiers}"
+                );
                 json!({ "code": result.code, "templates": result.templates,
                     "map": result.map, "errorMessages": result.error_messages })
             };
