@@ -5,7 +5,7 @@ use vize_atelier_core::parser::parse;
 use vize_atelier_vapor::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions,
     compile_vapor_with_experimental_options,
-    ir::{BlockIRNode, InsertionAnchor, NegativeBranch, OperationNode},
+    ir::{BlockIRNode, IRSlotControl, InsertionAnchor, NegativeBranch, OperationNode},
     lower::transform_to_ir,
 };
 use vize_carton::Allocator;
@@ -27,8 +27,16 @@ fn keys(block: &BlockIRNode<'_>) -> usize {
             OperationNode::CreateComponent(node) => node
                 .slots
                 .iter()
-                .flat_map(|slot| slot.blocks())
-                .map(keys)
+                .flat_map(|slot| {
+                    std::iter::successors(Some(slot), |slot| match &slot.control {
+                        Some(IRSlotControl::If {
+                            negative: Some(next),
+                            ..
+                        }) => Some(next.as_ref()),
+                        _ => None,
+                    })
+                })
+                .map(|slot| keys(&slot.block))
                 .sum(),
             _ => 0,
         })
