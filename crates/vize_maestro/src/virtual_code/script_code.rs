@@ -185,22 +185,41 @@ impl Default for ScriptCodeGenerator {
 /// The compatibility name is retained for downstream callers, but extraction
 /// is backed by Croquis' parsed semantic snapshot rather than source scanning.
 pub fn extract_simple_bindings(content: &str, is_setup: bool) -> Vec<String> {
+    extract_simple_bindings_demand(content, is_setup, false).0
+}
+
+pub(super) fn extract_simple_bindings_demand(
+    content: &str,
+    is_setup: bool,
+    capture: bool,
+) -> (
+    Vec<String>,
+    Option<vize_croquis::binding_occurrences::BindingOccurrences>,
+) {
     if !is_setup {
-        return Vec::new();
+        return (Vec::new(), None);
     }
 
     let mut drawer = Drawer::with_options(DrawerOptions {
         analyze_script: true,
         ..DrawerOptions::default()
     });
+    if capture {
+        drawer = drawer.with_binding_occurrences();
+    }
     drawer.analyze_script_setup(content);
-    drawer
-        .croquis()
+    let (croquis, packet) = if capture {
+        drawer.finish_with_binding_occurrences()
+    } else {
+        (drawer.finish(), None)
+    };
+    let bindings = croquis
         .semantic_snapshot()
         .bindings
         .into_iter()
         .map(|binding| binding.name.to_string())
-        .collect()
+        .collect();
+    (bindings, packet)
 }
 
 #[cfg(test)]

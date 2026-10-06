@@ -17,8 +17,8 @@ const count = 1
 "#;
 
 const TEXT: Option<DocumentHighlightKind> = Some(DocumentHighlightKind::TEXT);
-const READ: Option<DocumentHighlightKind> = Some(DocumentHighlightKind::READ);
-const WRITE: Option<DocumentHighlightKind> = Some(DocumentHighlightKind::WRITE);
+pub(super) const READ: Option<DocumentHighlightKind> = Some(DocumentHighlightKind::READ);
+pub(super) const WRITE: Option<DocumentHighlightKind> = Some(DocumentHighlightKind::WRITE);
 
 #[test]
 fn position_walker_matches_offset_to_position_str() {
@@ -45,7 +45,7 @@ fn position_walker_matches_offset_to_position_str() {
     }
 }
 
-fn state_for(source: &str, uri: &str, language_id: &str) -> (ServerState, Url) {
+pub(super) fn state_for(source: &str, uri: &str, language_id: &str) -> (ServerState, Url) {
     let state = ServerState::new();
     let uri = Url::parse(uri).unwrap();
     state
@@ -59,7 +59,7 @@ fn state_for(source: &str, uri: &str, language_id: &str) -> (ServerState, Url) {
 /// can assert the complete highlight list in one `assert_eq!`.
 type FlatHighlight = (u32, u32, u32, Option<DocumentHighlightKind>);
 
-fn highlights_at(
+pub(super) fn highlights_at(
     state: &ServerState,
     uri: &Url,
     source: &str,
@@ -163,15 +163,11 @@ const label = "Primary"
 </script>"#;
     let (state, uri) = state_for(source, "file:///Button.art.vue", "art-vue");
 
-    // Cursor on the `label` attribute *value*, which is not a tag name.
+    // The original value/interpolation/declaration positives are retained.
+    // Its native attribute name is the same false-use class as #7992.
     assert_eq!(
         highlights_at(&state, &uri, source, 2, 21),
-        vec![
-            (2, 13, 18, READ),
-            (2, 20, 25, READ),
-            (2, 30, 35, READ),
-            (7, 6, 11, WRITE),
-        ]
+        vec![(2, 20, 25, READ), (2, 30, 35, READ), (7, 6, 11, WRITE),]
     );
 }
 
