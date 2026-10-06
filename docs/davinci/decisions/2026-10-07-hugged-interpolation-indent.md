@@ -47,3 +47,11 @@ full104 instruction and full Rust suites, actual signed squash merge with a
 parsed terminal reporter trailer, then root-owned installed next-patch replay.
 Local source formatting, pure metadata tests and stock-only observations do
 not grant current CLI/native/performance/publication acceptance.
+
+Before publication, genuinely incorporate signed actual main064ffb3b1a, which
+contains the independent Canon readiness repair. The three reviewed production
+blobs, complete originals/references, two historical refinements and counters
+are conserved. Whole incoming source/docs survive the clean normal merge.
+CRLF corpus carriers explicitly retain their bytes and declare cr-at-eol for
+Git whitespace inspection; no output comparison or formatter rule changes.
+Fresh exact composed-source Actions and protected qualification remain required.
