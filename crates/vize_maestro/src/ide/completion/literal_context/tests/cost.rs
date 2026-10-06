@@ -16,7 +16,9 @@ fn records_completion_local_classifier_work_without_native_or_hover_requests() {
         .open(uri.clone(), ORIGINAL.into(), 1, "vue".into());
     state.update_virtual_docs(&uri, ORIGINAL);
     let output = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../target/differential/string-literal-classification-cost")
+        .join("../../target/nextest")
+        .join(std::env::var("NEXTEST_PROFILE").unwrap_or_else(|_| "full".into()))
+        .join("string-literal-classification-cost")
         .join(if cfg!(feature = "native") {
             "native.json"
         } else {

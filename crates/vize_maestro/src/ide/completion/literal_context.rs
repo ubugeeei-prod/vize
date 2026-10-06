@@ -5,7 +5,7 @@ use oxc_parser::{Kind, Parser, config::TokensParserConfig};
 use oxc_span::SourceType;
 
 use crate::ide::IdeContext;
-use crate::virtual_code::{BlockType, ProjectionFeatures};
+use crate::virtual_code::{BlockType, ProjectionFeatures, VirtualDocument};
 
 #[cfg(test)]
 mod tests;
@@ -47,10 +47,7 @@ pub(super) fn contains_cursor(ctx: &IdeContext<'_>) -> bool {
             else {
                 return false;
             };
-            let Some(offset) = document
-                .source_map
-                .to_generated_for(ctx.offset, ProjectionFeatures::COMPLETION)
-            else {
+            let Some(offset) = template_offset(document, ctx.offset) else {
                 return false;
             };
             let Some(span) = quoted_token(&document.content, offset, SourceType::ts()) else {
@@ -60,8 +57,8 @@ pub(super) fn contains_cursor(ctx: &IdeContext<'_>) -> bool {
             // Generated scaffolding and stale projections cannot grant a route.
             let Some(authored) = document
                 .source_map
-                .generated_range_to_authored(span.clone())
-                .and_then(|authored| ctx.content.get(authored))
+                .diagnostic_range_to_authored(span.start, span.end)
+                .and_then(|(start, end)| ctx.content.get(start..end))
             else {
                 return false;
             };
@@ -69,6 +66,25 @@ pub(super) fn contains_cursor(ctx: &IdeContext<'_>) -> bool {
         }
         _ => false,
     }
+}
+
+// Attribute values have exact sub-spans inside a coarse property mapping.
+// Use the existing producer's narrowest authored range, like Canon requests.
+fn template_offset(document: &VirtualDocument, offset: usize) -> Option<usize> {
+    document
+        .source_map
+        .rows()
+        .filter(|row| row.meta.features.contains(ProjectionFeatures::COMPLETION))
+        .flat_map(|row| {
+            row.span
+                .sub_spans
+                .iter()
+                .map(|span| (&span.src_range, &span.gen_range))
+                .chain(std::iter::once((&row.span.src_range, &row.span.gen_range)))
+        })
+        .filter(|(source, _)| source.contains(&offset))
+        .min_by_key(|(source, generated)| (source.len(), generated.len()))
+        .map(|(source, generated)| generated.start + (offset - source.start).min(generated.len()))
 }
 
 fn source_type(lang: Option<&str>) -> SourceType {
@@ -105,27 +121,50 @@ fn quoted_token(
     let parsed = Parser::new(&allocator, source, source_type)
         .with_config(TokensParserConfig)
         .parse();
-    parsed.tokens.iter().find_map(|token| {
-        let start = token.start() as usize;
-        let end = token.end() as usize;
-        if start >= offset || offset > end {
-            return None;
-        }
-        match token.kind() {
-            Kind::Str | Kind::NoSubstitutionTemplate if offset < end => Some(start..end),
-            // Incomplete authored quotes still cannot accept identifier extras.
-            // The native provider, not recovered syntax, decides their values.
-            Kind::Undetermined
-                if source
-                    .as_bytes()
-                    .get(start)
-                    .is_some_and(|byte| matches!(byte, b'\'' | b'"' | b'`')) =>
-            {
-                Some(start..end)
+    parsed
+        .tokens
+        .iter()
+        .find_map(|token| {
+            let start = token.start() as usize;
+            let end = token.end() as usize;
+            if start >= offset || offset > end {
+                return None;
             }
-            _ => None,
-        }
-    })
+            match token.kind() {
+                Kind::Str | Kind::NoSubstitutionTemplate if offset < end => Some(start..end),
+                // Incomplete authored quotes still cannot accept identifier extras.
+                // The native provider, not recovered syntax, decides their values.
+                Kind::Undetermined
+                    if source
+                        .as_bytes()
+                        .get(start)
+                        .is_some_and(|byte| matches!(byte, b'\'' | b'"' | b'`')) =>
+                {
+                    Some(start..end)
+                }
+                _ => None,
+            }
+        })
+        .or_else(|| {
+            // Fatal parsing clears tokens, but the lexer retains the entire EOF
+            // quote range in this exact diagnostic. No source rescan or reparse.
+            parsed.diagnostics.iter().find_map(|diagnostic| {
+                if diagnostic.message != "Unterminated string" {
+                    return None;
+                }
+                let label = diagnostic.labels.first()?;
+                let start = label.offset();
+                let end = start + label.len();
+                (start < offset
+                    && offset <= end
+                    && end == source.len()
+                    && source
+                        .as_bytes()
+                        .get(start)
+                        .is_some_and(|byte| matches!(byte, b'\'' | b'"' | b'`')))
+                .then_some(start..end)
+            })
+        })
 }
 
 #[cfg(feature = "native")]

@@ -104,12 +104,13 @@ export function witness(
   const result = {
     requestUri: pathToFileURL(generated[0].path).href,
     fileName: generated[0].path,
-    position: start,
+    position: Buffer.byteLength(code.slice(0, start), "utf8"),
     range,
   };
   record({
     kind: "independent-query",
     token,
+    utf16Offset: start,
     wholeGeneratedSha256: generated[0].sha256,
     ...result,
   });

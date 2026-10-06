@@ -35,6 +35,13 @@
       "gitBlob": "481c2c8534fb9ca36d64c896c1e7b31440210091",
       "sha256": "a574c5f60604c0b6aff0143e79ca9318bc96a6757e51b8ddda21cf5843fae30d",
       "bytes": 621140
+    },
+    {
+      "path": "internal/ls/lsconv/converters.go",
+      "ref": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "gitBlob": "0ff39bea16a5042ece28cf4b85cecafcb96308da",
+      "sha256": "54d5881b5596cf99074e168ed54aacbb582c62e3cc4294c5f1a3ed1d989fd3ac",
+      "bytes": 11562
     }
   ],
   "unchangedVize": [
@@ -103,9 +110,10 @@
       "$NATIVE_FILE",
       "$NATIVE_POSITION",
       "$NATIVE_RANGE"
-    ]
+    ],
+    "nativePosition": "UTF8 byte offset of the unique generated literal cursor; LSP replacement range uses UTF16 line/character coordinates"
   },
-  "independentWitness": "A unique physical unreferenced marker identifies exactly one live mirror before response inspection; full generated/authored files are saved, then the unique full current literal supplies UTF16 query and replacement coordinates. Fixed source-derived revision stamps are 1..5 for one opened document.",
+  "independentWitness": "A unique physical unreferenced marker identifies exactly one live mirror before response inspection; full generated/authored files are saved, then the unique full current literal supplies the native UTF8 byte offset and UTF16 replacement coordinates. Fixed source-derived revision stamps are 1..5 for one opened document.",
   "qualifications": [
     "Pinned primary source authorizes the authored expectation, not execution or current provider-binary acceptance.",
     "Outer Vize presentation intentionally retains the existing absence of textEdit; the entire original native textEdit remains in opaque raw.item.",

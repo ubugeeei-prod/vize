@@ -66,8 +66,10 @@ and the unchanged local converter/resolve/mirror/revision/options bodies.
 
 Before reading each response, an unreferenced bootstrap marker identifies one
 physical fixture-owned mirror. The observer retains full generated/authored
-sources and config, then derives the native file, URI, UTF16 cursor and entire
-inner-literal replacement range from the unique complete current literal.
+sources and config, then derives the native file, URI, UTF8 opaque byte offset
+and entire UTF16 inner-literal replacement range from the unique complete
+current literal. The pinned native converter explicitly translates negotiated
+LSP coordinates to a UTF8 byte offset before creating completion data.
 Only these independently witnessed ephemeral coordinates plus explicit
 authored URI/revision substitute into the complete fixed oracle. No response
 field supplies its own expected value. Complete requests, responses, raw wires,
@@ -78,11 +80,40 @@ classification-only cost, speed or budget acceptance.
 
 The first source was sealed privately, then genuinely replayed onto signed
 `6b5e6fd8357bc892d2ea9cefe271a13fc08100cb` after #8116 delivered.
-The branch remains uncompiled; the maintainer authorized one conventional
-non-Draft PR for ordinary Actions qualification, with admission pending gates. Rust formatting and static JS checks are
-distinct from real native acceptance. TODO: qualify compilation, all whole
+The maintainer authorized one conventional non-Draft PR, #8119, for ordinary
+Actions qualification, with admission pending gates. Initial source compilation,
+Clippy, formatting and static JS checks passed; they remain distinct from full
+native acceptance. TODO: qualify compilation, all whole
 original/dirty/null/lifecycle results, selected-completion work and unchanged
 protected suites/104 instruction ceilings on the genuinely composed current
 source. Actual signed merge, issue closure and installed release inclusion are
 still required. No local native build/install/run, new workflow, manual campaign, budget
 increase or private project input is authorized by this record.
+
+The [first failure decision](https://github.com/ubugeeei-prod/vize/issues/7997#issuecomment-6015525186)
+retains real failures rather than accepting partial output.
+Both original LF completion arrays, four complete resolves and the first stale
+revision guard passed. The first dirty CRLF/Unicode array differed only in opaque
+`data.position`: its independently owned generated prefix is 14,580 UTF16 code
+units and 14,584 UTF8 bytes. The native converter's exact-revision source, not
+the observed item, determines the corrected witness calculation. Every fixed
+item field and every complete original/dirty source remains unchanged.
+
+Two new Rust controls exposed real classifier gaps. The existing coarse
+projection caret method ignores an attribute value's exact sub-spans; the
+completion-local lookup now prefers the producer's narrowest sub-span and uses
+the existing diagnostic range mapper to prove the entire authored token. Fatal
+OXC parsing clears token output for an unfinished string, but the same lexer
+retains its exact `Unterminated string` range. Only an EOF-ended quote diagnostic
+containing the cursor can recover that route, without another parse or source
+scan. Existing lexer/domain expectations stay fixed; additional unfinished
+comment/regex and directive controls remain independently authored.
+
+The initial generator check also requires exactly two new raw-OXC inventory
+rows. Deleting those two rows recovers the complete prior TSV. The classifier
+observation test passed initially, but its JSON was outside the existing shard
+artifact directory, so no duration evidence is accepted from that run. Its
+output now lives under the actual `NEXTEST_PROFILE` shard envelope; the existing
+upload and all workflow commands remain unchanged. The necessary successor
+needs fresh complete source/runtime gates and retained classifier observations
+before admission. No initial failure or partial proof qualifies its execution.
