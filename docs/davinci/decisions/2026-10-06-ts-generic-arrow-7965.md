@@ -114,8 +114,26 @@ current JUnit archives (prooff7e7ffa8); strict builder and all4workers succeeded
 Required security job112066920225 still fails on the common13 npm advisories.
 The separately owned #8080 must actually merge before a genuine incorporation
 and fresh exact-head qualification; this branch remains Draft/auto-null/offqueue.
-Current canonical DOM/fan-in completion is pending. Old7690's terminal conclusion
+At that checkpoint canonical DOM/fan-in completion was pending. Old7690's terminal conclusion
 is CANCELLED from ordinary superseding concurrency, retaining its real two
 failures and seven successes; cancellation grants no passing aggregate. The
 new runtime result gives no protected104/full historical/actual merge/release
 credit. Current-data adoption, native/default/history and10x remain unfinished.
+
+## One report recovery, audit still blocked
+
+The [paired terminal record](https://github.com/ubugeeei-prod/vize/issues/7965#issuecomment-6007983274)
+retains Check37400529655 attempt2 overall FAILURE. The one targeted recovery
+actually passed Rust source report112073713803 and PR source report112073738982;
+final test-report and the existing report-comment reran automatically. Every21
+other executed context retains its original timestamps/result; all16 skipped
+markers have no runner/steps. No successful substantive suite repeated.
+The earlier cancelled report's network/maximum-job annotations stay historical.
+Receipt57eab0d2 authenticates complete API records and execution boundaries.
+
+Only inherited security-audit and final test-report remain failed. Source4f
+canonical DOM succeeded, but the common13 advisory repair #8080 must actually
+merge before genuine main incorporation and fresh exact source qualification.
+There is no further report retry, waiver, queue/protected/merge/release credit.
+These docs checkpoints remain local until that incorporation; the current
+seven/twelve source-scoped evidence does not transfer to a future composition.
