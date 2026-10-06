@@ -124,9 +124,15 @@ Those positives do not transfer to the incorporated successor.
 
 A concrete prospective merge with independent PR #8076 conflicts only at the
 shared appended canonical line and attribute-file EOF. Relocate this slice's
-complete owned canonical tail to the existing blank line 295, keeping all 350
+complete owned canonical tail to the existing blank line 280, keeping all 350
 incoming lines/prefixes. Place its exact formatter-only attribute block beside
 the existing formatter block; removing it recovers the entire incoming file.
 No attribute value/order for overlapping patterns, original byte, expectation,
 production path, workflow policy or ceiling changes. Recheck actual prospective
 composition before admission, then require fresh source/protected qualification.
+
+The private first metadata placement at adjacent line 295 still conflicts with
+#8076's line 294 under the actual Git merge algorithm. Keep that failed virtual
+composition distinct; use the unchanged complete owned tail at distant existing
+blank line 280, then require a clean actual prospective merge tree. No queue
+admission or source-runtime acceptance was inferred from the failed attempt.
