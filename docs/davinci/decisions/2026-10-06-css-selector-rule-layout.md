@@ -30,8 +30,10 @@ The two style-only originals retain their complete missing-template/script
 parse diagnostics; no component is invented to erase those negatives.
 Route handling remains uncredited (`nativeHandled: 0`) without measured evidence.
 
-Current status: private source preparation only. Static syntax, rustfmt and the
-three original independent references pass. Vize execution, current history,
-full Rust, instruction gates, source Actions, queue, merge and release are TODO.
-PR #8076 delivery has priority when the security fix actually merges. This slice
-has no new public PR or queue admission while the existing backlog is held.
+Current status: the publication hold is lifted and this slice is being sent to
+an independent conventional Draft PR and ordinary source Actions. Static syntax,
+rustfmt and the three original independent references pass. Current formatter
+execution, history, full Rust and instruction gates are still unknown. Bounded
+source review runs alongside Actions; genuine failures must be resolved before
+Ready/auto/queue admission. Actual merge and installed-release replay remain
+TODO. PR #8076 delivery has priority when the security fix actually merges.
