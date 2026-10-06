@@ -1,0 +1,281 @@
+[
+  {
+    "id": "original-card-list",
+    "filename": "CardList.vue",
+    "entry": "sfc",
+    "source": "<script setup lang=\"ts\">\nimport MyCard from \"./MyCard.vue\";\n</script>\n\n<template>\n  <MyCard></MyCard>\n  <my-card />\n  <MyCard>\n    <template v-slot:header>Title</template>\n  </MyCard>\n  <input disabled=\"disabled\" />\n</template>\n",
+    "fixed": "<script setup lang=\"ts\">\nimport MyCard from \"./MyCard.vue\";\n</script>\n\n<template>\n  <MyCard></MyCard>\n  <my-card />\n  <MyCard>\n    <template v-slot:header>Title</template>\n  </MyCard>\n  <input disabled />\n</template>\n",
+    "diagnostics": [
+      {
+        "target": "disabled=\"disabled\"",
+        "name": "disabled",
+        "value": "disabled",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "quoted-double",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><input disabled=\"disabled\" /></template>",
+    "fixed": "<template><input disabled /></template>",
+    "diagnostics": [
+      {
+        "target": "disabled=\"disabled\"",
+        "name": "disabled",
+        "value": "disabled",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "quoted-single",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><input checked='checked' /></template>",
+    "fixed": "<template><input checked /></template>",
+    "diagnostics": [
+      {
+        "target": "checked='checked'",
+        "name": "checked",
+        "value": "checked",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "unquoted",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><input required=required /></template>",
+    "fixed": "<template><input required /></template>",
+    "diagnostics": [
+      {
+        "target": "required=required",
+        "name": "required",
+        "value": "required",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "empty-value",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><button disabled=\"\">Click</button></template>",
+    "fixed": "<template><button disabled>Click</button></template>",
+    "diagnostics": [
+      {
+        "target": "disabled=\"\"",
+        "name": "disabled",
+        "value": "",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "false-string-still-present",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><button disabled=\"false\">Click</button></template>",
+    "fixed": "<template><button disabled>Click</button></template>",
+    "diagnostics": [
+      {
+        "target": "disabled=\"false\"",
+        "name": "disabled",
+        "value": "false",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "crlf-unicode-spacing",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><!-- 雪😀 -->\r\n<input\r\n  disabled \t=\r\n 'disabled'\r\n  title=\"保持\" />\r\n</template>",
+    "fixed": "<template><!-- 雪😀 -->\r\n<input\r\n  disabled\r\n  title=\"保持\" />\r\n</template>",
+    "diagnostics": [
+      {
+        "target": "disabled \t=\r\n 'disabled'",
+        "name": "disabled",
+        "value": "disabled",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "multiple-adjacent",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><input disabled=\"disabled\" required='required' title=\"keep\" /></template>",
+    "fixed": "<template><input disabled required title=\"keep\" /></template>",
+    "diagnostics": [
+      {
+        "target": "disabled=\"disabled\"",
+        "name": "disabled",
+        "value": "disabled",
+        "fix": true
+      },
+      {
+        "target": "required='required'",
+        "name": "required",
+        "value": "required",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "hidden-enumerated-refusal",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><div hidden=\"until-found\">Discover</div></template>",
+    "fixed": "<template><div hidden=\"until-found\">Discover</div></template>",
+    "diagnostics": [
+      {
+        "target": "hidden=\"until-found\"",
+        "name": "hidden",
+        "value": "until-found",
+        "fix": false
+      }
+    ]
+  },
+  {
+    "id": "hidden-enumerated-case-refusal",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><div hidden=\"UNTIL-FOUND\">Discover</div></template>",
+    "fixed": "<template><div hidden=\"UNTIL-FOUND\">Discover</div></template>",
+    "diagnostics": [
+      {
+        "target": "hidden=\"UNTIL-FOUND\"",
+        "name": "hidden",
+        "value": "UNTIL-FOUND",
+        "fix": false
+      }
+    ]
+  },
+  {
+    "id": "hidden-enumerated-entity-refusal",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><div hidden=\"until&#45;found\">Discover</div></template>",
+    "fixed": "<template><div hidden=\"until&#45;found\">Discover</div></template>",
+    "diagnostics": [
+      {
+        "target": "hidden=\"until&#45;found\"",
+        "name": "hidden",
+        "value": "until-found",
+        "fix": false
+      }
+    ]
+  },
+  {
+    "id": "hidden-ordinary",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><div hidden=\"hidden\">Hide</div></template>",
+    "fixed": "<template><div hidden>Hide</div></template>",
+    "diagnostics": [
+      {
+        "target": "hidden=\"hidden\"",
+        "name": "hidden",
+        "value": "hidden",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "html-public-entry",
+    "filename": "Control.html",
+    "entry": "html",
+    "source": "<!doctype html><input disabled=\"disabled\" />",
+    "fixed": "<!doctype html><input disabled />",
+    "diagnostics": [
+      {
+        "target": "disabled=\"disabled\"",
+        "name": "disabled",
+        "value": "disabled",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "jsx-public-entry",
+    "filename": "Control.jsx",
+    "entry": "jsx",
+    "source": "const A = () => <input disabled=\"disabled\" />;",
+    "fixed": "const A = () => <input disabled />;",
+    "diagnostics": [
+      {
+        "target": "disabled=\"disabled\"",
+        "name": "disabled",
+        "value": "disabled",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "tsx-nested-public-entry",
+    "filename": "Control.tsx",
+    "entry": "tsx",
+    "source": "const A = (): JSX.Element => <div>{ok && <input disabled=\"disabled\" />}</div>;",
+    "fixed": "const A = (): JSX.Element => <div>{ok && <input disabled />}</div>;",
+    "diagnostics": [
+      {
+        "target": "disabled=\"disabled\"",
+        "name": "disabled",
+        "value": "disabled",
+        "fix": true
+      }
+    ]
+  },
+  {
+    "id": "native-bare",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><input disabled checked required /></template>",
+    "fixed": "<template><input disabled checked required /></template>",
+    "diagnostics": []
+  },
+  {
+    "id": "bound-dynamic",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><input :disabled=\"disabled\" v-bind:checked=\"checked\" /></template>",
+    "fixed": "<template><input :disabled=\"disabled\" v-bind:checked=\"checked\" /></template>",
+    "diagnostics": []
+  },
+  {
+    "id": "component-and-custom",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><MyButton disabled=\"disabled\" /><my-button disabled=\"disabled\" /></template>",
+    "fixed": "<template><MyButton disabled=\"disabled\" /><my-button disabled=\"disabled\" /></template>",
+    "diagnostics": []
+  },
+  {
+    "id": "case-sensitive-name",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><INPUT disabled=\"disabled\" /><input DISABLED=\"disabled\" /></template>",
+    "fixed": "<template><INPUT disabled=\"disabled\" /><input DISABLED=\"disabled\" /></template>",
+    "diagnostics": []
+  },
+  {
+    "id": "qualified",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><svg:input disabled=\"disabled\" /><input html:disabled=\"disabled\" /></template>",
+    "fixed": "<template><svg:input disabled=\"disabled\" /><input html:disabled=\"disabled\" /></template>",
+    "diagnostics": []
+  },
+  {
+    "id": "non-boolean",
+    "filename": "Control.vue",
+    "entry": "sfc",
+    "source": "<template><input type=\"text\" aria-disabled=\"true\" /></template>",
+    "fixed": "<template><input type=\"text\" aria-disabled=\"true\" /></template>",
+    "diagnostics": []
+  }
+]

@@ -1,0 +1,2 @@
+const first = <T,>(items: readonly T[]): T | undefined => items[0];
+const pick = <T = unknown,>(value: T): T => value;

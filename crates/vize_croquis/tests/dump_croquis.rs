@@ -9,6 +9,7 @@
 use std::path::{Path, PathBuf};
 
 use vize_croquis::dump::Page as CroquisPage;
+use vize_l0::ToCompactString;
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::pass::{parse_pipelines, print_pipelines};
 
@@ -53,7 +54,7 @@ fn noncanonical_page_prints_one_deterministic_canonical_form() {
 fn malformed_page_reports_the_exact_parse_error() {
     let error = CroquisPage::parse("x\n").expect_err("content before [vir] is invalid");
     assert_eq!(
-        error.to_string(),
+        error.to_compact_string(),
         "folio parse error at line 1: content before the [vir] header"
     );
 }
@@ -74,7 +75,7 @@ fn historical_pipeline_text_is_only_a_grammar_contract() {
         assert_eq!(
             parse_pipelines(syntax)
                 .expect_err("malformed grammar must fail")
-                .to_string(),
+                .to_compact_string(),
             message
         );
     }

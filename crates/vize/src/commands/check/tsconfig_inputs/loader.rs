@@ -112,12 +112,19 @@ fn load_tsconfig_inputs_inner(
             .collect();
     }
 
-    if let Some(allow_js) = value
+    let own_allow_js = value
         .get("compilerOptions")
         .and_then(Value::as_object)
-        .and_then(|options| options.get("allowJs"))
-        .and_then(Value::as_bool)
+        .and_then(|options| options.get("allowJs"));
+    if resolved
+        .file_name()
+        .is_some_and(|name| name == "jsconfig.json")
     {
+        merged.allow_js = match own_allow_js {
+            None => Some(true),
+            Some(value) => value.as_bool(),
+        };
+    } else if let Some(allow_js) = own_allow_js.and_then(Value::as_bool) {
         merged.allow_js = Some(allow_js);
     }
 
@@ -127,15 +134,6 @@ fn load_tsconfig_inputs_inner(
     if let Some(declaration_dir) = compiler_option_dir_exclude(&value, dir, "declarationDir") {
         merged.declaration_dir_exclude = Some(declaration_dir);
     }
-    if let Some(allow_js) = value
-        .get("compilerOptions")
-        .and_then(Value::as_object)
-        .and_then(|options| options.get("allowJs"))
-        .and_then(Value::as_bool)
-    {
-        merged.allow_js = Some(allow_js);
-    }
-
     Ok(merged)
 }
 

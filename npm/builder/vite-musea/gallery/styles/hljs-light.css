@@ -1,7 +1,7 @@
 /* highlight.js light theme — warm brand tones
    Applied when data-musea-theme="light" or system-light is active */
 [data-musea-theme="light"] .hljs,
-:root .hljs {
+:root:not([data-musea-theme]) .hljs {
   color: #121212;
   background: #d4d0c4;
 }
@@ -13,13 +13,13 @@
 [data-musea-theme="light"] .hljs-template-variable,
 [data-musea-theme="light"] .hljs-type,
 [data-musea-theme="light"] .hljs-variable.language_,
-:root .hljs-doctag,
-:root .hljs-keyword,
-:root .hljs-meta .hljs-keyword,
-:root .hljs-template-tag,
-:root .hljs-template-variable,
-:root .hljs-type,
-:root .hljs-variable.language_ {
+:root:not([data-musea-theme]) .hljs-doctag,
+:root:not([data-musea-theme]) .hljs-keyword,
+:root:not([data-musea-theme]) .hljs-meta .hljs-keyword,
+:root:not([data-musea-theme]) .hljs-template-tag,
+:root:not([data-musea-theme]) .hljs-template-variable,
+:root:not([data-musea-theme]) .hljs-type,
+:root:not([data-musea-theme]) .hljs-variable.language_ {
   color: #73603e;
 }
 
@@ -27,10 +27,10 @@
 [data-musea-theme="light"] .hljs-title.class_,
 [data-musea-theme="light"] .hljs-title.class_.inherited__,
 [data-musea-theme="light"] .hljs-title.function_,
-:root .hljs-title,
-:root .hljs-title.class_,
-:root .hljs-title.class_.inherited__,
-:root .hljs-title.function_ {
+:root:not([data-musea-theme]) .hljs-title,
+:root:not([data-musea-theme]) .hljs-title.class_,
+:root:not([data-musea-theme]) .hljs-title.class_.inherited__,
+:root:not([data-musea-theme]) .hljs-title.function_ {
   color: #6b5090;
 }
 
@@ -44,91 +44,91 @@
 [data-musea-theme="light"] .hljs-selector-attr,
 [data-musea-theme="light"] .hljs-selector-class,
 [data-musea-theme="light"] .hljs-selector-id,
-:root .hljs-attr,
-:root .hljs-attribute,
-:root .hljs-literal,
-:root .hljs-meta,
-:root .hljs-number,
-:root .hljs-operator,
-:root .hljs-variable,
-:root .hljs-selector-attr,
-:root .hljs-selector-class,
-:root .hljs-selector-id {
+:root:not([data-musea-theme]) .hljs-attr,
+:root:not([data-musea-theme]) .hljs-attribute,
+:root:not([data-musea-theme]) .hljs-literal,
+:root:not([data-musea-theme]) .hljs-meta,
+:root:not([data-musea-theme]) .hljs-number,
+:root:not([data-musea-theme]) .hljs-operator,
+:root:not([data-musea-theme]) .hljs-variable,
+:root:not([data-musea-theme]) .hljs-selector-attr,
+:root:not([data-musea-theme]) .hljs-selector-class,
+:root:not([data-musea-theme]) .hljs-selector-id {
   color: #4a6b8a;
 }
 
 [data-musea-theme="light"] .hljs-regexp,
 [data-musea-theme="light"] .hljs-string,
 [data-musea-theme="light"] .hljs-meta .hljs-string,
-:root .hljs-regexp,
-:root .hljs-string,
-:root .hljs-meta .hljs-string {
+:root:not([data-musea-theme]) .hljs-regexp,
+:root:not([data-musea-theme]) .hljs-string,
+:root:not([data-musea-theme]) .hljs-meta .hljs-string {
   color: #486040;
 }
 
 [data-musea-theme="light"] .hljs-built_in,
 [data-musea-theme="light"] .hljs-symbol,
-:root .hljs-built_in,
-:root .hljs-symbol {
+:root:not([data-musea-theme]) .hljs-built_in,
+:root:not([data-musea-theme]) .hljs-symbol {
   color: #8b7040;
 }
 
 [data-musea-theme="light"] .hljs-comment,
 [data-musea-theme="light"] .hljs-code,
 [data-musea-theme="light"] .hljs-formula,
-:root .hljs-comment,
-:root .hljs-code,
-:root .hljs-formula {
-  color: #9a9590;
+:root:not([data-musea-theme]) .hljs-comment,
+:root:not([data-musea-theme]) .hljs-code,
+:root:not([data-musea-theme]) .hljs-formula {
+  color: #6b6b6b;
 }
 
 [data-musea-theme="light"] .hljs-name,
 [data-musea-theme="light"] .hljs-quote,
 [data-musea-theme="light"] .hljs-selector-tag,
 [data-musea-theme="light"] .hljs-selector-pseudo,
-:root .hljs-name,
-:root .hljs-quote,
-:root .hljs-selector-tag,
-:root .hljs-selector-pseudo {
+:root:not([data-musea-theme]) .hljs-name,
+:root:not([data-musea-theme]) .hljs-quote,
+:root:not([data-musea-theme]) .hljs-selector-tag,
+:root:not([data-musea-theme]) .hljs-selector-pseudo {
   color: #2d6a35;
 }
 
 [data-musea-theme="light"] .hljs-subst,
-:root .hljs-subst {
+:root:not([data-musea-theme]) .hljs-subst {
   color: #121212;
 }
 
 [data-musea-theme="light"] .hljs-section,
-:root .hljs-section {
+:root:not([data-musea-theme]) .hljs-section {
   color: #4a6b8a;
   font-weight: bold;
 }
 
 [data-musea-theme="light"] .hljs-bullet,
-:root .hljs-bullet {
+:root:not([data-musea-theme]) .hljs-bullet {
   color: #6b5020;
 }
 
 [data-musea-theme="light"] .hljs-emphasis,
-:root .hljs-emphasis {
+:root:not([data-musea-theme]) .hljs-emphasis {
   color: #121212;
   font-style: italic;
 }
 
 [data-musea-theme="light"] .hljs-strong,
-:root .hljs-strong {
+:root:not([data-musea-theme]) .hljs-strong {
   color: #121212;
   font-weight: bold;
 }
 
 [data-musea-theme="light"] .hljs-addition,
-:root .hljs-addition {
+:root:not([data-musea-theme]) .hljs-addition {
   color: #2d6a35;
   background-color: rgba(45, 106, 53, 0.1);
 }
 
 [data-musea-theme="light"] .hljs-deletion,
-:root .hljs-deletion {
+:root:not([data-musea-theme]) .hljs-deletion {
   color: #a04040;
   background-color: rgba(160, 64, 64, 0.1);
 }
@@ -184,7 +184,7 @@
   [data-musea-theme="system"] .hljs-comment,
   [data-musea-theme="system"] .hljs-code,
   [data-musea-theme="system"] .hljs-formula {
-    color: #9a9590;
+    color: #6b6b6b;
   }
 
   [data-musea-theme="system"] .hljs-name,

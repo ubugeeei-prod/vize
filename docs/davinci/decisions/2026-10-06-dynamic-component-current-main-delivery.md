@@ -231,3 +231,24 @@ No CPU/profile campaign, local native build, install, performance or 10x claim
 is added by this incorporation.
 
 [Paired actual-security-main decision](https://github.com/ubugeeei-prod/vize/issues/8003#issuecomment-6009756850) records this same source slice.
+
+## Current 62f qualification retained for the next actual-main incorporation
+
+- Source `62fb15cd4ba1b254820093e64dd6a78c07a24494`, tree `007b435bb8e7ead02b336443ff4581908a1640a4`, remains frozen. Its normal Check `37417367093` and NativePhase `37417366472` succeeded; all 16,317 ordinary Rust cases and the original twelve mapped laws passed.
+- Full Check `37418633548` completed with 18 successful jobs, six skipped jobs and one failed job. Its source coverage and full Clippy/Test jobs passed. The failed job is the unchanged create-vue inlay consumer, whose separate owner repair is #8082 in native Stack #8104. Both layers actually signed-merged on 2026-10-06 at 06:34:01 UTC as `a344f3d32f134e0f7b98e47b5b02c865ae69b0a4` then `29724e295221c428e26d2404a30f994865d6f62c`; the consumer has the provider as its sole parent.
+- The original 33-state callback passed in job `112122798857` in 13.3670481 seconds. Official artifact `11392895908` is 58,996,033 bytes, SHA-256 `3e20f8428743899e747f8da9d8ec8a3d2bd9930c525f995cee50c9fb674375ed`; all 1,465 unique members and CRCs were checked without broad extraction. Its raw receipt is SHA-256 `6ec1aac9a98dcdddc1baf4fb26339667ebcf4f5bb42fc07a5f96edce65dcf02d`.
+- Complete source-derived ordered code/start/count/severity/source assertions passed for all original cases, three URI sessions and versions 1–11, with 17 errors and 16 clean observations per channel. Full messages and end positions remain archived, with no independently frozen complete-message/end oracle. The source-build receipt reports the CLI hash; executable bytes and raw CLI/framed-RPC streams are not archived by this test.
+- Existing-peer archive assertion receipt is SHA-256 `dbfdcf79b82e1cd73c5ac2d7408ffbd5e0ea2f2f659ac509ff7390f0397056b2`; the final owner audit is `3c85bedba16b106861d8fc817877d101671a25ae429f5175fac594cf5377a6bb`. Neither grants overall full-Check, protected, public or performance acceptance.
+- Review reply [4192054057](https://github.com/ubugeeei-prod/vize/pull/8040#discussion_r4192054057), exact readback body SHA-256 `93ec52fe3a862fb5cc14d863d107c05be4d06bed632c8c506987e67d81689d85`, records the existing AST-owned `__Props`/generic declarations and native wrong-prop evidence in all three modes. It explicitly retains the unchanged sanitized value/slot/reference limitation; the review was not dismissed as solved.
+- Concrete TODO: validate namespace value and slot references against a real AST-owned `registry.Choice` component, including a clean typed slot, missing required slot and wrong slot payload. Preserve the original 33 controls and complete authored source/code/maps/ordered native diagnostics in all three registry modes before changing the original structural-slot/reference producer. Do not infer conformance from sanitized stubs or existing ordinary prop success, and do not add parsing stages or claim a speed gain.
+- Delivery remains independent #8040. The one actual-main incorporation selects signed `baa427830e0a1b1b50a45582bda418992d5a5ac9`, which includes that complete prefix, signed #8093 `890c3ce480488230961b142941295ea7f754b822`, and the original #8105 provider custody. Preserve every incoming source/decision/cap and repeat the necessary current qualification. Protected 104/Rust/native, actual signed merge, Issue closure and the root-selected single minor v0.435 publication remain separate gates.
+
+The incoming default-attribute changes overlap exactly two owned production files.
+`generator.rs` retains the complete `check_options` argument to default export;
+`component_props.rs` retains the `ctx.strict_component_attrs` helper argument.
+The original AST-owned fix deltas invert to whole incoming main, while all other
+owned non-doc implementation, fixture and oracle bytes remain exact `62f`.
+No staged code or replay result has yet qualified on this successor; old receipts
+remain historical. Admission is release-coordinated and publication remains root-owned.
+
+Paired preparation: [Issue #8003 comment 6010854839](https://github.com/ubugeeei-prod/vize/issues/8003#issuecomment-6010854839).

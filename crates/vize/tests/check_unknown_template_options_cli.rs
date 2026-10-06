@@ -24,6 +24,14 @@ fn original_unknown_template_options_have_complete_true_false_and_absent_vectors
             vize_l0::cstr!("error:{line}:{column} [TS{code}] {message}")
         })
         .collect();
+    let strict_messages = fixture::strict_messages(&corsa).unwrap();
+    let strict_full: Vec<_> = strict_messages
+        .iter()
+        .zip([(2353, 8, 24), (2339, 9, 6), (2339, 10, 10)])
+        .map(|(message, (code, line, column))| {
+            vize_l0::cstr!("error:{line}:{column} [TS{code}] {message}")
+        })
+        .collect();
     let executable = Path::new(env!("CARGO_BIN_EXE_vize"));
     for (name, config, indexes) in fixture::cases().unwrap() {
         let directory = tempfile::tempdir().unwrap();
@@ -46,9 +54,14 @@ fn original_unknown_template_options_have_complete_true_false_and_absent_vectors
         }
         let output = command.output().unwrap();
         fixture::retain(&root, name, &corsa, &command, &output).unwrap();
+        let selected = if name == "strict-component-attrs" {
+            &strict_full
+        } else {
+            &full
+        };
         let expected: Vec<_> = indexes
             .iter()
-            .map(|index| full.get(*index).ok_or("unknown diagnostic case index"))
+            .map(|index| selected.get(*index).ok_or("unknown diagnostic case index"))
             .collect::<Result<_, _>>()
             .unwrap();
         assert_eq!(

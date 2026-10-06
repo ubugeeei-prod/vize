@@ -19,6 +19,7 @@ import {
 import type { LspRange, PublishDiagnosticsParams } from "../../tooling/support/lsp/protocol.ts";
 import { LspSession } from "../../tooling/support/lsp/session.ts";
 import { expectedFolding, expectedSymbols } from "../../_helpers/create-vue-document-structure.ts";
+import { createVueStockInlay } from "../../_helpers/create-vue-stock-inlay.ts";
 
 // #2971 audit item 8: editor features must answer in *authored* `.vue`
 // coordinates, never the generated virtual-TS coordinates actually queried.
@@ -248,22 +249,8 @@ test("create-vue editor features answer in authored Vue ranges", async (t) => {
           const hints = await ask("textDocument/inlayHint", {
             range: { start: { line: 0, character: 0 }, end: { line: 17, character: 0 } },
           });
-          assert.deepEqual(hints, [
-            {
-              kind: 1,
-              label: ": Ref<number>",
-              paddingLeft: true,
-              position: VISIT_COUNT_DECL.end,
-              tooltip: "Vue reactive binding (Ref)",
-            },
-            {
-              kind: 1,
-              label: ": ComputedRef<number>",
-              paddingLeft: true,
-              position: DOUBLED_DECL.end,
-              tooltip: "Vue reactive binding (ComputedRef)",
-            },
-          ]);
+          const native = await createVueStockInlay(source, tsconfig, corsaPath);
+          assert.deepEqual(hints, native);
         });
 
         await t.test("document symbols and folding ranges follow the authored blocks", async () => {
