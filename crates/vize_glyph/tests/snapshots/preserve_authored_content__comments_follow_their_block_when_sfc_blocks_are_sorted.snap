@@ -5,7 +5,6 @@ expression: formatted
 <!-- template note -->
 
 <!-- script note -->
-
 <script setup>
 const ready = true;
 </script>

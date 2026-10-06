@@ -1,0 +1,4 @@
+/** @param {string} application @returns {string} */
+export function badgeLabel(application) {
+  return `${application}: workspace exports`;
+}
