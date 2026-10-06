@@ -15,6 +15,8 @@ pub(super) fn run<T: Sync>(
     items: &[T],
     request: impl Fn(&T) -> Result<(), String> + Sync,
 ) -> Result<(), String> {
+    let control = crate::corsa_bridge::native_operation::capture();
+    control.checkpoint()?;
     let next = AtomicUsize::new(0);
     let failed = AtomicBool::new(false);
     let first_error = Mutex::new(None);
@@ -25,6 +27,11 @@ pub(super) fn run<T: Sync>(
                 .name("vize-lsp-readiness".into())
                 .spawn_scoped(scope, || {
                     while !failed.load(Ordering::Acquire) {
+                        if let Err(error) = control.checkpoint() {
+                            remember_error(&first_error, error);
+                            failed.store(true, Ordering::Release);
+                            break;
+                        }
                         let index = next.fetch_add(1, Ordering::Relaxed);
                         let Some(item) = items.get(index) else {
                             break;
@@ -32,7 +39,9 @@ pub(super) fn run<T: Sync>(
                         if failed.load(Ordering::Acquire) {
                             break;
                         }
-                        if let Err(error) = request(item) {
+                        // A checkpoint can race with admission: drain every committed RPC.
+                        let response = request(item);
+                        if let Err(error) = control.checkpoint().and(response) {
                             remember_error(&first_error, error);
                             failed.store(true, Ordering::Release);
                             break;
@@ -66,7 +75,7 @@ pub(super) fn run<T: Sync>(
     };
     match error {
         Some(error) => Err(error),
-        None => Ok(()),
+        None => control.checkpoint(),
     }
 }
 
@@ -82,3 +91,6 @@ fn remember_error(errors: &Mutex<Option<String>>, error: String) {
 
 #[cfg(all(test, unix))]
 mod tests;
+
+#[cfg(all(test, unix))]
+mod retirement_tests;
