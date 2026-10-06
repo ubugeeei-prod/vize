@@ -7,7 +7,14 @@ use corsa::{
     runtime::block_on,
 };
 use serde_json::json;
+use std::collections::BTreeSet;
 use vize_l0::cstr;
+
+#[derive(serde::Serialize)]
+pub(super) struct ComponentTarget {
+    pub(super) component: TypeResponse,
+    pub(super) option_properties: BTreeSet<String>,
+}
 
 pub(super) fn component_target(
     api: &ApiClient,
@@ -16,7 +23,7 @@ pub(super) fn component_target(
     uri: &str,
     position: u32,
     capture: &mut capture::Capture,
-) -> corsa::Result<Option<TypeResponse>> {
+) -> corsa::Result<Option<ComponentTarget>> {
     let module = block_on(api.get_symbol_at_position(
         snapshot.clone(),
         project.clone(),
@@ -38,7 +45,48 @@ pub(super) fn component_target(
         Ok(value) => json!({"result":value}),
         Err(error) => json!({"error":cstr!("{error}")}),
     });
-    let mut exports = exports?.into_iter().filter(|symbol| symbol.name == "App");
+    let exports = exports?;
+    let mut option_exports = exports
+        .iter()
+        .filter(|symbol| symbol.name == "ComponentOptions");
+    let Some(mut options) = option_exports.next().cloned() else {
+        return Ok(None);
+    };
+    if option_exports.next().is_some() {
+        return Ok(None);
+    }
+    if options.flags & ALIAS != 0 {
+        let Some(resolved) =
+            block_on(api.get_aliased_symbol(snapshot.clone(), project.clone(), options.id))?
+        else {
+            return Ok(None);
+        };
+        options = resolved;
+    }
+    capture.record("componentOptionsExport", || json!(options));
+    let options_type =
+        block_on(api.get_declared_type_of_symbol(snapshot.clone(), project.clone(), options.id));
+    capture.record("componentOptionsType", || match &options_type {
+        Ok(value) => json!({"result":value}),
+        Err(error) => json!({"error":cstr!("{error}")}),
+    });
+    let Some(options_type) = options_type?.filter(known_type) else {
+        return Ok(None);
+    };
+    let properties =
+        block_on(api.get_properties_of_type(snapshot.clone(), project.clone(), options_type.id));
+    capture.record("componentOptionProperties", || match &properties {
+        Ok(value) => json!({"result":value}),
+        Err(error) => json!({"error":cstr!("{error}")}),
+    });
+    let option_properties = properties?
+        .into_iter()
+        .map(|symbol| symbol.name)
+        .collect::<BTreeSet<_>>();
+    if option_properties.is_empty() {
+        return Ok(None);
+    }
+    let mut exports = exports.into_iter().filter(|symbol| symbol.name == "App");
     let Some(mut symbol) = exports.next() else {
         return Ok(None);
     };
@@ -120,5 +168,10 @@ pub(super) fn component_target(
         Ok(value) => json!({"result":value}),
         Err(error) => json!({"error":cstr!("{error}")}),
     });
-    Ok(component?.filter(known_type))
+    Ok(component?
+        .filter(known_type)
+        .map(|component| ComponentTarget {
+            component,
+            option_properties,
+        }))
 }

@@ -11,6 +11,7 @@ use std::path::Path;
 use vize_l0::{String, cstr};
 
 mod capture;
+mod shape;
 mod target;
 
 // Native 7.0.2 checker/ast flags. These test unavailable type evidence, not names.
@@ -147,15 +148,26 @@ impl EditorLspSession {
                     let assigned = block_on(api.client.is_type_assignable_to(
                         snapshot.clone(),
                         project_id.clone(),
-                        value.id,
-                        target.id.clone(),
+                        value.id.clone(),
+                        target.component.id.clone(),
                     ))
                     .map_err(communication);
                     capture.record("assignability", || match &assigned {
                         Ok(value) => json!({"position":position,"result":value}),
                         Err(error) => json!({"position":position,"error":error}),
                     });
-                    assigned.map(Some)
+                    if !assigned? {
+                        return Ok(Some(false));
+                    }
+                    shape::has_component_evidence(
+                        &api.client,
+                        snapshot,
+                        project_id,
+                        &value,
+                        &target.option_properties,
+                        &mut capture,
+                    )
+                    .map_err(communication)
                 })
                 .collect::<Result<Vec<_>, _>>()
                 .map(Some)
