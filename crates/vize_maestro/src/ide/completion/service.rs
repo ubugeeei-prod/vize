@@ -73,6 +73,9 @@ impl super::CompletionService {
             }
         }
 
+        if super::literal_context::contains_cursor(ctx) {
+            return None;
+        }
         let items = match ctx.block_type? {
             BlockType::Template => template::complete_template(ctx),
             BlockType::Script => script::complete_script(ctx, false),
@@ -152,6 +155,9 @@ impl super::CompletionService {
             }
         }
 
+        if super::literal_context::contains_cursor(ctx) {
+            return super::literal_context::complete(ctx, corsa_bridge.as_deref()).await;
+        }
         let block_type = ctx.block_type?;
 
         // Inside HTML comments, only Vize directives are meaningful.

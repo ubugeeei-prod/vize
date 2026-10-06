@@ -1,0 +1,76 @@
+{
+  "schema": "vize/lsp-string-literal-completion-original/v1",
+  "issue": 7997,
+  "url": "https://github.com/ubugeeei-prod/vize/issues/7997",
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "reportedVersion": "0.432.0",
+  "sourceBase": "a11f4f02d1ccad8ee7f5c03ca9c117acef9a9913",
+  "files": [
+    {
+      "path": "issue-body.txt",
+      "bytes": 5757,
+      "sha256": "64d21557e65da2f968a169ac55278656dbdc5d05bba17b47a2837fdae6630e19"
+    },
+    {
+      "path": "reproduction.sh",
+      "bytes": 735,
+      "sha256": "e40d1260cf763ff2b354d54ed5be2333ef2c7a2f216d7934e86272c3400feeb4"
+    },
+    {
+      "path": "lsp-req.mjs",
+      "bytes": 3682,
+      "sha256": "4f2d195d15af1617c5400e66b1077c3908f959ae5e7281da99687100d8173c29"
+    },
+    {
+      "path": "Page.vue.txt",
+      "bytes": 178,
+      "sha256": "bd1a73b535f1f452fec9b9d90549321ed55d193749c3f67b7b50468520b5edb8",
+      "authoredPath": "Page.vue"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 147,
+      "sha256": "0fdee0a13aa2291393ed5c23790bdaa73b737eb0ade3fc615cf866923ef125ee"
+    },
+    {
+      "path": "messages.ts",
+      "bytes": 103,
+      "sha256": "c78780677b79a587b4c17b1c21d57c649316f8eb3dcaea85e7d0316050325a66"
+    }
+  ],
+  "originalRequests": [
+    {
+      "line": 8,
+      "character": 11
+    },
+    {
+      "line": 3,
+      "character": 17
+    }
+  ],
+  "expectedLabels": [
+    "form.help",
+    "form.name"
+  ],
+  "qualification": "Complete original source/config/argv/client retained. Supplemental full-response tests are not the original ten-second labels-only observer. Runtime/build/native acceptance pending.",
+  "controls": [
+    {
+      "path": "dirty-crlf-unicode.vue.txt",
+      "bytes": 200,
+      "sha256": "595b8ba0be4a332963d506a846bdacf3e5e022ada82a1b2fed0ed8f8d40dc915"
+    },
+    {
+      "path": "dirty-single-quotes.vue.txt",
+      "bytes": 189,
+      "sha256": "7f35c706b9f991e7ddfcd33b3422f186fce1d22c891e322c402c1114bb61ac24"
+    },
+    {
+      "path": "plain-messages.ts.txt",
+      "bytes": 99,
+      "sha256": "c23b46e649071babc001f8ee95a7e26f713794876ff51bdcffbb1078ad636a61"
+    }
+  ]
+}

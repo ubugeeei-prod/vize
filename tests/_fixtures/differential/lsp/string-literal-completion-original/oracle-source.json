@@ -1,0 +1,115 @@
+{
+  "schema": "vize/lsp-literal-completion-oracle-source/v1",
+  "primary": [
+    {
+      "path": "internal/ls/string_completions.go",
+      "ref": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "gitBlob": "f5240bcf329e865b2614558ae00ee49432e6bdec",
+      "sha256": "d08ebd7c2100a770d97e4334a1aaa5f8de1ef16bfffac6acd7a6247ec43c3e85",
+      "bytes": 72522
+    },
+    {
+      "path": "internal/ls/completions.go",
+      "ref": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "gitBlob": "5e62661fce9fa3799e6136f362bfb705700227a9",
+      "sha256": "b43c0a79d8ce56e286e26e805d0f4d24c8a0334d2be774062f7219e33b776fd6",
+      "bytes": 217658
+    },
+    {
+      "path": "internal/lsp/server_completion_test.go",
+      "ref": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "gitBlob": "8c936a5ff28d9c3c8b408c850b54b009fa0f91d0",
+      "sha256": "e412428324ed300d99bc16db24e3d64263ae09902181ab8fe4251aa98cab4436",
+      "bytes": 11243
+    },
+    {
+      "path": "internal/lsp/lsproto/lsp.go",
+      "ref": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "gitBlob": "152820346cc1f6ab5c2a52478bd4a61049550613",
+      "sha256": "d152e386b9e27386250eec9f4953679554eba0e32ce87af298672608b92aa8e1",
+      "bytes": 8065
+    },
+    {
+      "path": "internal/lsp/lsproto/lsp_generated.go",
+      "ref": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "gitBlob": "481c2c8534fb9ca36d64c896c1e7b31440210091",
+      "sha256": "a574c5f60604c0b6aff0143e79ca9318bc96a6757e51b8ddda21cf5843fae30d",
+      "bytes": 621140
+    }
+  ],
+  "unchangedVize": [
+    {
+      "path": "crates/vize_maestro/src/ide/completion/native_items.rs",
+      "ref": "a11f4f02d1ccad8ee7f5c03ca9c117acef9a9913",
+      "bytes": 3989,
+      "sha256": "c00b1925f785fc8d8f488345134a7bb02e1e4cdf64bc5f2292c991df0d41a93a"
+    },
+    {
+      "path": "crates/vize_maestro/src/ide/completion/resolve.rs",
+      "ref": "a11f4f02d1ccad8ee7f5c03ca9c117acef9a9913",
+      "bytes": 6152,
+      "sha256": "4750f9c0ad2116acb87668b36814f2441df16eb3dace2328e1fe4b878bf13abf"
+    },
+    {
+      "path": "crates/vize_maestro/src/document/store.rs",
+      "ref": "a11f4f02d1ccad8ee7f5c03ca9c117acef9a9913",
+      "bytes": 12126,
+      "sha256": "6b78aab271e35301d79fcf303f7d813a36ddedf2d0863dca6e55b34cc83e7eac"
+    },
+    {
+      "path": "crates/vize_canon/src/corsa_bridge/editor_session.rs",
+      "ref": "a11f4f02d1ccad8ee7f5c03ca9c117acef9a9913",
+      "bytes": 4130,
+      "sha256": "01260bb8e6f8d06399700d9c8a67ccb4c742e2cc89afb2916b803dd23520a27d"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tsconfig_gen.rs",
+      "ref": "a11f4f02d1ccad8ee7f5c03ca9c117acef9a9913",
+      "bytes": 14108,
+      "sha256": "78c1e854242c61a47e837cf45b4e956583f7a9f8d1f8cafeb5819cc1c897c481"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/native_options.rs",
+      "ref": "a11f4f02d1ccad8ee7f5c03ca9c117acef9a9913",
+      "bytes": 3078,
+      "sha256": "ad8e8424876bd96fc6af14f6f1ef31129926bfda251083464df13c02cac9f832"
+    },
+    {
+      "path": "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs",
+      "ref": "a11f4f02d1ccad8ee7f5c03ca9c117acef9a9913",
+      "bytes": 11270,
+      "sha256": "565530e211eb58886c60757ac9ad798317955a8f5b74190eb0d5626665baa4ff"
+    }
+  ],
+  "authoredFields": {
+    "kind": 21,
+    "sortText": "11",
+    "labels": [
+      "form.help",
+      "form.name"
+    ],
+    "nativeData": [
+      "fileName",
+      "position",
+      "name"
+    ],
+    "replacementRange": "entire inner content of the unique current literal, excluding both quotes",
+    "resolvedDetail": "candidate label",
+    "resolvedDocumentation": "complete Markdown typescript code fence of the label",
+    "opaquePlaceholders": [
+      "$AUTHORED_URI",
+      "$REVISION",
+      "$NATIVE_URI",
+      "$NATIVE_FILE",
+      "$NATIVE_POSITION",
+      "$NATIVE_RANGE"
+    ]
+  },
+  "independentWitness": "A unique physical unreferenced marker identifies exactly one live mirror before response inspection; full generated/authored files are saved, then the unique full current literal supplies UTF16 query and replacement coordinates. Fixed source-derived revision stamps are 1..5 for one opened document.",
+  "qualifications": [
+    "Pinned primary source authorizes the authored expectation, not execution or current provider-binary acceptance.",
+    "Outer Vize presentation intentionally retains the existing absence of textEdit; the entire original native textEdit remains in opaque raw.item.",
+    "Physical filesystem and generated-config custody is strict; no suffix-only native path acceptance.",
+    "All full runtime observations and selected quote-candidate classification cost are unexecuted."
+  ]
+}
