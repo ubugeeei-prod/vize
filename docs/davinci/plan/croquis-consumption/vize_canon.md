@@ -10,10 +10,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | product                        | kind  | module              | files | sites |
 | ------------------------------ | ----- | ------------------- | ----: | ----: |
-| `Analyzer`                     | type  | `analyzer`          |    44 |   162 |
-| `AnalyzerOptions`              | type  | `analyzer`          |    44 |   158 |
-| `ComponentUsage`               | type  | `croquis::template` |    20 |    44 |
-| `Croquis`                      | type  | `croquis`           |    92 |   218 |
+| `Analyzer`                     | type  | `analyzer`          |    46 |   170 |
+| `AnalyzerOptions`              | type  | `analyzer`          |    46 |   166 |
+| `ComponentUsage`               | type  | `croquis::template` |    22 |    48 |
+| `Croquis`                      | type  | `croquis`           |    92 |   219 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     1 |
@@ -80,10 +80,11 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ViolationSeverity`            |     1 |     3 |
 | `WITH_DEFAULTS`                |     1 |     1 |
 | `classify_event_handler`       |     2 |     3 |
-| `component_usage_list`         |    16 |    20 |
+| `component_usage_list`         |    18 |    24 |
+| `dynamic_component_alias`      |     2 |     2 |
 | `extract_identifier_refs_oxc`  |     2 |     3 |
 | `extract_identifiers_oxc`      |     5 |     6 |
-| `is_dynamic_component_alias`   |     3 |     4 |
+| `is_dynamic_component_alias`   |     3 |     5 |
 | `is_event_local`               |     1 |     1 |
 | `is_js_global`                 |     2 |     2 |
 | `is_keyword`                   |     1 |     1 |

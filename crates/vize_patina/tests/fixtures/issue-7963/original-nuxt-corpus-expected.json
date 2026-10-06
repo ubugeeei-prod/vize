@@ -1,0 +1,50 @@
+{
+  "nuxt-config-keys-order/complete-reversed-order": {
+    "fixTexts": [
+      " appId: null, buildId: null, extends: null, theme: null, modules: null, plugins: null, $development: true, $production: true, $test: true, ssr: null, pages: null, components: null, imports: null, devtools: null, app: null, css: null, vue: null, router: null, unhead: null, site: null, colorMode: null, content: null, mdc: null, ui: null, spaLoadingTemplate: null, appConfig: null, runtimeConfig: null, dir: null, rootDir: null, srcDir: null, appDir: null, workspaceDir: null, serverDir: null, buildDir: null, modulesDir: null, analyzeDir: null, alias: null, extensions: null, ignore: null, ignoreOptions: null, ignorePrefix: null, builder: null, build: null, generate: null, routeRules: null, sourcemap: null, optimization: null, dev: null, devServer: null, watch: null, watchers: null, future: null, features: null, experimental: null, compatibilityDate: null, nitro: null, hub: null, serverHandlers: null, devServerHandlers: null, vite: null, webpack: null, typescript: null, postcss: null, test: null, telemetry: null, debug: null, logLevel: null, hooks: null"
+    ],
+    "output": "export default { appId: null, buildId: null, extends: null, theme: null, modules: null, plugins: null, $development: true, $production: true, $test: true, ssr: null, pages: null, components: null, imports: null, devtools: null, app: null, css: null, vue: null, router: null, unhead: null, site: null, colorMode: null, content: null, mdc: null, ui: null, spaLoadingTemplate: null, appConfig: null, runtimeConfig: null, dir: null, rootDir: null, srcDir: null, appDir: null, workspaceDir: null, serverDir: null, buildDir: null, modulesDir: null, analyzeDir: null, alias: null, extensions: null, ignore: null, ignoreOptions: null, ignorePrefix: null, builder: null, build: null, generate: null, routeRules: null, sourcemap: null, optimization: null, dev: null, devServer: null, watch: null, watchers: null, future: null, features: null, experimental: null, compatibilityDate: null, nitro: null, hub: null, serverHandlers: null, devServerHandlers: null, vite: null, webpack: null, typescript: null, postcss: null, test: null, telemetry: null, debug: null, logLevel: null, hooks: null }"
+  },
+  "nuxt-config-keys-order/already-ordered": {
+    "fixTexts": [],
+    "output": "export default defineNuxtConfig({ modules: [], $development: {}, ssr: true, app: {}, vite: {}, hooks: {} })"
+  },
+  "nuxt-config-keys-order/environment-objects": {
+    "fixTexts": [
+      " modules: [], $production: { build: {}, app: {} }, $test: { ssr: true, modules: [] }, ssr: true",
+      " modules: [], ssr: true",
+      " app: {}, build: {}"
+    ],
+    "output": "export default { modules: [], $production: { app: {}, build: {} }, $test: { modules: [], ssr: true }, ssr: true }"
+  },
+  "nuxt-config-keys-order/unknown-and-literal-keys": {
+    "fixTexts": [" modules: [], css: [], 'app': {}, \"ssr\": true, alpha: 2, zebra: 1"],
+    "output": "export default { modules: [], css: [], 'app': {}, \"ssr\": true, alpha: 2, zebra: 1 }"
+  },
+  "nuxt-config-keys-order/computed-and-method-keys": {
+    "fixTexts": [" modules, [ssr]: true, app() {}, css, [\"app\"]: {}"],
+    "output": "export default { modules, [ssr]: true, app() {}, css, [\"app\"]: {} }"
+  },
+  "nuxt-config-keys-order/spread-boundaries": {
+    "fixTexts": [
+      " modules: [], ssr: true, ...base, app: {}, css: [], ...tail, build: {}, vite: {}"
+    ],
+    "output": "export default { modules: [], ssr: true, ...base, app: {}, css: [], ...tail, build: {}, vite: {} }"
+  },
+  "nuxt-config-keys-order/call-and-parentheses": {
+    "fixTexts": [" modules: [], ssr: true"],
+    "output": "export default (wrap(({ modules: [], ssr: true })))"
+  },
+  "nuxt-config-keys-order/export-shape-near-misses": {
+    "fixTexts": [],
+    "output": "const config = { ssr: true, modules: [] }; const local = wrap({ ssr: true, modules: [] }); export default wrap(extra, { ssr: true, modules: [] })"
+  },
+  "nuxt-config-keys-order/short-object-near-misses": {
+    "fixTexts": [],
+    "output": "const empty = {}; export default defineNuxtConfig({ ssr: true })"
+  },
+  "nuxt-config-keys-order/case-collation": {
+    "fixTexts": [" alpha: 3, Alpha: 4, zebra: 1, Zebra: 2"],
+    "output": "export default { alpha: 3, Alpha: 4, zebra: 1, Zebra: 2 }"
+  }
+}

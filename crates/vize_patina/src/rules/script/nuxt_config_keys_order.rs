@@ -231,6 +231,7 @@ fn report_sort(
             start,
             end,
             pieces,
+            trailing_comma,
             separators,
         } => {
             let mut replacement = String::new("");
@@ -238,7 +239,12 @@ fn report_sort(
                 let Some(piece) = pieces.get(index) else {
                     return;
                 };
-                replacement.push_str(piece);
+                if piece
+                    .append_to(&mut replacement, slot + 1 < pieces.len() || trailing_comma)
+                    .is_none()
+                {
+                    return;
+                }
                 if let Some(separator) = separators.get(slot) {
                     replacement.push_str(separator);
                 }
@@ -302,6 +308,8 @@ fn identifier_expression_name<'a>(expression: &'a Expression<'a>) -> Option<&'a 
     }
 }
 
+#[cfg(test)]
+mod comma_tests;
 #[cfg(test)]
 mod comment_tests;
 #[cfg(test)]

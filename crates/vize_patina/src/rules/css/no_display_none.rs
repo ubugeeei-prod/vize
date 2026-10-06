@@ -13,7 +13,7 @@ use lightningcss::declaration::DeclarationBlock;
 use lightningcss::properties::Property;
 use lightningcss::properties::display::{Display, DisplayKeyword};
 use lightningcss::rules::CssRule as LCssRule;
-use lightningcss::selector::Component;
+use lightningcss::selector::{Combinator, Component, PseudoClass, PseudoElement, Selector};
 use lightningcss::stylesheet::StyleSheet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
@@ -43,14 +43,21 @@ impl CssRule for NoDisplayNone {
         result: &mut CssLintResult,
     ) {
         for rule in &stylesheet.rules.0 {
-            self.check_rule(rule, source, offset, result);
+            self.check_rule(rule, source, offset, false, result);
         }
     }
 }
 
 impl NoDisplayNone {
     #[inline]
-    fn check_rule(&self, rule: &LCssRule, source: &str, offset: usize, result: &mut CssLintResult) {
+    fn check_rule(
+        &self,
+        rule: &LCssRule,
+        source: &str,
+        offset: usize,
+        inherited_external: bool,
+        result: &mut CssLintResult,
+    ) {
         match rule {
             LCssRule::Style(style_rule) => {
                 let is_pseudo = style_rule.selectors.0.iter().any(|selector| {
@@ -58,7 +65,12 @@ impl NoDisplayNone {
                         .iter()
                         .any(|component| matches!(component, Component::PseudoElement(_)))
                 });
-                if !is_pseudo {
+                let external = style_rule
+                    .selectors
+                    .0
+                    .iter()
+                    .all(|selector| external_target(selector, inherited_external));
+                if !is_pseudo && !external {
                     let mut positions = DeclarationPositions::new(source, style_rule);
                     self.check_declarations(
                         &style_rule.declarations,
@@ -68,12 +80,12 @@ impl NoDisplayNone {
                     );
                 }
                 for rule in &style_rule.rules.0 {
-                    self.check_rule(rule, source, offset, result);
+                    self.check_rule(rule, source, offset, external, result);
                 }
             }
             LCssRule::LayerBlock(layer) => {
                 for rule in &layer.rules.0 {
-                    self.check_rule(rule, source, offset, result);
+                    self.check_rule(rule, source, offset, inherited_external, result);
                 }
             }
             _ => {}
@@ -126,6 +138,47 @@ impl NoDisplayNone {
             }
         }
     }
+}
+
+/// Match the selected subject, not names in strings or a :has()/:not() filter.
+/// Mixed selector lists still warn for their local target. Siblings can stay
+/// within a foreign ancestor, but crossing that ancestor's boundary cannot.
+fn external_target(selector: &Selector<'_>, inherited: bool) -> bool {
+    let mut sibling_boundary = false;
+    for component in selector.iter_raw_match_order() {
+        match component {
+            Component::NonTSPseudoClass(PseudoClass::CustomFunction { name, arguments })
+                if !sibling_boundary
+                    && matches!(name.as_ref(), "deep" | "slotted")
+                    && !arguments.0.is_empty() =>
+            {
+                return true;
+            }
+            Component::PseudoElement(
+                PseudoElement::Custom { name } | PseudoElement::CustomFunction { name, .. },
+            ) if !sibling_boundary && matches!(name.as_ref(), "v-deep" | "v-slotted") => {
+                return true;
+            }
+            Component::Slotted(_) if !sibling_boundary => return true,
+            Component::Is(selectors) | Component::Where(selectors)
+                if !sibling_boundary
+                    && selectors
+                        .iter()
+                        .all(|selector| external_target(selector, inherited)) =>
+            {
+                return true;
+            }
+            Component::Combinator(Combinator::NextSibling | Combinator::LaterSibling) => {
+                sibling_boundary = true;
+            }
+            Component::Combinator(Combinator::Child | Combinator::Descendant) => {
+                sibling_boundary = false;
+            }
+            Component::Nesting if inherited && !sibling_boundary => return true,
+            _ => {}
+        }
+    }
+    false
 }
 
 #[cfg(test)]

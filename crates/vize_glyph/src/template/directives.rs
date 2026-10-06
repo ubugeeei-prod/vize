@@ -40,10 +40,11 @@ pub(super) fn format_directive_value(
 
     // Formatting a leading line comment as a standalone JS expression moves
     // it onto the opening quote and may rewrap the expression beneath it.
-    // Keep the authored multiline value so the comment still covers the same
-    // expression and the opening/closing quote stay on their own lines.
+    // Keep the authored tokens and quote placement, but rederive same-line
+    // continuations before the attribute and SFC printers add their depth.
+    // Values starting on the following line remain verbatim (#6694).
     if value.contains('\n') && trimmed.starts_with("//") {
-        return (value.to_compact_string(), false);
+        return reanchor_continuation_lines(value, options, Representation::Html);
     }
 
     // v-for has special syntax: "(item, index) in items"

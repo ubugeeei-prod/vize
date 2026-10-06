@@ -311,3 +311,7 @@ guards, snapshot release and budgets remain fixed. No parser, process, SDK
 adapter, level stage, return blacklist or vector waiver is added. Fresh current
 source/native/protected qualification and signed delivery remain required;
 current c393 evidence does not grant successor or public acceptance.
+
+Actual signed main composition (2026-10-06)
+
+Source 554c conflicted with the delivered native helper/workflow, so ordinary Check and native phases did not register. The uncommitted inspection of signed3c29 is superseded by one genuine merge of actual signed47a after the healthy CLI/CSS and dynamic-component deliveries. The incoming package-private import helper and every job, command, option, capture and guard remain; the complete tag helper follows the existing chain. Two new test/completion selectors replace two wholly covered selectors, preserving the trigger union and 350-line cap. Every classifier/original input/whole47 byte remains554 exact; no prior runtime acceptance transfers. [Paired issue decision](https://github.com/ubugeeei-prod/vize/issues/8001#issuecomment-6012248220).

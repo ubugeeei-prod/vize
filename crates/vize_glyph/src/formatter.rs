@@ -6,6 +6,7 @@ mod block_indent;
 mod custom_block;
 mod opening_tag;
 mod raw_mask;
+mod root_content;
 mod script_block;
 mod style_block;
 mod template_block;
@@ -170,14 +171,22 @@ impl<'a> GlyphFormatter<'a> {
         let first_tag_start = source_order
             .first()
             .map_or(source.len(), |loc| loc.tag_start);
-        let prologue = source.get(..first_tag_start).unwrap_or_default().trim();
+        let original_prologue = source.get(..first_tag_start).unwrap_or_default();
+        let (prologue, first_attachment) = if blocks.is_empty() {
+            (original_prologue.trim(), None)
+        } else {
+            root_content::split_prologue(original_prologue)
+        };
         let mut leading_content = FxHashMap::default();
+        if let Some(content) = first_attachment {
+            leading_content.insert(first_tag_start, (content, true));
+        }
         let mut previous_end = first_tag_start;
         for loc in source_order {
             if let Some(content) = source
                 .get(previous_end..loc.tag_start)
-                .map(str::trim)
-                .filter(|content| !content.is_empty())
+                .map(|gap| (gap.trim(), root_content::is_attached_comment(gap)))
+                .filter(|(content, _)| !content.is_empty())
             {
                 leading_content.insert(loc.tag_start, content);
             }
@@ -201,10 +210,12 @@ impl<'a> GlyphFormatter<'a> {
                 output.extend_from_slice(newline);
                 output.extend_from_slice(newline);
             }
-            if let Some(content) = leading_content.get(&block.location().tag_start) {
+            if let Some((content, attached)) = leading_content.get(&block.location().tag_start) {
                 output.extend_from_slice(content.as_bytes());
                 output.extend_from_slice(newline);
-                output.extend_from_slice(newline);
+                if !attached {
+                    output.extend_from_slice(newline);
+                }
             }
             match block {
                 Block::Script(script) => script_block::write_script_block(

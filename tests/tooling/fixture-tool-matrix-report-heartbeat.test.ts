@@ -15,6 +15,21 @@ function runToolMatrix(args: string[]) {
     cwd: root,
     encoding: "utf8",
   });
+  if (result.status !== 1 || !result.stderr.includes("[tool-matrix] start ")) {
+    console.error(
+      JSON.stringify({
+        phase: "fixture-tool-matrix-child",
+        command: "rust-script",
+        args: [toolPath, ...args, "--output-dir", outputDir],
+        cwd: root,
+        status: result.status,
+        signal: result.signal,
+        error: result.error?.stack ?? null,
+        stdout: result.stdout,
+        stderr: result.stderr,
+      }),
+    );
+  }
   return { outputDir, result };
 }
 
