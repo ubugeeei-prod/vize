@@ -8,6 +8,7 @@
 use std::sync::{Arc, Mutex, OnceLock};
 
 use serde_json::{Value, json};
+use vize_l0::cstr;
 
 use super::LspProcess;
 
@@ -52,7 +53,7 @@ impl LspProcess {
             "publishedDiagnostics": self.published_diagnostics(),
             "stderrBytes": &*stderr,
             "stderrUtf8": std::string::String::from_utf8_lossy(&stderr),
-            "exitStatus": self.status.map(|status| status.to_string()),
+            "exitStatus": self.status.map(|status| cstr!("{status}")),
             "exitSuccess": self.status.map(|status| status.success()),
             "exitCode": self.status.and_then(|status| status.code()),
             "stdoutReaderJoined": self.stdout_joined,

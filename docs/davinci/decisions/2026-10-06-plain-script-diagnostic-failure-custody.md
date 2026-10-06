@@ -51,8 +51,9 @@ publication. Only after the unchanged shutdown response, exit notification,
 successful process termination and reader joins does a mismatching fixture
 attach its whole buffered stderr bytes/readable text, terminal state, full
 message record and original configuration to the existing mismatch report.
-The record is decoded JSON, not raw wire frames. Other drivers allocate no
-message record.
+The record is decoded JSON, not raw wire frames. Default construction allocates
+one shared `Arc<OnceLock>` per process; complete message cloning/storage remains
+opt-in, and other drivers allocate no message record.
 
 No production source, logging configuration, native probe/query, input,
 expected vector, timeout, deadline, lifecycle ordering, SDK, budget or pipeline
@@ -67,3 +68,9 @@ Compilation and unchanged original-law hosted Actions remain required. Cause,
 fresh whole protected qualification, actual merge and root-coordinated release
 remain unfinished. Historical green cannot replace those facts; failed
 unpublished #8115 is not resumed by this capture change.
+
+[Peer correction](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6016324245)
+replaces the disallowed `ToString::to_string` spelling with existing `cstr!`
+without changing the complete exit-status string or adding a lint waiver. The
+original whole-driver inverse and joined-reader lifetime/order are source-clear;
+the corrected immutable successor still requires hosted qualification.
