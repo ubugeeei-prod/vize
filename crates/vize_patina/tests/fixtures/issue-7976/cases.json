@@ -1,0 +1,1246 @@
+{
+  "schema": "vize.css.external-targets.corpus",
+  "authority": "Whole outputs independently authored from both immutable issues, subject ownership and the existing declaration-position/report contracts; never captured formatter/lint output.",
+  "cases": [
+    {
+      "id": "original-7976",
+      "filename": "ScheduleView.vue",
+      "source": "<script setup lang=\"ts\">\nimport DataCalendar from \"./DataCalendar.vue\";\n</script>\n\n<template>\n  <div class=\"schedule\">\n    <DataCalendar />\n    <slot />\n  </div>\n</template>\n\n<style scoped>\n.schedule :deep(.calendar__week-numbers) {\n  display: none;\n}\n\n.schedule {\n  :deep(.calendar__footer) {\n    display: none;\n  }\n}\n\n:slotted(.hint) {\n  display: none;\n}\n</style>\n",
+      "styleStart": 189,
+      "styleEnd": 357,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "ScheduleView.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "original-7984",
+      "filename": "MyField.vue",
+      "source": "<script setup lang=\"ts\">\nimport MyInput from \"./MyInput.vue\";\n</script>\n\n<template>\n  <div class=\"my-field\">\n    <MyInput />\n  </div>\n</template>\n\n<style scoped>\n/* MyInput renders its own message row; this wrapper hides it */\n.my-field :deep(.my-input__messages) {\n  display: none;\n}\n</style>\n",
+      "styleStart": 161,
+      "styleEnd": 285,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "MyField.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "local",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n.local { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 95,
+      "expectedStarts": [
+        78
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 10,
+              "endLine": 3,
+              "endColumn": 17,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "local-nested",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n.local { .child { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 106,
+      "expectedStarts": [
+        87
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 19,
+              "endLine": 3,
+              "endColumn": 26,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "mixed-targets",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n.local, :deep(.remote) { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 111,
+      "expectedStarts": [
+        94
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 26,
+              "endLine": 3,
+              "endColumn": 33,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "mixed-parent",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n.local, :deep(.remote) { & .child { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 124,
+      "expectedStarts": [
+        105
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 37,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "external-descendant",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) .child { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 110,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "external-child",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) > .child { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 112,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "external-nested",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { & { display: none; } .child { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 135,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "external-layer",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { @layer parts { .child { display: none; } } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 131,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "sibling-subject",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) + .local { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 112,
+      "expectedStarts": [
+        95
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 27,
+              "endLine": 3,
+              "endColumn": 34,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "nested-sibling",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { & + .local { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 118,
+      "expectedStarts": [
+        99
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 31,
+              "endLine": 3,
+              "endColumn": 38,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "slotted",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:slotted(.remote) { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 106,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "slotted-descendant",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:slotted(.remote) .child { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 113,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "is-external",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:is(:deep(.a), :slotted(.b)) { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 117,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "where-external",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:where(:deep(.a), :slotted(.b)) { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 120,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "is-mixed",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:is(:deep(.a), .local) { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 111,
+      "expectedStarts": [
+        94
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 26,
+              "endLine": 3,
+              "endColumn": 33,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "where-mixed",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:where(:deep(.a), .local) { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 114,
+      "expectedStarts": [
+        97
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 29,
+              "endLine": 3,
+              "endColumn": 36,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "has-local",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n.local:has(:deep(.remote)) { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 115,
+      "expectedStarts": [
+        98
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 30,
+              "endLine": 3,
+              "endColumn": 37,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "not-local",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n.local:not(:deep(.remote)) { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 115,
+      "expectedStarts": [
+        98
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 30,
+              "endLine": 3,
+              "endColumn": 37,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "global-local",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:global(.local) { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 104,
+      "expectedStarts": [
+        87
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 19,
+              "endLine": 3,
+              "endColumn": 26,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "root-local",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:root { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 94,
+      "expectedStarts": [
+        77
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 9,
+              "endLine": 3,
+              "endColumn": 16,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "attribute-string",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n[data-note=\":deep(.remote)\"] { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 117,
+      "expectedStarts": [
+        100
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 32,
+              "endLine": 3,
+              "endColumn": 39,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "comment-string",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n/* :deep(.remote) */\n.local { display: none; content: \":slotted(.x)\"; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 141,
+      "expectedStarts": [
+        99
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 4,
+              "column": 10,
+              "endLine": 4,
+              "endColumn": 17,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "unknown-custom",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deepish(.remote) { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 106,
+      "expectedStarts": [
+        89
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 21,
+              "endLine": 3,
+              "endColumn": 28,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "legacy-functional",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n.local ::v-deep(.remote) { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 113,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "legacy-nested",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n::v-deep(.remote) { .child { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 117,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "v-slotted-nested",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n::v-slotted(.remote) { .child { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 120,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "local-layer",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n@layer parts { .local { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 112,
+      "expectedStarts": [
+        93
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 25,
+              "endLine": 3,
+              "endColumn": 32,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "existing-conditional",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n@media print { .local { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 112,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "existing-pseudo",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n.local::before { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 103,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "ordered-mixed",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { display: none; }\n.first { display: none; }\n:slotted(.remote) { display: none; }\n.second { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 193,
+      "expectedStarts": [
+        112,
+        176
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 4,
+              "column": 10,
+              "endLine": 4,
+              "endColumn": 17,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            },
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 6,
+              "column": 11,
+              "endLine": 6,
+              "endColumn": 18,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ]
+    },
+    {
+      "id": "utf8-crlf",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">é</div></template>\r\n<style scoped>\r\n.日本[data-note=\"😀\"] { display: none; }\r\n:deep(.remote) { display: none; }\r\n</style>\r\n",
+      "styleStart": 64,
+      "styleEnd": 147,
+      "expectedStarts": [
+        94
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 22,
+              "endLine": 3,
+              "endColumn": 29,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "inherited-is-target",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :is(&) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 114,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "inherited-where-target",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :where(&) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 117,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "inherited-is-sibling",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :is(& + .local) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 123,
+      "expectedStarts": [
+        104
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 43,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "inherited-where-sibling",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :where(& ~ .local) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 126,
+      "expectedStarts": [
+        107
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 39,
+              "endLine": 3,
+              "endColumn": 46,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "inherited-is-mixed",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :is(&, .local) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 122,
+      "expectedStarts": [
+        103
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 35,
+              "endLine": 3,
+              "endColumn": 42,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "inherited-where-mixed",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :where(&, .local) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 125,
+      "expectedStarts": [
+        106
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 38,
+              "endLine": 3,
+              "endColumn": 45,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "inherited-has-local",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { .local:has(&) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 121,
+      "expectedStarts": [
+        102
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 34,
+              "endLine": 3,
+              "endColumn": 41,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "inherited-not-local",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { .local:not(&) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 121,
+      "expectedStarts": [
+        102
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 34,
+              "endLine": 3,
+              "endColumn": 41,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "external-nested-adjacent",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { .header + .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 123,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "external-nested-later",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { .header ~ .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 123,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "external-flat-adjacent",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) .header + .body { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 119,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "external-flat-child-adjacent",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) > .header + .body { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 121,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "local-flat-sibling-descendant",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) + .local .child { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 119,
+      "expectedStarts": [
+        102
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 34,
+              "endLine": 3,
+              "endColumn": 41,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "local-nested-sibling-descendant",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { & + .local .child { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 125,
+      "expectedStarts": [
+        106
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 38,
+              "endLine": 3,
+              "endColumn": 45,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "farther-flat-deep",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) .header:deep(.inner) + .body { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 131,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-nested-deep",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) { .header:deep(.inner) + .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 135,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-flat-slotted",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) .header:slotted(.inner) + .body { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 134,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-nested-slotted",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) { .header:slotted(.inner) + .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 138,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-flat-is",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) .header:is(:deep(.inner)) + .body { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 136,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-nested-where",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.outer) { .header:where(:deep(.inner)) + .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 143,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "farther-explicit-before-nesting",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n.wrapper { :deep(.outer) & + .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 125,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    }
+  ]
+}

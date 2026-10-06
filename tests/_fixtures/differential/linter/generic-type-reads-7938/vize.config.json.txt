@@ -1,0 +1,1 @@
+{ "linter": { "rules": { "vue/no-unused-setup-bindings": "warn" } } }

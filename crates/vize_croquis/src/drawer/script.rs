@@ -106,7 +106,8 @@ impl Drawer {
 
         let mut result = result;
         if self.track_unused_bindings {
-            result.unused_bindings = crate::script_parser::unused_setup_bindings(program, &result);
+            result.unused_bindings =
+                crate::script_parser::unused_setup_bindings(program, &result, generic);
         }
         result.apply_to_croquis(&mut self.croquis);
 

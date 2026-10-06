@@ -240,14 +240,17 @@ impl Drawer {
             // bindings named like globals and the handler's implicit $event.
             let in_scope_chain = self.croquis.scopes.mark_used_if_defined(ident_str);
 
-            let is_builtin = crate::builtins::is_js_global(ident_str)
-                || crate::builtins::is_vue_builtin(ident_str)
-                || crate::builtins::is_event_local(ident_str)
-                || is_keyword(ident_str);
-
-            let is_defined = in_scope_vars || in_bindings || in_scope_chain || is_builtin;
-
-            if !is_defined && report_undefined {
+            // Builtin membership only decides whether to emit an undefined
+            // diagnostic. Keep lexical read tracking above unconditional.
+            if report_undefined
+                && !in_scope_vars
+                && !in_bindings
+                && !in_scope_chain
+                && !crate::builtins::is_js_global(ident_str)
+                && !crate::builtins::is_vue_builtin(ident_str)
+                && !crate::builtins::is_event_local(ident_str)
+                && !is_keyword(ident_str)
+            {
                 let ident_offset_in_content = find_identifier_offset(content, ident_str, 0)
                     .or_else(|| content.find(ident_str))
                     .unwrap_or(0);

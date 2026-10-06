@@ -1504,6 +1504,132 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/leading-line-comment-directive",
+      "state": "active",
+      "targets": ["fmt"],
+      "inputs": {
+        "root": "sfc-leading-line-comment-directive",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "1277ced41d2174a1fb70a9e3901e3e7105fd3d872f8c73f89a1e1b871be23ee1",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [7924, 6694, 3346],
+        "commits": [
+          {
+            "sha": "627898616bb35517cc19b6531beba5ffaae8caf0",
+            "role": "pre-fix-base",
+            "paths": ["crates/vize_glyph/src/template/directives.rs"]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 7924,
+            "path": "crates/vize_glyph/tests/leading_line_comment_directive.rs",
+            "symbol": "whole_original_leading_comment_reaches_one_fixed_point"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/leading_line_comment_directive.rs",
+          "symbol": "whole_original_leading_comment_reaches_one_fixed_point",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "3-pass-idempotence",
+            "FormatResult.changed",
+            "options-immutable"
+          ],
+          "limitations": [
+            "Exact-source Actions execution remains required; no native provider acceptance credit."
+          ]
+        },
+        {
+          "path": "crates/vize/tests/fmt_leading_line_comment_cli.rs",
+          "symbol": "original_write_write_write_check_is_stable_without_project_configuration",
+          "executor": "rust-test",
+          "asserts": [
+            "whole-original-input",
+            "full-output-bytes",
+            "3-writes",
+            "check-exit-and-streams",
+            "no-config"
+          ],
+          "limitations": ["Current source-built CLI process execution remains required on Actions."]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template", "leading-line-comment-directives"],
+            "selector": "default Vue version with --no-config"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with --no-config and three whole-output passes; App.vue transport retains every byte of the original Min.vue.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-leading-line-comment-directive/reference.expected.txt",
+              "sha256": "d9e697ef84d76b4bf144464ef89ee6946759c114d1991f06b2a948a8741caf6d",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 7924,
+                "path": "crates/vize_glyph/tests/leading_line_comment_directive.rs",
+                "symbol": "whole_original_leading_comment_reaches_one_fixed_point",
+                "assertion": "independently authored complete 72-byte SFC uses existing attribute depth; all three passes retain full bytes and second/third changed=false"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-7924-contract-derived-continuation-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {

@@ -1,0 +1,7 @@
+Patina lint report: 2 errors in 1 file
+
+src/MyTouch.vue
+  src/MyTouch.vue:5:15 error type/strict-boolean-expressions Unexpected object value in conditional. An object is always truthy.
+    Reference: docs/content/rules/type-and-script.md
+  src/MyTouch.vue:6:21 error type/strict-boolean-expressions Unexpected object value in conditional. An object is always truthy.
+    Reference: docs/content/rules/type-and-script.md

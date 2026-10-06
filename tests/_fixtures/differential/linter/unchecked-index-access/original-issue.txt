@@ -1,0 +1,85 @@
+### Area
+
+Linter: `type/strict-boolean-expressions` (#7377) with `noUncheckedIndexedAccess`
+
+### Version
+
+`vize` 0.432.0, `vue` 3.5.43, `typescript` 5.9.3, Node v26.8.1, macOS arm64
+
+### Summary
+
+With `"noUncheckedIndexedAccess": true` in `tsconfig.json`, an indexed access (`list[0]`, `record[key]`) has type `T | undefined`. Checking it for presence is exactly what that option asks for, and it is a nullable object, which the rule allows by default (`allowNullableObject`, as in typescript-eslint).
+
+The rule instead reports these checks as "Unexpected object value in conditional. An object is always truthy.", i.e. it sees the type without `| undefined`. `vize check` on the same project does apply the option (an assignment of `items[0]` to `string` is TS2322).
+
+Following the message (removing the check) would make the code fail `vize check` / `tsc`.
+
+### Reproduction
+
+`tsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "lib": ["ESNext", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ESNext",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}
+```
+
+`vize.config.json`
+
+```json
+{ "linter": { "typeAware": true, "rules": { "type/strict-boolean-expressions": "error" } } }
+```
+
+`src/MyTouch.vue`
+
+```vue
+<script setup lang="ts">
+const items: string[] = ["a"];
+const byKey: Record<string, { label: string }> = {};
+
+function first(event: TouchEvent): number {
+  const touch = event.touches[0];
+  if (!touch) return 0;
+  return touch.clientY;
+}
+
+function label(key: string): string {
+  const entry = byKey[key];
+  return entry ? entry.label : "";
+}
+
+const head = items[0] ? items[0].toUpperCase() : "";
+</script>
+
+<template>
+  <p @touchstart="first">{{ label("x") }} {{ head }}</p>
+</template>
+```
+
+```console
+$ npx vize lint -f plain --help-level none src/MyTouch.vue
+Patina lint report: 2 errors in 1 file
+
+src/MyTouch.vue
+  src/MyTouch.vue:7:8 error type/strict-boolean-expressions Unexpected object value in conditional. An object is always truthy.
+  src/MyTouch.vue:13:10 error type/strict-boolean-expressions Unexpected object value in conditional. An object is always truthy.
+$ npx vize check
+✓ … No type errors found!
+```
+
+`touch` is `Touch | undefined` and `entry` is `{ label: string } | undefined` here. (Line 16, `items[0] ? …`, is not reported either, although with the option it is a nullable string, which `allowNullableString: false` would report — consistent with the option being ignored.)
+
+### Expected
+
+The rule uses the same compiler options as `vize check`: with `noUncheckedIndexedAccess`, lines 7 and 13 are nullable objects (allowed by default), and line 16 is a nullable string.

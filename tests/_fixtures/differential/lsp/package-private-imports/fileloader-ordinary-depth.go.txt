@@ -1,0 +1,55 @@
+// Pinned native 7.0.2: internal/compiler/fileloader.go:125-145
+) processedFiles {
+	compilerOptions := opts.Config.CompilerOptions()
+	rootFiles := opts.Config.FileNames()
+	supportedExtensions := tsoptions.GetSupportedExtensions(compilerOptions, nil /*extraFileExtensions*/)
+	supportedExtensionsWithJsonIfResolveJsonModule := tsoptions.GetSupportedExtensionsWithJsonIfResolveJsonModule(compilerOptions, supportedExtensions)
+	var maxNodeModuleJsDepth int
+	if p := opts.Config.CompilerOptions().MaxNodeModuleJsDepth; p != nil {
+		maxNodeModuleJsDepth = *p
+	}
+	loader := fileLoader{
+		opts:               opts,
+		defaultLibraryPath: tspath.GetNormalizedAbsolutePath(opts.Host.DefaultLibraryPath(), opts.Host.GetCurrentDirectory()),
+		comparePathsOptions: tspath.ComparePathsOptions{
+			UseCaseSensitiveFileNames: opts.Host.FS().UseCaseSensitiveFileNames(),
+			CurrentDirectory:          opts.Host.GetCurrentDirectory(),
+		},
+		filesParser: &filesParser{
+			wg:       core.NewWorkGroup(singleThreaded),
+			maxDepth: maxNodeModuleJsDepth,
+		},
+		rootTasks:           make([]*parseTask, 0, len(rootFiles)+len(compilerOptions.Lib)),
+
+// Pinned native 7.0.2: internal/compiler/fileloader.go:591-621
+			resolvedFileName := resolvedModule.ResolvedFileName
+			isFromNodeModulesSearch := resolvedModule.IsExternalLibraryImport
+			// Don't treat redirected files as JS files.
+			isJsFile := !tspath.FileExtensionIsOneOf(resolvedFileName, tspath.SupportedTSExtensionsWithJsonFlat) && p.projectReferenceFileMapper.getRedirectParsedCommandLineForResolution(ast.NewHasFileName(resolvedFileName, p.toPath(resolvedFileName))) == nil
+			isJsFileFromNodeModules := isFromNodeModulesSearch && isJsFile && strings.Contains(resolvedFileName, "/node_modules/")
+
+			// add file to program only if:
+			// - resolution was successful
+			// - noResolve is falsy
+			// - module name comes from the list of imports
+			// - it's not a top level JavaScript module that exceeded the search max
+
+			importIndex := index - importsStart
+
+			shouldAddFile := moduleName != "" &&
+				module.GetResolutionDiagnostic(optionsForFile, resolvedModule, file) == nil &&
+				!optionsForFile.NoResolve.IsTrue() &&
+				!(isJsFile && !optionsForFile.GetAllowJS()) &&
+				(importIndex < 0 || (importIndex < len(file.Imports()) && (ast.IsInJSFile(file.Imports()[importIndex]) || file.Imports()[importIndex].Flags&ast.NodeFlagsJSDoc == 0)))
+
+			if shouldAddFile {
+				t.addSubTask(resolvedRef{
+					fileName:      resolvedFileName,
+					increaseDepth: resolvedModule.IsExternalLibraryImport,
+					elideOnDepth:  isJsFileFromNodeModules,
+					includeReason: &FileIncludeReason{
+						kind: fileIncludeKindImport,
+						data: &referencedFileData{
+							file:      t.path,
+							index:     importIndex,
+							synthetic: core.IfElse(importIndex < 0, entry, nil),

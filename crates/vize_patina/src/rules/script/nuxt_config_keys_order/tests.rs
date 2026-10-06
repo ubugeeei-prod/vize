@@ -7,6 +7,8 @@ use vize_l0::{String, ToCompactString, cstr};
 const CORPUS: &str = include_str!(
     "../../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/corpus.json"
 );
+const CORRECTED: &str =
+    include_str!("../../../../tests/fixtures/issue-7963/original-nuxt-corpus-expected.json");
 const RECORDING: &str = include_str!(
     "../../../../../../npm/framework/nuxt-lint-config/test/nuxt-eslint-compat/fixtures/nuxt-eslint-output.json"
 );
@@ -84,10 +86,10 @@ fn exact_single_line_diagnostic_and_fix_contract() {
 
     let edit = &diagnostic.fix.as_ref().unwrap().edits[0];
     assert_eq!((edit.start, edit.end), (33, 56));
-    assert_eq!(edit.new_text, " modules: [], ssr: true,");
+    assert_eq!(edit.new_text, " modules: [], ssr: true");
     assert_eq!(
         fix_until_stable(source),
-        "export default defineNuxtConfig({ modules: [], ssr: true, })"
+        "export default defineNuxtConfig({ modules: [], ssr: true })"
     );
 }
 
@@ -111,7 +113,7 @@ fn sorts_top_level_and_environment_objects_to_convergence() {
     let fixed = fix_until_stable(source);
     assert_eq!(
         fixed,
-        "export default { modules: [], $production: { app: {}, build: {}, }, $test: { modules: [], ssr: true, }, ssr: true, }"
+        "export default { modules: [], $production: { app: {}, build: {} }, $test: { modules: [], ssr: true }, ssr: true }"
     );
     assert!(lint(&fixed).diagnostics.is_empty());
 }
@@ -131,7 +133,7 @@ fn spreads_are_boundaries_between_sortable_segments() {
     );
     assert_eq!(
         fix_until_stable(source),
-        "export default { modules: [], ssr: true, ...base, app: {}, css: [], ...tail, build: {}, vite: {}, }"
+        "export default { modules: [], ssr: true, ...base, app: {}, css: [], ...tail, build: {}, vite: {} }"
     );
 }
 
@@ -227,7 +229,7 @@ fn nuxt_two_compatibility_does_not_apply_the_nuxt_three_order() {
 fn unknown_and_literal_keys_follow_upstream_collation() {
     assert_eq!(
         fix_until_stable("export default { zebra: 1, Zebra: 2, alpha: 3, Alpha: 4 }"),
-        "export default { alpha: 3, Alpha: 4, zebra: 1, Zebra: 2, }"
+        "export default { alpha: 3, Alpha: 4, zebra: 1, Zebra: 2 }"
     );
     let literal_source =
         "export default { zebra: 1, \"ssr\": true, modules: [], 'app': {}, css: [] }";
@@ -239,11 +241,11 @@ fn unknown_and_literal_keys_follow_upstream_collation() {
     assert_eq!((literal_diagnostic.start, literal_diagnostic.end), (17, 25));
     assert_eq!(
         fix_until_stable(literal_source),
-        "export default { modules: [], css: [], 'app': {}, \"ssr\": true, zebra: 1, }"
+        "export default { modules: [], css: [], 'app': {}, \"ssr\": true, zebra: 1 }"
     );
     assert_eq!(
         fix_until_stable("export default { \"ssr\": true, modules: [], 'app': {}, css: [] }"),
-        "export default { modules: [], css: [], 'app': {}, \"ssr\": true, }"
+        "export default { modules: [], css: [], 'app': {}, \"ssr\": true }"
     );
 }
 
@@ -253,6 +255,7 @@ fn keeps_the_recorded_nuxt_eslint_plugin_fix_oracle() {
     let recording: Value = serde_json::from_str(RECORDING).unwrap();
     let cases = corpus["nuxtConfigKeysOrderCases"].as_array().unwrap();
     let recorded = recording["nuxtConfigKeysOrderCases"].as_object().unwrap();
+    let corrected: Value = serde_json::from_str(CORRECTED).unwrap();
 
     for case in cases {
         let id = case["id"].as_str().unwrap();
@@ -268,8 +271,11 @@ fn keeps_the_recorded_nuxt_eslint_plugin_fix_oracle() {
 
         // #3768 intentionally narrows the upstream whole-object range and
         // rewrites its sorted-prefix message. Focused tests above pin those
-        // fields; this corpus continues to pin the upstream sorting fix.
-        for (diagnostic, expected) in result.diagnostics.iter().zip(expected_messages) {
+        // fields; #7963 preserves punctuation while pinning the same sorting
+        // and edit ranges. The original upstream recording stays immutable.
+        for (index, (diagnostic, expected)) in
+            result.diagnostics.iter().zip(expected_messages).enumerate()
+        {
             assert_eq!(diagnostic.rule_name, "nuxt/nuxt-config-keys-order", "{id}");
             assert_eq!(diagnostic.severity, Severity::Error, "{id}");
             let range = expected["range"].as_array().unwrap();
@@ -298,7 +304,7 @@ fn keeps_the_recorded_nuxt_eslint_plugin_fix_oracle() {
             );
             assert_eq!(
                 fix.edits[0].new_text,
-                expected_fix["text"].as_str().unwrap(),
+                corrected[id]["fixTexts"][index].as_str().unwrap(),
                 "fix text for {id}"
             );
         }
@@ -306,7 +312,7 @@ fn keeps_the_recorded_nuxt_eslint_plugin_fix_oracle() {
         let fixed = fix_until_stable(source);
         assert_eq!(
             fixed,
-            upstream["output"].as_str().unwrap(),
+            corrected[id]["output"].as_str().unwrap(),
             "output for {id}"
         );
         assert_eq!(
