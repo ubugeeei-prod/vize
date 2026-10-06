@@ -32,7 +32,7 @@ const OWNERS: Record<
   // #7704 changes production line endings; complete original law bodies are retained.
   "crates/vize_glyph/src/style.rs": {
     originalSha256: "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61",
-    actualMainSha256: "3867c75b9dfab9a133f5c0605352df3ffd857ac117d9b6bf554f0d4d1b5fbb68",
+    actualMainSha256: "5c99c5fd5c17af14f7ba03482a910d7ec1e55c11fa7b98d279acd81bd48db748",
     functions: {
       test_style_numbers_match_standalone_css_leading_zeroes:
         "768c1b2fee61409a7034b99c2a7a277d7ac19699302a94b36d58dd54912937cb",

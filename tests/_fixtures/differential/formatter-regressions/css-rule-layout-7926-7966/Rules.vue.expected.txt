@@ -1,0 +1,16 @@
+<template>
+  <div class="a"></div>
+</template>
+
+<style scoped>
+.a {
+  color: red;
+}
+.b,
+.c {
+  margin: 0;
+}
+.d {
+  padding: 0;
+}
+</style>

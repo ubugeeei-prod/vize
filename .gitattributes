@@ -40,3 +40,6 @@ tests/_fixtures/differential/lint-with-defaults/** -text whitespace=cr-at-eol
 
 # Original linter report fixtures retain authored LF/CRLF bytes on every checkout.
 crates/vize_patina/tests/fixtures/issue-7979/** -text whitespace=cr-at-eol
+
+# Complete CSS rule-layout fixtures retain their authored LF/CRLF bytes.
+tests/_fixtures/differential/formatter-regressions/css-rule-layout-7926-7966/*.vue*.txt -text whitespace=cr-at-eol
