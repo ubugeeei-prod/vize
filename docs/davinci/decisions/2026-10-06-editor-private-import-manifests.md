@@ -19,7 +19,11 @@ scan, process or pipeline stage.
 
 Pure controls require both original importers' entire registered source list,
 raw manifest and utility bytes. Ordinary native TS packages and missing private
-targets retain their prior routing. Actual source-built CLI and stdio controls
+targets retain their prior routing. The original TS project is byte-exact.
+Authored JS derivatives add ordinary `.js`, setup-JS and JSDoc/checkJs under
+both actual config names; the separately qualified jsconfig provider is the
+real Stack parent. CLI JS uses its authored TypeScript config only, leaving
+CLI-only jsconfig discovery explicitly unfinished. Actual source-built CLI and stdio controls
 require complete diagnostic vectors for the original project, wrong typed
 arguments, an existing utility deliberately excluded by a missing manifest
 target, and an ordinary package. A same-session, same-length/same-mtime
@@ -34,6 +38,10 @@ Vue template consumes that binding in the real SFC. Full native config
 publications and successful shutdown-ack → stdin EOF are separate assertions.
 Whole framed streams, complete reports, input bytes, provider metadata,
 source-build receipt and binary/version provenance are saved before assertions.
+Every native config publication is checked as a complete envelope; asynchronous
+publication multiplicity is retained, without diagnostic filtering. The child
+broadens only its parent-owned new workflow path filters to conservative helper,
+tooling and LSP corpus families, retaining all incoming stages/commands at350.
 The original reported client still ignores server stderr; its passive observer
 claims full frames and child-close status only, not stderr custody. Authored
 controls use the existing full stderr/close-aware wire recorder.
