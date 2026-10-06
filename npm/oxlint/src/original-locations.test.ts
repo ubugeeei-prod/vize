@@ -18,6 +18,9 @@ const capturePath =
 const cli = path.join(root, "npm/oxlint/dist/cli.mjs");
 const plugin = path.join(root, "npm/oxlint/dist/index.mjs");
 process.env.VIZE_PREFER_WORKSPACE_BINDING = "1";
+const cliEnv = { ...process.env };
+// Match the reported terminal invocation, as the existing integration suite does.
+delete cliEnv.GITHUB_ACTIONS;
 const pins = JSON.parse(fs.readFileSync(path.join(corpus, "source.json"), "utf8")) as {
   files: Array<{ file: string; bytes: number; sha256: string }>;
 };
@@ -86,6 +89,7 @@ try {
   function run(args: string[], status = 1) {
     const actual = spawnSync(process.execPath, [cli, ...args], {
       cwd: fixture,
+      env: cliEnv,
       encoding: "utf8",
       maxBuffer: 8 * 1024 * 1024,
     });

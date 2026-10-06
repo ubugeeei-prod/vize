@@ -34,7 +34,11 @@ void test("original Nuxt Oxlint issue, renderer, SFC and failed artifact remain 
   );
 });
 
-void test("the unchanged wrapper contract pins mapped full messages, labels and outside filenames", () => {
+void test("the original source contract pins full messages, byte labels and outside filenames", () => {
+  assert.equal(
+    Buffer.from(read("Input.vue.txt")).subarray(76, 94).toString(),
+    'style="color: red"',
+  );
   assert.deepEqual(
     ["app/components/InfoCard.vue", "../foreign/app/pages/About.vue"].map((file) =>
       expectedCliDiagnostic(corpus, "/project", file),
@@ -46,7 +50,7 @@ void test("the unchanged wrapper contract pins mapped full messages, labels and 
         message:
           "Avoid using inline style attributes\n    Help:\n      Use CSS classes or scoped styles instead",
         severity: "warning",
-        labels: [{ span: { offset: 186, length: 18, line: 6, column: 7 } }],
+        labels: [{ span: { offset: 76, length: 18, line: 6, column: 7 } }],
       },
       {
         code: "vize(vue/no-inline-style)",
@@ -54,7 +58,7 @@ void test("the unchanged wrapper contract pins mapped full messages, labels and 
         message:
           "Avoid using inline style attributes\n    Help:\n      Use CSS classes or scoped styles instead",
         severity: "warning",
-        labels: [{ span: { offset: 176, length: 18, line: 6, column: 7 } }],
+        labels: [{ span: { offset: 76, length: 18, line: 6, column: 7 } }],
       },
     ],
   );
