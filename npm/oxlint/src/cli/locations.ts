@@ -85,7 +85,7 @@ function originalIndex(offset: number, map: BridgeLocations): number | undefined
   const bytes = Buffer.from(map.source, "utf8");
   if (relative < 0 || relative > bytes.length) return undefined;
   const before = bytes.subarray(0, relative).toString("utf8");
-  if (Buffer.byteLength(before, "utf8") !== relative) return undefined;
+  if (!Buffer.from(before, "utf8").equals(bytes.subarray(0, relative))) return undefined;
   return before.length;
 }
 

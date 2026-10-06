@@ -94,6 +94,7 @@ await test("synthetic gaps and half-surrogates retain their exact unowned range"
         labels: [
           { span: { offset: bridge.locations.scriptStart + 1, length: 0, line: 1, column: 1 } },
           { span: { offset: bridge.locations.scriptStart + 3, length: 0, line: 1, column: 1 } },
+          { span: { offset: bridge.locations.originalStart + 3, length: 0, line: 1, column: 1 } },
         ],
       },
     ],

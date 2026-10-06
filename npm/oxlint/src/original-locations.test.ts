@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { lintPatina } from "./binding.ts";
+import { loadBinding } from "./native.ts";
 import { resetFixtureDir } from "./test-support/fixture-dir.ts";
 import type { PatinaLintResult } from "./model.js";
 
@@ -102,7 +102,7 @@ try {
     assert.equal(actual.status, status);
     assert.doesNotMatch(
       actual.stdout + actual.stderr,
-      /node_modules[\/\\]\.vize[\/\\]oxlint-plugin-vize|Error running JS plugin|RangeError/u,
+      /node_modules[/\\]\.vize[/\\]oxlint-plugin-vize|Error running JS plugin|RangeError/u,
     );
     assert.equal(fs.existsSync(path.join(fixture, "node_modules/.vize/oxlint-plugin-vize")), false);
     return actual.stdout;
@@ -147,10 +147,12 @@ try {
   for (const row of rows) {
     const source = fs.readFileSync(path.join(corpus, row.file), "utf8");
     fs.writeFileSync(path.join(fixture, row.filename), source);
-    const actual = lintPatina(source, row.filename, { preset: "essential", helpLevel: "full" }, [
-      "vue/no-v-html",
-      "vue/multi-word-component-names",
-    ]);
+    const actual = loadBinding().lintPatinaSfc(source, {
+      filename: row.filename,
+      preset: "essential",
+      helpLevel: "full",
+      enabledRules: ["vue/no-v-html", "vue/multi-word-component-names"],
+    });
     save({ filename: row.filename, source, sourceSha256: digest(source), native: actual });
     assert.deepEqual(
       { ...actual, diagnostics: ordered(actual.diagnostics) },
