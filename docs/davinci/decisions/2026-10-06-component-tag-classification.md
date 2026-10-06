@@ -206,3 +206,17 @@ classification cause is unknown; fresh ordinary and mandatory native Actions
 must reach the original47 and retained full query custody after the TS40 gate.
 No local compilation/native, Ready, protected delivery, public inclusion or
 performance credit is claimed.
+
+## Current native qualification composition
+
+The [paired current composition](https://github.com/ubugeeei-prod/vize/issues/8001#issuecomment-6010888117)
+incorporates signed890c and preserves its complete reference/batch/inlay and
+editor-jsconfig commands before the unchanged mandatory component helper under
+the existing AND guard. Root source peer e3e96704 independently preserves all
+6,156 original tests/tools at334b; it supplies no runtime acceptance. Removing
+only three fully covered positive path selectors restores the composed workflow
+from353 to350 while retaining the exact triggering domain and every other YAML
+field/job/command byte. All original47/full snapshots remain unchanged. Fresh
+ordinary/native Actions must own this union; the prior Title-only334 source
+had a genuine shared-helper conflict and provides no execution evidence. The
+remaining whole component response failures stay unqualified and mandatory.
