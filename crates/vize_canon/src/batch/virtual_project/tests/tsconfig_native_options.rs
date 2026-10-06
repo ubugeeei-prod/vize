@@ -3,6 +3,8 @@ use std::fs;
 
 use super::{SHARED_HELPERS_FILE, VirtualProject, unique_case_dir};
 
+mod jsconfig;
+
 #[test]
 fn materialized_tsconfig_normalizes_native_removed_options() {
     let case_dir = unique_case_dir("tsconfig-native-removed-options");

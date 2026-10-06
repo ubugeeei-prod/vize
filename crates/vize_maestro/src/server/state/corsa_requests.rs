@@ -59,16 +59,22 @@ impl ServerState {
     /// acquire this lock. No synchronous map/config guard survives acquisition.
     pub(crate) async fn corsa_request_scope(&self) -> CorsaRequestScope<'_> {
         let guard = self.corsa_request_lock.lock().await;
-        let stable = self.corsa_environment_changes.load(Ordering::Acquire) == 0;
-        let environment = self.corsa_environment_revision.load(Ordering::Acquire);
         CorsaRequestScope {
             state: self,
             _guard: guard,
-            stamp: CorsaRequestStamp {
-                documents: self.documents.stable_revision(),
-                environment,
-                stable: stable && self.corsa_environment_changes.load(Ordering::Acquire) == 0,
-            },
+            stamp: self.corsa_request_stamp(),
+        }
+    }
+
+    /// Capture source freshness without waiting for the native transaction.
+    /// This admits synchronous feedback only; native work still owns a scope.
+    pub(crate) fn corsa_request_stamp(&self) -> CorsaRequestStamp {
+        let stable = self.corsa_environment_changes.load(Ordering::Acquire) == 0;
+        let environment = self.corsa_environment_revision.load(Ordering::Acquire);
+        CorsaRequestStamp {
+            documents: self.documents.stable_revision(),
+            environment,
+            stable: stable && self.corsa_environment_changes.load(Ordering::Acquire) == 0,
         }
     }
 

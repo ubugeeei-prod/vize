@@ -29,6 +29,9 @@ on:
       - "crates/vize/tests/check_outside_import_types_cli.rs"
       - "tests/_fixtures/differential/typechecker/**"
       - "crates/vize_canon/**"
+      - ".github/actions/check-editor-jsconfig/**"
+      - "tests/tooling/**/*editor-jsconfig*"
+      - "tests/_fixtures/differential/lsp/editor-jsconfig/**"
       - ".github/actions/check-reference-path/**"
       - ".github/actions/check-computed-inlay/**"
       - "crates/vize_maestro/src/ide/inlay_hint/**"
@@ -50,7 +53,6 @@ permissions:
 concurrency:
   group: typechecker-native-phases-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
-
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
@@ -58,7 +60,6 @@ env:
   SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.source_sha || github.event.pull_request.head.sha }}
   DRIVER_SHA: ${{ github.event_name == 'workflow_dispatch' && github.workflow_sha || github.event.pull_request.head.sha }}
   CARGO_TARGET_DIR: ${{ github.workspace }}/target
-
 jobs:
   native-phases:
     name: Actual CLI shard native phase evidence

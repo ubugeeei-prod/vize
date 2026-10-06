@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import UiButton from "ui/UiButton.vue";
+</script>
+
+<template>
+  <UiButton />
+</template>

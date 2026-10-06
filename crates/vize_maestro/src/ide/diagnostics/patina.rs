@@ -9,7 +9,7 @@ pub(in crate::ide) fn linter_for_uri(
     uri: &Url,
     ecosystem_enabled: bool,
 ) -> Option<vize_patina::Linter> {
-    let (linter_config, rule_options) = state.linter_settings_for_uri(uri)?;
+    let (linter_config, rule_options, features) = state.linter_settings_for_uri(uri)?;
     if !linter_config.enabled {
         return None;
     }
@@ -28,6 +28,7 @@ pub(in crate::ide) fn linter_for_uri(
     .with_restricted_globals(lint_options.restricted_globals)
     .with_restricted_members(lint_options.restricted_members)
     .with_musea_design_tokens(lint_options.musea_design_tokens);
+    linter = linter.with_vue_version(features.vue_version);
     linter = linter_options::apply_rule_options(linter, &rule_options);
 
     #[cfg(not(target_arch = "wasm32"))]

@@ -62,7 +62,7 @@ impl ServerState {
     /// Get a clone of the current linter config.
     #[inline]
     pub fn get_linter_config(&self) -> LinterConfig {
-        self.linter_config.read().clone()
+        self.linter_config.read().0.clone()
     }
 
     /// Get a clone of the current per-rule lint options.
@@ -135,6 +135,7 @@ impl ServerState {
     fn apply_config_features(&self, features: vize_l0::config::ConfigFeatureFlags) {
         #[cfg(feature = "native")]
         let _change = self.corsa_environment_change();
+        self.apply_linter_features(features);
         self.experimental_patterned_template
             .store(features.experimental_patterned_template, Ordering::SeqCst);
         *self.type_checker_options_api.write() = features.type_checker_options_api;
@@ -184,7 +185,7 @@ impl ServerState {
     }
 
     fn apply_linter_config(&self, config: LinterConfig, source: &str) {
-        *self.linter_config.write() = config;
+        self.linter_config.write().0 = config;
         tracing::info!("Loaded linter config from {}", source);
     }
 

@@ -13,10 +13,17 @@ use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Url};
 impl DiagnosticService {
     /// Collect diagnostics asynchronously (includes Corsa diagnostics when available).
     pub async fn collect_async(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        tracing::info!("collect_async: {}", uri);
+        Self::collect_async_from_sync(state, uri, Self::collect(state, uri)).await
+    }
 
-        // Start with sync diagnostics (patina, etc.)
-        let mut diagnostics = Self::collect(state, uri);
+    /// Merge native diagnostics into an already collected, current sync set.
+    /// The server validates its source stamp before handing this set over.
+    pub(crate) async fn collect_async_from_sync(
+        state: &ServerState,
+        uri: &Url,
+        mut diagnostics: Vec<Diagnostic>,
+    ) -> Vec<Diagnostic> {
+        tracing::info!("collect_async: {}", uri);
         tracing::info!("sync diagnostics count: {}", diagnostics.len());
         let native_script_syntax = state.is_lsp_typecheck_enabled()
             && diagnostics

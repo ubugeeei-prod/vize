@@ -20,8 +20,9 @@
 //! reports [`WorkerError::TimedOut`], while the worker keeps draining the
 //! abandoned job so the backend transport is never left half-read. Callers
 //! that arrive while an abandoned job is still draining fail fast instead of
-//! queueing behind it, so a wedged backend costs one deadline in total rather
-//! than one deadline per request.
+//! queueing behind it for synchronous compatibility, startup and shutdown.
+//! Semantic async calls enqueue their actual operation on the same FIFO lane;
+//! the drain consumes that call's original deadline without blocking dispatch.
 //!
 //! Synchronous callers retain their blocking wait. Async callers wait on a
 //! worker-owned reply and a shared deadline wakeup, so the LSP can dispatch
