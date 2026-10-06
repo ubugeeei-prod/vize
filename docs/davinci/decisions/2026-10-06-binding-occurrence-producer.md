@@ -296,6 +296,14 @@ only added hits/file memberships are the six new Field missed remarks.
 The failed run remains unaccepted; fresh source/native/global-security
 qualification and whole protected delivery are still required.
 
+The current hidden facade serves the existing non-resolving lint-demand
+analysis; it does not replace Options API, Vue 2 or filename-resolved provider
+entry points. The child retains legacy paths for those outside-domain modes.
+A declaration span index is a recorded efficiency TODO: the current lookup
+scans owned bindings, and no latency or complexity improvement is claimed.
+Any index must preserve exact binding identities across offset shifts/merges
+and qualify current counters; it is outside this correctness correction.
+
 ### Retained 238/06 terminal source qualification
 
 The exact provider `23813949a926e1c5e80812375402c7a625d8b9a6` and child `06b4c10166cf8b161af09d79794b157b47e2912d` each ended with 23 successful jobs, 16 policy skips, and only the actual dependency security-audit plus aggregate test-report failures. Their four Rust workers and canonical corpora passed. Authenticated small JUnit ZIPs contain 16,329 / 16,343 passing cases with zero failure/error/skip; current actual synthetic checkout trees equal the respective source trees. The 17 SFC occurrence laws, five Croquis drawer laws, incoming joint builtin/occurrence law, and both full default-stdio bodies passed. The latter preserve 22 sessions / 168 whole feature replies, LF/CRLF original physical inputs and the exact retained complete authored expectations. Three shared framing guards also passed. Shared full 17/31 corpus still needs protected execution.
