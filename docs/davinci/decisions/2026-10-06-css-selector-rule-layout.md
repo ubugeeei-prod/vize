@@ -124,7 +124,7 @@ Those positives do not transfer to the incorporated successor.
 
 A concrete prospective merge with independent PR #8076 conflicts only at the
 shared appended canonical line and attribute-file EOF. Relocate this slice's
-complete owned canonical tail to the existing blank line 280, keeping all 350
+complete owned canonical tail to the existing prose line 279, keeping all 350
 incoming lines/prefixes. Place its exact formatter-only attribute block beside
 the existing formatter block; removing it recovers the entire incoming file.
 No attribute value/order for overlapping patterns, original byte, expectation,
@@ -134,5 +134,14 @@ composition before admission, then require fresh source/protected qualification.
 The private first metadata placement at adjacent line 295 still conflicts with
 #8076's line 294 under the actual Git merge algorithm. Keep that failed virtual
 composition distinct; use the unchanged complete owned tail at distant existing
-blank line 280, then require a clean actual prospective merge tree. No queue
+prose line 279, then require a clean actual prospective merge tree. No queue
 admission or source-runtime acceptance was inferred from the failed attempt.
+
+## Necessary canonical formatting correction
+
+Current source42 fails only the JavaScript formatting check because placing the
+complete clause on blank line280 immediately before a list requires another
+separator. Append that exact clause to existing prose line279 and restore the
+original blank line280 instead. All350 incoming line prefixes, reviewed source,
+whole inputs and expected vectors remain; fresh successor checks are required.
+The current42 formatter/Rust observations remain scoped to that source.
