@@ -1,4 +1,14 @@
-use super::{META, script_tests::linter};
+use super::{META, script_reads, script_tests::linter};
+use crate::{
+    context::LintContext,
+    diagnostic::{HelpLevel, LintDiagnostic},
+};
+use std::borrow::Cow;
+use vize_atelier_sfc::{
+    SfcDescriptor,
+    types::{BlockLocation, SfcScriptBlock},
+};
+use vize_l0::Allocator;
 
 #[test]
 fn typeof_probe_must_witness_the_same_runtime_global_across_called_scopes() {
@@ -149,4 +159,76 @@ fn split_statements_unsupported_setup_exports_and_import_conflicts_are_refused()
                 .is_empty()
         );
     }
+}
+
+#[test]
+fn supplied_script_frames_keep_reads_after_trailing_comments_in_both_physical_orders() {
+    for (module, setup) in [
+        (
+            "<script>const local = 0; // module comment</script>",
+            "<script setup>window.innerWidth;</script>",
+        ),
+        (
+            "<script>window.innerWidth;</script>",
+            "<script setup>const local = 0; // setup comment</script>",
+        ),
+    ] {
+        for source in physical_orders(module, setup) {
+            let start = source.find("window.innerWidth").unwrap();
+            // Supplied frames exercise the rule's private boundary mechanism.
+            // They do not claim legacy SFC parser acceptance for a closing tag
+            // inside an unterminated physical line comment.
+            let rows = supplied_frames(&source, module, setup);
+            assert_eq!(rows.len(), 1);
+            assert_eq!(rows[0].rule_name, META.name);
+            assert_eq!(
+                rows[0].message,
+                "'window' is a browser-only global and is not available in SSR"
+            );
+            assert_eq!(
+                (rows[0].start as usize, rows[0].end as usize),
+                (start, start + 6)
+            );
+            assert_eq!(rows[0].severity, crate::diagnostic::Severity::Warning);
+            assert!(rows[0].help.is_none() && rows[0].labels.is_empty() && rows[0].fix.is_none());
+        }
+    }
+}
+
+fn supplied_frames(source: &str, module: &str, setup: &str) -> Vec<LintDiagnostic> {
+    let block = |authored: &str, is_setup| {
+        let tag_start = source.find(authored).unwrap();
+        let start = tag_start + authored.find('>').unwrap() + 1;
+        let end = tag_start + authored.find("</script>").unwrap();
+        SfcScriptBlock {
+            content: Cow::Borrowed(&source[start..end]),
+            loc: BlockLocation {
+                start,
+                end,
+                tag_start,
+                tag_end: tag_start + authored.len(),
+                start_line: 1,
+                start_column: start + 1,
+                end_line: 1,
+                end_column: end + 1,
+            },
+            lang: None,
+            src: None,
+            setup: is_setup,
+            attrs: Default::default(),
+            bindings: None,
+        }
+    };
+    let descriptor = SfcDescriptor {
+        source: Cow::Borrowed(source),
+        script: Some(block(module, false)),
+        script_setup: Some(block(setup, true)),
+        ..Default::default()
+    };
+    let allocator = Allocator::default();
+    let mut ctx = LintContext::new(&allocator, source, "SuppliedFrames.vue");
+    ctx.set_help_level(HelpLevel::None);
+    ctx.set_sfc_descriptor(&descriptor);
+    script_reads::check(&mut ctx);
+    ctx.into_diagnostics()
 }

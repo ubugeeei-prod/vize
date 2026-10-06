@@ -849,6 +849,7 @@ linter	Linter	source	crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr/
 linter	Linter	source	crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr/script_reads.rs	8	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr/script_reads.rs	8	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 linter	Linter	test/dev	crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr/script_reads.rs	304	raw_oxc	raw OXC	raw	oxc_syntax	raw	2
+linter	Linter	test/dev	crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr/script_scope_tests.rs	11	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr/script_symbols.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr/script_symbols.rs	1	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr/script_symbols.rs	1	raw_oxc	raw OXC	raw	oxc_syntax	raw	1

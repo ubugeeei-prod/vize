@@ -37,7 +37,7 @@ Normal-script bindings remain visible to setup in either physical order, while
 setup locals cannot shadow module reads or leak into a called module function.
 No authored reference span or public AST changes. Block/source equality, language,
 external-source and cross-block statement guards refuse an unsupported Program.
-JS, TS, JSX and TSX use their authored parser mode. Mismatched script languages,
+Admitted JS, TS, JSX and TSX blocks use their authored parser mode. Mismatched script languages,
 setup exports and experimental import attributes/phases are not traced. Malformed
 syntax or semantic diagnostics produce no additional script-rule findings;
 ordinary diagnostics remain owned by their existing paths.
@@ -112,3 +112,36 @@ selection and regenerated inventory preserve existing policies. The separate
 security failure belongs to the still-pending security repair baseline. All raw
 failed job logs remain retained; none qualifies the successor or a runtime result.
 The original whole CLI/LSP/SSR assertions and all instruction budgets stay intact.
+
+Fresh successor `24c3dc82e0` no longer panics in actual authored-source lint.
+[Job 112110895370](https://github.com/ubugeeei-prod/vize/actions/runs/37414781119/job/112110895370)
+then reports exactly two real setup-time URL reads in the playground's
+`getInitialTab()` and Musea's `getTabFromUrl()`. The bounded consumer repair uses
+`globalThis.window?.location.search` in their existing URLSearchParams calls:
+browser query/tab behavior stays the same and an absent SSR window yields their
+existing default tab. The two files keep their previous line counts, including
+Musea's grandfathered 366 lines. The zero-warning gate and rule/corpus assertions
+stay unchanged. This [paired correction](https://github.com/ubugeeei-prod/vize/issues/7982#issuecomment-6009503285)
+requires fresh successor Actions; the failed old job does not qualify it.
+
+Independent successor source review closes the first two lexical defects but
+rejects `24c3dc82e0`'s space-only block padding: a trailing authored `//` comment
+can swallow the other real script. One LF now occupies the private padding byte
+immediately after each script content span. Authored bytes and all physical
+reference offsets stay intact. The complete diagnostic controls supply exact
+source-witnessed descriptor frames in both comment/read ownerships and physical
+orders; they qualify that private boundary mechanism, not the legacy SFC parser's
+acceptance of a closing tag inside a trailing line comment. Actual tooling job
+`112110999581` also rejects the existing generated census's stale SfcDescriptor
+non-product row (13/19 versus 14/20). The regenerated current row includes the
+new typed-frame test references (15/21), without changing its generator, baseline
+assertions or public API. These failed receipts require fresh source proof.
+
+The same source's four Rust workers execute 19 distinct rule laws: 18 pass and
+the four-language loop fails with warning count 0 versus its required 1. The
+original whole issue and documentation diagnostics and lexical controls pass,
+but this is not whole-source acceptance. Preserve all four original language
+inputs and expected findings; add only language/error/diagnostic context to that
+assertion so the next hosted result identifies the failing arm. Whole SFC
+admission for those cases remains unfinished; no local parser/native probe or
+weaker expectation replaces the genuine failure.

@@ -55,6 +55,11 @@ pub(super) fn prepare(descriptor: &SfcDescriptor<'_>) -> Option<Source> {
         bytes
             .get_mut(start..end)?
             .copy_from_slice(block.content.as_bytes());
+        // Each real script has its own lexer boundary. A trailing authored
+        // line comment must end before another script's padded AST input.
+        if let Some(separator) = bytes.get_mut(end) {
+            *separator = b'\n';
+        }
         spans.push(Span::new(
             u32::try_from(start).ok()?,
             u32::try_from(end).ok()?,

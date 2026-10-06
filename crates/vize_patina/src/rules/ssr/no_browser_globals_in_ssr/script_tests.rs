@@ -224,7 +224,12 @@ fn language_modes_are_authored_and_invalid_or_external_source_is_refused() {
         ("js", "const value = window.innerWidth;"),
     ] {
         let source = format!("<script setup lang=\"{lang}\">{source}</script><template />");
-        assert_eq!(linter().lint_sfc(&source, "Language.vue").warning_count, 1);
+        let result = linter().lint_sfc(&source, "Language.vue");
+        assert_eq!(
+            result.warning_count, 1,
+            "lang={lang}, errors={}, diagnostics={:?}",
+            result.error_count, result.diagnostics
+        );
     }
     for source in [
         "<script setup lang=\"coffee\">window.innerWidth</script><template />",

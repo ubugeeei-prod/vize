@@ -34,7 +34,7 @@ type TabType = "parsed" | "csf" | "variants";
 const validTabs: TabType[] = ["parsed", "csf", "variants"];
 
 function getTabFromUrl(): TabType {
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(globalThis.window?.location.search);
   const tab = params.get("tab");
   if (tab && validTabs.includes(tab as TabType)) {
     return tab as TabType;

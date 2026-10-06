@@ -31,7 +31,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | item                                      | files | sites |
 | ----------------------------------------- | ----: | ----: |
 | `Bindings`                                |     1 |     2 |
-| `BlockLocation`                           |     1 |     2 |
+| `BlockLocation`                           |     2 |     3 |
 | `CroquisFacts`                            |     4 |     5 |
 | `Demand`                                  |     3 |     6 |
 | `FactConsumer`                            |     4 |     4 |
@@ -44,10 +44,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScriptParseResult`                       |     3 |     3 |
 | `ScriptParserOptions`                     |     2 |     2 |
 | `SfcCustomBlock`                          |     1 |     2 |
-| `SfcDescriptor`                           |    13 |    19 |
+| `SfcDescriptor`                           |    15 |    21 |
 | `SfcError`                                |     1 |     2 |
 | `SfcParseOptions`                         |    14 |    15 |
-| `SfcScriptBlock`                          |     1 |     1 |
+| `SfcScriptBlock`                          |     2 |     2 |
 | `UndefinedRefs`                           |     1 |     2 |
 | `UnusedBindings`                          |     1 |     4 |
 | `collect_options_descriptor`              |     4 |     4 |
