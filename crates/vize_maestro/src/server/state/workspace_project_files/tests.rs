@@ -109,3 +109,96 @@ fn structural_workspace_symbols_need_file_events_without_enabling_the_checker() 
     assert!(!state.project_source_watcher_enabled());
     assert!(state.workspace_project_files.paths.read().is_none());
 }
+
+#[test]
+fn failed_project_walk_retains_available_sources_and_retries_without_an_event() {
+    crate::runtime::block_on(async {
+        let root = tempfile::tempdir().unwrap();
+        let missing = root.path().join("not-created-yet");
+        let available = root.path().join("existing.ts");
+        std::fs::write(&available, "export const existing = 1;").unwrap();
+        let state = ServerState::new();
+        state.set_workspace_root(root.path().to_owned());
+        state.set_workspace_folders(vec![missing.clone()]);
+        let mut expected = vec![(
+            Url::from_file_path(&available).unwrap(),
+            "export const existing = 1;".into(),
+        )];
+        assert_eq!(state.discover_workspace_project_sources().await, expected);
+        assert!(state.workspace_project_files.paths.read().is_none());
+        std::fs::create_dir(&missing).unwrap();
+        let created = missing.join("created.ts");
+        std::fs::write(&created, "export const created = 2;").unwrap();
+        expected.push((
+            Url::from_file_path(created).unwrap(),
+            "export const created = 2;".into(),
+        ));
+        expected.sort_by(|(left, _), (right, _)| left.as_str().cmp(right.as_str()));
+        assert_eq!(state.discover_workspace_project_sources().await, expected);
+        assert!(state.workspace_project_files.paths.read().is_some());
+    });
+}
+
+#[test]
+fn cached_project_read_retries_in_flight_root_folder_and_membership_changes() {
+    crate::runtime::block_on(async {
+        for change in ["root", "folders", "created", "deleted"] {
+            let root = tempfile::tempdir().unwrap();
+            let next = tempfile::tempdir().unwrap();
+            let path = root.path().join("original.ts");
+            let added = next.path().join("added.ts");
+            std::fs::write(&path, "original").unwrap();
+            std::fs::write(&added, "added").unwrap();
+            let uri = Url::from_file_path(&path).unwrap();
+            let added_uri = Url::from_file_path(&added).unwrap();
+            let state = ServerState::new();
+            state.set_workspace_root(root.path().to_owned());
+            assert_eq!(
+                state.discover_workspace_project_sources().await,
+                vec![(uri.clone(), "original".into())]
+            );
+            let (reached, waiting) = futures::channel::oneshot::channel();
+            let (resume, paused) = futures::channel::oneshot::channel();
+            *state.workspace_project_files.read_pause.write() = Some((reached, paused));
+            let mutation = async {
+                waiting.await.unwrap();
+                let mut expected = vec![(uri.clone(), "original".into())];
+                match change {
+                    "root" => {
+                        state.set_workspace_root(next.path().to_owned());
+                        expected = vec![(added_uri.clone(), "added".into())];
+                    }
+                    "folders" => {
+                        state.set_workspace_folders(vec![next.path().to_owned()]);
+                        expected.push((added_uri.clone(), "added".into()));
+                    }
+                    "created" => {
+                        let created = root.path().join("created.ts");
+                        std::fs::write(&created, "created").unwrap();
+                        let created_uri = Url::from_file_path(created).unwrap();
+                        state.observe_workspace_project_file_events(&[FileEvent {
+                            uri: created_uri.clone(),
+                            typ: FileChangeType::CREATED,
+                        }]);
+                        expected.push((created_uri, "created".into()));
+                    }
+                    "deleted" => {
+                        std::fs::remove_file(&path).unwrap();
+                        state.observe_workspace_project_file_events(&[FileEvent {
+                            uri: uri.clone(),
+                            typ: FileChangeType::DELETED,
+                        }]);
+                        expected.clear();
+                    }
+                    _ => unreachable!(),
+                }
+                expected.sort_by(|(left, _), (right, _)| left.as_str().cmp(right.as_str()));
+                resume.send(()).unwrap();
+                expected
+            };
+            let (actual, expected) =
+                futures::join!(state.discover_workspace_project_sources(), mutation);
+            assert_eq!(actual, expected, "{change}");
+        }
+    });
+}

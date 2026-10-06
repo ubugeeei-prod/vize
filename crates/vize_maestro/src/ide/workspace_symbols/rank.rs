@@ -16,8 +16,8 @@ pub(super) fn sort(
             return b_exact.cmp(&a_exact);
         }
 
-        let a_prefix = a_name.starts_with(&query_lower);
-        let b_prefix = b_name.starts_with(&query_lower);
+        let a_prefix = a_name.starts_with(query_lower);
+        let b_prefix = b_name.starts_with(query_lower);
 
         if a_prefix != b_prefix {
             return b_prefix.cmp(&a_prefix);

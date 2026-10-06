@@ -19,7 +19,11 @@ The inventory is lazy and caches only paths, keyed by workspace roots and file
 notification generation. It performs no initialization walk. Closed contents
 are read afresh; open buffers override them. File create/delete/rename and
 watched-source notifications invalidate the snapshot. Discovery failures are
-not cached. The existing native project/session, source mapping, cancellation
+not cached: the same walk retains its error status and still returns available
+sources. Cached reads recheck the generation and roots after background I/O,
+retrying if file membership or configured folders changed in flight. Missing-root
+recovery and controlled root/folder/create/delete races have complete-state laws.
+The existing native project/session, source mapping, cancellation
 and private-URI guards remain authoritative.
 
 Workspace symbols use that same demand-loaded inventory. Existing Vue symbol

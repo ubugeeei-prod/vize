@@ -16,6 +16,8 @@ pub(super) struct Inventory {
     generation: AtomicU64,
     paths: RwLock<Option<CachedPaths>>,
     scan: Mutex<()>,
+    #[cfg(test)]
+    read_pause: RwLock<Option<(oneshot::Sender<()>, oneshot::Receiver<()>)>>,
 }
 
 struct CachedPaths {
@@ -71,48 +73,50 @@ impl ServerState {
     ) -> Vec<(Url, std::string::String)> {
         let inventory = &self.workspace_project_files;
         let sources = loop {
-            let mut roots = self.workspace_root_paths();
-            roots.sort();
-            roots.dedup();
+            let roots = self.project_source_roots();
             let generation = inventory.generation.load(Ordering::Acquire);
             if let Some(uris) = inventory.cached_paths(&roots, generation) {
-                break background(move || read_sources(&uris))
+                if let Some(sources) = self
+                    .read_current_project_sources(uris, &roots, generation)
                     .await
-                    .unwrap_or_default();
+                {
+                    break sources;
+                }
+                continue;
             }
             let _scan = inventory.scan.lock().await;
             if inventory.generation.load(Ordering::Acquire) != generation {
                 continue;
             }
             if let Some(uris) = inventory.cached_paths(&roots, generation) {
-                break background(move || read_sources(&uris))
+                if let Some(sources) = self
+                    .read_current_project_sources(uris, &roots, generation)
                     .await
-                    .unwrap_or_default();
+                {
+                    break sources;
+                }
+                continue;
             }
             let scan_roots = roots.clone();
-            let Some((uris, sources)) = background(move || {
-                let uris = discover_paths(&scan_roots);
+            let Some((uris, sources, complete)) = background(move || {
+                let (uris, complete) = discover_paths(&scan_roots);
                 let sources = read_sources(&uris);
-                (uris, sources)
+                (uris, sources, complete)
             })
             .await
             else {
                 break Vec::new();
             };
-            if inventory.generation.load(Ordering::Acquire) != generation {
+            if !self.project_source_snapshot_current(&roots, generation) {
                 continue;
             }
-            let mut current_roots = self.workspace_root_paths();
-            current_roots.sort();
-            current_roots.dedup();
-            if current_roots != roots {
-                continue;
+            if complete {
+                *inventory.paths.write() = Some(CachedPaths {
+                    generation,
+                    roots,
+                    uris,
+                });
             }
-            *inventory.paths.write() = Some(CachedPaths {
-                generation,
-                roots,
-                uris,
-            });
             break sources;
         };
         let mut sources = sources.into_iter().collect::<FxHashMap<_, _>>();
@@ -129,6 +133,42 @@ impl ServerState {
         sources.sort_by(|(left, _), (right, _)| left.as_str().cmp(right.as_str()));
         sources
     }
+
+    fn project_source_roots(&self) -> Vec<PathBuf> {
+        let mut roots = self.workspace_root_paths();
+        roots.sort();
+        roots.dedup();
+        roots
+    }
+
+    fn project_source_snapshot_current(&self, roots: &[PathBuf], generation: u64) -> bool {
+        self.workspace_project_files
+            .generation
+            .load(Ordering::Acquire)
+            == generation
+            && self.project_source_roots() == roots
+    }
+
+    async fn read_current_project_sources(
+        &self,
+        uris: Vec<Url>,
+        roots: &[PathBuf],
+        generation: u64,
+    ) -> Option<Vec<(Url, std::string::String)>> {
+        let sources = background(move || read_sources(&uris))
+            .await
+            .unwrap_or_default();
+        #[cfg(test)]
+        {
+            let pause = self.workspace_project_files.read_pause.write().take();
+            if let Some((reached, resume)) = pause {
+                let _ = reached.send(());
+                let _ = resume.await;
+            }
+        }
+        self.project_source_snapshot_current(roots, generation)
+            .then_some(sources)
+    }
 }
 
 fn is_project_source(path: &Path) -> bool {
@@ -139,8 +179,9 @@ fn is_project_source(path: &Path) -> bool {
         )
 }
 
-fn discover_paths(roots: &[PathBuf]) -> Vec<Url> {
+fn discover_paths(roots: &[PathBuf]) -> (Vec<Url>, bool) {
     let mut uris = Vec::new();
+    let mut complete = true;
     for root in roots {
         let mut builder = WalkBuilder::new(root);
         builder
@@ -156,18 +197,22 @@ fn discover_paths(roots: &[PathBuf]) -> Vec<Url> {
                     && (!entry.file_type().is_some_and(|kind| kind.is_dir())
                         || !is_excluded_directory(entry.file_name()))
             });
-        uris.extend(
-            builder
-                .build()
-                .filter_map(Result::ok)
-                .filter(|entry| entry.file_type().is_some_and(|kind| kind.is_file()))
-                .filter(|entry| is_project_source(entry.path()))
-                .filter_map(|entry| Url::from_file_path(entry.path()).ok()),
-        );
+        for entry in builder.build() {
+            let Ok(entry) = entry else {
+                complete = false;
+                continue;
+            };
+            if entry.file_type().is_some_and(|kind| kind.is_file())
+                && is_project_source(entry.path())
+                && let Ok(uri) = Url::from_file_path(entry.path())
+            {
+                uris.push(uri);
+            }
+        }
     }
     uris.sort_by(|left, right| left.as_str().cmp(right.as_str()));
     uris.dedup();
-    uris
+    (uris, complete)
 }
 
 async fn background<T: Send + 'static>(work: impl FnOnce() -> T + Send + 'static) -> Option<T> {
