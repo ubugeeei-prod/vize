@@ -56,3 +56,21 @@ Source preparation is unexecuted. Exact original public verification, fresh
 Actions, protected suites and signed actual merge remain required. The global
 LSP history/default/native-stage and performance targets remain unfinished;
 this original code-action scope supplies no broader completion or gain claim.
+
+## First public-original execution and close cursor
+
+One authenticated public434 execution retains terminal exit1 and every original
+wire. Both CLI fixes, the literal client's exact four complete actions/titles,
+all applied-source/suppression controls and authored Unicode/CRLF edits passed.
+The authored close waiter failed by consuming a pre-open no-version backlog
+publication. Full raw order independently shows that packet before initial
+version1, and a genuine empty close packet after version15 plus successful
+omitted shutdown/exit0. This is an observer cursor defect, not an observed
+producer close failure. The failure is retained; it is not a full helper pass.
+
+The close helper registers a live passive observer before sending didClose,
+requires the first subsequent scoped no-version packet whole (including an
+unexpected nonempty packet), and retains all live observations. It uses the
+existing30-second deadline and removes only its own observer/timer. No expected
+value, source, server behavior, original client or budget changes. A meaningful
+corrected-helper execution still must qualify the authored positive closure.

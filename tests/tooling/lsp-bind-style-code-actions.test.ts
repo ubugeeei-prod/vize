@@ -19,6 +19,7 @@ import {
 
 import { compareCliFixes } from "./support/lsp/bind-style/cli.ts";
 import { prepareProviders } from "./support/lsp/bind-style/provider.ts";
+import { closePublication } from "./support/lsp/bind-style/close.ts";
 
 const fixture = path.join(root, "tests/_fixtures/differential/lsp/bind-style-code-actions");
 const observer = fileURLToPath(new URL("./support/lsp/bind-style/observe.mjs", import.meta.url));
@@ -240,14 +241,9 @@ await test("whole original bind-style diagnostics have configured fixes and supp
     }
     await change(++version, parent, diagnostics(parent));
     assert.equal(fs.readFileSync(path.join(workspace, "Parent.vue"), "utf8"), parent);
-    session.notify("textDocument/didClose", { textDocument: { uri } });
-    const closed = await session.waitForNotification(
-      "textDocument/publishDiagnostics",
-      (p) =>
-        (p as { uri: string; version?: number }).uri === uri &&
-        (p as { version?: number }).version === undefined,
-    );
-    rows.push({ method: "didClose publication", result: closed });
+    const close = await closePublication(session, uri);
+    const closed = close.actual;
+    rows.push({ method: "didClose publication", result: closed, liveObserved: close.observed });
     save();
     assert.deepEqual(closed, { uri, diagnostics: [] });
     await session.shutdown();
