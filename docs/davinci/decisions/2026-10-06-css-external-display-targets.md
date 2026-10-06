@@ -31,7 +31,7 @@ and invalid-CSS fallback are unchanged: this is not expanded support for the
 legacy `>>>` or `/deep/` parser grammar. Parsed `::v-deep` / `::v-slotted` retain
 their existing pseudo-element handling and pass their external nested context.
 
-Add 33 independently authored complete regression vectors: both original SFCs,
+Add 47 independently authored complete regression vectors: both original SFCs,
 local and nested positives, mixed alternatives, descendant and sibling cases,
 relational filters, global/root controls, token lookalikes, legacy functional
 forms, layers, conditional/pseudo controls, ordered findings and UTF-8/CRLF.
@@ -41,7 +41,7 @@ input must actually parse, so an empty oracle cannot pass via parser fallback.
 Every rule-off result is also a whole empty `LintResult`.
 
 The ordinary source-CLI observer requires the authenticated compiled build
-receipt, then makes 134 calls: two literal original plain commands, three full
+receipt, then makes 190 calls: two literal original plain commands, three full
 JSON queries and one off query per case. Keep each whole stdout/stderr/status,
 config, source and expected object before assertions, including failed runs.
 Check unchanged source and config bytes and both original neighboring children.
@@ -56,3 +56,14 @@ deduplicate either report based on this preparation or the anonymous real-app
 provenance. Keep #7963 (Nuxt final-comma preservation) and #7938 (generic-attribute
 import reads) as unowned future candidates; their current source causes have
 been inspected, and their runtime status is unknown.
+
+Private review found two opposite nesting boundaries in the first 6591051 source:
+`:is(& + .local)` can select a sibling outside the inherited external subtree,
+while nested `.header + .body` stays within that subtree. The locked parcel
+selector parser adds an implicit nesting prefix only when no nested `&` occurs;
+`:is()`/`:where()`/`:has()`/`:not()` propagate that nesting state. Follow the
+actual prefix and unanimous subject alternatives, without a blanket inherited
+fallback. A sibling crossing is uncertain until a child/descendant step proves
+a shared ancestor. Add 14 complete controls for these boundaries; preserve all
+33 prior case objects and both full original reports. This is a source-review
+correction, with no compiled acceptance transferred from the old private tree.

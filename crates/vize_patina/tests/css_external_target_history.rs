@@ -36,7 +36,7 @@ fn expected_diagnostic(start: u32) -> LintDiagnostic {
 fn both_originals_and_subject_controls_preserve_complete_api_and_cli_reports() {
     let corpus: Corpus =
         serde_json::from_str(include_str!("fixtures/issue-7976/cases.json")).unwrap();
-    assert_eq!(corpus.cases.len(), 33);
+    assert_eq!(corpus.cases.len(), 47);
     let linter = Linter::with_preset(LintPreset::Incremental)
         .with_enabled_rules(Some(vec![RULE.into()]))
         .with_locale(Locale::En)

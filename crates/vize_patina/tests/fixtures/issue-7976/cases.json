@@ -793,6 +793,342 @@
           "warningCount": 1
         }
       ]
+    },
+    {
+      "id": "inherited-is-target",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :is(&) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 114,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "inherited-where-target",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :where(&) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 117,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "inherited-is-sibling",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :is(& + .local) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 123,
+      "expectedStarts": [
+        104
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 43,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "inherited-where-sibling",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :where(& ~ .local) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 126,
+      "expectedStarts": [
+        107
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 39,
+              "endLine": 3,
+              "endColumn": 46,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "inherited-is-mixed",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :is(&, .local) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 122,
+      "expectedStarts": [
+        103
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 35,
+              "endLine": 3,
+              "endColumn": 42,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "inherited-where-mixed",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { :where(&, .local) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 125,
+      "expectedStarts": [
+        106
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 38,
+              "endLine": 3,
+              "endColumn": 45,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "inherited-has-local",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { .local:has(&) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 121,
+      "expectedStarts": [
+        102
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 34,
+              "endLine": 3,
+              "endColumn": 41,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "inherited-not-local",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { .local:not(&) { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 121,
+      "expectedStarts": [
+        102
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 34,
+              "endLine": 3,
+              "endColumn": 41,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "external-nested-adjacent",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { .header + .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 123,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "external-nested-later",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { .header ~ .body { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 123,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "external-flat-adjacent",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) .header + .body { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 119,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "external-flat-child-adjacent",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) > .header + .body { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 121,
+      "expectedStarts": [],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "local-flat-sibling-descendant",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) + .local .child { display: none; }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 119,
+      "expectedStarts": [
+        102
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 34,
+              "endLine": 3,
+              "endColumn": 41,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "local-nested-sibling-descendant",
+      "filename": "Control.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:deep(.remote) { & + .local .child { display: none; } }\n</style>\n",
+      "styleStart": 68,
+      "styleEnd": 125,
+      "expectedStarts": [
+        106
+      ],
+      "expectedCli": [
+        {
+          "file": "Control.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 38,
+              "endLine": 3,
+              "endColumn": 45,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
     }
   ]
 }

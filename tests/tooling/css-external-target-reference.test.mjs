@@ -17,6 +17,14 @@ await test("CSS target corpus retains both distinct originals and whole conserva
     "sibling-subject",
     "nested-sibling",
     "attribute-string",
+    "inherited-is-sibling",
+    "inherited-where-sibling",
+    "inherited-is-mixed",
+    "inherited-where-mixed",
+    "inherited-has-local",
+    "inherited-not-local",
+    "local-flat-sibling-descendant",
+    "local-nested-sibling-descendant",
   ])
     assert.equal(row(id).expectedCli[0].warningCount, 1);
   for (const id of [
@@ -27,6 +35,12 @@ await test("CSS target corpus retains both distinct originals and whole conserva
     "external-layer",
     "is-external",
     "where-external",
+    "inherited-is-target",
+    "inherited-where-target",
+    "external-nested-adjacent",
+    "external-nested-later",
+    "external-flat-adjacent",
+    "external-flat-child-adjacent",
   ])
     assert.deepEqual(row(id).expectedCli[0].messages, []);
   assert.equal(row("ordered-mixed").expectedCli[0].messages.length, 2);

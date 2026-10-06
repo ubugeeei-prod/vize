@@ -22,7 +22,7 @@ export function frozenCorpus() {
   }
   const corpus = JSON.parse(fs.readFileSync(path.join(fixture, "cases.json"), "utf8"));
   assert.equal(corpus.cases.length, source.caseCount);
-  assert.equal(source.caseCount, 33);
+  assert.equal(source.caseCount, 47);
   const ids = new Set();
   for (const row of corpus.cases) {
     assert(!ids.has(row.id));

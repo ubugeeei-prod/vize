@@ -63,10 +63,10 @@
   "authored": [
     {
       "file": "cases.json",
-      "bytes": 26336,
-      "sha256": "13949422c6a5ee84f0dd093699d49f96671e23f4b2d6a71d0a659674bb2a623f"
+      "bytes": 37365,
+      "sha256": "e6ed51138e8c386eae272ae5a3cd6b5d6347bdb7c9ac405fa0c3a6ecab68911e"
     }
   ],
-  "caseCount": 33,
+  "caseCount": 47,
   "scope": "Existing parsed subject/deep/slotted ownership only. Mixed/local/relational/sibling/global subjects and existing parser flags/conditional/pseudo behavior stay conservative. No generic custom-directive exemption."
 }

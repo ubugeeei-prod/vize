@@ -141,35 +141,39 @@ impl NoDisplayNone {
 }
 
 /// Match the selected subject, not names in strings or a :has()/:not() filter.
-/// Mixed selector lists still warn for their local target. A sibling step does
-/// not establish that the selected element belongs to the preceding deep target.
+/// Mixed selector lists still warn for their local target. Siblings can stay
+/// within a foreign ancestor, but crossing that ancestor's boundary cannot.
 fn external_target(selector: &Selector<'_>, inherited: bool) -> bool {
+    let mut sibling_boundary = false;
     for component in selector.iter_raw_match_order() {
         match component {
             Component::NonTSPseudoClass(PseudoClass::CustomFunction { name, arguments })
                 if matches!(name.as_ref(), "deep" | "slotted") && !arguments.0.is_empty() =>
             {
-                return true;
+                return !sibling_boundary;
             }
             Component::PseudoElement(
                 PseudoElement::Custom { name } | PseudoElement::CustomFunction { name, .. },
-            ) if matches!(name.as_ref(), "v-deep" | "v-slotted") => return true,
-            Component::Slotted(_) => return true,
+            ) if matches!(name.as_ref(), "v-deep" | "v-slotted") => return !sibling_boundary,
+            Component::Slotted(_) => return !sibling_boundary,
             Component::Is(selectors) | Component::Where(selectors)
                 if selectors
                     .iter()
-                    .all(|selector| external_target(selector, false)) =>
+                    .all(|selector| external_target(selector, inherited)) =>
             {
-                return true;
+                return !sibling_boundary;
             }
             Component::Combinator(Combinator::NextSibling | Combinator::LaterSibling) => {
-                return false;
+                sibling_boundary = true;
             }
-            Component::Nesting => return inherited,
+            Component::Combinator(Combinator::Child | Combinator::Descendant) => {
+                sibling_boundary = false;
+            }
+            Component::Nesting => return inherited && !sibling_boundary,
             _ => {}
         }
     }
-    inherited
+    false
 }
 
 #[cfg(test)]
