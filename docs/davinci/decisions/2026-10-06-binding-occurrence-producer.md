@@ -244,3 +244,11 @@ Initialize two independent identical Croquis inputs instead; the full source,
 ordinary/captured comparison, refusal and later-block assertions remain fixed.
 No production type or Clone implementation changes. This mechanical test-only
 repair needs fresh configured Actions; the audit failures remain separate.
+
+The current hidden facade serves the existing non-resolving lint-demand
+analysis; it does not replace Options API, Vue 2 or filename-resolved provider
+entry points. The child retains legacy paths for those outside-domain modes.
+A declaration span index is a recorded efficiency TODO: the current lookup
+scans owned bindings, and no latency or complexity improvement is claimed.
+Any index must preserve exact binding identities across offset shifts/merges
+and qualify current counters; it is outside this correctness correction.
