@@ -153,10 +153,11 @@ fn editor_vue_version_is_owned_by_the_matching_folder_and_global_fallback() {
         .enumerate()
         .map(|(index, root)| WorkspaceFolder {
             uri: Url::from_file_path(root).unwrap(),
-            name: format!("folder-{index}"),
+            name: ["folder-0", "folder-1", "folder-2"][index].to_owned(),
         })
         .collect();
     let state = ServerState::new();
+    state.load_workspace_config(&roots[0]);
     state.apply_initialize_workspace_folders(Some(&folders), Some(&roots[0]));
     for (index, root) in roots.iter().enumerate() {
         for case in &data["cases"].as_array().unwrap()[..6] {
