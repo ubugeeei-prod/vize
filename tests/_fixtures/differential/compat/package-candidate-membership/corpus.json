@@ -1,0 +1,35 @@
+{
+  "schema": "vize.check.package-candidate-membership",
+  "version": 1,
+  "origin": {
+    "issue": 8099,
+    "sourceHead": "f0a64efd05a47f1fb167fb676d39dec92f0ba5c8",
+    "description": "Complete unchanged authored real-JavaScript workspace inputs which exposed the current CLI defect."
+  },
+  "files": {
+    "ViteApp.vue.txt": {
+      "bytes": 648,
+      "sha256": "cc70dd2b840ccff5f76c843ac4b96257c78ac7d1c0f121e71caeb115c560ec83"
+    },
+    "BadgeCard.vue.txt": {
+      "bytes": 189,
+      "sha256": "59bb8ae6f913d6af826c769a849899a94cc31185657e78300de804d98a14b03f"
+    },
+    "ui-package-typed.json.txt": {
+      "bytes": 289,
+      "sha256": "6b2afba6266ffe3904b6f6d22bec9942bc516be19fbeae54135ae39e271b9b9d"
+    },
+    "pricing-package.json.txt": {
+      "bytes": 154,
+      "sha256": "33802dd27f70b1b971af5e778008ced1275217b94b0f9311399d0bbe371ea2cb"
+    },
+    "pricing-index.js.txt": {
+      "bytes": 193,
+      "sha256": "4382e563cc8aa113f9fc2d74294890a48dcd679682da3ce070b5ca9cae4dc469"
+    },
+    "pricing-label.mjs.txt": {
+      "bytes": 143,
+      "sha256": "f69b07aa5a85f573ffd4b1c64188b8c79c0d4997fdb2531e5548ae8ffee626a6"
+    }
+  }
+}
