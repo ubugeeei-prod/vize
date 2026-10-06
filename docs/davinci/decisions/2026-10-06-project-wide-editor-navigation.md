@@ -26,6 +26,16 @@ recovery and controlled root/folder/create/delete races have complete-state laws
 The existing native project/session, source mapping, cancellation
 and private-URI guards remain authoritative.
 
+The original regular-script `export const shared` integration law already
+asserted the complete five-location project result with `crossFile: true`.
+Its former false-flag condition excluded the unopened named-export importer;
+that expectation encoded the #8013 bug, rather than a setup-local namespace.
+Both lint values now require the same existing complete exported-symbol oracle,
+with original SFCs, configuration, request, ordering and declaration flags intact.
+The separate setup-local, lexical-shadow and dirty/close laws are unchanged.
+This correction follows the public project-wide API contract and pinned native
+`ProvideReferences` declaration/group semantics, not a Vize output recapture.
+
 Workspace symbols use that same demand-loaded inventory. Existing Vue symbol
 production and ranking remain; ordinary script declarations use their
 original AST identifier spans and UTF-16 ranges, without descending into
