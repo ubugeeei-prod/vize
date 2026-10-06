@@ -58,3 +58,15 @@ reported client, framing bytes, arguments, return value and semantic controls.
 The original client shutdown request remains byte-exact and unasserted; only
 its diagnostics/full-frame custody and child-close status are credited by
 that witness. Authored controls separately assert shutdown/exit success.
+
+Historical7019 reaches all original TS/native/CLI/editor and manifest-retarget
+controls, then its authored ordinary JS package exposes a missing stock oracle
+entry. Pinned native7.0.2 checker `errorOnImplicitAnyModule` preserves TS7016
+as a suggestion for the untyped `.js` package; the LSP converter presents the
+whole diagnostic with severity4, source `ts`, no absent-capability tags and
+the actual authored package path. Add that complete diagnostic before the
+existing bare-script unused suggestion, with the original import quote ranges
+for both documents. Preserve every raw JS package byte and the existing Vize
+whole vectors; no package declaration, filtering or production change hides
+this independent stock warning. Fresh execution must establish the remaining
+ordinary JS editor behavior and TypeScript-config JS cases.

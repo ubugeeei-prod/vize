@@ -5,7 +5,7 @@ import path from "node:path";
 import { diagnostic, save } from "./editor-jsconfig.ts";
 import { original } from "./package-private-imports.ts";
 
-export function vectors(mode: string, native = false): Record<string, unknown[]> {
+export function vectors(mode: string, native = false, directory = ""): Record<string, unknown[]> {
   const argument = "Argument of type 'number' is not assignable to parameter of type 'string'.";
   const missing = "Cannot find module '#lib/util.js' or its corresponding type declarations.";
   const app =
@@ -20,6 +20,13 @@ export function vectors(mode: string, native = false): Record<string, unknown[]>
       : mode === "missing-target"
         ? [diagnostic(2307, missing, 0, 22, 36, native)]
         : [];
+  if (native && mode === "ordinary-package") {
+    // Pinned checker.errorOnImplicitAnyModule retains this untyped JS suggestion.
+    const packageFile = path.join(directory, "node_modules/ordinary/index.js");
+    const message = `Could not find a declaration file for module 'ordinary'. '${packageFile}' implicitly has an 'any' type.`;
+    app.push({ ...diagnostic(7016, message, 1, 22, 32, true), severity: 4 });
+    main.push({ ...diagnostic(7016, message, 0, 22, 32, true), severity: 4 });
+  }
   if (native)
     app.push(
       diagnostic(6133, "'message' is declared but its value is never read.", 3, 6, 13, true),

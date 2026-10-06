@@ -87,7 +87,7 @@ test(
               bare,
               "js",
               "src/main.js",
-              vectors(mode, true),
+              vectors(mode, true, directory),
               name,
               runtime,
             );
