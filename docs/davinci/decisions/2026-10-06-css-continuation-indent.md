@@ -42,3 +42,10 @@ checks are preparation only. The ordinary vp wrapper is unavailable in this
 sparse tree; existing physical oxfmt/oxlint perform static checks without an
 install. No old source-only review or stock execution grants current runtime
 acceptance.
+
+Initial source a594 Check37465495241 failed check-js solely because inserting
+the owned canonical paragraph removed a required list-to-prose blank line.
+Retain the whole failed log (599f3b70b9a7c3f5f3631cc637b5e0e2455d138f2573f06d4a38634e9d85030b),
+restore the incoming blank and append the exact clause to existing prose.
+All production/originals/references/protocols remain unchanged; fresh exact
+source qualification is required without transferring prior runtime credit.
