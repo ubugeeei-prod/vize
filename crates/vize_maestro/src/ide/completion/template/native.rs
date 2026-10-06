@@ -7,19 +7,29 @@ use crate::ide::{IdeContext, is_component_tag};
 
 use super::tag_context::{is_prop_completion_prefix, opening_tag_context_at_offset};
 
-pub(super) fn native_element_attribute_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
+pub(super) fn native_element_attribute_completions(
+    ctx: &IdeContext,
+    component: &[CompletionItem],
+) -> Vec<CompletionItem> {
     let Some(tag_ctx) = opening_tag_context_at_offset(&ctx.content, ctx.offset) else {
         return Vec::new();
     };
-    if tag_ctx.inside_attribute_value
-        || is_component_tag(&tag_ctx.tag_name)
-        || !is_prop_completion_prefix(&tag_ctx.current_token)
-    {
+    if tag_ctx.inside_attribute_value || !is_prop_completion_prefix(&tag_ctx.current_token) {
         return Vec::new();
     }
 
     let mut items = common_attribute_completions();
-    items.extend(tag_attribute_completions(&tag_ctx.tag_name));
+    if is_component_tag(&tag_ctx.tag_name) {
+        // An explicitly declared prop owns its type and documentation. The
+        // common HTML table only supplies attributes absent from that surface.
+        items.retain(|attribute| {
+            !component.iter().any(|prop| {
+                prop.kind == Some(CompletionItemKind::PROPERTY) && prop.label == attribute.label
+            })
+        });
+    } else {
+        items.extend(tag_attribute_completions(&tag_ctx.tag_name));
+    }
     items
 }
 
