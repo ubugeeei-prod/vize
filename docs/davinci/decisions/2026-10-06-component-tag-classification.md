@@ -96,3 +96,47 @@ preserves the failed raw record and the independent Security13/surface
 rejections. Fresh actual-source ordinary/native Actions must run all47 whole
 responses, prior tag laws and protected ceilings before signed delivery and
 public inclusion. No runtime, timing or10x credit transfers.
+
+## Actual coordinate assertion-lint rejection
+
+Current54fc Tooling4 job112111392902 rejects the newly added pure caret
+control's partial closing-tag contains assertion. The complete686,568-byte
+log has SHA-256
+`0f9bf4364231112f1050a45c7081953368eeb545c4c74fe0b48de7ed9a1597e4`.
+Both frozen sources leave exactly `\n</template>\n`, or
+`\r\n</template>\r\n`, after their correct authored bare caret. Compare the
+entire remaining suffix while preserving all other coordinate assertions,
+original sources, production and full47 provider expectations. The
+[paired decision](https://github.com/ubugeeei-prod/vize/issues/8001#issuecomment-6009551359)
+retains the genuine rejection; no lint allowlist, cap, removed law or provider
+recapture is introduced. Preserve the running54fc native/Rust observation
+before successor publication. Current successor execution, old native gates,
+protected acceptance, actual merge and public inclusion remain pending.
+
+## Actual corrected-coordinate failure and query custody
+
+Exact54fc Native37414908427/job112111285845 retains three whole-response
+failures after the independent caret law passes. The original199vs195 items
+still include DialogState/SORT_OPTIONS and kebab variants; the two negative
+controls also retain their component item. Full raw591,590B
+`b3b5b79c84540cdf87128bf5eee59ecf243d6109b421b336af80e67ad5da7a76`,
+official small11390928685 digest `b52dcfc3d1836dc3919b67468578e7345b77bad4f37763e5c5c3769c2b9d288c`
+and all1,256 safeCRC members preserve four actual process captures. The
+independent current custody182efdad retains14 observations/11 whole matches
+and3 failures. Disabled exits0; failed sessions SIGKILL during assertion
+unwind. Their release-queue-closed warnings are evidence, not a proven cause.
+
+The [paired decision](https://github.com/ubugeeei-prod/vize/issues/8001#issuecomment-6009677837)
+adds opt-in complete custody to existing generated source/positions,
+project/source guards, module/export/declared/binding/assignability queries,
+errors and release. Maestro retains its exact source/stage/bridge return in
+existing stderr. The native helper enables capture only under the existing
+always-uploaded subtree; ordinary/default recording constructs no response
+copies. Best-effort output must be whole and within the existing16MiB cap;
+missing/oversized evidence never supplies a partial type result. No extra
+backend query/process/stage, config selection/rewrite, timeout/retry,
+expectation recapture or successful lifecycle claim is added. All original
+pins/full47 vectors and old tag laws remain exact. Fresh Actions must expose
+the actual native refusal before product qualification; current failed raw
+and Security13 stay separate. No native, protected, public, timing or10x
+credit transfers.

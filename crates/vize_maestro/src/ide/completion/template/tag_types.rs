@@ -1,13 +1,14 @@
 //! Recorded binding spans map to the acknowledged canonical checker document.
 
 use crate::ide::{IdeContext, corsa_support, position_to_offset};
-use std::collections::BTreeMap;
+use serde_json::json;
+use std::{collections::BTreeMap, sync::OnceLock};
 use vize_atelier_sfc::croquis::{
     SfcCroquisAnalysis, SfcCroquisOptions, script_content_for_descriptor,
 };
 use vize_canon::CorsaBridge;
 use vize_croquis::{Croquis, ScopeData};
-use vize_l0::String;
+use vize_l0::{String, cstr};
 use vize_relief::BindingType;
 
 pub(super) fn script_analysis(
@@ -28,21 +29,29 @@ pub(super) async fn classify(
     analysis: &SfcCroquisAnalysis,
     bridge: &CorsaBridge,
 ) -> BTreeMap<String, bool> {
-    classify_inner(ctx, analysis, bridge)
-        .await
-        .unwrap_or_default()
+    let mut stage = "script_setup";
+    let result = classify_inner(ctx, analysis, bridge, &mut stage).await;
+    if capture_enabled() {
+        tracing::warn!(target: "vize_component_types", evidence = %json!({
+            "uri":ctx.uri.as_str(),"source":ctx.content,"stage":stage,"result":result
+        }), "component classification guard custody");
+    }
+    result.unwrap_or_default()
 }
 
 async fn classify_inner(
     ctx: &IdeContext<'_>,
     analysis: &SfcCroquisAnalysis,
     bridge: &CorsaBridge,
+    stage: &mut &'static str,
 ) -> Option<BTreeMap<String, bool>> {
     if !analysis.croquis.bindings.is_script_setup || ctx.state.legacy_vue2_enabled() {
         return None;
     }
+    *stage = "script_descriptor";
     let descriptor = ctx.descriptor()?;
     let script = analysis.script_content_ref()?;
+    *stage = "vue_value_import";
     let module = analysis.croquis.scopes.iter().find_map(|scope| {
         let ScopeData::ExternalModule(import) = scope.data() else {
             return None;
@@ -59,6 +68,7 @@ async fn classify_inner(
                 as usize,
         )
     })?;
+    *stage = "authored_binding_spans";
     let candidates = analysis
         .croquis
         .bindings
@@ -81,6 +91,7 @@ async fn classify_inner(
     if candidates.is_empty() {
         return None;
     }
+    *stage = "canonical_document";
     let document = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
     let position = |offset| {
         let (line, character) =
@@ -99,7 +110,9 @@ async fn classify_inner(
             byte,
         ))
     };
+    *stage = "vue_module_mapping";
     let (module, _) = position(module)?;
+    *stage = "binding_mappings";
     let requests = candidates
         .into_iter()
         .filter_map(|(name, offset)| {
@@ -113,6 +126,7 @@ async fn classify_inner(
         .iter()
         .map(|(_, position)| *position)
         .collect::<Vec<_>>();
+    *stage = "native_component_types";
     let values = bridge
         .component_types(
             &document.request_uri,
@@ -120,12 +134,19 @@ async fn classify_inner(
             module,
             &positions,
         )
-        .await
-        .ok()
-        .flatten()?;
+        .await;
+    if capture_enabled() {
+        tracing::warn!(target: "vize_component_types", evidence = %json!({
+            "uri":ctx.uri.as_str(),"requestUri":document.request_uri,"modulePosition":module,
+            "bindings":requests,"positions":positions,"result":cstr!("{values:?}")
+        }), "component native return custody");
+    }
+    let values = values.ok().flatten()?;
+    *stage = "native_vector_length";
     if values.len() != requests.len() {
         return None;
     }
+    *stage = "complete";
     Some(
         requests
             .into_iter()
@@ -133,4 +154,9 @@ async fn classify_inner(
             .filter_map(|((name, _), value)| value.map(|value| (name, value)))
             .collect(),
     )
+}
+
+fn capture_enabled() -> bool {
+    static CAPTURE: OnceLock<bool> = OnceLock::new();
+    *CAPTURE.get_or_init(|| std::env::var_os("VIZE_COMPONENT_TYPE_CAPTURE").is_some())
 }

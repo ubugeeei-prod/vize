@@ -9,8 +9,11 @@ use corsa::{
     api::{ApiClient, ProjectHandle, SnapshotHandle, TypeResponse},
     runtime::block_on,
 };
+use serde_json::json;
 use std::path::Path;
 use vize_l0::{String, cstr};
+
+mod capture;
 
 // Native 7.0.2 checker/ast flags. These test unavailable type evidence, not names.
 const ANY_OR_UNKNOWN: u32 = (1 << 0) | (1 << 1);
@@ -25,52 +28,100 @@ impl EditorLspSession {
         vue_module: u32,
         positions: &[u32],
     ) -> Result<Option<Vec<Option<bool>>>, String> {
-        self.ready_document_uri(uri)?;
+        let mut capture = capture::Capture::new();
+        capture.record("request", || {
+            json!({
+                "uri":uri,"source":source,"vueModulePosition":vue_module,"positions":positions
+            })
+        });
+        let ready = self.ready_document_uri(uri);
+        capture.record("readiness", || json!({"error":ready.as_ref().err()}));
+        ready?;
         if self.configured_api.is_none() {
             // Default editor sessions also need the same-process checker API.
             // Retain it before any fallible query; existing owner-first close
             // releases this attachment on shutdown, discard, and recovery.
-            self.configured_api = Some(
-                self.attach_api()
-                    .map_err(super::configured_project::configuration_error)?,
-            );
+            let attachment = self
+                .attach_api()
+                .map_err(super::configured_project::configuration_error);
+            capture.record("attachment", || json!({"error":attachment.as_ref().err()}));
+            self.configured_api = Some(attachment?);
         }
         let api = self
             .configured_api
             .as_ref()
             .ok_or_else(|| cstr!("Component type attachment is missing"))?;
+        capture.record("retainedAttachment", || json!(api.session));
         let communication = |error| cstr!("Cannot classify component types: {error}");
-        let mut owner = SnapshotSourceOwner::create(&api.client).map_err(communication)?;
+        let snapshot = SnapshotSourceOwner::create(&api.client).map_err(communication);
+        capture.record("snapshot", || json!({"error":snapshot.as_ref().err()}));
+        let mut owner = snapshot?;
+        capture.record("snapshotHandle", || json!(owner.handle()));
         let result = (|| {
-            let Some(selected) = block_on(api.client.get_default_project_for_file(
+            let selected = block_on(api.client.get_default_project_for_file(
                 owner.handle().clone(),
                 uri_document_identifier(uri),
             ))
-            .map_err(communication)?
-            else {
+            .map_err(communication);
+            capture.record("defaultProject", || match &selected {
+                Ok(value) => json!({"result":value}),
+                Err(error) => json!({"error":error}),
+            });
+            let Some(selected) = selected? else {
                 return Ok(None);
             };
-            let Ok(project) = owner
+            let admitted = owner
                 .project(Path::new(selected.config_file_name.as_str()))
-                .map_err(communication)?
-            else {
+                .map_err(communication);
+            capture.record("projectAdmission", || match &admitted {
+                Ok(Ok(project)) => {
+                    json!({"project":project.descriptor(),"sourceNames":project.source_names()})
+                }
+                Ok(Err(reason)) => json!({"refusal":cstr!("{reason:?}")}),
+                Err(error) => json!({"error":error}),
+            });
+            let Ok(project) = admitted? else {
                 return Ok(None);
             };
+            capture.record("selectedProjectMatches", || {
+                json!(project.descriptor() == &selected)
+            });
             if project.descriptor() != &selected {
                 return Ok(None);
             }
-            let SourceTextOutcome::Complete(text) = project.read(uri).map_err(communication)?
-            else {
+            let text = project.read(uri).map_err(communication);
+            capture.record("sourceRead", || match &text {
+                Ok(SourceTextOutcome::Complete(text)) => json!({
+                    "text":text.text(),"fileName":text.file_name(),"path":text.path(),"uri":text.uri()
+                }),
+                Ok(SourceTextOutcome::Refused {reason,encoded}) => json!({
+                    "refusal":cstr!("{reason:?}"),"encoded":encoded.as_ref().map(|value|value.as_bytes())
+                }),
+                Err(error) => json!({"error":error})
+            });
+            let SourceTextOutcome::Complete(text) = text? else {
                 return Ok(None);
             };
+            capture.record("sourceMatches", || json!(text.text() == source));
             if text.text() != source {
                 return Ok(None);
             }
             let snapshot = owner.handle();
             let project_id = &project.descriptor().id;
-            let Some(target) = component_target(&api.client, snapshot, project_id, uri, vue_module)
-                .map_err(communication)?
-            else {
+            let target = component_target(
+                &api.client,
+                snapshot,
+                project_id,
+                uri,
+                vue_module,
+                &mut capture,
+            )
+            .map_err(communication);
+            capture.record("componentTarget", || match &target {
+                Ok(value) => json!({"result":value}),
+                Err(error) => json!({"error":error}),
+            });
+            let Some(target) = target? else {
                 return Ok(None);
             };
             let types = block_on(api.client.get_types_at_positions(
@@ -79,29 +130,44 @@ impl EditorLspSession {
                 uri_document_identifier(uri),
                 positions.to_vec(),
             ))
-            .map_err(communication)?;
+            .map_err(communication);
+            capture.record("bindingTypes", || match &types {
+                Ok(value) => json!({"result":value}),
+                Err(error) => json!({"error":error}),
+            });
+            let types = types?;
             if types.len() != positions.len() {
                 return Ok(None);
             }
             types
                 .into_iter()
-                .map(|value| {
+                .zip(positions)
+                .map(|(value, position)| {
                     let Some(value) = value.filter(known_type) else {
                         return Ok(None);
                     };
-                    block_on(api.client.is_type_assignable_to(
+                    let assigned = block_on(api.client.is_type_assignable_to(
                         snapshot.clone(),
                         project_id.clone(),
                         value.id,
                         target.id.clone(),
                     ))
-                    .map(Some)
-                    .map_err(communication)
+                    .map_err(communication);
+                    capture.record("assignability", || match &assigned {
+                        Ok(value) => json!({"position":position,"result":value}),
+                        Err(error) => json!({"position":position,"error":error}),
+                    });
+                    assigned.map(Some)
                 })
                 .collect::<Result<Vec<_>, _>>()
                 .map(Some)
         })();
+        capture.record("classification", || match &result {
+            Ok(value) => json!({"result":value}),
+            Err(error) => json!({"error":error}),
+        });
         let cleanup = owner.release().map_err(communication);
+        capture.record("release", || json!({"error":cleanup.as_ref().err()}));
         match (result, cleanup) {
             (Ok(value), Ok(())) => Ok(value),
             (Err(error), _) | (_, Err(error)) => Err(error),
@@ -119,26 +185,36 @@ fn component_target(
     project: &ProjectHandle,
     uri: &str,
     position: u32,
+    capture: &mut capture::Capture,
 ) -> corsa::Result<Option<TypeResponse>> {
-    let Some(module) = block_on(api.get_symbol_at_position(
+    let module = block_on(api.get_symbol_at_position(
         snapshot.clone(),
         project.clone(),
         uri_document_identifier(uri),
         position,
-    ))?
-    else {
+    ));
+    capture.record("moduleSymbol", || match &module {
+        Ok(value) => json!({"result":value}),
+        Err(error) => json!({"error":cstr!("{error}")}),
+    });
+    let Some(module) = module? else {
         return Ok(None);
     };
     if module.flags & MODULE == 0 {
         return Ok(None);
     }
-    let mut exports = block_on(api.get_exports_of_symbol_in_project(
+    let exports = block_on(api.get_exports_of_symbol_in_project(
         snapshot.clone(),
         project.clone(),
         module.id,
-    ))?
-    .into_iter()
-    .filter(|symbol| symbol.name == "Component");
+    ));
+    capture.record("moduleExports", || match &exports {
+        Ok(value) => json!({"result":value}),
+        Err(error) => json!({"error":cstr!("{error}")}),
+    });
+    let mut exports = exports?
+        .into_iter()
+        .filter(|symbol| symbol.name == "Component");
     let Some(mut symbol) = exports.next() else {
         return Ok(None);
     };
@@ -146,17 +222,24 @@ fn component_target(
         return Ok(None);
     }
     if symbol.flags & ALIAS != 0 {
-        let Some(resolved) =
-            block_on(api.get_aliased_symbol(snapshot.clone(), project.clone(), symbol.id))?
-        else {
+        let resolved =
+            block_on(api.get_aliased_symbol(snapshot.clone(), project.clone(), symbol.id));
+        capture.record("componentAlias", || match &resolved {
+            Ok(value) => json!({"result":value}),
+            Err(error) => json!({"error":cstr!("{error}")}),
+        });
+        let Some(resolved) = resolved? else {
             return Ok(None);
         };
         symbol = resolved;
     }
-    Ok(
-        block_on(api.get_declared_type_of_symbol(snapshot.clone(), project.clone(), symbol.id))?
-            .filter(known_type),
-    )
+    let declared =
+        block_on(api.get_declared_type_of_symbol(snapshot.clone(), project.clone(), symbol.id));
+    capture.record("declaredComponentType", || match &declared {
+        Ok(value) => json!({"result":value}),
+        Err(error) => json!({"error":cstr!("{error}")}),
+    });
+    Ok(declared?.filter(known_type))
 }
 
 impl CorsaProjectClient {
@@ -167,11 +250,24 @@ impl CorsaProjectClient {
         vue_module: u32,
         positions: &[u32],
     ) -> Result<Option<Vec<Option<bool>>>, String> {
-        if self.document_texts.get(uri).map(String::as_str) != Some(source) {
+        let mut capture = capture::Capture::new();
+        let matched = self.document_texts.get(uri).map(String::as_str) == Some(source);
+        capture.record("clientSourceAdmission", || {
+            json!({
+                "uri":uri,"requestedSource":source,"retainedSource":self.document_texts.get(uri),
+                "matches":matched
+            })
+        });
+        if !matched {
             return Ok(None);
         }
-        self.request_with_editor_lsp_recovery(|session| {
+        let result = self.request_with_editor_lsp_recovery(|session| {
             session.component_types(uri, source, vue_module, positions)
-        })
+        });
+        capture.record("clientResult", || match &result {
+            Ok(value) => json!({"result":value}),
+            Err(error) => json!({"error":error}),
+        });
+        result
     }
 }

@@ -101,7 +101,10 @@ fn authored_bare_caret_precedes_the_later_template_closing_tag() {
                 before.rsplit('\n').next().unwrap().encode_utf16().count(),
                 character
             );
-            assert!(source[before.len()..].contains("</template>"));
+            assert_eq!(
+                &source[before.len()..],
+                format!("{newline}</template>{newline}")
+            );
         }
     }
 }
