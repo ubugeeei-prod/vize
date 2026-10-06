@@ -1,10 +1,12 @@
-# LSP library rename refusal (#8010)
+# LSP bundled-library rename refusal (#8010)
 
 The complete live Toggle/App inputs, literal reported Corsa edit list and issue
 body are retained in the differential corpus. The report permits consistent
-event rename or whole refusal; this slice prepares whole refusal when any
-native target belongs to a standard library or an unowned dependency/external
-file. No partial WorkspaceEdit may survive target admission.
+event rename or whole refusal. This slice refuses a complete transaction when
+its captured ownership check finds unowned dependency or external targets,
+covering the original bundled library layout. No partial WorkspaceEdit may
+survive target admission. Configured runtime assets physically inside an
+authored root need separate origin authority; #8010 remains open.
 
 The private branch genuinely replays actual main `9fe172ced2`, which includes
 signed #8047 `94c13ebf`. Its authoritative native-null dispatch is a real
@@ -18,7 +20,7 @@ and physical workspace containment, and checks the completed authored result.
 Registered editor roots are copied once without discovering project files.
 No new native IPC, generated text or replacement escaping is introduced.
 
-This is UNCOMPILED and INELIGIBLE private preparation. The initial blanket
+The initial private preparation was UNCOMPILED and INELIGIBLE. Its blanket
 node_modules guard conflicted with mandatory
 `package_shadow_rename_edits_only_authored_vue_files`. The private successor
 admits that parsed, explicitly opened Vue source only through a retained Canon
@@ -95,3 +97,43 @@ Bare script exporter-origin rename lacks a public route and remains unfinished;
 the old crossVue global exporter law stays unchanged. Preserve failedjob
 112019124360/raw956714B/SHAe5225b7f514ffe384fde1f61a2d4a2917862d909831ce052ea4bd770b9201d9a
 and [paired6005163938](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6005163938); fresh all96/oldnative/protected gates remain required.
+
+Ordinary d8 source Check37387627452 actually passes the six strict native CLI
+sessions/96 whole responses and old strict #8009 CLI controls. Its older
+Maestro Corsa rows use VIZE_TEST_DISABLE_TSGO=1 and establish compile/PASS
+only; the earlier broad native-positive wording above is corrected by this
+qualification. One existing full Check37390666610 runs the required old native
+and NoNative envelope; no terminal full or delivery credit is assigned yet.
+
+Bounded source peer6917e1 found a conditional runtime-origin gap: a physically
+in-workspace configured native default library outside node_modules could pass
+the unknown real-file writer fallback. No native response instantiated that
+condition; the passing original96 fixture covers its actual bundled dependency
+layout only. Retain genuine backend/library-origin authority before whole
+transaction admission without a filename/.d.ts blacklist, executable-parent
+blanket refusal, extra project scan or per-rename native request. Authored
+declarations and package/importer positives remain mandatory. Draft stays off
+queue; [paired6006292300](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6006292300) records this unfinished scope.
+
+The final scoped-delivery decision keeps the complete d8 production/corpus and
+typed vectors unchanged. Current ordinary Check37387627452 is terminal SUCCESS;
+current full Check37390666610 is also terminal SUCCESS (19 successful jobs, six
+event skips). The full workspace command uses VIZE_TEST_REQUIRE_TSGO=1 without
+Disable and genuinely executes old package/global/Event/Model/Props/Options
+controls; plain and glyph NoNative checks pass. Independent scoped receipts
+6442bb6 and7d7e9e3 separate those native obligations from ordinary compile-only
+Maestro rows. No unique repeated Cargo total or successful wire/ELF hash is
+invented. The six strict native CLI sessions retain all96 complete responses.
+
+Deliver the verified original bundled-layout protection as a small partial fix,
+keeping #8010 OPEN for configured-runtime origin authority. The unchanged
+conditional custom-root gap is not an instantiated regression. Exact7.0.2 has
+a genuine metadata handler, but Program default-library roles, copied source
+identity and missing/defaulted role fields do not prove distribution asset
+origin, including imported/noLib cases. No new backend request or path blacklist
+is adopted. A future slice needs a faithful original-owner runtime fixture and
+a sound provider/snapshot contract. [Paired6006723065](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6006723065)
+records the scope; #8071 uses Refs, not automatic issue closure. Fresh exact
+successor ordinary checks, actual-main/prospective composition, protected full
+Rust/native/unchanged104 ceilings, signed merge and release handoff remain
+required. Prior source/full receipts retain their exact-head scope.
