@@ -55,3 +55,12 @@ TODO: retain fresh exact-source native/full/scaling and protected queue results,
 then actual signed delivery. The full-command ten-times target remains open.
 
 Paired decision: https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6016599405.
+
+The first exact-source tooling run retained one stale-inventory failure. The
+unchanged scanner and renderer regenerate the complete Canon typechecker shard
+with two additional rows: the worker's L0 import at line10 and its test import at
+line23. Removing those rows recovers every previous byte. The drift guard and
+all production, native, workload and expected-result sources remain unchanged;
+fresh exact-source Actions must validate the correction.
+
+Paired correction: https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6017107629.
