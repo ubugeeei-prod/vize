@@ -35,6 +35,7 @@ impl ServerState {
         let existing_bridge = { self.corsa_bridge.read().clone() };
         if let Some(bridge) = existing_bridge {
             if bridge.is_draining() {
+                trace_draining_bridge();
                 return None;
             }
             if bridge.is_initialized() && self.flush_corsa_disk_state_if_dirty(&bridge).await {
@@ -56,6 +57,7 @@ impl ServerState {
         let existing_bridge = { self.corsa_bridge.read().clone() };
         if let Some(bridge) = existing_bridge {
             if bridge.is_draining() {
+                trace_draining_bridge();
                 return None;
             }
             if bridge.is_initialized() && self.flush_corsa_disk_state_if_dirty(&bridge).await {
@@ -247,6 +249,12 @@ impl ServerState {
         {
             *slot = None;
         }
+    }
+}
+
+fn trace_draining_bridge() {
+    if super::super::native_requests::trace_enabled() {
+        tracing::info!("native bridge unavailable while an abandoned request is still draining");
     }
 }
 

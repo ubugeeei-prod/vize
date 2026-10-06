@@ -7,6 +7,8 @@ use vize_canon::{CorsaBridge, LspHover, LspHoverContents};
 use super::{HoverService, range::authored_hover_token_range};
 use crate::ide::{IdeContext, corsa_support};
 
+mod trace;
+
 pub(super) async fn component_hover(
     ctx: &IdeContext<'_>,
     bridge: Option<&Arc<CorsaBridge>>,
@@ -37,17 +39,41 @@ pub(super) async fn hover(
     bridge: Option<&Arc<CorsaBridge>>,
     follow_declaration: bool,
 ) -> Option<Answer> {
-    let bridge = bridge.filter(|bridge| bridge.is_initialized())?;
-    let document = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
-    let (line, character) =
-        corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
-    let Some(mut hover) = bridge
-        .hover(&document.request_uri, line, character)
-        .await
-        .ok()?
-    else {
-        return Some(Answer::Empty);
+    let Some(bridge) = bridge.filter(|bridge| bridge.is_initialized()) else {
+        trace::refused(ctx, "bridge-unavailable", None);
+        return None;
     };
+    let document = match corsa_support::open_canonical_virtual_document_strict(ctx, bridge).await {
+        Ok(Some(document)) => document,
+        Ok(None) => {
+            trace::refused(ctx, "canonical-open-unavailable", None);
+            return None;
+        }
+        Err(error) => {
+            trace::refused(ctx, "canonical-open-error", Some(&error));
+            return None;
+        }
+    };
+    trace::document(ctx, &document);
+    let Some((line, character)) =
+        corsa_support::canonical_source_offset_to_position(&document, ctx.offset)
+    else {
+        trace::refused(ctx, "canonical-position-unmapped", None);
+        return None;
+    };
+    trace::query(ctx, line, character);
+    let mut hover = match bridge.hover(&document.request_uri, line, character).await {
+        Ok(Some(hover)) => hover,
+        Ok(None) => {
+            trace::refused(ctx, "native-hover-empty", None);
+            return Some(Answer::Empty);
+        }
+        Err(error) => {
+            trace::refused(ctx, "native-hover-error", Some(&error));
+            return None;
+        }
+    };
+    trace::answer(ctx, &hover);
     // Native quick info can omit JSDoc after a mapped type. Follow the
     // checker's declaration identities for documentation while retaining the
     // instantiated signature and the authored hover range from this use.

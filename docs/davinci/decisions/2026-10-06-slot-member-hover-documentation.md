@@ -30,3 +30,25 @@ This integration observation is recorded on LSP fix-history issue #6883 and
 must not be attributed to the inlay or compiler change from ancestry alone.
 
 The paired issue record is [comment 6008430599](https://github.com/ubugeeei-prod/vize/issues/6883#issuecomment-6008430599).
+
+The meaningful passive-capture full Check at exact `399dd0af` reproduced the
+original assertion on production parent `143c1d4a`. Official artifact
+11387839308 (12,965 bytes, SHA256
+`94d094de123d89759433208fa45e3c24257fed7b7576db2f769d23a3d55cafef`)
+passes all 18 CRC and complete manifest checks. The complete provider packet
+SHA256 is `d25c2724a5024b9aa178cc812d3454fa5f60a2942b5e5c60762fde1962c8794d`.
+Its unchanged SlotAuthoring version-1 query at 37:23 returns the generic
+`v-slot` directive Markdown (range 37:22–29), while the preceding method and
+prop queries retain their correct documentation. Actual editor successes at
+605/548 and failure at 0f6 use the same production 143c; cause is unfinished.
+
+The next bounded diagnostic source preserves every existing result and adds
+passive canonical open/mapping/query/result/error and draining-bridge traces
+under the existing real-host trace opt-in. It logs the opened authored and
+generated text/mappings and complete decoded native Hover, without another
+request or project scan. It preserves native empty-answer authority and all
+original SDK queries/assertions/deadlines. One meaningful existing full Check
+is necessary to identify the earlier suppression boundary; no production
+repair or acceptance is inferred from the failed 399 execution.
+
+The paired observed-result/stage-capture record is [comment 6008706143](https://github.com/ubugeeei-prod/vize/issues/6883#issuecomment-6008706143).
