@@ -71,6 +71,21 @@ await test("whole TSX reference authority preserves the actual original source a
     assert.equal(data.length, bytes);
     assert.equal(createHash("sha256").update(data).digest("hex"), hash);
   }
+  const previous = readFileSync(new URL(authority.previousPreparedReferencePath, root));
+  assert.equal(previous.length, authority.previousPreparedReferenceBytes);
+  assert.equal(
+    createHash("sha256").update(previous).digest("hex"),
+    authority.previousPreparedReferenceSha256,
+  );
+  assert.equal(
+    readFileSync(new URL(authority.referencePath, repository), "utf8"),
+    previous
+      .toString("utf8")
+      .replace(
+        "setValue as _setValue, createKeyedFragment as _createKeyedFragment",
+        "createKeyedFragment as _createKeyedFragment, setValue as _setValue",
+      ),
+  );
   const producer = readFileSync(new URL(authority.producerSourcePath, repository));
   assert.equal(createHash("sha256").update(producer).digest("hex"), authority.producerSourceSha256);
   const source = producer.toString("utf8");

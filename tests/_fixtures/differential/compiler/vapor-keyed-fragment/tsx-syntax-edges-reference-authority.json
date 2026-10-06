@@ -10,7 +10,7 @@
   "originalReferenceBytes": 1978,
   "originalReferenceSha256": "2df10d46a6f15bc6f71299a2a03312e0d3a0cb5eed745caf53e847b2e32006d3",
   "currentReferenceBytes": 2244,
-  "currentReferenceSha256": "eab7233ef5b62b8d9c0686d1fd12460736850a2bc073faf0161c366cc111df3e",
+  "currentReferenceSha256": "6dccb4d88e47bc655434544839155f437059342b9393521c4264e4b2bb53841c",
   "actualFailure": {
     "run": 37417123222,
     "job": 112120054162,
@@ -21,5 +21,19 @@
     "Two original conditional list-arm keys create owned Key blocks; each previous native child remains inside its own callback, with subsequent IDs shifted by the inserted owner.",
     "The exact authored input/value calls existing setValue, preserving live value and default value attribute; prop-modifier and option paths retain their existing meanings."
   ],
-  "execution": "UNEXECUTED_SUCCESSOR; helper tie order is literal expected and remains subject to strict Actions comparison."
+  "execution": "UNEXECUTED_SUCCESSOR; helper tie order is literal expected and remains subject to strict Actions comparison.",
+  "previousPreparedReferencePath": "tsx-syntax-edges.pre-helper-order.snap",
+  "previousPreparedReferenceBytes": 2244,
+  "previousPreparedReferenceSha256": "eab7233ef5b62b8d9c0686d1fd12460736850a2bc073faf0161c366cc111df3e",
+  "helperOrderSource": "crates/vize_atelier_vapor/src/generate/setup.rs",
+  "helperOrderSourceSha256": "05ba25e0fed7fbe1b1f6dbcd91761c657fba6313ace101856f5a45bc0208560f",
+  "helperOrderQualification": "Existing helper priority returns50 for both names and preserves the actual FxHashSet bucket order; only the independently authored two-helper literal is corrected to createKeyedFragment then setValue. Keep full old/current modules and fail every other difference.",
+  "helperOrderFailure": {
+    "sourceHead": "47517d2716bab3db2787b05760b47666b16a6d42",
+    "producer": "e911849e9e83b62429d21f4f193a3365ce8b7f2a",
+    "run": 37421581495,
+    "job": 112133606241,
+    "rawBytes": 979569,
+    "rawSha256": "b673a7dbc21903febaadbead9548474bcb9098bd901c36aa60b6a3a5c78b633c"
+  }
 }

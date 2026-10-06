@@ -10,7 +10,6 @@ use vize_atelier_vapor::{
 };
 use vize_carton::Allocator;
 
-#[path = "keyed_fragment/branch.rs"]
 mod branch;
 
 fn keys(block: &BlockIRNode<'_>) -> usize {

@@ -258,8 +258,8 @@ compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_vapor_upstrea
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/trace.rs	14	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/davinci_walk_baseline.rs	31	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/experimental_diagnostics.rs	2	carton	Carton host/compatibility	old	vize_carton	legacy	3
-compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/keyed_fragment.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/keyed_fragment/branch.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/keyed_fragment/main.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/native_stage_capture.rs	6	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/native_stage_capture.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/tests/native_stage_capture.rs	6	l2	L2	stage	vize_l2	preferred	1
