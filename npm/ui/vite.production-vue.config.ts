@@ -41,7 +41,12 @@ const packages = names.map((name) => {
   assert.equal(manifest.version, "3.5.42");
   const directory = path.dirname(manifestPath);
   scopes.set(name, createRequire(manifestPath));
-  const entry = name === "vue" ? "dist/vue.runtime.esm-bundler.js" : manifest.module;
+  const entry =
+    name === "vue"
+      ? "dist/vue.runtime.esm-bundler.js"
+      : name === "@vue/compiler-sfc"
+        ? manifest.main
+        : manifest.module;
   assert.equal(typeof entry, "string");
   const entryPath = fs.realpathSync(path.join(directory, entry));
   return {
@@ -58,9 +63,21 @@ const entry = (name: string) => {
   assert.ok(selected);
   return selected.entryPath;
 };
-const compiler = requireVue("@vue/compiler-sfc");
+const requireUi = createRequire(new URL("./package.json", import.meta.url));
+const testUtilsManifestPath = fs.realpathSync(requireUi.resolve("@vue/test-utils/package.json"));
+const testUtilsBytes = fs.readFileSync(testUtilsManifestPath);
+const testUtilsManifest = JSON.parse(testUtilsBytes.toString());
+assert.equal(testUtilsManifest.name, "@vue/test-utils");
+assert.equal(testUtilsManifest.version, "2.4.10");
+assert.equal(testUtilsManifest.exports["."].import, `./${testUtilsManifest.module}`);
+const testUtilsPath = fs.realpathSync(
+  path.join(path.dirname(testUtilsManifestPath), testUtilsManifest.module),
+);
+// Vue's public Node wrapper registers its own installed TypeScript filesystem.
+const compiler = requireVue("vue/compiler-sfc");
 assert.equal(compiler.version, "3.5.42");
-const compilerPath = fs.realpathSync(requireVue.resolve("@vue/compiler-sfc"));
+const compilerPath = fs.realpathSync(requireVue.resolve("vue/compiler-sfc"));
+const compilerRegistrationPath = path.join(path.dirname(compilerPath), "register-ts.js");
 console.log(
   JSON.stringify({
     scope: "installed-production-vue-ui",
@@ -68,6 +85,15 @@ console.log(
     packages,
     compilerPath,
     compilerSha256: sha256(fs.readFileSync(compilerPath)),
+    compilerRegistrationPath,
+    compilerRegistrationSha256: sha256(fs.readFileSync(compilerRegistrationPath)),
+    testUtils: {
+      version: testUtilsManifest.version,
+      manifestPath: testUtilsManifestPath,
+      manifestSha256: sha256(testUtilsBytes),
+      entryPath: testUtilsPath,
+      entrySha256: sha256(fs.readFileSync(testUtilsPath)),
+    },
   }),
 );
 
@@ -97,7 +123,8 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: /^vue\/server-renderer$/, replacement: entry("@vue/server-renderer") },
-      { find: /^vue\/compiler-sfc$/, replacement: entry("@vue/compiler-sfc") },
+      { find: /^vue\/compiler-sfc$/, replacement: compilerPath },
+      { find: /^@vue\/test-utils$/, replacement: testUtilsPath },
       ...packages.map(({ name, entryPath }) => ({
         find: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`),
         replacement: entryPath,
@@ -107,6 +134,6 @@ export default defineConfig({
   test: {
     environment: "happy-dom",
     include: ["src/**/*.test.ts"],
-    server: { deps: { inline: ["@vue/test-utils"] } },
+    server: { deps: { inline: [...names, "@vue/test-utils"] } },
   },
 });

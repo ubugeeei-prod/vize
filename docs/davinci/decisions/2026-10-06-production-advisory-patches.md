@@ -147,3 +147,15 @@ refs at post priority-1 and synchronously flush post effects before hydration
 returns. No new DOM write/hook/tick or expected/input change is introduced.
 Fresh whole35/42/native41/current audit and protected delivery remain unknown.
 Paired decision: [6008321749](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6008321749).
+
+Actuald7fd passed the full original35 suite494files/3808tests, including both
+immediate single hydration controls. The first reached real42 suite exposed
+provider configuration failures: bare compiler-sfc had no registered TypeScript
+filesystem, and TestUtils exports.node loaded Vue35 CJS outside the42 aliases.
+Use the actual production Vue public Node compiler wrapper, matching stock
+plugin-vue, and the existing TestUtils2.4.10 declared ESM-bundler import entry.
+Keep their package/entry/wrapper-registration hashes and inline the complete
+selected Vue graph. Every original provider/peer, product/test/assertion, full
+SSR/module capture and production lock/audit remains unchanged. Fresh both
+whole suites and all native/protected/actual delivery remain required.
+Paired decision: [6008429840](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6008429840).
