@@ -1,0 +1,40 @@
+[
+  {
+    "label": "form.help",
+    "kind": 21,
+    "sortText": "11",
+    "data": {
+      "vizeCompletion": {
+        "uri": "$AUTHORED_URI",
+        "revision": "$REVISION",
+        "requestUri": "$NATIVE_URI",
+        "item": {
+          "label": "form.help",
+          "kind": 21,
+          "sortText": "11",
+          "textEdit": { "newText": "form.help", "range": "$NATIVE_RANGE" },
+          "data": { "fileName": "$NATIVE_FILE", "position": "$NATIVE_POSITION", "name": "form.help" }
+        }
+      }
+    }
+  },
+  {
+    "label": "form.name",
+    "kind": 21,
+    "sortText": "11",
+    "data": {
+      "vizeCompletion": {
+        "uri": "$AUTHORED_URI",
+        "revision": "$REVISION",
+        "requestUri": "$NATIVE_URI",
+        "item": {
+          "label": "form.name",
+          "kind": 21,
+          "sortText": "11",
+          "textEdit": { "newText": "form.name", "range": "$NATIVE_RANGE" },
+          "data": { "fileName": "$NATIVE_FILE", "position": "$NATIVE_POSITION", "name": "form.name" }
+        }
+      }
+    }
+  }
+]

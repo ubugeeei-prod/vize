@@ -64,3 +64,26 @@ all production, native, workload and expected-result sources remain unchanged;
 fresh exact-source Actions must validate the correction.
 
 Paired correction: https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6017107629.
+
+## Qualified source pair and genuine main integration
+
+[Current qualification](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6017672839)
+retains exact53b9 run37469766002/artifact11417116944:810 safe CRC members,
+79 complete measured envelopes, and18 whole notifications (one initialization
+log plus17 diagnostic publications). First534 readiness was463.192→191.205ms
+and first hover2011.620→1711.218ms; four128 drains392.235→411.980ms and warm20
+median21.136→22.407ms showed no warm improvement. These are one same-worker
+shipping-profile source pair, without installed/public/general10x credit.
+
+Both sides retain zero diagnostic timeout warnings and seven release warnings;
+final observations have two same-birth zombies before and none after, without
+OS-reaping or Program-reuse proof. Four strict consumer artifacts are fresh on
+both sides; after reuses28 unchanged linked locals of33. Binary hashes join
+receipts without independent ELF bytes. The complete27-package graph binds
+actual Vue3.6.0-beta.10 and physical nativeSDK7.0.2.
+
+Genuinely incorporate signed main de6f9e9294cebd27a41fa2884dffefc47d820d3d,
+keeping all incoming bytes and scheduling/control bodies. Only the adjacent
+owned canonical conflict is resolved. The53b9 receipt remains historical;
+fresh current source/native/scaling/protected gates and actual signed delivery
+with the terminal reporter footer remain required.
