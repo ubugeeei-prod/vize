@@ -68,9 +68,7 @@
       "api": "sfc",
       "file": "Comment.vue",
       "source": "\ufeff<!-- document note -->\n<template>\n  <div>x</div>\n</template>\n",
-      "expected": "\ufeff<!-- document note -->\n<template>\n  <div>x</div>\n</template>\n",
-      "supersededExpected": "\ufeff<!-- document note -->\n\n<template>\n  <div>x</div>\n</template>\n",
-      "refinementIssue": 8117
+      "expected": "\ufeff<!-- document note -->\n\n<template>\n  <div>x</div>\n</template>\n"
     },
     {
       "id": "json-authored-scalar-bom",

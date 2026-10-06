@@ -60,3 +60,17 @@ and module from passes2/3 to pass1. No product or independent content expectatio
 changes. The actual signed756f composition preserves all incoming source, attributes
 and canonical350 records; fresh successor Actions are required, without transferring
 old-head runtime acceptance.
+
+The [actual4e failure correction](https://github.com/ubugeeei-prod/vize/issues/8117#issuecomment-6013891907)
+retains Check37445035659's three failed tooling jobs and one failed Rust law:
+a needless test-only L0 import changes inventory, a new `starts_with` assertion
+violates existing policy, and BOM `vue-comment-prologue` retains the same faulty
+first-comment blank. Use ordinary serde `std::String` fields and exact COMPLETE
+pre-script root-content equality; keep full public three-pass equality. Correct
+only that BOM current expectation, preserve its whole old manifest/superseded
+bytes, all14 originals and other13 expected/error rows. The finite regression
+scope is now three #7877 rows plus one BOM row; original300 history and the single
+already-current history refinement are unchanged. No production, independent
+control, CLI stream, compiler fixedpoint, inventory, assertion-policy or cap change.
+Fresh source/protected tests are required; failed4e and any passing child controls
+remain historical.
