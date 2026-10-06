@@ -68,6 +68,7 @@ export function projectEvidence(root, context, application) {
     : [shell];
   const stockPrograms = [];
   const loadedPrograms = new Map();
+  const stockOptions = new Map();
   for (const filename of configPaths) {
     const loaded = load(filename);
     const effective = structuredClone(loaded.options);
@@ -115,6 +116,7 @@ export function projectEvidence(root, context, application) {
     for (const file of input)
       while (!file.startsWith(common + path.sep)) common = path.dirname(common);
     loadedPrograms.set(relative(loaded.filename), effective);
+    stockOptions.set(relative(loaded.filename), parsed.options);
     stockPrograms.push({
       root: relative(common) || ".",
       tsconfig: relative(loaded.filename),
@@ -131,13 +133,33 @@ export function projectEvidence(root, context, application) {
     const schemaManifest = fs.realpathSync(
       createRequire(nuxtManifest).resolve("@nuxt/schema/package.json"),
     );
+    const nuxt = JSON.parse(fs.readFileSync(nuxtManifest, "utf8"));
+    const schemaTypes = path.join(path.dirname(nuxtManifest), nuxt.exports["./schema"].types);
+    const fallbackManifest = fs.realpathSync(
+      createRequire(path.join(application, "package.json")).resolve("@nuxt/schema/package.json"),
+    );
+    const cohortLock = JSON.parse(
+      fs.readFileSync(path.join(root, cohort.path, "package-lock.json"), "utf8"),
+    );
     schemaAlias = {
       nuxtManifest,
+      schemaTypes,
       schemaManifest,
       package: JSON.parse(fs.readFileSync(schemaManifest, "utf8")),
+      fallback: {
+        manifest: fallbackManifest,
+        package: JSON.parse(fs.readFileSync(fallbackManifest, "utf8")),
+        locked: cohortLock.packages["node_modules/@nuxt/schema"],
+      },
       generated: stockPrograms.map((program) => ({
         tsconfig: program.tsconfig,
         paths: program.compilerOptions.paths["@nuxt/schema"],
+        resolution: ts.resolveModuleName(
+          "@nuxt/schema",
+          schemaTypes,
+          stockOptions.get(program.tsconfig),
+          ts.sys,
+        ),
       })),
     };
   }
@@ -199,9 +221,22 @@ export function projectEvidence(root, context, application) {
   if (schemaAlias) {
     assert.equal(schemaAlias.package.name, "@nuxt/schema");
     assert.equal(schemaAlias.package.version, cohort.nuxt);
+    assert.equal(schemaAlias.fallback.package.name, "@nuxt/schema");
+    assert.equal(schemaAlias.fallback.package.version, schemaAlias.fallback.locked.version);
+    assert.equal(schemaAlias.fallback.package.version, "3.11.2");
     assert.ok(schemaAlias.generated.length > 0);
-    for (const generated of schemaAlias.generated)
-      assert.deepEqual(generated.paths, [path.dirname(schemaAlias.schemaManifest)]);
+    for (const generated of schemaAlias.generated) {
+      assert.deepEqual(generated.paths, [
+        path.dirname(schemaAlias.schemaManifest),
+        path.dirname(schemaAlias.fallback.manifest),
+      ]);
+      assert.equal(
+        fs.realpathSync(generated.resolution.resolvedModule.resolvedFileName),
+        fs.realpathSync(
+          path.resolve(path.dirname(schemaAlias.schemaManifest), schemaAlias.package.types),
+        ),
+      );
+    }
   }
   return {
     original,
