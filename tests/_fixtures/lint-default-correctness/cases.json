@@ -476,8 +476,39 @@
           "message": "Do not import 'defineProps' - compiler macros are automatically available in <script setup>\n\nHelp: Remove the macro from the import statement. Compiler macros are auto-imported."
         }
       ],
-      "baselineDiagnostics": [],
-      "baselineLspDiagnostics": []
+      "baselineDiagnostics": [
+        {
+          "rule_name": "script/no-import-compiler-macros",
+          "severity": "error",
+          "message": "Do not import 'defineProps' - compiler macros are automatically available in <script setup>",
+          "start": 34,
+          "end": 45,
+          "help": "Remove the macro from the import statement. Compiler macros are auto-imported.",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "baselineLspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 9
+            },
+            "end": {
+              "line": 1,
+              "character": 20
+            }
+          },
+          "severity": 1,
+          "code": "script/no-import-compiler-macros",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/script/no-import-compiler-macros.html"
+          },
+          "source": "vize/lint",
+          "message": "Do not import 'defineProps' - compiler macros are automatically available in <script setup>\n\nHelp: Remove the macro from the import statement. Compiler macros are auto-imported."
+        }
+      ]
     },
     {
       "id": "macro-valid",
