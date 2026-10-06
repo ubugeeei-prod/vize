@@ -1,6 +1,7 @@
 use super::tests::{fix_until_stable, lint};
 use crate::diagnostic::{Fix, LintDiagnostic, TextEdit};
 use serde_json::Value;
+use vize_l0::format;
 
 const CASES: &str = include_str!("../../../../tests/fixtures/issue-7963/cases.json");
 
