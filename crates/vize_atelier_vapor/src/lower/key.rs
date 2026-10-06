@@ -28,7 +28,7 @@ pub(super) fn value<'a, 'b>(
     el: &'b ElementNode<'a>,
     non_reactive: bool,
 ) -> Option<&'b SimpleExpressionNode<'a>> {
-    if non_reactive {
+    if non_reactive || !matches!(el.tag_type, ElementType::Element | ElementType::Component) {
         return None;
     }
     let value = el.props.iter().find_map(|prop| match prop {

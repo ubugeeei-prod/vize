@@ -29,7 +29,8 @@ pub(in crate::lower) fn classify<'a, 'b>(
     inherited: bool,
     own_key: bool,
 ) -> DirectiveAnalysis<'a, 'b> {
-    if own_key && !inherited {
+    if own_key && !inherited && matches!(el.tag_type, ElementType::Element | ElementType::Component)
+    {
         classify_role::<true>(el, inherited)
     } else {
         classify_role::<false>(el, inherited)
