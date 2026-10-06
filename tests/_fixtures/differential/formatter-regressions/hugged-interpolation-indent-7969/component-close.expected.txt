@@ -1,0 +1,5 @@
+<template>
+  <Panel>{{
+    label
+  }}</Panel>
+</template>

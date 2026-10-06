@@ -65,3 +65,6 @@ tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/hab
 
 # Preserve full authored LF/CRLF CSS continuation originals and references.
 tests/_fixtures/differential/formatter-regressions/css-continuation-indent-7915/** -text whitespace=cr-at-eol
+
+# Public #7969 whole LF/CRLF formatter carriers stay byte exact.
+tests/_fixtures/differential/formatter-regressions/hugged-interpolation-indent-7969/*.txt -text
