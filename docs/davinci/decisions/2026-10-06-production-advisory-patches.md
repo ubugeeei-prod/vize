@@ -187,3 +187,13 @@ changes as well as merge queue, preserving every strict lint/render check.
 Fresh whole35/42/native41/security and all protected gates must qualify this
 successor before an actual signed merge; prior green receives no transfer.
 Paired decision: [6009110589](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6009110589).
+
+Actualf14f tooling4 failed only the existing UI-tier contract's old queue-only
+step name/guard after strict UI coverage was deliberately extended to PR.
+Require shared selected-JS coverage and the complete five recorded argument
+vectors in both selected PR/queue cases; retain both unselected empty vectors
+and every history, native declaration/type and source-report failure law.
+All other tests, workflow commands/guards, product/original/cap bytes remain
+unchanged. Fresh same-head whole tooling/UI/native/protected execution remains
+mandatory; the failed source receives no acceptance transfer.
+Paired decision: [6009222114](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6009222114).
