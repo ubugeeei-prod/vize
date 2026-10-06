@@ -105,3 +105,10 @@ workflow after removing the new browser caller; it returns to 690. No old step,
 command, environment, gate or ceiling is removed. PR workflow is 350 lines.
 The corrected successor still requires fresh source Actions, all 17 API cases,
 all 85 complete CLI captures, history and protected gates before admission.
+
+Fresh 6f9 Check 37415785884 passes JS lint and Rust fmt but its Rust producer
+112114089752 fails the new nested guard's Clippy collapsible_if rule. Retain
+the complete actual log and use the prescribed let-chain with the same option
+binding, observation order and body. No lint allow, ownership relaxation or
+expected-byte change is introduced. Healthy tooling/DOM executions continue
+before this necessary source successor; full Rust remains unqualified.

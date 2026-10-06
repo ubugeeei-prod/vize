@@ -42,13 +42,13 @@ impl RuleLayout {
         let mut brace = 0;
         let mut frames: Option<Frames> = None;
         for token in Tokens::new(source) {
-            if let Some(owner) = &mut frames {
-                if owner.observe(&token, brace) {
-                    if owner.preludes.len() == owner.expected {
-                        result.preludes.append(&mut owner.preludes);
-                    }
-                    frames = None;
+            if let Some(owner) = &mut frames
+                && owner.observe(&token, brace)
+            {
+                if owner.preludes.len() == owner.expected {
+                    result.preludes.append(&mut owner.preludes);
                 }
+                frames = None;
             }
             if token.text != "{" || token.parens != 0 || token.brackets != 0 {
                 continue;
