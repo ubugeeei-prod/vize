@@ -106,7 +106,7 @@ fn quote_candidate(source: &str, offset: usize) -> bool {
     line.bytes().any(|byte| matches!(byte, b'\'' | b'"' | b'`'))
         || before.contains('`')
         || before.contains("\\\n")
-        || before.contains("\\\r\n")
+        || before.contains("\\\r")
 }
 
 fn quoted_token(

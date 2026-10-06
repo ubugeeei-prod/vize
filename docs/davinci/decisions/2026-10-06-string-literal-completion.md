@@ -192,3 +192,32 @@ All fa570 completion production, original sources, fixed payloads, 37 response
 values and six publications remain exact in this observer-only successor.
 Fresh automatic exact-head source/native gates and protected suites/104 still
 qualify the joined source; none of fa570's execution transfers to it.
+
+Current review identified one further negative-guard omission: backslash followed
+by a bare carriage return was rejected before reaching the existing lexer. The
+locked OXC revision `fc702c1fa9f0412d06ec6908b58cd395b826cf7f`,
+`lexer/unicode.rs:344-351`, explicitly handles CR with an optional following LF.
+The sole production correction replaces the CRLF-only guard with CR, which
+also covers CRLF. Every positive still requires the same lexer-owned token;
+there is no additional parse, cache, provider path or hover work.
+
+Six appended lexer controls cover double/single quotes, CRLF and comment/regex
+refusals. A separately authored 180-byte whole original-derived SFC contains
+only one added backslash/CR continuation and retains the template expression.
+Its catalog hash and both selected script/template classifier checks are fixed
+before hosted execution. The six original carrier objects, three prior controls
+and every native item/37 stdio response/six publication expectation stay exact.
+Removing the added catalog object restores the entire previous manifest. This
+is a supplemental classifier control; no whole native CR-only replay is claimed.
+
+The remaining review scope preserves the measured selected-completion design:
+out-of-range offsets already fail before lexing, and no unreviewed per-revision
+token cache or statement lexer is introduced. Cost capture deliberately uses
+the existing workspace/nextest upload authority; arbitrary read-only external
+Cargo target configurations are not claimed. The observer retains both old and
+current mirrors and uses an independently named second-session marker, with the
+same strict one-owner assertion. It makes no new bridge-cleanup claim.
+
+This necessary same-PR successor preserves the passive original-CJS capture and
+requires fresh exact-head hosted qualification. Any unfinished or cancelled
+preceding job remains historical, with no transferred runtime acceptance.

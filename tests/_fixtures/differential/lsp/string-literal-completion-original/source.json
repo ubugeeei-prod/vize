@@ -71,6 +71,12 @@
       "path": "plain-messages.ts.txt",
       "bytes": 99,
       "sha256": "c23b46e649071babc001f8ee95a7e26f713794876ff51bdcffbb1078ad636a61"
+    },
+    {
+      "path": "bare-cr-continuation.vue.txt",
+      "bytes": 180,
+      "sha256": "79b777a44a0baefde796b48dec12c1ecde5503c75110222e0ebe912c3a7b5ff7",
+      "qualification": "Whole original SFC with one bare-CR string continuation; supplemental classifier law, not an additional native RPC oracle."
     }
   ]
 }

@@ -46,6 +46,12 @@ fn lexer_distinguishes_full_literals_from_comments_regex_and_template_code() {
         ("t(\"don't\")", "don't", true),
         (r#"t("escaped\"quote")"#, r#"escaped\""#, true),
         ("t(\"line\\\ncontinued\")", "continued", true),
+        ("t(\"line\\\rcontinued\")", "continued", true),
+        ("t(\"line\\\r\ncontinued\")", "continued", true),
+        ("t('line\\\rcontinued')", "continued", true),
+        ("// t(\"line\\\rcontinued\")", "continued", false),
+        ("/* t(\"line\\\rcontinued\") */", "continued", false),
+        ("const rx = /line\\\rcontinued/;", "continued", false),
         ("t(`line\ncontinued`)", "continued", true),
         ("t(\"unfinished", "unfinished", true),
         ("t('unfinished", "unfinished", true),
@@ -122,6 +128,12 @@ fn source_domains_do_not_mistake_markup_or_regex_quotes_for_arguments() {
         .replace('\n', "\r\n")
         .replace("form.help", "雪🌸form.help");
     assert!(context(&crlf, at(&crlf, "雪🌸")));
+    let bare_cr = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/lsp/string-literal-completion-original/bare-cr-continuation.vue.txt"
+    ));
+    assert!(context(bare_cr, at(bare_cr, "form.\\\rna")));
+    assert!(context(bare_cr, at(bare_cr, "<p>{{ t(\"")));
 }
 
 #[test]
