@@ -103,6 +103,24 @@ await test("synthetic gaps and half-surrogates retain their exact unowned range"
   assert.equal(rewriteReportedLocations(raw, new Map([["temporary.vue", bridge.locations]])), raw);
 });
 
+await test("colored stylish rows preserve whole multiline messages and foreign ownership", () => {
+  const source = '<template><!-- 雪😀 --><div v-html="value" /></template>\n';
+  const bridge = prepareWorkaroundSource(source, "/repo/Unicode.vue");
+  const color = String.fromCharCode(27);
+  const filename = `${color}[4mtemporary.vue${color}[0m`;
+  const warning = `${color}[33mwarning${color}[0m`;
+  const error = `${color}[31merror${color}[0m`;
+  const position = (column: number, padding = "") => `${color}[2m1:${column}${padding}${color}[0m`;
+  const warningColumn = bridge.locations.scriptStart + 28;
+  const errorColumn = bridge.locations.scriptStart + 11;
+  const raw = `\n${filename}\n  ${position(warningColumn)}  ${warning}  complete first message\n    Help: quoted:8:9: coordinates stay exact\n      full next line  ${color}[2mvize(vue/no-v-html)${color}[0m\n  ${position(errorColumn, "  ")}  ${error}  complete second message\n${color}[4moutside.ts${color}[0m\n  ${position(errorColumn)}  ${error}  complete foreign message\n${color}[31mwhole summary${color}[0m\n`;
+  const expected = `\n${filename}\n  ${position(28)}  ${warning}  complete first message\n    Help: quoted:8:9: coordinates stay exact\n      full next line  ${color}[2mvize(vue/no-v-html)${color}[0m\n  ${position(11, "  ")}  ${error}  complete second message\n${color}[4moutside.ts${color}[0m\n  ${position(errorColumn)}  ${error}  complete foreign message\n${color}[31mwhole summary${color}[0m\n`;
+  assert.equal(
+    rewriteReportedLocations(raw, new Map([["temporary.vue", bridge.locations]])),
+    expected,
+  );
+});
+
 await test("default graphical headers keep exact colored owners and every surrounding frame byte", () => {
   const bridge = prepareWorkaroundSource("<template>\n<div />\n</template>\n", "/repo/Static.vue");
   const column = bridge.locations.scriptStart + 11;
