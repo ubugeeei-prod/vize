@@ -84,3 +84,68 @@ source receipt and require fresh automatic source/native gates before the
 unchanged full qualification; no known-red manual run or acceptance transfer.
 
 [Paired formatter decision](https://github.com/ubugeeei-prod/vize/issues/8003#issuecomment-6004556232) records this correction.
+
+## Complete fresh 4d source qualification
+
+Source `4d15506a6dc196ec68a4b343ecc09fdf3ffe9af9`, tree
+`e3975e6d9066f8ad4bde0448811474e712c0a390`, now has fresh terminal evidence:
+
+- [Automatic Check 37383687188](https://github.com/ubugeeei-prod/vize/actions/runs/37383687188)
+  succeeds at the distinct executed PR merge `808c36f2bbaf5ed4667e82aee6f0f3106fad7073`.
+  All four official JUnit artifacts retain 16,282 successful cases, including
+  all 12 unchanged mapped ownership/props/navigation laws.
+- [NativePhase 37383686650](https://github.com/ubugeeei-prod/vize/actions/runs/37383686650)
+  succeeds with source and driver 4d, workflow 808, profile:none. Official
+  artifact 11378275053 is 82,408,947 bytes, SHA256
+  `e62f9c549cb85ea2662721043879c86af79ff17c5892f454f8cab2b11390687a`.
+  Source/metadata/container custody confirms 20 changed entries and seven
+  unchanged infrastructure bridges. This is not an independent whole native
+  report/graph audit, CPU attribution or native-success-only claim.
+- [Full Check 37385496762](https://github.com/ubugeeei-prod/vize/actions/runs/37385496762)
+  succeeds on literal source/driver 4d after exactly one ordinary unchanged
+  full dispatch. All 25 jobs succeed or are skipped; tooling job 112017643023
+  actually completes the original 33-case callback. No CI rerun was needed.
+
+The full official artifact 11379937249 is 58,910,284 bytes, SHA256
+`855d9dced82d1b18888a539741612e3b392e3855d38744176cc8563f57170a84`:
+1,464 unique members, all CRC-valid. Its complete 26,440-byte original raw
+receipt has SHA256 `99104ff26d544fb4eff754ac4babbb04db29b8a66b1a7c34525778f67c5535d4`.
+All 33 CLI observations and 33 version-matched whole publications in three
+sessions pass: true/false/absent 11 each, 17 genuine error rows per channel
+and 16 clean observations. Genuine static/reserved-looking unknown, missing
+value/member, invalid value and constructor/member prop controls remain.
+Every original ordered count/code/start/severity/source assertion is retained.
+Raw message/end fields are preserved; same-producer message equality is an
+observation, not an independently frozen full-message/end expected vector.
+
+The source-built receipt reports `cargo build --profile ci -p vize`, version
+0.433.0 and binary SHA256 `46bdd9f3b8b83e649b65b2c1ac3d0999ecc598aabefc665cb1e1cf98de8ad3f3`.
+Executable bytes are not archived in this tooling artifact, so no independent
+executable-byte hash or installed-public proof is claimed. The fetched main
+for these jobs is `cbdf9c564215a2514eea2e182dbfd79b9050691e`; b77 remains the
+actual incorporation base. Neither is silently relabeled as later main.
+
+The first artifact GET times out after 26,198,016 bytes, SHA256
+`3c1280ff41c2336f7f82885032a38a617139db91c4bb6767ff4cae3c0a4068f5`.
+That partial is retained and never accepted. One bounded retry of the same
+original artifact succeeds at its exact official size/digest; underlying
+transport cause remains UNKNOWN. No workflow rerun, source/oracle change,
+new native probe or broad archive extraction is used to obtain this proof.
+
+Independent streamed full33 assertion review also passes with receipt SHA256
+`7fa149a8480d88d459aebda2e46681402afe9e987bb9755000020f642e917329`.
+It re-derives the complete ordered expectations from the unchanged driver,
+checks every archive member and authentic job/run conclusion, and confirms
+33 whole recorded publications. The JSON retains complete parsed rows,
+not original CLI stdout/stderr bytes or every framed RPC. Those transport
+bytes are not claimed as independently archived by this source driver.
+
+This factual documentation successor preserves every non-document byte of 4d;
+it must obtain its own fresh automatic source checks. Prior failed heads,
+including the cancelled 276 aggregate with its genuine failed check-js job,
+remain historical. Draft/offqueue/root admission coordination, protected
+instruction/Rust gates, actual signed merge and public handoff remain open.
+The old private c9 helper remains unchanged and uninvoked. P0 closure and
+speed/public-runtime claims are not granted by this source qualification.
+
+[Paired complete-source decision](https://github.com/ubugeeei-prod/vize/issues/8003#issuecomment-6005899716) records the exact receipt and remaining delivery gates.
