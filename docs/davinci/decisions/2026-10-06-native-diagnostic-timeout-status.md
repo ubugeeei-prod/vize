@@ -41,3 +41,11 @@ delivery, retain the failed release337 receipt, and qualify the separate
 readiness scheduling change with every started worker drained and all original
 queries/stamps intact. A timeout warning alone does not make original diagnostic
 parity pass or establish that the user's reported hover delay is resolved.
+
+The first exact-head PR scaling check stopped before building or measuring: its
+closed source allow-list omitted the new timeout wrapper and its test leaf. Add
+only those two literal paths to the existing allow-list, preserving the complete
+original400 inputs, vectors, recipe, timers and limits. Retain the actual failed
+job and require fresh source-bound qualification; no runtime result transfers.
+
+Paired source-binding correction: [#7698 decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6017106748).
