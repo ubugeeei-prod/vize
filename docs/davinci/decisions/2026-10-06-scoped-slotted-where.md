@@ -45,3 +45,19 @@ Hosted exact-head source checks, the full existing compiler corpus, protected
 instruction gates, actual signed merge and an installed release replay remain
 pending. No benchmark/ranking or performance result is claimed. Root owns
 publication and the public replay handoff.
+
+The first exact-head source build at `10b9afef` failed before tests: Rust 1.98
+Clippy rejects six unchecked string slices in the new functional helper. The
+correction uses the existing pseudo-function parts and checked UTF-8 access.
+All original sources and complete expected CSS/API vectors remain unchanged;
+the failed build is retained and grants no execution acceptance. The separate
+inherited dependency audit failure remains with the security lane. Fresh
+exact-head source and protected checks are still required.
+
+The same first tooling attempt failed before the new assertions because the
+tests package does not declare `@vizejs/native`. Its direct import now uses the
+existing checkout-native entry, matching other native tooling tests. The real
+Vite wrapper still resolves its declared native dependency. The unchanged
+registered task builds that checkout addon first. The complete 872,085-byte
+failed tooling log is retained; this repairs test provisioning without changing
+any compile option, assertion, input or expectation.

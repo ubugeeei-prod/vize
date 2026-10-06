@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { test } from "node:test";
-import { compileCss, compileSfc } from "@vizejs/native";
+import { compileCss, compileSfc } from "../../npm/native/index.js";
 import { scopeCssForPipeline } from "../../npm/builder/vite/src/utils/css.ts";
 
 const root = new URL(

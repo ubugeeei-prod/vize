@@ -42,21 +42,19 @@ pub(super) fn scope_functional_anchor(selector: &str, scope_id: &str) -> Option<
         return None;
     };
     let function = find_pseudo_function_from(selector, marker, 0)?;
-    if !only_pseudos_and_combinators(&selector[function.end..]) {
+    let (_, inner, after) = function.parts(selector);
+    if !only_pseudos_and_combinators(after) {
         return None;
     }
     let mut output = String::with_capacity(selector.len() + scope_id.len() + 2);
-    output.push_str(&selector[..function.inner_start]);
-    for (index, branch) in split_selector_list(function.parts(selector).1)
-        .iter()
-        .enumerate()
-    {
+    output.push_str(selector.get(..function.inner_start)?);
+    for (index, branch) in split_selector_list(inner).iter().enumerate() {
         if index > 0 {
             output.push(',');
         }
         output.push_str(add_scope_to_selector_end(branch.trim(), scope_id).as_str());
     }
-    output.push_str(&selector[function.inner_end..]);
+    output.push_str(selector.get(function.inner_end..)?);
     Some(output)
 }
 
@@ -70,7 +68,10 @@ fn only_pseudos_and_combinators(mut tail: &str) -> bool {
             let Some(end) = comment.find("*/") else {
                 return false;
             };
-            tail = &comment[end + 2..];
+            let Some(rest) = comment.get(end + 2..) else {
+                return false;
+            };
+            tail = rest;
             continue;
         }
         let Some(pseudo) = tail.strip_prefix(':') else {
@@ -79,12 +80,18 @@ fn only_pseudos_and_combinators(mut tail: &str) -> bool {
         let end = pseudo
             .find(|c: char| !(c.is_alphanumeric() || matches!(c, '-' | '_' | ':')))
             .unwrap_or(pseudo.len());
-        tail = &pseudo[end..];
+        let Some(rest) = pseudo.get(end..) else {
+            return false;
+        };
+        tail = rest;
         if tail.starts_with('(') {
             let Some(end) = find_matching_paren(tail, 0) else {
                 return false;
             };
-            tail = &tail[end + 1..];
+            let Some(rest) = tail.get(end + 1..) else {
+                return false;
+            };
+            tail = rest;
         }
     }
     true
