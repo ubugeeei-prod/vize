@@ -21,7 +21,7 @@ interpolations remain syntax owned by the parser. Name matching remains
 advisory and does not prove the call's Vue import identity.
 
 The ID rule visits actual zero-argument `Math.random`, `Date.now` and
-`crypto.randomUUID` calls. ID-bearing identifier bindings, assignment targets
+`crypto.randomUUID` calls. ID-bearing identifier bindings, assignment targets,
 literal property assignments, named ID functions and noncomputed property
 values own the inference; comments, string values
 and neighboring bindings cannot supply that context. Retain the previous
@@ -59,14 +59,13 @@ remains the sole release publisher and owns later installed verification.
 The [paired positive-control correction and retained audit rejection](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6019730327)
 conserves real ID functions and literal property assignments, which the old
 same-line heuristic already reported. Four whole controls are appended; the
-initial 37 source/result vectors remain exact. Current `2aae5016` has actual
+initial 37 source/result vectors remain exact. Historical `2aae5016` had actual
 Check37487267761/job112351566807 security red for the new unreviewed critical
 GHSA-pqg4-j6r4-53mv in Nuxt's transitive shell-quote1.9.0. Preserve all three
 original attempts, 82,372 raw bytes, SHA-256
 `5672e53b763f99b2a20079aa00dfc2888ebbaecfc59052c7c69b192a68aaaae4`.
-PR8135 is Draft/offqueue; healthy product workers continue. The security owner
-must supply a genuine correction and current exact-source green before queue
-admission; no allowlist, budget or rerun waiver is offered.
+PR8135 was moved to Draft/offqueue while its healthy product workers continued.
+No allowlist, budget or rerun waiver is offered.
 
 [Complete success-result custody](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6019945572)
 uses one existing-style default nextest override, filtered to exactly the
@@ -79,3 +78,15 @@ whole separate original script-only service result through the existing
 uploader. A real TOML parse and complete prior configuration inverse pass;
 retry, deadline, threads, selection and all other settings remain exact.
 Fresh hosted execution and extraction must authenticate actual raw retention.
+
+The [paired security-source composition and Stack decision](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6020585011)
+replays this complete source onto actual signed main
+`ef84821d30fa0d8538b2472fef34418e75380523`, delivered by #8137 at
+`2026-10-06T16:16:25Z`. The dependency correction genuinely passed its protected
+queue; those results grant no current script-runtime credit. Preserve all
+41 vectors and qualify the new exact head in Actions before admitting it.
+The separately owned CSS layer must branch from that published script parent,
+then update the three complete original CSS findings under its real source.
+Register and verify their native Stack; a green parent prefix can enter the
+queue before its child is ready. The issue remains open after the partial
+parent. Root owns subsequent publication and installed verification.
