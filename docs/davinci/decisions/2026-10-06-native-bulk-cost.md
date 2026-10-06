@@ -254,3 +254,49 @@ then ONE existing full Check runs whole681 equality before observer0 matched
 pairs. Historical nine slower pairs remain failed, with no current gain or
 Ready credit. The [query decision](./2026-10-06-native-diagnostic-query-contracts.md)
 records exact ownership, counts and remaining protected/delivery gates.
+
+## Actual 9d comparison and bounded raw projection
+
+[The paired decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6007703493)
+keeps actual9d Draft/offqueue after native37396254683 passed18 bulk laws,
+72 original eight-profile comparisons and78 actual category acknowledgements.
+Ordinary37396256255 passed16288 hosted Rust entries; PR-only conditional
+skips do not establish protected104. Full37398412397 Vue passed all2043 raw
+and public original500Vue+181TS comparisons, full source/PID/budget custody,
+but its security-audit job failed independently and has another source owner.
+
+The faithful observer0 three-pair result FAILED optimization acceptance:
+original40a/bulk9d median milliseconds were cold5407/7875,
+brokenWarm3124/4809 and repairedWarm3119/4586 (1.456/1.539/1.470).
+All nine pair/lane comparisons were slower. Distinct5762a726/aee42c3f
+binaries rebuilt fresh=false from880/896 authenticated physical objects;
+all unchanged15000/10000 budgets, zero retained native PIDs and853 fixture
+bodies/13 states passed. Artifact11384129285 SHA256898e0b3b8306cbe790db4949b8f086a3358d69ade38b1984f55aa3646dd12b6b
+has38 CRC-passing members; the complete proof has SHA256e23fa949bedca5ff2d1b5f3589d60bb3346d036c206e0515c43f9b98e68c25ca.
+No new timing campaign or gain/default/CLI/LSP/10x claim follows.
+
+The minimal private source correction consumes each existing category once.
+Requested rows use the original owned decoder once. Unrequested rows borrow
+all original typed fields and validate both recursive arrays without owning
+diagnostic strings or child vectors. Every main name must still belong to the
+same sealed source universe; any late schema/identity refusal discards the
+whole local category. Raw SDK JSON allocation, native checking and requested
+conversion/provider/release/fallback are unchanged. This is a demonstrated
+removal of source-level construction, not a measured bottleneck or benefit.
+
+Authenticated payload counts are208 omitted semantic and634 omitted suggestion
+main rows per generation, with1381 recursive records. Requested main counts
+are1616/1177 (broken1617/1177); counts do not measure allocator time or checker
+work. Structural packet SHA2569f8c2328256c18b39294f0841965d149d662eef30e9b7e860baf56f45e533247
+binds every full raw generation to the original artifact. Actual40a/9d share
+8056 projection and8008 AliasContext editor memo; Batch incremental execution
+uses check_session_client/request_diagnostics_batch, not the editor query
+surface producer. Internal native Program/group equality and cost remain unknown.
+
+Two new differential laws retain complete old-decoder outcomes for every field
+boundary/default/null, positional/object representation, recursive child and
+late ownership/alias refusal. Old18/native fixtures remain exact; native20,
+whole681 and an independently qualified actual benefit are pending. Freeze and
+review source before existing Actions; use the already authorized bounded
+observer only if necessary to diagnose residual operations. No blind matched
+repeat, new RPC/schema/stage, SDK change, cap raise, Ready or closure.

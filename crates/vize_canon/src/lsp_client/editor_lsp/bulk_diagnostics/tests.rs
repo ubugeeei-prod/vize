@@ -284,6 +284,7 @@ fn related_provider_refusal_coordinates_and_real_error_never_return_partial_rows
 #[cfg(unix)]
 mod native;
 
+mod raw_projection;
 mod selected_semantics;
 
 mod grouped;

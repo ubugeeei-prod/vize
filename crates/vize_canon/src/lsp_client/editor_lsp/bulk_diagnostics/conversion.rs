@@ -27,6 +27,7 @@ pub(super) struct NativeDiagnostic {
     related_information: Vec<NativeDiagnostic>,
 }
 
+#[cfg(test)]
 impl NativeDiagnostic {
     pub(super) fn file_name(&self) -> &str {
         self.file_name.as_str()

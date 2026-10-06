@@ -188,3 +188,49 @@ full broken/repaired diagnostics, native reaping and unchanged budgets.
 No historic run transfers; keep Draft/offqueue until actual faster full results
 and current protected/native Stack qualification. Root remains sole publisher;
 #7698, default/CLI/LSP/whole-product completion and10x remain unfinished.
+
+## Borrowed validation before omitted-row construction
+
+[Actual execution and the paired correction](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6007703493)
+record successful native18/eight profiles and2043 full original rows, followed
+by nine slower matched comparisons against immutable actual40a. See the
+[cost record](./2026-10-06-native-bulk-cost.md) for the failed medians and full
+artifact identities. These remain failed while the following source is private.
+
+The original decode_project constructed every NativeDiagnostic, including both
+recursive child vectors, before exact membership validation and requested
+filtering. Keep the existing three/four category calls and same raw response.
+Consume rows once: check the lexical main identity against sealed names;
+requested rows use the original owned decoder exactly once; omitted rows use a
+borrowed schema with the same u32/u32/i32/u8 fields, required text, default
+filename/arrays, recursive children and ignored unknown-field policy. Null
+whole categories remain empty. Preserve serde_json's supported positional
+struct representation as well as maps. A malformed or foreign late row refuses
+the whole category; omission never certifies unrequested coordinates or related
+source text, matching the previous conversion boundary.
+
+The borrowed child visitor validates and discards each recursive shape without
+creating child vectors. SDK JSON parsing/ownership is unchanged; CompactString
+can already consume owned JSON strings, so this does not claim every old string
+was cloned. Retained diagnostics still have original ownership and converter
+semantics. No positions/text/member cache, transport, lifetime or recovery path
+changes. Numeric observation counters still count all returned main rows and
+ordinary observer0 remains unchanged.
+
+The actual Cargo pins are compact_str0.10.0 and serde_json1.0.149. Authenticate
+their primary source against locked .crate SHA25679fcda08c33bb58b97008b2cdada6622500e949e060f5913361763121abd2416
+and83fc039473c5595ace860d8c4fafa220ff474b3fc6bfdb4293327f1a37e94d86;
+owned/borrowed Value deserializers both support maps/sequences and exact field
+types. The pinned decoder/callgraph packet SHA256e87fd1c854f32ca7574972d7f9541574be79ee094f5a32575beee747463137a2
+also binds actual40a/9d readiness/config/init,8056 projection and8008 editor
+memo. Session changes are test-only qualification registration; editor recovery
+changes visibility only; the actual production selection delta is the bulk
+route before original batch fallbacks. Do not infer native Program/pool counts,
+semantic checking equivalence or speed causes from this source call graph.
+
+Two whole differential laws use the unchanged original owned decoder as the
+oracle, comparing complete diagnostic Debug structures and refusal outcomes.
+All old pure/native fixtures, capture-before-unwrap, category order, same-owner
+snapshot/related text, reader-failure retirement and full fallback remain exact.
+Current compilation/native20/whole681/benefit/full current gates/protected104/
+actual Stack delivery remain unverified; #8038 stays Draft and #7698 stays open.

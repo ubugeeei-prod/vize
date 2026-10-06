@@ -1,7 +1,10 @@
 //! Same-snapshot requested names and whole-category main-source admission.
 
 use super::conversion::NativeDiagnostic;
+use serde::Deserialize;
 use vize_l0::{FxHashSet, String};
+
+mod raw_schema;
 
 pub(super) fn names<'a>(
     uris: &[String],
@@ -18,6 +21,7 @@ pub(super) fn names<'a>(
     Some(selected)
 }
 
+#[cfg(test)]
 pub(super) fn decode(
     value: serde_json::Value,
     selected_file: Option<&str>,
@@ -38,21 +42,27 @@ pub(super) fn decode_project(
     members: &FxHashSet<&str>,
     requested: &FxHashSet<&str>,
 ) -> Option<Vec<NativeDiagnostic>> {
-    // Decode the entire response before omitting anything. A malformed or
-    // foreign unrequested row must refuse this whole category as well.
-    let diagnostics = decode(value, None)?;
-    if !diagnostics
-        .iter()
-        .all(|row| !row.file_name().is_empty() && members.contains(row.file_name()))
-    {
-        return None;
+    let rows = match value {
+        serde_json::Value::Null => return Some(Vec::new()),
+        serde_json::Value::Array(rows) => rows,
+        _ => return None,
+    };
+    let mut retained = Vec::new();
+    for row in rows {
+        let name = raw_schema::main_name(&row)?;
+        if name.is_empty() || !members.contains(name) {
+            return None;
+        }
+        if requested.contains(name) {
+            // Decode retained rows once with the original owned schema.
+            retained.push(serde_json::from_value::<NativeDiagnostic>(row).ok()?);
+        } else {
+            // Validate every omitted field, including recursive children,
+            // without constructing owned diagnostic strings or child vectors.
+            raw_schema::Diagnostic::deserialize(&row).ok()?;
+        }
     }
-    // Preserve native category order. Only retained requested rows need the
-    // existing position/related-text conversion; no later disk read is added.
-    Some(
-        diagnostics
-            .into_iter()
-            .filter(|row| requested.contains(row.file_name()))
-            .collect(),
-    )
+    // Any late malformed/foreign row discards the entire local category.
+    // Native order and the original requested/related converter stay intact.
+    Some(retained)
 }
