@@ -1,7 +1,7 @@
 //! Generating virtual TypeScript for `.vue` SFCs: parsing the template, running
 //! Croquis analysis, augmenting type-based props, and emitting the `.vue.ts`
 //! source consumed by Corsa. Incomplete scripts retain their authored code and
-//! mappings; unrecoverable SFC/template structure uses a typed fallback module.
+//! mappings; batch or unrecoverable SFC structure uses a typed fallback module.
 
 use std::path::Path;
 use vize_carton::config::VueVersion;
@@ -38,6 +38,8 @@ use super::{
 mod style_modules;
 mod types;
 pub(super) use types::{GeneratedVueFile, VueCodegenOptions};
+#[cfg(test)]
+mod editor_script_tests;
 
 pub(super) fn generate_vue_virtual_ts(
     path: &Path,
@@ -106,7 +108,7 @@ pub(super) fn generate_vue_virtual_ts(
     // The native TypeScript parser recovers incomplete expressions and can
     // still answer editor requests against their exact source mappings.
     // Track whether the template produced any *hard* parse error. Only hard
-    // errors abort codegen and collapse the file to the fallback stub.
+    // errors omit the template AST; batch projections use the fallback stub.
     // Recovery-level diagnostics keep the real virtual TS:
     //   - `ErrorCode::ExtendPoint`, pushed by the HTML tree-construction
     //     recovery path for self-closing rewrites, fostered elements,
@@ -157,15 +159,17 @@ pub(super) fn generate_vue_virtual_ts(
         })
     });
 
+    let has_script_projection = !template_hard_error
+        || (codegen_options.preserve_script_on_template_error
+            && (descriptor.script.is_some() || descriptor.script_setup.is_some()));
     let script_diagnostics =
-        collect_script_parse_fallbacks(path, source, descriptor, !template_hard_error);
+        collect_script_parse_fallbacks(path, source, descriptor, has_script_projection);
     diagnostics.extend(script_diagnostics.diagnostics);
 
-    // Abort to the fallback stub only on hard template errors. Pure
-    // recovery-level template diagnostics must not suppress real codegen: the
-    // parse diagnostic is still reported, alongside the script's own type
-    // diagnostics, which is what `vize check` and the linter now agree on.
-    if template_hard_error {
+    // Batch/content-mapper fallback stays intact. Editor projections retain
+    // authored scripts and parse diagnostics while the unusable template AST
+    // remains absent; native TypeScript owns syntax diagnostics for that script.
+    if !has_script_projection {
         return Ok(GeneratedVueFile {
             typed_router_import: false,
             code: invalid_sfc_fallback_virtual_ts(),

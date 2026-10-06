@@ -203,11 +203,7 @@ fn component_target(
     if module.flags & MODULE == 0 {
         return Ok(None);
     }
-    let exports = block_on(api.get_exports_of_symbol_in_project(
-        snapshot.clone(),
-        project.clone(),
-        module.id,
-    ));
+    let exports = block_on(api.get_exports_of_module(snapshot.clone(), project.clone(), module.id));
     capture.record("moduleExports", || match &exports {
         Ok(value) => json!({"result":value}),
         Err(error) => json!({"error":cstr!("{error}")}),

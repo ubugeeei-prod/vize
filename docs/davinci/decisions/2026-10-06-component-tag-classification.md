@@ -140,3 +140,35 @@ pins/full47 vectors and old tag laws remain exact. Fresh Actions must expose
 the actual native refusal before product qualification; current failed raw
 and Security13 stay separate. No native, protected, public, timing or10x
 credit transfers.
+
+## Actual native exports and partial-template script ownership
+
+Exact4d fails three whole-completion laws. Its acknowledged original process
+resolves the physical Vue module but the raw symbol-export table contains only
+`__export`, `compileToFunction` and `compile`. The pinned SDK's existing
+`get_exports_of_module` asks the native checker to resolve the complete module
+exports, including Vue's re-exported `Component`, on the same snapshot/project.
+Replace the existing query; all target/type/assignability/source/release guards
+remain unchanged. The exact native implementation is
+[checker-backed module exports](https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/api/session.go#L2423).
+
+Controls and unsaved named-tag queries separately refuse before Canon: hard
+MissingEndTag generation returns the complete fallback stub without script
+mappings. Editor-only generation now retains its existing authored script
+projection while keeping the unusable template AST absent. Template parse
+diagnostics remain; retained TypeScript keeps its native syntax owner. Batch
+checking and content-mapper output, script-less fallback, SFC and patterned
+template rejection remain unchanged. No extra parser, backend request, process
+or pipeline stage is added.
+
+Three authored whole code/map/semantic-link/diagnostic conservation laws cover
+the original Controls, split scripts, Unicode, LF/CRLF, malformed TypeScript
+and script-less refusal. Source migration inventories record lexical named
+surfaces only; this test leaf adds no listed surface and their existing check
+passes without changed rows. Every original input and all47 complete completion
+expectations remain exact. The [paired decision](https://github.com/ubugeeei-prod/vize/issues/8001#issuecomment-6010235378)
+retains current4d failures, independent source cause8c492452 and complete
+process custodyc655f658. These additions are uncompiled/unexecuted locally. One
+genuine signed-security-main incorporation and fresh mandatory whole47, old
+native, full source and protected Actions remain required before actual merge
+and public inclusion. No old execution, timing or10x credit transfers.
