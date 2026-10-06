@@ -55,7 +55,17 @@ export function nuxt3TypeProviders(root, project, artifacts, cohort, corpus) {
     graph.push({ name, source, target, manifestBytes, members });
   }
   const driverLock = fs.readFileSync(path.join(root, "pnpm-lock.yaml"), "utf8");
-  const driver = createRequire(path.join(root, "tests/package.json"))("yaml").parse(driverLock);
+  const documents = createRequire(path.join(root, "tests/package.json"))("yaml").parseAllDocuments(
+    driverLock,
+  );
+  assert.equal(documents.length, 2, "manager and workspace lock documents remain separate");
+  for (const document of documents) assert.deepEqual(document.errors, []);
+  const manager = documents[0].toJS();
+  const driver = documents[1].toJS();
+  assert.equal(manager.lockfileVersion, "9.0");
+  assert.deepEqual(Object.keys(manager.importers), ["."]);
+  assert.ok(manager.importers["."].packageManagerDependencies.pnpm);
+  assert.equal(driver.lockfileVersion, manager.lockfileVersion);
   assert.equal(driver.importers.tests.devDependencies["@types/node"].version, node.version);
   for (const { name, manifestBytes } of graph)
     assert.ok(driver.packages[`${name}@${JSON.parse(manifestBytes).version}`].resolution.integrity);
@@ -70,7 +80,7 @@ export function nuxt3TypeProviders(root, project, artifacts, cohort, corpus) {
     schemaMembers: files(path.dirname(schemaManifest)),
     lockedSchema,
     cohortLock: { sha256: sha(lock), source: lock },
-    driverLock: { sha256: sha(driverLock), source: driverLock },
+    driverLock: { sha256: sha(driverLock), source: driverLock, documents: 2, workspaceDocument: 1 },
     graph,
   });
   return () => {
