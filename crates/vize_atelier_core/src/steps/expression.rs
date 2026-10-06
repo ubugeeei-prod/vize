@@ -36,16 +36,27 @@ pub use vize_relief::{ExpressionScope, for_each_function_var};
 /// Returns true if an expression is a callable reference that should be passed
 /// through directly as an event handler, not wrapped as `$event => (...)`.
 pub fn is_event_handler_reference_expression(content: &str) -> bool {
-    with_whole_expression(content, is_handler_reference_shape).unwrap_or(false)
+    with_whole_expression(
+        content,
+        SourceType::default().with_module(true),
+        is_handler_reference_shape,
+    )
+    .unwrap_or(false)
 }
 
 /// Returns true if the whole expression is a function / arrow function expression.
 pub fn is_function_expression(content: &str) -> bool {
-    with_whole_expression(content, is_function_shape).unwrap_or(false)
+    with_whole_expression(
+        content,
+        SourceType::ts().with_module(true),
+        is_function_shape,
+    )
+    .unwrap_or(false)
 }
 
 fn with_whole_expression<T>(
     content: &str,
+    source_type: SourceType,
     decide: impl FnOnce(&oxc_ast::ast::Expression<'_>) -> T,
 ) -> Option<T> {
     if !expression_is_safe_to_parse(content) {
@@ -55,13 +66,9 @@ fn with_whole_expression<T>(
     // The bare parser accepts a prefix (`save; count++` as `save`). Require
     // one whole expression. The newline also terminates authored line comments.
     let wrapped = cstr!("({content}\n)");
-    let expr = Parser::new(
-        &allocator,
-        &wrapped,
-        SourceType::default().with_module(true),
-    )
-    .parse_expression()
-    .ok()?;
+    let expr = Parser::new(&allocator, &wrapped, source_type)
+        .parse_expression()
+        .ok()?;
     (expr.span().end as usize == wrapped.len()).then(|| decide(expr.get_inner_expression()))
 }
 

@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const emit = defineEmits<{ typed: [a: number]; plain: [a: number]; updateThing: [] }>();
+</script>
+
+<template>
+  <button @click="emit('typed', 1); emit('plain', 2); emit('updateThing')">go</button>
+</template>
