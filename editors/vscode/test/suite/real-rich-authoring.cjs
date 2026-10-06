@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const vscode = require("vscode");
 const { openWorkspaceDocument, waitForDiagnostics } = require("./real-server-support.cjs");
+const { beginHover, retainHover } = require("./real-rich-hover-custody.cjs");
 
 function assertReadableDocumentation(value) {
   assert.match(value, /```typescript\n/);
@@ -26,11 +27,16 @@ exports.runRichAuthoring = async function runRichAuthoring() {
   const callStart = original.lastIndexOf(authoredCall);
   assert.ok(callStart >= 0);
   const hoverPosition = document.positionAt(callStart + "invoice.for".length);
+  const hoverRequest = beginHover(document, hoverPosition, {
+    expression: authoredCall,
+    description: "Format the total shown on an invoice",
+  });
   const hovers = await vscode.commands.executeCommand(
     "vscode.executeHoverProvider",
     document.uri,
     hoverPosition,
   );
+  retainHover(hoverRequest, hovers);
   const documentedHover = hovers?.find((hover) =>
     hover.contents.some((content) => content.value?.includes("Format the total")),
   );
@@ -162,11 +168,16 @@ exports.runRichAuthoring = async function runRichAuthoring() {
 async function assertComponentDocumentation(document, editor) {
   const source = document.getText();
   const heading = source.indexOf('heading="April"');
+  const hoverRequest = beginHover(document, document.positionAt(heading + 2), {
+    expression: 'heading="April"',
+    description: "Heading displayed above the invoice total",
+  });
   const hovers = await vscode.commands.executeCommand(
     "vscode.executeHoverProvider",
     document.uri,
     document.positionAt(heading + 2),
   );
+  retainHover(hoverRequest, hovers);
   const hover = hovers?.find((item) =>
     item.contents.some((content) =>
       content.value?.includes("Heading displayed above the invoice total"),
@@ -231,11 +242,18 @@ async function assertMemberDocumentation(file, cases) {
     const start = source.lastIndexOf(expression);
     assert.ok(start >= 0);
     const position = document.positionAt(start + expression.indexOf(".") + 2);
+    const hoverRequest = beginHover(document, position, {
+      expression,
+      description,
+      label,
+      declaration,
+    });
     const hovers = await vscode.commands.executeCommand(
       "vscode.executeHoverProvider",
       document.uri,
       position,
     );
+    retainHover(hoverRequest, hovers);
     const hover = hovers?.find((entry) =>
       entry.contents.some((content) => content.value?.includes(description)),
     );
