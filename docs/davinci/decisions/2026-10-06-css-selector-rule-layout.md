@@ -62,3 +62,10 @@ positions. Provision the tests-package Chromium for the exact selected browser
 test using the existing complete tier/shard selector and stable apt path, and
 for full unsharded Check. No test is skipped, no ceiling rises, and no old
 snapshot is updated. New source execution and protected acceptance remain TODO.
+
+Source c00 Check 37413939455 reports two genuine no-floating-promises
+warnings in the new pure browser dependency test. Await both actual Node test
+promises instead of waiving the zero-warning gate. Their assertions and every
+production/oracle byte remain unchanged; preserve the failed raw check-js log.
+Healthy source formatter/Rust/tooling/browser jobs continue before the next
+necessary source push. This correction grants no runtime or merge acceptance.

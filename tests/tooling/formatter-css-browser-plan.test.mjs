@@ -6,7 +6,7 @@ import { needsFormatterCssBrowser } from "../../tools/support/compat/github/form
 const browser = "tests/tooling/formatter-css-rule-layout.test.mjs";
 const files = ["a.test.mjs", "b.test.mjs", "c.test.mjs", browser];
 
-test("only the selected browser-owning runner needs Chromium, with complete merge validation", () => {
+await test("only the selected browser-owning runner needs Chromium, with complete merge validation", () => {
   for (const tier of ["pr", "merge"]) {
     const plan = { version: 1, tier, tests: files };
     for (let index = 1; index <= 4; index++)
@@ -33,7 +33,7 @@ test("only the selected browser-owning runner needs Chromium, with complete merg
   );
 });
 
-test("selected and unsharded workflows provision the actual tests-package browser before execution", () => {
+await test("selected and unsharded workflows provision the actual tests-package browser before execution", () => {
   const read = (file) => fs.readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
   const source = read(".github/workflows/pr-source-checks.yml");
   const plan = source.indexOf("- name: Plan CSS formatter browser dependency");
