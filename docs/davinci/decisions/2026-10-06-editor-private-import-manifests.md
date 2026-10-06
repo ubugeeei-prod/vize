@@ -51,3 +51,10 @@ extends/project references and explicit Vize overrides remain distinct
 configuration authorities; this package-import correction does not guess a
 Nuxt mapping. Source review, fresh Actions, protected full suites/instruction
 ceilings, actual signed merge and publication remain pending.
+
+Historical child7019 check-js rejects one unbound-method observer reference.
+Bind the original stdin method to that exact stream, preserving the entire
+reported client, framing bytes, arguments, return value and semantic controls.
+The original client shutdown request remains byte-exact and unasserted; only
+its diagnostics/full-frame custody and child-close status are credited by
+that witness. Authored controls separately assert shutdown/exit success.

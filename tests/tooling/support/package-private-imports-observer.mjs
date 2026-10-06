@@ -13,10 +13,10 @@ childProcess.spawn = function (command, argv, options) {
   const child = originalSpawn.call(this, command, argv, options);
   const client = [];
   const server = [];
-  const originalWrite = child.stdin.write;
+  const originalWrite = child.stdin.write.bind(child.stdin);
   child.stdin.write = function (bytes, ...rest) {
     client.push(Buffer.from(bytes));
-    return originalWrite.call(this, bytes, ...rest);
+    return originalWrite(bytes, ...rest);
   };
   child.stdout.on("data", (bytes) => server.push(Buffer.from(bytes)));
   child.on("close", (status, signal) => {
