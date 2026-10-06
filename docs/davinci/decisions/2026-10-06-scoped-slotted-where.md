@@ -61,3 +61,35 @@ Vite wrapper still resolves its declared native dependency. The unchanged
 registered task builds that checkout addon first. The complete 872,085-byte
 failed tooling log is retained; this repairs test provisioning without changing
 any compile option, assertion, input or expectation.
+
+At `ff46327d`, all eight complete CSS/native/Vite comparisons passed, then the
+original whole-SFC CSS assertion found one incorrectly authored terminal LF.
+The unchanged writer's `flush_declarations` trims final root trivia and drops
+empty trailing declarations; the existing slotted style route uses that writer.
+The corrected reference removes exactly this one byte and retains every leading,
+inter-rule, selector and declaration byte. Its old whole reference/hash and the
+872,512-byte failed log are preserved. Original inputs, all eight controls,
+production and whole comparisons remain unchanged; no output was re-recorded.
+Fresh whole-SFC, map, Rust and protected acceptance remain pending.
+
+The same first complete Rust execution also found two additional old focused
+slotted expectations with ordinary-prefix scope attributes: the mixed SFC
+assertion and the SFC snapshot. The paired CSS snapshot has the same independently
+proven mistake. Remove only those attributes under the same Vue primary contract;
+full old files/hashes are retained, with all original inputs and other expected
+bytes unchanged. No blanket snapshot update is used.
+
+The L3 remarks sweep additionally requires the new original `App.vue` in its
+registered file list. Append only that sorted path: all existing 451 paths and
+entire entries/explanations remain byte-exact. The authentic execution reported
+452 files, 150 remarks, 15 applied, 135 missed and zero remark changes. This is
+fixture membership conservation, with the unchanged full gate still required.
+
+The current native-phase run found the parallel L2 sweep's same new membership
+and two new original-file remarks. Independently retain the original div's
+authored 13..44 span: its static class props hoist, while its slot child blocks
+whole-subtree hoisting under the existing producer. Add only this path and those
+two complete literal rows. Every old L2 path/remark/explanation remains byte-exact.
+The complete 724,241-byte native failure log is retained, with no parser/pass,
+regression explanation or update-mode change. Fresh unchanged gates remain
+mandatory; the first native attempt stays failed.

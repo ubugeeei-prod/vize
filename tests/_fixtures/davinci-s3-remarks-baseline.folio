@@ -97,6 +97,7 @@
 "tests/_fixtures/davinci-ts40-projection/tsx-script.vue"
 "tests/_fixtures/davinci-ts40-projection/utf8-crlf-props.vue"
 "tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue"
+"tests/_fixtures/differential/compiler/scoped-slotted-where-7942/App.vue"
 "tests/_fixtures/differential/formatter/sfc-plain-style-nested-comments/App.vue"
 "tests/_fixtures/differential/formatter/sfc-split-v-pre-indentation/App.vue"
 "tests/_fixtures/differential/lsp/binding-occurrences-original/Field.vue"

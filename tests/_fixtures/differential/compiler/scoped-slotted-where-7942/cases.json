@@ -67,7 +67,7 @@
       "pipelineSha256": "b7acc6ef8b4e46cf2c9c0425a04c8c63116c1216cb86d1b1b2c4f1d28e138e51"
     }
   ],
-  "originalPipelineSha256": "a06140dfad7f5aa9a13c113bb3fdd830e59df51a3fbcce27e5fa6ba944727cf2",
+  "originalPipelineSha256": "605a4bc6b9b62fa966a8340b60033da8de7c52f97fd9d32db027c9d4bae18565",
   "priorFocusedAssertions": [
     {
       "path": "crates/vize_atelier_sfc/src/vite_plugin/css_scope/slotted.rs",
@@ -81,5 +81,53 @@
       "sourceSha256": "d7c0d727685e3bd76408c42faf1c6d2f69f30cf2635d3614810313651029d949",
       "qualification": "Original inputs unchanged; only the ordinary pre-slotted scope attributes in focused expected CSS are removed by the Vue 3.5.38 selector contract."
     }
-  ]
+  ],
+  "pipelineReferenceCorrection": {
+    "oldSha256": "a06140dfad7f5aa9a13c113bb3fdd830e59df51a3fbcce27e5fa6ba944727cf2",
+    "oldBytes": 103,
+    "newBytes": 102,
+    "change": "Remove exactly the authored terminal LF; all selector/declaration/leading/inter-rule bytes are identical.",
+    "sourceRule": "css_scope.rs::flush_declarations trims final root trivia before emitting; style.rs routes this slotted block through that existing writer."
+  },
+  "additionalFocusedReferences": [
+    {
+      "path": "crates/vize_atelier_sfc/src/compile_tests.rs",
+      "oldSha256": "6dd834e26f19f8f32bba0264dc16aca905df8d29d5f2308038a1747af5dac9f4",
+      "oldBytes": 7605,
+      "newSha256": "0dc61327df05a53ef461616e744cac2339e5f365db5b562ae9d7b0c5f08f595d",
+      "change": "Remove only ordinary pre-slotted scope attribute; original source and every other expected byte unchanged."
+    },
+    {
+      "path": "crates/vize_atelier_sfc/tests/snapshots/scoped_slotted__sfc.snap",
+      "oldSha256": "b25b93fae33a637775671d8fea163a319c1332d63f53671611e4d8e343da71f0",
+      "oldBytes": 166,
+      "newSha256": "1cbd3e36f2fafb0d8ceab14e0e053dba0d1bbae69390f603e331f268f30bbcc8",
+      "change": "Remove only ordinary pre-slotted scope attribute; original source and every other expected byte unchanged."
+    },
+    {
+      "path": "crates/vize_atelier_sfc/tests/snapshots/scoped_slotted__css.snap",
+      "oldSha256": "2e0d7ea2e3105c2b6f55cdf0e07b6c030d4b36e23dfbfa0e8c56ebc9c442a9b9",
+      "oldBytes": 162,
+      "newSha256": "fb07a8d12c4e5e9c36419025d7d6c1146510bc5b9d5ed3244c3828ac8616513c",
+      "change": "Remove only ordinary pre-slotted scope attribute; original source and every other expected byte unchanged."
+    }
+  ],
+  "remarksCorpusMembership": {
+    "path": "\"tests/_fixtures/differential/compiler/scoped-slotted-where-7942/App.vue\"",
+    "oldFiles": 451,
+    "newFiles": 452,
+    "entriesAndExplanationsUnchanged": true,
+    "observedChanges": 0,
+    "runtimeHead": "ff46327d5329e01b31e061d4125141d3869a97fb"
+  },
+  "l2RemarksCorpusMembership": {
+    "path": "\"tests/_fixtures/differential/compiler/scoped-slotted-where-7942/App.vue\"",
+    "newEntries": [
+      "\"tests/_fixtures/differential/compiler/scoped-slotted-where-7942/App.vue\" s2.hoist-static applied static-props @13:44 tag=\"div\"",
+      "\"tests/_fixtures/differential/compiler/scoped-slotted-where-7942/App.vue\" s2.hoist-static missed static-subtree @13:44 tag=\"div\" blocker=\"child\" op=\"ui.slot\""
+    ],
+    "oldSha256": "868f53247296123f9ada5abc7c0a0d353f1162b0c3b177d47698f347e9a447fb",
+    "oldEntriesAndExplanationsUnchanged": true,
+    "sourceRule": "The original div has static class props and a ui.slot child: hoist props, refuse the whole subtree; whole authored element byte span is 13..44. See pass/hoist/remarks.rs and lower/slot.rs."
+  }
 }
