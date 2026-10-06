@@ -1,0 +1,71 @@
+{
+  "schema": "vize.typecheck.cli-jsconfig-discovery",
+  "version": 1,
+  "provenance": "authored regression controls for configless CLI discovery; no historical reporter input is claimed",
+  "inputFiles": [
+    {
+      "carrier": "jsconfig.json.txt",
+      "bytes": 198,
+      "sha256": "80be52a67a9af97e8e7e1f77d1eda6a1fd774d710ad58c177f0810a8cc17e2cd"
+    },
+    {
+      "carrier": "jsconfig-deny.json.txt",
+      "bytes": 220,
+      "sha256": "69fcc6934a24846d1ddc21706214df286346de7505657c15cae14073ddcf9150"
+    },
+    {
+      "carrier": "message.js.txt",
+      "bytes": 49,
+      "sha256": "60256fc9faa62df4e8936fff0905fa934799778054a2bba075167cb403360810"
+    },
+    {
+      "carrier": "message-repaired.js.txt",
+      "bytes": 54,
+      "sha256": "3198c183d1460453448f249ecdbafe78955b4dd7a3799b6b1157e8368a53d34b"
+    },
+    {
+      "carrier": "value.ts.txt",
+      "bytes": 33,
+      "sha256": "4519bd7fc34238126c4a37d0f6bed6db94fc8653cb4d5adda7e3f0e39bad385c"
+    },
+    {
+      "carrier": "package.json.txt",
+      "bytes": 70,
+      "sha256": "034ae705e5ac164bbd89a1fb77a6c7e973153c1b9f837c179f7e2eb931f99c92"
+    }
+  ],
+  "nativeSource": [
+    {
+      "commit": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "path": "internal/core/compileroptions.go",
+      "gitBlob": "b079097c54037ef95fbcc91db80ff1e9c2373464",
+      "sha256": "0794dd74ffbecdda009f07e3dc515ae6ffe248e488dd7aea6fe88025b24a9e65",
+      "bytes": 27555,
+      "carrier": "native-source/compileroptions.go.txt"
+    },
+    {
+      "commit": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "path": "internal/tsoptions/tsconfigparsing.go",
+      "gitBlob": "4f85782753d4d2079ffe289ed503cd42e6b48163",
+      "sha256": "729fcce1ed4f1bd83860f3d986794584054ff59ed98bd56c115056f525fdcfa4",
+      "bytes": 73771,
+      "carrier": "native-source/tsconfigparsing.go.txt"
+    }
+  ],
+  "jsconfigDefaults": {
+    "allowJs": true,
+    "maxNodeModuleJsDepth": 2,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "diagnostic": {
+    "code": 2322,
+    "severity": 1,
+    "message": "Type 'number' is not assignable to type 'string'.",
+    "line": 2,
+    "column": 14,
+    "start": 35,
+    "length": 7
+  },
+  "execution": "pending fresh required source-built Actions; source review provides no runtime credit"
+}
