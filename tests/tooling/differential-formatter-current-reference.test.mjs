@@ -12,6 +12,7 @@ import {
   formatterReferenceComparisons,
   validateFormatterReferencePass,
 } from "../differential/formatter-current-reference.ts";
+import { validateRootCommentSnapshotTransition } from "../differential/formatter-root-comment-reference.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const directory = "tests/_fixtures/differential/formatter-history";
@@ -31,10 +32,10 @@ const cases = packs.flatMap(
 );
 const qualified = cases.filter((row) => row.currentReference);
 
-void test("one reviewed current reference keeps all original300 source and captured outputs", () => {
+void test("three reviewed current references keep all original300 source and captured outputs", () => {
   assert.equal(cases.length, 300);
-  assert.equal(qualified.length, 1);
-  const fixture = qualified[0];
+  assert.equal(qualified.length, 3);
+  const fixture = qualified.find((row) => row.currentReference.issue === 7826);
   assert.equal(fixture.api, "format_sfc");
   assert.equal(fixture.currentReference.issue, 7826);
   assert.notDeepEqual(fixture.expected, fixture.currentExpected);
@@ -45,10 +46,17 @@ void test("one reviewed current reference keeps all original300 source and captu
   assert(whole && !whole.currentReference);
   const url = cases.find((row) => row.id === "prepared/style-comment-in-url");
   assert(url && !url.currentReference);
+  const roots = qualified.filter((row) => row.currentReference.issue === 7877);
+  assert.equal(roots.length, 2);
+  for (const row of roots) {
+    assert.equal(row.api, "format_sfc");
+    assert.notDeepEqual(row.expected, row.currentExpected);
+    assert.equal(row.expected.length, row.currentExpected.length + 1);
+  }
 });
 
 void test("current refinement rejects source, API, history and qualification forgery", (t) => {
-  const fixture = qualified[0];
+  const fixture = qualified.find((row) => row.currentReference.issue === 7826);
   for (const [row, input, historical] of [
     [{ ...fixture, api: "format_style" }, fixture.input, fixture.expected],
     [{ ...fixture, profile: "skip_script_stabilization" }, fixture.input, fixture.expected],
@@ -84,7 +92,7 @@ void test("current refinement rejects source, API, history and qualification for
 });
 
 void test("historical mismatch stays a failure while current admission requires exact complete bytes", () => {
-  const fixture = qualified[0];
+  const fixture = qualified.find((row) => row.currentReference.issue === 7826);
   const row = {
     currentReference: fixture.currentReference,
     legacy: { state: "matched-reference" },
@@ -127,4 +135,107 @@ void test("historical mismatch stays a failure while current admission requires 
   assert.deepEqual(currentFormatterReferenceSummary([{ ...row, legacy: { state: "failed" } }]), {
     currentReferenceMatches: 0,
   });
+});
+
+void test("both exact root-comment refinements reject forged ownership and old wrong blank lines", () => {
+  for (const fixture of qualified.filter((row) => row.currentReference.issue === 7877)) {
+    for (const [row, input, historical] of [
+      [{ ...fixture, api: "format_style" }, fixture.input, fixture.expected],
+      [{ ...fixture, kind: "VueTemplate" }, fixture.input, fixture.expected],
+      [{ ...fixture, profile: "skip_script_stabilization" }, fixture.input, fixture.expected],
+      [{ ...fixture, outcome: "error" }, fixture.input, fixture.expected],
+      [
+        { ...fixture, options: { ...fixture.options, userOverrides: { sortBlocks: false } } },
+        fixture.input,
+        fixture.expected,
+      ],
+      [
+        { ...fixture, witness: { ...fixture.witness, path: "foreign.rs" } },
+        fixture.input,
+        fixture.expected,
+      ],
+      [
+        { ...fixture, witness: { ...fixture.witness, sourceSha256: "0".repeat(64) } },
+        fixture.input,
+        fixture.expected,
+      ],
+      [
+        { ...fixture, witness: { ...fixture.witness, inputExpressionRangeBytes: [0, 1] } },
+        fixture.input,
+        fixture.expected,
+      ],
+      [fixture, Buffer.from("<template />"), fixture.expected],
+      [fixture, fixture.input, fixture.currentExpected],
+    ])
+      assert.throws(() => currentFormatterReference(root, row, input, historical));
+    const row = {
+      currentReference: fixture.currentReference,
+      legacy: { state: "matched-reference" },
+    };
+    const comparison = formatterReferenceComparisons(fixture, fixture.currentExpected);
+    assert.equal(comparison.referenceComparison.state, "different");
+    assert.equal(comparison.currentReferenceComparison.state, "equal");
+    validateFormatterReferencePass(fixture, row, comparison, fixture.currentExpected);
+    for (const output of [
+      fixture.expected,
+      Buffer.concat([fixture.currentExpected, Buffer.from("\n")]),
+    ]) {
+      assert.throws(() =>
+        validateFormatterReferencePass(
+          fixture,
+          row,
+          formatterReferenceComparisons(fixture, output),
+          output,
+        ),
+      );
+    }
+    assert.throws(() =>
+      validateFormatterReferencePass(
+        fixture,
+        { ...row, currentReference: undefined },
+        comparison,
+        fixture.currentExpected,
+      ),
+    );
+    assert.throws(() =>
+      validateFormatterReferencePass(
+        fixture,
+        row,
+        { ...comparison, referenceComparison: { state: "equal" } },
+        fixture.currentExpected,
+      ),
+    );
+  }
+});
+
+void test("the two snapshot transitions retain original bytes and reject restored wrong current output", () => {
+  const authority = JSON.parse(
+    fs.readFileSync(
+      path.join(
+        root,
+        "tests/_fixtures/differential/formatter-history/current-references-7877.json",
+      ),
+    ),
+  );
+  for (const row of authority.cases) {
+    const current = fs.readFileSync(path.join(root, row.currentSnapshot.path));
+    const historical = fs.readFileSync(path.join(root, row.historicalSnapshot.path));
+    const name = row.witness.function;
+    const hash = row.historicalSnapshot.sha256;
+    assert.equal(validateRootCommentSnapshotTransition(root, name, current, hash), true);
+    assert.throws(() => validateRootCommentSnapshotTransition(root, name, historical, hash));
+    assert.throws(() => validateRootCommentSnapshotTransition(root, name, current, "0".repeat(64)));
+    assert.throws(() =>
+      validateRootCommentSnapshotTransition(
+        root,
+        name,
+        Buffer.concat([current, Buffer.from("\n")]),
+        hash,
+      ),
+    );
+  }
+  assert.equal(
+    validateRootCommentSnapshotTransition(root, "foreign_owner", Buffer.from(""), ""),
+    false,
+  );
 });

@@ -58,10 +58,17 @@ pub fn evaluate(
     }
     let jsx = matches!(setup.lang.as_deref(), Some("jsx" | "tsx"));
     let decls = bindings_extract::extract(&setup.content, jsx)?;
+    // The naive evaluator resolves the complete authored script and type
+    // parameters together; it does not read production's free-reference set.
+    let generic_scope = setup
+        .attrs
+        .get("generic")
+        .map(|generic| cstr!("{}\n;(function<{generic}>() {{}});", setup.content));
+    let semantic_source = generic_scope.as_deref().unwrap_or(&setup.content);
     let allocator = Allocator::default();
     let parsed = Parser::new(
         &allocator,
-        &setup.content,
+        semantic_source,
         if jsx {
             SourceType::tsx()
         } else {

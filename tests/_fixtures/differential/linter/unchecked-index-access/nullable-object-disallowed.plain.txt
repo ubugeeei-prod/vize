@@ -1,0 +1,9 @@
+Patina lint report: 3 errors in 1 file
+
+src/MyTouch.vue
+  src/MyTouch.vue:7:8 error type/strict-boolean-expressions Unexpected nullable object value in conditional. Please handle the nullish case explicitly.
+    Reference: docs/content/rules/type-and-script.md
+  src/MyTouch.vue:13:10 error type/strict-boolean-expressions Unexpected nullable object value in conditional. Please handle the nullish case explicitly.
+    Reference: docs/content/rules/type-and-script.md
+  src/MyTouch.vue:16:14 error type/strict-boolean-expressions Unexpected nullable string value in conditional. Please handle the nullish and empty string cases explicitly.
+    Reference: docs/content/rules/type-and-script.md

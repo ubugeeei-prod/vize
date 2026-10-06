@@ -1,0 +1,44 @@
+// Pinned native 7.0.2: internal/checker/checker.go:13937-13956
+func (c *Checker) errorOrSuggestion(isError bool, location *ast.Node, message *diagnostics.Message, args ...any) {
+	c.addErrorOrSuggestion(isError, NewDiagnosticForNode(location, message, args...))
+}
+
+func (c *Checker) errorAndMaybeSuggestAwait(location *ast.Node, maybeMissingAwait bool, message *diagnostics.Message, args ...any) *ast.Diagnostic {
+	diagnostic := c.error(location, message, args...)
+	if maybeMissingAwait {
+		diagnostic.AddRelatedInfo(createDiagnosticForNode(location, diagnostics.Did_you_forget_to_use_await))
+	}
+	return diagnostic
+}
+
+func (c *Checker) addErrorOrSuggestion(isError bool, diagnostic *ast.Diagnostic) {
+	if isError {
+		c.addDiagnostic(diagnostic)
+	} else {
+		suggestion := *diagnostic
+		suggestion.SetCategory(diagnostics.CategorySuggestion)
+		c.addSuggestionDiagnostic(&suggestion)
+	}
+
+// Pinned native 7.0.2: internal/checker/checker.go:15238-15244
+
+		if sourceFile.Symbol != nil {
+			if errorNode != nil {
+				if resolvedModule.IsExternalLibraryImport && !resolutionExtensionIsTSOrJson(resolvedModule.Extension) {
+					c.errorOnImplicitAnyModule(false /*isError*/, errorNode, mode, resolvedModule, moduleReference)
+				}
+				if c.moduleKind == core.ModuleKindNode16 || c.moduleKind == core.ModuleKindNode18 {
+
+// Pinned native 7.0.2: internal/checker/checker.go:15297-15308
+	if resolvedModule.IsResolved() && !resolutionExtensionIsTSOrJson(resolvedModule.Extension) && resolutionDiagnostic == nil || resolutionDiagnostic == diagnostics.Could_not_find_a_declaration_file_for_module_0_1_implicitly_has_an_any_type {
+		if isForAugmentation {
+			c.error(
+				errorNode,
+				diagnostics.Invalid_module_name_in_augmentation_Module_0_resolves_to_an_untyped_module_at_1_which_cannot_be_augmented,
+				moduleReference,
+				resolvedModule.ResolvedFileName,
+			)
+		} else {
+			c.errorOnImplicitAnyModule(c.noImplicitAny && moduleNotFoundError != nil, errorNode, mode, resolvedModule, moduleReference)
+		}
+		return nil

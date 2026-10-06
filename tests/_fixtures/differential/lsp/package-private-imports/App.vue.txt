@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { greet } from "#lib/util.ts";
+
+const message = greet("x");
+</script>
+
+<template>
+  <p>{{ message }}</p>
+</template>

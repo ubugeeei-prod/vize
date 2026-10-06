@@ -7,9 +7,12 @@ use vize_carton::CompactString;
 
 use super::ScriptParseResult;
 
+mod generic_reads;
+
 pub(crate) fn unused_setup_bindings(
     program: &Program<'_>,
     result: &ScriptParseResult,
+    generic: Option<&str>,
 ) -> Vec<CompactString> {
     let built = SemanticBuilder::new()
         .with_check_syntax_error(true)
@@ -42,6 +45,18 @@ pub(crate) fn unused_setup_bindings(
             unused.push(CompactString::new(name.as_str()));
         }
     }
+    if !unused.is_empty()
+        && let Some(generic) = generic
+    {
+        let Some(reads) = generic_reads::free_reads(generic) else {
+            // An invalid attribute cannot prove any binding is unread.
+            return Vec::new();
+        };
+        unused.retain(|name| !reads.contains(name));
+    }
     unused.sort_unstable();
     unused
 }
+
+#[cfg(test)]
+mod tests;

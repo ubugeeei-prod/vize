@@ -40,8 +40,16 @@ void test("full formatter denominator rejects missing original fixes, source arm
   );
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "formatter-retained-law-"));
   t.after(() => fs.rmSync(scratch, { recursive: true, force: true }));
+  const rootAuthority =
+    "tests/_fixtures/differential/formatter-history/current-references-7877.json";
+  const rootSnapshots = JSON.parse(fs.readFileSync(path.join(root, rootAuthority))).cases.map(
+    (row) => row.historicalSnapshot.path,
+  );
+  assert.equal(rootSnapshots.length, 2);
   for (const relative of [
     PRESERVED_FORMATTER_SOURCE.originalAsset,
+    rootAuthority,
+    ...rootSnapshots,
     ...preservedFunctions.map(
       (name) => `crates/vize_glyph/tests/snapshots/preserve_authored_content__${name}.snap`,
     ),

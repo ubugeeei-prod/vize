@@ -224,3 +224,39 @@ new composition; historical `229c` failures and ordinary green remain separate.
 Protected 100+4 measurements, full suites, signed merge and an actually included
 finite published cut stay pending. Root's v0.435 release work is separate from
 this unqualified source; no inclusion, public or performance credit is assumed.
+
+## Independent actual-main delivery after inherited Vapor cap failure
+
+Paired [current-main decision](https://github.com/ubugeeei-prod/vize/issues/7982#issuecomment-6013257289).
+
+SSR source `64ed0ce8a5` passes ordinary Check 37425200171 and full Check
+37427289673: all 23 rule/parser laws, six complete CLI observations, both whole
+original/repair/restore LSP cycles and all three pinned Vue SSR controls. These
+remain historical receipts; they do not qualify the following composition.
+
+Protected candidate `09b6aa99c1` inherits parent `b5f41c39bd` and fails three
+`atelier_vapor_lower_large` samples at 79,683 > 76,975. That parent already fails
+at the same value; preceding `3c29fb6bbc` passes. Retain all 312 exclusive Ir
+samples, original fixture/window/allocator markers, both bounded official ZIPs
+and unchanged budgets. The actual instruction job fails; the superseded aggregate
+is separately cancelled only after removal from every current queue projection.
+The PR is promptly dequeued. The later #8101 repair's protected failure is also
+separate; no green source check substitutes for protected measurement.
+
+The SSR source has no dependency on ordinary Vapor reactive-key production.
+Its 33 owned paths exclude Vapor/Core/instruction-harness/budget changes, and the
+original CLI/LSP lints and pinned stock Vue SSR controls do not invoke that
+lowering path. The #8101 owner independently confirms the source separation.
+
+Incorporate actual signed main `b96599a160` once into this same PR. It excludes
+unmerged #8101; the fresh live queue excludes that failed slice too. All production
+merges cleanly. Resolve only the shared canonical paragraph, preserving the whole
+incoming file and appending the owned entry at 350 lines. Preserve all original
+issue/doc/corpus bytes, rule/parser bodies, complete diagnostic assertions and
+incoming workflow/lock/provider/default behavior. This is independent delivery,
+not a claim that the Vapor regression is repaired or an instruction-budget waiver.
+
+TODO: exact new source Actions and necessary existing full Check, fresh healthy
+protected projection with all 104 measurements/full suites, actual signed merge
+and an included future published version. Published v0.435.0 excludes this PR;
+no public-inclusion, native typechecker, whole-CLI gain or 10x credit is claimed.

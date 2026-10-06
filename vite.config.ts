@@ -52,6 +52,7 @@ const formatterSensitiveContentIgnorePatterns = [
   "tests/fixtures/typechecker/options-api-writable-computed/**",
   "tests/fixtures/typechecker/slot-outlet-union/**",
   "tests/fixtures/typechecker/pnpm-workspace-routes/**",
+  "tests/fixtures/typechecker/unknown-dynamic-component/**",
   // Formatter input/output witnesses must retain their authored bytes.
   "crates/vize_glyph/tests/style_spec/**",
   "docs/content/**/*.md",

@@ -128,6 +128,23 @@ impl ServerState {
         self.workspace_root.read().clone()
     }
 
+    /// Capture every registered editor folder without rescanning its sources.
+    #[cfg(feature = "native")]
+    pub(crate) fn workspace_root_paths(&self) -> Vec<PathBuf> {
+        let mut roots = self
+            .workspace_folder_configs
+            .read()
+            .iter()
+            .map(|context| context.root.clone())
+            .collect::<Vec<_>>();
+        if let Some(primary) = self.get_workspace_root()
+            && !roots.contains(&primary)
+        {
+            roots.push(primary);
+        }
+        roots
+    }
+
     /// Resolve the primary workspace root from `initialize`: `rootUri` when
     /// present, otherwise the first workspace folder. This root keeps driving
     /// process-wide config, the type-checker/Corsa session, and formatting.
