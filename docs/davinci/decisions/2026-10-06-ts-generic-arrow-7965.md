@@ -97,3 +97,25 @@ historical pins/options and ceilings stay exact; there is no record mode,
 stderr suppression or formatter change. Strict Rust source build already passed
 on7690; actual Rust cases and fresh repaired whole7/12/source/protected104/full
 Rust/signed merge/release remain required. No old result transfers to a new head.
+
+## Current affected runtime and upstream dependency
+
+[Current paired evidence](https://github.com/ubugeeei-prod/vize/issues/7965#issuecomment-6007730993)
+qualifies source `4f013b88` only. Official artifact11384923040 at32,560B/API
+ce0ce223/all17CRCs retains both complete originals and exact command, all12
+cases/36 whole Oxfmt0.63 outputs/error vectors/60 whole case CLI observations.
+Actual checkout3ccd0f50 has genuine143c+4f parents and the exact reviewed tree;
+source-built vize0.434.0 receipt binds binarySHA a4d3f9f0. No executable bytes
+were independently rehashed. Proof8e34432c verifies whole bytes, streams,
+status/error/signal, unchanged check files and three-pass fixed points.
+All7 original Rust laws actually pass once in the four API-hash/CRC-qualified
+current JUnit archives (prooff7e7ffa8); strict builder and all4workers succeeded.
+
+Required security job112066920225 still fails on the common13 npm advisories.
+The separately owned #8080 must actually merge before a genuine incorporation
+and fresh exact-head qualification; this branch remains Draft/auto-null/offqueue.
+Current canonical DOM/fan-in completion is pending. Old7690's terminal conclusion
+is CANCELLED from ordinary superseding concurrency, retaining its real two
+failures and seven successes; cancellation grants no passing aggregate. The
+new runtime result gives no protected104/full historical/actual merge/release
+credit. Current-data adoption, native/default/history and10x remain unfinished.
