@@ -62,8 +62,8 @@ actual measured improvement. Deliver #8071 as a scoped original bundled-library
 rename protection; keep #8010 open for configured runtime library origin authority.
 The unchanged conditional gap is not a reason to withhold the tested partial
 improvement, and its closure is not claimed. All other P0/native/default/fix-history/Davinci
-completion remains unfinished. Process the existing PR queue before admitting
-the separate private new slices.
+completion remains unfinished. Admit reviewed slices to Draft qualification
+while existing owners continue current checks and actual merge delivery.
 
 ## Terminal record and admission
 
@@ -125,3 +125,24 @@ twelve Semver checks, the complete version-only source/tag bridge, actual
 publication channels and faithful installed-original fixture replays.
 The completed v0.434.0 evidence remains historical. No new cut, PR, head or
 public receipt is assigned yet. Preserve the unused patch preparation.
+
+## Asynchronous qualification
+
+The [paired scaling decision](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-6009111460)
+lifts the blanket publication hold after the maintainer's explicit instruction
+to scale native Stacks, worktrees and subagents without blocking development.
+Reviewed slices may publish small conventional Draft PRs and run original
+Actions while their dependency's delivery continues. Each owner follows
+current failures, qualification, queue admission and actual merge through to
+the installed release handoff. Preserve genuine parent ancestry and native
+Stack membership for dependent layers; use squash auto-merge for independent
+passing PRs.
+
+PR8073 has genuine parent-base child PR8086. The CSS ownership child and native
+Stack registration remain pending. Existing Stack8069 qualifies separately.
+Dependency candidate633af494 was actually dequeued after the changed
+conditional `v-bind` failed strict UI lint; both complete Vue runtime suites
+passed. A typed binding and fresh full qualification remain pending. The
+configless alias and default lint improvements also require original-fixture
+qualification. These preparations do not assign a release cut or prove merge
+or publication; keep the finite v0.435.0 delivery above.
