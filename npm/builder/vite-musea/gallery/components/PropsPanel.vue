@@ -380,14 +380,20 @@ const controlKindOptions = [
               </button>
             </div>
             <pre
-              class="props-usage-code hljs"
+              class="props-usage-code musea-code-block"
+              tabindex="0"
+              role="region"
+              aria-label="Usage code"
             ><HighlightedCode :code="usageCode" language="xml" /></pre>
           </div>
 
           <div class="props-json">
             <div class="props-json-header">Current Values</div>
             <pre
-              class="props-json-code hljs"
+              class="props-json-code musea-code-block"
+              tabindex="0"
+              role="region"
+              aria-label="Props JSON"
             ><HighlightedCode :code="valuesJson" language="json" /></pre>
           </div>
         </div>
@@ -616,11 +622,12 @@ const controlKindOptions = [
 
 .props-split {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
 .props-split-left {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -630,13 +637,17 @@ const controlKindOptions = [
 }
 
 .props-split-right {
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
 @media (max-width: 900px) {
   .props-split {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .props-split-left {
+    position: static;
   }
 }
 
@@ -954,16 +965,6 @@ const controlKindOptions = [
   border-bottom: 1px solid var(--musea-border);
 }
 
-.props-json-code {
-  padding: 0.75rem;
-  font-family: var(--musea-font-mono);
-  font-size: 0.75rem;
-  color: var(--musea-text-secondary);
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-break: break-all;
-}
-
 .props-preview {
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-md);
@@ -1039,16 +1040,6 @@ const controlKindOptions = [
 .props-copy-btn:hover {
   color: var(--musea-text);
   border-color: var(--musea-text-muted);
-}
-
-.props-usage-code {
-  padding: 0.75rem;
-  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-  font-size: 0.75rem;
-  color: var(--musea-text-secondary);
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-break: break-all;
 }
 
 .props-empty {

@@ -31,6 +31,9 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::{CssLintResult, CssRule, CssRuleMeta};
 
+mod ignored_tokens;
+use ignored_tokens::IgnoredTokens;
+
 static META: CssRuleMeta = CssRuleMeta {
     name: "css/no-utility-classes",
     description: "Warn against implementing utility classes in component styles",
@@ -119,6 +122,7 @@ impl CssRule for NoUtilityClasses {
         result: &mut CssLintResult,
     ) {
         let bytes = source.as_bytes();
+        let ignored = IgnoredTokens::new(source);
 
         // Check exact patterns (must match exactly, no more characters)
         for &pattern in EXACT_UTILITY_PATTERNS {
@@ -143,7 +147,7 @@ impl CssRule for NoUtilityClasses {
                         Some(b' ' | b'{' | b',' | b'\n' | b'\r' | b'\t')
                     );
 
-                if is_selector_start && is_exact_match {
+                if is_selector_start && is_exact_match && !ignored.contains(absolute_pos) {
                     result.add_diagnostic(
                         LintDiagnostic::warn(
                             META.name,
@@ -180,7 +184,7 @@ impl CssRule for NoUtilityClasses {
                 let next_pos = absolute_pos + pattern.len();
                 let is_followed_by_digit = bytes.get(next_pos).is_some_and(u8::is_ascii_digit);
 
-                if is_selector_start && is_followed_by_digit {
+                if is_selector_start && is_followed_by_digit && !ignored.contains(absolute_pos) {
                     // Find the end of the class name
                     let mut end = next_pos;
                     while bytes

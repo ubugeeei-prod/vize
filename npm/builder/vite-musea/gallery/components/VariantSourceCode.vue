@@ -53,8 +53,11 @@ async function copyCode() {
       </button>
     </div>
     <pre
-      class="source-pre"
-    ><HighlightedCode class="source-code-text hljs" :code language="xml" /></pre>
+      class="source-pre musea-code-block"
+      tabindex="0"
+      role="region"
+      aria-label="Template source"
+    ><HighlightedCode class="source-code-text" :code language="xml" /></pre>
   </div>
 </template>
 
@@ -100,21 +103,5 @@ async function copyCode() {
 .source-copy-btn:hover {
   color: var(--musea-text);
   border-color: var(--musea-text-muted);
-}
-
-.source-pre {
-  margin: 0;
-  padding: 0.75rem;
-  background: var(--musea-bg-primary);
-  overflow-x: auto;
-  max-height: 200px;
-}
-
-.source-code-text {
-  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-  font-size: 0.75rem;
-  line-height: 1.6;
-  color: var(--musea-text-secondary);
-  white-space: pre;
 }
 </style>

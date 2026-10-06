@@ -20,6 +20,9 @@ pub const CHILD: &str = source!("src/Child.vue");
 pub const PARENT: &str = source!("src/Parent.vue");
 pub const CONFIG: &str = source!("tsconfig.json");
 const ORACLE: &str = source!("Oracle.ts");
+const STRICT_ORACLE: &str = include_str!(
+    "../../../../tests/_fixtures/differential/typechecker/strict-template-fallback/StrictComponentAttrsOracle.ts.txt"
+);
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 fn require(condition: bool, message: &'static str) -> Result<()> {
@@ -93,6 +96,11 @@ pub fn cases() -> Result<Vec<Case>> {
             vec![1, 2],
         ),
         (
+            "strict-component-attrs",
+            json!({"strictTemplates":true,"strictComponentAttrs":true,"fallthroughAttributes":false}),
+            vec![0, 1, 2],
+        ),
+        (
             "strict-explicit-false",
             json!({"strictTemplates":true,"checkUnknownComponents":false,"checkUnknownProps":false,"checkUnknownDirectives":false}),
             vec![],
@@ -158,7 +166,7 @@ pub fn retain(
             "sourceSha":std::env::var("SOURCE_SHA").ok(),"nativeBinary":corsa,"nativeSha256":digest(corsa)?,
             "executable":command.get_program().to_string_lossy(),"executableSha256":digest(Path::new(command.get_program()))?,"exitCode":output.status.code(),
             "workingDirectory":command.get_current_dir(),"arguments":command.get_args().map(|arg|arg.to_string_lossy()).collect::<Vec<_>>(),
-            "inputHashes":{"parent":digest(&root.join(if name == "oracle" {"Oracle.ts"} else {"src/Parent.vue"}))?,"config":digest(&root.join("tsconfig.json"))?}
+            "inputHashes":{"parent":digest(&root.join(if matches!(name, "oracle" | "oracle-strict") {"Oracle.ts"} else {"src/Parent.vue"}))?,"config":digest(&root.join("tsconfig.json"))?}
         }))?,
     )?;
     Ok(())
@@ -167,10 +175,18 @@ pub fn retain(
 /// The oracle is authored independently; its complete native output supplies the
 /// compiler-version-specific type display, never a captured Vize expectation.
 pub fn messages(corsa: &Path) -> Result<Vec<String>> {
+    messages_from(corsa, ORACLE, "oracle")
+}
+
+pub fn strict_messages(corsa: &Path) -> Result<Vec<String>> {
+    messages_from(corsa, STRICT_ORACLE, "oracle-strict")
+}
+
+fn messages_from(corsa: &Path, source: &str, capture: &str) -> Result<Vec<String>> {
     let directory = tempfile::tempdir()?;
     let root = directory.path().canonicalize()?;
     link_vue(&root)?;
-    write(&root, "Oracle.ts", ORACLE)?;
+    write(&root, "Oracle.ts", source)?;
     let original: Value = serde_json::from_str(CONFIG)?;
     write(
         &root,
@@ -184,7 +200,7 @@ pub fn messages(corsa: &Path) -> Result<Vec<String>> {
         .current_dir(&root)
         .args(["-p", "tsconfig.json", "--pretty", "false"]);
     let output = command.output()?;
-    retain(&root, "oracle", corsa, &command, &output)?;
+    retain(&root, capture, corsa, &command, &output)?;
     require(
         output.status.code() == Some(1) && output.stderr.is_empty(),
         "native oracle status differs",

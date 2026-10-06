@@ -21,6 +21,8 @@ import {
   workspaceInventory,
 } from "./vue-benchmarks-current-typecheck-fixture.mjs";
 
+import { vizeTypecheckConfig } from "./vize-typecheck-config.mjs";
+
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
 function parseArgs(argv) {
@@ -110,6 +112,10 @@ export async function main(argv = process.argv.slice(2)) {
   const corsa = resolve(args["--corsa-bin"]);
   const fixture = await prepareFixture(repository, workRoot, resolve(args["--vue-dir"]));
   archiveInputs(fixture.upstream, fixture.inventory, join(output, "inputs", "upstream"));
+  const translatedConfigs = ["tsconfig.json", fixture.fallthroughTsconfig].map((config) => ({
+    original: config,
+    translated: vizeTypecheckConfig(workRoot, config),
+  }));
   const authoredInputs = workspaceInventory(workRoot);
   const expectedVueFiles = authoredInputs
     .map(({ path }) => path)
@@ -171,6 +177,7 @@ export async function main(argv = process.argv.slice(2)) {
     vue: fixture.vue,
     providerLock,
     configs: fixture.configs,
+    translatedConfigs,
     sourceBuiltBinaryProvenance: "requires hosted build log and workflow checkout reconciliation",
     timing: "not measured",
     profile: "none",
@@ -180,7 +187,8 @@ export async function main(argv = process.argv.slice(2)) {
   const pairs = [];
   for (const config of ["tsconfig.json", fixture.fallthroughTsconfig]) {
     const label = config === "tsconfig.json" ? "shared" : "fallthrough";
-    const commandArgs = ["check", ".", "--tsconfig", config, "--corsa-path", corsa];
+    const translated = translatedConfigs.find((entry) => entry.original === config).translated;
+    const commandArgs = ["check", "--tsconfig", translated, "--corsa-path", corsa];
     const text = capture(`vize-${label}-text`, cli, commandArgs);
     const textRun = decodedRun(fixture, text);
     assert.ok([0, 1].includes(textRun.status), "unexpected native checker exit status");
@@ -197,7 +205,7 @@ export async function main(argv = process.argv.slice(2)) {
         "--servers",
         String(servers),
       ]);
-      const observed = reportRun(fixture, raw, expectedVueFiles, config);
+      const observed = reportRun(fixture, raw, expectedVueFiles, translated);
       assert.ok([0, 1].includes(observed.run.status), "unexpected native JSON exit status");
       writeJson(join(output, `vize-${label}-report-${servers}.json`), observed.report);
       reports.push(observed);

@@ -1,0 +1,15 @@
+// Authored strictComponentAttrs contract; independent of generated Vize code.
+import type { VNodeProps, AllowedComponentProps, ComponentCustomProps } from 'vue';
+// The original child declares label: string.
+// Vue public component attributes remain admitted.
+// fallthroughAttributes:false admits no implicit native-root attributes.
+// No global HTML attribute intersection belongs to this opt-in contract.
+// Keep all three genuine native rows and their full messages.
+interface __VizePublicComponentAttrs extends VNodeProps, AllowedComponentProps, ComponentCustomProps {}
+type Props = { label: string };
+type __VizeComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
+declare const check: (props: __VizeComponentCheckProps<Props, __VizePublicComponentAttrs>) => void;
+check({ "label": "ok", "unknownProp": 1 });
+const { "NotImported": missingComponent } = {} as {};
+const { "vNotADirective": missingDirective } = {} as {};
+void missingComponent; void missingDirective;

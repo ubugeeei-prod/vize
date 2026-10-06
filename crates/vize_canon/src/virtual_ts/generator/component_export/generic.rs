@@ -47,12 +47,16 @@ pub(super) fn generic_check_props_param(
     fallthrough_props_ref: Option<&str>,
     props_type: &str,
     check_unknown_fallthrough_props: bool,
+    strict_component_attrs: bool,
 ) -> String {
     let mut param = cstr!(
-        "{props_type}<{generic_names}> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & __VizeComponentGlobalHtmlAttrs"
+        "{props_type}<{generic_names}> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps"
     );
+    if !strict_component_attrs {
+        param.push_str(" & __VizeComponentGlobalHtmlAttrs");
+    }
     if let Some(fallthrough) = fallthrough_props_ref {
-        if check_unknown_fallthrough_props {
+        if check_unknown_fallthrough_props || strict_component_attrs {
             param.push_str(
                 cstr!(" & {{ [K in keyof ({fallthrough}) as string extends K ? never : K]?: unknown }}").as_str(),
             );
@@ -126,7 +130,8 @@ mod tests {
                 "T",
                 Some("Partial<__VizeNativeElement<\"span\">>"),
                 "Props",
-                true
+                true,
+                false
             ),
             vize_l0::cstr!(
                 "{closed} & {{ [K in keyof (Partial<__VizeNativeElement<\"span\">>) as string extends K ? never : K]?: unknown }}"
@@ -137,11 +142,38 @@ mod tests {
                 "T",
                 Some("Partial<__VizeNativeElement<\"span\">>"),
                 "Props",
+                false,
                 false
             ),
             vize_l0::cstr!("{closed} & Record<string, unknown>")
         );
-        assert_eq!(generic_check_props_param("T", None, "Props", true), closed);
-        assert_eq!(generic_check_props_param("T", None, "Props", false), closed);
+        assert_eq!(
+            generic_check_props_param("T", None, "Props", true, false),
+            closed
+        );
+        assert_eq!(
+            generic_check_props_param("T", None, "Props", false, false),
+            closed
+        );
+    }
+    #[test]
+    fn strict_component_attrs_keeps_only_declared_public_and_inferred_keys() {
+        let declared = "Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps";
+        assert_eq!(
+            generic_check_props_param("T", None, "Props", false, true),
+            declared
+        );
+        assert_eq!(
+            generic_check_props_param(
+                "T",
+                Some("Partial<__VizeNativeElement<\"div\">>"),
+                "Props",
+                false,
+                true
+            ),
+            vize_l0::cstr!(
+                "{declared} & {{ [K in keyof (Partial<__VizeNativeElement<\"div\">>) as string extends K ? never : K]?: unknown }}"
+            )
+        );
     }
 }
