@@ -67,3 +67,14 @@ native wire or report-discriminant capture. A successful new run alone cannot
 identify the earlier cause; preserve the original failed logs and require
 meaningful current full/native qualification before delivery or release.
 The paired decision is [6015578882](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6015578882).
+
+The first full Vue run at `3f46bf8` also exposes an obsolete Element Plus
+hover assertion. Its unchanged authored `ElBadge.content` callback accepts
+`{ value: string }`; the ambient constructor mapping and existing optional-slot
+factory preserve that payload. Existing broken-property CLI, VueTsc and editor
+laws already require string. Correct only the complete hover Markdown literal
+and its widening comment, preserving every input and other assertion. The old
+full failure remains failed; current full qualification and the separate empty
+assembly cause remain pending. This is an authored type contract, not a
+recaptured response or performance claim. Paired decision:
+[6015819899](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6015819899).
