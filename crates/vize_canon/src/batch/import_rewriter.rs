@@ -6,7 +6,7 @@ use oxc_allocator::Allocator;
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{String, ToCompactString, cstr};
+use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
 #[path = "import_rewriter_authored_vue_ts.rs"]
 mod authored_vue_ts;
@@ -225,8 +225,9 @@ impl ImportRewriter {
         let mut collector = ModuleSpecifierCollector::new();
         collector.visit_program(&result.program);
         let mut specifiers: Vec<String> = Vec::new();
+        let mut seen = FxHashSet::default();
         for (_, _, path, _) in collector.specifiers {
-            if !specifiers.contains(&path) {
+            if seen.insert(path.clone()) {
                 specifiers.push(path);
             }
         }

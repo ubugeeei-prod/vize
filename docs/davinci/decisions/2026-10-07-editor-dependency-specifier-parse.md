@@ -8,6 +8,9 @@ visit the same module literals in the same order. The walk now collects the
 existing ordered, deduplicated module list once and applies those three existing
 classifications to it. This removes one parse when no aliases/package routes
 exist, and two when they do. Each dependency is still visited and resolved.
+Membership uses a local hash set while results append in their first AST order,
+avoiding quadratic deduplication when alias-free modules have many bare imports.
+That temporary set belongs only to this one collection and caches no authority.
 
 Relative Vue probes retain explicit and extensionless spellings, deduplication
 after mapping, and their existing order. Script classification retains exclusions
