@@ -247,6 +247,8 @@ await test("original literal unions keep complete native candidates, resolution 
     // empty; a missing union is never replaced with Vue APIs or bindings.
     record({ kind: "plain-string-control", source: original, messages: plainMessages });
     fs.writeFileSync(path.join(workspace, "messages.ts"), plainMessages);
+    const plainMarker = "vize-string-literal-plain-fixture";
+    createMarker(workspace, plainMarker);
     session = new LspSession({ repoRoot: root, binary: path.join(root, "target/ci/vize") });
     active = session;
     active.responseObservers.push((message) => record({ kind: "response", message }));
@@ -284,7 +286,7 @@ await test("original literal unions keep complete native candidates, resolution 
     assert.deepEqual(plainPublication, { uri, version: 1, diagnostics: [] });
     for (const label of ["form.name", "form.help"]) {
       const token = `"${label}"`;
-      witness(workspace, original, plainMessages, tsconfig, token, record);
+      witness(workspace, original, plainMessages, tsconfig, token, record, plainMarker);
       await request(
         "textDocument/completion",
         {

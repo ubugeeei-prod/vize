@@ -140,3 +140,23 @@ remain fixed. Check 37458862366 and both authentic failed build logs are
 retained. Pending jobs on that head may be superseded without waiting; their
 unknown or cancelled state grants no execution credit. The same PR remains
 off queue until fresh exact-source qualification completes.
+
+Current `e9046f4` compiled successfully. Its source-built stdio test passed all
+35 first-session full arrays, resolves and stale/closed responses, plus six full
+diagnostic publications. The second plain-string session then failed the strict
+marker witness: the previous shutdown session's physical mirror still exists.
+That observer incorrectly called both filesystem namespaces live. The plain
+session now creates its own unreferenced marker after the first shutdown and
+passes that explicit marker identity to the unchanged one-owner check. No old
+namespace is removed or ignored, and no completion response supplies ownership.
+The original marker, complete sources/configs, fixed whole item oracle and all
+37 expected response values stay unchanged. The full failed log and official
+API-digest-matched artifact are retained; complete current runtime qualification
+still requires the fresh successor. No product code changes in this repair.
+
+The same e904 Rust shard also retained a separate pre-existing plain-CJS
+diagnostic failure: `javascript_variants_keep_plain_script_ownership_with_misleading_vue_language_id`
+received an empty publication. The diagnostic provider/test and inputs are
+unchanged by this completion repair; ownership diagnosis is pending. No old
+expected diagnostic is changed or waived, and full current Rust acceptance
+remains required.
