@@ -97,3 +97,17 @@ metadata defect, rerun its common Rust build and all dependent workers/reports
 as one closure, retaining the old evidence. A report-only retry cannot repair
 the carried empty workers. The publication above remains complete; this PR's
 actual merge, the next release and unfinished P0 work remain pending.
+
+## Next finite release
+
+The [paired version decision](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-6007762330)
+selects v0.435.0. Already merged PR8037 adds public builtin reactive-type and
+inlay support APIs, so use the supported minor release command. Select a
+signed source cut after the dependency repair PR8080 and selected ready fixes
+actually merge. Do not wait for unfinished PR8067 or the regressing PR8038.
+
+Require a new release PR and head, all six fresh exact-head workflows and
+twelve Semver checks, the complete version-only source/tag bridge, actual
+publication channels and faithful installed-original fixture replays.
+The completed v0.434.0 evidence remains historical. No new cut, PR, head or
+public receipt is assigned yet. Preserve the unused patch preparation.
