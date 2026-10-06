@@ -212,7 +212,7 @@ is added. Setup generic attributes have no original identifier AST in this
 script view and likewise refuse the packet. Four new whole-analysis controls
 cover script/template query refusals, unprovided setup generic metadata and
 preserve normal annotations with both authored script/template reads. All original sixteen laws and whole fixtures remain
-unchanged; these five new controls are prepared, not yet executed.
+unchanged; these six new controls are prepared, not yet executed.
 
 Fresh `214bf05a` Check `37398437054` and `ab366e67` Check `37398503305`
 actually executed 16,322 / 16,336 JUnit cases without failure/error/skip,
@@ -226,3 +226,13 @@ subobjects; do not invent a lock regression or waive the security policy. The
 new correction and eventual genuine dependency integration require fresh
 exact-head Actions and both full protected deliveries. Historical failed
 source evidence and native/default/history/performance limits remain intact.
+
+The bounded peer rejected private `eda7c681` because an escaped style read
+can retain the cooked semantic name while its physical span witness refuses.
+Keep both results from the same checked expression parse: invalidate only the
+authored occurrence packet and continue all cooked names and later blocks.
+The additional whole SFC control pins the physical `\u0069d` read, a later
+style read and the retained unused `untouched` finding, comparing the entire
+ordinary VIR and semantic snapshot. Syntax or dynamic-eval refusal still
+uses the unchanged ordinary conservative result. This is source preparation;
+no correction execution or current security acceptance is inferred.

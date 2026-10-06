@@ -3,7 +3,7 @@
 use crate::SfcDescriptor;
 use vize_croquis::Croquis;
 use vize_croquis::binding_occurrences::BindingOccurrences;
-use vize_croquis::drawer::{extract_identifier_refs_checked, extract_identifiers_checked};
+use vize_croquis::drawer::{extract_identifier_refs_with_witness, extract_identifiers_checked};
 
 pub(super) fn apply_style_reads(
     croquis: &mut Croquis,
@@ -43,13 +43,19 @@ pub(super) fn apply_style_reads(
                 continue;
             };
             let reads = if let Some(packet) = occurrences.as_deref_mut() {
-                let Some(references) = extract_identifier_refs_checked(expression) else {
+                let Some((references, witnessed)) =
+                    extract_identifier_refs_with_witness(expression)
+                else {
                     croquis.unused_bindings.clear();
                     return false;
                 };
                 let mut reads = Vec::with_capacity(references.len());
-                let mut refused = false;
+                let mut refused = !witnessed;
                 for reference in references {
+                    if !witnessed {
+                        reads.push(reference.name);
+                        continue;
+                    }
                     if let Some(&declaration) = croquis.binding_spans.get(reference.name.as_str()) {
                         let Some(start) = (range.start as u32).checked_add(reference.offset) else {
                             refused = true;

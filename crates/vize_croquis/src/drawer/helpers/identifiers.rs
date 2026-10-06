@@ -26,6 +26,12 @@ pub fn extract_identifier_refs_checked(source: &str) -> Option<Vec<IdentifierRef
     checked::checked_references(source)
 }
 
+/// Retain cooked names even when their physical authored spans cannot be proved.
+#[doc(hidden)]
+pub fn extract_identifier_refs_with_witness(source: &str) -> Option<(Vec<IdentifierRef>, bool)> {
+    checked::checked_references_with_witness(source)
+}
+
 use vize_carton::{CompactString, profile};
 use vize_relief::JsExpression;
 

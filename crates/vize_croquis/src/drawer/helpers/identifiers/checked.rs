@@ -18,16 +18,19 @@ pub(super) fn checked_reads(source: &str) -> Option<Vec<CompactString>> {
 }
 
 pub(super) fn checked_references(source: &str) -> Option<Vec<IdentifierRef>> {
+    let (references, witnessed) = checked_references_with_witness(source)?;
+    witnessed.then_some(references)
+}
+
+pub(super) fn checked_references_with_witness(source: &str) -> Option<(Vec<IdentifierRef>, bool)> {
     let references = checked_semantic_references(source)?;
-    references
-        .iter()
-        .all(|reference| {
-            let start = reference.offset as usize;
-            start
-                .checked_add(reference.name.len())
-                .is_some_and(|end| source.get(start..end) == Some(reference.name.as_str()))
-        })
-        .then_some(references)
+    let witnessed = references.iter().all(|reference| {
+        let start = reference.offset as usize;
+        start
+            .checked_add(reference.name.len())
+            .is_some_and(|end| source.get(start..end) == Some(reference.name.as_str()))
+    });
+    Some((references, witnessed))
 }
 
 fn checked_semantic_references(source: &str) -> Option<Vec<IdentifierRef>> {

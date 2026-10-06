@@ -21,7 +21,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis.macros`            | field | `croquis` |     6 |    17 |
 | `Croquis.scopes`            | field | `croquis` |     1 |     2 |
 | `Croquis.types`             | field | `croquis` |     4 |    16 |
-| `Croquis.unused_bindings`   | field | `croquis` |     2 |     7 |
+| `Croquis.unused_bindings`   | field | `croquis` |     3 |     8 |
 
 ## Non-product `vize_croquis` imports
 
@@ -48,7 +48,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `SfcCustomBlock`                          |     2 |     2 |
 | `SfcDescriptor`                           |    20 |    48 |
 | `SfcError`                                |    22 |    65 |
-| `SfcParseOptions`                         |    25 |   132 |
+| `SfcParseOptions`                         |    25 |   133 |
 | `SfcScriptBlock`                          |     2 |     2 |
 | `SfcStyleBlock`                           |     5 |     8 |
 | `SfcTemplateBlock`                        |     7 |     9 |
@@ -66,7 +66,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `checked_v_bind_expression_ranges`        |     1 |     1 |
 | `extract_and_transform_v_bind`            |     1 |     1 |
 | `extract_and_transform_v_bind_with_scope` |     1 |     1 |
-| `extract_identifier_refs_checked`         |     1 |     1 |
+| `extract_identifier_refs_with_witness`    |     1 |     1 |
 | `extract_identifiers_checked`             |     1 |     1 |
 | `find_matching_paren`                     |     1 |     1 |
 | `is_builtin_component`                    |     1 |     1 |

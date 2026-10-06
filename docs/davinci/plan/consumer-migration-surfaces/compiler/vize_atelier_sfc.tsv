@@ -194,7 +194,7 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/croquis/drawer.rs	3	carton	
 compiler	Compiler	source	crates/vize_atelier_sfc/src/croquis/drawer.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/croquis/occurrences.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/refusal_tests.rs	10	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/refusal_tests.rs	10	old_ast	old AST/parser	old	vize_armature	legacy	4
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/refusal_tests.rs	10	old_ast	old AST/parser	old	vize_armature	legacy	5
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/tests.rs	8	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/tests.rs	8	old_ast	old AST/parser	old	vize_armature	legacy	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/croquis/occurrences/tests.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	1
