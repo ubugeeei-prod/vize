@@ -98,6 +98,20 @@ as one closure, retaining the old evidence. A report-only retry cannot repair
 the carried empty workers. The publication above remains complete; this PR's
 actual merge, the next release and unfinished P0 work remain pending.
 
+## Superseded dependency qualification
+
+Paired [#8079 record](https://github.com/ubugeeei-prod/vize/issues/8079#issuecomment-6008541570).
+
+The dependency correction's `d7fdc793b3` Check run
+[37406169269](https://github.com/ubugeeei-prod/vize/actions/runs/37406169269)
+passed all 3,808 original and additional Vue 3.5.35 tests, then failed its newly
+reached Vue 3.5.42 provider qualification. Its normal cancellation left only an
+obsolete report-comment job running while successor `76c6423407` had no jobs.
+One force cancellation completed the old run as cancelled and released fresh
+[37406927212](https://github.com/ubugeeei-prod/vize/actions/runs/37406927212).
+The original failure remains evidence; the successor still requires its own
+full checks and protected merge. Native runs were untouched.
+
 ## Next finite release
 
 The [paired version decision](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-6007762330)
