@@ -51,3 +51,19 @@ this change grants no broader unobserved-disk-change guarantee.
 
 No private project inputs, new pipeline stage, SDK change, oracle weakening,
 instruction ceiling change, or speed/10x claim is part of this preparation.
+
+The first published helper source at `3f46bf8` fails Clippy on eleven uncontextualized
+unwraps in the prepared fixture helpers. Replace those helper-only unwraps with
+contextual assertions while preserving all full input and expected vectors.
+The separate actual release candidate `337dbf3` fails the unchanged CLI/editor
+assembly law: CLI returns the expected three diagnostics, while the filtered
+editor result is empty. The cause is not established. Test-only, test-thread
+custody now records the complete pre-filter editor set, generated source and
+mappings, decoded native diagnostics or errors, request stamps, full fixture
+configuration, options, elapsed time and collection outcome. It adds no native
+query and changes no original APP, expected diagnostic, native method, deadline,
+retry, fallback or diagnostic count. Decoded bridge diagnostics are not a full
+native wire or report-discriminant capture. A successful new run alone cannot
+identify the earlier cause; preserve the original failed logs and require
+meaningful current full/native qualification before delivery or release.
+The paired decision is [6015578882](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6015578882).
