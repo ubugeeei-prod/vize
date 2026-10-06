@@ -31,7 +31,11 @@
 //! - Unique: No collisions between component instances
 //! - Accessible: Perfect for aria-labelledby, aria-describedby
 
-use memchr::memmem;
+use oxc_ast::ast::{
+    AssignmentExpression, AssignmentTarget, BindingPattern, CallExpression, Expression,
+    ObjectProperty, Program, PropertyKey, VariableDeclarator,
+};
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -51,53 +55,110 @@ impl ScriptRule for PreferUseId {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
-
-        // Check for Math.random() in ID generation context
-        let patterns = [
-            (b"Math.random()" as &[u8], "Math.random()"),
-            (b"Date.now()" as &[u8], "Date.now()"),
-            (b"crypto.randomUUID()" as &[u8], "crypto.randomUUID()"),
-        ];
-
-        for (pattern, _name) in patterns {
-            let finder = memmem::Finder::new(pattern);
-            let mut search_start = 0;
-
-            while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
-                let abs_pos = search_start + pos;
-                search_start = abs_pos + pattern.len();
-
-                // Check if this looks like ID generation (has id or Id nearby)
-                let line_start = source
-                    .get(..abs_pos)
-                    .and_then(|before| before.rfind('\n'))
-                    .map_or(0, |p| p + 1);
-                let line_end = source
-                    .get(abs_pos..)
-                    .and_then(|after| after.find('\n'))
-                    .map_or(source.len(), |p| abs_pos + p);
-                let line = source.get(line_start..line_end).unwrap_or_default();
-
-                let looks_like_id = line.to_lowercase().contains("id")
-                    || line.contains("uuid")
-                    || line.contains("unique");
-
-                if looks_like_id {
-                    result.add_diagnostic(
-                        LintDiagnostic::warn(
-                            META.name,
-                            "Consider using useId() for generating IDs (Vue 3.5+)",
-                            (offset + abs_pos) as u32,
-                            (offset + abs_pos + pattern.len()) as u32,
-                        )
-                        .with_help("useId() provides SSR-safe, unique IDs: `const id = useId()`"),
-                    );
-                }
-            }
-        }
+    fn uses_ast(&self) -> bool {
+        true
     }
+
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        PreferUseIdVisitor {
+            offset,
+            result,
+            id_context: false,
+        }
+        .visit_program(program);
+    }
+}
+
+struct PreferUseIdVisitor<'result> {
+    offset: usize,
+    result: &'result mut ScriptLintResult,
+    id_context: bool,
+}
+
+impl<'a> Visit<'a> for PreferUseIdVisitor<'_> {
+    fn visit_variable_declarator(&mut self, declarator: &VariableDeclarator<'a>) {
+        self.visit_binding_pattern(&declarator.id);
+        let previous = self.id_context;
+        self.id_context = matches!(&declarator.id,
+            BindingPattern::BindingIdentifier(identifier) if is_id_name(identifier.name.as_str()));
+        if let Some(initializer) = &declarator.init {
+            self.visit_expression(initializer);
+        }
+        self.id_context = previous;
+    }
+
+    fn visit_assignment_expression(&mut self, assignment: &AssignmentExpression<'a>) {
+        self.visit_assignment_target(&assignment.left);
+        let previous = self.id_context;
+        self.id_context = match &assignment.left {
+            AssignmentTarget::AssignmentTargetIdentifier(identifier) => {
+                is_id_name(identifier.name.as_str())
+            }
+            AssignmentTarget::StaticMemberExpression(member) => {
+                is_id_name(member.property.name.as_str())
+            }
+            _ => false,
+        };
+        self.visit_expression(&assignment.right);
+        self.id_context = previous;
+    }
+
+    fn visit_object_property(&mut self, property: &ObjectProperty<'a>) {
+        self.visit_property_key(&property.key);
+        let previous = self.id_context;
+        self.id_context |= !property.computed
+            && match &property.key {
+                PropertyKey::StaticIdentifier(identifier) => is_id_name(identifier.name.as_str()),
+                PropertyKey::StringLiteral(string) => is_id_name(string.value.as_str()),
+                _ => false,
+            };
+        self.visit_expression(&property.value);
+        self.id_context = previous;
+    }
+
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        if self.id_context && is_id_generator(call) {
+            self.result.add_diagnostic(
+                LintDiagnostic::warn(
+                    META.name,
+                    "Consider using useId() for generating IDs (Vue 3.5+)",
+                    self.offset as u32 + call.span.start,
+                    self.offset as u32 + call.span.end,
+                )
+                .with_help("useId() provides SSR-safe, unique IDs: `const id = useId()`"),
+            );
+        }
+        walk_call_expression(self, call);
+    }
+}
+
+fn is_id_name(name: &str) -> bool {
+    name.as_bytes()
+        .windows(2)
+        .any(|part| part.eq_ignore_ascii_case(b"id"))
+        || name.contains("unique")
+}
+
+fn is_id_generator(call: &CallExpression<'_>) -> bool {
+    if !call.arguments.is_empty() {
+        return false;
+    }
+    let Expression::StaticMemberExpression(member) = call.callee.get_inner_expression() else {
+        return false;
+    };
+    let Expression::Identifier(object) = member.object.get_inner_expression() else {
+        return false;
+    };
+    matches!(
+        (object.name.as_str(), member.property.name.as_str()),
+        ("Math", "random") | ("Date", "now") | ("crypto", "randomUUID")
+    )
 }
 
 #[cfg(test)]

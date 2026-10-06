@@ -755,8 +755,12 @@ linter	Linter	source	crates/vize_patina/src/rules/script/prefer_import_meta.rs	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_import_meta.rs	10	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_import_meta.rs	10	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	test/dev	crates/vize_patina/src/rules/script/prefer_import_meta/tests.rs	5	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/script/prefer_ref_over_reactive.rs	37	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/prefer_ref_over_reactive.rs	37	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_use_attrs.rs	32	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_use_attrs.rs	32	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/prefer_use_id.rs	34	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/prefer_use_id.rs	34	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_use_slots.rs	32	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_use_slots.rs	32	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_use_template_ref.rs	59	l0	L0	stage	vize_l0	preferred	1

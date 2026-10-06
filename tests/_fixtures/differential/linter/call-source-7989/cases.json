@@ -1,0 +1,1681 @@
+{
+  "schema": "vize.linter.call-source-corpus",
+  "version": 1,
+  "issue": 7989,
+  "authority": "Complete original public body/input/config/argv/report and independently authored full service/CLI vectors; partial script fix leaves the three original CSS findings unresolved",
+  "originalScriptOnly": {
+    "filename": "MyNotes.vue",
+    "error_count": 0,
+    "warning_count": 0,
+    "diagnostics": []
+  },
+  "cases": [
+    {
+      "id": "whole-original-four-rules-partial",
+      "filename": "MyNotes.vue",
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\n\n// We moved away from reactive({ ... }) and from Math.random().toString(36) ids.\nconst hint = ref(\"reactive({ a: 1 }) is not used here\");\n</script>\n\n<template>\n  <p class=\"my-notes\">{{ hint }}</p>\n</template>\n\n<style scoped>\n/* The old rule used v-bind(color); it is gone. */\n.my-notes::after {\n  content: \"v-bind(size) !important\";\n}\n</style>\n",
+      "sourceBytes": 397,
+      "sourceSha256": "c80c2c2a895e003fb1b41f7404dc127df6a6e726341a31528ab80a1d4b3a98ba",
+      "service": {
+        "filename": "MyNotes.vue",
+        "error_count": 0,
+        "warning_count": 3,
+        "diagnostics": [
+          {
+            "rule_name": "css/no-important",
+            "severity": "warning",
+            "message": "Avoid using !important as it makes styles harder to override",
+            "start": 373,
+            "end": 383,
+            "help": "Use more specific selectors or reorganize CSS specificity instead",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "css/no-v-bind-performance",
+            "severity": "warning",
+            "message": "v-bind() installs runtime CSS variable updates",
+            "start": 299,
+            "end": 312,
+            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "css/no-v-bind-performance",
+            "severity": "warning",
+            "message": "v-bind() installs runtime CSS variable updates",
+            "start": 360,
+            "end": 372,
+            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "MyNotes.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-v-bind-performance",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
+              "line": 13,
+              "column": 22,
+              "endLine": 13,
+              "endColumn": 35,
+              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
+            },
+            {
+              "ruleId": "css/no-v-bind-performance",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
+              "line": 15,
+              "column": 13,
+              "endLine": 15,
+              "endColumn": 25,
+              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
+            },
+            {
+              "ruleId": "css/no-important",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
+              "line": 15,
+              "column": 26,
+              "endLine": 15,
+              "endColumn": 36,
+              "help": "Use more specific selectors or reorganize CSS specificity instead"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 3
+        }
+      ]
+    },
+    {
+      "id": "whole-original-crlf",
+      "filename": "MyNotes.vue",
+      "source": "<script setup lang=\"ts\">\r\nimport { ref } from \"vue\";\r\n\r\n// We moved away from reactive({ ... }) and from Math.random().toString(36) ids.\r\nconst hint = ref(\"reactive({ a: 1 }) is not used here\");\r\n</script>\r\n\r\n<template>\r\n  <p class=\"my-notes\">{{ hint }}</p>\r\n</template>\r\n\r\n<style scoped>\r\n/* The old rule used v-bind(color); it is gone. */\r\n.my-notes::after {\r\n  content: \"v-bind(size) !important\";\r\n}\r\n</style>\r\n",
+      "sourceBytes": 414,
+      "sourceSha256": "9f4c9d7f7bee9812eb59deaa8fa6529c5a85376fd29e82909267d86d9349d47f",
+      "service": {
+        "filename": "MyNotes.vue",
+        "error_count": 0,
+        "warning_count": 3,
+        "diagnostics": [
+          {
+            "rule_name": "css/no-important",
+            "severity": "warning",
+            "message": "Avoid using !important as it makes styles harder to override",
+            "start": 387,
+            "end": 397,
+            "help": "Use more specific selectors or reorganize CSS specificity instead",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "css/no-v-bind-performance",
+            "severity": "warning",
+            "message": "v-bind() installs runtime CSS variable updates",
+            "start": 311,
+            "end": 324,
+            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "css/no-v-bind-performance",
+            "severity": "warning",
+            "message": "v-bind() installs runtime CSS variable updates",
+            "start": 374,
+            "end": 386,
+            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "MyNotes.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-v-bind-performance",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
+              "line": 13,
+              "column": 22,
+              "endLine": 13,
+              "endColumn": 35,
+              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
+            },
+            {
+              "ruleId": "css/no-v-bind-performance",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
+              "line": 15,
+              "column": 13,
+              "endLine": 15,
+              "endColumn": 25,
+              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
+            },
+            {
+              "ruleId": "css/no-important",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
+              "line": 15,
+              "column": 26,
+              "endLine": 15,
+              "endColumn": 36,
+              "help": "Use more specific selectors or reorganize CSS specificity instead"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 3
+        }
+      ]
+    },
+    {
+      "id": "whole-original-unicode-prefix",
+      "filename": "MyNotes.vue",
+      "source": "<!-- 雪 😀 -->\n<script setup lang=\"ts\">\nimport { ref } from \"vue\";\n\n// We moved away from reactive({ ... }) and from Math.random().toString(36) ids.\nconst hint = ref(\"reactive({ a: 1 }) is not used here\");\n</script>\n\n<template>\n  <p class=\"my-notes\">{{ hint }}</p>\n</template>\n\n<style scoped>\n/* The old rule used v-bind(color); it is gone. */\n.my-notes::after {\n  content: \"v-bind(size) !important\";\n}\n</style>\n",
+      "sourceBytes": 415,
+      "sourceSha256": "962529183062f72c109744ff724b78ccf2f716b5deb14f7774ad32583e15b383",
+      "service": {
+        "filename": "MyNotes.vue",
+        "error_count": 0,
+        "warning_count": 3,
+        "diagnostics": [
+          {
+            "rule_name": "css/no-important",
+            "severity": "warning",
+            "message": "Avoid using !important as it makes styles harder to override",
+            "start": 391,
+            "end": 401,
+            "help": "Use more specific selectors or reorganize CSS specificity instead",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "css/no-v-bind-performance",
+            "severity": "warning",
+            "message": "v-bind() installs runtime CSS variable updates",
+            "start": 317,
+            "end": 330,
+            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "css/no-v-bind-performance",
+            "severity": "warning",
+            "message": "v-bind() installs runtime CSS variable updates",
+            "start": 378,
+            "end": 390,
+            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "MyNotes.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-v-bind-performance",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
+              "line": 14,
+              "column": 22,
+              "endLine": 14,
+              "endColumn": 35,
+              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
+            },
+            {
+              "ruleId": "css/no-v-bind-performance",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
+              "line": 16,
+              "column": 13,
+              "endLine": 16,
+              "endColumn": 25,
+              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
+            },
+            {
+              "ruleId": "css/no-important",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
+              "line": 16,
+              "column": 26,
+              "endLine": 16,
+              "endColumn": 36,
+              "help": "Use more specific selectors or reorganize CSS specificity instead"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 3
+        }
+      ]
+    },
+    {
+      "id": "script-comment-only",
+      "filename": "case.ts",
+      "source": "// reactive({ count: 0 }) Math.random().toString(36) id\n/* reactive({}) Date.now() unique crypto.randomUUID() */\nconst id = useId();\n",
+      "sourceBytes": 133,
+      "sourceSha256": "46eb7cb5f69eb8985a41f74d3aed35b13dbf93a66aa51e3ee55901d90ee372bd",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "script-double-quoted-string",
+      "filename": "case.ts",
+      "source": "const id = \"reactive({ count: 0 }) Math.random() Date.now() crypto.randomUUID()\";\n",
+      "sourceBytes": 82,
+      "sourceSha256": "d344a29ab04dc89b60f62ff67d2afb97efe071fdf608e60a9ed77884a87be57a",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "script-single-quoted-string",
+      "filename": "case.ts",
+      "source": "const id = 'reactive({ count: 0 }) Math.random() Date.now() crypto.randomUUID()';\n",
+      "sourceBytes": 82,
+      "sourceSha256": "0758aeec178cbacb00dcbedc49b47706c0cc284f637ec77b3f992ac79cf5ceb1",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "script-template-text",
+      "filename": "case.ts",
+      "source": "const id = `reactive({ count: 0 }) Math.random() Date.now() crypto.randomUUID()`;\n",
+      "sourceBytes": 82,
+      "sourceSha256": "be37a51476c6900b5eff955ee54bb565078050410466dba1b55b6f7adaedcf1a",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "script-regex-text",
+      "filename": "case.ts",
+      "source": "const id = /reactive() Math.random() Date.now() crypto.randomUUID()/;\n",
+      "sourceBytes": 70,
+      "sourceSha256": "2622c5f98a2d49edade7919fb6a26effe2d70b6e6a1a56fd4ec6c5258b6616cd",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "real-reactive-old-positive",
+      "filename": "case.ts",
+      "source": "const state = reactive({ count: 0 })",
+      "sourceBytes": 36,
+      "sourceSha256": "0d60544c89dccf6e74449bda24eadd40ed59d0438d8af5f7b4938297560d2c07",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 14,
+            "end": 22,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 1,
+              "column": 15,
+              "endLine": 1,
+              "endColumn": 23,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "real-reactive-unicode-old-positive",
+      "filename": "case.ts",
+      "source": "const state = /*éé日*/reactive({ count: 0 })",
+      "sourceBytes": 47,
+      "sourceSha256": "8957135b40fec4fbd0fc7497af3ea5645e2a07d2a0e3d4357cc7c79161daa09d",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 25,
+            "end": 33,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 30,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "real-reactive-whitespace",
+      "filename": "case.ts",
+      "source": "const state = reactive /* actual call */\n ({ count: 0 });\n",
+      "sourceBytes": 58,
+      "sourceSha256": "12e049f61328143a5edcf7e92e81ccbbfbde32c8b9f06a93c878dbe6dfca770a",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 14,
+            "end": 22,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 1,
+              "column": 15,
+              "endLine": 1,
+              "endColumn": 23,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "real-reactive-generic",
+      "filename": "case.ts",
+      "source": "const state = reactive<{ count: number }>({ count: 0 });\n",
+      "sourceBytes": 57,
+      "sourceSha256": "21234bc717bd5c924adb558f1add35959dc6f9bebde15502fed7d362e8058564",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 14,
+            "end": 22,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 1,
+              "column": 15,
+              "endLine": 1,
+              "endColumn": 23,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "real-reactive-member",
+      "filename": "case.ts",
+      "source": "const state = Vue.reactive({ count: 0 });\n",
+      "sourceBytes": 42,
+      "sourceSha256": "e6d531d0d5cf1d89dfc88e59beba7ec7b7b4a11c6e3418b8eb2e61fb51b4e3b7",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 18,
+            "end": 26,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 1,
+              "column": 19,
+              "endLine": 1,
+              "endColumn": 27,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "real-reactive-nested",
+      "filename": "case.ts",
+      "source": "const state = reactive({ inner: reactive({}) });\n",
+      "sourceBytes": 49,
+      "sourceSha256": "46c6982b6912304e97134e01b62fd96522f6a924ab984b2c709e69d9e5a4061a",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 14,
+            "end": 22,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 32,
+            "end": 40,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 1,
+              "column": 15,
+              "endLine": 1,
+              "endColumn": 23,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            },
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 1,
+              "column": 33,
+              "endLine": 1,
+              "endColumn": 41,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ]
+    },
+    {
+      "id": "real-reactive-to-refs",
+      "filename": "case.ts",
+      "source": "const state = toRefs(reactive({ count: 0 }));\n",
+      "sourceBytes": 46,
+      "sourceSha256": "237474e316e36798e0559bda9760580dc47a83aaf9143e2a6924686ffca46b9e",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 21,
+            "end": 29,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 1,
+              "column": 22,
+              "endLine": 1,
+              "endColumn": 30,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "reactive-reference-and-other-names",
+      "filename": "case.ts",
+      "source": "const fn = reactive; const state = shallowReactive({}); const other = not_reactive({}); const unicode = 日reactive({});\n",
+      "sourceBytes": 121,
+      "sourceSha256": "3493077f17e2125ed5564dfd197b7e1adab73772fc1551b739f4024ca30731b2",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "reactive-string-and-interpolation",
+      "filename": "case.ts",
+      "source": "const hint = `reactive({}) ${reactive({})}`;\n",
+      "sourceBytes": 45,
+      "sourceSha256": "f9f9718d893b983ba936b71e5604265702366405bb74f826dadd39507760469f",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 29,
+            "end": 37,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 1,
+              "column": 30,
+              "endLine": 1,
+              "endColumn": 38,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "math-id-old-positive",
+      "filename": "case.ts",
+      "source": "const id = `input-${Math.random()}`",
+      "sourceBytes": 35,
+      "sourceSha256": "1254f5d3b6cc6087c8a46a3b7ad4dd6f101f34f3bca12218f045544b20553528",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 20,
+            "end": 33,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 21,
+              "endLine": 1,
+              "endColumn": 34,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "date-id-old-positive",
+      "filename": "case.ts",
+      "source": "const uniqueId = `el-${Date.now()}`",
+      "sourceBytes": 35,
+      "sourceSha256": "1f29707caa99f3da08b254b983008e82a784f39e888d8d099fed8bcff68784ed",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 23,
+            "end": 33,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 24,
+              "endLine": 1,
+              "endColumn": 34,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "crypto-id-positive",
+      "filename": "case.ts",
+      "source": "const uuid = crypto.randomUUID();\n",
+      "sourceBytes": 34,
+      "sourceSha256": "24f0bde833d3024d81f32b542dcb2f15f50856c99c889c9939919d431db38980",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 13,
+            "end": 32,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 14,
+              "endLine": 1,
+              "endColumn": 33,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "random-not-id-old-negative",
+      "filename": "case.ts",
+      "source": "const value = Math.random() * 100",
+      "sourceBytes": 33,
+      "sourceSha256": "4b1a656776a3ca1257345a05be43a34186eee3b05226d09d0428dfb9f6378ede",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "id-comment-does-not-own-real-call",
+      "filename": "case.ts",
+      "source": "const value = Math.random(); // old id generation\n",
+      "sourceBytes": 50,
+      "sourceSha256": "c98964199ac0b2075bbd9dc4e6bf3b93f31f0b13b61da6240fd4bdc460f4fef7",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "id-string-does-not-own-real-call",
+      "filename": "case.ts",
+      "source": "const value = Math.random() + \"id\";\n",
+      "sourceBytes": 36,
+      "sourceSha256": "78ab8f6e806bb57525b328bccdc82076ecfa7feb1dded4e9ec1e54451e483d49",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "neighbor-id-binding-does-not-own-real-call",
+      "filename": "case.ts",
+      "source": "const value = Math.random(); const id = useId();\n",
+      "sourceBytes": 49,
+      "sourceSha256": "e4292dd971b5466d7e27308543d7ac2f92ffc17896628c0a36dea6b9a4c0b724",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "real-id-multiline",
+      "filename": "case.ts",
+      "source": "const id =\n  Math.random()\n    .toString(36);\n",
+      "sourceBytes": 46,
+      "sourceSha256": "e2bf512671a52a027aa570a1e1b36c856151417d75f75aeed5546918b2f07c7d",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 13,
+            "end": 26,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 2,
+              "column": 3,
+              "endLine": 2,
+              "endColumn": 16,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "real-id-callee-whitespace",
+      "filename": "case.ts",
+      "source": "const id = Math /* global */ . random /* method */ ();\n",
+      "sourceBytes": 55,
+      "sourceSha256": "9e8a8fa3fbab910a4690e1c8c774d89b92b6580f1d40eff44d425a9ebeec8727",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 11,
+            "end": 53,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 12,
+              "endLine": 1,
+              "endColumn": 54,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "real-id-multiple-generators",
+      "filename": "case.ts",
+      "source": "const uniqueId = Math.random() + Date.now() + crypto.randomUUID();\n",
+      "sourceBytes": 67,
+      "sourceSha256": "79ba3124d8582d9bbd1c5fdd82102a39d7ea256c310ad004111a87d7f34169e1",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 3,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 17,
+            "end": 30,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 33,
+            "end": 43,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 46,
+            "end": 65,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 18,
+              "endLine": 1,
+              "endColumn": 31,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            },
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 34,
+              "endLine": 1,
+              "endColumn": 44,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            },
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 47,
+              "endLine": 1,
+              "endColumn": 66,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 3
+        }
+      ]
+    },
+    {
+      "id": "real-id-assignment",
+      "filename": "case.ts",
+      "source": "let id; id = Math.random(); state.uniqueId = Date.now();\n",
+      "sourceBytes": 57,
+      "sourceSha256": "eca25d580db09f3c6e65f956c4637eef513b55d1e8113a7255219f1b69e7c085",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 13,
+            "end": 26,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 45,
+            "end": 55,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 14,
+              "endLine": 1,
+              "endColumn": 27,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            },
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 46,
+              "endLine": 1,
+              "endColumn": 56,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ]
+    },
+    {
+      "id": "real-id-property",
+      "filename": "case.ts",
+      "source": "const value = { id: Math.random(), \"unique\": Date.now(), count: Math.random() };\n",
+      "sourceBytes": 81,
+      "sourceSha256": "bb285749dc6caba1dcfb0423378cb4eea607defedac1b6153c352788c97651e8",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 20,
+            "end": 33,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 45,
+            "end": 55,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 21,
+              "endLine": 1,
+              "endColumn": 34,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            },
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 46,
+              "endLine": 1,
+              "endColumn": 56,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ]
+    },
+    {
+      "id": "id-property-restores-context",
+      "filename": "case.ts",
+      "source": "const value = { id: Math.random(), count: Math.random() }; const count = Date.now();\n",
+      "sourceBytes": 85,
+      "sourceSha256": "4f9a02d21529806912944a881390953db62ae64f9a40648898545b625077f376",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 20,
+            "end": 33,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 21,
+              "endLine": 1,
+              "endColumn": 34,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "id-declarator-restores-context",
+      "filename": "case.ts",
+      "source": "const id = Math.random(), value = Date.now();\n",
+      "sourceBytes": 46,
+      "sourceSha256": "c131fe0d211131c9c750ec46522dfb288f13f8a081e894005d6f72ec1bb57191",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 11,
+            "end": 24,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 12,
+              "endLine": 1,
+              "endColumn": 25,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ]
+    },
+    {
+      "id": "unrelated-generator-member",
+      "filename": "case.ts",
+      "source": "const id = other.Math.random(); const uniqueId = clock.now(); const uuid = other.randomUUID();\n",
+      "sourceBytes": 95,
+      "sourceSha256": "4592405be646f19d5b4bbddfd550adffc2c1c5cda1faddac593d2228374ef8c9",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "generator-reference-and-arguments",
+      "filename": "case.ts",
+      "source": "const id = Math.random; const uuid = crypto.randomUUID(options);\n",
+      "sourceBytes": 65,
+      "sourceSha256": "d5bbd44a86677a39273013bb94908b5be6f3b284ecf3ec1ee93c6c347cea955b",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "vue-script-and-setup-real-calls",
+      "filename": "Both.vue",
+      "source": "<script>\nconst id = Math.random();\n</script>\n<script setup lang=\"ts\">\nconst state = reactive({});\n</script>\n",
+      "sourceBytes": 108,
+      "sourceSha256": "229291494a2edd5a9f95fafa7714833aa0d1a336ec73de6fdae7dffb41d3f855",
+      "service": {
+        "filename": "Both.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 84,
+            "end": 92,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 20,
+            "end": 33,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "Both.vue",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 2,
+              "column": 12,
+              "endLine": 2,
+              "endColumn": 25,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            },
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 5,
+              "column": 15,
+              "endLine": 5,
+              "endColumn": 23,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ]
+    },
+    {
+      "id": "plain-js-real-calls",
+      "filename": "case.js",
+      "source": "const id = Date.now(); const state = reactive({});\n",
+      "sourceBytes": 51,
+      "sourceSha256": "3bcf7647d80790e8887772fa1e285db520e6266cc9ce59f7218f8456fe3b6f41",
+      "service": {
+        "filename": "case.js",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 11,
+            "end": 21,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 37,
+            "end": 45,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.js",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 1,
+              "column": 12,
+              "endLine": 1,
+              "endColumn": 22,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            },
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 1,
+              "column": 38,
+              "endLine": 1,
+              "endColumn": 46,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ]
+    },
+    {
+      "id": "mixed-text-and-real-calls",
+      "filename": "case.ts",
+      "source": "// id Math.random() reactive({})\nconst id = `Math.random() ${Math.random()}`;\nconst hint = \"reactive({})\"; const state = reactive({});\n",
+      "sourceBytes": 135,
+      "sourceSha256": "5158fbc9a1577f5920d73bc25e0292ce34141931fdf2afdc28db8ff44ab2fa78",
+      "service": {
+        "filename": "case.ts",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "script/prefer-use-id",
+            "severity": "warning",
+            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
+            "start": 61,
+            "end": 74,
+            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "script/prefer-ref-over-reactive",
+            "severity": "warning",
+            "message": "Consider using ref() instead of reactive() for simpler state management",
+            "start": 121,
+            "end": 129,
+            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "case.ts",
+          "messages": [
+            {
+              "ruleId": "script/prefer-use-id",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
+              "line": 2,
+              "column": 29,
+              "endLine": 2,
+              "endColumn": 42,
+              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
+            },
+            {
+              "ruleId": "script/prefer-ref-over-reactive",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 1,
+              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
+              "line": 3,
+              "column": 44,
+              "endLine": 3,
+              "endColumn": 52,
+              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ]
+    },
+    {
+      "id": "css-real-positive-control",
+      "filename": "RealCss.vue",
+      "source": "<style>\n.button { color: v-bind(color) !important; }\n</style>\n",
+      "sourceBytes": 62,
+      "sourceSha256": "7e6dbc581aace0c21474ae694f7415e4850b4ebca45f3a4c9c4453f2a4612a27",
+      "service": {
+        "filename": "RealCss.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "css/no-important",
+            "severity": "warning",
+            "message": "Avoid using !important as it makes styles harder to override",
+            "start": 39,
+            "end": 49,
+            "help": "Use more specific selectors or reorganize CSS specificity instead",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "css/no-v-bind-performance",
+            "severity": "warning",
+            "message": "v-bind() installs runtime CSS variable updates",
+            "start": 25,
+            "end": 38,
+            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      },
+      "cli": [
+        {
+          "file": "RealCss.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-v-bind-performance",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
+              "line": 2,
+              "column": 18,
+              "endLine": 2,
+              "endColumn": 31,
+              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
+            },
+            {
+              "ruleId": "css/no-important",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
+              "line": 2,
+              "column": 32,
+              "endLine": 2,
+              "endColumn": 42,
+              "help": "Use more specific selectors or reorganize CSS specificity instead"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 2
+        }
+      ]
+    }
+  ]
+}
