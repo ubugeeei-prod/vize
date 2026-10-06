@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "./manifest.mjs";
+import { validateRootCommentSnapshotTransition } from "./formatter-root-comment-reference.ts";
 import { resolvePreservedLayoutSource } from "./formatter-history-layout-artifact.ts";
 import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.mjs";
 
@@ -123,7 +124,9 @@ function preservedSource(root: string, originalSha256: string) {
       root,
       `crates/vize_glyph/tests/snapshots/preserve_authored_content__${name}.snap`,
     );
-    assert.equal(sha256(snapshot), snapshotHash, "preserved snapshot bytes changed");
+    if (!validateRootCommentSnapshotTransition(root, name, snapshot, snapshotHash)) {
+      assert.equal(sha256(snapshot), snapshotHash, "preserved snapshot bytes changed");
+    }
   }
   return original;
 }

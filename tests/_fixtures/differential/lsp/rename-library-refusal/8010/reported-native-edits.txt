@@ -1,0 +1,7 @@
+Toggle.vue 6:8-6:14 "change" -> "update"
+node_modules/@typescript/typescript-darwin-arm64/lib/lib.dom.d.ts 10986:5-10986:11 "change" -> "update"
+node_modules/@typescript/typescript-darwin-arm64/lib/lib.dom.d.ts 16666:5-16666:11 "change" -> "update"
+node_modules/@typescript/typescript-darwin-arm64/lib/lib.dom.d.ts 24244:5-24244:11 "change" -> "update"
+node_modules/@typescript/typescript-darwin-arm64/lib/lib.dom.d.ts 28243:5-28243:11 "change" -> "update"
+node_modules/@typescript/typescript-darwin-arm64/lib/lib.dom.d.ts 34714:5-34714:11 "change" -> "update"
+node_modules/@typescript/typescript-darwin-arm64/lib/lib.dom.d.ts 36810:5-36810:11 "change" -> "update"

@@ -69,7 +69,7 @@ pub(crate) fn parse_script_setup_for_unused<const BUILTIN_TYPES: bool>(
         }
     }
     if unused && ret.diagnostics.is_empty() {
-        result.unused_bindings = super::unused_setup_bindings(&ret.program, &result);
+        result.unused_bindings = super::unused_setup_bindings(&ret.program, &result, generic);
     }
     result
 }

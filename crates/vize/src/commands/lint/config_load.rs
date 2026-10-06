@@ -5,6 +5,8 @@ use crate::config::{
     LinterConfigPlanWithConfigRuleOptions, LinterFeatureFlags, LoadedConfigWithFeatures,
 };
 
+mod rule_names;
+
 pub(super) fn load(
     args: &mut LintArgs,
 ) -> (
@@ -27,6 +29,10 @@ pub(super) fn load(
             },
         )
     };
+    rule_names::validate(&plan.plan).unwrap_or_else(|error| {
+        eprintln!("\x1b[31mError:\x1b[0m {error}");
+        std::process::exit(2);
+    });
     args.cross_file |= execution.cross_file;
     args.cross_file_tree |= execution.cross_file_tree;
     args.cross_file_complexity |= execution.cross_file_complexity;
