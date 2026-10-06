@@ -6,11 +6,10 @@
 //! It's often a sign of specificity wars and can lead to CSS bloat.
 
 use lightningcss::stylesheet::StyleSheet;
-use memchr::memmem;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
-use super::{CssLintResult, CssRule, CssRuleMeta};
+use super::{CssLintResult, CssRule, CssRuleMeta, value_tokens::ValueTokens};
 
 static META: CssRuleMeta = CssRuleMeta {
     name: "css/no-important",
@@ -33,50 +32,17 @@ impl CssRule for NoImportant {
         offset: usize,
         result: &mut CssLintResult,
     ) {
-        // Use text search to find !important occurrences
-        // This provides accurate source positions for inline disable comments
-        let bytes = source.as_bytes();
-        let finder = memmem::Finder::new(b"!important");
-
-        let mut search_start = 0;
-        while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
-            let abs_pos = search_start + pos;
-
-            // Verify it's not inside a comment or string
-            if !Self::is_in_css_comment(bytes, abs_pos) {
-                result.add_diagnostic(
-                    LintDiagnostic::warn(
-                        META.name,
-                        "Avoid using !important as it makes styles harder to override",
-                        (offset + abs_pos) as u32,
-                        (offset + abs_pos + 10) as u32,
-                    )
-                    .with_help("Use more specific selectors or reorganize CSS specificity instead"),
-                );
-            }
-
-            search_start = abs_pos + 1;
+        for (start, end) in ValueTokens::new(source).important {
+            result.add_diagnostic(
+                LintDiagnostic::warn(
+                    META.name,
+                    "Avoid using !important as it makes styles harder to override",
+                    (offset + start) as u32,
+                    (offset + end) as u32,
+                )
+                .with_help("Use more specific selectors or reorganize CSS specificity instead"),
+            );
         }
-    }
-}
-
-impl NoImportant {
-    /// Check if a position is inside a CSS comment
-    fn is_in_css_comment(bytes: &[u8], pos: usize) -> bool {
-        let mut in_comment = false;
-        let mut i = 0;
-        while i < pos && i + 1 < bytes.len() {
-            if !in_comment && bytes.get(i..i + 2) == Some(b"/*".as_slice()) {
-                in_comment = true;
-                i += 2;
-            } else if in_comment && bytes.get(i..i + 2) == Some(b"*/".as_slice()) {
-                in_comment = false;
-                i += 2;
-            } else {
-                i += 1;
-            }
-        }
-        in_comment
     }
 }
 

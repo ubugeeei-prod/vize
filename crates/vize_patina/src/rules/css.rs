@@ -39,6 +39,7 @@ mod prefer_nested_selectors;
 mod prefer_slotted;
 mod require_font_display;
 mod strip_comments;
+mod value_tokens;
 
 pub use strip_comments::strip_vize_comments;
 

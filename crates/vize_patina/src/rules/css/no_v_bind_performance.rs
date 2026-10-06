@@ -10,13 +10,11 @@
 //!
 //! Consider using static CSS or computed styles for better performance.
 
-use memchr::memmem;
-
 use lightningcss::stylesheet::StyleSheet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
-use super::{CssLintResult, CssRule, CssRuleMeta};
+use super::{CssLintResult, CssRule, CssRuleMeta, value_tokens::ValueTokens};
 
 static META: CssRuleMeta = CssRuleMeta {
     name: "css/no-v-bind-performance",
@@ -39,56 +37,20 @@ impl CssRule for NoVBindPerformance {
         offset: usize,
         result: &mut CssLintResult,
     ) {
-        // Use SIMD-accelerated search for "v-bind("
-        let finder = memmem::Finder::new(b"v-bind(");
-        let bytes = source.as_bytes();
-
-        let mut search_start = 0;
-        while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
-            let absolute_pos = search_start + pos;
-
-            // Find the closing parenthesis
-            let end_pos = find_closing_paren(source, absolute_pos + 7);
-
-            let start = (offset + absolute_pos) as u32;
-            let end = (offset + end_pos.unwrap_or(absolute_pos + 7)) as u32;
-
+        for (start, end) in ValueTokens::new(source).bindings {
             result.add_diagnostic(
                 LintDiagnostic::warn(
                     META.name,
                     "v-bind() installs runtime CSS variable updates",
-                    start,
-                    end,
+                    (offset + start) as u32,
+                    (offset + end) as u32,
                 )
                 .with_help(
                     "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
                 ),
             );
-
-            search_start = absolute_pos + 1;
         }
     }
-}
-
-/// Find the closing parenthesis, handling nested parentheses
-#[inline]
-fn find_closing_paren(source: &str, start: usize) -> Option<usize> {
-    let mut depth = 1;
-    let bytes = source.as_bytes();
-
-    for (offset, &byte) in bytes.get(start..)?.iter().enumerate() {
-        match byte {
-            b'(' => depth += 1,
-            b')' => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(start + offset + 1);
-                }
-            }
-            _ => {}
-        }
-    }
-    None
 }
 
 #[cfg(test)]
