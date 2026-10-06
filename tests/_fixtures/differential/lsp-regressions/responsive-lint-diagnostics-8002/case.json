@@ -1,0 +1,56 @@
+{
+  "schema": "vize.lsp.responsive-lint-diagnostics.corpus",
+  "version": 1,
+  "issue": 8002,
+  "baseRevision": "143c1d4a9fbe6530cdd06f1f001b816f39c1d00a",
+  "originalFiles": [
+    {
+      "path": "App.vue.txt",
+      "sha256": "d400a8c833aa8cf8e468d266a9b65c8d0a00433825e99f88dccb9733b8195fae"
+    },
+    {
+      "path": "original-body.md",
+      "sha256": "5b2fb668adf4c09f5ffe4e40261305268b251307e2e25306910fc1e20dccc6a7"
+    },
+    {
+      "path": "original-issue.json",
+      "sha256": "f3538eb28fc58a90f0c22332273d64f5722e0b9b4ca6828146ed7c148d360084"
+    },
+    {
+      "path": "tsconfig-original.txt",
+      "sha256": "23b63422c968e0f8a5ed2996b92979939e3704cd473bfc026fa5f6272e624025"
+    },
+    {
+      "path": "tsconfig.authored.json.txt",
+      "sha256": "94eb4537e8e6507792ab4505f0f53ba1433301bf7ec0afeea347432f35c5336e"
+    },
+    {
+      "path": "vize.config.json.txt",
+      "sha256": "2aace414c0199b580bcea90f37055728dc419b14b0c6823901373477205252ef"
+    }
+  ],
+  "originalSource": "App.vue.txt",
+  "originalConfig": "vize.config.json.txt",
+  "runtimeConfig": "tsconfig.authored.json.txt",
+  "session": {
+    "initializationOptions": {
+      "lint": true,
+      "typecheck": true,
+      "editor": true
+    },
+    "controlTypecheck": false,
+    "cycles": 3,
+    "change": "remove literal alt=\"\" then restore full original source"
+  },
+  "oracle": {
+    "sync": "complete public diagnostics from identical source with typecheck disabled",
+    "nativeGate": "actual owned native executable processes stopped after real initial typecheck",
+    "early": "unversioned complete sync set including empty repairs",
+    "terminal": "versioned complete native merge with current source/version; older results refused"
+  },
+  "limitations": [
+    "Historical reported versions retained; current locked runtime recorded separately.",
+    "Authored tsconfig wraps only the exact options/include supplied in prose.",
+    "No native API/Program-reuse or universal timing claim."
+  ]
+}

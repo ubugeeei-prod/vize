@@ -16,7 +16,7 @@ const ORIGINAL_STREAM: &str = include_str!(
     "../../../../../../tests/_fixtures/differential/lsp-regressions/diagnostic-publication-8012/b899-publish-stream.json"
 );
 
-fn drain(socket: &mut ClientSocket, work: impl Future<Output = ()>) -> Vec<Value> {
+pub(super) fn drain(socket: &mut ClientSocket, work: impl Future<Output = ()>) -> Vec<Value> {
     futures::executor::block_on(async {
         futures::pin_mut!(work);
         let mut messages = Vec::new();
@@ -35,14 +35,14 @@ fn drain(socket: &mut ClientSocket, work: impl Future<Output = ()>) -> Vec<Value
     })
 }
 
-fn diagnostics(messages: Vec<Value>) -> Vec<Value> {
+pub(super) fn diagnostics(messages: Vec<Value>) -> Vec<Value> {
     messages
         .into_iter()
         .filter(|message| message["method"] == "textDocument/publishDiagnostics")
         .collect()
 }
 
-fn notification(fixture: &Fixture, collected: &CollectedDiagnostics) -> Value {
+pub(super) fn notification(fixture: &Fixture, collected: &CollectedDiagnostics) -> Value {
     json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":whole(fixture, collected)})
 }
 
@@ -84,8 +84,21 @@ fn queued_old_edits_cannot_adopt_the_latest_version_after_waiting_for_native_sco
     let observed = diagnostics(drain(&mut fixture.socket, async {
         futures::future::join_all(edits).await;
     }));
-    assert_eq!(observed, vec![notification(&fixture, &current(&fixture))]);
-    assert_eq!(observed[0]["params"]["version"], 87);
+    let sync = crate::ide::DiagnosticService::collect(&fixture.service.inner().state, &fixture.app);
+    let partial = json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"uri":fixture.app,"diagnostics":sync}});
+    // Every edit now queues its prompt partial before the held native scope.
+    // The original ownership law still requires exactly one current complete.
+    assert_eq!(
+        observed,
+        vec![
+            partial.clone(),
+            partial.clone(),
+            partial.clone(),
+            partial,
+            notification(&fixture, &current(&fixture))
+        ]
+    );
+    assert_eq!(observed[4]["params"]["version"], 87);
 }
 
 #[test]
