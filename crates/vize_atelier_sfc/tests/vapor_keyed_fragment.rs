@@ -24,6 +24,16 @@ const STABLE: &str = include_str!(
     "../../../tests/_fixtures/differential/compiler/vapor-keyed-fragment/stable.vue.txt"
 );
 
+const NESTED_ATTRS: &str = include_str!(
+    "../../../tests/_fixtures/differential/compiler/vapor-keyed-fragment/nested-attrs.vue.txt"
+);
+const ROOT_ATTRS: &str = include_str!(
+    "../../../tests/_fixtures/differential/compiler/vapor-keyed-fragment/root-attrs.vue.txt"
+);
+const IF_ATTRS: &str = include_str!(
+    "../../../tests/_fixtures/differential/compiler/vapor-keyed-fragment/if-attrs.vue.txt"
+);
+
 fn compile(source: &str, filename: &str, inline: bool, production: bool) -> Value {
     let descriptor = parse_sfc(
         source,
@@ -91,7 +101,7 @@ fn original_keyed_component_and_element_replace_and_dispose_scopes() {
     std::fs::create_dir_all(&destination).expect("raw runtime custody directory");
     for production in [false, true] {
         for inline in [false, true] {
-            let cases: StdVec<Value> = [("component", "App.vue", APP), ("element", "element.vue", ELEMENT), ("stable", "stable.vue", STABLE)]
+            let cases: StdVec<Value> = [("component", "App.vue", APP), ("element", "element.vue", ELEMENT), ("stable", "stable.vue", STABLE), ("nested-attrs", "nested-attrs.vue", NESTED_ATTRS), ("root-attrs", "root-attrs.vue", ROOT_ATTRS), ("if-attrs", "if-attrs.vue", IF_ATTRS)]
                 .into_iter().map(|(name, filename, source)| json!({"name":name,"filename":filename,"source":source,"compiled":compile(source,filename,inline,production)})).collect();
             let input = json!({"production":production,"inline":inline,"cases":cases,"counter":{"source":COUNTER,"filename":"Counter.vue","compiled":compile(COUNTER,"Counter.vue",inline,production)}});
             let runner = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -126,7 +136,7 @@ fn original_keyed_component_and_element_replace_and_dispose_scopes() {
                     .as_array()
                     .expect("rows")
                     .len(),
-                3
+                6
             );
         }
     }

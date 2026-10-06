@@ -45,6 +45,36 @@
       "path": "stable.vue.txt",
       "bytes": 199,
       "sha256": "ee700ce7be25e5c8600d823ac634420893becae73b4917bd3031e2486b30383e"
+    },
+    {
+      "path": "nested-attrs.vue.txt",
+      "bytes": 264,
+      "sha256": "79062372e62a5a6c79fe383c603af8f89fa6049cb7a06c308aecda46f06922f4"
+    },
+    {
+      "path": "nested-attrs.expected.json",
+      "bytes": 2516,
+      "sha256": "03467bc308b39d543e27ffa78982600e5ef929f280de4a8cb2a81a15aef60d50"
+    },
+    {
+      "path": "root-attrs.vue.txt",
+      "bytes": 204,
+      "sha256": "b8aea4b59ea86e8bf2fda80be984ca2aae8c88aafcc29048fc21786083367106"
+    },
+    {
+      "path": "root-attrs.expected.json",
+      "bytes": 940,
+      "sha256": "48825f3167cf00f5dd5d46822e5a4923156d36d79fb5a5fb460b308bed4a08c8"
+    },
+    {
+      "path": "if-attrs.vue.txt",
+      "bytes": 236,
+      "sha256": "f3c1006377ac2694b810149236858529f1ec59526358b146262854582e85cce9"
+    },
+    {
+      "path": "if-attrs.expected.json",
+      "bytes": 940,
+      "sha256": "48825f3167cf00f5dd5d46822e5a4923156d36d79fb5a5fb460b308bed4a08c8"
     }
   ]
 }

@@ -21,7 +21,7 @@ try {
     originals.set(file.path, bytes.toString("utf8"));
   }
   const expected = Object.fromEntries(
-    ["component", "element", "stable"].map((name) => [
+    ["component", "element", "stable", "nested-attrs", "root-attrs", "if-attrs"].map((name) => [
       name,
       JSON.parse(originals.get(`${name}.expected.json`)),
     ]),
@@ -33,7 +33,7 @@ try {
   assert.equal(typeof input.inline, "boolean");
   assert.deepEqual(
     input.cases.map(({ name }) => name),
-    ["component", "element", "stable"],
+    ["component", "element", "stable", "nested-attrs", "root-attrs", "if-attrs"],
   );
   const fromUi = createRequire(new URL("../../../npm/ui/package.json", import.meta.url));
   const fromVue = createRequire(fromUi.resolve("vue-vapor-runtime/package.json"));
@@ -180,7 +180,10 @@ try {
       return setup.apply(this, args);
     };
     const component = await evaluate(module.code, counter);
-    const app = vue.createVaporApp(component);
+    const fallthrough = ["nested-attrs", "root-attrs", "if-attrs"].includes(name);
+    const app = fallthrough
+      ? vue.createVaporApp(component, { title: "outer" })
+      : vue.createVaporApp(component);
     const diagnostics = [];
     app.config.warnHandler = (message) => diagnostics.push(message);
     app.config.errorHandler = (error) => diagnostics.push(String(error));
@@ -189,7 +192,7 @@ try {
     const rows = [];
     const raw = [];
     Object.assign(capture, { rows, raw, diagnostics });
-    const selector = name === "element" ? "input" : "i";
+    const selector = name === "element" || fallthrough ? "input" : "i";
     let previous;
     const snapshot = () => {
       const node = host.querySelector(selector);
@@ -216,7 +219,17 @@ try {
       previous = host.querySelector(selector);
       assert.ok(previous);
       snapshot();
-      if (name === "element") {
+      if (fallthrough) {
+        if (name === "nested-attrs") await click("button:nth-of-type(2)");
+        else {
+          previous.dispatchEvent(new window.Event("dblclick", { bubbles: true }));
+          await vue.nextTick();
+          snapshot();
+        }
+        const old = previous;
+        await click(name === "nested-attrs" ? "button" : "input");
+        assert.equal(old.isConnected, false);
+      } else if (name === "element") {
         previous.value = "typed";
         snapshot();
         const old = previous;
@@ -261,9 +274,14 @@ try {
     assert.equal(
       fixture.source,
       originals.get(
-        { component: "App.vue.txt", element: "element.vue.txt", stable: "stable.vue.txt" }[
-          fixture.name
-        ],
+        {
+          component: "App.vue.txt",
+          element: "element.vue.txt",
+          stable: "stable.vue.txt",
+          "nested-attrs": "nested-attrs.vue.txt",
+          "root-attrs": "root-attrs.vue.txt",
+          "if-attrs": "if-attrs.vue.txt",
+        }[fixture.name],
       ),
     );
     const reference = official(fixture);

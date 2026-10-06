@@ -7,6 +7,7 @@ use vize_atelier_core::{codegen::document::EmitDocument, options::BindingMetadat
 use vize_carton::{FxHashSet, String, cstr};
 
 use super::context::GenerateContext;
+use super::root_key::collect_root_key_templates;
 use super::setup::generate_imports;
 use super::spans::{TEMPLATE_ESCAPES, VaporSourceSpans};
 use super::{
@@ -128,14 +129,11 @@ pub(crate) fn generate_vapor_with_spans(
         }
     }
 
-    for op in &ir.block.operation {
-        if let OperationNode::Key(node) = op
-            && let [element] = node.render.returns.as_slice()
-            && let Some(&template) = ir.element_template_map.get(element)
-        {
-            root_template_indices.insert(template);
-        }
-    }
+    collect_root_key_templates(
+        &ir.block,
+        &ir.element_template_map,
+        &mut root_template_indices,
+    );
 
     // Template strings keep the links lowering gave them through escaping.
     let mut template_code = EmitDocument::new(spans.is_some());

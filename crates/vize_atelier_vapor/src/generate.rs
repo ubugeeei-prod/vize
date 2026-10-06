@@ -9,6 +9,7 @@ mod expression_retained;
 mod helpers;
 mod names;
 mod operations;
+mod root_key;
 mod setup;
 pub(crate) mod spans;
 

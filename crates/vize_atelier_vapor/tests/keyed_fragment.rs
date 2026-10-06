@@ -191,3 +191,65 @@ fn all_complete_keyed_outputs_maps_and_ordinary_boundaries_agree() {
         );
     }
 }
+
+#[test]
+fn only_the_actual_returned_keyed_root_templates_get_fallthrough_flags() {
+    let cases: [(&str, &[&str]); 5] = [
+        (
+            "<input :key=\"epoch\" :title=\"inner\" />",
+            &["const t0 = _template(\"<input>\", true)"],
+        ),
+        (
+            "<section><input :key=\"epoch\" :title=\"inner\" /></section>",
+            &[
+                "const t0 = _template(\"<input>\")",
+                "const t1 = _template(\"<section></section>\", true)",
+            ],
+        ),
+        (
+            "<input v-if=\"ok\" :key=\"epoch\" :title=\"inner\" />",
+            &["const t0 = _template(\"<input>\", true)"],
+        ),
+        (
+            "<section><input v-if=\"ok\" :key=\"epoch\" :title=\"inner\" /></section>",
+            &[
+                "const t0 = _template(\"<input>\")",
+                "const t1 = _template(\"<section></section>\", true)",
+            ],
+        ),
+        (
+            "<input :key=\"epoch\" :title=\"inner\" /><p>after</p>",
+            &[
+                "const t0 = _template(\"<input>\")",
+                "const t1 = _template(\"<p>after</p>\")",
+            ],
+        ),
+    ];
+    for (source, expected) in cases {
+        for retained in [false, true] {
+            let allocator = Allocator::new();
+            let result = compile_vapor_with_experimental_options(
+                &allocator,
+                source,
+                VaporCompilerOptions {
+                    davinci_retained_lane: retained,
+                    ..Default::default()
+                },
+                Default::default(),
+            );
+            assert!(
+                result.error_messages.is_empty(),
+                "{:?}",
+                result.error_messages
+            );
+            let mut declarations = result
+                .code
+                .lines()
+                .filter(|line| line.starts_with("const t"));
+            for declaration in expected {
+                assert_eq!(declarations.next(), Some(*declaration), "{source}");
+            }
+            assert_eq!(declarations.next(), None, "no extra template declaration");
+        }
+    }
+}
