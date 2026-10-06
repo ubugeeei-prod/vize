@@ -157,3 +157,25 @@ prefixes, all reviewed product/corpus bytes, and every original expectation.
 No unmerged prefix production is adopted. Require a clean actual-prefix merge
 tree and fresh successor Actions before independent queue admission; previous
 current checks remain historical evidence, not successor gate credit.
+
+## Protected layout metadata cost
+
+The paired [#7926](https://github.com/ubugeeei-prod/vize/issues/7926#issuecomment-6010944133)
+and [#7966](https://github.com/ubugeeei-prod/vize/issues/7966#issuecomment-6010944334)
+decision retains genuine candidateb424 Check37424004555 failure. All three
+repeats measured SFC305832>293575 and reused-allocatorSFC287204>274723.
+Only this PR was removed from the queue and returned to Draft. The current
+complete Callgrind graph attributes18700 inclusive instructions to first-parse
+layout collection, including12705 in the token iterator. Exact predecessor3f765
+qualified at286685/267834. No binary-address or disassembly claim is made.
+
+Collect optional metadata after the same existing print/reindent. If the entire
+protected printed CSS, trimmed only at its document boundary, equals the entire
+protected input and no raw comma exists, no selector or rule-gap edit is needed.
+Keep an empty first-parse marker so later stabilization passes cannot acquire
+replacement ownership. A comma or any printed change retains the original first
+parse, whole-prelude and complete-token guards. Add no parse, print or pass.
+All original/expected carriers,17 cases/85 complete CLI captures, runtime states,
+options/errors, probes, allocator/window protocol and budget files remain exact.
+Fresh source, protected104x3, actual signed merge and installed release replay
+are still required; the source change grants no new performance or native credit.

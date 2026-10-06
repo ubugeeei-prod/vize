@@ -46,13 +46,6 @@ fn format_chunk_once(
 ) -> Result<String, FormatError> {
     let stylesheet = StyleSheet::parse(trimmed, ParserOptions::default())
         .map_err(|e| FormatError::StyleFormatError(e.to_compact_string()))?;
-    if collect_layout && layout.is_none() {
-        *layout = Some(super::rule_layout::RuleLayout::from_parse(
-            trimmed,
-            &stylesheet.rules,
-        ));
-    }
-
     let indent_width = options.tab_width;
     let printer_options = PrinterOptions {
         minify: false,
@@ -70,6 +63,19 @@ fn format_chunk_once(
     // lightningcss uses 2-space indent by default; re-indent if needed
     if options.use_tabs || indent_width != 2 || options.newline_bytes() != b"\n" {
         code = super::authored::reindent_css(&code, options);
+    }
+
+    if collect_layout && layout.is_none() {
+        // Identical bytes without any comma cannot need selector or gap edits.
+        // Retain an empty first-parse marker so later passes never own layout.
+        *layout = Some(
+            if memchr::memchr(b',', trimmed.as_bytes()).is_none() && code.as_str().trim() == trimmed
+            {
+                super::rule_layout::RuleLayout::default()
+            } else {
+                super::rule_layout::RuleLayout::from_parse(trimmed, &stylesheet.rules)
+            },
+        );
     }
 
     Ok(code)
