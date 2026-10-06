@@ -78,21 +78,25 @@ impl<'a> TransformContext<'a> {
 
     /// An element's template string, anchored when a map is requested.
     #[inline(always)]
-    pub(crate) fn element_template(&self, el: &ElementNode<'_>) -> EmitDocument {
+    pub(crate) fn element_template(
+        &self,
+        el: &ElementNode<'_>,
+        key_non_reactive: bool,
+    ) -> EmitDocument {
         let scope_id = self.scope_id.as_deref();
         if self.template_spans.is_some() {
             super::element::template::generate_element_template_spanned(
                 el,
                 scope_id,
                 self.source,
-                self.is_key_non_reactive(),
+                key_non_reactive,
             )
         } else {
             super::element::template::generate_element_template(
                 el,
                 scope_id,
                 self.source,
-                self.is_key_non_reactive(),
+                key_non_reactive,
             )
             .into()
         }

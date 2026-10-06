@@ -114,10 +114,16 @@ pub(crate) fn generate_vapor_with_spans(
     }
 
     let mut root_template_indices: FxHashSet<usize> = FxHashSet::default();
-    if let [element_id] = ir.block.returns.as_slice()
-        && let Some(&template_index) = ir.element_template_map.get(element_id)
-    {
-        root_template_indices.insert(template_index);
+    if let [element_id] = ir.block.returns.as_slice() {
+        if let Some(&template_index) = ir.element_template_map.get(element_id) {
+            root_template_indices.insert(template_index);
+        } else {
+            collect_root_key_templates(
+                &ir.block,
+                &ir.element_template_map,
+                &mut root_template_indices,
+            );
+        }
     }
     for op in ir.block.operation.iter() {
         if let OperationNode::If(if_node) = op {
@@ -128,12 +134,6 @@ pub(crate) fn generate_vapor_with_spans(
             );
         }
     }
-
-    collect_root_key_templates(
-        &ir.block,
-        &ir.element_template_map,
-        &mut root_template_indices,
-    );
 
     // Template strings keep the links lowering gave them through escaping.
     let mut template_code = EmitDocument::new(spans.is_some());

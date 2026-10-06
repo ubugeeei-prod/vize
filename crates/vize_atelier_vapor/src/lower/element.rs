@@ -43,7 +43,7 @@ pub(super) fn transform_element_unkeyed<'a>(
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
-    let non_reactive = super::key::classify(el, true, false);
+    let non_reactive = super::key::classify(el, ctx.is_key_non_reactive(), false);
     transform_classified_element(ctx, el, block, non_reactive);
 }
 
@@ -105,7 +105,7 @@ pub(super) fn transform_classified_element<'a>(
     if has_dynamic_element_children {
         // Dynamic element children: allocate child IDs first, then parent ID.
         // Use child/next navigation instead of separate templates.
-        transform_element_with_dynamic_children(ctx, el, block);
+        transform_element_with_dynamic_children(ctx, el, block, non_reactive.key_non_reactive);
         if entered_non_reactive {
             ctx.exit_non_reactive_scope();
         }
@@ -115,7 +115,7 @@ pub(super) fn transform_classified_element<'a>(
     if has_control_flow_children {
         // Control flow children (v-if/v-for): defer parent ID and template
         // allocation until after children, so inner IDs/templates come first.
-        transform_element_with_control_flow_children(ctx, el, block);
+        transform_element_with_control_flow_children(ctx, el, block, non_reactive.key_non_reactive);
         if entered_non_reactive {
             ctx.exit_non_reactive_scope();
         }
@@ -136,7 +136,7 @@ pub(super) fn transform_classified_element<'a>(
 
     match el.tag_type {
         ElementType::Element => {
-            let template = ctx.element_template(el);
+            let template = ctx.element_template(el, non_reactive.key_non_reactive);
 
             // Process props and events
             for prop in el.props.iter() {

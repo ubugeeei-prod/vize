@@ -6,6 +6,8 @@ pub(in crate::lower) struct DirectiveAnalysis<'a, 'b> {
     pub(in crate::lower) should_lower_as_once: bool,
     pub(in crate::lower) memo_error: Option<&'static str>,
     pub(in crate::lower) key: Option<&'b SimpleExpressionNode<'a>>,
+    /// ANY once/empty memo for this writer root; FIRST memo still owns errors.
+    pub(in crate::lower) key_non_reactive: bool,
 }
 
 pub(in crate::lower) fn classify<'a, 'b>(
@@ -13,7 +15,18 @@ pub(in crate::lower) fn classify<'a, 'b>(
     inherited: bool,
     own_key: bool,
 ) -> DirectiveAnalysis<'a, 'b> {
-    let read_key = own_key && !inherited;
+    if own_key && !inherited && super::eligible_target(el) {
+        classify_role::<true>(el, inherited)
+    } else {
+        classify_role::<false>(el, inherited)
+    }
+}
+
+// Hoist the actual target/scope role once; both paths retain the same property walk.
+fn classify_role<'a, 'b, const READ_KEY: bool>(
+    el: &'b ElementNode<'a>,
+    inherited: bool,
+) -> DirectiveAnalysis<'a, 'b> {
     let mut key = None;
     let mut has_once = false;
     let mut first_memo = None;
@@ -35,8 +48,8 @@ pub(in crate::lower) fn classify<'a, 'b>(
                 key_non_reactive |= matches!(dir.exp.as_ref(), Some(ExpressionNode::Simple(exp))
                     if exp.content.trim() == "[]");
             }
-            "for" if read_key => has_for = true,
-            "bind" if read_key && key.is_none() => key = super::binding_value(dir),
+            "for" if READ_KEY => has_for = true,
+            "bind" if READ_KEY && key.is_none() => key = super::binding_value(dir),
             _ => {}
         }
     }
@@ -64,7 +77,8 @@ pub(in crate::lower) fn classify<'a, 'b>(
     DirectiveAnalysis {
         should_lower_as_once,
         memo_error,
-        key: key.filter(|value| !key_non_reactive && !has_for && super::eligible_value(el, value)),
+        key: key.filter(|value| !key_non_reactive && !has_for && super::eligible_value(value)),
+        key_non_reactive,
     }
 }
 

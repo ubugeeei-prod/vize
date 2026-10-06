@@ -19,8 +19,9 @@ pub(super) fn transform_element_with_control_flow_children<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
+    key_non_reactive: bool,
 ) {
-    transform_element_with_dynamic_children(ctx, el, block);
+    transform_element_with_dynamic_children(ctx, el, block, key_non_reactive);
 }
 
 /// Transform an element that has dynamic element children.
@@ -31,6 +32,7 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
+    key_non_reactive: bool,
 ) {
     let dynamic_child_count = count_dynamic_element_children(&el.children);
     let child_ids: std::vec::Vec<usize> = (0..dynamic_child_count).map(|_| ctx.next_id()).collect();
@@ -39,7 +41,7 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     let parent_id = ctx.next_id();
 
     // Generate template (includes all children inline)
-    let template = ctx.element_template(el);
+    let template = ctx.element_template(el, key_non_reactive);
 
     // Process parent props
     for prop in el.props.iter() {

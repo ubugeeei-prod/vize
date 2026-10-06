@@ -12,7 +12,7 @@ mod attributes;
 mod writer;
 use writer::{LeadingNewlineWriter, TemplateWriter};
 
-/// Generate element template string.
+/// Generate an element template from its already-classified root key scope.
 #[inline(always)]
 pub(crate) fn generate_element_template(
     el: &ElementNode<'_>,
@@ -21,7 +21,7 @@ pub(crate) fn generate_element_template(
     non_reactive: bool,
 ) -> String {
     let mut template = String::default();
-    write_element_template(&mut template, el, scope_id, source, non_reactive);
+    write_element_template(&mut template, el, scope_id, source, non_reactive, true);
     template
 }
 
@@ -34,7 +34,7 @@ pub(crate) fn generate_element_template_spanned(
     non_reactive: bool,
 ) -> EmitDocument {
     let mut template = EmitDocument::default();
-    write_element_template(&mut template, el, scope_id, source, non_reactive);
+    write_element_template(&mut template, el, scope_id, source, non_reactive, true);
     template
 }
 
@@ -44,7 +44,10 @@ fn write_element_template(
     scope_id: Option<&str>,
     source: &str,
     non_reactive: bool,
+    classified_root: bool,
 ) {
+    // Root facts came from its actual lowering walk. Recursion still owns
+    // each child's once/memo derivation and never broadens the lower's context.
     let mut non_reactive = non_reactive;
     template.push_str("<");
     let tag_start = el.loc.span.start + 1;
@@ -60,8 +63,12 @@ fn write_element_template(
     if !el.props.is_empty() {
         // Collect dynamic binding names to skip their static counterparts
         let mut has_static_attr = false;
-        let dynamic_attrs =
-            attributes::collect_dynamic_attrs(el, &mut has_static_attr, &mut non_reactive);
+        let dynamic_attrs = attributes::collect_dynamic_attrs(
+            el,
+            &mut has_static_attr,
+            &mut non_reactive,
+            !classified_root,
+        );
 
         // Add static attributes (skip those overridden by dynamic bindings).
         // This result depends only on the unchanged props. The first pass above
@@ -176,7 +183,14 @@ fn append_child_templates(
                 if is_template_backed_element(child_el, non_reactive) =>
             {
                 ensure_sufficient_stack(|| {
-                    write_element_template(template, child_el, scope_id, source, non_reactive)
+                    write_element_template(
+                        template,
+                        child_el,
+                        scope_id,
+                        source,
+                        non_reactive,
+                        false,
+                    )
                 });
             }
             // Only a block followed by template-rendered siblings keeps its
@@ -330,3 +344,6 @@ fn is_void_element(tag: &str) -> bool {
             | "wbr"
     )
 }
+
+#[cfg(test)]
+mod facts_tests;

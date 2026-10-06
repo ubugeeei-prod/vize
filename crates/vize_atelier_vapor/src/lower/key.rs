@@ -28,7 +28,7 @@ pub(super) fn value<'a, 'b>(
     el: &'b ElementNode<'a>,
     non_reactive: bool,
 ) -> Option<&'b SimpleExpressionNode<'a>> {
-    if non_reactive {
+    if non_reactive || !eligible_target(el) {
         return None;
     }
     let value = el.props.iter().find_map(|prop| match prop {
@@ -65,12 +65,12 @@ fn eligible(el: &ElementNode<'_>, value: &SimpleExpressionNode<'_>, non_reactive
             .props
             .iter()
             .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "for"))
-        && eligible_value(el, value)
+        && eligible_value(value)
 }
 
-fn eligible_value(el: &ElementNode<'_>, value: &SimpleExpressionNode<'_>) -> bool {
-    !(!matches!(el.tag_type, ElementType::Element | ElementType::Component)
-        || matches!(
+fn eligible_target(el: &ElementNode<'_>) -> bool {
+    matches!(el.tag_type, ElementType::Element | ElementType::Component)
+        && !matches!(
             el.tag,
             "component"
                 | "Component"
@@ -85,7 +85,10 @@ fn eligible_value(el: &ElementNode<'_>, value: &SimpleExpressionNode<'_>) -> boo
                 | "TransitionGroup"
                 | "transition-group"
         )
-        || value.is_static
+}
+
+fn eligible_value(value: &SimpleExpressionNode<'_>) -> bool {
+    !(value.is_static
         || value.const_type != vize_atelier_core::ConstantType::NotConstant
         || matches!(value.content.trim(), "true" | "false" | "null")
         || value.js_ast.is_some_and(|js| {
@@ -156,3 +159,6 @@ pub(super) fn element<'a>(
         transform_classified_element(ctx, el, block, directives);
     }
 }
+
+#[cfg(test)]
+mod target_tests;

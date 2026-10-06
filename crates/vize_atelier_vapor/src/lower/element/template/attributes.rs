@@ -7,6 +7,7 @@ pub(super) fn collect_dynamic_attrs<'a>(
     el: &ElementNode<'a>,
     has_static_attr: &mut bool,
     non_reactive: &mut bool,
+    derive_non_reactive: bool,
 ) -> FxHashSet<&'a str> {
     if matches!(el.props.as_slice(), [PropNode::Attribute(_)]) {
         *has_static_attr = true;
@@ -20,7 +21,7 @@ pub(super) fn collect_dynamic_attrs<'a>(
                     None
                 }
                 PropNode::Directive(dir) => {
-                    if !*non_reactive {
+                    if derive_non_reactive && !*non_reactive {
                         *non_reactive = dir.name == "once"
                             || dir.name == "memo"
                                 && matches!(dir.exp.as_ref(), Some(ExpressionNode::Simple(exp))
