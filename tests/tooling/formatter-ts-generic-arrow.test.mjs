@@ -93,16 +93,25 @@ void test("original TS generics retain full bytes while TSX keeps disambiguation
       "Generic.vue",
       "plain.ts",
     ]);
+    report.originalOutputs = Object.fromEntries(
+      Object.keys(originalFiles).map((file) => {
+        const actual = fs.readFileSync(path.join(reported, file));
+        return [file, { source: actual.toString(), sha256: sha256(actual) }];
+      }),
+    );
     assert.equal(report.originalCommand.error, null);
     assert.equal(report.originalCommand.signal, null);
     assert.equal(report.originalCommand.status, 0);
-    assert.equal(report.originalCommand.stderr, "");
-    report.originalOutputs = {};
-    for (const [file, fixture] of Object.entries(originalFiles)) {
-      const actual = fs.readFileSync(path.join(reported, file));
-      report.originalOutputs[file] = { source: actual.toString(), sha256: sha256(actual) };
-      assert.deepEqual(actual, fs.readFileSync(path.join(corpus, fixture)));
-    }
+    assert.equal(report.originalCommand.stdout, "");
+    assert.equal(
+      report.originalCommand.stderr,
+      "Found 2 file(s)\n\nFormatted 2 file(s)\n  2 file(s) unchanged\n",
+    );
+    for (const [file, fixture] of Object.entries(originalFiles))
+      assert.deepEqual(
+        Buffer.from(report.originalOutputs[file].source),
+        fs.readFileSync(path.join(corpus, fixture)),
+      );
 
     for (const fixture of manifest.cases) {
       await t.test(fixture.id, async () => {
@@ -157,6 +166,19 @@ void test("original TS generics retain full bytes while TSX keeps disambiguation
           });
           assert.equal(result.error, null);
           assert.equal(result.signal, null);
+          assert.equal(result.stdout, "");
+          const changed = before.toString() !== fixture.expected;
+          const expectedStderr = [
+            "Found 1 file(s)\n",
+            changed
+              ? `${mode === "--check" ? "Would reformat" : "Reformatted"}: ${fixture.file}\n`
+              : "",
+            `\n${mode === "--check" ? "Checked" : "Formatted"} 1 file(s)\n`,
+            mode === "--check"
+              ? `  1 file(s) ${changed ? "would be reformatted" : "already formatted"}\n`
+              : `  1 file(s) ${changed ? "reformatted" : "unchanged"}\n`,
+          ].join("");
+          assert.equal(result.stderr, expectedStderr);
           return { result, before, after };
         };
         const initial = call("--check");
@@ -165,12 +187,10 @@ void test("original TS generics retain full bytes while TSX keeps disambiguation
         for (let pass = 1; pass <= 3; pass++) {
           const { result, after } = call("--write");
           assert.equal(result.status, 0);
-          assert.equal(result.stderr, "");
           assert.deepEqual(after, Buffer.from(fixture.expected), `whole pass ${pass}`);
         }
         const final = call("--check");
         assert.equal(final.result.status, 0);
-        assert.equal(final.result.stderr, "");
         assert.deepEqual(final.after, final.before);
         row.qualified = true;
         report.cliQualified++;

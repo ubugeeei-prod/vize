@@ -75,3 +75,25 @@ protected full Rust/unchanged104, actual signed merge and root-owned public
 release remain required. The issue comment above is paired with this checkpoint;
 `nativeHandled` remains zero and formatter native/default/history completion
 is unfinished.
+
+## First published source failure
+
+Published source `7690c0af` / Check37399499074 is historical RED. Required
+security job112063268701 found the existing global13 npm advisories; its
+separate owner is repairing them without a waiver. Tooling2 job112063392986
+failed this new observer's empty-stderr assumption after the exact original
+two-file command returned zero. Official artifact11385080658 is authenticated
+at29,543B/SHA25644da4377/all member CRCs, retaining checkoutd2dbd283,
+source-built vize0.434.0 binary hash7f586502, workspace Oxfmt0.63.0 and the
+whole original command streams. The twelve rows and original-output comparison
+were not reached; no whole-corpus success or executable-byte rehash is claimed.
+
+The [paired correction](https://github.com/ubugeeei-prod/vize/issues/7965#issuecomment-6007553939)
+changes only this observer's full normal stdout/stderr expectations, independently
+derived from existing CLI summary/change branches and literal-file collection.
+It retains both original outputs before process assertions. All seven Rust laws,
+originals, twelve complete formatted expectations, formatter production,
+historical pins/options and ceilings stay exact; there is no record mode,
+stderr suppression or formatter change. Strict Rust source build already passed
+on7690; actual Rust cases and fresh repaired whole7/12/source/protected104/full
+Rust/signed merge/release remain required. No old result transfers to a new head.
