@@ -8,6 +8,8 @@
 await Promise.all([
   import("../cli/files.test.ts"),
   import("../cli/output.test.ts"),
+  import("../cli/locations.test.ts"),
+  import("../original-locations.test.ts"),
   import("../cli/oxlint.test.ts"),
   import("../cli/scoped-config.test.ts"),
   import("../cli/scoped-options.test.ts"),

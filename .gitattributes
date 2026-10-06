@@ -46,3 +46,6 @@ crates/vize_patina/tests/fixtures/issue-7979/** -text whitespace=cr-at-eol
 
 # Preserve whole authored LF/CRLF utility-class regression inputs.
 crates/vize_patina/tests/fixtures/css-utility-literal-tokens/*.vue.txt -text whitespace=cr-at-eol
+
+# Oxlint position laws retain authored source bytes, including CRLF.
+tests/_fixtures/differential/lint/oxlint-original-locations-7904/*.txt -text whitespace=cr-at-eol

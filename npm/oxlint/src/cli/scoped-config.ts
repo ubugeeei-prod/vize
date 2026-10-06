@@ -2,9 +2,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { appendScriptlessWorkaround } from "../workaround.ts";
+import { prepareWorkaroundSource } from "../workaround.ts";
 import { isStandaloneHtmlFile } from "../file-kinds.ts";
-import { registerPathReplacementVariants } from "./workaround-files.ts";
+import { registerLocationVariants, registerPathReplacementVariants } from "./workaround-files.ts";
+import type { BridgeLocations } from "./locations.js";
 
 type Config = Record<string, unknown>;
 
@@ -99,6 +100,7 @@ export function createScopedMirror(cwd: string, config: ScopedConfig, files: rea
       );
     const originalsToCopies = new Map<string, string>();
     const pathReplacements = new Map<string, string>();
+    const locations = new Map<string, BridgeLocations>();
     for (const file of files) {
       if (isStandaloneHtmlFile(file))
         throw new Error(
@@ -112,9 +114,11 @@ export function createScopedMirror(cwd: string, config: ScopedConfig, files: rea
         throw new Error("Scoped Vue transport cannot preserve files on another filesystem root.");
       const source = fs.readFileSync(file, "utf8");
       fs.mkdirSync(path.dirname(copy), { recursive: true });
-      fs.writeFileSync(copy, appendScriptlessWorkaround(source, file), { flag: "wx" });
+      const bridge = prepareWorkaroundSource(source, file);
+      fs.writeFileSync(copy, bridge.source, { flag: "wx" });
       originalsToCopies.set(file, copy);
       registerPathReplacementVariants(pathReplacements, cwd, copy, file);
+      registerLocationVariants(locations, cwd, copy, bridge.locations);
     }
     const copyPatterns = [...originalsToCopies.values()].map(literalGlob);
     const outside = [...originalsToCopies].filter(([file]) => !contains(configDir, file));
@@ -172,7 +176,7 @@ export function createScopedMirror(cwd: string, config: ScopedConfig, files: rea
     }
     if (fs.readFileSync(config.file, "utf8") !== config.bytes)
       throw new Error("Oxlint config changed while preparing its scoped Vue transport.");
-    return { sibling, originalsToCopies, pathReplacements, cleanup };
+    return { sibling, originalsToCopies, pathReplacements, locations, cleanup };
   } catch (error) {
     cleanup();
     throw error;

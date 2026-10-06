@@ -5,6 +5,7 @@ import { expectsLintReport, getLintTargets } from "./cli/args.js";
 import { collectVueLikeFilesFromTargets } from "./cli/files.js";
 import { resolveOxlintCliEntrypoint, verifyOxlintCliEntrypoint } from "./cli/oxlint.js";
 import { rewriteReportedPaths } from "./cli/output.js";
+import { rewriteReportedLocations } from "./cli/locations.js";
 import { prepareScriptlessWorkaroundFiles } from "./cli/workaround-files.js";
 import { prepareScopedSelection } from "./cli/scoped-selection.js";
 
@@ -35,8 +36,14 @@ async function main(): Promise<void> {
 
   try {
     const result = sourceResult ?? (await runOxlint(process.execPath, args, cwd));
-    const stdout = rewriteReportedPaths(result.stdout, prepared.pathReplacements);
-    const stderr = rewriteReportedPaths(result.stderr, prepared.pathReplacements);
+    const stdout = rewriteReportedPaths(
+      rewriteReportedLocations(result.stdout, prepared.locations),
+      prepared.pathReplacements,
+    );
+    const stderr = rewriteReportedPaths(
+      rewriteReportedLocations(result.stderr, prepared.locations),
+      prepared.pathReplacements,
+    );
 
     if (stdout) {
       await writeStream(process.stdout, stdout);
