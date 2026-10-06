@@ -36,3 +36,24 @@ The unchanged workflow's following WASM command and ordinary source checks must 
 The first published source `6c2d5a4748be08cb2e87aad9d4a559654f134443` failed only its ordinary Rust formatter job [112050933715](https://github.com/ubugeeei-prod/vize/actions/runs/37395677645/job/112050933715). The complete raw log is 39,669 bytes, SHA-256 `dfd47462e6979cfce19e7949f818c63aeeb921f6d63c879131fb6a63ef585277`. The workspace uses Rust edition 2024, so the earlier local edition-2021 check was insufficient. Move only the existing `ToCompactString` import before the other L0 imports, preserving all code tokens and every original law. This is paired with [the current issue decision](https://github.com/ubugeeei-prod/vize/issues/6830#issuecomment-6006879717).
 
 Fresh exact-source Actions remain required. The first focused workflow continues without blind cancellation; source-qualified observations remain distinct. No assertion, fixture, policy, cap, production or workflow change is made.
+
+## Delivered Security main and native Stack qualification
+
+Security8080 is actually signed-merged as48cb1d4f, parent143c, at05:04:12Z
+on2026-10-06. Official main/merge/signature were verified before the sole
+bottom integration. Both whole repaired test files, all original inputs,
+assertions/snapshots and both original commit author/email/date/full-body/
+reporter footers remain exact. Every incoming canonical byte is conserved at
+350 lines. The [paired decision](https://github.com/ubugeeei-prod/vize/issues/6830#issuecomment-6009732436)
+requires the actual native Stack8092 order8073→8086→8091, genuine literal
+child ancestry and the same ordered remote identity. No independent layer
+auto-merge is enabled.
+
+Historical d83616178 source cases/ten original integration laws and focused
+Clippy/WASM/436+251 units/five whole graph pairs remain old-head proof only.
+Protected ea185 had104×3 proof but Security/aggregate failed and the candidate
+was removed. Fresh ordinary source and one existing exact-base compact
+workflow, each child's whole native vectors, protected104/Rust/native/WASM,
+actual signed contiguous-prefix merges and public release inclusion remain
+required. No caps/goldens/workflows/schema/production/profile inputs change,
+and no historical green or queue entry is actual completion.
