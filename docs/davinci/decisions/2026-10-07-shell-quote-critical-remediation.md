@@ -34,3 +34,8 @@ that cut or add this advisory to an allowance. Resume once the actual signed
 security merge and current strict installed audit are qualified. TODO: retain
 fresh hosted consumer/security/full protected results and the signed merge
 identity before handing the patched cut to the sole release publisher.
+
+The first hosted audit and both Node engine compatibility jobs passed. Its
+strict JavaScript lint rejected an unawaited new test registration; await that
+existing test promise, preserving every consumer and refusal assertion. The
+first failed head remains historical; qualify the corrected head afresh.

@@ -30,7 +30,7 @@ assert.ok(
 );
 
 for (const entry of entries) {
-  test(`${entry} resolves patched shell-quote and retains explicit editor parsing`, () => {
+  await test(`${entry} resolves patched shell-quote and retains explicit editor parsing`, () => {
     const directory = path.join(store, entry, "node_modules/launch-editor");
     const editor = createRequire(path.join(directory, "package.json"));
     assert.equal(editor(path.join(directory, "package.json")).version, "2.14.1");
