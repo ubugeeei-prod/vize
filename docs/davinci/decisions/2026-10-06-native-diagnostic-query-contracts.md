@@ -159,3 +159,12 @@ per profile, plus declaration when configured, should replace historical102
 profile acknowledgements with78; the72 whole response comparisons remain.
 These are intended counts, not observed execution. Full681/2043 parity and a
 defensible ONE matched observer0 comparison still gate performance acceptance.
+
+The frozen production review found no source blocker, but the eight-profile
+harness still unwrapped bulk/original Results before its first disk capture.
+Retain the full bulk Result and category custody immediately before unwrap,
+then append/save each complete original Result before unwrap or the next query.
+Keep prior bulkOutcome/comparison fields, all72 equality checks and the new3/4
+request assertions. This test-only failure-first correction changes no native
+operation, product, fixture or gain claim; fresh compilation/execution remains
+mandatory and the source is still private during the publication hold.

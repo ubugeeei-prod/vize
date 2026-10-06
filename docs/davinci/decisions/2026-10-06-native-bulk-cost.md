@@ -238,3 +238,10 @@ main-name validation/filtering before URI grouping supplies no checker/gain
 proof or claim of previously eager text savings. Source compilation/native18/
 whole681/matched gains remain pending. Preserve Draft/offqueue, actual root
 publication hold, unchanged budgets/defaults/fixtures/pins and no new campaign.
+
+Independent production review preserves the complete conversion/provider/
+release/fallback suffix and old laws, but finds premature unwrap in the original
+eight-profile capture harness. Save full bulk Result/custody and every original
+Result before unwrap/next request while retaining old complete comparisons and
+new actual3/4-call assertions. This necessary test-custody correction supplies
+no execution or speed acceptance; the private source still needs fresh Actions.

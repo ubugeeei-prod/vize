@@ -414,7 +414,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/bulk_
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/selected_semantics.rs	4	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/tests.rs	4	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/tests/grouped.rs	3	l0	L0	stage	vize_l0	preferred	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/tests/native.rs	8	l0	L0	stage	vize_l0	preferred	3
+typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/tests/native.rs	8	l0	L0	stage	vize_l0	preferred	5
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/tests/native.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/tests/native/deep.rs	37	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/bulk_diagnostics/tests/native/selected.rs	8	l0	L0	stage	vize_l0	preferred	1

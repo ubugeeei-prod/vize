@@ -100,33 +100,50 @@ fn compare(
     case: usize,
     phase: &str,
 ) {
-    let outcome = editor.bulk_diagnostics(config, uris).unwrap();
-    let status = vize_l0::cstr!("{outcome:?}");
+    let mut packet = json!({
+        "acknowledgedDocuments":editor.documents,
+        "configuration":std::fs::read_to_string(config).unwrap(),
+        "comparisons":[],"originalResults":[],
+    });
+    let persist = |packet: &serde_json::Value| {
+        if let Some(dir) = std::env::var_os("VIZE_NATIVE_BULK_CAPTURE_DIR") {
+            let dir = Path::new(&dir).join(vize_l0::cstr!("profile-{case}/{phase}").as_str());
+            std::fs::create_dir_all(&dir).unwrap();
+            std::fs::write(
+                dir.join("whole-diagnostics.json"),
+                serde_json::to_vec_pretty(packet).unwrap(),
+            )
+            .unwrap();
+        }
+    };
+    let result = editor.bulk_diagnostics(config, uris);
+    let status = match &result {
+        Ok(outcome) => vize_l0::cstr!("{outcome:?}"),
+        Err(error) => vize_l0::cstr!("Err({error:?})"),
+    };
+    let custody = super::super::take_receipt();
+    packet["bulkResult"] = json!(vize_l0::cstr!("{result:?}"));
+    packet["bulkOutcome"] = json!(status);
+    packet["custody"] = json!(custody);
+    persist(&packet);
+    let outcome = result.unwrap();
     let bulk = match outcome {
         BulkDiagnostics::Complete(rows) => Some(rows),
         _ => None,
     };
-    let custody = super::super::take_receipt();
     let mut comparisons = Vec::new();
     for (index, uri) in uris.iter().enumerate() {
-        let original = serde_json::to_value(editor.diagnostics(uri).unwrap()).unwrap();
+        let result = editor.diagnostics(uri);
+        packet["originalResults"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!({"uri":uri,"result":result}));
+        persist(&packet);
+        let original = serde_json::to_value(result.unwrap()).unwrap();
         let actual = bulk.as_ref().and_then(|rows| rows.get(index));
         comparisons.push(json!({"uri":uri,"bulk":actual,"lsp":original}));
-    }
-    if let Some(dir) = std::env::var_os("VIZE_NATIVE_BULK_CAPTURE_DIR") {
-        let dir = Path::new(&dir).join(vize_l0::cstr!("profile-{case}/{phase}").as_str());
-        std::fs::create_dir_all(&dir).unwrap();
-        std::fs::write(
-            dir.join("whole-diagnostics.json"),
-            serde_json::to_vec_pretty(&json!({
-                "bulkOutcome":status, "custody":custody,
-                "acknowledgedDocuments":editor.documents,
-                "configuration":std::fs::read_to_string(config).unwrap(),
-                "comparisons":comparisons,
-            }))
-            .unwrap(),
-        )
-        .unwrap();
+        packet["comparisons"] = json!(comparisons);
+        persist(&packet);
     }
     // Persist every complete side before a failed comparison can abort CI.
     let bulk =
