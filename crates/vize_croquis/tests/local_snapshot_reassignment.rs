@@ -4,9 +4,15 @@ use vize_croquis::{
     reactivity::{ReactivityLoss, ReactivityLossKind},
     script_parser::parse_script_setup,
 };
+use vize_l0::cstr;
 
 fn property(source: &str, target: &str, initializer: &str) -> ReactivityLoss {
-    let start = source.find(initializer).unwrap() as u32;
+    let start = source.find(initializer);
+    assert!(
+        start.is_some(),
+        "the fixture contains initializer {initializer}"
+    );
+    let start = start.unwrap_or_default() as u32;
     ReactivityLoss {
         kind: ReactivityLossKind::ReactivePropertyExtract {
             source_name: "props".into(),
@@ -21,13 +27,15 @@ fn property(source: &str, target: &str, initializer: &str) -> ReactivityLoss {
 fn assert_losses(source: &str, expected: Vec<ReactivityLoss>) {
     let parsed = parse_script_setup(source);
     assert_eq!(
-        format!("{:#?}", parsed.reactivity.losses()),
-        format!("{expected:#?}")
+        cstr!("{:#?}", parsed.reactivity.losses()),
+        cstr!("{expected:#?}")
     );
 }
 
 fn argument(source: &str) -> ReactivityLoss {
-    let start = (source.find("useFeature(last)").unwrap() + "useFeature(".len()) as u32;
+    let start = source.find("useFeature(last)");
+    assert!(start.is_some(), "the fixture contains useFeature(last)");
+    let start = (start.unwrap_or_default() + "useFeature(".len()) as u32;
     ReactivityLoss {
         kind: ReactivityLossKind::FunctionArgumentExtract {
             source_name: "props.modelValue".into(),
@@ -83,7 +91,7 @@ fn sequence_and_self_assignment_keep_rhs_reads_before_replacement() {
         "last = (useFeature(last), 'fresh');",
         "last = last; useFeature(last);",
     ] {
-        let source = format!(
+        let source = cstr!(
             "const props = defineProps<{{ modelValue: string }}>();\nlet last = props.modelValue;\n{assignment}"
         );
         assert_losses(

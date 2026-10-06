@@ -1,0 +1,32 @@
+# Compact collections all-target Clippy repair
+
+This decision is paired with [the comment on CI roadmap issue #6830](https://github.com/ubugeeei-prod/vize/issues/6830#issuecomment-6006142235).
+
+## Retained failure
+
+The focused `compact-collections` workflow run [37386300391](https://github.com/ubugeeei-prod/vize/actions/runs/37386300391), job [112020300720](https://github.com/ubugeeei-prod/vize/actions/runs/37386300391/job/112020300720), checked source `145588f1b43da0eb59b410f6c3e6141ef3140988`. Its two affected files are byte-identical at actual main `40a1243f54ee7a95fe593d0504448d957adc227b`.
+
+The existing library tests passed 444 Croquis and 251 control-flow cases. The following all-target Clippy command failed with exit 101: two helper `Option::unwrap` calls, three standard `format!` calls, and two `ToString::to_string` calls. The subsequent WASM check did not execute. Passing library tests do not establish a successful all-target baseline.
+
+The retained complete log is 208,239 bytes with SHA-256 `30ca074cc8e5c631e8b16e11f408c22d5f46123c15dec1545938983be2e8f29c`. The immutable failure custody record has SHA-256 `7562907c4b2bf5a7d8a6a368fe4e20f78843c3c5e94270c273b778df89b6545c`.
+
+## Narrow correction
+
+Use the existing L0 `cstr!` formatting macro and `ToCompactString` trait in the two integration-test files. Keep every original formatting specification, complete debug comparison, dump error message, authored source, fixture and test registration. No dependency or production implementation changes are needed.
+
+Before a helper consumes a discovered source offset, assert that the original fixture selector exists. The following optional offset default is unreachable on a missing selector because the assertion already fails; it does not accept a missing fixture span. The original complete reactivity-loss assertions remain intact.
+
+The fourteen canonical dump pages, all grammar cases, and all six snapshot-reassignment laws retain their original input and expectations. No new lint allowance, policy change, source cap, CI schema, workflow stage or benchmark change is introduced.
+
+## Qualification and delivery
+
+Preparation starts from literal actual main `40a1243f54ee7a95fe593d0504448d957adc227b`. Rustfmt and diff checks are local source checks only. The repaired source has not yet executed Clippy, Rust tests or the WASM recipe; do not transfer the historical library successes to this source.
+
+After the current v0.434 publication hold is lifted, use one small conventional PR and the existing Actions commands, preserving their order:
+
+```sh
+cargo test --locked -p vize_croquis -p vize_croquis_cf --lib
+cargo clippy --locked -p vize_croquis -p vize_croquis_cf --all-targets -- -D warnings
+```
+
+The unchanged workflow's following WASM command and ordinary source checks must also pass. Keep the branch private during the hold. Track the protected queue, signed actual merge and a subsequent verified release separately; source preparation is not delivery or performance evidence.
