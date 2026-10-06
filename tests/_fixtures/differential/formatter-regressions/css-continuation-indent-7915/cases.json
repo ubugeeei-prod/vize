@@ -1,0 +1,570 @@
+{
+  "schema": "vize.formatter-css-continuation-indent",
+  "version": 1,
+  "issue": 7915,
+  "base": "c30f1a02da763e0086c489b8e17b9aa558187cff",
+  "originalSourceSha256": "753f60bc1b5de094933ffa475bb7a1faaaab452f14b77d9d11d1cafd1042bf82",
+  "originalIssueSha256": "1ccdc12692d397d1190489d3b40840f922c389f79fc73872fd4c786cb2ec4a37",
+  "reporter": {
+    "id": "MDQ6VXNlcjcxMjAxMzA4",
+    "is_bot": false,
+    "login": "ubugeeei",
+    "name": "ubugeeei"
+  },
+  "expectedAuthority": "Whole independently authored configured-unit continuation layout before current formatter execution; quoted/escaped token bytes immutable; Prettier alternative captured separately",
+  "cases": [
+    {
+      "id": "original-four-spaces",
+      "api": "sfc",
+      "input": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "expected": "<template>\n    <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n    transition: background-color var(--duration, 0.2s) var(--ease, ease),\n        color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "options": {
+        "tabWidth": 4
+      },
+      "filename": "Button.vue",
+      "inputFile": "original-four-spaces.input.txt",
+      "inputSha256": "753f60bc1b5de094933ffa475bb7a1faaaab452f14b77d9d11d1cafd1042bf82",
+      "expectedFile": "original-four-spaces.expected.txt",
+      "expectedSha256": "80ec27454a2b4e8351ef6248b25ee1804cebfad17497b0e356d516ecc31524ee",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: Button.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: Button.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "original-tabs",
+      "api": "sfc",
+      "input": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "expected": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition: background-color var(--duration, 0.2s) var(--ease, ease),\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "options": {
+        "useTabs": true
+      },
+      "filename": "Button.vue",
+      "inputFile": "original-tabs.input.txt",
+      "inputSha256": "753f60bc1b5de094933ffa475bb7a1faaaab452f14b77d9d11d1cafd1042bf82",
+      "expectedFile": "original-tabs.expected.txt",
+      "expectedSha256": "66197cee8f9f932c0b812dfeeb7565cad83d25f972167052f2e66eb71d84e857",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: Button.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: Button.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "original-tabs-four",
+      "api": "sfc",
+      "input": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "expected": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition: background-color var(--duration, 0.2s) var(--ease, ease),\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "options": {
+        "useTabs": true,
+        "tabWidth": 4
+      },
+      "filename": "Button.vue",
+      "inputFile": "original-tabs-four.input.txt",
+      "inputSha256": "753f60bc1b5de094933ffa475bb7a1faaaab452f14b77d9d11d1cafd1042bf82",
+      "expectedFile": "original-tabs-four.expected.txt",
+      "expectedSha256": "66197cee8f9f932c0b812dfeeb7565cad83d25f972167052f2e66eb71d84e857",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: Button.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: Button.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "original-default-control",
+      "api": "sfc",
+      "input": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "expected": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "options": {},
+      "filename": "Button.vue",
+      "inputFile": "original-default-control.input.txt",
+      "inputSha256": "753f60bc1b5de094933ffa475bb7a1faaaab452f14b77d9d11d1cafd1042bf82",
+      "expectedFile": "original-default-control.expected.txt",
+      "expectedSha256": "753f60bc1b5de094933ffa475bb7a1faaaab452f14b77d9d11d1cafd1042bf82",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "original-four-crlf",
+      "api": "sfc",
+      "input": "<template>\r\n  <button class=\"button\" type=\"button\">Save</button>\r\n</template>\r\n\r\n<style scoped>\r\n.button {\r\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\r\n    color var(--duration, 0.2s) var(--ease, ease);\r\n}\r\n</style>\r\n",
+      "expected": "<template>\r\n    <button class=\"button\" type=\"button\">Save</button>\r\n</template>\r\n\r\n<style scoped>\r\n.button {\r\n    transition: background-color var(--duration, 0.2s) var(--ease, ease),\r\n        color var(--duration, 0.2s) var(--ease, ease);\r\n}\r\n</style>\r\n",
+      "options": {
+        "tabWidth": 4,
+        "endOfLine": "crlf"
+      },
+      "filename": "Button.vue",
+      "inputFile": "original-four-crlf.input.txt",
+      "inputSha256": "5305bed0d1129ae15aad72f3109fd0a9d4a06387d8ef3752e16bc0af80b9742e",
+      "expectedFile": "original-four-crlf.expected.txt",
+      "expectedSha256": "d278b60bc4cb37be7da0640db2608db5c691bc5e4d92192ee0bfa9fd639d197c",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: Button.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: Button.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "original-tabs-crlf",
+      "api": "sfc",
+      "input": "<template>\r\n  <button class=\"button\" type=\"button\">Save</button>\r\n</template>\r\n\r\n<style scoped>\r\n.button {\r\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\r\n    color var(--duration, 0.2s) var(--ease, ease);\r\n}\r\n</style>\r\n",
+      "expected": "<template>\r\n\t<button class=\"button\" type=\"button\">Save</button>\r\n</template>\r\n\r\n<style scoped>\r\n.button {\r\n\ttransition: background-color var(--duration, 0.2s) var(--ease, ease),\r\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\r\n}\r\n</style>\r\n",
+      "options": {
+        "useTabs": true,
+        "endOfLine": "crlf"
+      },
+      "filename": "Button.vue",
+      "inputFile": "original-tabs-crlf.input.txt",
+      "inputSha256": "5305bed0d1129ae15aad72f3109fd0a9d4a06387d8ef3752e16bc0af80b9742e",
+      "expectedFile": "original-tabs-crlf.expected.txt",
+      "expectedSha256": "089c6c90c407d70ba3a2cfd3cb4a522511e13c3d43d97849f04e6f4afd3aff4c",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: Button.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: Button.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "plain-values-four",
+      "api": "sfc",
+      "input": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: color 0.2s ease,\n    background-color 0.2s ease;\n}\n</style>\n",
+      "expected": "<template>\n    <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n    transition: color 0.2s ease,\n        background-color 0.2s ease;\n}\n</style>\n",
+      "options": {
+        "tabWidth": 4
+      },
+      "filename": "plain-values-four.vue",
+      "inputFile": "plain-values-four.input.txt",
+      "inputSha256": "6fd95c1cd5a4ef4ba96feeed3224972953222e3d330bd8e186c6ece883439081",
+      "expectedFile": "plain-values-four.expected.txt",
+      "expectedSha256": "ebc0bd879ca2526ed0b0a0d6a18132a458127959654460962291581eceb97b20",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: plain-values-four.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: plain-values-four.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "plain-values-tabs",
+      "api": "sfc",
+      "input": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: color 0.2s ease,\n    background-color 0.2s ease;\n}\n</style>\n",
+      "expected": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition: color 0.2s ease,\n\t\tbackground-color 0.2s ease;\n}\n</style>\n",
+      "options": {
+        "useTabs": true
+      },
+      "filename": "plain-values-tabs.vue",
+      "inputFile": "plain-values-tabs.input.txt",
+      "inputSha256": "6fd95c1cd5a4ef4ba96feeed3224972953222e3d330bd8e186c6ece883439081",
+      "expectedFile": "plain-values-tabs.expected.txt",
+      "expectedSha256": "77c4a99794b07c40dffc6f8b3e0725e17e07aa79f34ff937bdc5cb3181c4e9a1",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: plain-values-tabs.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: plain-values-tabs.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "nested-four",
+      "api": "sfc",
+      "input": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n@media (width > 640px) {\n  .button {\n    transition: color var(--duration),\n      background-color var(--duration);\n  }\n}\n</style>\n",
+      "expected": "<template>\n    <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n@media (width > 640px) {\n    .button {\n        transition: color var(--duration),\n            background-color var(--duration);\n    }\n}\n</style>\n",
+      "options": {
+        "tabWidth": 4
+      },
+      "filename": "nested-four.vue",
+      "inputFile": "nested-four.input.txt",
+      "inputSha256": "844dcd30566ecb649352095b7dc88c9bf587c9012f07deeeef49a59bfded3dc3",
+      "expectedFile": "nested-four.expected.txt",
+      "expectedSha256": "9cedf77e44077194724d1a4f84bf42e7ddc7aab0581cedc0a708ff96b39f9d16",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: nested-four.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: nested-four.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "nested-tabs",
+      "api": "sfc",
+      "input": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n@media (width > 640px) {\n  .button {\n    transition: color var(--duration),\n      background-color var(--duration);\n  }\n}\n</style>\n",
+      "expected": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n@media (width > 640px) {\n\t.button {\n\t\ttransition: color var(--duration),\n\t\t\tbackground-color var(--duration);\n\t}\n}\n</style>\n",
+      "options": {
+        "useTabs": true
+      },
+      "filename": "nested-tabs.vue",
+      "inputFile": "nested-tabs.input.txt",
+      "inputSha256": "844dcd30566ecb649352095b7dc88c9bf587c9012f07deeeef49a59bfded3dc3",
+      "expectedFile": "nested-tabs.expected.txt",
+      "expectedSha256": "89e1f8ae4633b831fae6335493c3490c70f19008d1c9137552f8d70c92a65889",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: nested-tabs.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: nested-tabs.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "escaped-string-raw-spaces",
+      "api": "sfc",
+      "input": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  --label: \"first\\\n    second\";\n  transition: color var(--duration),\n    background-color var(--duration);\n}\n</style>\n",
+      "expected": "<template>\n    <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n    --label: \"first\\\n    second\";\n    transition: color var(--duration),\n        background-color var(--duration);\n}\n</style>\n",
+      "options": {
+        "tabWidth": 4
+      },
+      "filename": "escaped-string-raw-spaces.vue",
+      "inputFile": "escaped-string-raw-spaces.input.txt",
+      "inputSha256": "6d25d3efefaa9a211be36b074b0af2b2dd75da2bdb0bcd2ef6e0821282382c0d",
+      "expectedFile": "escaped-string-raw-spaces.expected.txt",
+      "expectedSha256": "43b6621eb1c725f46012b13659aec8f164001d212ca1fbaa3321e21bc52997d0",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: escaped-string-raw-spaces.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: escaped-string-raw-spaces.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "selector-colons-and-value-parens",
+      "api": "sfc",
+      "input": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button:hover,\n.button:focus {\n  --色: var(--one,\n    var(--two));\n}\n</style>\n",
+      "expected": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button:hover,\n.button:focus {\n\t--色: var(--one,\n\t\tvar(--two));\n}\n</style>\n",
+      "options": {
+        "useTabs": true
+      },
+      "filename": "selector-colons-and-value-parens.vue",
+      "inputFile": "selector-colons-and-value-parens.input.txt",
+      "inputSha256": "1018655723e1577e32e385275f7a3b267c754cd07a3aa478ab92380735f7c157",
+      "expectedFile": "selector-colons-and-value-parens.expected.txt",
+      "expectedSha256": "5078fa6a862104697af78319cbe0c29ca388fc9d80113f8ff0dbba78009a726f",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: selector-colons-and-value-parens.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: selector-colons-and-value-parens.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    }
+  ]
+}
