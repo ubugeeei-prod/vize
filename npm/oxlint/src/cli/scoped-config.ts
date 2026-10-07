@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { prepareWorkaroundSource } from "../workaround.ts";
 import { isStandaloneHtmlFile } from "../file-kinds.ts";
@@ -13,7 +14,11 @@ export interface ScopedConfig {
   file: string;
   bytes: string;
   value: Config;
+  module?: boolean;
+  discovered?: boolean;
 }
+
+const CONFIG_NAMES = [".oxlintrc.json", ".oxlintrc.jsonc", "oxlint.config.ts", "oxlint.config.mts"];
 
 export function readScopedConfig(cwd: string, args: readonly string[]): ScopedConfig | undefined {
   let file: string | undefined;
@@ -21,11 +26,21 @@ export function readScopedConfig(cwd: string, args: readonly string[]): ScopedCo
     if (args[index] === "-c" || args[index] === "--config") file = args[++index];
     else if (args[index].startsWith("--config=")) file = args[index].slice(9);
   }
-  // Discovery/nested/dynamic configurations keep their existing route. This
-  // transport owns only an explicit, complete JSON configuration.
-  if (file == null || !file.endsWith(".json")) return undefined;
+  const discovered = file == null;
+  if (discovered) {
+    const found = CONFIG_NAMES.filter((name) => fs.existsSync(path.join(cwd, name)));
+    // Let Oxlint own conflicting root configurations and JSONC parse errors.
+    if (found.length !== 1) return undefined;
+    file = found[0];
+  }
+  if (file == null) return undefined;
+  const module = /\.(?:m?ts)$/u.test(file);
+  if (!module && !file.endsWith(".json")) return undefined;
   file = path.resolve(cwd, file);
   const bytes = fs.readFileSync(file, "utf8");
+  if (!fs.lstatSync(file).isFile() || fs.lstatSync(file).isSymbolicLink())
+    throw new Error(`Scoped Vue transport requires a regular config: ${file}`);
+  if (module) return { file, bytes, value: {}, module: true, discovered };
   let value: unknown;
   try {
     value = JSON.parse(bytes);
@@ -34,19 +49,54 @@ export function readScopedConfig(cwd: string, args: readonly string[]): ScopedCo
   }
   if (!isRecord(value) || (value.ignorePatterns == null && value.overrides == null))
     return undefined;
-  if (!fs.lstatSync(file).isFile() || fs.lstatSync(file).isSymbolicLink())
-    throw new Error(`Scoped Vue transport requires a regular JSON config: ${file}`);
-  return { file, bytes, value };
+  return { file, bytes, value, discovered };
+}
+
+/** Match Oxlint's native Node import and JSON serialization of TS config objects. */
+export async function loadScopedConfig(config: ScopedConfig): Promise<ScopedConfig> {
+  if (!config.module) return config;
+  const loaded = (await import(pathToFileURL(config.file).href)) as { default?: unknown };
+  if (!isRecord(loaded.default))
+    throw new Error("Scoped Vue transport requires a default config object.");
+  const value: unknown = JSON.parse(JSON.stringify(loaded.default));
+  if (!isRecord(value))
+    throw new Error("Scoped Vue transport requires a serializable config object.");
+  return { ...config, value };
+}
+
+export function validateNestedConfigs(config: ScopedConfig, files: readonly string[]): void {
+  if (!config.discovered) return;
+  const root = path.dirname(config.file);
+  for (const file of files) {
+    let directory = path.dirname(file);
+    while (contains(root, directory) && directory !== root) {
+      if (CONFIG_NAMES.some((name) => fs.existsSync(path.join(directory, name))))
+        throw new Error(
+          "Scoped Vue transport cannot preserve nested configuration files; use an explicit config.",
+        );
+      directory = path.dirname(directory);
+    }
+  }
 }
 
 export function validateScopedConfig(config: ScopedConfig, args: readonly string[]): void {
   const value = config.value;
   if (path.parse(config.file).root !== "/")
     throw new Error("Scoped Vue transport cannot preserve non-POSIX filesystem roots.");
-  if (value.extends != null && (!Array.isArray(value.extends) || value.extends.length !== 0))
+  if (
+    !config.module &&
+    value.extends != null &&
+    (!Array.isArray(value.extends) || value.extends.length !== 0)
+  )
     throw new Error(
       "Scoped Vue transport cannot preserve inherited configs; use a complete JSON config.",
     );
+  if (config.module && value.extends != null) {
+    if (!Array.isArray(value.extends) || value.extends.some((parent) => !isRecord(parent)))
+      throw new Error("Scoped Vue transport requires config objects in TypeScript extends.");
+    for (const parent of value.extends)
+      validateScopedConfig({ ...config, value: parent as Config }, args);
+  }
   if (args.includes("--cwd") || args.some((arg) => arg.startsWith("--cwd=")))
     throw new Error("Scoped Vue transport requires the process cwd; remove --cwd.");
   if (
@@ -84,7 +134,7 @@ export function validateSelectionPaths(cwd: string, candidates: Iterable<string>
 export function createScopedMirror(cwd: string, config: ScopedConfig, files: readonly string[]) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-vize-"));
   const configDir = path.dirname(config.file);
-  const sibling = path.join(configDir, `${path.basename(root)}.json`);
+  const sibling = path.join(configDir, `${path.basename(root)}.${config.module ? "mts" : "json"}`);
   let ownsSibling = false;
   const cleanup = () => {
     try {
@@ -145,32 +195,42 @@ export function createScopedMirror(cwd: string, config: ScopedConfig, files: rea
         );
       });
     };
-    const overrides = config.value.overrides;
-    if (overrides != null && !Array.isArray(overrides))
-      throw new Error("Scoped Vue transport requires an override array.");
-    const borrowed: Config = {
-      ...config.value,
-      overrides: (overrides ?? []).flatMap((row: unknown) => {
-        if (!isRecord(row)) throw new Error("Scoped Vue transport requires object overrides.");
-        const files = mapPatterns(row.files);
-        const excludes = row.excludeFiles == null ? [] : mapPatterns(row.excludeFiles);
-        return [
-          { ...row, excludeFiles: [...strings(row.excludeFiles), ...copyPatterns] },
-          {
-            ...row,
-            files,
-            ...(excludes.length ? { excludeFiles: excludes } : { excludeFiles: [] }),
-          },
-        ];
-      }),
+    const project = (value: Config): Config => {
+      const overrides = value.overrides;
+      if (overrides != null && !Array.isArray(overrides))
+        throw new Error("Scoped Vue transport requires an override array.");
+      const borrowed: Config = {
+        ...value,
+        ...(config.module && Array.isArray(value.extends)
+          ? { extends: value.extends.map((parent) => project(parent as Config)) }
+          : {}),
+        overrides: (overrides ?? []).flatMap((row: unknown) => {
+          if (!isRecord(row)) throw new Error("Scoped Vue transport requires object overrides.");
+          const files = mapPatterns(row.files);
+          const excludes = row.excludeFiles == null ? [] : mapPatterns(row.excludeFiles);
+          return [
+            { ...row, excludeFiles: [...strings(row.excludeFiles), ...copyPatterns] },
+            {
+              ...row,
+              files,
+              ...(excludes.length ? { excludeFiles: excludes } : { excludeFiles: [] }),
+            },
+          ];
+        }),
+      };
+      return borrowed;
     };
+    const borrowed = project(config.value);
     // The borrowed config is a sibling: plugin/extends resolution keeps its
     // original directory. Global ignores remain unchanged and apply to original
     // paths; copies live outside this root and were selected by the real engine.
     const descriptor = fs.openSync(sibling, "wx");
     ownsSibling = true;
     try {
-      fs.writeFileSync(descriptor, `${JSON.stringify(borrowed, null, 2)}\n`);
+      fs.writeFileSync(
+        descriptor,
+        `${config.module ? "export default " : ""}${JSON.stringify(borrowed, null, 2)}${config.module ? ";" : ""}\n`,
+      );
     } finally {
       fs.closeSync(descriptor);
     }

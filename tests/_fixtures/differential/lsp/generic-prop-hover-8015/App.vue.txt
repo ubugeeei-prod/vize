@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import List from "./List.vue";
+
+const rows = [{ id: 1, name: "a" }];
+function onPick(row: { id: number; name: string }) {
+  console.log(row.name);
+}
+</script>
+
+<template>
+  <List :items="rows" title="Rows" @pick="onPick" />
+</template>

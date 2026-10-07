@@ -1,0 +1,12 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "cross-file": "error",
+      "ecosystem/vue-router-unknown-route": "warn"
+    },
+    "categories": {
+      "suspicious": "error"
+    }
+  }
+}
