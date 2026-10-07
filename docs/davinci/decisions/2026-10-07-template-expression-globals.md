@@ -72,3 +72,22 @@ vectors alongside the globals extension. Standalone production/tests and the
 original corpus stay byte-identical. The previous head's successful source
 and native receipts are historical; require fresh exact-head source/native
 Actions on the genuine union before root-owned cohort admission and release.
+
+The next refresh genuinely fetches actual main
+`3ed1cc90908c88016310b90a855500c94a156f1f`, after rechecking local, remote and
+PR ownership at `9c5db6fcb79ea526a5dada6c94b4d786fa3065ce`. Replay the seven
+existing commits through observed actual `8c772761`, then integrate only the
+fetched actual `3ed1cc90` ancestry. Prospective cohort analysis objects never
+supply source ancestry. Preserve all 15 owned source/test/inventory/corpus
+blobs, all 33 original native-event/common-attribute controls, the frozen whole
+41-global bank and the exact native-or-test helper gate. Retain incoming
+checkout rules and the actual main native workflow byte-for-byte at 350 lines.
+
+Use the root-approved common canonical file unchanged, SHA-256
+`f4bd4c030fe794c89c7872cdfdcfaa3823d1dc93bdd44295b83fce11637b570d`, at 350
+lines; it retains the incoming, prospective and historical owned clauses.
+Previous `9c5db6f` source, native, production stdio and 16,546 selected Rust
+passes remain historical. Fresh exact-head automatic source/native Actions
+must qualify this union before root-owned queue admission and release.
+No installed replay, whole-Issue completion or measured speed claim follows
+from the local refresh.
