@@ -1,6 +1,7 @@
 //! Original generic component props retain declared types through real stdio.
 #![cfg(test)]
 #![expect(
+    clippy::disallowed_types,
     clippy::disallowed_macros,
     clippy::disallowed_methods,
     reason = "whole authored sources and LSP JSON fixtures"
@@ -14,6 +15,13 @@ mod project;
 use project::Fixture;
 use serde_json::Value;
 use sha2::{Digest, Sha256};
+
+fn source_digest(source: &str) -> std::string::String {
+    Sha256::digest(source.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
 
 const APP: &str =
     include_str!("../../../tests/_fixtures/differential/lsp/generic-prop-hover-8015/App.vue.txt");
@@ -46,7 +54,7 @@ fn complete_original_generic_hover_sources_match_the_reporter_manifest() {
         ),
     ] {
         assert_eq!(
-            format!("{:x}", Sha256::digest(bytes.as_bytes())),
+            source_digest(bytes),
             source["originalSha256"][name].as_str().unwrap()
         );
     }

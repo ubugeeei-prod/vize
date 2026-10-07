@@ -30,3 +30,5 @@ type. Common component attributes are owned by #8131. Expression globals and
 additional data/ARIA candidates remain separate work. Keep #8015 open until
 all original acceptance cases are delivered. Exact-head Actions, protected
 instruction/full gates, signed merge and public delivery remain pending.
+
+The first source/native runs rejected SHA256 array LowerHex formatting in the new custody test before execution; use the established byte-by-byte hexadecimal renderer. The native workflow reached352 lines after two added paths, so replace the previous exact CLI path with an inclusive LSP CLI pattern and retire the now-redundant computed-inlay exact path. All old triggers remain covered and the workflow stays350 lines; production and all original/expected payloads are unchanged. Fresh successor Actions are required.
