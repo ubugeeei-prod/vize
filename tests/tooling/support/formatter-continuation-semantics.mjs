@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { compileFunction } from "node:vm";
 const sha = (value) => createHash("sha256").update(value).digest("hex");
 const uiRequire = createRequire(
   fileURLToPath(new URL("../../../npm/ui/package.json", import.meta.url)),
@@ -12,14 +13,22 @@ const vueRequire = createRequire(vueEntry);
 const rendererEntry = uiRequire.resolve("vue/server-renderer");
 const rendererRequire = createRequire(rendererEntry);
 const packageEntries = {
-  vue: [vueRequire, "vue", "vue"],
-  compilerDom: [vueRequire, "@vue/compiler-dom", "@vue/compiler-dom"],
-  compilerSfc: [uiRequire, "vue/compiler-sfc", "@vue/compiler-sfc"],
-  compilerSsr: [rendererRequire, "@vue/compiler-ssr", "@vue/compiler-ssr"],
-  renderer: [uiRequire, "vue/server-renderer", "@vue/server-renderer"],
+  vue: { require: vueRequire, name: "vue", packageName: "vue" },
+  compilerDom: { require: vueRequire, name: "@vue/compiler-dom", packageName: "@vue/compiler-dom" },
+  compilerSfc: { require: uiRequire, name: "vue/compiler-sfc", packageName: "@vue/compiler-sfc" },
+  compilerSsr: {
+    require: rendererRequire,
+    name: "@vue/compiler-ssr",
+    packageName: "@vue/compiler-ssr",
+  },
+  renderer: {
+    require: uiRequire,
+    name: "vue/server-renderer",
+    packageName: "@vue/server-renderer",
+  },
 };
 const identities = Object.fromEntries(
-  Object.entries(packageEntries).map(([id, [require, name, packageName]]) => {
+  Object.entries(packageEntries).map(([id, { require, name, packageName }]) => {
     const entry = require.resolve(name);
     const packageRequire = id === "compilerSfc" ? vueRequire : createRequire(entry);
     const version = packageRequire(`${packageName}/package.json`).version;
@@ -120,8 +129,8 @@ export async function observeSource(source, id, states) {
     prefixIdentifiers: true,
   }).code;
   const ssrCode = compileSsr(template, { mode: "function", whitespace: "condense" }).code;
-  const render = new Function("Vue", domCode)(Vue);
-  const ssrRender = new Function("require", ssrCode)((name) => {
+  const render = compileFunction(domCode, ["Vue"])(Vue);
+  const ssrRender = compileFunction(ssrCode, ["require"])((name) => {
     assert.ok(["vue", "vue/server-renderer"].includes(name), name);
     return name === "vue" ? Vue : req(identities.renderer.entry);
   });

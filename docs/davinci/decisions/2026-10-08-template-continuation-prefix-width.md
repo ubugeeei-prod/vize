@@ -81,3 +81,11 @@ Internal expression reflow (the deep call remains 101 columns at width100),
 child-inclusive start-tag/mustache layout, closing-tag reflow and the complete
 Edit.vue multiline guard remain TODOs in #7876. This bounded PR does not close
 that issue or claim release, history, native or performance completion.
+
+Initial a5 hosted JS qualification correctly rejects five new observer/tooling
+warnings: two unhandled test promises, one inferred provider tuple union and
+two Function constructors. The successor uses explicit void tests, named
+provider descriptors and node:vm compileFunction for genuine stock-generated
+render code. Production, all whole inputs/expected contracts, current-reference
+hashes and every ceiling remain unchanged. Re-run the same140 stock states
+and custody laws; all source-built acceptance requires fresh successor Actions.

@@ -11,7 +11,7 @@ const old = path.join(base, "directive-print-width-7876");
 const current = path.join(base, "continuation-prefix-width-7876");
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
-test("original sixteen-case witness and the finite current corpus remain exact", () => {
+void test("original sixteen-case witness and the finite current corpus remain exact", () => {
   const originalBytes = fs.readFileSync(path.join(old, "corpus.json"));
   assert.equal(
     sha(originalBytes),
@@ -63,7 +63,7 @@ test("original sixteen-case witness and the finite current corpus remain exact",
   );
 });
 
-test("whole stock contracts preserve the independent ten-case denominator", () => {
+void test("whole stock contracts preserve the independent ten-case denominator", () => {
   const raw = fs.readFileSync(path.join(current, "contracts-index.json"));
   assert.equal(sha(raw), "cf6a10c97dcf83c411816432be301e3f30ba7f43cd406fbf2a6d891bcb33ddd1");
   const index = JSON.parse(raw);
