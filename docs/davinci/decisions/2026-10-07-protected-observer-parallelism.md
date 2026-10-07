@@ -279,3 +279,10 @@ improvement is established; three32-vCPU workers also increase peak capacity.
 Updated source readiness and protected full-suite delivery still require fresh
 exact-head Actions. All original commands, input vectors and100+4 ceilings stay
 unchanged.
+
+The carrier737 and CSS8d33 subsequently merged as authentic signed main. Refresh
+onto actual main8d33 while preserving every incoming byte, all35 non-doc observer
+source/control paths and the original Rust collector module. Every canonical row
+except the existing owned326 paragraph equals actual main byte-exact. Earlier014
+source qualification remains historical; the refreshed head needs fresh required
+Actions and protected delivery before readmission or completion.

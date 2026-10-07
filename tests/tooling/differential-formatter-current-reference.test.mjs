@@ -33,9 +33,9 @@ const cases = packs.flatMap(
 );
 const qualified = cases.filter((row) => row.currentReference);
 
-void test("eleven reviewed current references keep all original300 source and captured outputs", () => {
+void test("twelve reviewed current references keep all original300 source and captured outputs", () => {
   assert.equal(cases.length, 300);
-  assert.equal(qualified.length, 11);
+  assert.equal(qualified.length, 12);
   const fixture = qualified.find((row) => row.currentReference.issue === 7826);
   assert.equal(fixture.api, "format_sfc");
   assert.equal(fixture.currentReference.issue, 7826);
@@ -44,7 +44,7 @@ void test("eleven reviewed current references keep all original300 source and ca
   assert.equal(fixture.expected.length, 184);
   assert.equal(fixture.currentExpected.length, 185);
   const whole = cases.find((row) => row.id === fixture.id.replace("sfc/0", "style/1"));
-  assert(whole && !whole.currentReference);
+  assert(whole && whole.currentReference.issue === 7866);
   const url = cases.find((row) => row.id === "prepared/style-comment-in-url");
   assert(url && !url.currentReference);
   const roots = qualified.filter((row) => row.currentReference.issue === 7877);

@@ -95,3 +95,6 @@ tests/_fixtures/differential/lsp/template-expression-globals-8015/** -text white
 
 # Contextual data/ARIA controls preserve complete source and expected payload bytes.
 tests/_fixtures/differential/lsp/data-aria-attributes-8015/** -text whitespace=cr-at-eol
+
+# Whole malformed and Unicode #7903 carriers retain the authored source bytes.
+tests/_fixtures/differential/lint/oxlint-script-safe-carrier-7903/** -text whitespace=cr-at-eol

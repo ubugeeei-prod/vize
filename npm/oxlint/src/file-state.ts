@@ -14,7 +14,11 @@ import {
   isTypeAwareRuleName,
 } from "./settings.js";
 import { isScriptLikeFile } from "./file-kinds.js";
-import { resolveWorkaroundSource } from "./workaround.js";
+import {
+  readOriginalWorkaroundSource,
+  resolveWorkaroundSource,
+  validateWorkaroundAuthority,
+} from "./workaround.js";
 
 export interface FileState {
   readonly revision: SourceRevisionIdentity;
@@ -55,10 +59,10 @@ let fileStateCacheClock = 0;
 export function getFileState(context: Context): FileState {
   const settings = getVizeSettings(context);
   const physicalSource = fs.readFileSync(context.physicalFilename, "utf8");
-  const resolvedSource = resolveWorkaroundSource(physicalSource, context.physicalFilename);
-  const cacheKey = getCacheKey(resolvedSource.filename, settings);
+  const cacheKey = getCacheKey(context.physicalFilename, settings);
   const cached = fileStateCache.get(cacheKey);
   if (cached && cached.state.revision.physicalSource === physicalSource) {
+    validateWorkaroundAuthority(cached.state, context.physicalFilename);
     if (cached.state.extractedScript !== context.sourceCode.text) {
       // A dual-script SFC is visited with multiple extracted programs for the
       // same physical revision. Diagnostics/reporting remain shared to avoid
@@ -70,6 +74,11 @@ export function getFileState(context: Context): FileState {
     return cached.state;
   }
 
+  const resolvedSource = resolveWorkaroundSource(
+    physicalSource,
+    context.physicalFilename,
+    readOriginalWorkaroundSource,
+  );
   const state: FileState = {
     revision: {
       physicalSource,
