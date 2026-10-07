@@ -55,7 +55,7 @@ fn the_committed_planes_agree_with_the_specs() {
         );
     }
     eprintln!("{}", battery.scope_lines("battery"));
-    assert_census(&battery, (9, 9, 87), (9, 9, 11), "battery");
+    assert_census(&battery, (9, 9, 88), (9, 9, 11), "battery");
 
     let mut ladder = Planes::default();
     for fixture in &davinci_harness::fixtures::LADDER {

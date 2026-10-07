@@ -1,0 +1,14 @@
+<script lang="ts">
+export enum Tone {
+  Info = "info",
+  Warn = "warn",
+}
+</script>
+
+<script setup lang="ts">
+const { tone = Tone.Info } = defineProps<{ tone?: Tone }>();
+</script>
+
+<template>
+  <span :class="{ warn: tone === Tone.Warn }">{{ tone }}</span>
+</template>
