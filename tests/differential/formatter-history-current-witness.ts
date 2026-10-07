@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "./manifest.mjs";
+import { validateDeclarationSnapshotAuthority } from "./formatter-declaration-reference.ts";
 import {
   retainedFormatterFunction,
   validatePreservedFormatterWitness,
@@ -129,6 +130,12 @@ const OWNERS: Record<
 };
 
 export function validateCurrentFormatterWitness(root: string, entry: any, name: string) {
+  if (
+    entry.path === "crates/vize_glyph/src/style.rs" &&
+    name === "test_format_nested_css_at_rule"
+  ) {
+    validateDeclarationSnapshotAuthority(root);
+  }
   if (validatePreservedFormatterWitness(root, entry, name)) return;
   const bytes = fs.readFileSync(path.join(root, entry.path));
   const actual = sha256(bytes);

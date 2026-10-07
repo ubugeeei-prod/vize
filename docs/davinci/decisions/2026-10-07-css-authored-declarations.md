@@ -57,3 +57,24 @@ value-helper move and strict12 current continuation/control authorities. Both
 current style owner pins are recomputed for the composed private module list;
 every original source law/input/capture/output and both decision clauses are
 retained. The canonical record stays at its unchanged350-line ceiling.
+
+## Current named snapshot custody
+
+Exact-head hosted Rust `47258160b0` exposed one intended live named snapshot
+transition in `test_format_nested_css_at_rule`: the recognized `color:red`
+declaration now prints `color: red;`. Preserve the complete original `.snap`
+under `snapshot-witnesses/nested-css-at-rule.pre-7866.snap` before changing the
+live file. Original asset SHA256 is
+`aba736ea0f41a939bb08cc84885c82f46b0d80376b6cae388de83107691869d4`;
+current complete snapshot SHA256 is
+`5ea562b78c25145d1abfccafdf76698168fdc55563a24ccd196c4a633aede4f0`.
+The additive `current-snapshot-7866.json` authority hashes both whole assets and
+pins L090, its original style owner and the exact unchanged law body. Validation
+allows only that one colon space/final semicolon, retains metadata and all rule/
+value bytes, and rejects restored old current bytes or archive edits. Original
+L090 metadata and all original300 inputs/output/capture/source assets stay
+immutable; named snapshot framing gains no public-output byte credit. The
+source-witness and current-reference paths enforce this custody. Pure forgery
+laws pass; fresh hosted snapshot/runtime qualification remains required. The
+child is actually rebased onto parent `454853f3c6`, inheriting the same exact
+12-row Rust continuation/rule current-reference controls.
