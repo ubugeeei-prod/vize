@@ -9,6 +9,8 @@ use vize_croquis::facts::{Demand, FactConsumer, FactGroup, UndefinedRefs};
 use vize_l0::cstr;
 use vize_relief::RootNode;
 
+mod props;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/no-undefined-refs",
     description: "Disallow undefined variable references in templates",
@@ -32,6 +34,11 @@ impl Rule for NoUndefinedRefs {
     }
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
+        // Imported props can declare any of the otherwise unresolved names.
+        // A single-file pass cannot prove they are absent from that shape.
+        if ctx.analysis().is_some_and(props::has_unresolved_props) {
+            return;
+        }
         let Some(view) = ctx.facts::<Self>() else {
             return;
         };
