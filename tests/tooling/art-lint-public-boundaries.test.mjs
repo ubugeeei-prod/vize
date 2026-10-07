@@ -98,17 +98,15 @@ await test("original Art bindings remain correct through CLI, source NAPI and Ox
         path.join(nativeHistoryDirectory(nativeDir), name),
         path.join(artifacts, name),
       );
-    const env = {
-      ...process.env,
-      VIZE_PREFER_WORKSPACE_BINDING: "1",
-      NAPI_RS_NATIVE_LIBRARY_PATH: receipt.frozen.path,
-    };
+    const env = { ...process.env, VIZE_PREFER_WORKSPACE_BINDING: "1" };
+    delete env.NAPI_RS_NATIVE_LIBRARY_PATH;
     delete env.NAPI_RS_FORCE_WASI;
     delete env.GITHUB_ACTIONS;
     process.env.VIZE_PREFER_WORKSPACE_BINDING = "1";
     process.env.NAPI_RS_NATIVE_LIBRARY_PATH = receipt.frozen.path;
     delete process.env.NAPI_RS_FORCE_WASI;
     const binding = require(path.join(nativeDir, "index.js"));
+    delete process.env.NAPI_RS_NATIVE_LIBRARY_PATH;
     assert.ok(
       require.cache[fs.realpathSync(receipt.frozen.path)],
       "the public NAPI loaded the authenticated physical addon",
@@ -177,6 +175,7 @@ await test("original Art bindings remain correct through CLI, source NAPI and Ox
     const pluginEnv = {
       ...env,
       VIZE_ART_SOURCE_BINDING: receipt.frozen.path,
+      VIZE_ART_NATIVE_DIRECTORY: nativeDir,
       VIZE_ART_SOURCE_BINDING_SHA256: receipt.frozen.sha256,
       VIZE_ART_NATIVE_CALLS: nativeCalls,
       NODE_OPTIONS: `${env.NODE_OPTIONS ?? ""} --require=${JSON.stringify(path.join(root, "tests/tooling/support/art-lint-source-binding.cjs"))}`,

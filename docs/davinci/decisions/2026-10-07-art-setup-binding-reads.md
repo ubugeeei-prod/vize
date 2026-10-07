@@ -92,3 +92,10 @@ always-upload differential artifacts. No production behavior, old corpus,
 source gate, instruction budget, native migration or release acceptance is
 changed or inferred. Fresh exact-head/protected qualification and actual
 signed delivery are required; publication and installed replay remain pending.
+
+First source `4ed2ce06` fails before any Art producer executes: the generic
+`NAPI_RS_NATIVE_LIBRARY_PATH` also makes VP load Vize's addon (`run is not a
+function`). Scope that override to the workspace native package's own
+loader only, restoring it before unrelated addons load. The original inputs,
+whole expected vectors and product bytes remain unchanged; retain the failed
+raw capture and require fresh successor execution with no transferred credit.
