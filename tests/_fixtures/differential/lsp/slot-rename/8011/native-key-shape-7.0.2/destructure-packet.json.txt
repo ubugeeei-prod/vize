@@ -1,0 +1,147 @@
+{
+  "name": "destructure",
+  "wholeSource": "type Card = { 'item-row': (props: { title: string }) => unknown };\nconst card = undefined as unknown as Card;\nconst { 'item-row': slot } = card;\nconst unrelated = 'item-row';\ntype Other = { 'item-row': () => void };\nconst other = undefined as unknown as Other;\nvoid other['item-row'];\nvoid slot;\n",
+  "runtime": "/Users/ubugeeei/orca/workspaces/vize/davinci/node_modules/.pnpm/@typescript+typescript-darwin-arm64@7.0.2/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+  "runtimeSha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+  "version": "7.0.2",
+  "observations": [
+    {
+      "origin": "declaration",
+      "definition": [
+        {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-first-red/native-quoted-key-probe/destructure/App.ts",
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 14
+            },
+            "end": {
+              "line": 0,
+              "character": 24
+            }
+          }
+        }
+      ],
+      "references": [
+        {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-first-red/native-quoted-key-probe/destructure/App.ts",
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 15
+            },
+            "end": {
+              "line": 0,
+              "character": 23
+            }
+          }
+        }
+      ],
+      "rename": {
+        "changes": {
+          "file:///tmp/vize-n8n-p0-20261007/8011-slot-first-red/native-quoted-key-probe/destructure/App.ts": [
+            {
+              "range": {
+                "start": {
+                  "line": 0,
+                  "character": 15
+                },
+                "end": {
+                  "line": 0,
+                  "character": 23
+                }
+              },
+              "newText": "heading"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "origin": "consumer",
+      "definition": [
+        {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-first-red/native-quoted-key-probe/destructure/App.ts",
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 14
+            },
+            "end": {
+              "line": 0,
+              "character": 24
+            }
+          }
+        }
+      ],
+      "references": [
+        {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-first-red/native-quoted-key-probe/destructure/App.ts",
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 15
+            },
+            "end": {
+              "line": 0,
+              "character": 23
+            }
+          }
+        },
+        {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-first-red/native-quoted-key-probe/destructure/App.ts",
+          "range": {
+            "start": {
+              "line": 2,
+              "character": 9
+            },
+            "end": {
+              "line": 2,
+              "character": 17
+            }
+          }
+        },
+        {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-first-red/native-quoted-key-probe/destructure/App.ts",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 19
+            },
+            "end": {
+              "line": 3,
+              "character": 27
+            }
+          }
+        },
+        {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-first-red/native-quoted-key-probe/destructure/App.ts",
+          "range": {
+            "start": {
+              "line": 4,
+              "character": 16
+            },
+            "end": {
+              "line": 4,
+              "character": 24
+            }
+          }
+        },
+        {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-first-red/native-quoted-key-probe/destructure/App.ts",
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 12
+            },
+            "end": {
+              "line": 6,
+              "character": 20
+            }
+          }
+        }
+      ],
+      "rename": null
+    }
+  ]
+}

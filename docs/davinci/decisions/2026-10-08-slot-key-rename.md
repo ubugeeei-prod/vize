@@ -17,7 +17,7 @@ moves unchanged into an ordinary module in a separate move-only commit.
 
 The existing public `__VizeSlots` type copies the macro's inner type text.
 Map only its retained, unchanged static keys to the authored declaration.
-The complete generated TypeScript bytes remain unchanged. Payload type
+The complete public slot alias text remains unchanged. Payload type
 references keep their existing setup-scope diagnostic ownership; this adds
 no free-name parse, provider, pipeline stage or dispatcher branch. Ordinary
 slot metadata and every existing native rename refusal remain in force.
@@ -48,6 +48,34 @@ The fixture retains whole original/expected/actual files, complete parsed
 native wire frames, all errors and exact packet hashes. Both complete baseline virtual modules and the actual zero-diagnostic CLI check output are also retained; this CLI recipe exports no maps, so it grants no baseline-map equivalence credit. An earlier 0.435.0
 local producer observed the same failure, but its source identity is unknown
 and gives no current-source credit.
+
+## Hosted quoted-key failure and bounded repair
+
+[The paired repair decision](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6048763424)
+retains the actual first hosted head `43958e1e832d46128486ec6e6f45880a088d28de`:
+Check 37699397879 tested revision `8c3bf50bea3ef216fb8c87adb30381d3b9352f01`;
+worker 113060773404 failed the complete six quoted/hyphen transactions.
+Declaration/outlet origins omitted CardUser, causing post-edit TS2339.
+Consumer origins returned nine references including unrelated strings and
+foreign owners, then correctly refused the unsafe rename. Complete original
+expected/actual packets and native binary hashes remain unchanged in the
+fixture; the source field was null, so custody explicitly uses the actual
+run/job/artifact rather than an invented embedded source identity.
+
+An independent unchanged native TypeScript 7.0.2 LSP probe reproduces the
+quoted destructuring failure. The same complete module with only an
+owner-bound bracket read returns exactly two references and two edits from
+both origins, preserving unrelated strings and foreign property keys. Full
+raw modules, packets, frames and runtime hash are retained separately. This
+primitive evidence grants no Vize successor, protected or release credit.
+
+Emit only non-identifier static slot navigation as a bracket read of the
+same owner. Identifier emission and full quoted/content mapping ranges stay
+unchanged. The existing area-gradient snapshot changes only this expression;
+all twelve authored transaction vectors/files stay exact. No parse, stage,
+metadata, provider or refusal changes accompany this fix. Refresh the stale
+Croquis consumer shard for the actual MacroTracker/macros sites; its scanner
+and all ceilings remain unchanged.
 
 ## Required qualification and boundaries
 

@@ -1,0 +1,8 @@
+type Card = { 'item-row': (props: { title: string }) => unknown };
+const card = undefined as unknown as Card;
+const { 'item-row': slot } = card;
+const unrelated = 'item-row';
+type Other = { 'item-row': () => void };
+const other = undefined as unknown as Other;
+void other['item-row'];
+void slot;
