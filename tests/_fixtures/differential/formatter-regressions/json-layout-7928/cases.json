@@ -194,6 +194,16 @@
       "file": "dangling.jsonc",
       "source": "{\n\"a\":1,\n\n// last\n}",
       "expected": "{\n  \"a\": 1\n\n  // last\n}\n"
+    },
+    {
+      "id": "expanded-space-indent",
+      "api": "json",
+      "file": "spaces.json",
+      "source": "{\n\"a\":1,\n\"nested\":{\"b\":2}\n}",
+      "options": {
+        "tabWidth": 4
+      },
+      "expected": "{\n    \"a\": 1,\n    \"nested\": { \"b\": 2 }\n}\n"
     }
   ]
 }

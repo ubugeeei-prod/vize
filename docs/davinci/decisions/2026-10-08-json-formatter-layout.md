@@ -17,13 +17,22 @@ them to the other side of a comment. Existing strict input validation, JSONC
 trailing-comma removal, scalar token text, key order, BOM and line-ending policy
 remain part of the public contract.
 
-The original report and twenty-one complete expected outputs live in
+The original report and twenty-two complete expected outputs live in
 `tests/_fixtures/differential/formatter-regressions/json-layout-7928/cases.json`.
 References were independently captured with cached Oxfmt 0.63.0, with
 `trailingComma: "none"` for JSONC. Public API tests check complete bytes, three
 passes and strict JSON value preservation; CLI tests check read-only verdicts,
 written bytes and the subsequent passing check. Existing BOM and JSONC corpus
 inputs remain intact while compact-output expectations follow this correction.
+
+The complete original JSON unit-test witness remains an immutable source asset.
+All twenty-two live law inputs remain original, including the minified custom
+indent control; a separate expanded-space-indent case observes four-space
+indentation. Six explicit current references qualify only the corrected whole
+JSON outputs while preserving all original three hundred formatter carriers,
+historical expected bytes, hashes and capture receipts. Historical mismatches
+remain separately observable, and source/output mutation controls reject scope
+or ownership drift.
 
 Source Actions, protected merge-queue verification and actual merge remain
 required before delivery. This change fixes the existing formatter; it does

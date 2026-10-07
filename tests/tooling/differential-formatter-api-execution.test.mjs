@@ -69,6 +69,7 @@ void test("shared formatter API history observes complete source-built output an
         legacyErrorMatches: errors,
         legacyFailures: 0,
         ...(name === "prepared" ? { currentReferenceMatches: 2 } : {}),
+        ...(name === "literal" ? { currentReferenceMatches: 6 } : {}),
         ...(name === "capture" ? { currentReferenceMatches: 2 } : {}),
         ...(name === "capture-extra" ? { currentReferenceMatches: 1 } : {}),
         nativeUnsupported: count,

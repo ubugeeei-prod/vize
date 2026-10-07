@@ -12,7 +12,8 @@ cached Oxfmt 0.63.0 API, using strict JSON and JSONC with `trailingComma: "none"
 The controls cover source-expanded objects, collapsed source arrays, member
 prefixes and commas at the width boundary, bracket spacing, tab columns,
 normalized blank lines, CRLF, JSONC comments, numeric-array fill, Unicode display
-width, comment-adjacent gaps and inline block-comment suffixes.
+width, comment-adjacent gaps, inline block-comment suffixes and four-space
+indentation.
 
 Rust public API and CLI integration tests consume every case and assert whole
 output, fixed points or check/write/check behavior. Strict JSON controls also
