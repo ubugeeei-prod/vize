@@ -69,7 +69,9 @@ pub(super) fn emit_dom_observed<'f>(
             && !(options.prefix_identifiers
                 && diagnostic.stage == Stage::Semantic
                 && diagnostic.message.as_str() == crate::lower::SAME_KEY_MESSAGE
-                && diagnostic.exemption() == Some(&crate::exemptions::LOWERING))
+                && diagnostic
+                    .exemption()
+                    .is_some_and(|exemption| crate::exemptions::LOWERING.eq(exemption)))
     }) {
         return Err(EmitError::Diagnostics);
     }

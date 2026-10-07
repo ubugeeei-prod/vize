@@ -1,6 +1,5 @@
 //! Complete output and ordered diagnostic parity for one authenticated original.
 use serde_json::{Value, json};
-#[path = "official_diagnosed.rs"]
 mod official;
 use vize_atelier_core::CompilerError;
 use vize_l0::{
