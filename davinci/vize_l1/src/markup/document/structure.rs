@@ -94,7 +94,6 @@ impl<'o, 'a> DocumentHtmlStructure<'o, 'a> {
     }
 
     /// Elements in original start-tag order; each has its actual HTML parent.
-    #[must_use]
     pub fn elements(&self) -> impl ExactSizeIterator<Item = DocumentHtmlElement<'_, 'o, 'a>> {
         self.elements.iter().map(|element| DocumentHtmlElement {
             tree: self,
