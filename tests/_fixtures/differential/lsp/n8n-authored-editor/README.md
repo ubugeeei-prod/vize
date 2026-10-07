@@ -5,7 +5,7 @@ Issue: [#8142](https://github.com/ubugeeei-prod/vize/issues/8142).
 The three complete inputs are unmodified source bytes from licensed n8n master
 `e882e8a483f433facb47bab9b407d0ec00a81172`. `provenance.json` pins original paths,
 byte lengths and SHA-256 values. They retain the upstream Sustainable Use
-License; the fixture submodule retains the full `LICENSE.md`. They are
+License; the accompanying `LICENSE.md` retains its full terms. They are
 development/test inputs and are not product code.
 
 The test copies these inputs to a disposable workspace, follows the original
