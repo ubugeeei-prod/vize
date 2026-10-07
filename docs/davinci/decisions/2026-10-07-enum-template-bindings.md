@@ -112,3 +112,6 @@ authored six-form Rust matrix and every original enum production/test/fixture
 byte remain unchanged. Hosted execution of these new controls is pending;
 only its fresh complete result can remove the earlier CLI/runtime validation
 boundary. Actual enum delivery and protected qualification remain pending.
+Each mode retains its failure and the remaining modes still run; the final
+complete DOM/SSR/Vapor inventory must contain three passes. This preserves
+all available evidence without accepting a failed or unexecuted mode.

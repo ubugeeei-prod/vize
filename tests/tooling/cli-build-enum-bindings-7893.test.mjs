@@ -93,7 +93,6 @@ void test("#7893 original CLI builds and complete Vue runtime observations agree
           status: "FAIL",
           failure: { message: error.message, stack: error.stack },
         });
-        throw error;
       } finally {
         writeFileSync(join(evidence, "whole-observations.json"), JSON.stringify(rows, null, 2));
         rmSync(project, { recursive: true, force: true });
