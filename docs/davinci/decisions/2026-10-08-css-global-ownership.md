@@ -94,3 +94,14 @@ Keep #7976 open until the literal originals, foreign global cases and preserved
 local/dynamic controls pass on the actual delivered source; public release
 qualification remains a separately tracked root-owned obligation. No budgets,
 workflows, historical goldens or unrelated compiler CSS sources are changed.
+
+Initial a90 Actions compiled the source, passed warning-denying Clippy and all
+four Rust workers, but tooling rejected the CSS module's growth from 424 to
+426 lines and stale generated rule-source anchors. Preserve these real failed
+jobs. Colocate the complete byte-exact new private helper under its owning
+display-rule module in a move-only import/wiring commit, restoring the CSS
+module to 424; regenerate only four owning EN/JA reference/index anchors and
+the genuine consumer inventory. Every new/historical fixture and observer
+remains byte-exact. No fixture split or cap/gate waiver is needed. Require fresh
+successor source and full protected qualification without transferring a90
+runtime acceptance.

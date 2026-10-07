@@ -245,7 +245,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 
 | ルール | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 |
 | --- | --- | --- | --- | --- | --- | --- |
-| [`css/no-display-none`](./reference/css-no-display-none.md) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L24) | 表示切り替えに display: none を使う箇所で v-show を検討します。 |
+| [`css/no-display-none`](./reference/css-no-display-none.md) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L27) | 表示切り替えに display: none を使う箇所で v-show を検討します。 |
 | [`css/no-hardcoded-values`](./reference/css-no-hardcoded-values.md) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_hardcoded_values.rs#L30) | CSS の直接指定値を CSS 変数にまとめます。 |
 | [`css/no-id-selectors`](./reference/css-no-id-selectors.md) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19) | 詳細度が高い CSS の ID セレクターを検出します。 |
 | [`css/no-important`](./reference/css-no-important.md) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L14) | 通常のカスケードを上書きする !important を検出します。 |
