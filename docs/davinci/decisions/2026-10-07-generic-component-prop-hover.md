@@ -32,3 +32,11 @@ all original acceptance cases are delivered. Exact-head Actions, protected
 instruction/full gates, signed merge and public delivery remain pending.
 
 The first source/native runs rejected SHA256 array LowerHex formatting in the new custody test before execution; use the established byte-by-byte hexadecimal renderer. The native workflow reached352 lines after two added paths, so replace the previous exact CLI path with an inclusive LSP CLI pattern and retire the now-redundant computed-inlay exact path. All old triggers remain covered and the workflow stays350 lines; production and all original/expected payloads are unchanged. Fresh successor Actions are required.
+
+The clean owned #8162 refresh rebases onto actual main
+`c86c7a21f9b858122c0aa42f9771555e33a87c32`. All eleven owned source/control
+files retain their exact `494944d350` bytes, and all incoming attribute rules and
+canonical entries remain intact. The canonical record and native workflow each
+retain 350 lines. Previous original stdio and native-signature successes remain
+historical receipts; fresh exact-head source/native Actions are mandatory.
+Admission remains held for corrective #8181 and verified release delivery.
