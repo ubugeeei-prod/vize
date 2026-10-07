@@ -1,11 +1,11 @@
 # Configuring CLI project findings
 
-The CLI applies the same per-file resolved \`linter.rules\` and \`entries[].linter.rules\`
-configuration to findings emitted with \`--cross-file\`. Route-typing rules use their
-reported \`ecosystem/vue-router-*\` IDs. The \`cross-file\` group controls the Croquis
+The CLI applies the same per-file resolved `linter.rules` and `entries[].linter.rules`
+configuration to findings emitted with `--cross-file`. Route-typing rules use their
+reported `ecosystem/vue-router-*` IDs. The `cross-file` group controls the Croquis
 findings, and a complete diagnostic code overrides the group for one finding:
 
-\`\`\`json
+```json
 {
   "linter": {
     "rules": {
@@ -15,11 +15,11 @@ findings, and a complete diagnostic code overrides the group for one finding:
     }
   }
 }
-\`\`\`
+```
 
-All three values \`off\`, \`warn\` and \`error\` are supported. Categories can also set
-\`cross-file\` or \`ecosystem\`; route findings additionally follow the existing
-\`suspicious\` ecosystem category. A disabled category suppresses its findings;
+All three values `off`, `warn` and `error` are supported. Categories can also set
+`cross-file` or `ecosystem`; route findings additionally follow the existing
+`suspicious` ecosystem category. A disabled category suppresses its findings;
 otherwise an explicit rule (then the cross-file group) overrides a category's
 severity. Defaults and existing diagnostic IDs remain unchanged. A warning-only
 pass exits successfully unless the configured warning limit is exceeded. These

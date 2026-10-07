@@ -54,6 +54,13 @@ fn expected_consumer() -> Value {
         .expect("inject reference")
 }
 
+fn expected_uniform_consumer() -> Value {
+    serde_json::from_str(include_str!(
+        "fixtures/issue-7935/Consumer.same-severity.expected.json"
+    ))
+    .expect("equal-severity inject reference")
+}
+
 fn configure_expected(mut report: Value, severity: &str) -> Value {
     for file in report.as_array_mut().unwrap() {
         let rows = file["messages"].as_array_mut().unwrap();
@@ -128,9 +135,35 @@ fn cross_file_group_and_individual_codes_control_inject_findings() {
         let mut config = settings;
         config["preset"] = json!("incremental");
         let (report, status) = run(json!({"linter":config}), source, "Consumer.vue");
-        assert_eq!(report, configure_expected(expected_consumer(), "warn"));
+        assert_eq!(
+            report,
+            configure_expected(expected_uniform_consumer(), "warn")
+        );
         assert_eq!(status, 0);
     }
+    for settings in [
+        json!({"rules":{"cross-file":"error"}}),
+        json!({"categories":{"cross-file":"error"}}),
+        json!({"rules":{"vize:croquis/cf/inject-without-symbol":"error"}}),
+    ] {
+        let mut config = settings;
+        config["preset"] = json!("incremental");
+        let (report, status) = run(json!({"linter":config}), source, "Consumer.vue");
+        assert_eq!(
+            report,
+            configure_expected(expected_uniform_consumer(), "error")
+        );
+        assert_eq!(status, 1);
+    }
+    let (report, status) = run(
+        json!({"linter":{"preset":"incremental","rules":{
+            "cross-file":"warn", "vize:croquis/cf/unmatched-inject":"error"
+        }}}),
+        source,
+        "Consumer.vue",
+    );
+    assert_eq!(report, expected_consumer());
+    assert_eq!(status, 1);
     let (report, status) = run(
         json!({"linter":{"preset":"incremental","rules":{
             "vize:croquis/cf/unmatched-inject":"off"
