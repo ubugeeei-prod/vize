@@ -18,7 +18,7 @@ fn member_mutations_preserve_live_ref_values() {
         "fixtures/reactivity-live-ref-values/cases.json"
     ))
     .expect("valid lexical provenance corpus");
-    assert_eq!(cases.len(), 10);
+    assert_eq!(cases.len(), 15);
     for case in cases {
         let parsed = parse_script_setup(&case.source);
         let mutations: Vec<_> = parsed

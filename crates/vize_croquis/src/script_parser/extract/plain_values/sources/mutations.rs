@@ -146,7 +146,7 @@ fn reactive_plain_value_from_mutated_member(
     end: u32,
 ) -> Option<ReactivePlainValue> {
     let mut value = reactive_plain_value_from_mutated_expression(result, object, source)?;
-    if keeps_live_ref_value(result, value.source_name.as_str()) {
+    if keeps_live_ref_value(result, object) {
         return None;
     }
     value.argument_name = common::expression_label(source, oxc_span::Span::new(start, end));
@@ -175,13 +175,11 @@ fn reactive_plain_mutation_identifier_value(
     })
 }
 
-/// Member writes through deep refs and template nodes do not lose a subscription.
+/// A captured proxy retains its source identity when source names are shadowed.
 pub(in crate::script_parser::extract::plain_values) fn keeps_live_ref_value(
     result: &ScriptParseResult,
-    source_name: &str,
+    object: &Expression<'_>,
 ) -> bool {
-    let Some((root, suffix)) = source_name.split_once(".value") else {
-        return false;
-    };
-    (suffix.is_empty() || suffix.starts_with('.')) && result.live_ref_value_sources.contains(root)
+    super::super::names::root_identifier(object)
+        .is_some_and(|root| result.keeps_live_ref_origin(root.as_str()))
 }

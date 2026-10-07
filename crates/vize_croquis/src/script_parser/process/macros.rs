@@ -28,7 +28,6 @@ use super::bindings::{
 mod define_model_destructure;
 mod injection;
 mod object_origins;
-mod ref_value_mutation;
 
 use injection::is_inject_call;
 use object_origins::record_object_pattern_property_origins;
@@ -39,7 +38,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
     kind: VariableDeclarationKind,
     source: &str,
 ) {
-    ref_value_mutation::record(result, declarator);
+    result.record_ref_value_declaration(declarator);
     match &declarator.id {
         BindingPattern::BindingIdentifier(id) => {
             let name = id.name.as_str();

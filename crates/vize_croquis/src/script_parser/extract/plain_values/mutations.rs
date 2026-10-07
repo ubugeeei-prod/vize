@@ -78,7 +78,7 @@ pub fn check_reactive_plain_call_mutation(
         return;
     };
 
-    if sources::keeps_live_ref_value(result, value.source_name.as_str()) {
+    if sources::keeps_live_ref_value(result, &member.object) {
         return;
     }
 

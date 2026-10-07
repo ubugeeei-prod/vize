@@ -186,6 +186,7 @@ pub fn check_reactive_plain_alias_extraction(
         return;
     }
 
+    let live = result.keeps_live_ref_origin(value.argument_name.as_str());
     result.reactivity.record_plain_value_alias(
         value.source_name.clone(),
         value.argument_name,
@@ -199,6 +200,7 @@ pub fn check_reactive_plain_alias_extraction(
             source_name: value.source_name,
         },
     );
+    result.record_live_ref_origin(target_name, live);
 }
 
 /// Check `alias = count` where `count` is already a plain reactive snapshot.
@@ -223,6 +225,7 @@ pub fn check_reactive_plain_assignment_alias(
         return;
     }
 
+    let live = result.keeps_live_ref_origin(value.argument_name.as_str());
     result.reactivity.record_plain_value_alias(
         value.source_name.clone(),
         value.argument_name,
@@ -236,6 +239,7 @@ pub fn check_reactive_plain_assignment_alias(
             source_name: value.source_name,
         },
     );
+    result.record_live_ref_origin(target_name, live);
 }
 
 #[inline]

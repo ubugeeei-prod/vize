@@ -6,6 +6,8 @@
 
 mod debug;
 mod origins;
+mod ref_value_declaration;
+mod ref_values;
 
 use crate::croquis::{BindingMetadata, ComponentRegistration, ComponentShape, Croquis};
 use crate::croquis::{
@@ -42,6 +44,14 @@ pub(crate) enum ReactiveValueOrigin {
     PlainAlias {
         source_name: CompactString,
     },
+}
+
+/// Lexical identity of a ref initializer or a shadowing ordinary binding.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum RefValueSourceKind {
+    Live,
+    Raw,
+    Other,
 }
 
 /// A returned context whose methods are backed by getter arguments.
@@ -100,9 +110,9 @@ pub struct ScriptParseResult {
     pub(crate) scoped_reactive_value_origins:
         FxHashMap<ScopeId, FxHashMap<CompactString, ReactiveValueOrigin>>,
     /// Ref value member writes that retain a proxy or point at a template node.
-    pub(crate) live_ref_value_sources: FxHashSet<CompactString>,
-    /// Known markRaw values, including aliases used as ref initializers.
-    pub(crate) raw_ref_value_sources: FxHashSet<CompactString>,
+    pub(crate) ref_value_sources: FxHashMap<ScopeId, FxHashMap<CompactString, RefValueSourceKind>>,
+    /// A snapshot keeps the identity of its source even in a shadowing closure.
+    pub(crate) live_ref_value_origins: FxHashMap<ScopeId, FxHashSet<CompactString>>,
     /// Call results that were constructed from getter arguments.
     pub(crate) reactive_getter_contexts: FxHashMap<CompactString, ReactiveGetterContext>,
     /// Setup context violation tracking, plus script browser-global reads.

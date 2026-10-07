@@ -8,6 +8,8 @@ impl ScriptParseResult {
         name: CompactString,
         origin: ReactiveValueOrigin,
     ) {
+        let live = self.origin_keeps_live_ref_value(&origin);
+        self.record_live_ref_origin(name.as_str(), live);
         self.scoped_reactive_value_origins
             .entry(self.scopes.current_id())
             .or_default()
@@ -15,7 +17,7 @@ impl ScriptParseResult {
         self.reactive_value_origins.insert(name, origin);
     }
 
-    fn reactive_origin_scope(&self, name: &str) -> Option<ScopeId> {
+    pub(super) fn reactive_origin_scope(&self, name: &str) -> Option<ScopeId> {
         let mut current = Some(self.scopes.current_id());
         while let Some(id) = current {
             let scope = self.scopes.get_scope(id)?;
@@ -46,6 +48,9 @@ impl ScriptParseResult {
             return;
         };
         if let Some(origins) = self.scoped_reactive_value_origins.get_mut(&id) {
+            origins.remove(name);
+        }
+        if let Some(origins) = self.live_ref_value_origins.get_mut(&id) {
             origins.remove(name);
         }
         self.reactive_value_origins.remove(name);
