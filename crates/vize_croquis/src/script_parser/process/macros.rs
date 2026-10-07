@@ -26,8 +26,10 @@ use super::bindings::{
 };
 
 mod define_model_destructure;
+mod injection;
 mod object_origins;
 
+use injection::is_inject_call;
 use object_origins::record_object_pattern_property_origins;
 
 pub(in crate::script_parser) fn process_variable_declarator(
@@ -36,6 +38,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
     kind: VariableDeclarationKind,
     source: &str,
 ) {
+    result.record_ref_value_declaration(declarator);
     match &declarator.id {
         BindingPattern::BindingIdentifier(id) => {
             let name = id.name.as_str();
@@ -468,7 +471,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         let key = key_name
                             .map(CompactString::new)
                             .unwrap_or_else(|| CompactString::new(&local_name));
-                        result.reactive_value_origins.insert(
+                        result.record_reactive_origin(
                             CompactString::new(&local_name),
                             ReactiveValueOrigin::PropsDestructure {
                                 prop_name: key.clone(),
@@ -497,7 +500,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             destructure.rest_id = Some(CompactString::new(&name));
                         }
 
-                        result.reactive_value_origins.insert(
+                        result.record_reactive_origin(
                             CompactString::new(&name),
                             ReactiveValueOrigin::PropsDestructure {
                                 prop_name: CompactString::new("(rest)"),
@@ -630,14 +633,6 @@ pub(in crate::script_parser) fn process_variable_declarator(
             add_binding_pattern_names(&mut result.bindings, &assign.left, binding_type);
         }
     }
-}
-
-fn is_inject_call(call: &oxc_ast::ast::CallExpression<'_>, result: &ScriptParseResult) -> bool {
-    let Expression::Identifier(id) = &call.callee else {
-        return false;
-    };
-    let callee_name = id.name.as_str();
-    callee_name == "inject" || result.inject_aliases.contains(callee_name)
 }
 
 fn extract_inject_call_from_torefs<'a>(

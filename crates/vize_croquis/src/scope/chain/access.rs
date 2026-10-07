@@ -3,6 +3,13 @@
 use super::{Scope, ScopeChain, ScopeId};
 
 impl ScopeChain {
+    /// Pre-allocate slots without rebuilding the existing universal root.
+    #[inline]
+    pub(crate) fn reserve_scopes(&mut self, capacity: usize) {
+        let additional = capacity.saturating_sub(self.scopes.len());
+        self.scopes.raw.reserve_exact(additional);
+    }
+
     /// Get the current scope
     #[inline]
     pub fn current_scope(&self) -> &Scope {
@@ -47,3 +54,6 @@ impl ScopeChain {
         unsafe { self.scopes.raw.get_unchecked(id.as_u32() as usize) }
     }
 }
+
+#[cfg(test)]
+mod tests;

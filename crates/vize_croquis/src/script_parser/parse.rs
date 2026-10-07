@@ -12,7 +12,7 @@ use super::process;
 use super::recovery::parse_program_for_analysis;
 use super::result::{ScriptParseResult, ScriptParserOptions};
 use crate::croquis::BindingMetadata;
-use crate::scope::{NonScriptSetupScopeData, ScopeChain, ScriptSetupScopeData};
+use crate::scope::{NonScriptSetupScopeData, ScriptSetupScopeData};
 use vize_carton::{CompactString, profile};
 
 /// Parse script setup source code using OXC parser with an optional generic parameter.
@@ -116,10 +116,10 @@ pub(crate) fn analyze_script_setup_program_demand<const BUILTIN_TYPES: bool>(
     let mut result = ScriptParseResult {
         occurrence_capture: occurrences.then(Default::default),
         bindings: BindingMetadata::script_setup(),
-        scopes: ScopeChain::with_capacity(16),
         skip_diagnostics,
         ..Default::default()
     };
+    result.scopes.reserve_scopes(16);
 
     // Setup global scope hierarchy (universal → mod)
     profile!(
@@ -282,11 +282,11 @@ pub(crate) fn parse_script_with_options_source_type(
     let mut result = ScriptParseResult {
         occurrence_capture: occurrences.then(Default::default),
         bindings: BindingMetadata::new(), // Not script setup
-        scopes: ScopeChain::with_capacity(16),
-        is_non_setup_script: true, // Mark as non-setup script for violation detection
+        is_non_setup_script: true,        // Mark as non-setup script for violation detection
         skip_diagnostics,
         ..Default::default()
     };
+    result.scopes.reserve_scopes(16);
 
     // Setup global scope hierarchy (universal → mod)
     profile!(
