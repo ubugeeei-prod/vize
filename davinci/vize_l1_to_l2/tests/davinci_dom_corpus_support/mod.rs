@@ -12,6 +12,7 @@ mod allowlist;
 mod output;
 use output::{first_diff, mismatch_window};
 mod diagnosed;
+mod n8n_packets;
 mod sfc_inputs;
 
 use std::{collections::BTreeMap, fs};
@@ -93,8 +94,7 @@ pub fn compare_sweep_lane(sweep: &CorpusSweep, lane: Lane) -> Report {
     report
 }
 
-/// `extract_component_name`: the filename's stem, `anonymous` when the
-/// path has none.
+/// `extract_component_name`: the filename's stem, or `anonymous` without one.
 fn component_name_of(path: &str) -> std::string::String {
     std::path::Path::new(path)
         .file_stem()
@@ -134,11 +134,9 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
     // `extract_component_name`: the SFC filename's stem.
     let component_name = matches!(lane, Lane::Bindings).then(|| component_name_of(name));
 
-    // The **legacy** lane, L2 declined. The ordinary `compile_template*`
-    // entry points route through the L2 emitter since the P2-11 production
-    // switch, so building the old side on them compares L2 against itself:
-    // measured, renaming `Helper::CreateElementVNode`'s alias in the L2
-    // emitter left this sweep at `compared=12062 divergences=0`.
+    // Force the independent legacy lane: ordinary compile_template* now routes
+    // through L2. Historically renaming the native CreateElementVNode alias
+    // left this sweep at compared=12062 divergences=0: L2 against itself.
     let old_allocator = Allocator::new();
     let (_, errors, old) = match lane {
         Lane::Default => compile_template_legacy_with_options(
@@ -232,7 +230,8 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
         }
         return;
     }
-    let old = format!("{}\n{}", old.preamble, old.code);
+    let old_codegen = old;
+    let old = format!("{}\n{}", old_codegen.preamble, old_codegen.code);
 
     let new_allocator = Allocator::new();
     let default_options = DomEmitOptions::DEFAULT;
@@ -268,6 +267,18 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
             &binding_options,
         ),
     };
+    let (lane_name, options) = match lane {
+        Lane::Default => ("default", &default_options),
+        Lane::Prefixed => ("prefixed", &prefixed_options),
+        Lane::Bindings => ("bindings", &binding_options),
+    };
+    n8n_packets::retain_compile(
+        (name, source, &template.content, lane_name),
+        options,
+        &old_codegen,
+        &errors,
+        &emitted,
+    );
     let new = match emitted {
         Ok(observed) => {
             report.patch_fact_compared += 1;

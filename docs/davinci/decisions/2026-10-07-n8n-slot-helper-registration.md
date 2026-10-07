@@ -46,6 +46,16 @@ forced-legacy modules for these 17 inputs in all three shipped option lanes.
 Local checks authenticate frozen bytes and source/module/license hashes.
 No local Vize Rust compilation or hosted candidate result is claimed here.
 
+The existing four-target invocation can set `VIZE_N8N_CONTROL_PACKET_DIR`
+inside its already uploaded custody directory. An optional test-only writer
+then retains each eligible whole old/native comparison, complete legacy
+code/map/error fields, native complete Debug/code, original SFC/template
+bytes, exact options and SHA256 identity of the actual test executable.
+Refused native results are tagged `Err` and receive no successful output
+credit. Default corpus execution leaves the writer disabled; its existing
+sampling limits, counters and strict gates remain unchanged. The separately
+diagnosed original retains its full independent before/after custody packet.
+
 Acceptance requires the unchanged entire canonical corpus and production
 reach to report zero divergences, plus source, native, original custody,
 runtime, and every explicitly feature-enabled authored target to pass on the
