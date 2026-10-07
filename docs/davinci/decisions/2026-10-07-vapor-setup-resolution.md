@@ -63,3 +63,23 @@ the complete owned byte census remains exact. The approved common 350-line
 record preserves all prior map-failure evidence and TODO boundaries. This
 genuine main union requires fresh exact-head Actions and protected actual
 delivery; projected merge analysis supplies neither ancestry nor execution.
+
+The unchanged original module/runtime controls and source Actions passed on
+`5829fd5741dacbfe6dbc1f6b40c8cf95fb13dc93`, but protected candidate
+`ebc92600629b6587543048959e3d37fed3bec3aa` exceeded the existing Vapor
+lowering ceiling (77,212 > 76,975) and interpolation ceiling
+(5,364,859 > 5,340,048), alongside three Croquis ceilings. The candidate was
+removed from the queue; these measured failures remain historical evidence.
+The corrective source composes genuine signed main
+`eed471b4424b922b878bc35cac765dc7274e5736` without compiler product conflicts
+and retains the approved complete 350-line record and every original fixture.
+The retained following whole-prefix candidate
+`1a9b7f1654462485548990e8407bbf6ad0427fa0` contains 500 empty-scope lookups
+and no component-resolution call in its interpolation capture. This motivates
+shortening the existing scope metadata path while preserving component output.
+Empty loop and slot stacks with absent binding metadata now return the same
+`None` through a small inline wrapper; every other scope uses the unchanged
+resolution body. This adds no scan or allocation. The historical counts do not
+qualify this source. Fresh Actions and protected measurements must
+establish the resulting counts before delivery; the filename and native
+custom-directive boundaries above remain unfinished.
