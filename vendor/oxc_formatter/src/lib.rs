@@ -1,5 +1,6 @@
 // NOTE: `inline_always`: Intentional on `FormatWith::fmt` / `FormatOnce::fmt` hot-path dispatch
-#![allow(clippy::inline_always)]
+// The vendored formatter retains upstream implementation style.
+#![allow(clippy::all, clippy::wildcard_imports, clippy::inline_always)]
 
 mod ast_nodes;
 #[cfg(feature = "detect_code_removal")]

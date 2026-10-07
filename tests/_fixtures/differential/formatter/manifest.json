@@ -1630,6 +1630,147 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/script-trailing-line-comment-parens",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "script-trailing-line-comment-parens",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "a2311eb15cb8f9dc2d8266653e50f18edfe05f27af1a007e166b3144557284aa",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [
+          7929
+        ],
+        "commits": [
+          {
+            "sha": "eed471b4424b922b878bc35cac765dc7274e5736",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/script/format.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 7929,
+            "path": "crates/vize_glyph/tests/trailing_line_comment_parens.rs",
+            "symbol": "script_block_keeps_original_comment_grouping_and_changed_flag"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/trailing_line_comment_parens.rs",
+          "symbol": "script_block_keeps_original_comment_grouping_and_changed_flag",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "3-pass-idempotence",
+            "FormatResult.changed"
+          ],
+          "limitations": [
+            "Exact-source Actions execution remains required."
+          ]
+        },
+        {
+          "path": "crates/vize/tests/fmt_trailing_line_comment_cli.rs",
+          "symbol": "both_original_conditions_write_three_times_then_check_without_redundant_parens",
+          "executor": "rust-test",
+          "asserts": [
+            "whole-original-input",
+            "LF/CRLF",
+            "full-output-bytes",
+            "3-writes",
+            "check-exit-and-streams",
+            "no-config"
+          ],
+          "limitations": [
+            "Current source-built CLI process execution remains required on Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "typescript",
+              "unary-trailing-line-comments"
+            ],
+            "selector": "default Vue version with --no-config"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with --no-config and three whole-output passes; the SFC script contains every original b.ts byte.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "script-trailing-line-comment-parens/reference.expected.txt",
+              "sha256": "a2311eb15cb8f9dc2d8266653e50f18edfe05f27af1a007e166b3144557284aa",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 7929,
+                "path": "crates/vize_glyph/tests/trailing_line_comment_parens.rs",
+                "symbol": "script_block_keeps_original_comment_grouping_and_changed_flag",
+                "assertion": "The expected SFC retains every original b.ts byte, including comment grouping and final LF; all three outputs are identical and changed=false."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-7929-unchanged-whole-script-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {
