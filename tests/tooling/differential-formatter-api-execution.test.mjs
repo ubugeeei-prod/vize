@@ -157,4 +157,15 @@ void test("shared formatter API history observes complete source-built output an
     JSON.stringify(malformed.rows, null, 2),
   );
   runCssGroupingRegressions({ repoRoot: root, ...built, evidenceDir });
+  runCssGroupingRegressions(
+    { repoRoot: root, ...built, evidenceDir },
+    {
+      path: "crates/vize_glyph/tests/fixtures/style_multi_value_declarations_7968.json",
+      schema: "vize.formatter-css-multi-value-regressions",
+      executionSchema: "vize.formatter-css-multi-value-execution",
+      issue: 7968,
+      count: 26,
+      report: "css-multi-value-declarations-7968-report.json",
+    },
+  );
 });

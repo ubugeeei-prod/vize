@@ -1,6 +1,8 @@
 //! Prelude ownership from the existing parse, independent of color offsets.
 
 use super::blank_lines::Tokens;
+use lightningcss::declaration::DeclarationBlock;
+use lightningcss::properties::Property;
 use lightningcss::rules::{CssRule, CssRuleList, Location};
 use std::ops::Range;
 
@@ -13,6 +15,7 @@ pub(super) struct Prelude {
 #[derive(Default)]
 pub(super) struct RuleLayout {
     pub(super) preludes: Vec<Prelude>,
+    pub(super) multi_values: bool,
 }
 
 impl RuleLayout {
@@ -29,7 +32,8 @@ impl RuleLayout {
 
     pub(super) fn from_parse(source: &str, rules: &CssRuleList<'_>) -> Self {
         let mut locations = Vec::new();
-        collect(rules, &mut locations);
+        let mut multi_values = false;
+        collect(rules, &mut locations, &mut multi_values);
         locations.sort_by_key(|(loc, _, _)| (loc.line, loc.column));
         let starts = line_starts(source);
         let mut locations = locations
@@ -38,7 +42,10 @@ impl RuleLayout {
                 source_offset(source, &starts, loc).map(|start| (start, list, frames))
             })
             .peekable();
-        let mut result = Self::default();
+        let mut result = Self {
+            multi_values,
+            ..Self::default()
+        };
         let mut brace = 0;
         let mut frames: Option<Frames> = None;
         for token in Tokens::new(source) {
@@ -113,44 +120,50 @@ impl Frames {
     }
 }
 
-fn collect(rules: &CssRuleList<'_>, output: &mut Vec<(Location, bool, usize)>) {
+fn collect(
+    rules: &CssRuleList<'_>,
+    output: &mut Vec<(Location, bool, usize)>,
+    multi_values: &mut bool,
+) {
     for rule in &rules.0 {
         match rule {
             CssRule::Style(rule) => {
+                *multi_values |= has_multi_values(&rule.declarations);
                 output.push((rule.loc, rule.selectors.0.len() > 1, 0));
-                collect(&rule.rules, output);
+                collect(&rule.rules, output, multi_values);
             }
             CssRule::Nesting(rule) => {
+                *multi_values |= has_multi_values(&rule.style.declarations);
                 output.push((rule.loc, rule.style.selectors.0.len() > 1, 0));
-                collect(&rule.style.rules, output);
+                collect(&rule.style.rules, output, multi_values);
             }
             CssRule::Media(rule) => {
                 output.push((rule.loc, false, 0));
-                collect(&rule.rules, output);
+                collect(&rule.rules, output, multi_values);
             }
             CssRule::Supports(rule) => {
                 output.push((rule.loc, false, 0));
-                collect(&rule.rules, output);
+                collect(&rule.rules, output, multi_values);
             }
             CssRule::Container(rule) => {
                 output.push((rule.loc, false, 0));
-                collect(&rule.rules, output);
+                collect(&rule.rules, output, multi_values);
             }
             CssRule::LayerBlock(rule) => {
                 output.push((rule.loc, false, 0));
-                collect(&rule.rules, output);
+                collect(&rule.rules, output, multi_values);
             }
             CssRule::Scope(rule) => {
                 output.push((rule.loc, false, 0));
-                collect(&rule.rules, output);
+                collect(&rule.rules, output, multi_values);
             }
             CssRule::StartingStyle(rule) => {
                 output.push((rule.loc, false, 0));
-                collect(&rule.rules, output);
+                collect(&rule.rules, output, multi_values);
             }
             CssRule::MozDocument(rule) => {
                 output.push((rule.loc, false, 0));
-                collect(&rule.rules, output);
+                collect(&rule.rules, output, multi_values);
             }
             CssRule::Keyframes(rule) => output.push((rule.loc, false, rule.keyframes.len())),
             CssRule::FontFace(rule) => output.push((rule.loc, false, 0)),
@@ -165,6 +178,18 @@ fn collect(rules: &CssRuleList<'_>, output: &mut Vec<(Location, bool, usize)>) {
             _ => {}
         }
     }
+}
+
+fn has_multi_values(declarations: &DeclarationBlock<'_>) -> bool {
+    declarations
+        .declarations
+        .iter()
+        .chain(&declarations.important_declarations)
+        .any(|property| match property {
+            Property::Transition(values, _) => values.len() > 1,
+            Property::BoxShadow(values, _) => values.len() > 1,
+            _ => false,
+        })
 }
 
 fn line_starts(source: &str) -> Vec<usize> {

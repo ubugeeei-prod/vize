@@ -27,6 +27,7 @@ pub(super) fn preserve_rule_layout(
     let mut printed = Tokens::new(&formatted);
     let mut adjustments = Vec::new();
     let mut pending = Vec::new();
+    let mut values = DeclarationValues::default();
     let mut previous_boundary = false;
     let mut previous_close = false;
     let mut previous_close_line = false;
@@ -42,6 +43,17 @@ pub(super) fn preserve_rule_layout(
         match (original.next(), printed.next()) {
             (None, None) => break,
             (Some(authored), Some(target)) if authored.text == target.text => {
+                let rule_brace = authored.text == "{"
+                    && preludes.peek().is_some_and(|prelude| {
+                        prelude.brace == brace
+                            && authored
+                                .start
+                                .checked_sub(prelude.range.len())
+                                .and_then(|start| source.get(start..authored.start))
+                                .zip(protected.get(prelude.range.clone()))
+                                .is_some_and(|(original, parsed)| original == parsed)
+                    });
+                values.observe(source, &authored, &target, rule_brace, &mut adjustments);
                 if previous_boundary
                     && authored.depth > 0
                     && authored.parens == 0
@@ -136,8 +148,10 @@ pub(super) fn preserve_rule_layout(
     let mut output = String::default();
     let mut cursor = 0;
     for adjustment in adjustments {
-        let indentation = if adjustment.selector {
-            options.indent_string().repeat(adjustment.depth)
+        let indentation = if adjustment.selector || adjustment.value {
+            options
+                .indent_string()
+                .repeat(adjustment.depth + usize::from(adjustment.value))
         } else {
             formatted
                 .get(adjustment.gap_start..adjustment.start)
@@ -179,6 +193,7 @@ struct Adjustment {
     newlines: usize,
     selector: bool,
     authored_rule_gap: bool,
+    value: bool,
 }
 
 impl Adjustment {
@@ -191,7 +206,106 @@ impl Adjustment {
             newlines,
             selector,
             authored_rule_gap: false,
+            value: false,
         }
+    }
+}
+
+// Reuse the complete-token custody pass for declaration continuation gaps.
+// A nested-rule prelude can look like a property until its opening brace;
+// no pending value edit is committed before a real declaration boundary.
+#[derive(Default)]
+struct DeclarationValues {
+    blocks: Vec<bool>,
+    start: usize,
+    colon: bool,
+    force: bool,
+    comma: bool,
+    multiline: bool,
+    next_value: bool,
+    pending: Vec<Adjustment>,
+}
+
+impl DeclarationValues {
+    fn observe(
+        &mut self,
+        source: &str,
+        authored: &Token<'_>,
+        target: &Token<'_>,
+        rule_brace: bool,
+        adjustments: &mut Vec<Adjustment>,
+    ) {
+        if authored.parens != 0 || authored.brackets != 0 {
+            return;
+        }
+        match authored.text {
+            "{" => {
+                self.blocks.push(rule_brace);
+                self.reset(authored.start + 1);
+            }
+            ";" | "}" => {
+                if self.colon && self.comma && (self.force || self.multiline) {
+                    adjustments.append(&mut self.pending);
+                }
+                if authored.text == "}" {
+                    self.blocks.pop();
+                }
+                self.reset(authored.start + 1);
+            }
+            ":" if !self.colon && self.blocks.last() == Some(&true) => {
+                let property = source
+                    .get(self.start..authored.start)
+                    .unwrap_or_default()
+                    .trim();
+                // Custom values retain their token-stream whitespace ownership.
+                // Restrict recognition to an ordinary CSS property identifier.
+                if !property.starts_with("--")
+                    && property.bytes().next().is_some_and(|first| {
+                        first.is_ascii_alphabetic() || matches!(first, b'-' | b'_')
+                    })
+                    && property
+                        .bytes()
+                        .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+                {
+                    self.colon = true;
+                    self.force = property.eq_ignore_ascii_case("transition")
+                        || property.eq_ignore_ascii_case("box-shadow")
+                        || [
+                            "-webkit-transition",
+                            "-moz-transition",
+                            "-ms-transition",
+                            "-webkit-box-shadow",
+                            "-moz-box-shadow",
+                        ]
+                        .iter()
+                        .any(|name| property.eq_ignore_ascii_case(name));
+                    self.multiline = true;
+                    self.next_value = true;
+                }
+            }
+            "," if self.colon => {
+                self.comma = true;
+                self.next_value = true;
+            }
+            _ if self.colon && self.next_value => {
+                self.multiline &= authored.gap.contains(['\r', '\n']);
+                let mut adjustment = Adjustment::new(authored, target, 1, false);
+                adjustment.value = true;
+                self.pending.push(adjustment);
+                self.next_value = false;
+            }
+            _ => {}
+        }
+    }
+
+    fn reset(&mut self, start: usize) {
+        self.start = start;
+        self.colon = false;
+        self.force = false;
+        self.comma = false;
+        self.multiline = false;
+        self.next_value = false;
+        self.pending.clear();
     }
 }
 
@@ -309,6 +423,25 @@ mod tests {
     use super::preserve;
     use crate::FormatOptions;
     use vize_l0::cstr;
+
+    #[test]
+    fn parsed_custom_brace_values_cannot_become_declaration_blocks() {
+        use lightningcss::stylesheet::{ParserOptions, StyleSheet};
+        let source = ".a {\n  --values: {transition: x, y;};\n}\n";
+        let parsed = StyleSheet::parse(source, ParserOptions::default()).unwrap();
+        let layout = super::super::rule_layout::RuleLayout::from_parse(source, &parsed.rules);
+        let printed = source.into();
+        assert_eq!(
+            super::preserve_rule_layout(
+                source,
+                printed,
+                &FormatOptions::default(),
+                Some(&layout),
+                source
+            ),
+            source,
+        );
+    }
 
     #[test]
     fn comment_punctuation_cannot_take_rule_group_ownership() {
