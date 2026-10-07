@@ -157,3 +157,19 @@ clause, and all 350 physical lines remain. This incorporation is paired in
 Fresh exact source Actions and protected execution must qualify the composed
 route fix and dependency repair; no old execution or installed-public credit
 transfers to this successor.
+
+Fresh eee5 execution qualifies all twenty complete CLI cases/ninety-four file
+rows and 16,511 unique Rust passes across four authenticated JUnit archives,
+with zero failures, errors or skips. The separate current native phase matches
+the committed 496-file corpus: 1085 remarks, 198 applied, 887 missed, zero
+changes. Every original input, command, full vector and raw process result
+remains mandatory; invocation isolation is now genuinely executed.
+The overall Check still fails its strict audit and honest fan-in on newly
+reported high MCP SDK advisory GHSA-6qxp-vccf-f47h. The shell-quote critical
+finding is absent, and package/lock/audit source is byte-exact signed ef848.
+Exact-head/no-entry containment retains Draft/offqueue. Existing #8148 owns
+real remediation; actual signed incorporation and fresh qualification must
+follow before admission. This current result and containment are paired in
+[the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6033648522).
+No current protected, installed-public, page-table or performance credit is
+claimed. These source passes remain historical after a later composition.
