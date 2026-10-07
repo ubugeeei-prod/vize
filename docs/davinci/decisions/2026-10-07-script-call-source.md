@@ -98,15 +98,15 @@ The original shell-quote critical is absent; this is a separate dependency
 finding, with patched SDK versions `>=1.31.0` in the audit. Retain all 81,162
 raw bytes, SHA-256
 `b1b0fcc30c6dfa201d5d9f6b55d46370da4e7dd738147488814f97980b22a4e3`.
-Parent8135 is again Draft/offqueue with auto-merge unset; preserve its healthy
-workers and route the dependency correction to the existing security owner.
+Parent8135 was again moved to Draft/offqueue with auto-merge unset; preserve
+its healthy workers and route the correction to the existing security owner.
 The real CSS child may replay from the published parent, while current red
 layers remain offqueue. Actual corrected signed main and fresh exact-source
 qualification are required before admitting a native Stack prefix. Preserve
 every script input/oracle; this audit grants no product-cause inference.
 
 [Actual native Stack registration](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6033382557)
-is Stack8147: official reads from both PRs show script8135/a77 at position1
+is Stack8147: initial official reads showed script8135/a77 at position1
 then CSS8143/d5f at position2, size2 and real parent-base chaining. Both are
 Draft with auto-merge unset and no admission. Authenticate the true parent
 ancestor, all41 whole sources/five original raw pins and other38 complete
@@ -116,3 +116,17 @@ apart from the API carrier's corrected combined-clean comment. This grants
 source/registration proof only. After genuine dependency delivery and fresh
 exact greens, admit the highest ready prefix through protected Stack merge;
 no individual layer auto-merge or partial whole-issue closure.
+
+The [actual SDK-main composition](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6034020810)
+genuinely replays this source onto signed main
+`706a5b7886c363f6c67a03964ac55f26c5a2a341`, delivered by #8148 at
+`2026-10-07T08:21:15Z`, sole parent ef848. Its protected audit removes the new
+SDK advisory; prior reviewed high findings stay separately attested. Keep all
+14 noncanonical source/helper/config blobs and all41 vectors exact. Historical
+a77 all four Rust/tooling workers and canonical passed; bounded official JUnit
+artifacts authenticated42 complete CLI envelopes and42 API observations, with
+all source/result fields matching. Those results grant no current-head credit.
+Publish the composed parent Ready without auto-merge, then genuinely replay
+the CSS child from that exact head and verify Stack8147 positions1/2 again.
+Fresh exact-head Actions and protected full suites remain mandatory before
+actual signed delivery; a ready parent prefix need not wait for its child.
