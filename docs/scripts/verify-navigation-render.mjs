@@ -117,6 +117,9 @@ try {
         title: document.title,
         viewport: innerWidth,
         bodyWidth: document.documentElement.scrollWidth,
+        goals: [...document.querySelectorAll(".feature-title")].map(
+          (element) => element.textContent,
+        ),
         groups: [...document.querySelectorAll(".sidebar .nav-section")].map((element) => ({
           title: element.querySelector("summary")?.textContent,
           open: element.open,
@@ -133,7 +136,18 @@ try {
       assert(metrics.bodyWidth <= viewport.width + 1, `${route}: page overflows viewport`);
       assert.equal(pageErrors.length, 0, pageErrors.join("\n"));
       const sidebar = page.locator(".sidebar");
-      if (!(await page.locator("body.entry-page").count()) && (await sidebar.count())) {
+      if (await page.locator("body.entry-page").count()) {
+        assert.equal(await sidebar.isVisible(), false, "Entry page sidebar must be hidden");
+        const cards = page.locator(".feature-card");
+        if (["/", "/ja", "/ja/"].includes(route)) {
+          assert.equal(await cards.count(), 6, "English/Japanese entry pages expose six goals");
+        }
+        for (const card of await cards.all()) {
+          assert.equal(await card.isVisible(), true);
+          await card.click({ trial: true });
+        }
+        await page.evaluate(() => scrollTo(0, 0));
+      } else if (await sidebar.count()) {
         if (device === "mobile") {
           assert.equal(await sidebar.isVisible(), false, "Closed menu must be hidden");
           await page.locator("[data-mobile-menu]").click();

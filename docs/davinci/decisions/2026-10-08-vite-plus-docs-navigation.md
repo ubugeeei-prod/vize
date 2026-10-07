@@ -25,6 +25,9 @@ rule detail pages remain reachable through their indexes without adding every
 leaf to the menu. Configuration details remain in linked standalone/compiler
 references. Tables scroll within the content column instead of breaking paths
 and option names or widening the page. Closed mobile navigation is hidden.
+Entry pages hide their unused sidebar explicitly: the original offscreen sheet
+appeared in full-page mobile captures and covered the six goal cards. The browser
+gate requires those six authored cards to be visible and the entry sidebar hidden.
 
 ## Evidence and delivery
 

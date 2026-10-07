@@ -3,6 +3,10 @@
   display: none;
 }
 
+.entry-page .sidebar {
+  display: none !important;
+}
+
 .entry-page .main.main--with-toc {
   padding-inline: 0;
 }
