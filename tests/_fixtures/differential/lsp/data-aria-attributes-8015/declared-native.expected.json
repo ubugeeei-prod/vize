@@ -6,9 +6,11 @@
         "name": null,
         "position": null
       },
+      "filterText": null,
+      "insertText": null,
       "kind": 5,
       "label": null,
-      "sortText": "11"
+      "sortText": "12"
     },
     "label": null,
     "requestUri": null,

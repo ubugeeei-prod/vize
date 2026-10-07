@@ -159,7 +159,9 @@ fn assigned_aria_names_preserve_the_suffix_and_spaced_assignment_on_both_tag_kin
                 json!([expected]),
                 "assigned {tag} {prefix} completion"
             );
-            let restored = format!("{}{}{}", &source[..start], prefix, &source[end..]);
+            let (before, _) = source.split_at_checked(start).unwrap();
+            let (_, after) = source.split_at_checked(end).unwrap();
+            let restored = format!("{before}{prefix}{after}");
             assert_eq!(
                 restored, source,
                 "the offered edit must preserve the assignment"

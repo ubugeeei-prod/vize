@@ -38,3 +38,20 @@ installed/public release replay are required before delivery is complete.
 Preserve all earlier original/global/generic oracles. Keep #8015 open until the
 remaining full acceptance and delivery are actually qualified; unrelated P0
 issues and Content Mapper combined-diagnostic limits remain unfinished.
+
+## Optional native resolve carrier
+
+The [native run on `76cfe84d`](https://github.com/ubugeeei-prod/vize/actions/runs/37645309688/job/112874418271)
+retains three failed complete optional-prop comparisons; the original assignment
+and disk/hash controls passed, while the compared visible declared
+type/documentation fields match. Both authored
+`Declared.vue` props use `?`, and the runtime remains pinned to TypeScript 7.0.2.
+The prior test carrier incorrectly reused required-member metadata. The independent
+[backend optional-member contract](https://github.com/microsoft/typescript-go/blob/89d5d5b2849a0db0957065889ca58536fa6d2e4a/internal/ls/completions.go#L5069-L5080)
+decorates the raw label with `?` and preserves the undecorated filter/insertion
+name; its optional sort priority is `12`. Pin all those complete fields while
+keeping the undecorated resolve-data name, independently witnessed file/query
+UTF-16 offsets and source revisions unchanged. That backend source is corroborating
+primary evidence, not a claimed source checkout of the pinned binary. No response
+fields are removed or learned from the response. Retain the red run; fresh exact-head
+source/native and protected qualification remain required without a waiver.

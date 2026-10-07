@@ -19,7 +19,7 @@
       "Declared.vue.txt": "a00e03474b9732f5f3a5b9d5b18c5fa822606f01cdf8824a0ed4bcc68ff3e2e2",
       "Owner.vue.txt": "1998c6520829b68ae128fd620c9f0a1290e381b1daffb3b7718bfd3e5571dd11",
       "declared-props.expected.json": "6406a7cb36e8ad06e75677f09fd3911a76ac869305144858ab3c2c25fd1292cb",
-      "declared-native.expected.json": "8643f3a40f460f348abcb0b8ef007786301ab08adb0cdc668003956d844c8750",
+      "declared-native.expected.json": "bdfc38e7beec97897f8284ec2bf7d3e15cf28504b01d70cb36c5c33a525fd987",
       "defaults.expected.json": "90dc2f1a58fb01a4468a28ad29e806681c23c91d5c9498d9c2635b26156c8d96"
     },
     "scope": "Literal whole default/declared payloads; independently bound native mirror paths, UTF-16 query offsets and one-document revisions; static kebab and dynamic camel aliases; typecheck disabled/enabled; same-line Unicode and CRLF overlays with unchanged disk and full restoration."

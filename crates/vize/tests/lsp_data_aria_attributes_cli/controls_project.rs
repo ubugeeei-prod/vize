@@ -136,12 +136,19 @@ impl Project {
         for key in ["name", "fileName", "position"] {
             assert!(payload["item"]["data"][key].is_null());
         }
-        assert!(payload["item"]["label"].is_null());
+        for key in ["label", "filterText", "insertText"] {
+            assert!(payload["item"][key].is_null());
+        }
         payload["label"] = json!(name);
         payload["uri"] = json!(self.uri);
         payload["revision"] = json!(self.revision);
         payload["requestUri"] = json!(file_uri(&observed.path));
-        payload["item"]["label"] = json!(name);
+        // Both authored Declared.vue properties are optional. TypeScript's
+        // member carrier decorates only the backend label with `?`, retaining
+        // the undecorated name for filtering, insertion and lazy resolve data.
+        payload["item"]["label"] = json!(format!("{name}?"));
+        payload["item"]["filterText"] = json!(name);
+        payload["item"]["insertText"] = json!(name);
         payload["item"]["data"]["name"] = json!(name);
         payload["item"]["data"]["fileName"] = json!(observed.path);
         payload["item"]["data"]["position"] = json!(observed.position);
