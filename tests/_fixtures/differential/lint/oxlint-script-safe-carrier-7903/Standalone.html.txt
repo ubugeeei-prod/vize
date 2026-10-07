@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<head>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="app">{{ count }}</div>
+  <script>
+Vue.createApp({
+  data() {
+    return { count: 1 };
+  },
+}).mount("#app");
+  </script>
+</body>
+</html>

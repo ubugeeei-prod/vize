@@ -30,6 +30,12 @@ retain original stdout and stderr while failing the run. This also applies after
 original linting when mirror preparation, selection, process startup or output
 mapping fails. Owned temporary configurations and carriers are removed.
 
+Standalone HTML-only discovery retains the existing HTML/HTM adapter and its
+unchanged native reporter snapshot. Stock Oxlint excludes HTML from its Vue
+selection. A mixture of HTML and Vue retains the original report and explicitly
+refuses transport; it cannot select the HTML fallback. HTML compatibility grants
+no original-project, direct n8n51 or scriptless adoption qualification.
+
 The authored regression corpus contains nine positive Vue inputs, including
 scriptless, malformed JS/TS, astral Unicode, CRLF and script-closing text. The
 same whole source vectors retain five independent script fatals exactly once,

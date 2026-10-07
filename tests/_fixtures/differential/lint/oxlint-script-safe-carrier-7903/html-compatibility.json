@@ -1,0 +1,11 @@
+{
+  "issue": 7903,
+  "file": "Standalone.html.txt",
+  "sha256": "02f4d43714e5381744d1a1340db3271620f8b6f0823d34295a7e227672fd5ba4",
+  "origin": "Byte-exact existing npm/oxlint/src/test.ts standalone HTML input. Existing stylish-standalone-html-output snapshot is unchanged.",
+  "contract": "Preserve the legacy HTML-only adapter; reject mixed HTML/Vue after retaining original reports.",
+  "limits": [
+    "HTML does not qualify original-project Vue packet authority",
+    "No direct51 scriptless or full n8n acceptance credit"
+  ]
+}

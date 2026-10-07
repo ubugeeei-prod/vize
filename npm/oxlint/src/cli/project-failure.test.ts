@@ -5,6 +5,8 @@ import path from "node:path";
 import test from "node:test";
 import { prepareScopedSelection } from "./scoped-selection.ts";
 import { unavailableProjectTransport } from "./project-output.ts";
+import { prepareScriptlessWorkaroundFiles } from "./workaround-files.ts";
+import { readOriginalWorkaroundSource, resolveWorkaroundSource } from "../workaround.ts";
 
 const fixture = JSON.parse(
   fs.readFileSync(
@@ -20,6 +22,82 @@ const originalPacket = {
   stderr: "whole original stderr\n",
   status: 1,
 };
+
+void test("HTML-only inputs retain the legacy adapter and complete original source", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-html-compatibility-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const bytes = fs.readFileSync(
+    new URL(
+      "../../../../tests/_fixtures/differential/lint/oxlint-script-safe-carrier-7903/Standalone.html.txt",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const files = ["Standalone.html", "Standalone.htm"].map((name) => path.join(root, name));
+  for (const file of files) fs.writeFileSync(file, bytes);
+  assert.equal(
+    await prepareScopedSelection(
+      root,
+      ["."],
+      files,
+      async () => {
+        throw new Error("HTML compatibility must not use stock Vue selection");
+      },
+      new Set(files),
+    ),
+    undefined,
+  );
+  const prepared = prepareScriptlessWorkaroundFiles(root, files);
+  try {
+    const copies = prepared.appendedArgs.filter((arg) => arg.endsWith(".vue"));
+    assert.equal(copies.length, files.length);
+    for (const [index, copy] of copies.entries())
+      assert.deepEqual(
+        resolveWorkaroundSource(fs.readFileSync(copy, "utf8"), copy, readOriginalWorkaroundSource),
+        {
+          filename: files[index],
+          source: bytes,
+          usesOriginalLocations: true,
+        },
+      );
+  } finally {
+    prepared.cleanup();
+  }
+  assert.deepEqual(fs.readdirSync(root).sort(), ["Standalone.htm", "Standalone.html"]);
+  for (const file of files) assert.equal(fs.readFileSync(file, "utf8"), bytes);
+});
+
+for (const selectedVue of [true, false])
+  void test(`mixed HTML/Vue inputs retain raw reports and refuse transport with Vue selected=${selectedVue}`, async (t) => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-mixed-html-"));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    const files = ["Original.vue", "Standalone.html"].map((name) => path.join(root, name));
+    for (const file of files) fs.writeFileSync(file, "<template />\n");
+    fs.writeFileSync(
+      path.join(root, ".oxlintrc.json"),
+      JSON.stringify({ rules: { "vize/vue/no-v-html": "error" } }),
+    );
+    const result = await prepareScopedSelection(
+      root,
+      ["-f", "json", "."],
+      files,
+      async (args) =>
+        args.includes("--debug")
+          ? { status: 0, stdout: selectedVue ? "Original.vue\n" : "", stderr: "" }
+          : originalPacket,
+      new Set(files),
+    );
+    assert.ok(result && "result" in result);
+    assert.equal(result.result.stdout, originalPacket.stdout);
+    assert.ok(result.result.stderr.startsWith(originalPacket.stderr));
+    assert.match(result.result.stderr, /cannot combine standalone HTML and Vue targets/u);
+    assert.equal(result.result.status, originalPacket.status);
+    assert.deepEqual(fs.readdirSync(root).sort(), [
+      ".oxlintrc.json",
+      "Original.vue",
+      "Standalone.html",
+    ]);
+  });
 
 for (const mode of ["mirror", "selection", "spawn"] as const)
   void test(`a ${mode} failure after original linting retains raw fields and duplicate fatals`, async (t) => {

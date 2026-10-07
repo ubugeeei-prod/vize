@@ -1,4 +1,5 @@
 import path from "node:path";
+import { isStandaloneHtmlFile } from "../file-kinds.ts";
 
 import {
   createScopedMirror,
@@ -38,6 +39,9 @@ export async function prepareScopedSelection(
   | undefined
 > {
   if (vueFiles.length === 0) return undefined;
+  // Oxlint does not select standalone HTML. Keep its existing adapter only
+  // when exhaustive candidate discovery found no Vue SFC to transport.
+  if (vueFiles.every(isStandaloneHtmlFile)) return undefined;
   let config = readScopedConfig(cwd, originalArgs);
   if (config == null) {
     // A safe carrier cannot replace core/custom/parser source ownership. Keep
@@ -67,6 +71,13 @@ export async function prepareScopedSelection(
     if (selection.status !== 0) return { result: selection };
     const selected = parseFiles(cwd, selection);
     const original = await run(originalArgs);
+    if (vueFiles.some(isStandaloneHtmlFile))
+      return {
+        result: unavailableProjectTransport(
+          original,
+          new Error("Scoped Vue transport cannot combine standalone HTML and Vue targets."),
+        ),
+      };
     if (!vueFiles.some((file) => selected.includes(file))) return { result: original };
     return {
       result: {
@@ -115,7 +126,17 @@ export async function prepareScopedSelection(
       "Scoped Vue transport cannot bind every selected file to an original candidate.",
     );
   const selectedVue = vueFiles.filter((file) => selected.includes(file));
-  if (selectedVue.length === 0) return { result: await run(originalArgs) };
+  if (selectedVue.length === 0) {
+    const original = await run(originalArgs);
+    return {
+      result: vueFiles.some(isStandaloneHtmlFile)
+        ? unavailableProjectTransport(
+            original,
+            new Error("Scoped Vue transport cannot combine standalone HTML and Vue targets."),
+          )
+        : original,
+    };
+  }
   // The carrier intentionally contains no executable original script. Core,
   // custom and parser checks therefore always need the unchanged originals,
   // even when neither import nor type-aware rules are configured.
@@ -140,6 +161,8 @@ export async function prepareScopedSelection(
       source.cleanup();
     }
     config = phases.bridge;
+    if (vueFiles.some(isStandaloneHtmlFile))
+      throw new Error("Scoped Vue transport cannot combine standalone HTML and Vue targets.");
     mirror = createScopedMirror(cwd, config, selectedVue);
     const args = [...bridgeOptions];
     if (config.discovered) args.unshift("--config", mirror.sibling);
