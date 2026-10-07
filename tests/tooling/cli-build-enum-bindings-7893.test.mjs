@@ -31,10 +31,10 @@ void test("#7893 original CLI builds and complete Vue runtime observations agree
   mkdirSync(evidence, { recursive: true });
   const rows = [];
   try {
-    for (const [lane, flags] of [
-      ["dom", []],
-      ["ssr", ["--ssr"]],
-      ["vapor", ["--vapor"]],
+    for (const { lane, flags } of [
+      { lane: "dom", flags: [] },
+      { lane: "ssr", flags: ["--ssr"] },
+      { lane: "vapor", flags: ["--vapor"] },
     ]) {
       const project = mkdtempSync(join(tmpdir(), "vize-enum-7893-"));
       const row = { lane, source, originalSha256, receipt, status: "RUNNING" };
