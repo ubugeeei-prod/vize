@@ -35,6 +35,8 @@ JSON outputs while preserving all original three hundred formatter carriers,
 historical expected bytes, hashes and capture receipts. Historical mismatches
 remain separately observable, and source/output mutation controls reject scope
 or ownership drift.
+The original literal pack therefore reports seventy-eight historical byte
+matches and six current-reference matches, retaining all eighty-four cases.
 
 Source Actions, protected merge-queue verification and actual merge remain
 required before delivery. This change fixes the existing formatter; it does
