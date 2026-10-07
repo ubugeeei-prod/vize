@@ -145,7 +145,9 @@ export function verifyCommittedInventory(proof, gitlinks) {
   const walk = (logical, directory, ancestors = new Set()) => {
     assert(!ancestors.has(directory.path), "Committed directory cycle");
     ancestors.add(directory.path);
-    for (const name of [...children.get(directory.path)].sort()) {
+    for (const name of [...children.get(directory.path)].sort((left, right) =>
+      left < right ? -1 : left > right ? 1 : 0,
+    )) {
       if (excluded.has(name)) continue;
       const node = resolveNode(directory.path ? `${directory.path}/${name}` : name);
       const path = logical ? `${logical}/${name}` : name;

@@ -198,3 +198,9 @@ run the original strict selector again before writing any receipt. Exhaustion
 remains a refusal, and existing output-clearing checks remain required. These
 local synthetic controls grant no repaired genuine protected execution credit;
 fresh hosted source and protected replay remain mandatory.
+
+The next 52cf source Check 37648325582 passed configured formatting and rejected
+one inferred-array comparison warning in the new committed inventory walker.
+Use an explicit string code-unit comparator, preserving the previous JavaScript
+default order, all paths/blobs and every corpus requirement. Fresh source and
+protected qualification remain required; there is no warning-budget waiver.
