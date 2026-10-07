@@ -24,6 +24,8 @@ mod source_path;
 mod strict_boolean;
 #[cfg(test)]
 mod template_component_tests;
+#[cfg(test)]
+mod unsafe_template_tests;
 mod template_queries;
 
 #[cfg(test)]
