@@ -79,3 +79,9 @@ help is `Cow<str>`, and `.as_str()` dereferences to unstable `str_as_str`. Borro
 it with `.as_ref()` at the two existing call sites. The original source ranges,
 fixes, metadata, corpus and observer references remain unchanged. Fresh native
 Actions is required; the prior compilation failure provides no runtime credit.
+
+The next source compilation reaches the test target and rejects two authored
+unsafe-custody setup boxes: OXC's allocator generic requires a reference to the
+existing borrowed L0 allocator. Pass that borrowed allocator at both unchanged
+fixture constructors, retaining every unsafe source/argument/expected refusal.
+This is test setup repair; new native runtime acceptance remains pending.

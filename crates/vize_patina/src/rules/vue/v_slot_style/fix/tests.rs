@@ -124,7 +124,7 @@ fn unsafe_spans_and_recovered_heads_never_receive_an_edit() {
     directive.raw_name = Some("v-slot");
     directive.arg = Some(ExpressionNode::Simple(ArenaBox::new_in(
         SimpleExpressionNode::new("header", true, SourceLocation::new(8, 14)),
-        &allocator,
+        &&allocator,
     )));
     let fix = slot_fix(source, &directive, Longform, Shorthand, HELP).unwrap();
     assert_eq!(
@@ -167,7 +167,7 @@ fn unsafe_spans_and_recovered_heads_never_receive_an_edit() {
     );
     directive.arg = Some(ExpressionNode::Simple(ArenaBox::new_in(
         SimpleExpressionNode::new("name", false, SourceLocation::new(9, 13)),
-        &allocator,
+        &&allocator,
     )));
     let malformed = " v-slot:[name=\"props\" ";
     directive.loc = SourceLocation::new(1, malformed.len() as u32 - 1);
