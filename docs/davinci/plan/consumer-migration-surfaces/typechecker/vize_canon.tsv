@@ -430,8 +430,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/mater
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/native_vue.rs	16	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/native_vue.rs	16	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/native_vue/filesystem.rs	5	l0	L0	stage	vize_l0	preferred	1
-typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/original_program.rs	14	l0	L0	stage	vize_l0	preferred	1
-typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/project_configuration.rs	11	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/original_program.rs	21	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/project_configuration.rs	14	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/lsp_client/editor_lsp/project_configuration/tests.rs	13	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/project_identity.rs	7	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/lsp_client/editor_lsp/readiness.rs	5	l0	L0	stage	vize_l0	preferred	1
@@ -1145,6 +1145,8 @@ typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/primitive_returns.rs	7	l0	L0	stage	vize_l0	preferred	3
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/primitive_returns.rs	7	l2	L2	stage	vize_l2	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/primitive_returns.rs	7	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/process_reuse.rs	7	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/process_reuse.rs	7	l1	L1	stage	vize_l1	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/reference_paths.rs	9	l0	L0	stage	vize_l0	preferred	3
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/reference_paths.rs	9	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/original_program_check/reference_paths.rs	9	l1	L1	stage	vize_l1	preferred	1
@@ -1179,6 +1181,8 @@ typechecker	Typechecker	test/dev	crates/vize_canon/tests/runtime_function_prop_u
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/setup_scoped_type_exports.rs	108	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/setup_scoped_type_exports.rs	108	raw_oxc	raw OXC	raw	oxc_parser	raw	3
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/support/auto_import_project.rs	132	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/support/original_diagnosing_process.rs	51	l0	L0	stage	vize_l0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize_canon/tests/support/original_diagnosing_process.rs	51	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/support/reference_path_project.rs	7	l0	L0	stage	vize_l0	preferred	4
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/support/tier_l_fixture.rs	4	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/tests/support/tier_l_incremental_artifact.rs	7	l0	L0	stage	vize_l0	preferred	1

@@ -62,3 +62,42 @@ The [actual-parent incorporation](https://github.com/ubugeeei-prod/vize/issues/7
 The [paired refresh decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6043713794) incorporates delivered, signature-verified `8e8e0754c88751296641ed2b11be644a492eb358` while preserving the original b906 source, clean unpublished a634 security-main composition and complete author/decision history. The old worktree stays intact. The final source also incorporates actual, signature-verified `8fd5ff02d8b361d795c0e49878de5404257f58bb` (#8170), which arrived during composition, retaining its complete compiler/corpus and attribute bytes without a retirement product conflict. All production/RPC/lifetime/reverse-window/534 controls remain; checked Option equality on the whole authored `value` token preserves invalid-range and different-token refusal under current strict lints. Keep every incoming binder entry plus only the original eight retirement paths, the complete current scaling workflow, original400+134/whole79/18, runtime/deadlines/budgets and the independently owned navigation capacity CAS. The existing renderer scans the full actual source for the owned inventory. Native GraphQL confirms remote Stack8128 membership; root alone admits a qualified prefix.
 
 Historical b906 full/native/paired execution and its inherited audit failure remain retained, with worse warm/background timings and no uncancelled gain or historical337-cause claim. Fresh exact-head ordinary/native/scaling/full laws, protected gates, actual signed merge and release delivery remain pending; the pinned full-command10x target and Issue7698 remain open.
+
+## Retained original diagnosing process
+
+For the explicit completed Original Module checker, retain one independent native
+`--lsp` process and its configured API attachment on the owning project client.
+It never shares the live virtual-document editor overlay. Each call still parses
+the authored configuration and full root membership with the existing refresh,
+checks the complete diagnosing options before and after the raw report, and closes
+its own authored overlay afterward. Put complete filesystem invalidation into the
+existing before-observation snapshot RPC; do not add a request or pipeline stage.
+Open the explicit project reference once and release every observed snapshot;
+retain the project only for this diagnosing owner's lifetime.
+
+Reuse requires the canonical direct native image's complete SHA-256 and the full
+configuration-chain session key. Unknown launchers and scripts keep the previous
+fresh-process behavior, because their bytes cannot identify a delegated runtime.
+Configuration/runtime replacement retires the old owner before the new one can
+answer. Errors and admission refusals also retire it without replacing the existing
+typed primary error. Materialized mode, native Vue mode, root/config activation,
+explicit shutdown, Drop and existing SessionMap idle eviction retire this owner;
+process shutdown/reaping precedes the attached API reader join.
+
+The additive original-diagnosing-process-7698 corpus freezes the complete source,
+shared dependency, config, TS2322 raw report and exact authored range. Linux native
+controls compare the physical executable, PID and kernel birth through five no-op
+checks, authored leaf/shared edits and exact inverses; config-option edits compare
+whole effective options and require the previous native life to be reaped. Separate
+shutdown, Drop, idle-to-next-owner and materialized-mode laws observe the recorded
+life disappearing, with no same-birth zombie or wrapper/init-counter credit. An
+explicit source-only disabled envelope does not claim native execution; Require=1
+rejects disabled or absent runtimes, and the existing official native workflow
+runs the added controls with its pinned direct binary. Keep every original27+6,
+SDK-native lifetime fixture, 400+134 shipping input and all104 ceilings unchanged.
+
+Corsa 1.14 has no compiler Program-object identity. This is retained diagnosing
+process/project-reference work, not proof of true NativeProgram reuse or the full
+10x target. The legacy product routes remain in place while #6879/#6883 are open.
+Fresh exact-source native/full/protected execution, actual merge, latency evidence
+and public release acceptance remain unfinished. The [paired decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6047368965) records this source slice on actual signed main3e with declared Rust1.98; an incoming protected candidate after the Rust migration must independently qualify1.99. Source/historical success cannot substitute for its fresh protected proof.

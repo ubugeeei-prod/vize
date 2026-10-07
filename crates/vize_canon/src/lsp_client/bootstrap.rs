@@ -78,6 +78,7 @@ impl CorsaProjectClient {
             external_document_uris: Default::default(),
             temp_dir,
             editor_lsp: None,
+            original_diagnosing_session: None,
             editor_lsp_documents_dirty: true,
             editor_lsp_will_rename_supported: None,
             closed: false,
@@ -88,6 +89,8 @@ impl CorsaProjectClient {
         if self.materialized_project_session {
             return Ok(());
         }
+
+        self.retire_original_diagnosing_session()?;
 
         let config_path = write_materialized_project_tsconfig(&self.project_root)?;
         let documents: Vec<_> = self
