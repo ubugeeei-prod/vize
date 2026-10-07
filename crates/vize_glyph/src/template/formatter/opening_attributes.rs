@@ -1,7 +1,8 @@
 //! Shared emission of already parsed template attributes.
 use super::TemplateFormatter;
 use crate::template::attributes::{
-    ParsedAttribute, render_attribute, should_use_multiline_attrs, write_rendered_attributes,
+    AttributeLayout, ParsedAttribute, render_attribute, should_use_multiline_attrs,
+    write_rendered_attributes,
 };
 use vize_l0::String;
 
@@ -48,7 +49,11 @@ impl TemplateFormatter<'_> {
                     self.newline,
                     self.indent,
                     depth + 1,
-                    max_per_line,
+                    &AttributeLayout {
+                        options: self.options,
+                        base_depth: self.base_depth,
+                        max_per_line,
+                    },
                 );
                 if !self.options.bracket_same_line {
                     output.extend_from_slice(self.newline);

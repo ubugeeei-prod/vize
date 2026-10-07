@@ -107,3 +107,23 @@ The final remote refresh also incorporates actual main
 `a0f50992e2eb457933b81b951d462090e0af4811` after #8176 merged. Its incoming
 LSP/source/corpus records remain exact; all preserved-text implementation,
 configuration, API/CLI and runtime-observer bytes stay equal to frozen d776.
+
+Compose the existing change with signed actual main
+`f3ed2ee49cd50619830b3db6a2ae2d946f18ec5e`, including merged #8203.
+Keep its extracted tag parser and attribute-value layout exact. Ordinary SFC
+formatting retains main's relative depth with `base_depth = 1`; preserved text
+retains its original absolute SFC depth with `base_depth = 0`. The shared
+attribute writer passes this context unchanged, so indentation is counted once.
+All original public API/CLI, configuration, expected output and stock-runtime
+observer bytes remain exact. Two additional complete public API fixed-point
+controls combine narrow attribute wrapping with preserved text using spaces and
+tabs; no historical reference, option, input, instruction ceiling or measurement
+window changes.
+
+The prior `2b6cf34f82` source native gate and all 100+4 instruction ceilings passed;
+its complete preserve-mode CLI/DOM/SSR observer passed. Its whole source Check
+failed only at an unchanged Docker sandbox hook test (`ETIMEDOUT`) and the two
+aggregate reports. Retain this failure receipt. This material integration needs
+fresh exact-head source/native Actions and the unchanged instruction recipe;
+previous receipts do not qualify it. Protected qualification, actual merge and
+installed release replay remain pending.
