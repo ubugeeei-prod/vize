@@ -28,8 +28,10 @@ pub(super) fn write_summary(
         );
         write(cstr!("Linted {} files in {:.4?}\n", file_count, elapsed).as_bytes());
     }
-    if matches!(format, super::OutputFormat::Text | super::OutputFormat::Plain)
-        && let Some(tree) = cross_file_tree
+    if matches!(
+        format,
+        super::OutputFormat::Text | super::OutputFormat::Plain
+    ) && let Some(tree) = cross_file_tree
     {
         write(cstr!("\n{tree}\n").as_bytes());
     }
