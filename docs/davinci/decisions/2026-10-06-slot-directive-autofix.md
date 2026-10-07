@@ -85,3 +85,11 @@ unsafe-custody setup boxes: OXC's allocator generic requires a reference to the
 existing borrowed L0 allocator. Pass that borrowed allocator at both unchanged
 fixture constructors, retaining every unsafe source/argument/expected refusal.
 This is test setup repair; new native runtime acceptance remains pending.
+
+The first native test execution passes the new whole slot laws but rejects the
+exact markup battery census: the configured-style matrix adds two nonliteral
+`lint_template` call sites (before and after fixes). Deliberately pin those two
+calls and two skips at 1,057/87 in the shared constant used by both ordinary and
+legacy-differential lanes. Compared templates remain 869 and trace lines remain
+6,316; every comparison, original fixture and whole slot oracle stays unchanged.
+This observed census repair requires fresh exact-head Actions before acceptance.
