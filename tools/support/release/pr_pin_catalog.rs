@@ -9,6 +9,13 @@ use std::{
     sync::atomic::{AtomicU64, Ordering},
 };
 
+const PUBLICATION_AUTHORITIES: [&str; 4] = [
+    ".github/workflows/release.yml",
+    "tools/commands/ci/github/release-platforms.rs",
+    "tools/moon/cmd/publish_npm_package_dirs/main.mbt",
+    "tools/moon/cmd/publish_npm_package/main.mbt",
+];
+
 pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Value, String> {
     let mut npm = BTreeMap::new();
     let mut editors = BTreeMap::new();
@@ -148,8 +155,12 @@ pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Valu
                 json!({"path":path,"manifest":text(revision,path,root)?,"publication":descriptor}),
             );
         }
+        let publication_authorities = PUBLICATION_AUTHORITIES
+            .into_iter()
+            .map(|path| Ok((path, text(revision, path, root)?)))
+            .collect::<Result<BTreeMap<_, _>, String>>()?;
         Ok(
-            json!({"npm":npm,"editors":editors,"crates":crates,"cratePublisher":text(revision,"tools/moon/cmd/publish_crates/main.mbt",root)?,"nativeCatalog": native_catalog(&text(revision,"pnpm-workspace.yaml",root)?,version)}),
+            json!({"npm":npm,"editors":editors,"crates":crates,"cratePublisher":text(revision,"tools/moon/cmd/publish_crates/main.mbt",root)?,"nativeCatalog": native_catalog(&text(revision,"pnpm-workspace.yaml",root)?,version),"publicationAuthorities":publication_authorities}),
         )
     })();
     // This path was allocated by this invocation; no shared checkout is touched.

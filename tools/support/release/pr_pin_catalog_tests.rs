@@ -24,6 +24,10 @@ fn complete_shipment_catalog_rejects_exports_bins_and_feature_changes() {
             "tools/moon/cmd/publish_crates/main.mbt",
             "let published_crates = [\"vize_law\"]\n",
         ),
+        (".github/workflows/release.yml", "publish npm/law\n"),
+        ("tools/commands/ci/github/release-platforms.rs", "native-test\n"),
+        ("tools/moon/cmd/publish_npm_package_dirs/main.mbt", "all native directories\n"),
+        ("tools/moon/cmd/publish_npm_package/main.mbt", "publish exact package version\n"),
     ]);
     github::output("cargo", &["generate-lockfile", "--offline"], &repo.work).unwrap();
     let head = repo.commit(&[]);
@@ -60,6 +64,74 @@ fn complete_shipment_catalog_rejects_exports_bins_and_feature_changes() {
     assert_ne!(
         original,
         metadata::catalog(&feature, "1.2.3", &repo.work).unwrap()
+    );
+}
+
+#[test]
+fn unchanged_manifests_cannot_borrow_a_changed_publication_selection() {
+    let repo = Repo::new();
+    repo.commit(&[
+        ("Cargo.toml", "[workspace]\nmembers = [\"pkg\"]\nresolver = \"2\"\n[workspace.package]\nversion = \"1.2.3\"\nedition = \"2024\"\n"),
+        ("pkg/Cargo.toml", "[package]\nname = \"vize_law\"\nversion.workspace = true\nedition.workspace = true\n"),
+        ("pkg/src/lib.rs", "pub fn law() {}\n"),
+        ("npm/law/package.json", "{\"name\":\"vize-law\",\"version\":\"1.2.3\"}\n"),
+        ("pnpm-workspace.yaml", "catalogs:\n  native-binaries:\n    \"@vizejs/native-test\": \"1.2.3\"\n"),
+        ("tools/moon/cmd/publish_crates/main.mbt", "let published_crates = [\"vize_law\"]\n"),
+        (".github/workflows/release.yml", "publish npm/law\n"),
+        ("tools/commands/ci/github/release-platforms.rs", "native-test\n"),
+        ("tools/moon/cmd/publish_npm_package_dirs/main.mbt", "all native directories\n"),
+        ("tools/moon/cmd/publish_npm_package/main.mbt", "publish exact package version\n"),
+    ]);
+    github::output("cargo", &["generate-lockfile", "--offline"], &repo.work).unwrap();
+    let head = repo.commit(&[]);
+    let original = metadata::catalog(&head, "1.2.3", &repo.work).unwrap();
+    for (authority, changed) in [
+        (".github/workflows/release.yml", "omit npm/law\n"),
+        (
+            "tools/commands/ci/github/release-platforms.rs",
+            "omit native-test\n",
+        ),
+        (
+            "tools/moon/cmd/publish_npm_package_dirs/main.mbt",
+            "skip one native directory\n",
+        ),
+        (
+            "tools/moon/cmd/publish_npm_package/main.mbt",
+            "publish another version\n",
+        ),
+    ] {
+        github::git(&["reset", "--hard", &head], &repo.work).unwrap();
+        let revision = repo.commit(&[(authority, changed)]);
+        let observed = metadata::catalog(&revision, "1.2.3", &repo.work).unwrap();
+        for channel in [
+            "npm",
+            "crates",
+            "editors",
+            "nativeCatalog",
+            "cratePublisher",
+        ] {
+            assert_eq!(
+                original[channel], observed[channel],
+                "{authority}: {channel}"
+            );
+        }
+        assert_ne!(original, observed, "{authority}");
+    }
+    github::git(&["reset", "--hard", &head], &repo.work).unwrap();
+    let ordinary = repo.commit(&[
+        (
+            ".github/workflows/check.yml",
+            "ordinary source qualification update\n",
+        ),
+        (
+            ".github/workflows/build-docs.yml",
+            "ordinary docs deployment update\n",
+        ),
+        ("tools/support/common.rs", "ordinary utility change\n"),
+    ]);
+    assert_eq!(
+        original,
+        metadata::catalog(&ordinary, "1.2.3", &repo.work).unwrap()
     );
 }
 

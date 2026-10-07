@@ -31,6 +31,10 @@ package versions and published package catalog must agree between H, V and
 current main, including complete shipment manifests, entry points, dependency
 requirements, features and targets. Missing, stale, ambiguous or changed
 custody fails closed.
+The catalog also binds the exact release workflow, platform planner, generated
+npm directory selector and individual npm publisher. Unchanged manifests cannot
+authorize a changed publishing selection; ordinary Check, Docs and shared
+utility changes remain independent of that publication authority.
 
 Only after both the original H qualification and the actual integration proof
 pass does the command create the immutable annotated tag at H. This operation
