@@ -90,3 +90,29 @@ then update the three complete original CSS findings under its real source.
 Register and verify their native Stack; a green parent prefix can enter the
 queue before its child is ready. The issue remains open after the partial
 parent. Root owns subsequent publication and installed verification.
+
+The [new current audit rejection](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6033226959)
+at exact `a77c035c` is Check37587584375/job112681210568: all three attempts
+newly reject high GHSA-6qxp-vccf-f47h in the locked MCP SDK1.30.0 consumer.
+The original shell-quote critical is absent; this is a separate dependency
+finding, with patched SDK versions `>=1.31.0` in the audit. Retain all 81,162
+raw bytes, SHA-256
+`b1b0fcc30c6dfa201d5d9f6b55d46370da4e7dd738147488814f97980b22a4e3`.
+Parent8135 is again Draft/offqueue with auto-merge unset; preserve its healthy
+workers and route the dependency correction to the existing security owner.
+The real CSS child may replay from the published parent, while current red
+layers remain offqueue. Actual corrected signed main and fresh exact-source
+qualification are required before admitting a native Stack prefix. Preserve
+every script input/oracle; this audit grants no product-cause inference.
+
+[Actual native Stack registration](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6033382557)
+is Stack8147: official reads from both PRs show script8135/a77 at position1
+then CSS8143/d5f at position2, size2 and real parent-base chaining. Both are
+Draft with auto-merge unset and no admission. Authenticate the true parent
+ancestor, all41 whole sources/five original raw pins and other38 complete
+vectors; only the first three full remaining CSS findings become clean under
+the child's actual production source. The parent drivers/config are exact
+apart from the API carrier's corrected combined-clean comment. This grants
+source/registration proof only. After genuine dependency delivery and fresh
+exact greens, admit the highest ready prefix through protected Stack merge;
+no individual layer auto-merge or partial whole-issue closure.
