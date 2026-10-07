@@ -46,12 +46,18 @@ fn labels_after(marker: &str) -> Vec<String> {
 
 #[test]
 fn a_bound_attribute_offers_the_template_bindings_right_after_the_equals() {
-    // Every binding in scope, and nothing else: no directive names, because
+    // Every binding and allowed global in scope: no directive names, because
     // the attribute-name list is over once `=` has been typed.
     for marker in [":title=", "@click=", "v-if="] {
+        let mut expected = vec!["count".to_string(), "label".to_string(), "pick".to_string()];
+        let globals: Vec<tower_lsp::lsp_types::CompletionItem> = serde_json::from_str(include_str!(
+            "../../../../../../tests/_fixtures/differential/lsp/template-expression-globals-8015/globals.expected.json"
+        )).unwrap();
+        expected.extend(globals.into_iter().map(|item| item.label));
+        expected.sort();
         assert_eq!(
             labels_after(marker),
-            vec!["count".to_string(), "label".to_string(), "pick".to_string(),],
+            expected,
             "`{marker}` must offer the template bindings"
         );
     }

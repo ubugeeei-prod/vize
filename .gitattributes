@@ -74,3 +74,6 @@ tests/_fixtures/differential/lsp/component-global-attributes-8015/*.vue.txt -tex
 
 # Public #7969 whole LF/CRLF formatter carriers stay byte exact.
 tests/_fixtures/differential/formatter-regressions/hugged-interpolation-indent-7969/*.txt -text whitespace=cr-at-eol
+
+# Original #8015 SFC and Issue inputs retain authored checkout bytes.
+tests/_fixtures/differential/lsp/template-expression-globals-8015/** -text whitespace=cr-at-eol
