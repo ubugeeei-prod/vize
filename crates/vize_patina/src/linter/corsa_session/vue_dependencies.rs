@@ -56,7 +56,7 @@ pub(super) fn prepare(
     while let Some((path, text, target, source_type)) = queue.pop() {
         let allocator = Allocator::default();
         let parsed = Parser::new(&allocator, &text, source_type).parse();
-        if target.is_some() && !parsed.errors.is_empty() {
+        if target.is_some() && !parsed.diagnostics.is_empty() {
             continue;
         }
         let mut specifiers = Specifiers::default();
