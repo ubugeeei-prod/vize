@@ -34,3 +34,8 @@ and [public instance surface](https://github.com/vuejs/core/blob/v3.5.43/package
 First exact-source run `37589426480` rejected a removed import still used by
 the existing legacy-Vue completion helper. Restore that import without changing
 its behavior or any fixture expectation; fresh successor Actions are required.
+
+The identifier provider also runs without native support. Share the existing
+pure member-position classifier across both builds (including its unchanged
+Unicode/numeric tests), so non-native compilation and expression boundaries
+retain the same contract; its OXC identifier dependency was already unconditional.
