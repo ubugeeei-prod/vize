@@ -37,3 +37,8 @@ the authored whole-result controls and existing registration laws must execute
 on the PR's exact source in Actions, followed by protected queue suites and
 actual merge. Release and installed-package evidence are separate. This change
 does not complete native/default migration or the lint fix-history gate.
+
+The first source `8b5cb076` was rejected by Check 37589451607/job 112687306804
+for one owned Clippy warning: the final `Option<&mut Croquis>` dereference was
+redundant. Consume that existing option directly; no relation, original input
+or expected whole result changes. Fresh successor Actions remain required.

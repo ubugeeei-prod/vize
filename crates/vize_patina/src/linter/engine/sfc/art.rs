@@ -64,7 +64,7 @@ impl Linter {
         source: &str,
         filename: &str,
         descriptor: &SfcDescriptor<'_>,
-        mut summary: Option<&mut Croquis>,
+        summary: Option<&mut Croquis>,
     ) -> LintResult {
         let offset = SourceRoot::new(descriptor.source.as_ref())
             .ok()
@@ -109,7 +109,7 @@ impl Linter {
             },
         );
         if self.has_unused_bindings_demand()
-            && let Some(summary) = summary.as_deref_mut()
+            && let Some(summary) = summary
         {
             if let Some(analysis) = analysis {
                 summary
