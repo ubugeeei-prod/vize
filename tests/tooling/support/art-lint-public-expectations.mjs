@@ -51,6 +51,7 @@ export function pluginExpected(row, originalLocations) {
         : `${d.message} (at <art>:${d.location.start.line}:${d.location.start.column})`,
       code: `vize(${d.rule})`,
       severity: d.severity,
+      causes: [],
       filename: row.filename,
       labels: [
         {
@@ -62,6 +63,7 @@ export function pluginExpected(row, originalLocations) {
           },
         },
       ],
+      related: [],
     };
   });
 }

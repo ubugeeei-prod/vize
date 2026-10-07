@@ -99,3 +99,11 @@ function`). Scope that override to the workspace native package's own
 loader only, restoring it before unrelated addons load. The original inputs,
 whole expected vectors and product bytes remain unchanged; retain the failed
 raw capture and require fresh successor execution with no transferred credit.
+
+Successor `26e7fc49` genuinely executes the original Card, Art Panel and
+ordinary PanelHost through all four public producers, including physical
+source-addon calls. Its first unused negative control then rejects the
+authored Oxlint envelope because real Oxlint retains mandatory empty
+`causes`/`related` vectors. Add those explicit empty fields, retaining whole
+equality and every semantic span/message/count; the immutable failed artifact
+keeps partial evidence, while all six controls require fresh terminal execution.
