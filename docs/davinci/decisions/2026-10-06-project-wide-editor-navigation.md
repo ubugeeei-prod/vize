@@ -116,3 +116,11 @@ legacy consumer suites alongside the original public 8013 native controls, with
 source-built process captures copied before preserving the original exit status.
 Fresh successor source/native and protected qualification are required; the
 current failure is retained, and the PR was promptly dequeued and made Draft.
+
+On 2026-10-07, #8148 actually merged the SDK security fix as main
+`706a5b7886c363f6c67a03964ac55f26c5a2a341`. The clean owned #8121 branch
+incorporates that genuine main without changing its navigation implementation,
+original sources, whole RPC vectors, mandatory acquisition or instruction caps.
+Fresh exact-head source/native Actions and protected queue qualification remain
+required. The separate #8139 webcam fake-clock candidate is still pending actual
+merge; its queue entry grants no acceptance credit to this branch.

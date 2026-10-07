@@ -33,6 +33,7 @@ on:
       - "crates/vize_canon/src/corsa_bridge/preparation_trace.rs"
       - "crates/vize_canon/src/lsp_client/editor_lsp/client.rs"
       - "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs"
+      - "crates/vize_canon/src/lsp_client/diagnostics_lsp/**"
       - "crates/vize_canon/src/lsp_client/editor_lsp/readiness.rs"
       - "crates/vize_canon/src/lsp_client/editor_lsp/synchronize.rs"
       - "crates/vize_canon/src/corsa_bridge/vue_document.rs"

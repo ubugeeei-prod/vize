@@ -8,7 +8,8 @@
 //! configs, `Ref<any>`), which silently defeats type-checking on every later
 //! read and write. Such a ref should carry an explicit type argument
 //! (`ref<string>()`, `ref<User | null>(null)`) so the intended element type is
-//! known up front.
+//! known up front. A direct identifier binding annotation also supplies that
+//! explicit type, for example `const value: Ref<string | null> = ref(null)`.
 //!
 //! Only the un-inferable initializers are flagged — `ref()`, `ref(null)`, and
 //! `ref(undefined)` *without* a type argument. A `ref(0)` (inferable from the
@@ -41,12 +42,14 @@
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
-    CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier, Program,
+    BindingPattern, CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier,
+    Program, VariableDeclarator,
 };
 use oxc_ast_visit::{
     Visit,
-    walk::{walk_call_expression, walk_import_declaration},
+    walk::{walk_call_expression, walk_import_declaration, walk_variable_declarator},
 };
+use oxc_span::Span;
 use vize_l0::{CompactString, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -85,6 +88,7 @@ impl ScriptRule for RequireTypedRef {
             result,
             ref_aliases: FxHashSet::default(),
             ref_imported: false,
+            annotated_initializer: None,
         };
         visitor.visit_program(program);
     }
@@ -98,6 +102,8 @@ struct RequireTypedRefVisitor<'result> {
     /// Whether `ref` was imported from `vue` at all. Only then do bare `ref(...)`
     /// calls refer to the reactivity helper rather than some unrelated function.
     ref_imported: bool,
+    /// Only the annotated binding's direct call, never an arbitrary nested ref.
+    annotated_initializer: Option<Span>,
 }
 
 impl<'a> Visit<'a> for RequireTypedRefVisitor<'_> {
@@ -119,8 +125,31 @@ impl<'a> Visit<'a> for RequireTypedRefVisitor<'_> {
         walk_import_declaration(self, it);
     }
 
+    fn visit_variable_declarator(&mut self, it: &VariableDeclarator<'a>) {
+        let previous = self.annotated_initializer;
+        self.annotated_initializer = if it.type_annotation.is_some()
+            && matches!(&it.id, BindingPattern::BindingIdentifier(_))
+        {
+            it.init.as_ref().and_then(|init| {
+                if let Expression::CallExpression(call) = init.get_inner_expression() {
+                    Some(call.span)
+                } else {
+                    None
+                }
+            })
+        } else {
+            None
+        };
+        walk_variable_declarator(self, it);
+        self.annotated_initializer = previous;
+    }
+
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
-        if self.is_ref_call(it) && it.type_arguments.is_none() && init_is_uninferable(it) {
+        if self.is_ref_call(it)
+            && it.type_arguments.is_none()
+            && init_is_uninferable(it)
+            && self.annotated_initializer != Some(it.span)
+        {
             let start = self.offset as u32 + it.span.start;
             let end = self.offset as u32 + it.span.end;
             self.result.add_diagnostic(
@@ -254,3 +283,6 @@ mod tests {
         assert_eq!(result.diagnostics[0].start, call_start);
     }
 }
+
+#[cfg(test)]
+mod ownership_tests;
