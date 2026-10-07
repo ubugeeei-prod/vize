@@ -16,8 +16,8 @@
   },
   "files": {
     "computed-prop-and-callback.vue.txt": {
-      "bytes": 455,
-      "sha256": "e7516efaa74989b3e327418670caca09abcfd1da42b1a8284b09c6bfbccf8eaf"
+      "bytes": 460,
+      "sha256": "4fe118a49baae2f034c45a458a4a151c86191fd0e7de732b82ac4672e7fd9af5"
     },
     "loop-and-scalar.vue.txt": {
       "bytes": 727,
@@ -86,7 +86,7 @@
         "files": [
           {
             "path": "computed-prop-and-callback.vue.txt",
-            "sha256": "e7516efaa74989b3e327418670caca09abcfd1da42b1a8284b09c6bfbccf8eaf"
+            "sha256": "4fe118a49baae2f034c45a458a4a151c86191fd0e7de732b82ac4672e7fd9af5"
           },
           {
             "path": "loop-and-scalar.vue.txt",

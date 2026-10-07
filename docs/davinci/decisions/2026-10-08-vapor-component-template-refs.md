@@ -43,7 +43,21 @@ root intake and actual signed delivery. Existing broader direct-Ref-expression
 coverage, native-only compiler migration, reporter rc.10 execution, SSR,
 hydration, browsers and installed-release acceptance remain unfinished.
 
-The paired local preparation decision is [#7882 comment6046345987](https://github.com/ubugeeei-prod/vize/issues/7882#issuecomment-6046345987). Read-only pinned stock compilation accepts all eight complete modules (three inputs plus Child, development and production); their full descriptors, script outputs, modules and maps are retained locally. Mounted stock/current runtime remains unexecuted because the local read-only dependencies lack happy-dom; this does not change the hosted recipe or grant runtime credit.
+The paired local preparation decision is [#7882 comment6046345987](https://github.com/ubugeeei-prod/vize/issues/7882#issuecomment-6046345987). Initial read-only pinned stock compilation accepted all eight complete modules; that earlier capture had no local happy-dom and granted no mounted-runtime credit.
+
+Existing read-only dependencies later became available. Independent stock-only
+execution of development and production now passes six complete mounts and 18
+whole frames against the unchanged literal expected vectors. The first stock
+capture exposed an observation alias in the new callback control: its reader
+returned the live event array, so unmount retroactively mutated the earlier
+snapshot. Preserve that full failed packet; change only this unpublished
+authored reader to return a copied array. The original App/Child, old parent
+fixtures, expected vectors and generic observer remain byte-exact. Refresh only
+the authored source and runtime-pack hashes. The source correction is test-only;
+it changes no product operation or expectation. The complete stock descriptors,
+script outputs, modules/maps, requests and process observations remain retained.
+Vize compilation and paired mounted/runtime/map/performance qualification still
+remain unexecuted and require fresh hosted controls after the actual parent.
 
 The existing component-prop walk retains a boolean for an actual static `ref`
 attribute or bind argument. Only that existing metadata admits the reused ref

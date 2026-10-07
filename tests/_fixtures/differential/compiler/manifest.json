@@ -51,7 +51,7 @@
     },
     {
       "path": "vapor-component-template-refs-7882/manifest.json",
-      "sha256": "641d45ae755e960ce2ee4b741e159f7004a3f3b3c344aa81721eafd394739b22",
+      "sha256": "7ae0220119810dd4140ce3953e1ee60422b9bdd900d41dd071dc8bc1f74db219",
       "adapter": "compiler-rust-whole-source-runtime-v1",
       "workflow": ".github/workflows/check.yml"
     },

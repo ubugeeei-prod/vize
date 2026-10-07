@@ -9,7 +9,7 @@ function capture(component) {
   current = component;
   seen.value.push(component?.hello ?? null);
 }
-const read = () => ({ hello: current?.hello ?? null, seen: seen.value });
+const read = () => ({ hello: current?.hello ?? null, seen: [...seen.value] });
 defineExpose({ read });
 </script>
 <template>
