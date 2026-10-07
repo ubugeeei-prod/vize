@@ -22,15 +22,6 @@ impl RawJs<'_> {
     }
 }
 
-/// A retained, already-admitted expression may keep its authored line comments
-/// when the attribute's trailing padding terminates them before emitted syntax.
-pub(super) fn authored_line_comments_are_terminated(source: &str, trailing: &str) -> bool {
-    source.contains("//")
-        && trailing
-            .chars()
-            .any(|ch| matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}'))
-}
-
 pub(super) fn line_comment_source_as_block<'a>(
     source: &'a str,
     span_start: u32,

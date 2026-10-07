@@ -48,16 +48,20 @@ impl BindValue<'_> {
         if cx.prefixing() {
             return self.emit_prefixed(cx, bind);
         }
-        let Self::Js(js) = self else {
-            return self.emit(cx, bind);
-        };
-        let padding = authored_value_padding(cx.source, bind, js.source, js.span);
-        let raw_source = if padding.is_some_and(|(_, trailing)| {
-            super::js_comment::authored_line_comments_are_terminated(js.source, trailing)
-        }) {
-            RawJs::Borrowed(js.source)
-        } else {
-            js_expr_source(js)
+        // Admission has already retained the AST or safely converted a refused
+        // trailing line comment. Layout comes from the original expression's
+        // span, never from the converted block comment's byte length.
+        let (raw_source, padding) = match self {
+            Self::Js(js) => (
+                js_expr_source(js),
+                authored_value_padding(cx.source, bind, js.source, js.span),
+            ),
+            Self::RawJs(source) => (
+                RawJs::Borrowed(source.as_str()),
+                bind.value.and_then(|expr| {
+                    authored_value_padding(cx.source, bind, expr.source(), expr.span())
+                }),
+            ),
         };
         let decoded = raw_source
             .as_str()

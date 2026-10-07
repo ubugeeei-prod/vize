@@ -8,8 +8,6 @@
     reason = "whole-source, whole-module and executable compiler regression oracles"
 )]
 
-mod support;
-
 use sha2::{Digest, Sha256};
 use std::{
     io::Write,
@@ -17,17 +15,40 @@ use std::{
 };
 use vize_atelier_dom::{DomCompilerOptions, compile_template_legacy_with_options};
 use vize_l0::Allocator;
+use vize_l1_to_l2::{DomEmitOptions, LegacyCaps, emit_dom_source_with_options};
 
 const ORIGINAL: &str = include_str!(
     "../../../tests/_fixtures/differential/compiler/n8n-prop-comments/RunDataJsonActions.vue.txt"
 );
 
-fn legacy(source: &str) -> String {
+fn legacy(source: &str, is_ts: bool) -> String {
     let allocator = Allocator::new();
-    let (_, errors, output) =
-        compile_template_legacy_with_options(&allocator, source, DomCompilerOptions::default());
+    let (_, errors, output) = compile_template_legacy_with_options(
+        &allocator,
+        source,
+        DomCompilerOptions {
+            is_ts,
+            ..Default::default()
+        },
+    );
     assert!(errors.is_empty(), "{errors:?}");
     format!("{}\n{}", output.preamble, output.code)
+}
+
+fn current(source: &str, is_ts: bool) -> String {
+    let allocator = Allocator::new();
+    emit_dom_source_with_options(
+        &allocator,
+        source,
+        LegacyCaps::VUE3,
+        &DomEmitOptions {
+            is_ts,
+            ..DomEmitOptions::DEFAULT
+        },
+    )
+    .expect("complete authored module emits")
+    .assembled()
+    .to_string()
 }
 
 #[test]
@@ -42,8 +63,13 @@ fn complete_original_n8n_template_keeps_the_legacy_module_bytes() {
     let parsed = vize_atelier_sfc::parse_sfc(ORIGINAL, Default::default())
         .expect("complete unchanged original n8n SFC");
     let template = parsed.template.as_ref().expect("original template");
-    let current = support::assembled_dom(template.content.as_ref()).to_string();
-    assert_eq!(current, legacy(template.content.as_ref()));
+    for is_ts in [false, true] {
+        assert_eq!(
+            current(template.content.as_ref(), is_ts),
+            legacy(template.content.as_ref(), is_ts),
+            "complete original: is_ts={is_ts}"
+        );
+    }
 }
 
 fn execute_props(module: &str) {
@@ -109,10 +135,27 @@ fn authored_prop_comments_keep_newline_bytes_and_safe_single_line_values() {
         ),
         ("regex-slashes", r"!isInPopOutWindow && /\/\//.test('//')"),
         ("existing-block", "!isInPopOutWindow /* // untouched */"),
+        ("lf-block", "\n  !isInPopOutWindow /* note */\n  "),
+        ("crlf-block", "\r\n\t!isInPopOutWindow /* note */\r\n\t"),
+        ("lf-internal-line", "\n (!isInPopOutWindow // note\n )\n "),
+        (
+            "crlf-internal-line",
+            "\r\n\t(!isInPopOutWindow // note\r\n )\r\n\t",
+        ),
+        (
+            "lf-quoted-slashes",
+            "\n !isInPopOutWindow && 'https://x//y' === 'https://x//y'\n ",
+        ),
+        (
+            "crlf-regex-slashes",
+            "\r\n !isInPopOutWindow && /\\/\\//.test('//')\r\n ",
+        ),
     ] {
         let source = format!("<Probe :teleported=\"{expression}\" :after=\"42\" />");
-        let current = support::assembled_dom(&source).to_string();
-        assert_eq!(current, legacy(&source), "{name}: whole module");
-        execute_props(&current);
+        for is_ts in [false, true] {
+            let current = current(&source, is_ts);
+            assert_eq!(current, legacy(&source, is_ts), "{name}: is_ts={is_ts}");
+            execute_props(&current);
+        }
     }
 }
