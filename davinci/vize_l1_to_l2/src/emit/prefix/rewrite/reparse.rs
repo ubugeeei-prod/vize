@@ -1,7 +1,8 @@
 use oxc_ast_visit::Visit;
+use vize_l0::String;
 
 use super::{
-    Allocator, IdentifierCollector, Parser, PrefixScope, Retained, RewriteResult, String,
+    Allocator, IdentifierCollector, Parser, PrefixScope, Retained, RewriteResult,
     is_generated_filter_helper, is_simple_identifier, js_module, js_module_compatible,
     parses_as_typescript, splice_insertions,
 };
