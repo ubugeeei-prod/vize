@@ -1,6 +1,5 @@
 use super::super::fix::{apply_lint_fixes, fix_until_stable, lint_source_with_optional_fix};
 use std::{fs, path::Path};
-use vize_l0::{String, cstr};
 use vize_patina::{Fix, LintDiagnostic, LintPreset, LintResult, Linter, TextEdit};
 
 #[test]
@@ -124,8 +123,8 @@ fn nonconvergent_fixes_stop_after_ten_passes_and_report_final_source() {
     let mut calls = 0;
     let (source, result) = fix_until_stable("0".into(), replacement_result("0", "1"), |source| {
         calls += 1;
-        let next: String = cstr!("{}", source.parse::<usize>().unwrap() + 1);
-        replacement_result(source, &next)
+        let next = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11"][calls - 1];
+        replacement_result(source, next)
     });
     assert_eq!(calls, 10);
     assert_eq!(source.as_str(), "10");

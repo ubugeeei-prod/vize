@@ -53,7 +53,7 @@ fn lint_fix_converges_overlapping_binding_fixes_and_is_idempotent() {
                 "--preset",
                 "opinionated",
                 "--format",
-                "plain",
+                "json",
                 "--help-level",
                 "none",
             ])
@@ -67,7 +67,13 @@ fn lint_fix_converges_overlapping_binding_fixes_and_is_idempotent() {
             String::from_utf8_lossy(&output.stdout),
             String::from_utf8_lossy(&output.stderr)
         );
-        assert!(output.stdout.is_empty(), "{:?}", output.stdout);
+        assert_eq!(
+            serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap(),
+            serde_json::json!([{
+                "file": file.to_str().unwrap(), "messages": [],
+                "errorCount": 0, "warningCount": 0,
+            }])
+        );
         assert!(output.stderr.is_empty(), "{:?}", output.stderr);
         assert_eq!(fs::read_to_string(&file).unwrap(), expected);
     }
