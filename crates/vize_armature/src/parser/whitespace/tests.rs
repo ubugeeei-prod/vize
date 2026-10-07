@@ -28,7 +28,7 @@ fn whitespace_only_text_uses_the_complete_vue_ascii_alphabet() {
         let allocator = Allocator::new();
         let text = TemplateChildNode::Text(vize_l0::Box::new_in(
             TextNode::new(content, SourceLocation::default()),
-            &allocator,
+            &&allocator,
         ));
         assert_eq!(is_whitespace_text(&text), expected, "{content:?}");
     }
