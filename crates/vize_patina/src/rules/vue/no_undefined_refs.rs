@@ -53,9 +53,10 @@ impl Rule for NoUndefinedRefs {
             .collect();
 
         for (name, start, end) in undefined_refs {
-            // vue-router installs these on the component proxy. They are not
-            // script bindings, but templates may read them (#7214, #7235).
-            if matches!(name.as_str(), "$route" | "$router") {
+            // Plugins install `$`-prefixed properties on the component proxy
+            // through app.config.globalProperties. Single-file binding facts
+            // cannot enumerate these values (#7214, #7235, #7896).
+            if name.starts_with('$') {
                 continue;
             }
             ctx.report(

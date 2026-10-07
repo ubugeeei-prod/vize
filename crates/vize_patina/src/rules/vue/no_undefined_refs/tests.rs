@@ -183,3 +183,18 @@ const label = "Back";
         vec![expected]
     );
 }
+
+#[test]
+fn plugin_proxy_globals_do_not_hide_undefined_bare_identifiers() {
+    let sfc = include_str!("../../../../tests/fixtures/no-undefined-refs/plugin-globals.vue");
+    let expected = undefined_at(sfc, "missing");
+    assert_eq!(
+        findings(&lint_sfc(sfc))
+            .into_iter()
+            .map(|(rule, severity, start, end, message)| {
+                (rule, severity, start, end, message.to_string())
+            })
+            .collect::<Vec<_>>(),
+        vec![expected]
+    );
+}
