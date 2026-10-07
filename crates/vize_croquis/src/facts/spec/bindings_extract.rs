@@ -72,7 +72,7 @@ pub enum Form {
     DefaultImport,
     /// `import type …` / `import { type a }`.
     TypeImport,
-    /// `function f() {}` / `class C {}` / a runtime `enum E {}`.
+    /// `function f() {}` / `class C {}` / a non-ambient `enum E {}`.
     Declaration,
     /// `const x = …` / `let x = …`.
     Simple(VarKind, Init),
@@ -171,9 +171,7 @@ fn read_statement(statement: &Statement<'_>, out: &mut Vec<Decl>) -> Result<(), 
                 ));
             }
         }
-        Statement::TSEnumDeclaration(enumeration)
-            if !enumeration.r#const && !enumeration.declare =>
-        {
+        Statement::TSEnumDeclaration(enumeration) if !enumeration.declare => {
             let id = &enumeration.id;
             out.push(named_declaration(
                 id.name.as_str(),

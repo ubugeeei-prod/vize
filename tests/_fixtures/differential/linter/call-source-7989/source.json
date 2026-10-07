@@ -31,7 +31,8 @@
   },
   "caseCount": 41,
   "originalReportedWarnings": 6,
-  "partialOriginalRemainingWarnings": 3,
+  "partialOriginalRemainingWarnings": 0,
   "nativeHandled": 0,
-  "authority": "Complete original public body/input/config/argv/report and independently authored full service/CLI vectors; partial script fix leaves the three original CSS findings unresolved"
+  "authority": "Complete original public body/input/config/argv/report and independently authored full service/CLI vectors; combined script/CSS source requires whole original zero warnings; no native/history acceptance",
+  "combinedCssParent": "a77c035c8323051b7a1a8ae945f05cd0cc336f09"
 }
