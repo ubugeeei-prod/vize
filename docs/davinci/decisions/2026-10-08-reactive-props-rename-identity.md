@@ -127,3 +127,26 @@ DISABLE_TSGO absent must qualify the repaired source before normal protected
 intake; unrelated optional coverage does not add a waiting gate. Protected
 runtime/corpus/instruction budgets, actual signed merge and release remain
 separate requirements.
+
+## Actual original-report source delivery
+
+PR [#8188](https://github.com/ubugeeei-prod/vize/pull/8188) actually merged at
+2026-10-07 22:12:28 UTC as signed
+`177933f33e75af1f696fdc468665e7850025d28b`, independently verified on fresh
+main. Its [exact protected Check](https://github.com/ubugeeei-prod/vize/actions/runs/37692670456)
+passed with current original 16 complete transactions, inherited 32/40 sessions,
+three geometry laws, four native requirement laws, per-unit required
+model/event/package execution and 104 budgets measured three times. Historical
+source and replaced candidate results supply no execution credit.
+
+The original Expected text of #7994/#7996 requires the delivered shorthand
+expansions and inline reactive public/local identity with code that type-checks.
+The source bugs closed after genuine native execution and actual signed merge;
+[paired #7994](https://github.com/ubugeeei-prod/vize/issues/7994#issuecomment-6047945164)
+and [#7996](https://github.com/ubugeeei-prod/vize/issues/7996#issuecomment-6047945636)
+retain the concrete delivery facts. Installed v0.435.1 replay and publication
+remain independent release authority. The configured feature differential job
+uses its declared smoke corpus with `closure_evidence=false`; it provides no
+full-corpus closure authority. Local named type-alias/interface combinations
+are a separate [48-session test-only qualification](./2026-10-08-reactive-named-type-rename-controls.md),
+not an invented original source-bug closure condition.
