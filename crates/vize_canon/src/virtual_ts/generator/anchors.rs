@@ -2,7 +2,7 @@
 
 use super::imports::{IdentifierUsage, collect_setup_binding_anchor_names};
 use std::ops::Range;
-use vize_carton::{FxHashSet, String, append};
+use vize_carton::{FxHashSet, String, append, profile};
 use vize_croquis::{BindingType, Croquis};
 
 /// Header comment for the anchor list; the wording differs when unused-local
@@ -62,7 +62,32 @@ fn is_setup_variable(kind: &BindingType) -> bool {
     )
 }
 
-pub(super) fn emit_setup_binding_anchors(
+pub(super) struct SetupBindingAnchors<'a> {
+    pub(super) summary: &'a Croquis,
+    pub(super) script_content: Option<&'a str>,
+    pub(super) usage: &'a IdentifierUsage,
+    pub(super) template_usage_names: &'a FxHashSet<String>,
+    pub(super) preserve_unused_diagnostics: bool,
+}
+
+impl SetupBindingAnchors<'_> {
+    pub(super) fn emit(&self, ts: &mut String, label: &'static str) {
+        profile!(
+            label,
+            emit_setup_binding_anchors(
+                ts,
+                self.summary,
+                self.script_content,
+                self.usage,
+                self.preserve_unused_diagnostics
+                    .then_some(self.template_usage_names),
+                setup_binding_anchor_comment(self.preserve_unused_diagnostics),
+            )
+        );
+    }
+}
+
+fn emit_setup_binding_anchors(
     ts: &mut String,
     summary: &Croquis,
     script_content: Option<&str>,

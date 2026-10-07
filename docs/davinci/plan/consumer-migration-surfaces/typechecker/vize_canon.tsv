@@ -768,6 +768,14 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/declarations.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/declarations.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/declarations.rs	6	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/emit_navigation.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	2
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/emit_navigation.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/emit_navigation.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/emit_navigation.rs	5	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/emit_navigation.rs	5	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/emit_navigation.rs	5	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/setup_helpers/emit_navigation/tests.rs	2	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/setup_helpers/emit_navigation/tests.rs	2	croquis	Croquis analysis	old	vize_croquis	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/macro_results.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/macro_results.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/setup_helpers/macro_results.rs	4	raw_oxc	raw OXC	raw	oxc_ast	raw	1

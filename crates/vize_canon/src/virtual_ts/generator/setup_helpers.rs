@@ -12,6 +12,7 @@ use vize_relief::RootNode;
 
 mod boolean_keys;
 mod declarations;
+mod emit_navigation;
 mod macro_results;
 pub(super) use declarations::SetupHelperPlan;
 mod template_ref_registry;
