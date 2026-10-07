@@ -1,0 +1,48 @@
+name: n8n adoption fixture
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/n8n-adoption.yml
+      - .gitmodules
+      - tests/_fixtures/_git/n8n
+      - tests/_fixtures/n8n-adoption.json
+      - tests/_fixtures/vue-ecosystem-fixtures.json
+      - tests/tooling/n8n-adoption-fixture.test.mjs
+      - npm/oxlint/**
+  merge_group:
+    types: [checks_requested]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n8n-adoption-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  fixture:
+    name: Pinned n8n adoption corpus
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Hydrate the read-only licensed n8n fixture
+        run: git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n
+      - name: Verify complete fixture and frozen adoption configuration
+        env:
+          VIZE_N8N_FIXTURE_REQUIRED: "1"
+        run: vp node --test tests/tooling/n8n-adoption-fixture.test.mjs
