@@ -13,7 +13,10 @@ fn typecheck_watcher_tracks_declarations_vue_sources_and_manifests() {
     assert_eq!(registration.method, "workspace/didChangeWatchedFiles");
     let options = registration.register_options.unwrap();
     assert_eq!(options["watchers"][0]["globPattern"], "**/*.d.{ts,mts,cts}");
-    assert_eq!(options["watchers"][1]["globPattern"], "**/*.vue");
+    assert_eq!(
+        options["watchers"][1]["globPattern"],
+        "**/*.{vue,ts,tsx,mts,cts,js,jsx,mjs,cjs}"
+    );
     assert_eq!(options["watchers"][2]["globPattern"], "**/package.json");
     assert_eq!(options["watchers"][3]["globPattern"], "**/tsconfig*.json");
     assert_eq!(options["watchers"][4]["globPattern"], "**/jsconfig.json");

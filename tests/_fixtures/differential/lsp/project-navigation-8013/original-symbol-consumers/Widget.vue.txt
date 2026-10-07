@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const internalState = ref(1)
+</script>
+
+<template>
+  <span>{{ internalState }}</span>
+</template>

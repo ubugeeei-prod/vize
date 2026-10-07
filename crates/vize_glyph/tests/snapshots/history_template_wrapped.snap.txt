@@ -1,6 +1,6 @@
 <p>{{
-    veryLongFunctionName(
-      firstArgument,
-      secondArgument,
-    )
-  }}</p>
+  veryLongFunctionName(
+    firstArgument,
+    secondArgument,
+  )
+}}</p>

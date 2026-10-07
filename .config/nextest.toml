@@ -7,6 +7,13 @@ nextest-version = "0.9.146"
 filter = 'package(=vize_atelier_vapor) & binary(=davinci_vapor_native_budget) & test(=native_lane_stays_within_its_allocation_ceilings)'
 junit.store-success-output = true
 
+# Preserve complete public #7989 CLI/API observations in both inherited PR/full
+# JUnit receipts. Only these exact two laws opt in; runtime policies stay fixed.
+[[profile.default.overrides]]
+filter = '''(package(=vize) & binary(=lint_call_source_cli) & test(=original_argv_and_complete_comment_string_real_call_vectors_are_checked)) |
+(package(=vize_patina) & binary(=call_source_7989) & test(=original_and_controls_keep_complete_configured_service_results))'''
+junit.store-success-output = true
+
 [profile.pr]
 # Audited real-TSGO cases remain mandatory in the full Cargo T1 lane.
 # Exact package, binary and names keep future tests in the PR tier.

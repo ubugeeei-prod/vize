@@ -1,0 +1,11 @@
+<template>
+  <div>
+    <span>{{
+        new Date(version.date).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+      }}</span>
+  </div>
+</template>

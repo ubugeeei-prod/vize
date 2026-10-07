@@ -1,0 +1,9 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "cross-file": "off",
+      "ecosystem/vue-router-unknown-route": "error"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+<template>
+  <span>{{
+    `first
+    raw`
+  }}</span>
+</template>

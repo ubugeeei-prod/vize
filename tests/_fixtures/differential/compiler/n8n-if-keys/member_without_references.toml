@@ -1,0 +1,42 @@
+# Captured from the official self-contained Vue 3.5.26 compiler browser bundle.
+# Complete authored SFC and complete compileTemplate code/error/map/tip outputs.
+package = "@vue/compiler-sfc"
+version = "3.5.26"
+url = "https://unpkg.com/@vue/compiler-sfc@3.5.26/dist/compiler-sfc.esm-browser.js"
+sha256 = "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec"
+name = "member_without_references"
+filename = "member_without_references.vue"
+id = "data-v-member_without_references"
+entrypoint = "compileTemplate"
+isProd = false
+source_sha256 = "5d1bc4a9b024bfd6e0c78842c6bd68563994e75c39e46505d426bc103c1b8707"
+source = "<script setup>const foo = 'same'; const chunks = []</script><template><p v-if=\"a\" :key=\"({ id: 1 }).id\">1</p><p v-else :key=\"({ id: 1 }).id\">2</p></template>"
+template = "<p v-if=\"a\" :key=\"({ id: 1 }).id\">1</p><p v-else :key=\"({ id: 1 }).id\">2</p>"
+
+[[modes]]
+mode = "function"
+prefixIdentifiers = false
+cacheHandlers = false
+hoistStatic = false
+comments = false
+sourceMap = false
+code = "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = _Vue\n\n    return a\n      ? (_openBlock(), _createElementBlock(\"p\", { key: ({ id: 1 }).id }, \"1\"))\n      : (_openBlock(), _createElementBlock(\"p\", { key: ({ id: 1 }).id }, \"2\"))\n  }\n}"
+map_json = "null"
+tips_json = "[]"
+error_codes = [29]
+errors_json = "[{\"code\":29,\"message\":\"v-if/else branches must use unique keys.\",\"loc\":{\"start\":{\"column\":50,\"line\":1,\"offset\":49},\"end\":{\"column\":71,\"line\":1,\"offset\":70},\"source\":\":key=\\\"({ id: 1 }).id\\\"\"}}]"
+error_spans = [[49, 70]]
+
+[[modes]]
+mode = "module"
+prefixIdentifiers = true
+cacheHandlers = false
+hoistStatic = false
+comments = false
+sourceMap = false
+code = "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_ctx.a)\n    ? (_openBlock(), _createElementBlock(\"p\", {\n        key: ({ id: 1 }).id\n      }, \"1\"))\n    : (_openBlock(), _createElementBlock(\"p\", {\n        key: ({ id: 1 }).id\n      }, \"2\"))\n}"
+map_json = "null"
+tips_json = "[]"
+error_codes = []
+errors_json = "[]"
+error_spans = []

@@ -107,6 +107,10 @@ impl CorsaTypeAwareSession {
             virtual_file_path,
             supports_overlay_updates,
             overlay_version: 0,
+            rewritten_source: None,
+            import_source_map: vize_canon::ImportSourceMap::empty(),
+            dependency_paths: Vec::new(),
+            dependency_cache: vize_l0::FxHashMap::default(),
             closed: false,
         })
     }
@@ -121,6 +125,30 @@ impl CorsaTypeAwareSession {
         filename: &str,
     ) -> Result<(), String> {
         let next_path = virtual_file_path(&self.session_root, &self.project_root, filename);
+        let next_existed = next_path.exists();
+        let prepared = super::vue_dependencies::prepare(
+            generated_source,
+            filename,
+            &self.session_root,
+            &self.project_root,
+            &mut self.dependency_cache,
+        );
+        let prior_dependencies: Vec<_> = self
+            .dependency_paths
+            .iter()
+            .filter(|path| **path != next_path)
+            .cloned()
+            .collect();
+        let mut dependency_changes =
+            super::vue_dependencies::materialize(&prepared.files, &prior_dependencies)?;
+        self.dependency_paths = prepared
+            .files
+            .iter()
+            .map(|(path, _)| path.clone())
+            .collect();
+        self.import_source_map = prepared.source_map;
+        self.rewritten_source = prepared.code;
+        let generated_source = self.rewritten_source.as_deref().unwrap_or(generated_source);
         let previous_wire = if next_path == self.virtual_file_path {
             None
         } else {
@@ -143,16 +171,37 @@ impl CorsaTypeAwareSession {
             let previous_wire =
                 std::mem::replace(&mut self.virtual_file_wire, path_to_wire(&next_path));
             let previous_path = std::mem::replace(&mut self.virtual_file_path, next_path);
-            let _ = std::fs::remove_file(previous_path);
+            if !self.dependency_paths.contains(&previous_path) {
+                let _ = std::fs::remove_file(previous_path);
+            }
             Some(previous_wire)
         };
-        let file_changes = previous_wire.as_ref().map(|previous| {
-            FileChanges::Summary(FileChangeSummary {
-                changed: Vec::new(),
-                created: vec![self.virtual_file_wire.as_str().into()],
-                deleted: vec![previous.as_str().into()],
-            })
-        });
+        if let Some(previous) = &previous_wire {
+            if next_existed {
+                dependency_changes
+                    .changed
+                    .push(self.virtual_file_wire.as_str().into());
+            } else {
+                dependency_changes
+                    .created
+                    .push(self.virtual_file_wire.as_str().into());
+            }
+            if !self
+                .dependency_paths
+                .iter()
+                .any(|path| path_to_wire(path) == *previous)
+            {
+                dependency_changes.deleted.push(previous.as_str().into());
+            }
+        } else if !self.supports_overlay_updates {
+            dependency_changes
+                .changed
+                .push(self.virtual_file_wire.as_str().into());
+        }
+        let file_changes = (!dependency_changes.changed.is_empty()
+            || !dependency_changes.created.is_empty()
+            || !dependency_changes.deleted.is_empty())
+        .then_some(FileChanges::Summary(dependency_changes));
 
         if self.supports_overlay_updates {
             self.overlay_version = self.overlay_version.saturating_add(1);

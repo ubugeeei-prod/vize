@@ -54,6 +54,10 @@ class CustomEventNameCasingOptions {
   casing: CustomEventNameCasing = "camelCase"
 }
 
+class RequireComponentRegistrationOptions {
+  globals: Listing<String> = new Listing {}
+}
+
 /// Options for `vue/no-mutating-props`.
 class NoMutatingPropsOptions {
   shallowOnly: Boolean = false
@@ -110,13 +114,20 @@ class StrictBooleanExpressionsOptions {
   allowAny: Boolean = false
 }
 
+/// Style for props destructuring; matches eslint-plugin-vue's default.
+class DefinePropsDestructuringOptions {
+  destructure: "only-when-assigned"|"always"|"never" = "only-when-assigned"
+}
+
 class LintRuleOptions {
+  `script/define-props-destructuring`: DefinePropsDestructuringOptions? = null
   `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
   `vue/no-mutating-props`: NoMutatingPropsOptions? = null
+  `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
   `vue/v-on-event-hyphenation`: HyphenationStyle? = null

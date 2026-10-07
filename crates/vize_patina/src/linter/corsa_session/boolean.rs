@@ -25,12 +25,29 @@ impl CorsaTypeAwareSession {
         targets: &[u32],
         ranges: &[(u32, u32)],
     ) -> Result<Vec<Option<Vec<Value>>>, String> {
+        let translated_targets = self.rewritten_source.as_ref().map(|_| {
+            targets
+                .iter()
+                .map(|&at| self.import_source_map.get_virtual_offset(at))
+                .collect::<Vec<_>>()
+        });
+        let translated_ranges = self.rewritten_source.as_ref().map(|_| {
+            ranges
+                .iter()
+                .map(|&(start, end)| {
+                    (
+                        self.import_source_map.get_virtual_offset(start),
+                        self.import_source_map.get_virtual_offset(end),
+                    )
+                })
+                .collect::<Vec<_>>()
+        });
         block_on(classify_batch(
             &self.session,
             self.virtual_file_wire.as_str(),
-            source,
-            targets,
-            ranges,
+            self.rewritten_source.as_deref().unwrap_or(source),
+            translated_targets.as_deref().unwrap_or(targets),
+            translated_ranges.as_deref().unwrap_or(ranges),
         ))
         .map_err(|error| {
             compact_error(

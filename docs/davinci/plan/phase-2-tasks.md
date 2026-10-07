@@ -252,7 +252,7 @@ the live-source boundary test that keeps `VIZE_DAVINCI_DOM`, `DOM_LANE_FLAG`,
 - [x] **Waiver budget: zero.** DOM emitted output is the hard byte-parity bar (charter #23) and this is the most output-visible surface in the phase; any corpus diff is a bug in this task, exactly as P1-9 ran it
 - [x] Patch-flag equivalence fixtures (the flags the new path computes must equal the old path's, per node, exactly)
 
-**Acceptance:** `rust-script tools/commands/davinci/corpus-diff.rs --surface compiler --shards 2 --timeout-ms 600000` empty across the 144-project manifest with scope proof, run from clean fixtures (TS-11); differential lane zero divergence with its comparison count recorded as 144 DOM-output comparisons (TS-25); patch-flag equivalence fixtures exact (TS-1/TS-2); DOM bench `allocs` re-recorded in `budgets.toml` (TS-10); TS-13. **Deps:** P2-9. **Non-goals:** SSR and Vapor backends (phase 3); source maps from a structured L4 emitter (P3-9); deleting the relief codegen-node universe; the vapor run-then-discard double transform (P3-6).
+**Acceptance:** `rust-script tools/commands/davinci/corpus-diff.rs --surface compiler --shards 2 --timeout-ms 600000` empty across the 145-project manifest with scope proof, run from clean fixtures (TS-11); differential lane zero divergence with its comparison count recorded as 145 DOM-output comparisons (TS-25); patch-flag equivalence fixtures exact (TS-1/TS-2); DOM bench `allocs` re-recorded in `budgets.toml` (TS-10); TS-13. **Deps:** P2-9. **Non-goals:** SSR and Vapor backends (phase 3); source maps from a structured L4 emitter (P3-9); deleting the relief codegen-node universe; the vapor run-then-discard double transform (P3-6).
 
 ## P2-12a — Phase-start baselines and pinned targets
 

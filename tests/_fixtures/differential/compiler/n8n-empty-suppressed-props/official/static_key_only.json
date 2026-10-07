@@ -1,0 +1,92 @@
+{
+  "compiler": {
+    "version": "3.5.26",
+    "entrypoint": "@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js",
+    "url": "https://unpkg.com/@vue/compiler-sfc@3.5.26/dist/compiler-sfc.esm-browser.js",
+    "sha256": "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec"
+  },
+  "name": "static_key_only",
+  "filename": "static_key_only.vue",
+  "source": "<template><template v-for=\"row in rows\"><span key=\"fixed\">{{ row.label }}</span></template></template>",
+  "sourceSha256": "a5fcfe9e2e6f1b6cbfbe2c3d6079a39c0721107ac25cbdc494692d79ea5ea199",
+  "template": "<template v-for=\"row in rows\"><span key=\"fixed\">{{ row.label }}</span></template>",
+  "parseErrors": [],
+  "outputs": [
+    {
+      "options": {
+        "source": "<template v-for=\"row in rows\"><span key=\"fixed\">{{ row.label }}</span></template>",
+        "filename": "static_key_only.vue",
+        "id": "static_key_only",
+        "compilerOptions": {
+          "mode": "function",
+          "prefixIdentifiers": false,
+          "cacheHandlers": false,
+          "sourceMap": false
+        },
+        "sourceMap": false
+      },
+      "code": "const _Vue = Vue\nconst {  } = _Vue\n\nconst _hoisted_1 = { key: \"fixed\" }\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { renderList: _renderList, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, toDisplayString: _toDisplayString } = _Vue\n\n    return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(rows, (row) => {\n      return (_openBlock(), _createElementBlock(\"span\", _hoisted_1, _toDisplayString(row.label), 1 /* TEXT */))\n    }), 256 /* UNKEYED_FRAGMENT */))\n  }\n}",
+      "codeSha256": "8aad2c9bd7b5cca7627826eed0ee647fe86b90cb44042861213b2055b168319e",
+      "errors": [
+        {
+          "name": "SyntaxError",
+          "message": "<template v-for> key should be placed on the <template> tag.",
+          "code": 33,
+          "loc": {
+            "start": {
+              "column": 37,
+              "line": 1,
+              "offset": 36
+            },
+            "end": {
+              "column": 48,
+              "line": 1,
+              "offset": 47
+            },
+            "source": "key=\"fixed\""
+          }
+        }
+      ],
+      "tips": [],
+      "map": null
+    },
+    {
+      "options": {
+        "source": "<template v-for=\"row in rows\"><span key=\"fixed\">{{ row.label }}</span></template>",
+        "filename": "static_key_only.vue",
+        "id": "static_key_only",
+        "compilerOptions": {
+          "mode": "module",
+          "prefixIdentifiers": true,
+          "cacheHandlers": false,
+          "sourceMap": false
+        },
+        "sourceMap": false
+      },
+      "code": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from \"vue\"\n\nconst _hoisted_1 = { key: \"fixed\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.rows, (row) => {\n    return (_openBlock(), _createElementBlock(\"span\", _hoisted_1, _toDisplayString(row.label), 1 /* TEXT */))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+      "codeSha256": "df2c6cf99beae40a0e3525f3b4b9e77ff77946928a7442e31aa22426e65cf4b5",
+      "errors": [
+        {
+          "name": "SyntaxError",
+          "message": "<template v-for> key should be placed on the <template> tag.",
+          "code": 33,
+          "loc": {
+            "start": {
+              "column": 37,
+              "line": 1,
+              "offset": 36
+            },
+            "end": {
+              "column": 48,
+              "line": 1,
+              "offset": 47
+            },
+            "source": "key=\"fixed\""
+          }
+        }
+      ],
+      "tips": [],
+      "map": null
+    }
+  ]
+}

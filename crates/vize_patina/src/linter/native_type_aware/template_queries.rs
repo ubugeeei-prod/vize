@@ -195,34 +195,53 @@ fn generated_offset_for_content(
     let expected = content.trim_end_matches(char::is_whitespace);
     let probe_offset = probe_offset_for_text(source_start, source_text)?;
     let source_end = source_start as usize + trimmed.len();
-    // A shorthand binding (`:name`) and a bare event handler (`@click="save"`)
-    // map the same authored text to both a synthetic check identifier and the
-    // actual expression. Kebab-case shorthand has camelized expression content
-    // and may acquire a props receiver or an unref wrapper in the projection.
-    // Probe the expression's sub-span so synthetic
-    // `unknown`/`any` types cannot become false unsafe-binding diagnostics.
+    // An attribute maps to both a synthetic check and the initializer. A
+    // nested callee must use the initializer's containing sub-span too.
+    let source_range = source_start as usize..source_end;
+    let mut actual_expression = None;
     for row in virtual_ts
         .mapping
         .rows_containing_authored(probe_offset as usize)
     {
-        for sub_span in &row.span.sub_spans {
-            if sub_span.src_range != (source_start as usize..source_end) {
+        let spans = std::iter::once((&row.span.src_range, &row.span.gen_range)).chain(
+            row.span
+                .sub_spans
+                .iter()
+                .map(|span| (&span.src_range, &span.gen_range)),
+        );
+        for (authored, generated) in spans {
+            if authored.start > source_range.start || authored.end < source_range.end {
                 continue;
             }
-            let Some(generated) = virtual_ts.content.get(sub_span.gen_range.clone()) else {
-                continue;
-            };
-            let matches = generated == expected
-                || (expected != trimmed
-                    && generated
-                        .strip_suffix(expected)
-                        .is_some_and(|prefix| prefix.ends_with('.') || prefix.ends_with('(')));
-            if matches {
-                return u32::try_from(sub_span.gen_range.end.checked_sub(1)?).ok();
+            let start = generated.start + source_range.start - authored.start;
+            let end = start + trimmed.len();
+            let exact =
+                end <= generated.end && virtual_ts.content.get(start..end) == Some(expected);
+            let shorthand = authored == &source_range
+                && expected != trimmed
+                && virtual_ts
+                    .content
+                    .get(generated.clone())
+                    .is_some_and(|text| {
+                        text == expected
+                            || text.strip_suffix(expected).is_some_and(|prefix| {
+                                prefix.ends_with('.') || prefix.ends_with('(')
+                            })
+                    });
+            if exact || shorthand {
+                let end = if shorthand { generated.end } else { end };
+                let offset = u32::try_from(end.checked_sub(1)?).ok()?;
+                // Prefer an inferred probe over a check annotated with the
+                // destination type. The latter may intentionally be unknown.
+                if super::expression_bindings::binding_offset(&virtual_ts.content, offset).is_some()
+                {
+                    return Some(offset);
+                }
+                actual_expression.get_or_insert(offset);
             }
         }
     }
-    virtual_ts.generated_offset(probe_offset)
+    actual_expression.or_else(|| virtual_ts.generated_offset(probe_offset))
 }
 
 /// Probe the inferred iterable from a `v-for` source instead of the last byte

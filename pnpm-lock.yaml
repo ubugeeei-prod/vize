@@ -181,8 +181,8 @@ catalogs:
       version: 7.0.2
   integrations:
     '@modelcontextprotocol/sdk':
-      specifier: 1.30.0
-      version: 1.30.0
+      specifier: 1.31.0
+      version: 1.31.0
     '@napi-rs/cli':
       specifier: 3.6.2
       version: 3.6.2
@@ -1123,7 +1123,7 @@ importers:
     dependencies:
       '@modelcontextprotocol/sdk':
         specifier: catalog:integrations
-        version: 1.30.0(supports-color@10.2.2)(zod@4.4.3)
+        version: 1.31.0(supports-color@10.2.2)(zod@4.4.3)
       '@vizejs/native':
         specifier: workspace:*
         version: link:../native
@@ -2816,8 +2816,8 @@ packages:
   '@mermaid-js/parser@1.2.0':
     resolution: {integrity: sha512-oYPyv8A4As1yH5Bx+04iQEQxXuIQDe0GKCNSRgao6z8AM9jixXIfP0vsppRLvGf+nKIOb9/LdpWA4YuJiVvESA==}
 
-  '@modelcontextprotocol/sdk@1.30.0':
-    resolution: {integrity: sha512-xKd8OIzlqNzcqcNumGAa6g+PW2kjD5vrpcKOnfldAUPP3j7lnqMPwlTXQm8gF+UwH72z0lqaRbjr9hqGz0eITA==}
+  '@modelcontextprotocol/sdk@1.31.0':
+    resolution: {integrity: sha512-UvTMgnNlnIBO/22ob2RcVGDlcvOslQs8T59+FTGdA0L27a39fdGF/EDETNtDVK4DZGpwomlsYpRdA8UXcVL/pw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
@@ -14455,7 +14455,7 @@ snapshots:
     dependencies:
       '@chevrotain/types': 11.1.2
 
-  '@modelcontextprotocol/sdk@1.30.0(supports-color@10.2.2)(zod@4.4.3)':
+  '@modelcontextprotocol/sdk@1.31.0(supports-color@10.2.2)(zod@4.4.3)':
     dependencies:
       '@hono/node-server': 2.0.11(hono@4.13.7)
       ajv: 8.20.0

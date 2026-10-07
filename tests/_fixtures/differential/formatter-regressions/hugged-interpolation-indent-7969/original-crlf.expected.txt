@@ -1,0 +1,13 @@
+<script setup lang="ts">
+const describeEverySelectedItemInTheList = (items: string[]): string =>
+  items.join(", ");
+const selectedItems = ["a", "b"];
+</script>
+
+<template>
+  <div>
+    <span class="names">{{
+      describeEverySelectedItemInTheList(selectedItems)
+    }}</span>
+  </div>
+</template>

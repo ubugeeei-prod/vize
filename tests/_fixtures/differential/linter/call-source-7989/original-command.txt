@@ -1,0 +1,1 @@
+vize lint -f plain --help-level none MyNotes.vue

@@ -1,0 +1,4 @@
+<Select>
+  <template v-if="prefix" #prefix>header</template>
+  <Option v-for="row in loadRows()" :key="row.id" :row-id="row.id">{{ row.label }}</Option>
+</Select>

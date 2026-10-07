@@ -48,6 +48,7 @@ title: ルール オプション
 | `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case" }` | 既定は `PascalCase` です。 |
 | `script/custom-event-name-casing` | `{ casing?: "camelCase" \| "kebab-case" }` | 既定は `camelCase` です。 |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | 既定は `false` です。`true` では direct prop replacement を禁止したまま nested mutation は許可します。 |
+| `vue/require-component-registration` | `{ globals?: string[] }` | application plugin や previewSetup が登録する component 名を指定します。PascalCase と kebab-case を許可します。rule は別途有効にしてください。 |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | 既定は `[["script", "template"], "style"]` です。ネストした配列は、その rank でどの selector でもよいことを表します。 |
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"` | 既定は `html.void: "always"`、`html.normal: "any"`、`html.component: "always"`、`svg: "always"`、`math: "always"` です。 |
 | `vue/v-on-event-hyphenation` | `"always" \| "never"` | component 上の static event listener 名を hyphenation するかを設定します。 |
@@ -436,4 +437,26 @@ hardcoded CSS value を `path` から導かれる CSS custom property に対応�
   color: var(--color-primary);
 }
 </style>
+```
+
+## `vue/require-component-registration`
+
+application plugin や Musea `previewSetup` が登録する component 名を明示します。
+PascalCase と kebab-case を許可し、正規表現は解釈しません。option だけでは
+rule は有効になりません。scoped entry は list 全体を置き換え、空 list で reset します。
+
+```json
+{"linter":{"rules":{"vue/require-component-registration":"warn"},"ruleOptions":{"vue/require-component-registration":{"globals":["MyButton","MyIcon"]}}}}
+```
+
+悪い（未登録の component）:
+
+```vue
+<MissingWidget />
+```
+
+良い（設定した global）:
+
+```vue
+<MyButton />
 ```

@@ -33,6 +33,21 @@ pub(super) fn validate(plan: &LinterConfigPlan) -> Result<(), String> {
     known.extend(builtin_script_rules().into_iter().map(|rule| rule.name));
     known.extend(builtin_css_rules().into_iter().map(|rule| rule.name));
     known.extend(builtin_musea_rules().into_iter().map(|rule| rule.name));
+    use vize_croquis_cf::{CrossFileDiagnostic, providers::vue_router::typing};
+    known.extend([
+        "cross-file",
+        super::super::cross_file::CROSS_COMPONENT_RULE,
+        super::super::cross_file::FALLTHROUGH_RULE,
+        typing::UNKNOWN_ROUTE,
+        typing::EXTRA_PARAM,
+        typing::PARAM_TYPE,
+        typing::MISSING_PARAM,
+    ]);
+    known.extend(
+        CrossFileDiagnostic::CODES
+            .into_iter()
+            .map(|code| code.strip_prefix("vize:").unwrap_or(code)),
+    );
 
     let mut problems = Vec::new();
     for (scope, names) in [("linter.rules", root), ("entries[].linter.rules", entries)] {

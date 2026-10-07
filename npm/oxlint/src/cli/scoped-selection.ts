@@ -2,7 +2,9 @@ import path from "node:path";
 
 import {
   createScopedMirror,
+  loadScopedConfig,
   readScopedConfig,
+  validateNestedConfigs,
   validateScopedConfig,
   validateSelectionPaths,
 } from "./scoped-config.ts";
@@ -29,7 +31,7 @@ export async function prepareScopedSelection(
   | undefined
 > {
   if (vueFiles.length === 0) return undefined;
-  const config = readScopedConfig(cwd, originalArgs);
+  let config = readScopedConfig(cwd, originalArgs);
   if (config == null) return undefined;
   const options = withoutLintTargets(originalArgs);
   if (
@@ -59,8 +61,10 @@ export async function prepareScopedSelection(
   // config validation, before linting or fixing. The engine owns this predicate.
   const selection = await run(["--debug", "files", ...originalArgs]);
   if (selection.status !== 0) return { result: selection };
+  config = await loadScopedConfig(config);
   validateScopedConfig(config, originalArgs);
   const selected = parseFiles(cwd, selection);
+  validateNestedConfigs(config, selected);
   if (selected.some((file) => !candidates.has(file)))
     throw new Error(
       "Scoped Vue transport cannot bind every selected file to an original candidate.",
@@ -70,6 +74,7 @@ export async function prepareScopedSelection(
   const mirror = createScopedMirror(cwd, config, selectedVue);
   try {
     const args = [...options];
+    if (config.discovered) args.unshift("--config", mirror.sibling);
     // Last config wins in the original parser; replace its explicit occurrence
     // rather than adding a duplicate option with implementation-specific rules.
     for (let index = 0; index < args.length && args[index] !== "--"; index += 1) {

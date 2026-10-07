@@ -159,3 +159,28 @@ this listener successor must conserve all reviewed production/corpus bytes on
 that actual main and obtain fresh exact-head Actions before independent queue
 admission. No current source/protected/installed release acceptance is inherited
 from the failed aggregate run, and no gate or ceiling is waived.
+
+## Genuine current-main refresh and unchanged classifier extraction
+
+The existing draft is refreshed from original head
+`098c46e41d78eb1cf2f2293daa0a63eab85b31f1` onto signed actual main
+`8f01ff9c320f4b474b410efe7d66baed462df7aa`. The complete unchanged TypeScript
+function classifier moves to the ordinary `expression/function_shape.rs` helper
+in a separate move-only commit. Its public reexport, shared whole-expression
+wrapper, parse arena, safety guard, retained JavaScript fast path and component
+handler body keep their existing behavior. The genuine union keeps the parent
+expression module within 350 lines; no parse, stage or fallback is added.
+
+The seven complete pinned inputs, fixed runtime expectation, standalone typed
+JavaScript colon-refusal law, whole runtime runner and all retained full
+module/map packets remain unchanged. Complete incoming and owned consumer
+inventory rows are regenerated from the union. Historical signed producer
+`d5e01e2e6ee6eb14e7e0c6ff76bf6740997ad831` passed all 16 original runtime rows
+and all 16,512 Rust executions, but its aggregate failed the shared security
+gate. Its full raw failure and success packets remain historical evidence.
+
+TODO: qualify this genuine refreshed source with fresh required Actions and
+protected gates. The reference remains real pinned Vue 3.6.0-rc.9; requested
+rc.10, native-level, direct Vapor SSR/hydration, Chromium, installed release
+and performance acceptance remain unfinished. No old result transfers to the
+refreshed source, and the draft remains outside the queue until root admission.
