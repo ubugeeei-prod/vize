@@ -262,7 +262,7 @@ pub(super) fn transform_template_ref<'a>(
         .push(OperationNode::SetTemplateRef(SetTemplateRefIRNode {
             element: element_id,
             value,
-            ref_for: has_static_ref_for(el),
+            ref_for: ctx.for_depth > 0 || has_static_ref_for(el),
         }));
 }
 

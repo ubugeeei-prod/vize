@@ -231,8 +231,10 @@ fn transform_for_node_with_options<'a>(
     // Consume ID for the render block
     let _render_block_id = ctx.next_id();
 
-    // Transform children as render block
+    // Refs on the loop root and all descendants belong to this loop body.
+    ctx.for_depth += 1;
     let render = transform_children(ctx, &for_node.children);
+    ctx.for_depth -= 1;
 
     let ir_for = ForIRNode {
         id: for_id,

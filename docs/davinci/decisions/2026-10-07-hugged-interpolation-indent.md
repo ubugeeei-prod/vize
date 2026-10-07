@@ -110,3 +110,12 @@ runtime observers. Preserve the complete module body, explicit Vue/Server
 bindings, returned render function and every assertion. Fresh exact-head
 Actions must qualify both lint and the original runtime controls before queue
 admission; no product output or expected reference changes in this repair.
+
+Refresh the exact owned source head 87d9f0b2 onto fetched, signed actual main
+c86c7a21. Retain every original/stock/runtime carrier, API/CLI assertion and
+source-reference refinement. Preserve the complete incoming canonical350 clauses
+and both authored additions while combining the LF/CRLF and component fixture
+attributes. The old terminal source green/security refusal is historical; the
+union requires fresh exact-head Actions and protected qualification. Queue
+admission, actual merge and supported installed-release replay remain root owned
+and pending; no additional PR or unpublished #7876 lane is introduced.

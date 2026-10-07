@@ -109,12 +109,6 @@ impl ReferencesService {
             corsa_locations,
             Self::references(ctx, include_declaration),
         )
-        .map(|mut locations| {
-            if !ctx.state.lsp_features().cross_file {
-                locations.retain(|location| location.uri == *ctx.uri);
-            }
-            locations
-        })
     }
 
     #[cfg(feature = "native")]

@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineProps<{
+  label?: string;
+  size?: "small" | "large";
+}>();
+</script>
+
+<template>
+  <button type="button">{{ label }}</button>
+</template>
