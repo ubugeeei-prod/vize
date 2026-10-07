@@ -48,7 +48,7 @@ jobs:
           run-install: false
       - name: Install pinned repository Rust
         if: env.MEASURE == 'true'
-        run: rustup toolchain install 1.98.0 --profile minimal
+        run: rustup toolchain install 1.99.0 --profile minimal
       - name: Install Callgrind and matching client request headers
         if: env.MEASURE == 'true'
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind

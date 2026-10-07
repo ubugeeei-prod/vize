@@ -43,24 +43,36 @@ type Worker = {
   captures: Capture[];
 };
 
-function checkout(repoRoot: string) {
+type SourceIdentity = { sha: string; tree: string; toolchain: string };
+
+export function typecheckerSourceIdentity(repoRoot: string): SourceIdentity {
   const git = (...args: string[]) =>
     execFileSync("git", args, {
       cwd: repoRoot,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
     }).trim();
-  return { sha: git("rev-parse", "HEAD"), tree: git("rev-parse", "HEAD^{tree}") };
+  const sha = git("rev-parse", "HEAD");
+  const committed = git("show", `${sha}:rust-toolchain.toml`);
+  const channels = [...committed.matchAll(/^channel\s*=\s*"([^"]+)"\s*$/gm)];
+  assert.equal(channels.length, 1, "one committed Rust toolchain stamp is required");
+  const toolchain = channels[0][1];
+  assert(["1.98.0", "1.99.0"].includes(toolchain), "unsupported source Rust toolchain");
+  return { sha, tree: git("rev-parse", `${sha}^{tree}`), toolchain };
 }
 
-function receiptIdentity(bytes: Buffer, expected: { sha: string; tree: string }) {
+export function validateTypecheckerReceipt(bytes: Buffer, expected: SourceIdentity) {
   const receipt: Receipt = JSON.parse(bytes.toString("utf8"));
   assert.equal(receipt.schemaVersion, 3);
   assert.equal(receipt.sha, expected.sha);
   assert.equal(receipt.tree, expected.tree);
   assert.equal(receipt.cargoProfile, "ci");
   assert.equal(receipt.nextestVersion, "0.9.146");
-  assert.match(receipt.rustcVersion, /^rustc 1\.98\.0 /);
+  assert.equal(typeof receipt.rustcVersion, "string", "Rust compiler stamp is required");
+  assert(
+    receipt.rustcVersion.startsWith(`rustc ${expected.toolchain} `),
+    "Rust compiler does not match the committed source toolchain",
+  );
   assert.equal(receipt.requireTsgo, "1");
   assert.equal(receipt.disableTsgo, null);
   assert.equal(receipt.nuxtIterations, "100");
@@ -97,7 +109,7 @@ function validateWorker(
   loaded: LoadedTypechecker,
   worker: Worker,
   junit: Buffer,
-  expected: { sha: string; tree: string },
+  expected: SourceIdentity,
 ) {
   assert.equal(worker.schema, "vize.typechecker-worker-observations");
   assert.equal(worker.version, 1);
@@ -106,7 +118,7 @@ function validateWorker(
   assert.equal(worker.sourceTree, expected.tree);
   assert.equal(worker.manifestSha256, loaded.manifestSha256);
   const receipt = Buffer.from(worker.receiptBase64, "base64");
-  receiptIdentity(receipt, expected);
+  validateTypecheckerReceipt(receipt, expected);
   assert.equal(worker.junitSha256, sha256(junit));
   assert.deepEqual(worker.tests, passedFixtureTests(junit.toString("utf8")));
   assert.deepEqual(
@@ -138,9 +150,9 @@ export function verifyTypecheckerWorker({
   const loaded = loadTypecheckerManifest(
     path.join(repoRoot, "tests/_fixtures/differential/typechecker/manifest.json"),
   );
-  const expected = checkout(repoRoot);
+  const expected = typecheckerSourceIdentity(repoRoot);
   const receipt = fs.readFileSync(receiptPath);
-  const identity = receiptIdentity(receipt, expected);
+  const identity = validateTypecheckerReceipt(receipt, expected);
   const junit = fs.readFileSync(junitPath);
   const tests = passedFixtureTests(junit.toString("utf8"));
   fs.mkdirSync(evidenceDir, { recursive: true });
@@ -194,7 +206,7 @@ export function aggregateTypecheckerWorkers({
   const loaded = loadTypecheckerManifest(
     path.join(repoRoot, "tests/_fixtures/differential/typechecker/manifest.json"),
   );
-  const expected = checkout(repoRoot);
+  const expected = typecheckerSourceIdentity(repoRoot);
   const workers = fs
     .readdirSync(artifactRoot)
     .sort()

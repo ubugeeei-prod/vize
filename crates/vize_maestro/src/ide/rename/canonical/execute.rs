@@ -122,10 +122,12 @@ async fn rename_strict_inner(
         character,
     )
     .await;
+    // A native declaration name alone does not prove a public prop identity.
+    // Event/model queries retain their existing semantic projections.
     let definition_positions = if component_props.positions.is_empty() {
         Vec::new()
     } else {
-        component_props.authored_definition_positions(ctx, &document)
+        component_props.authored_definition_positions(ctx, &document, rename_kind.is_none())
     };
     let property_arguments = if component_props.positions.is_empty()
         || same_name_bindings::is_binding_declaration(ctx)

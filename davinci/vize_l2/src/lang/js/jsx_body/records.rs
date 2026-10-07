@@ -87,7 +87,6 @@ impl<'f, 'a> JsxNode<'f, 'a> {
         }
     }
     /// Borrow the existing original preorder range, including this node.
-    #[must_use]
     pub fn subtree(self) -> impl ExactSizeIterator<Item = Self> {
         let end = self.record().map_or(self.index, |row| row.subtree_end);
         (self.index..end).map(move |index| Self::new(self.owner, index))

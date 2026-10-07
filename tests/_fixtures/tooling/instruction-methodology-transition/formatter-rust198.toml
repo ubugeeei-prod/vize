@@ -1,0 +1,24 @@
+# Measured instruction ceilings. Every row must come from three identical Actions runs.
+# Ratchet: existing ceilings may only decrease; rows may never disappear.
+schema_version = 1
+source_commit = "c225f11707b6e42c08ea5379df255fb3ddb5e5cd"
+recorded_run = "https://github.com/ubugeeei-prod/vize/actions/runs/37163400887"
+
+[methodology]
+allocator = "counting-mimalloc-reserve128m-preinit64m-purgeoff-v1"
+flags = "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no"
+fixture_digest = "input-identity-v2"
+guest_context = "fixed-env-fixed-argv0-v1"
+libc = "glibc 2.39"
+libc_dispatch = "glibc.cpu.hwcaps=-AVX,-AVX2,-AVX512F,-AVX512VL,-AVX512BW,-AVX_Fast_Unaligned_Load,-ERMS,-FSRM,-Prefer_ERMS,-Prefer_FSRM,-SSSE3,-SSE4_1,-SSE4_2"
+profile = "ci-opt"
+rustc = "rustc 1.98.0 (88d9e12ae 2026-08-18)"
+target = "x86_64-unknown-linux-gnu"
+valgrind = "valgrind-3.22.0"
+window_protocol = "callgrind-client-call-boundary-v1"
+
+[instruction]
+formatter_script_large = { fixture = "crates/vize_glyph/benches/fixtures/formatter/large-script.txt", fixture_sha256 = "177e6c9adeeee234d5ac1bd7c0f445230e8fbf9564632930c093fb1da3d010a2", instructions = 929044, window = "stage-return" }
+formatter_sfc_reuse = { fixture = "crates/vize_glyph/benches/fixtures/formatter/simple-sfc.txt", fixture_sha256 = "c1fbc42956f36eb0b97fd6bc1389f8c5d3a9c5b9518639bcb9dabb8f9920334d", instructions = 274723, window = "stage-return" }
+formatter_sfc_simple = { fixture = "crates/vize_glyph/benches/fixtures/formatter/simple-sfc.txt", fixture_sha256 = "c1fbc42956f36eb0b97fd6bc1389f8c5d3a9c5b9518639bcb9dabb8f9920334d", instructions = 293575, window = "stage-return" }
+formatter_template_complex = { fixture = "crates/vize_glyph/benches/fixtures/formatter/complex-template.txt", fixture_sha256 = "4db8b7957e2c8e6f4405eeb8705e4bc140cb88e0f6c5f11e002dae662df70f41", instructions = 244347, window = "stage-return" }

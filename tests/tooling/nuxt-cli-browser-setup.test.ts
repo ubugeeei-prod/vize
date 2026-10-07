@@ -196,6 +196,7 @@ test(
     ]) {
       const result = probe(download, cli);
       assert.equal(result.status, expected);
+      assert.ok(result.output.includes(`Nuxt3 setup statuses: download=${download} CLI=${cli}`));
       assert.ok(!result.events.includes("install-start"));
     }
   },
