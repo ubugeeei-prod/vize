@@ -1,0 +1,17 @@
+<script setup vapor>
+import { ref as makeRef } from "vue";
+import Child from "./Child.vue";
+const ref = "id";
+const value = "reported";
+const seen = makeRef([]);
+let current = null;
+function capture(component) {
+  current = component;
+  seen.value.push(component?.hello ?? null);
+}
+const read = () => ({ hello: current?.hello ?? null, seen: seen.value });
+defineExpose({ read });
+</script>
+<template>
+  <Child :[ref]="value" :ref="capture" />
+</template>

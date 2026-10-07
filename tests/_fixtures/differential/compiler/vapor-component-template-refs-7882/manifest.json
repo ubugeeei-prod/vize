@@ -1,0 +1,99 @@
+{
+  "issue": 7882,
+  "reporter": "ubugeeei",
+  "reporterId": 71201308,
+  "scope": "Original component ref plus lexical loop/scalar ownership and computed-prop/callback controls; hosted execution pending",
+  "originals": {
+    "directory": "../vapor-for-template-refs-7882",
+    "App.vue.txt": {
+      "bytes": 380,
+      "sha256": "b6a68a1787929e832d791d4db059dc7066317f11a7392b212e4d8ce971bcbc0f"
+    },
+    "Child.vue.txt": {
+      "bytes": 104,
+      "sha256": "ae1918329a460b092103a57eb8191720e654ea9d56c5c68fdfb4472607f4436a"
+    }
+  },
+  "files": {
+    "computed-prop-and-callback.vue.txt": {
+      "bytes": 455,
+      "sha256": "e7516efaa74989b3e327418670caca09abcfd1da42b1a8284b09c6bfbccf8eaf"
+    },
+    "loop-and-scalar.vue.txt": {
+      "bytes": 727,
+      "sha256": "83ef5e585ce193c2791db688e92612669d8d9c4cefd4943cfab288da0a04a6c8"
+    }
+  },
+  "runtime": {
+    "version": "3.6.0-rc.9",
+    "actualRecipes": [
+      {
+        "production": false,
+        "inline": false
+      },
+      {
+        "production": false,
+        "inline": true
+      },
+      {
+        "production": true,
+        "inline": false
+      },
+      {
+        "production": true,
+        "inline": true
+      }
+    ],
+    "referenceRecipe": "independent compiler-sfc inline=true at matching production mode; full generated module/map/script Result retained",
+    "fullCases": [
+      "original",
+      "loop-and-scalar",
+      "computed-prop-and-callback"
+    ],
+    "expectedMounts": 24,
+    "expectedFrames": 72,
+    "qualification": "UNEXECUTED; source/runtime/map/corpus/instruction gates and actual signed merge required"
+  },
+  "schema": "vize.differential.runtime-pack",
+  "version": 1,
+  "product": "compiler",
+  "reference": {
+    "path": "runtime.expected.json",
+    "sha256": "45a06b1f844873aeecb8d0a8eed16a7407192628467f778e22aa18c685bc38bd",
+    "source": "Literal original world / 3 plus independently authored lexical loop/scalar/removal and callback/computed-prop observations; runtime unexecuted"
+  },
+  "cases": [
+    {
+      "id": "compiler/vapor-component-original-7882",
+      "inputs": {
+        "root": "vapor-for-template-refs-7882",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "b6a68a1787929e832d791d4db059dc7066317f11a7392b212e4d8ce971bcbc0f"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "ae1918329a460b092103a57eb8191720e654ea9d56c5c68fdfb4472607f4436a"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/vapor-component-lexical-refs-7882",
+      "inputs": {
+        "root": "vapor-component-template-refs-7882",
+        "files": [
+          {
+            "path": "computed-prop-and-callback.vue.txt",
+            "sha256": "e7516efaa74989b3e327418670caca09abcfd1da42b1a8284b09c6bfbccf8eaf"
+          },
+          {
+            "path": "loop-and-scalar.vue.txt",
+            "sha256": "83ef5e585ce193c2791db688e92612669d8d9c4cefd4943cfab288da0a04a6c8"
+          }
+        ]
+      }
+    }
+  ]
+}

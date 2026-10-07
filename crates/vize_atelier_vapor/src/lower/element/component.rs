@@ -10,6 +10,7 @@ mod implicit_slot;
 mod model;
 mod slots;
 mod structural_slots;
+use super::template::{is_runtime_only_attr, transform_template_ref};
 use model::transform_component_v_model;
 
 /// Transform a component element into a `CreateComponent` operation.
@@ -92,6 +93,9 @@ pub(super) fn transform_component<'a>(
                             if key_exp.is_static && key_exp.content == "key" {
                                 continue;
                             }
+                            if key_exp.is_static && is_runtime_only_attr(key_exp.content) {
+                                continue;
+                            }
                             if kind == ComponentKind::Dynamic
                                 && key_exp.is_static
                                 && key_exp.content == "is"
@@ -159,7 +163,7 @@ pub(super) fn transform_component<'a>(
                 }
             }
             PropNode::Attribute(attr) => {
-                if attr.name == "key" {
+                if attr.name == "key" || is_runtime_only_attr(attr.name) {
                     continue;
                 }
                 // `<component is="a">` names its component statically; it is
@@ -251,6 +255,7 @@ pub(super) fn transform_component<'a>(
     block
         .operation
         .push(OperationNode::CreateComponent(create_component));
+    transform_template_ref(ctx, el, element_id, block);
     for prop in &el.props {
         if let PropNode::Directive(dir) = prop
             && !matches!(

@@ -50,6 +50,12 @@
       "workflow": ".github/workflows/check.yml"
     },
     {
+      "path": "vapor-component-template-refs-7882/manifest.json",
+      "sha256": "641d45ae755e960ce2ee4b741e159f7004a3f3b3c344aa81721eafd394739b22",
+      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
+    },
+    {
       "path": "vapor-slot-defaults-7886.manifest.json",
       "sha256": "4a66edd85a4292ad75fc45d6a87dd4bb8e3efcf0917a7e2bf64ac43addd5b30a",
       "adapter": "compiler-rust-whole-source-runtime-v1",
