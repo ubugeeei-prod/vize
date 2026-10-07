@@ -9,6 +9,7 @@ mod unused_setup_bindings;
 
 pub use max_template_complexity::MaxTemplateComplexity;
 pub use unused_setup_bindings::NoUnusedSetupBindings;
+pub(crate) use unused_setup_bindings::v_for_source_reads;
 
 use vize_l0::fact::FactConsumer;
 

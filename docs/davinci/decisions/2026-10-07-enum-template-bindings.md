@@ -81,3 +81,14 @@ Its plugin-global half separately requires actual delivery of #8146; that PR
 is still open at `b39adcc2a082b83206e0cfe60b91dda66bf87043` at this review.
 Neither one alone closes #7896. Broader binding/type-resolution and native
 compiler/linter migration remain outside this reported enum slice.
+
+The next genuine signed-main union is
+`3ed1cc90908c88016310b90a855500c94a156f1f`, descended from actual `8c`.
+Its four delivered linter slices add no enum product conflicts; the nineteen
+original non-document paths and both original/authored fixture hashes remain
+exact. The earlier #8146 status above is historical: its actual merge at
+`2026-10-07T13:06:26Z` is `6681b8986ab09e794807cf2764dc0a66779a44e4`,
+an ancestor of this genuine main. This establishes the plugin-global delivery
+prerequisite for #7896; the enum delivery prerequisite still remains open.
+The approved common decision record is applied byte-for-byte at 350 lines,
+SHA256 `f4bd4c030fe794c89c7872cdfdcfaa3823d1dc93bdd44295b83fce11637b570d`.

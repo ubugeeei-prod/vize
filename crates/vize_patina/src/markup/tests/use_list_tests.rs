@@ -51,6 +51,14 @@ fn use_list_template_markup_boundaries() {
     for (source, expected, label) in [
         (r#"<p>Normal text</p>"#, 0, "normal text is clean"),
         (
+            r#"<span class="required"> * </span>"#,
+            0,
+            "required marker is clean",
+        ),
+        (r#"<p> -   </p>"#, 0, "empty dash marker is clean"),
+        (r#"<p> + </p>"#, 0, "empty plus marker is clean"),
+        ("<p> • \t </p>", 0, "empty unicode marker is clean"),
+        (
             r#"<p>-word</p>"#,
             0,
             "dash without following space is clean",
@@ -166,6 +174,16 @@ fn use_list_list_context_ancestors_suppress_nested_bullets() {
 fn use_list_jsx_direct_matches_lowered_for_element_boundaries() {
     let rule = UseList;
     for (source, expected, label) in [
+        (
+            r#"const A = () => <span className="required"> * </span>;"#,
+            0,
+            "required marker is clean",
+        ),
+        (
+            r#"const A = () => <p> -   </p>;"#,
+            0,
+            "empty dash marker is clean",
+        ),
         (
             r#"const A = () => <p>Normal text</p>;"#,
             0,
