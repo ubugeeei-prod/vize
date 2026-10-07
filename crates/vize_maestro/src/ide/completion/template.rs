@@ -11,6 +11,8 @@
 
 mod art;
 #[cfg(test)]
+mod attribute_extension_tests;
+#[cfg(test)]
 mod attribute_value_tests;
 mod bindings;
 mod component_cache;

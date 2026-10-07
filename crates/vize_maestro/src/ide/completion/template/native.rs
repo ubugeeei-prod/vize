@@ -7,6 +7,8 @@ use crate::ide::{IdeContext, is_component_tag};
 
 use super::tag_context::{is_prop_completion_prefix, opening_tag_context_at_offset};
 
+pub(super) mod custom_attributes;
+
 pub(super) fn native_element_attribute_completions(
     ctx: &IdeContext,
     component: &[CompletionItem],
@@ -19,6 +21,7 @@ pub(super) fn native_element_attribute_completions(
     }
 
     let mut items = common_attribute_completions();
+    items.extend(custom_attributes::completions(ctx, &tag_ctx, component));
     if is_component_tag(&tag_ctx.tag_name) {
         // An explicitly declared prop owns its type and documentation. The
         // common HTML table only supplies attributes absent from that surface.

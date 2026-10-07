@@ -145,6 +145,9 @@ pub(super) fn apply_rule_options(
     mut linter: vize_patina::Linter,
     options: &vize_l0::config::ConfigLintRuleOptions,
 ) -> vize_patina::Linter {
+    if let Some(globals) = options.component_registration_globals() {
+        linter = linter.with_component_registration_globals(globals.to_vec());
+    }
     if let Some(names) = options.palpable_content_directives() {
         linter = linter.with_palpable_content_directives(names.to_vec());
     }

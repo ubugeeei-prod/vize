@@ -322,3 +322,5 @@ mod spreads;
 mod structural_slots;
 mod teleport;
 mod templates;
+
+mod attribute_modifiers;

@@ -31,23 +31,19 @@ pub(super) fn emit_component_resolution(ctx: &mut GenerateContext, component_var
 
     let resolution_name = ctx.component_resolution_name(tag);
     ctx.use_helper("resolveComponent");
-    if ctx.is_self_component_reference(tag) {
-        ctx.push_line(&cstr!(
-            "const {} = _resolveComponent(\"{}\", true)",
-            component_var,
-            resolution_name
-        ));
+    // The resolved name maps to the first element authoring the tag, including
+    // filename recursion; only the experimental Self spelling changes it.
+    let source = (resolution_name == tag)
+        .then(|| ctx.tag_start(tag))
+        .flatten();
+    let mut line = EmitDocument::plain(&cstr!("const {} = _resolveComponent(\"", component_var));
+    line.push_spanned(&ctx.spanned_at(&resolution_name, source));
+    line.push_str(if ctx.is_self_component_reference(tag) {
+        "\", true)"
     } else {
-        // The resolved name maps to the first element authoring the tag.
-        let source = (resolution_name == tag)
-            .then(|| ctx.tag_start(tag))
-            .flatten();
-        let mut line =
-            EmitDocument::plain(&cstr!("const {} = _resolveComponent(\"", component_var));
-        line.push_spanned(&ctx.spanned_at(&resolution_name, source));
-        line.push_str("\")");
-        ctx.push_line_spanned(&line);
-    }
+        "\")"
+    });
+    ctx.push_line_spanned(&line);
 }
 
 /// Generate CreateComponent

@@ -1,0 +1,79 @@
+{
+  "schema": "vize.differential.runtime-pack",
+  "version": 1,
+  "product": "compiler",
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/7886",
+  "cases": [
+    {
+      "id": "compiler/vapor-slot-defaults-7886",
+      "inputs": {
+        "root": "vapor-slot-defaults-7886",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "f0d4150f64a2d87c246b586638e4e131dcc0b4abe26778386a82bb89a8991858"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "f355690c2a05fa058c502cbeb7d76ecb1c94fd3e6995242f08166c45afd226eb"
+          },
+          {
+            "path": "controls.json",
+            "sha256": "b278840d9b5ed9c23c47385bed6ada3438e794dd3fb9c4af7beb1a748b948ac8"
+          },
+          {
+            "path": "original-issue.md",
+            "sha256": "47335934791dbdb1d258dadea8ca05c6bb02967566d0faadb928b215bd4f0c80"
+          },
+          {
+            "path": "reported-actual.js.txt",
+            "sha256": "1af849b297adf11c126b6173408cf15593edf5f191fa52710e819f081fdbaa27"
+          },
+          {
+            "path": "reported-expected.js.txt",
+            "sha256": "809a8b1997bf7313142edcece5d6f6dd5bb992b75ff4e6d5cdf47557fddc0c7e"
+          },
+          {
+            "path": "repro.sh.txt",
+            "sha256": "32a2d003a0d2cb786159855321aa9d12fe39557bbd3a0580ad09c126b22dc3fe"
+          },
+          {
+            "path": "runtime.expected.json",
+            "sha256": "dfcbf90f62cb4e32f7ae32bd8a15e362ab42496a7ead074b4d1c68a4c446707b"
+          },
+          {
+            "path": "vize-vdom-source-64349976.failure.txt",
+            "sha256": "ea875703071eab450f8fdff4f3da6979fd2581e0e9e6750be57d2b0cda97d231"
+          },
+          {
+            "path": "vize-vdom-source-64349976.failure.raw.txt",
+            "sha256": "5e22dd0450f8e8b12dad94501708254077882a79f17134964e9884741febbbcb"
+          },
+          {
+            "path": "controls-source-0910fca.original.json",
+            "sha256": "e072a3975b45986e16a2fb3172785b44b155577dcb38bfd25ddd267b7e064cae"
+          },
+          {
+            "path": "quoted-key-source-0910fca.failure.raw.txt",
+            "sha256": "3aa7494d2c6f43c59e76df173300f5039986531180078e18498b0dcef2d2c1a1"
+          },
+          {
+            "path": "custody.json",
+            "sha256": "6c7139b259472c6b89ba0747acdb0132c27b39ba3489b7a9fe9e3badf48fcc37"
+          }
+        ]
+      },
+      "reference": {
+        "path": "vapor-slot-defaults-7886/runtime.expected.json",
+        "sha256": "dfcbf90f62cb4e32f7ae32bd8a15e362ab42496a7ead074b4d1c68a4c446707b",
+        "source": "original reported fallback:1 and independently authored value/update controls"
+      },
+      "runtime": {
+        "rustTarget": "crates/vize_atelier_sfc/tests/vapor_slot_defaults.rs",
+        "helper": "tests/tooling/support/vapor-slot-defaults-7886.mjs",
+        "lockedVue": "3.6.0-rc.9",
+        "nativeHandled": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "compiler": {
+    "version": "3.5.26",
+    "entrypoint": "@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js",
+    "url": "https://unpkg.com/@vue/compiler-sfc@3.5.26/dist/compiler-sfc.esm-browser.js",
+    "sha256": "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec"
+  },
+  "name": "surviving_bound_prop",
+  "filename": "surviving_bound_prop.vue",
+  "source": "<template><template v-for=\"row in rows\"><span :key=\"row.id\" :title=\"row.title\">{{ row.label }}</span></template></template>",
+  "sourceSha256": "f64fad37598b5b313428a7a1f56d68747a7dc00b14bafb10f78aea57d338b474",
+  "template": "<template v-for=\"row in rows\"><span :key=\"row.id\" :title=\"row.title\">{{ row.label }}</span></template>",
+  "parseErrors": [],
+  "outputs": [
+    {
+      "options": {
+        "source": "<template v-for=\"row in rows\"><span :key=\"row.id\" :title=\"row.title\">{{ row.label }}</span></template>",
+        "filename": "surviving_bound_prop.vue",
+        "id": "surviving_bound_prop",
+        "compilerOptions": {
+          "mode": "function",
+          "prefixIdentifiers": false,
+          "cacheHandlers": false,
+          "sourceMap": false
+        },
+        "sourceMap": false
+      },
+      "code": "const _Vue = Vue\nconst {  } = _Vue\n\nconst _hoisted_1 = [\"title\"]\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { renderList: _renderList, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, toDisplayString: _toDisplayString } = _Vue\n\n    return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(rows, (row) => {\n      return (_openBlock(), _createElementBlock(\"span\", {\n        key: row.id,\n        title: row.title\n      }, _toDisplayString(row.label), 9 /* TEXT, PROPS */, _hoisted_1))\n    }), 256 /* UNKEYED_FRAGMENT */))\n  }\n}",
+      "codeSha256": "3a8159d699a2bc934419ce381ac4a939c5e5928519e46956cf614a4b94b9f79d",
+      "errors": [
+        {
+          "name": "SyntaxError",
+          "message": "<template v-for> key should be placed on the <template> tag.",
+          "code": 33,
+          "loc": {
+            "start": {
+              "column": 37,
+              "line": 1,
+              "offset": 36
+            },
+            "end": {
+              "column": 50,
+              "line": 1,
+              "offset": 49
+            },
+            "source": ":key=\"row.id\""
+          }
+        }
+      ],
+      "tips": [],
+      "map": null
+    },
+    {
+      "options": {
+        "source": "<template v-for=\"row in rows\"><span :key=\"row.id\" :title=\"row.title\">{{ row.label }}</span></template>",
+        "filename": "surviving_bound_prop.vue",
+        "id": "surviving_bound_prop",
+        "compilerOptions": {
+          "mode": "module",
+          "prefixIdentifiers": true,
+          "cacheHandlers": false,
+          "sourceMap": false
+        },
+        "sourceMap": false
+      },
+      "code": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from \"vue\"\n\nconst _hoisted_1 = [\"title\"]\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.rows, (row) => {\n    return (_openBlock(), _createElementBlock(\"span\", {\n      key: row.id,\n      title: row.title\n    }, _toDisplayString(row.label), 9 /* TEXT, PROPS */, _hoisted_1))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+      "codeSha256": "9a18df0a8fa39ddd99596cbd7cc5233d3916efd546689af60df8be2951feb831",
+      "errors": [
+        {
+          "name": "SyntaxError",
+          "message": "<template v-for> key should be placed on the <template> tag.",
+          "code": 33,
+          "loc": {
+            "start": {
+              "column": 37,
+              "line": 1,
+              "offset": 36
+            },
+            "end": {
+              "column": 50,
+              "line": 1,
+              "offset": 49
+            },
+            "source": ":key=\"row.id\""
+          }
+        }
+      ],
+      "tips": [],
+      "map": null
+    }
+  ]
+}

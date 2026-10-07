@@ -36,7 +36,7 @@ pub(in crate::script_parser) fn walk_statement(
             }
             // Add variable bindings to current scope and check for reactivity losses
             for decl in var_decl.declarations.iter() {
-                result.refuse_declarator_type_reads(decl);
+                result.prepare_ref_value_declaration(decl);
                 add_binding_pattern_to_scope(result, &decl.id, decl.span.start);
                 if let Some(init) = &decl.init {
                     walk_expression(result, init, source);

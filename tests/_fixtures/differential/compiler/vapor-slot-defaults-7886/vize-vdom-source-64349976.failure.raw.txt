@@ -1,0 +1,60 @@
+2026-10-07T07:57:23.6580330Z     [0m[31;1mthread 'slot_defaults_are_lazy_reactive_and_keep_nullish_value_semantics' (18113) panicked at crates/vize_atelier_sfc/tests/vapor_slot_defaults.rs:75:5:[0m
+2026-10-07T07:57:23.6581009Z     [31;1mstatus=exit status: 1[0m
+2026-10-07T07:57:23.6581258Z     stdout=
+2026-10-07T07:57:23.6581471Z     stderr=node:internal/modules/run_main:107
+2026-10-07T07:57:23.6581777Z         triggerUncaughtException(
+2026-10-07T07:57:23.6582137Z         ^
+2026-10-07T07:57:23.6582327Z 
+2026-10-07T07:57:23.6582504Z     AssertionError [ERR_ASSERTION]: mounted SFC diagnostics
+2026-10-07T07:57:23.6582844Z     + actual - expected
+2026-10-07T07:57:23.6582991Z 
+2026-10-07T07:57:23.6583082Z     + [
+2026-10-07T07:57:23.6583395Z     +   'Property "record" was accessed during render but is not defined on instance.',
+2026-10-07T07:57:23.6583884Z     +   'TypeError: _ctx.record is not a function'
+2026-10-07T07:57:23.6584158Z     + ]
+2026-10-07T07:57:23.6584354Z     - []
+2026-10-07T07:57:23.6584467Z 
+2026-10-07T07:57:23.6584763Z         at snapshot (file:///home/runner/_work/vize/vize/tests/tooling/support/vapor-sfc-runtime.mjs:92:10)
+2026-10-07T07:57:23.6586034Z         at file:///home/runner/_work/vize/vize/tests/tooling/support/vapor-sfc-runtime.mjs:108:3 {
+2026-10-07T07:57:23.6586640Z       generatedMessage: false,
+2026-10-07T07:57:23.6586872Z       code: 'ERR_ASSERTION',
+2026-10-07T07:57:23.6587135Z       actual: [
+2026-10-07T07:57:23.6587519Z         'Property "record" was accessed during render but is not defined on instance.',
+2026-10-07T07:57:23.6587917Z         'TypeError: _ctx.record is not a function'
+2026-10-07T07:57:23.6588171Z       ],
+2026-10-07T07:57:23.6588363Z       expected: [],
+2026-10-07T07:57:23.6588614Z       operator: 'deepStrictEqual',
+2026-10-07T07:57:23.6588888Z       diff: 'simple'
+2026-10-07T07:57:23.6589096Z     }
+2026-10-07T07:57:23.6589239Z 
+2026-10-07T07:57:23.6589345Z     Node.js v24.14.0
+2026-10-07T07:57:23.6589473Z 
+2026-10-07T07:57:23.6589985Z     import { toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from "vue"
+2026-10-07T07:57:23.6590549Z 
+2026-10-07T07:57:23.6590553Z 
+2026-10-07T07:57:23.6590733Z     function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
+2026-10-07T07:57:23.6591140Z       return (_openBlock(), _createBlock($setup.Child, null, {
+2026-10-07T07:57:23.6591598Z         default: _withCtx(({ label = (_ctx.record('default'), _ctx.state.fallback), count }) => [
+2026-10-07T07:57:23.6592147Z           _createTextVNode(_toDisplayString(label) + ":" + _toDisplayString(count), 1 /* TEXT */)
+2026-10-07T07:57:23.6592527Z         ]),
+2026-10-07T07:57:23.6592704Z         _: 1 /* STABLE */
+2026-10-07T07:57:23.6592906Z       }))
+2026-10-07T07:57:23.6593093Z     }
+2026-10-07T07:57:23.6593288Z     import Child from './Child.vue'
+2026-10-07T07:57:23.6593648Z     import { state, record } from './fixture'
+2026-10-07T07:57:23.6593839Z 
+2026-10-07T07:57:23.6593845Z 
+2026-10-07T07:57:23.6593927Z     export default {
+2026-10-07T07:57:23.6594151Z       __name: 'anonymous',
+2026-10-07T07:57:23.6594396Z       render: _sfc_render,
+2026-10-07T07:57:23.6594631Z       setup(__props) {
+2026-10-07T07:57:23.6594786Z 
+2026-10-07T07:57:23.6594789Z 
+2026-10-07T07:57:23.6594974Z     const __returned__ = { Child, state, record }
+2026-10-07T07:57:23.6595496Z     Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+2026-10-07T07:57:23.6595904Z     return __returned__
+2026-10-07T07:57:23.6596147Z     }
+2026-10-07T07:57:23.6596249Z 
+2026-10-07T07:57:23.6596332Z     }
+2026-10-07T07:57:23.6596754Z     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace[0m
+2026-10-07T07:57:23.6597052Z 

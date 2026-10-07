@@ -1,0 +1,57 @@
+body {
+  margin: 0;
+  background: var(--vize-ui-color-canvas, #fff);
+  color: var(--vize-ui-color-text, #252525);
+  font:
+    15px/1.55 system-ui,
+    sans-serif;
+}
+
+.preview-shell {
+  padding: 20px;
+}
+.preview-shell header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.preview-shell header select {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  padding: 3px;
+  border: 1px solid #8888;
+  border-radius: 4px;
+}
+.preview-stage {
+  padding: 28px 0;
+  min-block-size: 170px;
+}
+.preview-stage > div:not([data-vize-tabs]) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+.preview-stage output {
+  display: block;
+  flex-basis: 100%;
+}
+.preview-stage label {
+  display: block;
+}
+.preview-stage [data-vize-input] {
+  max-inline-size: 100%;
+}
+.preview-shell footer a {
+  color: inherit;
+  text-underline-offset: 3px;
+  font-size: 13px;
+}
+.preview-stage form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}

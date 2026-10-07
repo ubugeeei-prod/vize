@@ -1,0 +1,157 @@
+name: n8n adoption fixture
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/n8n-adoption.yml
+      - .gitmodules
+      - tests/_fixtures/_git/n8n
+      - tests/_fixtures/n8n-adoption.json
+      - tests/_fixtures/vue-ecosystem-fixtures.json
+      - tests/tooling/n8n-adoption-fixture.test.mjs
+      - tests/tooling/support/n8n-compiler-*.mjs
+      - tests/tooling/support/n8n-default-slot-loop*.mjs
+      - tests/_fixtures/differential/compiler/n8n-*/**
+      - tools/support/compat/n8n-official-compiler-custody.mjs
+      - crates/vize_atelier_sfc/**
+      - crates/vize_atelier_core/**
+      - crates/vize_atelier_dom/**
+      - davinci/vize_l1_to_l2/**
+      - tests/tooling/n8n-authored-editor.test.ts
+      - tests/tooling/support/n8n-authored-editor.ts
+      - tests/_fixtures/differential/lsp/n8n-authored-editor/**
+      - crates/vize_maestro/**
+      - crates/vize_canon/**
+      - crates/vize_corsa/**
+      - npm/oxlint/**
+  merge_group:
+    types: [checks_requested]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n8n-adoption-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  fixture:
+    name: Pinned n8n adoption corpus
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Hydrate the read-only licensed n8n fixture
+        run: git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n
+      - name: Verify complete fixture and frozen adoption configuration
+        env:
+          VIZE_N8N_FIXTURE_REQUIRED: "1"
+        run: vp node --test tests/tooling/n8n-adoption-fixture.test.mjs
+
+  compiler-custody:
+    name: Complete n8n compiler source before and after
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      VIZE_N8N_CAPTURE_BASELINE: f5699c195e627ad26aa1c8efd4a59266120cd9b9
+      VIZE_N8N_REPAIR_ANCHOR: 311e3c8a0e1a42d91381ba3769ef9fcfc6c1f826
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: n8n-compiler-custody
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Hydrate the same licensed read-only originals
+        run: git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n
+      - name: Fetch the immutable capture-only source and pinned official compiler
+        run: |
+          git fetch origin "$VIZE_N8N_CAPTURE_BASELINE" "$VIZE_N8N_REPAIR_ANCHOR"
+          curl --fail --location --retry 5 --retry-all-errors \
+            --output "$RUNNER_TEMP/n8n-official-compiler.mjs" \
+            https://unpkg.com/@vue/compiler-sfc@3.5.26/dist/compiler-sfc.esm-browser.js
+          echo "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec  $RUNNER_TEMP/n8n-official-compiler.mjs" | sha256sum --check
+      - name: Build and capture both authenticated source states with the same recipe
+        run: |
+          vp node tests/tooling/support/n8n-compiler-custody.mjs \
+            "$VIZE_N8N_CAPTURE_BASELINE" \
+            "$VIZE_N8N_REPAIR_ANCHOR" \
+            tests/_fixtures/_git/n8n \
+            "target/n8n-compiler-custody/${{ github.run_id }}-${{ github.run_attempt }}" \
+            "$RUNNER_TEMP/n8n-official-compiler.mjs"
+      - name: Verify source SFC default-slot runtime and iterator laws
+        run: cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test n8n_default_slot_loops -- --nocapture
+      - name: Verify every n8n compiler regression and changed-source refusal
+        env:
+          VIZE_N8N_CONTROL_PACKET_DIR: ${{ github.workspace }}/target/n8n-compiler-custody/${{ github.run_id }}-${{ github.run_attempt }}/authored
+        run: |
+          cargo test --locked --profile ci --no-fail-fast -p vize_l1_to_l2 --features legacy-differential \
+            --test davinci_dom_n8n_diagnosed \
+            --test davinci_dom_n8n_default_loops \
+            --test davinci_dom_n8n_helper_props \
+            --test davinci_dom_n8n_if_key_modes -- --nocapture
+      - name: Upload complete source, official modules, maps and diagnostic vectors
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: n8n-compiler-before-after-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/n8n-compiler-custody
+          if-no-files-found: error
+
+  authored-editor:
+    name: Authored n8n navigation and type diagnostics
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      VIZE_TEST_REQUIRE_TSGO: "1"
+      VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+      VIZE_LSP_BIN: target/ci/vize
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: n8n-authored-editor
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install pinned source and typechecker dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Build and authenticate the current-source LSP
+        run: cargo build --profile ci -p vize && vp node tests/differential/build-receipt.mjs
+      - name: Preserve ordinary default-export navigation
+        run: cargo test --profile ci -p vize_maestro --lib ide::definition::service::import_target::default_export::tests -- --nocapture
+      - name: Check original n8n navigation and unsaved diagnostic repair
+        run: vp node --test tests/tooling/n8n-authored-editor.test.ts

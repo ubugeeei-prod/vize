@@ -170,7 +170,7 @@ fn no_terminator_falls_back_to_lf_and_explicit_options_win() {
         format_json("{\"value\":1}", &auto_options())
             .unwrap()
             .as_str(),
-        "{\n  \"value\": 1\n}\n"
+        "{ \"value\": 1 }\n"
     );
 }
 

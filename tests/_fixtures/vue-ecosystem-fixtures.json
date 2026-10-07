@@ -7717,6 +7717,35 @@
         "lsp"
       ],
       "diff": "curator-compare"
+    },
+    {
+      "id": "n8n",
+      "displayName": "n8n",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/n8n",
+      "repository": "https://github.com/n8n-io/n8n",
+      "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+      "license": {
+        "spdx": "LicenseRef-Sustainable-Use AND LicenseRef-n8n-Enterprise",
+        "files": [
+          "LICENSE.md",
+          "LICENSE_EE.md"
+        ]
+      },
+      "vueGlobs": [
+        "packages/**/*.vue"
+      ],
+      "tsconfig": "packages/frontend/editor-ui/tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "note": "Licensed master corpus; read-only n8n adoption PR40393 requirements are tracked separately in n8n-adoption.json and issue #8142. Enterprise files are used only as development/testing inputs. Generic tool coverage does not establish custom-rule adoption acceptance."
     }
   ]
 }

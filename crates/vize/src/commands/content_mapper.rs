@@ -6,7 +6,7 @@
 //! compiler options, and `transform` projects one Vue SFC into virtual
 //! TypeScript for an opened project handle.
 
-use std::io::{self, BufRead, BufReader, BufWriter, Write};
+use std::io::{self, BufRead, BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
 use clap::Args;
@@ -22,6 +22,7 @@ mod project;
 use project::{CloseProjectParams, OpenProjectParams, ProjectRegistry, resolve_open_project};
 
 const MAX_MESSAGE_BYTES: usize = 64 * 1024 * 1024;
+const MAX_HEADER_BYTES: usize = 8 * 1024;
 
 #[derive(Args, Default)]
 pub struct ContentMapperArgs {}
@@ -178,9 +179,28 @@ fn serve<R: BufRead, W: Write>(reader: &mut R, writer: &mut W) -> io::Result<()>
 fn read_frame<R: BufRead>(reader: &mut R) -> io::Result<Option<Vec<u8>>> {
     let mut content_length = None;
     let mut saw_header = false;
+    let mut header_bytes = 0;
     loop {
+        let remaining = MAX_HEADER_BYTES - header_bytes;
+        if remaining == 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "content-mapper headers exceed 8 KiB",
+            ));
+        }
         let mut line = Vec::new();
-        let bytes = reader.read_until(b'\n', &mut line)?;
+        // Limit the read itself: checking after read_until would already have
+        // allocated an arbitrarily large line, or accepted unbounded lines.
+        let bytes = (&mut *reader)
+            .take(remaining as u64)
+            .read_until(b'\n', &mut line)?;
+        header_bytes += bytes;
+        if bytes == remaining && !line.ends_with(b"\n") {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "content-mapper headers exceed 8 KiB",
+            ));
+        }
         if bytes == 0 {
             if saw_header {
                 return Err(io::Error::new(
@@ -200,6 +220,12 @@ fn read_frame<R: BufRead>(reader: &mut R) -> io::Result<Option<Vec<u8>>> {
                 .unwrap_or_default()
                 .eq_ignore_ascii_case(b"content-length")
         {
+            if content_length.is_some() {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "duplicate Content-Length header",
+                ));
+            }
             let value = std::str::from_utf8(line.get(separator + 1..).unwrap_or_default())
                 .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "invalid Content-Length"))?
                 .trim();
@@ -263,3 +289,7 @@ mod tests;
 #[cfg(test)]
 #[path = "content_mapper/project_tests.rs"]
 mod project_tests;
+
+#[cfg(test)]
+#[path = "content_mapper/frame_tests.rs"]
+mod frame_tests;

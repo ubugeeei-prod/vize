@@ -91,3 +91,23 @@ passes remain historical. Fresh exact-head automatic source/native Actions
 must qualify this union before root-owned queue admission and release.
 No installed replay, whole-Issue completion or measured speed claim follows
 from the local refresh.
+
+## Full editor oracle follow-up
+
+The Element Plus badge cursor is `{{ val|ue.toUpperCase() }}` and the packaged
+Vim cursor is `<Child  :count="|total" />`; both request expression identifiers.
+The 41 Vue instance and allowed JavaScript globals added for #8015 are valid at
+these positions. Preserve the original ordered Element Plus `value`/`Message`
+answers and the complete Vim `Child`/`total` objects, then explicitly append all
+41 frozen global answers. Retain every original authored source, request position,
+hover, diagnostic, revision, formatting, code action and semantic-token control.
+No provider route or assertion is weakened; full Check must replay both scenarios.
+
+The [current `a5c09ab` full run](https://github.com/ubugeeei-prod/vize/actions/runs/37647333345/job/112881429585)
+passes the complete Vim and Neovim scenarios, then exposes the same inherited
+expression-answer omission in the shared Rust Zed/Helix smoke oracle. Preserve
+its two complete original `Child`/`total` objects and every original source,
+position and other response, then append the complete already-frozen global bank.
+The Rust runner and its two compatibility mirrors use that immutable corpus;
+no actual response supplies expected fields. The Zed failure and consequent
+Helix skip remain recorded until fresh exact-head full qualification executes both.

@@ -344,6 +344,11 @@
       "dialectCoverage": { "state": "unknown", "evidence": [] }
     },
     {
+      "fixturePath": "tests/_fixtures/_git/n8n",
+      "memberships": ["ecosystem"],
+      "dialectCoverage": { "state": "unknown", "evidence": [] }
+    },
+    {
       "fixturePath": "tests/_fixtures/_git/naive-ui",
       "memberships": ["ecosystem", "app"],
       "dialectCoverage": { "state": "unknown", "evidence": [] }

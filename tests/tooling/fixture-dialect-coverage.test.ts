@@ -14,7 +14,7 @@ const ledger = readCompatibilityLedger();
 test("pinned project dialect presence stays distinct from per-file coverage", () => {
   validateCompatibilityLedger(ledger, context);
   const coverage = createCompatibilityReport(ledger, context).dialectCoverage;
-  assert.equal(coverage.unknownFixtureCount, 132);
+  assert.equal(coverage.unknownFixtureCount, 133);
   assert.equal(coverage.partialFixtureCount, 15);
   assert.deepEqual(coverage.presentInFixtures["vue2-sfc"], [
     "tests/_fixtures/_git/bootstrap-vue",

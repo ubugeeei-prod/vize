@@ -1,0 +1,3 @@
+# Raw stdio frames preserve exact CRLF/LF and incomplete terminal bytes.
+*.wire -text -diff
+*.response -text -diff

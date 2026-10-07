@@ -1,0 +1,25 @@
+{
+  "repository": "https://github.com/n8n-io/n8n",
+  "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+  "license": "LicenseRef-Sustainable-Use",
+  "files": [
+    {
+      "fixture": "NullEmptyCellRenderer.vue.txt",
+      "upstreamPath": "packages/frontend/editor-ui/src/features/core/dataTable/components/dataGrid/NullEmptyCellRenderer.vue",
+      "sha256": "91446b8d45dab10ef21fac1c4351cc7381c9e658f9a60f7144c6bbc0b84f28d3",
+      "bytes": 288
+    },
+    {
+      "fixture": "BlockUi.vue.txt",
+      "upstreamPath": "packages/frontend/@n8n/design-system/src/components/N8nBlockUi/BlockUi.vue",
+      "sha256": "9029a304c06b6b25bb7d4c87dfa146c12bde0651bedceb541e333269ac86654b",
+      "bytes": 729
+    },
+    {
+      "fixture": "index.ts.txt",
+      "upstreamPath": "packages/frontend/@n8n/design-system/src/components/N8nBlockUi/index.ts",
+      "sha256": "476508e3ff6302c7c8e05b5f89ddadb1f693c234a1beb26a09f708b0f2312920",
+      "bytes": 68
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "compiler": {
+    "version": "3.5.26",
+    "entrypoint": "@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js",
+    "url": "https://unpkg.com/@vue/compiler-sfc@3.5.26/dist/compiler-sfc.esm-browser.js",
+    "sha256": "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec"
+  },
+  "name": "element_loop_keeps_key",
+  "filename": "element_loop_keeps_key.vue",
+  "source": "<template><span v-for=\"row in rows\" :key=\"row.id\">{{ row.label }}</span></template>",
+  "sourceSha256": "07916ca89e9adfe285f59b55b44ff5cca4f1dbb1ef8cfff8c1996f06f80bcd6c",
+  "template": "<span v-for=\"row in rows\" :key=\"row.id\">{{ row.label }}</span>",
+  "parseErrors": [],
+  "outputs": [
+    {
+      "options": {
+        "source": "<span v-for=\"row in rows\" :key=\"row.id\">{{ row.label }}</span>",
+        "filename": "element_loop_keeps_key.vue",
+        "id": "element_loop_keeps_key",
+        "compilerOptions": {
+          "mode": "function",
+          "prefixIdentifiers": false,
+          "cacheHandlers": false,
+          "sourceMap": false
+        },
+        "sourceMap": false
+      },
+      "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { renderList: _renderList, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, toDisplayString: _toDisplayString } = _Vue\n\n    return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(rows, (row) => {\n      return (_openBlock(), _createElementBlock(\"span\", { key: row.id }, _toDisplayString(row.label), 1 /* TEXT */))\n    }), 128 /* KEYED_FRAGMENT */))\n  }\n}",
+      "codeSha256": "b11a789f647ab29ddf55f12f4fa96ccaf5270a73e7c052370af949553c0ef55b",
+      "errors": [],
+      "tips": [],
+      "map": null
+    },
+    {
+      "options": {
+        "source": "<span v-for=\"row in rows\" :key=\"row.id\">{{ row.label }}</span>",
+        "filename": "element_loop_keeps_key.vue",
+        "id": "element_loop_keeps_key",
+        "compilerOptions": {
+          "mode": "module",
+          "prefixIdentifiers": true,
+          "cacheHandlers": false,
+          "sourceMap": false
+        },
+        "sourceMap": false
+      },
+      "code": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.rows, (row) => {\n    return (_openBlock(), _createElementBlock(\"span\", {\n      key: row.id\n    }, _toDisplayString(row.label), 1 /* TEXT */))\n  }), 128 /* KEYED_FRAGMENT */))\n}",
+      "codeSha256": "8b8e6a5ba459735e8591547bd85b3bd1e3e5ccb3af8cb6f54810bba5c18306c3",
+      "errors": [],
+      "tips": [],
+      "map": null
+    }
+  ]
+}
