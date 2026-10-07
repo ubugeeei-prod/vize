@@ -121,7 +121,7 @@ async fn rename_strict_inner(
         character,
     )
     .await;
-    let definition_positions = if component_props.positions.is_empty() {
+    let definition_positions = if component_props.names.is_empty() {
         Vec::new()
     } else {
         component_props.authored_definition_positions(ctx, &document)

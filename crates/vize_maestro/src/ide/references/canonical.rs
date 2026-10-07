@@ -78,7 +78,19 @@ pub(super) async fn references(
     let (line, character) = match attribute {
         Some(Some(position)) => position,
         Some(None) => return Some(Vec::new()),
-        None => corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?,
+        None => {
+            let position =
+                corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
+            let Some(position) = corsa_support::local_binding_reference_position(
+                ctx,
+                &document,
+                &document.request_uri,
+                position,
+            ) else {
+                return Some(Vec::new());
+            };
+            position
+        }
     };
     let mut locations = bridge
         .references(&document.request_uri, line, character, include_declaration)
@@ -90,9 +102,21 @@ pub(super) async fn references(
     locations.extend(prop_locations);
     let mut linked = linked_positions(&document, &locations);
     if attribute.is_none() {
-        linked.extend(corsa_support::materialized_semantic_positions(
-            &document, ctx.uri, ctx.offset,
-        ));
+        for mut position in
+            corsa_support::materialized_semantic_positions(&document, ctx.uri, ctx.offset)
+        {
+            let Some((line, character)) = corsa_support::local_binding_reference_position(
+                ctx,
+                &document,
+                &position.request_uri,
+                (position.line, position.character),
+            ) else {
+                return Some(Vec::new());
+            };
+            position.line = line;
+            position.character = character;
+            linked.insert(position);
+        }
     }
     linked.remove(&corsa_support::CanonicalSemanticPosition {
         request_uri: document.request_uri.clone(),

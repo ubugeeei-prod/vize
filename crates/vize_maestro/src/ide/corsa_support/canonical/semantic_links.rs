@@ -6,6 +6,7 @@ use vize_l0::{FxHashMap, FxHashSet, String};
 use super::{CanonicalVirtualDocument, location_matches_uri};
 use crate::ide::diagnostics::VirtualTsResult;
 
+mod binding_roles;
 mod component_arguments;
 mod component_props;
 
@@ -21,6 +22,7 @@ pub(crate) struct CanonicalSemanticPosition {
     pub(crate) character: u32,
 }
 
+#[derive(Default)]
 pub(crate) struct ComponentPropNavigationMatches {
     pub(crate) positions: Vec<CanonicalSemanticPosition>,
     pub(crate) names: FxHashSet<String>,
@@ -174,7 +176,7 @@ fn linked_offset(
     })
 }
 
-fn virtual_result<'a>(
+pub(super) fn virtual_result<'a>(
     document: &'a CanonicalVirtualDocument,
     uri: &str,
 ) -> Option<(&'a String, &'a VirtualTsResult)> {

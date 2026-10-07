@@ -10,6 +10,8 @@ use super::semantic_links::{
 use super::{CanonicalProjectOpenError, CanonicalVirtualDocument};
 use crate::ide::IdeContext;
 
+mod definition_positions;
+
 /// Ordinary local symbols keep the existing open-importer surface. Public
 /// component props also need unopened consumers, independent of `crossFile`.
 /// This route is called only by references and rename, never by document edits,
@@ -99,6 +101,11 @@ impl ComponentPropNavigationMatches {
                 &definition.uri,
                 offset,
             ));
+            if let Some(source) = source.as_deref() {
+                positions.extend(definition_positions::positions(
+                    document, definition, source,
+                ));
+            }
         }
         positions
     }

@@ -25,3 +25,36 @@ No old binary, predecessor green run, static concern or partially exercised
 session supplies current-source acceptance. Native Stack/queue delivery, actual
 signed merge and release remain separate responsibilities owned by the root.
 The issue stays open until all reported directions receive genuine qualification.
+
+## Current source reproduction and correction
+
+PR #8188 source `570de01bd80e297e3937ec05ac44619c2d6f0273` genuinely failed
+Check 37642663121. Public declaration rename omitted the destructure key and
+produced TS2339; local declaration rename additionally changed the public type
+and Parent implicit value, producing TS2339, missing-required-prop and unknown
+Parent value diagnostics. Failed Rust jobs 112869450696 and 112869450967 retain
+complete references, WorkspaceEdits, applied/disk files and diagnostic arrays.
+Only the first shorthand/LF session executed in each new wrapper before its
+assertion; this supplies no acceptance for the remaining 22 sessions.
+
+The correction keeps all exact reverse-mapped generated identities of a native
+resolved authored declaration, so both exported component type and original
+setup type reach the native property rename. Complete authored range roundtrips
+and existing scope/mapping/batch gates still control every endpoint and edit.
+Actual setup BindingIdentifier definitions suppress public endpoint discovery
+for local queries; producer-owned component arguments retain the public role.
+No posthoc name filter or source spelling search removes a wrong edit.
+
+TypeScript native references at a shorthand binding declaration include its
+source-property group even though rename there selects the local variable.
+For reactive object destructure declarations only, the reference query therefore
+uses a real generated IdentifierReference resolved to that exact local symbol.
+Each materialized copy receives the same role selection; ordinary object and
+import shorthand retain their prior route. Generated parser/value-resolution
+failure after a proved reactive cursor returns an authoritative empty reference
+answer. TS/TSX syntax and actual Canon projection controls accompany the native
+24-session contract. Setup-role detection alone is not a malformed-parser
+fail-closed claim; existing canonical failure/scope guards remain necessary.
+
+Fresh exact-head source/native Actions must qualify the correction and every
+unchanged authored vector before readiness, queue admission, merge or closure.

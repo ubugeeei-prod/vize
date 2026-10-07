@@ -34,6 +34,9 @@ pub(crate) async fn matching_component_prop_navigation_positions(
         };
     };
     let authored_definitions = map_canonical_corsa_locations(ctx, document, definitions);
+    if super::binding_roles::is_local_query(ctx, document, &authored_definitions) {
+        return ComponentPropNavigationMatches::default();
+    }
     let mut source_cache = ComponentPropSourceCache::default();
     let names = authored_definitions
         .iter()
