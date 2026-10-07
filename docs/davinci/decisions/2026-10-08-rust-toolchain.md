@@ -93,3 +93,9 @@ Before publication, also incorporate signed actual main
 `c544ca63ffb2dd14fe58b796ccea79b1d518a156`. Its incoming changes deliver
 documentation navigation; preserve all of them and every incoming canonical
 clause. The reviewed observer compiler correction remains unchanged.
+
+The final publication composition also genuinely includes signed latest main
+`7557c93594916e797bd6defac459c88235221547` and its delivered caller-retirement
+source, fixture, workflow and inventory changes. Every incoming byte and
+canonical clause is retained; original 104 registry/cap/input bytes and all 33
+compiler custody drivers remain identical to the owned source.

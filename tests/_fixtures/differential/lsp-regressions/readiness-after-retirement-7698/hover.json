@@ -1,0 +1,16 @@
+{
+  "contents": {
+    "kind": "markdown",
+    "value": "```typescript\nconst value: string\n```\n\n**Authored** value."
+  },
+  "range": {
+    "start": {
+      "line": 1,
+      "character": 13
+    },
+    "end": {
+      "line": 1,
+      "character": 18
+    }
+  }
+}
