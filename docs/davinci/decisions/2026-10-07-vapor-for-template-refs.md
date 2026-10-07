@@ -149,3 +149,22 @@ new advisory; do not waive or raise its exact accepted-high list. Incorporate
 the actual dependency merge and require fresh current-source/protected tests,
 actual signed merge and installed replay. The component-ref half of #7882
 and broader direct-array binding remain unfinished.
+
+The separate MCP SDK repair #8148 actually signed-merged at
+2026-10-07T08:21:15Z as 706a5b7886c363f6c67a03964ac55f26c5a2a341
+(valid GitHub signature, sole parent ef848). Genuinely incorporate this actual
+main, including its locked 1.31.0/catalog and complete new decision record.
+The automatic merge preserves every incoming canonical line prefix at 350
+lines and all ref implementation, original fixture, complete law and runtime
+observer bytes. No package, advisory-list, cap or expected-vector edits are
+made by this slice. The whole 5f source Check also completed: all four tooling
+and Rust shards plus strict canonical corpus passed; its only failures were
+the now-remediated SDK advisory and required report. Its independent source
+receipt retains nine laws/16518 cases/36 mounts/114 exact complete phases
+(SHA256 54c2683e4a57de9deab6dce3ec643fbb8e516aa2892bfa5d3f1a7cd31f984e34).
+These are historical source results; the genuine current union must pass its
+own exact-head Actions, protected full Rust/unchanged ceilings, actual signed
+merge and installed replay. Restore normal Ready because the concrete source
+and controls are complete and the actual security prerequisite is delivered;
+auto/queue remains off until current-source checks pass. Component/defineExpose
+and broader direct-array acceptance remain unfinished; #7882 stays open.
