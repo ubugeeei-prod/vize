@@ -1,6 +1,6 @@
 //! Snapshot provenance follows lexical declarations, including closure captures.
 
-use super::{CompactString, FxHashMap, ReactiveValueOrigin, ScopeId, ScriptParseResult};
+use super::{CompactString, ReactiveValueOrigin, ScopeId, ScriptParseResult};
 
 impl ScriptParseResult {
     pub(crate) fn record_reactive_origin(
@@ -10,7 +10,7 @@ impl ScriptParseResult {
     ) {
         self.scoped_reactive_value_origins
             .entry(self.scopes.current_id())
-            .or_insert_with(FxHashMap::default)
+            .or_default()
             .insert(name.clone(), origin.clone());
         self.reactive_value_origins.insert(name, origin);
     }
