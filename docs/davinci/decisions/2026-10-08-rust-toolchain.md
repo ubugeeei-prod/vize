@@ -57,3 +57,12 @@ synthetic revision first, and retain the original over-ceiling, malformed-dump
 and under-ceiling laws. This corrects test context; no source guard or ceiling
 changes. The separate authored Vapor raw-template premise needs its own literal
 AST/original-algorithm proof, and all fresh source gates remain required.
+
+Fresh `1a3a590a` paired n8n passes, but native job `112934206269` refuses
+the missing `lsp_data_aria_attributes_cli` target before execution: merged PR
+workflow configuration includes the newly delivered target while its exact
+source checkout still descends from older main. Genuinely merge signed current
+main `cd7adbdd1bcf6dd8bc92734a9a4108da6eb3284f`, preserving all incoming product,
+formatter/vendor/dependency and original fixture bytes alongside these owned
+changes. Keep the mandatory target and full source/native/corpus/instruction
+gates; adding no missing-target skip or test waiver.

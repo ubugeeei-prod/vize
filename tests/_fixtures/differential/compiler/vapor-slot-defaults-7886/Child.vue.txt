@@ -1,0 +1,7 @@
+<script setup vapor>
+const n = 1;
+</script>
+
+<template>
+  <slot :count="n" />
+</template>

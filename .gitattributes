@@ -42,6 +42,10 @@ tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/** -text
 # Immutable formatter regressions include literal CRLF/CRCRLF output bytes.
 tests/_fixtures/differential/formatter/sfc-vue*/** -text whitespace=-blank-at-eol
 
+# Reporter examples retain their exact original source and output bytes.
+tests/_fixtures/differential/compiler/vapor-slot-defaults-7886/*.txt -text
+tests/_fixtures/differential/compiler/vapor-slot-defaults-7886/original-issue.md -text
+
 # Complete CSS rule-layout fixtures retain their authored LF/CRLF bytes.
 tests/_fixtures/differential/formatter-regressions/css-rule-layout-7926-7966/*.vue*.txt -text whitespace=cr-at-eol
 
@@ -81,3 +85,6 @@ tests/_fixtures/differential/formatter-regressions/hugged-interpolation-indent-7
 
 # Original #8015 SFC and Issue inputs retain authored checkout bytes.
 tests/_fixtures/differential/lsp/template-expression-globals-8015/** -text whitespace=cr-at-eol
+
+# Contextual data/ARIA controls preserve complete source and expected payload bytes.
+tests/_fixtures/differential/lsp/data-aria-attributes-8015/** -text whitespace=cr-at-eol

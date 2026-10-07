@@ -43,6 +43,13 @@ impl DiagnosticService {
         let path = uri.path();
         if path.ends_with(".art.vue") {
             if features.lint {
+                diagnostics.extend(Self::collect_art_lint_diagnostics(
+                    state,
+                    uri,
+                    &content,
+                    features.ecosystem,
+                    &line_index,
+                ));
                 diagnostics.extend(Self::collect_musea_diagnostics(
                     state,
                     uri,
@@ -222,9 +229,16 @@ impl DiagnosticService {
         // collector below (mirrors `collect`).
         let line_index = LineIndex::new(&content);
 
-        // Art files (*.art.vue): Musea-specific lint only.
+        // Art files (*.art.vue): shared template/script lint and Musea lint.
         let path = uri.path();
         if path.ends_with(".art.vue") {
+            diagnostics.extend(Self::collect_art_lint_diagnostics(
+                state,
+                uri,
+                &content,
+                features.ecosystem,
+                &line_index,
+            ));
             diagnostics.extend(Self::collect_musea_diagnostics(
                 state,
                 uri,
