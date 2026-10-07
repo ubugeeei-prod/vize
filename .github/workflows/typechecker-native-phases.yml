@@ -154,7 +154,7 @@ jobs:
           node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs
           node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs
           node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs
-          bash tools/benchmarks/scripts/typechecker-native-unknown-options.sh
+          bash tools/benchmarks/scripts/typechecker-native-unknown-options.sh && cargo test --locked --profile ci-opt -p vize_patina --test documented_rule_examples documented_type_aware_examples_match_with_the_required_corsa_runtime --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
       - name: Check exact neutral inputs, strict phase parser and projection probe
         run: |
           node tools/benchmarks/scripts/typechecker-native-phases.mjs --self-test
