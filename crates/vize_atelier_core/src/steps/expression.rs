@@ -2,6 +2,7 @@
 
 mod collector;
 mod collector_targets;
+mod function_shape;
 mod inline_handler;
 pub(crate) mod nesting;
 mod parse_checks;
@@ -23,6 +24,7 @@ use crate::{
     SimpleExpressionNode, lane::TransformContext,
 };
 
+pub use function_shape::is_typescript_function_expression;
 pub use inline_handler::process_inline_handler;
 pub use nesting::{
     MAX_EXPRESSION_NESTING_DEPTH, expression_exceeds_max_depth, expression_has_balanced_delimiters,
@@ -31,7 +33,10 @@ pub use nesting::{
 pub use prefix::{is_simple_identifier, prefix_identifiers_in_expression};
 use rewrite::rewrite_expression;
 pub use scope::is_template_global;
-pub use shape_checks::{is_event_handler_reference_node, is_function_expression_node};
+pub use shape_checks::{
+    is_event_handler_reference_node, is_function_expression_node,
+    is_typescript_function_expression_node,
+};
 use shape_checks::{is_function_shape, is_handler_reference_shape};
 pub use typescript::strip_typescript_from_expression;
 pub use vize_relief::{ExpressionScope, for_each_function_var};
@@ -39,16 +44,27 @@ pub use vize_relief::{ExpressionScope, for_each_function_var};
 /// Returns true if an expression is a callable reference that should be passed
 /// through directly as an event handler, not wrapped as `$event => (...)`.
 pub fn is_event_handler_reference_expression(content: &str) -> bool {
-    with_whole_expression(content, is_handler_reference_shape).unwrap_or(false)
+    with_whole_expression(
+        content,
+        SourceType::default().with_module(true),
+        is_handler_reference_shape,
+    )
+    .unwrap_or(false)
 }
 
 /// Returns true if the whole expression is a function / arrow function expression.
 pub fn is_function_expression(content: &str) -> bool {
-    with_whole_expression(content, is_function_shape).unwrap_or(false)
+    with_whole_expression(
+        content,
+        SourceType::default().with_module(true),
+        is_function_shape,
+    )
+    .unwrap_or(false)
 }
 
 fn with_whole_expression<T>(
     content: &str,
+    source_type: SourceType,
     decide: impl FnOnce(&oxc_ast::ast::Expression<'_>) -> T,
 ) -> Option<T> {
     if !expression_is_safe_to_parse(content) {
@@ -58,13 +74,9 @@ fn with_whole_expression<T>(
     // The bare parser accepts a prefix (`save; count++` as `save`). Require
     // one whole expression. The newline also terminates authored line comments.
     let wrapped = cstr!("({content}\n)");
-    let expr = Parser::new(
-        &allocator,
-        &wrapped,
-        SourceType::default().with_module(true),
-    )
-    .parse_expression()
-    .ok()?;
+    let expr = Parser::new(&allocator, &wrapped, source_type)
+        .parse_expression()
+        .ok()?;
     (expr.span().end as usize == wrapped.len()).then(|| decide(expr.get_inner_expression()))
 }
 

@@ -10,20 +10,26 @@ Enable the native type-aware rule explicitly under `linter.rules`. It belongs
 to no preset. Use `linter.ruleOptions` to choose which non-boolean conditions
 to allow. The native checker projection already uses strict checking.
 
-```json
-{
-  "linter": {
-    "typeAware": true,
-    "rules": { "type/strict-boolean-expressions": "error" },
-    "ruleOptions": {
-      "type/strict-boolean-expressions": {
-        "allowString": false,
-        "allowNumber": false,
-        "allowNullableObject": false
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  "lint": {
+    "vize": {
+      "typeAware": true,
+      "rules": {
+        "type/strict-boolean-expressions": "error"
+      },
+      "ruleOptions": {
+        "type/strict-boolean-expressions": {
+          "allowString": false,
+          "allowNumber": false,
+          "allowNullableObject": false
+        }
       }
     }
   }
-}
+});
 ```
 
 With these options, the following script and template conditions は悪い例です:

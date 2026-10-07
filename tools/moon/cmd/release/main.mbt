@@ -68,7 +68,7 @@ async fn run_app() -> Int {
   }
   if args.is_empty() {
     @stdio.stderr.write(
-      "Usage: moon run --target native tools/moon/cmd/release -- <patch|minor|major|alpha|beta|rc|release> [-y]\n",
+      "Usage: moon run --target native tools/moon/cmd/release -- <patch|minor|major|alpha|beta|rc|release> [-y] [--pin] | --resume <PR> [--pin]\n",
     )
     return 1
   }
@@ -80,9 +80,18 @@ async fn run_app() -> Int {
       args[1],
     ])
   }
+  if args.length() == 3 && args[0] == "--resume" && args[2] == "--pin" {
+    return @process.run("rust-script", [
+      "tools/commands/release/pr.rs",
+      "resume",
+      args[1],
+      "--pin",
+    ])
+  }
   let bump = args[0]
   let mut prepare_only = false
   let mut auto_confirm = false
+  let mut pin = false
   for i in 1..<args.length() {
     if args[i] == "--prepare-only" {
       prepare_only = true
@@ -90,6 +99,10 @@ async fn run_app() -> Int {
     }
     if args[i] == "-y" {
       auto_confirm = true
+      continue
+    }
+    if args[i] == "--pin" {
+      pin = true
       continue
     }
     if args[i] == "--force-tag" {
@@ -102,6 +115,10 @@ async fn run_app() -> Int {
       @stdio.stderr.write("Unknown release arguments\n")
       return 1
     }
+  }
+  if pin && prepare_only {
+    @stdio.stderr.write("Error: --pin requires the release PR protocol.\n")
+    return 1
   }
 
   let cargo_toml_path = "Cargo.toml"
@@ -146,6 +163,11 @@ async fn run_app() -> Int {
   }
 
   if !prepare_only {
+    if pin {
+      return @process.run("rust-script", [
+        "tools/commands/release/pr.rs", "start", bump, "--pin",
+      ])
+    }
     return @process.run("rust-script", [
       "tools/commands/release/pr.rs", "start", bump,
     ])

@@ -118,3 +118,22 @@ The faithful composition also includes signed actual Art delivery
 paragraphs match that main byte for byte. The sole owned canonical suffix now
 occupies row 333, unchanged. All 33 capture drivers, four original cap/input
 registries and current compiler-observation guards retain exact 55c bytes.
+
+The CI Stack actually delivers signed commits
+`86418231fdf6c59752f1239c5bbdd66b22f5f9ba` and
+`3e0745b6277c00176178de6e9c15de2ee500a258` before Rust admission. Genuinely
+merge that actual main, retain its durable official action pins and every
+archive/source/feature/observation guard, and change only the new live
+`pr-rust-differential.yml` compiler selection from 1.98.0 to 1.99.0. Existing
+producer/source selector pins remain 1.99.0; synthetic and historical 1.98
+fixtures plus MSRV 1.95 stay exact. Source 2e fully passed all required gates
+but was never admitted with the known stale incoming consumer. The composed
+source requires fresh mandatory Actions and actual protected delivery.
+
+Cheap composed controls identify the new sibling harness still simulating
+1.98 as its current producer: the unchanged strict 1.99 archive constructor
+correctly refuses before either feature law executes. Derive only that active
+simulated banner from the declared sibling pin, retain the old 1.98 banner as
+an explicit refused envelope, and keep every foreign/corrupt archive and full
+feature-failure control intact. No stored historical fixture, archive validator,
+production behavior or numerical ceiling changes.

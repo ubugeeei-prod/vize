@@ -31,7 +31,7 @@ jobs:
         run: echo 'Rust Clippy and tests skipped because this PR changes no Rust or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ inputs.run-rust }}
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
         if: ${{ inputs.run-rust }}
         with:
           components: clippy
@@ -109,14 +109,6 @@ jobs:
           if-no-files-found: error
           compression-level: 0
           retention-days: 1
-      - name: Test merge queue differential corpora
-        if: ${{ github.event_name == 'merge_group' && inputs.run-rust }}
-        uses: ./.github/actions/test-rust-workspace-differential
-        with:
-          workspace-already-tested: "true"
-      - name: Check fixture coverage
-        if: ${{ inputs.run-rust }}
-        run: rust-script tools/commands/ci/github/write-coverage-summary.rs
       - name: Summarize Rust test timing evidence
         if: ${{ always() && inputs.run-rust }}
         env:
@@ -138,6 +130,13 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  merge-rust-differential:
+    name: Required Rust differential corpora
+    if: ${{ github.event_name == 'merge_group' && inputs.run-rust }}
+    needs: merge-rust-source
+    uses: ./.github/workflows/pr-rust-differential.yml
+    with: { run-rust: "${{ inputs.run-rust }}" }
+
   pr-rust-build:
     name: Build affected Rust tests
     if: ${{ github.event_name == 'pull_request' && inputs.run-rust }}
@@ -150,7 +149,7 @@ jobs:
       RUST_PLAN_JSON: ${{ inputs.rust-plan }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
         with:
           components: clippy
           toolchain: "1.99.0"
@@ -214,7 +213,7 @@ jobs:
       SHARD: ${{ matrix.shard }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
         with:
           toolchain: "1.99.0"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -273,7 +272,7 @@ jobs:
     name: Rust source report
     permissions: { contents: read, actions: read }
     if: ${{ always() }}
-    needs: [merge-rust-source, pr-rust-build, pr-rust-shard]
+    needs: [merge-rust-source, merge-rust-differential, pr-rust-build, pr-rust-shard]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:

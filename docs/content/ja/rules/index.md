@@ -2,48 +2,30 @@
 title: ルール
 ---
 
-<!-- Generated translation; source: rules/index.md -->
-
 # ルール
 
-Vize の診断は、1 つの大きなマトリックスとしてではなく、ルールとして文書化されます。各ルール ページには、
-Bad/Good の例に近い検出動作なので、参照を ESLint ルールのように読み取ることができます
-マニュアル。
+[全ルール](./all.md)から、各ルールの目的、既定の重大度、適用範囲、設定、悪い例・良い例を確認できます。
+個別ページは実装のルール名に対応し、英語と日本語で同じコード例を使っています。
 
-## ページ
+Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lint.vize` に設定します。
+`vp run lint` で Vize と Oxlint の検査を実行します。既存の同名 script がある場合は
+`vp run vize:lint` を使ってください。組み込みの `vp lint` は Vite+ 自身の検査です。
 
-- [すべての緑青ルール](./all.md): すべての緑青ルールの実装に関する 1 ページのメタデータ テーブル、
-  GitHub ソース リンクを含む。
-- [ルール オプション](./options.md): すべての configurable rule の型付き
-  `linter.ruleOptions` shape、既定値、置き換え挙動、例。
-- [Vue ルール](./vue.md): SFC テンプレート構造、Vue ディレクティブ、コンポーネント規約、および
-  単一ファイルの Vue の正当性チェック。
-- [タイプとスクリプトのルール](./type-and-script.md): TypeScript チェッカーによる診断と Vapor
-  スクリプトの制限。
-- [HTML ルール](./html.md): HTML の有効性とセマンティック マークアップのチェック。
-- [アクセシビリティ ルール](./accessibility.md): ARIA、キーボード インタラクション、ラベル、ランドマーク、および
-  アクセス可能なメディアのチェック。
-- [SSRルール](./ssr.md): サーバーレンダリングとハイドレーションの危険。
-- [Vapor ルール](./vapor.md): Vapor のみのテンプレート制約。
-- [エコシステム ルール](./ecosystem.md): Nuxt、Vue Router、Ponia、vue-i18n のプリセットに基づくチェック
-  Vue テスト ユーティリティと Void Vue。
-- [Musea と CSS ルール](./musea-and-css.md): Musea のアートブロック チェックとスタイル診断。
-- [クロスファイル ルール](./cross-file.md): によって発行されるプロジェクト グラフ診断
-  `vize lint --cross-file`。
+- [全ルールの検索・一覧](./all.md)
+- [ルール オプション](./options.md)：型と既定値
+- [ESLint からの移行対応表](./migration.md)
+- [ファイル間の検査と Router の例](./cross-file.md)
+- [Vue の検査](./vue.md)
+- [型と script の検査](./type-and-script.md)
+- [HTML](./html.md)・[アクセシビリティ](./accessibility.md)
+- [SSR](./ssr.md)・[Vapor](./vapor.md)・[エコシステム](./ecosystem.md)
+- [Musea と CSS](./musea-and-css.md)
 
 ## プリセット
 
-`essential` には、ほぼ常に有効にする必要がある正確性ルールが含まれています。 `happy-path` が追加
-日々の Vue 開発のための実践的な衛生チェック。 `ecosystem` は広範なデフォルトから開始します
-Vue Router、Vue I18n、Pinia、Vue Test Utils、Nuxt、および Void Vue チェックをバンドルして追加します。 `nuxt`
-Nuxt 指向の SSR 期待値と Vapor 期待値が含まれます。 `opinionated` が最も広範です
-内蔵プリセット。
+`essential` は基本的な正しさ、`happy-path` は日常的な改善、`opinionated` は厳しい規約を検査します。
+`ecosystem` は対応ライブラリー向け、`nuxt` は Nuxt 向けの規則を含みます。`incremental` は空の状態から
+必要なルールだけを有効にするためのプリセットです。実際の所属は各ルールの個別ページを参照してください。
 
-`incremental` は空から始まります。ホストがルールを継承せずに特定のルールをオプトインしたい場合に使用します。
-大きなプリセット。
-
-## タイプ認識構成
-
-セマンティック情報を必要とするルールは、`tsconfig.json` を通じて TypeScript プロジェクトを読み取ります。好む
-共有環境名を保持する代わりに、`compilerOptions.types` またはプロジェクト参照に配置します。
-Vize 構成内の別の `globals` リスト。
+型を使うルールには TypeScript プロジェクトと `typeAware` が必要です。グローバル名の型は
+`tsconfig.json` の `compilerOptions.types` や project references で管理してください。

@@ -163,13 +163,18 @@ impl<'a> Emitter<'a, '_> {
                 node.is_handler_key = prop.handler;
                 Box::new_in(node, &self.allocator)
             } else if prop.handler {
-                // The retained lane's handler key: `on` + capitalized name.
-                let mut key = String::from("on");
-                let mut chars = prop.key.chars();
-                if let Some(first) = chars.next() {
-                    key.push(first.to_ascii_uppercase());
-                    key.push_str(chars.as_str());
-                }
+                // Model update keys keep their existing authored suffix.
+                let key = if prop.value_kind == crate::ir::PropValueKind::ModelUpdate {
+                    let mut key = String::from("on");
+                    let mut chars = prop.key.chars();
+                    if let Some(first) = chars.next() {
+                        key.push(first.to_ascii_uppercase());
+                        key.push_str(chars.as_str());
+                    }
+                    key
+                } else {
+                    vize_atelier_core::steps::create_on_name(prop.key)
+                };
                 let mut node = SimpleExpressionNode::new(
                     self.allocator.alloc_str(&key),
                     true,

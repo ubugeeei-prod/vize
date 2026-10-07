@@ -190,6 +190,7 @@ test("the Rust report waits for the builder and all four independently executing
   assert.match(steps[run].run ?? "", /--partition "hash:\$SHARD\/4"/);
   assert.deepEqual(rust.jobs["rust-source-report"].needs, [
     "merge-rust-source",
+    "merge-rust-differential",
     "pr-rust-build",
     "pr-rust-shard",
   ]);

@@ -1,0 +1,223 @@
+2026-10-07T11:12:17.1245534Z ##[group]Run rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run
+2026-10-07T11:12:17.1245944Z [36;1mrust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run[0m
+2026-10-07T11:12:17.1264232Z shell: /usr/bin/bash -e {0}
+2026-10-07T11:12:17.1264368Z env:
+2026-10-07T11:12:17.1264476Z   CARGO_TERM_COLOR: always
+2026-10-07T11:12:17.1264637Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-07T11:12:17.1264786Z   VIZE_DAVINCI_DOM_CORPUS_MODE: enforce
+2026-10-07T11:12:17.1264928Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 244
+2026-10-07T11:12:17.1265069Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 353
+2026-10-07T11:12:17.1265208Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-07T11:12:17.1265347Z   CARGO_HOME: /home/runner/.cargo
+2026-10-07T11:12:17.1265472Z   CARGO_INCREMENTAL: 0
+2026-10-07T11:12:17.1265583Z ##[endgroup]
+2026-10-07T11:12:17.2994521Z [1m[92m   Compiling[0m proc-macro2 v1.0.106
+2026-10-07T11:12:17.2994766Z [1m[92m   Compiling[0m quote v1.0.45
+2026-10-07T11:12:17.2994994Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-10-07T11:12:17.2995184Z [1m[92m   Compiling[0m serde_core v1.0.228
+2026-10-07T11:12:17.2995357Z [1m[92m   Compiling[0m serde v1.0.228
+2026-10-07T11:12:17.2996021Z [1m[92m   Compiling[0m siphasher v1.0.3
+2026-10-07T11:12:17.2996184Z [1m[92m   Compiling[0m cfg-if v1.0.4
+2026-10-07T11:12:17.2996366Z [1m[92m   Compiling[0m zmij v1.0.21
+2026-10-07T11:12:17.2996515Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-10-07T11:12:17.2996663Z [1m[92m   Compiling[0m memchr v2.8.3
+2026-10-07T11:12:17.3007520Z [1m[92m   Compiling[0m fastrand v2.4.1
+2026-10-07T11:12:17.3018301Z [1m[92m   Compiling[0m thiserror v2.0.20
+2026-10-07T11:12:17.3041825Z [1m[92m   Compiling[0m allocator-api2 v0.2.21
+2026-10-07T11:12:17.3059759Z [1m[92m   Compiling[0m rustversion v1.0.22
+2026-10-07T11:12:17.3066789Z [1m[92m   Compiling[0m str_indices v0.4.4
+2026-10-07T11:12:17.3073315Z [1m[92m   Compiling[0m rustc-hash v2.1.3
+2026-10-07T11:12:17.3074393Z [1m[92m   Compiling[0m find-msvc-tools v0.1.9
+2026-10-07T11:12:17.3083081Z [1m[92m   Compiling[0m owo-colors v4.3.0
+2026-10-07T11:12:17.3093883Z [1m[92m   Compiling[0m shlex v1.3.0
+2026-10-07T11:12:17.3109109Z [1m[92m   Compiling[0m unicode-linebreak v0.1.5
+2026-10-07T11:12:17.3118765Z [1m[92m   Compiling[0m smawk v0.3.2
+2026-10-07T11:12:17.3126291Z [1m[92m   Compiling[0m unicode-width v0.2.2
+2026-10-07T11:12:17.3136931Z [1m[92m   Compiling[0m static_assertions v1.1.0
+2026-10-07T11:12:17.3137864Z [1m[92m   Compiling[0m unicode-segmentation v1.13.3
+2026-10-07T11:12:17.3139334Z [1m[92m   Compiling[0m oxc_estree v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:17.3161507Z [1m[92m   Compiling[0m libc v0.2.189
+2026-10-07T11:12:17.3173045Z [1m[92m   Compiling[0m dragonbox_ecma v0.1.12
+2026-10-07T11:12:17.3224151Z [1m[92m   Compiling[0m autocfg v1.5.0
+2026-10-07T11:12:17.3225688Z [1m[92m   Compiling[0m cow-utils v0.1.3
+2026-10-07T11:12:17.3266330Z [1m[92m   Compiling[0m nonmax v0.5.5
+2026-10-07T11:12:17.3304398Z [1m[92m   Compiling[0m unicode-id-start v1.4.0
+2026-10-07T11:12:17.3344190Z [1m[92m   Compiling[0m object v0.39.1
+2026-10-07T11:12:17.3527425Z [1m[92m   Compiling[0m serde_json v1.0.149
+2026-10-07T11:12:17.3573542Z [1m[92m   Compiling[0m percent-encoding v2.3.2
+2026-10-07T11:12:17.3628737Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-10-07T11:12:17.3930449Z [1m[92m   Compiling[0m xxhash-rust v0.8.18
+2026-10-07T11:12:17.4032150Z [1m[92m   Compiling[0m phf_shared v0.14.0
+2026-10-07T11:12:17.4177312Z [1m[92m   Compiling[0m cc v1.2.62
+2026-10-07T11:12:17.4180503Z [1m[92m   Compiling[0m phf_shared v0.13.1
+2026-10-07T11:12:17.4305333Z [1m[92m   Compiling[0m simdutf8 v0.1.5
+2026-10-07T11:12:17.4708952Z [1m[92m   Compiling[0m either v1.15.0
+2026-10-07T11:12:17.4759768Z [1m[92m   Compiling[0m crossbeam-utils v0.8.21
+2026-10-07T11:12:17.4852471Z [1m[92m   Compiling[0m textwrap v0.16.2
+2026-10-07T11:12:17.4926266Z [1m[92m   Compiling[0m dtoa v1.0.11
+2026-10-07T11:12:17.5030108Z [1m[92m   Compiling[0m seq-macro v0.3.6
+2026-10-07T11:12:17.5113026Z [1m[92m   Compiling[0m pastey v0.1.1
+2026-10-07T11:12:17.5148229Z [1m[92m   Compiling[0m self_cell v1.2.2
+2026-10-07T11:12:17.5167134Z [1m[92m   Compiling[0m adler2 v2.0.1
+2026-10-07T11:12:17.5209290Z [1m[92m   Compiling[0m equivalent v1.0.2
+2026-10-07T11:12:17.5352316Z [1m[92m   Compiling[0m oxc_sourcemap v8.1.2
+2026-10-07T11:12:17.5435391Z [1m[92m   Compiling[0m regex-syntax v0.8.11
+2026-10-07T11:12:17.5600569Z [1m[92m   Compiling[0m vsimd v0.8.0
+2026-10-07T11:12:17.5628551Z [1m[92m   Compiling[0m dtoa-short v0.3.5
+2026-10-07T11:12:17.5902010Z [1m[92m   Compiling[0m phf_generator v0.13.1
+2026-10-07T11:12:17.6055251Z [1m[92m   Compiling[0m phf_generator v0.14.0
+2026-10-07T11:12:17.6109669Z [1m[92m   Compiling[0m phf v0.14.0
+2026-10-07T11:12:17.6144481Z [1m[92m   Compiling[0m phf v0.13.1
+2026-10-07T11:12:17.6197635Z [1m[92m   Compiling[0m itertools v0.15.0
+2026-10-07T11:12:17.6230586Z [1m[92m   Compiling[0m miniz_oxide v0.9.1
+2026-10-07T11:12:17.6336866Z [1m[92m   Compiling[0m outref v0.5.2
+2026-10-07T11:12:17.6338305Z [1m[92m   Compiling[0m json-escape-simd v3.0.2
+2026-10-07T11:12:17.6535707Z [1m[92m   Compiling[0m parking_lot_core v0.9.12
+2026-10-07T11:12:17.6594455Z [1m[92m   Compiling[0m hashbrown v0.17.1
+2026-10-07T11:12:17.6687909Z [1m[92m   Compiling[0m phf_codegen v0.13.1
+2026-10-07T11:12:17.6777514Z [1m[92m   Compiling[0m scopeguard v1.2.0
+2026-10-07T11:12:17.6813322Z [1m[92m   Compiling[0m num-traits v0.2.19
+2026-10-07T11:12:17.6836100Z [1m[92m   Compiling[0m base64 v0.23.0
+2026-10-07T11:12:17.6978371Z [1m[92m   Compiling[0m hmac-sha1-compact v1.1.7
+2026-10-07T11:12:17.7064523Z [1m[92m   Compiling[0m memoffset v0.9.1
+2026-10-07T11:12:17.7096834Z [1m[92m   Compiling[0m zerocopy v0.8.48
+2026-10-07T11:12:17.7143543Z [1m[92m   Compiling[0m lock_api v0.4.14
+2026-10-07T11:12:17.7224049Z [1m[92m   Compiling[0m aho-corasick v1.1.4
+2026-10-07T11:12:17.7296160Z [1m[92m   Compiling[0m crossbeam-epoch v0.9.20
+2026-10-07T11:12:17.7346507Z [1m[92m   Compiling[0m hashbrown v0.14.5
+2026-10-07T11:12:17.7368862Z [1m[92m   Compiling[0m index_vec v0.1.4
+2026-10-07T11:12:17.7502766Z [1m[92m   Compiling[0m typenum v1.20.0
+2026-10-07T11:12:17.7543625Z [1m[92m   Compiling[0m thin-vec v0.2.20
+2026-10-07T11:12:17.8144123Z [1m[92m   Compiling[0m rayon-core v1.13.0
+2026-10-07T11:12:17.8247984Z [1m[92m   Compiling[0m plotters-backend v0.3.7
+2026-10-07T11:12:17.8507541Z [1m[92m   Compiling[0m getrandom v0.3.4
+2026-10-07T11:12:17.8690614Z [1m[92m   Compiling[0m anstyle v1.0.14
+2026-10-07T11:12:17.8848757Z [1m[92m   Compiling[0m clap_lex v1.1.0
+2026-10-07T11:12:17.8984259Z [1m[92m   Compiling[0m winnow v1.0.1
+2026-10-07T11:12:17.9153550Z [1m[92m   Compiling[0m ciborium-io v0.2.2
+2026-10-07T11:12:17.9223492Z [1m[92m   Compiling[0m rustix v1.1.4
+2026-10-07T11:12:17.9448637Z [1m[92m   Compiling[0m base64-simd v0.8.0
+2026-10-07T11:12:17.9654106Z [1m[92m   Compiling[0m castaway v0.2.4
+2026-10-07T11:12:17.9719459Z [1m[92m   Compiling[0m plotters-svg v0.3.7
+2026-10-07T11:12:17.9771496Z [1m[92m   Compiling[0m itertools v0.13.0
+2026-10-07T11:12:17.9910086Z [1m[92m   Compiling[0m const-oid v0.10.2
+2026-10-07T11:12:18.0153031Z [1m[92m   Compiling[0m clap_builder v4.6.6
+2026-10-07T11:12:18.0263541Z [1m[92m   Compiling[0m same-file v1.0.6
+2026-10-07T11:12:18.0343864Z [1m[92m   Compiling[0m toml_writer v1.1.2+spec-1.1.0
+2026-10-07T11:12:18.0376152Z [1m[92m   Compiling[0m cast v0.3.0
+2026-10-07T11:12:18.0435847Z [1m[92m   Compiling[0m linux-raw-sys v0.12.1
+2026-10-07T11:12:18.0463543Z [1m[92m   Compiling[0m anes v0.1.6
+2026-10-07T11:12:18.0583310Z [1m[92m   Compiling[0m regex-lite v0.1.9
+2026-10-07T11:12:18.1161846Z [1m[92m   Compiling[0m walkdir v2.5.0
+2026-10-07T11:12:18.1214947Z [1m[92m   Compiling[0m cpufeatures v0.3.0
+2026-10-07T11:12:18.1332969Z [1m[92m   Compiling[0m syn v2.0.117
+2026-10-07T11:12:18.1422908Z [1m[92m   Compiling[0m syn v3.0.5
+2026-10-07T11:12:18.1463593Z [1m[92m   Compiling[0m oorandom v11.1.5
+2026-10-07T11:12:18.1583323Z [1m[92m   Compiling[0m similar v2.7.0
+2026-10-07T11:12:18.1823901Z [1m[92m   Compiling[0m indexmap v2.14.0
+2026-10-07T11:12:18.2800791Z [1m[92m   Compiling[0m crossbeam-deque v0.8.6
+2026-10-07T11:12:18.3471665Z [1m[92m   Compiling[0m stacker v0.1.25
+2026-10-07T11:12:18.3472148Z [1m[92m   Compiling[0m libmimalloc-sys v0.1.49
+2026-10-07T11:12:18.3472499Z [1m[92m   Compiling[0m alloca v0.4.0
+2026-10-07T11:12:18.4547502Z [1m[92m   Compiling[0m num-integer v0.1.46
+2026-10-07T11:12:18.4547970Z [1m[92m   Compiling[0m plotters v0.3.7
+2026-10-07T11:12:18.4929838Z [1m[92m   Compiling[0m which v8.0.5
+2026-10-07T11:12:18.4942508Z [1m[92m   Compiling[0m page_size v0.6.0
+2026-10-07T11:12:18.4947505Z [1m[92m   Compiling[0m console v0.16.3
+2026-10-07T11:12:18.5441317Z [1m[92m   Compiling[0m hybrid-array v0.4.10
+2026-10-07T11:12:18.6198531Z [1m[92m   Compiling[0m num-bigint v0.5.1
+2026-10-07T11:12:18.7046844Z [1m[92m   Compiling[0m rayon v1.12.0
+2026-10-07T11:12:18.8022568Z [1m[92m   Compiling[0m toml_parser v1.1.3+spec-1.1.0
+2026-10-07T11:12:18.8069589Z [1m[92m   Compiling[0m crypto-common v0.2.1
+2026-10-07T11:12:18.8070060Z [1m[92m   Compiling[0m block-buffer v0.12.0
+2026-10-07T11:12:18.9473328Z [1m[92m   Compiling[0m regex-automata v0.4.18
+2026-10-07T11:12:18.9756899Z [1m[92m   Compiling[0m criterion-plot v0.8.2
+2026-10-07T11:12:19.0996517Z [1m[92m   Compiling[0m bitflags v2.13.1
+2026-10-07T11:12:19.0997019Z [1m[92m   Compiling[0m toml_datetime v1.1.1+spec-1.1.0
+2026-10-07T11:12:19.0997403Z [1m[92m   Compiling[0m serde_spanned v1.1.1
+2026-10-07T11:12:19.1142642Z [1m[92m   Compiling[0m digest v0.11.2
+2026-10-07T11:12:19.1776862Z [1m[92m   Compiling[0m sha2 v0.11.0
+2026-10-07T11:12:19.1856135Z [1m[92m   Compiling[0m toml_edit v0.25.11+spec-1.1.0
+2026-10-07T11:12:19.1856410Z [1m[92m   Compiling[0m toml v1.1.4+spec-1.1.0
+2026-10-07T11:12:19.2399558Z [1m[92m   Compiling[0m clap v4.6.6
+2026-10-07T11:12:19.3316049Z [1m[92m   Compiling[0m mimalloc v0.1.52
+2026-10-07T11:12:19.6107155Z [1m[92m   Compiling[0m htmlize v1.1.0
+2026-10-07T11:12:19.8917308Z [1m[92m   Compiling[0m thiserror-impl v2.0.20
+2026-10-07T11:12:19.8917761Z [1m[92m   Compiling[0m oxc_ast_macros v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:20.0619797Z [1m[92m   Compiling[0m tempfile v3.27.0
+2026-10-07T11:12:20.0770113Z [1m[92m   Compiling[0m ar_archive_writer v0.5.3
+2026-10-07T11:12:20.1535931Z [1m[92m   Compiling[0m regex v1.13.1
+2026-10-07T11:12:20.2453087Z [1m[92m   Compiling[0m serde_derive v1.0.228
+2026-10-07T11:12:20.2453513Z [1m[92m   Compiling[0m oxc-miette-derive v3.0.1
+2026-10-07T11:12:20.2453875Z [1m[92m   Compiling[0m phf_macros v0.14.0
+2026-10-07T11:12:20.2454177Z [1m[92m   Compiling[0m phf_macros v0.13.1
+2026-10-07T11:12:20.2454651Z [1m[92m   Compiling[0m vize_l0_derive v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l0_derive)
+2026-10-07T11:12:20.2454959Z [1m[92m   Compiling[0m cssparser-macros v0.7.0
+2026-10-07T11:12:20.2455150Z [1m[92m   Compiling[0m zerocopy-derive v0.8.48
+2026-10-07T11:12:20.2726120Z [1m[92m   Compiling[0m cobs v0.3.0
+2026-10-07T11:12:20.3604168Z [1m[92m   Compiling[0m psm v0.1.31
+2026-10-07T11:12:20.5795050Z [1m[92m   Compiling[0m oxc-miette v3.0.1
+2026-10-07T11:12:20.8214752Z [1m[92m   Compiling[0m oxc_diagnostics v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:21.2299936Z [1m[92m   Compiling[0m smallvec v1.15.2
+2026-10-07T11:12:21.2300199Z [1m[92m   Compiling[0m compact_str v0.10.0
+2026-10-07T11:12:21.2300391Z [1m[92m   Compiling[0m oxc_index v5.0.0
+2026-10-07T11:12:21.2301039Z [1m[92m   Compiling[0m postcard v1.1.3
+2026-10-07T11:12:21.2301252Z [1m[92m   Compiling[0m tinytemplate v1.2.1
+2026-10-07T11:12:21.2301428Z [1m[92m   Compiling[0m insta v1.48.0
+2026-10-07T11:12:21.2954591Z [1m[92m   Compiling[0m ropey v1.6.1
+2026-10-07T11:12:21.2954991Z [1m[92m   Compiling[0m cssparser v0.37.0
+2026-10-07T11:12:21.3373237Z [1m[92m   Compiling[0m oxc-browserslist v3.0.12
+2026-10-07T11:12:21.3800660Z [1m[92m   Compiling[0m dashmap v6.2.1
+2026-10-07T11:12:21.5046989Z [1m[92m   Compiling[0m oxc_data_structures v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:21.5831341Z [1m[92m   Compiling[0m oxc_allocator v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:21.7691064Z [1m[92m   Compiling[0m oxc_str v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:21.8073597Z [1m[92m   Compiling[0m oxc_span v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:21.8646160Z [1m[92m   Compiling[0m oxc_syntax v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:21.8647035Z [1m[92m   Compiling[0m oxc_regular_expression v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:22.0845633Z [1m[92m   Compiling[0m vize_l0 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l0)
+2026-10-07T11:12:22.0846114Z [1m[92m   Compiling[0m oxc_compat v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:22.1358112Z [1m[92m   Compiling[0m half v2.7.1
+2026-10-07T11:12:22.1766307Z [1m[92m   Compiling[0m oxc_ast v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:22.2237985Z [1m[92m   Compiling[0m ciborium-ll v0.2.2
+2026-10-07T11:12:22.2806461Z [1m[92m   Compiling[0m ciborium v0.2.2
+2026-10-07T11:12:22.4586345Z [1m[92m   Compiling[0m criterion v0.8.2
+2026-10-07T11:12:23.3904160Z [1m[92m   Compiling[0m vize_carton v0.435.0 (/home/runner/_work/vize/vize/crates/vize_carton)
+2026-10-07T11:12:23.3904603Z [1m[92m   Compiling[0m davinci_test_support v0.435.0 (/home/runner/_work/vize/vize/tests/davinci_test_support)
+2026-10-07T11:12:23.4995603Z [1m[92m   Compiling[0m davinci_harness v0.435.0 (/home/runner/_work/vize/vize/tools/benchmarks/crates/davinci_harness)
+2026-10-07T11:12:24.1083890Z [1m[92m   Compiling[0m oxc_ast_visit v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:24.1084521Z [1m[92m   Compiling[0m oxc_ecmascript v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:24.4935159Z [1m[92m   Compiling[0m vize_oxc_parser v0.435.0 (/home/runner/_work/vize/vize/vendor/oxc_parser)
+2026-10-07T11:12:24.4935997Z [1m[92m   Compiling[0m oxc_semantic v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:24.4936671Z [1m[92m   Compiling[0m vize_relief v0.435.0 (/home/runner/_work/vize/vize/crates/vize_relief)
+2026-10-07T11:12:24.8676690Z [1m[92m   Compiling[0m oxc_traverse v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:24.8677178Z [1m[92m   Compiling[0m oxc_codegen v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:25.4234808Z [1m[92m   Compiling[0m vize_l1 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l1)
+2026-10-07T11:12:25.7389527Z [1m[92m   Compiling[0m oxc_transformer v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:12:26.2535898Z [1m[92m   Compiling[0m vize_l2 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l2)
+2026-10-07T11:12:26.2536512Z [1m[92m   Compiling[0m vize_armature v0.435.0 (/home/runner/_work/vize/vize/crates/vize_armature)
+2026-10-07T11:12:27.2348471Z [1m[92m   Compiling[0m vize_l3 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l3)
+2026-10-07T11:12:27.8466938Z [1m[92m   Compiling[0m vize_l1_to_l2 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l1_to_l2)
+2026-10-07T11:12:27.8467333Z [1m[92m   Compiling[0m vize_croquis v0.435.0 (/home/runner/_work/vize/vize/crates/vize_croquis)
+2026-10-07T11:12:27.8467677Z [1m[92m   Compiling[0m vize_l2_to_l3 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l2_to_l3)
+2026-10-07T11:12:29.4118839Z [1m[92m   Compiling[0m vize_l4 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l4)
+2026-10-07T11:12:30.1124715Z [1m[92m   Compiling[0m vize_atelier_core v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_core)
+2026-10-07T11:12:31.0178509Z [1m[92m   Compiling[0m vize_atelier_dom v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_dom)
+2026-10-07T11:12:31.0178914Z [1m[92m   Compiling[0m vize_atelier_vapor v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_vapor)
+2026-10-07T11:12:31.0179294Z [1m[92m   Compiling[0m vize_atelier_ssr v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_ssr)
+2026-10-07T11:12:31.9374282Z [1m[92m   Compiling[0m vize_atelier_sfc v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_sfc)
+2026-10-07T11:12:34.5875711Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 17.43s
+2026-10-07T11:12:34.5995283Z [1m[92m     Running[0m tests/davinci_dom_corpus.rs (target/debug/deps/davinci_dom_corpus-f482983927354a4b)
+2026-10-07T11:12:34.6012312Z 
+2026-10-07T11:12:34.6012442Z running 4 tests
+2026-10-07T11:12:34.6014070Z test canonical_invalid_fixture_allowlist_is_exact ... ok
+2026-10-07T11:12:34.6017937Z test unrelated_invalid_end_tag_still_blocks_old_lane_comparison ... ok
+2026-10-07T11:12:34.6028834Z test nested_anchor_and_button_recoveries_are_compared_not_skipped ... ok
+2026-10-07T11:12:35.5082379Z davinci-differential corpus scope: root=/home/runner/_work/vize/vize/tests/davinci_test_support/../../tests/_fixtures/_git scope=canonical closure_evidence=true submodules=147
+2026-10-07T11:13:09.8913698Z davinci DOM corpus sweep: files=42998 unreadable=0 parsed=42998 templates=42625 compared=42609 patch_fact_entries=390838 old_error_skips=16 s2_refusals=0 divergences=0
+2026-10-07T11:13:09.8914255Z davinci DOM corpus refusal reasons: {}
+2026-10-07T11:13:09.8914671Z davinci DOM corpus old-lane error reasons: {"ExtendPoint": 1, "InvalidEndTag": 20, "MissingEndTag": 10, "MissingWhitespaceBetweenAttributes": 4, "VElseNoAdjacentIf": 1, "VIfSameKey": 4, "VSlotDuplicateSlotNames": 1}
+2026-10-07T11:13:09.8915069Z davinci DOM corpus refusal samples: {}
+2026-10-07T11:13:09.8949089Z test dom_emit_agrees_on_sfc_templates ... ok
+2026-10-07T11:13:09.8949285Z 
+2026-10-07T11:13:09.8949455Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 35.29s
+2026-10-07T11:13:09.8949623Z 

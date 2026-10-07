@@ -105,3 +105,16 @@ pub fn wait_for_promotion(number: u64, head: &str, tag: &str, root: &Path) -> Re
         sleep(Duration::from_secs(20));
     }
 }
+
+pub fn validate_pinned(number: u64, head: &str, tag: &str, root: &Path) -> Result<(), String> {
+    super::pr_pin::validate(number, head, tag, root)
+}
+
+pub fn wait_for_promotion_pinned(
+    number: u64,
+    head: &str,
+    tag: &str,
+    root: &Path,
+) -> Result<(), String> {
+    super::pr_pin::wait_for_promotion(number, head, tag, root)
+}

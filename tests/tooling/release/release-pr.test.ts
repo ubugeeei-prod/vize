@@ -6,11 +6,47 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { repoRoot } from "../_helpers/moonbit.ts";
+import { repoRoot, runMoonScript } from "../_helpers/moonbit.ts";
 import { writeFakeCommand } from "../support/fake-command.ts";
 import { readRepoFile } from "../support/github-workflows.ts";
 
 const script = path.join(repoRoot, "tools/commands/release/pr.rs");
+
+test("public release CLI forwards pinned start and resume without bypassing its Rust protocol", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-pinned-cli-"));
+  const bin = path.join(root, "bin");
+  const capture = path.join(root, "capture.json");
+  fs.mkdirSync(bin);
+  writeFakeCommand(
+    bin,
+    "rust-script",
+    `require('node:fs').writeFileSync(${JSON.stringify(capture)}, JSON.stringify(process.argv.slice(2)));`,
+  );
+  try {
+    const cases = [
+      { args: ["--resume", "42"], protocol: ["resume", "42"] },
+      { args: ["--resume", "42", "--pin"], protocol: ["resume", "42", "--pin"] },
+      { args: ["patch", "-y", "--pin"], protocol: ["start", "patch", "--pin"] },
+    ];
+    for (const { args, protocol } of cases) {
+      const result = runMoonScript("release", args, {
+        env: { PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}` },
+      });
+      assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+      assert.deepEqual(JSON.parse(fs.readFileSync(capture, "utf8")), [
+        "tools/commands/release/pr.rs",
+        ...protocol,
+      ]);
+    }
+    fs.rmSync(capture);
+    const rejected = runMoonScript("release", ["patch", "-y", "--pin", "--prepare-only"]);
+    assert.notEqual(rejected.status, 0);
+    assert.match(rejected.stderr, /--pin requires the release PR protocol/);
+    assert.equal(fs.existsSync(capture), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
 
 test("release promotion rejects stale main and immutable tag conflicts atomically", () => {
   const result = spawnSync("rust-script", ["--test", script], { encoding: "utf8" });
@@ -73,6 +109,31 @@ test("release-only workflow validates all artifacts before promotion and preserv
   const barrier = parse(readRepoFile(".github", "workflows", "release-promotion.yml"));
   assert.deepEqual(barrier.permissions, { contents: "read", "pull-requests": "read" });
   assert.match(barrier.jobs.promotion.steps.at(-1).run, /pr\.rs wait-promotion/);
+});
+
+test("pinned publication retains the original build barrier and explicitly opts into every verifier", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "release.yml"));
+  assert.deepEqual(workflow.on.workflow_dispatch.inputs.pinned, {
+    description: "Publish an immutable source cut after a protected version integration",
+    required: false,
+    default: false,
+    type: "boolean",
+  });
+  assert.match(workflow["run-name"], /Pinned Release \{0\} PR #\{1\} @ \{2\}/);
+  const authorization = workflow.jobs.candidate.steps.at(-1);
+  assert.equal(authorization.env.RELEASE_PINNED, "${{ inputs.pinned }}");
+  assert.match(authorization.run, /validate-pinned/);
+  for (const job of ["candidate-preflight", "release-preflight"]) {
+    assert.equal(workflow.jobs[job].with.pinned, "${{ inputs.pinned }}");
+  }
+  const preflight = parse(readRepoFile(".github", "workflows", "release-preflight.yml"));
+  assert.equal(preflight.on.workflow_call.inputs.pinned.default, false);
+  assert.equal(preflight.jobs.verify.steps.at(-1).env.RELEASE_PINNED, "${{ inputs.pinned }}");
+  const promotion = parse(readRepoFile(".github", "workflows", "release-promotion.yml"));
+  assert.equal(promotion.on.workflow_call.inputs.pinned.default, false);
+  assert.match(promotion.jobs.promotion.steps.at(-1).run, /wait-promotion-pinned/);
+  assert.equal(workflow.jobs["release-preflight"].needs, "candidate-ready");
+  assert.deepEqual(promotion.permissions, { contents: "read", "pull-requests": "read" });
 });
 
 test("Actions candidate authorization checks actual Git ancestry and never creates a tag", () => {

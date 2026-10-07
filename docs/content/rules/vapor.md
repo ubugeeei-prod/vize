@@ -1,114 +1,21 @@
 ---
-title: Vapor Rules
+title: Vapor rules
 ---
 
-# Vapor Rules
+# Vapor rules
 
-These rules cover template constraints for Vapor-oriented components and apps. Composition API and
-script-level Vapor guidance lives in [Type and script rules](./type-and-script.md).
+Follow each rule for purpose, severity, scope, configuration, and Bad/Good examples. Individual pages are the reference for current support boundaries.
 
-## `vapor/no-vue-lifecycle-events`
+Configure `lint.vize.rules` and run `vp run lint` with the Vite+ helper. Check each page for type-aware, filename, or additional-configuration prerequisites.
 
-Reports per-element lifecycle events such as `@vue:mounted`.
+| Rule | Purpose |
+| --- | --- |
+| [`script/no-get-current-instance`](./reference/script-no-get-current-instance.md) | Disallow getCurrentInstance() in Vapor mode (returns null) |
+| [`script/no-next-tick`](./reference/script-no-next-tick.md) | Disallow nextTick() usage in Vapor-oriented components |
+| [`script/no-options-api`](./reference/script-no-options-api.md) | Disallow Options API patterns in Vapor mode |
+| [`vapor/no-inline-template`](./reference/vapor-no-inline-template.md) | Disallow deprecated inline-template attribute |
+| [`vapor/no-vue-lifecycle-events`](./reference/vapor-no-vue-lifecycle-events.md) | Disallow @vue:xxx per-element lifecycle events (not supported in Vapor) |
+| [`vapor/prefer-static-class`](./reference/vapor-prefer-static-class.md) | Prefer static class over dynamic class binding for string literals |
+| [`vapor/require-vapor-attribute`](./reference/vapor-require-vapor-attribute.md) | Suggest adding vapor attribute to script setup |
 
-Default severity: `error`  
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <input @vue:mounted="focusInput" />
-</template>
-```
-
-Good:
-
-```vue
-<script setup lang="ts" vapor>
-const input = useTemplateRef<HTMLInputElement>("input");
-
-onMounted(() => {
-  input.value?.focus();
-});
-</script>
-
-<template>
-  <input ref="input" />
-</template>
-```
-
-## `vapor/require-vapor-attribute`
-
-Suggests adding `vapor` to `<script setup>` when the preset expects Vapor-compatible components.
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script setup lang="ts">
-const count = ref(0);
-</script>
-```
-
-Good:
-
-```vue
-<script setup lang="ts" vapor>
-const count = ref(0);
-</script>
-```
-
-## `vapor/no-inline-template`
-
-Reports the deprecated `inline-template` attribute.
-
-Default severity: `error`  
-Presets: `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <LegacyCard inline-template>
-    <p>Profile</p>
-  </LegacyCard>
-</template>
-```
-
-Good:
-
-```vue
-<template>
-  <LegacyCard>
-    <template #default>
-      <p>Profile</p>
-    </template>
-  </LegacyCard>
-</template>
-```
-
-## `vapor/prefer-static-class`
-
-Reports dynamic `:class` bindings whose value is a static string literal.
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<template>
-  <section :class="'panel panel-primary'">Profile</section>
-</template>
-```
-
-Good:
-
-```vue
-<template>
-  <section class="panel panel-primary">Profile</section>
-</template>
-```
+[All rules](./all.md) · [Rule Options](./options.md) · [ESLint migration map](./migration.md) · [Project checks](./cross-file.md)
