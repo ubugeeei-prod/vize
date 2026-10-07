@@ -1,0 +1,15 @@
+{
+  "schema": "vize.content-mapper.incomplete-tag",
+  "version": 1,
+  "issue": 8158,
+  "positions": "authored UTF-16, one-based",
+  "states": ["complete", "unfinished-tag", "template-repaired", "script-repaired"],
+  "scriptMessage": "Type 'string' is not assignable to type 'number'.",
+  "cases": [
+    { "file": "setup.vue.txt", "line": 2, "column": 16 },
+    { "file": "normal.vue.txt", "line": 2, "column": 23 },
+    { "file": "split.vue.txt", "line": 5, "column": 16 }
+  ],
+  "lineEndings": ["LF", "CRLF"],
+  "unsupported": "No whole-product native acceptance or alias-rename credit."
+}
