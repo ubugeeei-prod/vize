@@ -239,7 +239,7 @@ fn process_expression_shape<'a>(
         compound
             .children
             .push(CompoundExpressionChild::Simple(simple));
-        ExpressionNode::Compound(Box::new_in(compound, allocator))
+        ExpressionNode::Compound(Box::new_in(compound, &allocator))
     } else {
         ExpressionNode::Simple(simple)
     }
