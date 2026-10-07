@@ -271,6 +271,9 @@ export interface LintRuleOptions {
   "vue/no-mutating-props"?: {
     shallowOnly?: boolean;
   };
+  "vue/require-component-registration"?: {
+    globals?: string[];
+  };
   "vue/sfc-element-order"?: {
     order?: (string | string[])[];
   };

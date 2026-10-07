@@ -103,6 +103,10 @@ class CustomEventNameCasingOptions {
   casing: CustomEventNameCasing = "camelCase"
 }
 
+class RequireComponentRegistrationOptions {
+  globals: Listing<String> = new Listing {}
+}
+
 class NoMutatingPropsOptions {
   shallowOnly: Boolean = false
 }
@@ -159,6 +163,7 @@ class LintRuleOptions {
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
   `vue/no-mutating-props`: NoMutatingPropsOptions? = null
+  `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
   `vue/v-on-event-hyphenation`: HyphenationStyle? = null

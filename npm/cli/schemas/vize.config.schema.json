@@ -539,6 +539,18 @@
           },
           "additionalProperties": false
         },
+        "vue/require-component-registration": {
+          "type": "object",
+          "properties": {
+            "globals": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/sfc-element-order": {
           "type": "object",
           "properties": {

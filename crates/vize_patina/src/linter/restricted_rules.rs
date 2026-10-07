@@ -22,6 +22,19 @@ use crate::rules::vue::{
 use vize_l0::String;
 
 impl Linter {
+    /// Configure global component names without enabling the rule.
+    pub fn with_component_registration_globals(mut self, globals: Vec<String>) -> Self {
+        if self.registry.has_rule("vue/require-component-registration") {
+            self.registry.replace(Box::new(
+                crate::rules::opinionated::vue::RequireComponentRegistration {
+                    ignore_globals: globals,
+                    nuxt_mode: matches!(self.preset, Some(LintPreset::Nuxt)),
+                },
+            ));
+        }
+        self
+    }
+
     /// Configure known content-providing directives without enabling the rule.
     pub fn with_palpable_content_directives(mut self, names: Vec<String>) -> Self {
         if self.registry.has_rule("html/no-empty-palpable-content") {

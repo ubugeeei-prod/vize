@@ -1,0 +1,22 @@
+# Globally registered component lint options
+
+Issue: [#7978](https://github.com/ubugeeei-prod/vize/issues/7978).
+
+Expose the registration rule's existing global-name list through
+`linter.ruleOptions["vue/require-component-registration"].globals`. The shared
+Rust config, CLI and LSP constructors and Pkl/JSON Schema/TypeScript artifacts
+carry the same string list. Name matching accepts Vue PascalCase and kebab-case
+spellings while retaining the existing case-insensitive allowances. Regular
+expressions are not interpreted.
+
+Options do not enable an unselected rule. A later config layer replaces the
+list, including an explicit empty reset. Runtime `previewSetup` code is not
+executed or analyzed by the linter; the names explicitly record the components
+it provides. `GlobalComponents` provider resolution remains a separate future
+precision path.
+
+The authored Art corpus retains `defineArt` implicit registration, both global
+spellings and a missing-component positive. Tests cover the public lint API,
+CLI configuration, editor configuration and strict layered options. Art editor
+lint delivery itself is tracked in #7945. This legacy regression adds no
+Davinci native acceptance credit.
