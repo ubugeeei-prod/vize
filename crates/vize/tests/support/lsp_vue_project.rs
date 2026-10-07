@@ -71,6 +71,14 @@ impl Fixture {
         Self::new_with_options_and_files(source, false, false, true, false, (name, files, None))
     }
 
+    pub fn new_with_cross_file_component_project(
+        source: &str,
+        name: &str,
+        files: &[(&str, &str)],
+    ) -> Self {
+        Self::new_with_options_and_files(source, false, true, true, false, (name, files, None))
+    }
+
     pub fn new_with_pinned_vue_project(
         source: &str,
         name: &str,
@@ -205,6 +213,21 @@ impl Fixture {
             }}),
         );
         self.diagnostics(version)
+    }
+
+    pub fn change_file(&mut self, uri: &str, source: &str, version: i64) -> Value {
+        self.lsp.send(
+            json!({ "jsonrpc": "2.0", "method": "textDocument/didChange", "params": {
+                "textDocument": { "uri": uri, "version": version },
+                "contentChanges": [{ "text": source }]
+            }}),
+        );
+        self.lsp.recv_matching(|message| {
+            message["method"] == "textDocument/publishDiagnostics"
+                && message["params"]["uri"] == uri
+                && message["params"]["version"] == version
+        })["params"]["diagnostics"]
+            .clone()
     }
 
     fn diagnostics(&mut self, version: i64) -> Value {

@@ -1,0 +1,61 @@
+{
+  "issue": 7905,
+  "rule": "vue/v-slot-style",
+  "author": {
+    "login": "ubugeeei",
+    "id": 71201308,
+    "coAuthor": "ubugeeei <71201308+ubugeeei@users.noreply.github.com>"
+  },
+  "bodySha256": "6e5c483cf61590c5eb9fa1007faaf5a97eba3f71bdff3183e44e512f35d9aab0",
+  "scope": "Only proven slot prefix/default-name edits. Whole original carriers and boolean corpus are unchanged. Other two template rule edits, original Vapor requirement, repeated-pass umbrella7906 and hosted execution remain pending.",
+  "inputs": [
+    {
+      "file": "../issue-7905/original-issue.md",
+      "bytes": 3071,
+      "sha256": "6e5c483cf61590c5eb9fa1007faaf5a97eba3f71bdff3183e44e512f35d9aab0"
+    },
+    {
+      "file": "../issue-7905/original-command.sh",
+      "bytes": 841,
+      "sha256": "c3853b28e466bd856d057f37ab07151aafd8bdf6c0d513b880ef97e3b9991852"
+    },
+    {
+      "file": "../issue-7905/original-actual.txt",
+      "bytes": 408,
+      "sha256": "e42cdfdf7ce659ae1aaf7f99052ddc2112da8bd54425fb85b70327e37f240c18"
+    },
+    {
+      "file": "../issue-7905/original-requested-all-four.vue.fixture",
+      "bytes": 132,
+      "sha256": "1f4ced1b75f3d08fbc1d021db79f91657ba9514409f99b758202f1216721bc26"
+    },
+    {
+      "file": "../issue-7905/CardList.vue.fixture",
+      "bytes": 228,
+      "sha256": "fb28839a62fd3a00c1a1f7c828c2c4a095b4f23d0c621e9cad1637be6c6c0f79"
+    },
+    {
+      "file": "../issue-7905/MyCard.vue.fixture",
+      "bytes": 59,
+      "sha256": "c8fdce68c6cacd9a5f0838857748d0e8c53e379c0b4f9310192aa138494a06ab"
+    },
+    {
+      "file": "../issue-7905/vize.config.json",
+      "bytes": 242,
+      "sha256": "1ee881abfa25d044d8350b418979afe24767eb9d90bef5fd2ffcfe79c6c05b46"
+    }
+  ],
+  "cases": {
+    "file": "cases.json",
+    "count": 29,
+    "bytes": 21340,
+    "sha256": "3c336f8707bd8cf245ea03effe280ea4bfc452911d9a3f48c9c2bb9d9db23867"
+  },
+  "authoringAuthority": [
+    "Full source and fixed bytes independently authored, never captured from current Vize output.",
+    "Vue slot/default/dynamic identity: https://vuejs.org/guide/components/slots.html",
+    "Existing source v-slot-style diagnostic classifier/messages and unchanged Pug view mapping determine complete warning contracts.",
+    "https://eslint.vuejs.org/rules/v-slot-style.html",
+    "Configured uniform-style host laws are separate Rust vectors; public CLI controls use the actual default rule shape."
+  ]
+}

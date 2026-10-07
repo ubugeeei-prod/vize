@@ -45,3 +45,13 @@ Filename case normalization beyond the reported `Tree.vue` and matching kebab
 tag remains unqualified: the SFC owner currently supplies the raw filename stem,
 so lower-case/kebab filenames versus Pascal tags need a separate acceptance
 control. This TODO grants no closure or native migration credit.
+
+The existing PR now composes actual signed main
+`8c7727613de6213e0a52cde96eeb295d01c9bef5` from its real
+`3ed19a53f0b80a32583a15ece1196cc985a591e0` source head. Every owned product,
+test, original fixture and runtime observer byte remains unchanged; the shared
+SFC consumption inventory retains both sides' entries. The coordinated decision
+record preserves the complete slice clause and incoming decisions. Previous
+source success grants no acceptance to this composition: fresh exact-head
+Actions, protected gates and actual merge remain required, with both filename
+case normalization and native custom-directive admission still unfinished.

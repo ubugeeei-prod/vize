@@ -1,0 +1,2 @@
+plugin-vue: [["", "Hello world!", ""], ["", "<span>", " Spring course", ""]]
+vize:       [["", "Hello ", "world", "!", ""], ["", "<span>", " ", "Spring course", ""]]
