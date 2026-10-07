@@ -49,3 +49,13 @@ The single same-worker shipping pair demonstrates no hover speed benefit: first 
 After #8137 actually signed-merged, incorporate genuine main `ef84821d30fa0d8538b2472fef34418e75380523` once. Preserve all three transfer production blobs and incoming readiness, security, workflows and decisions. Every `718` result above remains historical for the composed successor; fresh exact-head source/native/original400 Actions and protected signed delivery are required. Issue #7698 remains open.
 
 Paired incorporation decision: [comment 6033188073](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6033188073).
+
+## Historical 428 qualification and next security incorporation
+
+Source `42890b61a0fa773b2c5186f81acc58dcdc2269ba` incorporates signed `ef84821` with the three transfer production files unchanged. Check `37588150872` passed configured source checks and all four Rust workers (16,509 unique executed cases, zero failures/errors/skips); only the new MCP advisory and its dependent aggregate failed. Keep the complete failure and Draft/offqueue state.
+
+Native run `37588150315` passed; independently checked all six complete corpus/mode outputs and physical virtual-file tables, all 18 raw shard records and existing three freshness controls. Original400 run `37588150413` passed all 79 whole query vectors and 18 authored envelopes. Its same-worker shipping pair observed first hover 1693.02→1649.80ms, warm median 19.60→17.88ms and background median 64.66→58.63ms. One pair does not isolate batch-copy cost or establish a general latency benefit; the earlier pair showed no hover benefit.
+
+The actual source audit found `@modelcontextprotocol/sdk` 1.30.0 affected by `GHSA-6qxp-vccf-f47h`. After #8148 actually signed-merged at 2026-10-07T08:21:15Z, incorporate genuine main `706a5b7886c363f6c67a03964ac55f26c5a2a341`, preserving all incoming dependencies, workflows and decisions and the three transfer production files byte-exact `428`. Prior 428 execution remains historical for the successor; fresh source/native/original400 and protected signed delivery remain mandatory. No installed-public or old release337-cause credit follows; #7698 remains open.
+
+Paired current incorporation decision: [comment 6034041575](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6034041575).
