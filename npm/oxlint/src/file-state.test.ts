@@ -4,7 +4,9 @@ import os from "node:os";
 import path from "node:path";
 
 import type { Context } from "@oxlint/plugins";
-import { it } from "vite-plus/test";
+import { it, vi } from "vite-plus/test";
+import * as binding from "./binding.ts";
+import { parseRuleSelection } from "./rule-selection.ts";
 
 import {
   clearFileStateCache,
@@ -223,4 +225,105 @@ it("does not strip user-authored whitespace blocks that mimic the workaround mar
     source,
     usesOriginalLocations: false,
   });
+});
+
+it("the selected n8n native pass preserves complete per-rule diagnostics and options", () => {
+  clearFileStateCache();
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-n8n-native-parity-"));
+  const corpus = new URL(
+    "../../../tests/_fixtures/differential/linter/oxlint-batched-selection/",
+    import.meta.url,
+  );
+  const source = fs.readFileSync(new URL("App.vue.txt", corpus), "utf8");
+  const rules = JSON.parse(fs.readFileSync(new URL("n8n-rules.json", corpus), "utf8")) as Record<
+    string,
+    unknown
+  >;
+  const selection = parseRuleSelection(rules)!;
+  const filename = path.join(root, "App.vue");
+  const settings = { preset: "incremental" as const, helpLevel: "none" as const, rules };
+  fs.writeFileSync(filename, source);
+  const context = createContext(filename, "const items = [1, 2];");
+  Object.assign(context, { settings: { vize: settings } });
+  const sortWholeDiagnostics = (diagnostics: unknown[]) =>
+    diagnostics.map((entry) => JSON.stringify(entry)).sort();
+  const expected = selection.names.flatMap(
+    (name) =>
+      binding.lintPatina(source, filename, settings, [name], selection.optionsByRule.get(name))
+        .diagnostics,
+  );
+  assert.ok(expected.some((diagnostic) => diagnostic.rule === "vue/attribute-hyphenation"));
+  assert.ok(expected.some((diagnostic) => diagnostic.rule === "vue/require-v-for-key"));
+  assert.ok(expected.some((diagnostic) => diagnostic.rule === "vue/no-v-html"));
+
+  const spy = vi.spyOn(binding, "lintPatina");
+  try {
+    const actual = selection.names.flatMap((name) => [
+      ...getDiagnosticsForRule(
+        context,
+        getFileState(context),
+        name,
+        selection.optionsByRule.get(name),
+      ),
+    ]);
+    assert.deepEqual(sortWholeDiagnostics(actual), sortWholeDiagnostics(expected));
+    assert.equal(spy.mock.calls.length, 1);
+  } finally {
+    spy.mockRestore();
+    clearFileStateCache();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+it("a missing runtime preset retains explicit rules outside general-recommended", () => {
+  clearFileStateCache();
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-no-settings-"));
+  const source = fs.readFileSync(
+    new URL(
+      "../../../tests/_fixtures/differential/linter/oxlint-batched-selection/NoSettings.vue.txt",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const filename = path.join(root, "NoSettings.vue");
+  fs.writeFileSync(filename, source);
+  const context = createContext(filename, "\nexport default {};\n");
+  const rule = "script/no-options-api";
+  const expected = binding.lintPatina(source, filename, { preset: "incremental" }, [
+    rule,
+  ]).diagnostics;
+  assert.equal(expected.length, 1);
+  try {
+    assert.deepEqual(getDiagnosticsForRule(context, getFileState(context), rule), expected);
+  } finally {
+    clearFileStateCache();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
+
+it("a canonical CSS rule map preserves the native positive diagnostic vector", () => {
+  clearFileStateCache();
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-css-map-"));
+  const source = fs.readFileSync(
+    new URL(
+      "../../../tests/_fixtures/differential/linter/oxlint-batched-selection/Css.vue.txt",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const filename = path.join(root, "Css.vue");
+  fs.writeFileSync(filename, source);
+  const rule = "css/no-important";
+  const settings = { preset: "incremental" as const, rules: { [rule]: "error" } };
+  const context = createContext(filename, 'const message = "hello";');
+  Object.assign(context, { settings: { vize: settings } });
+  const expected = binding.lintPatina(source, filename, settings, [rule]).diagnostics;
+  assert.equal(expected.length, 1);
+  assert.equal(expected[0]?.rule, rule);
+  try {
+    assert.deepEqual(getDiagnosticsForRule(context, getFileState(context), rule), expected);
+  } finally {
+    clearFileStateCache();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
 });
