@@ -1,0 +1,9 @@
+<script lang="ts">
+import { watch } from "vue";
+</script>
+<script setup lang="ts">
+watch(0, () => { document.title; });
+</script>
+<template>
+  <p>Ready</p>
+</template>

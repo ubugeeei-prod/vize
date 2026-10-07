@@ -17,9 +17,6 @@ use super::{
 };
 
 /// Walk an expression to find nested scopes (arrow functions, callbacks, etc.)
-///
-/// This is called recursively to build the scope chain for the script.
-/// Performance: Only walks into expressions that might contain function scopes.
 #[inline]
 pub(in crate::script_parser) fn walk_expression(
     result: &mut ScriptParseResult,
@@ -30,6 +27,7 @@ pub(in crate::script_parser) fn walk_expression(
     match expr {
         // Arrow functions create closure scopes (no `arguments`, no `this` binding)
         Expression::ArrowFunctionExpression(arrow) => {
+            super::super::ssr_functions::note_arrow(result, expr);
             let params = extract_function_params_with_occurrences(result, &arrow.params);
 
             result.scopes.enter_closure_scope(
@@ -45,12 +43,7 @@ pub(in crate::script_parser) fn walk_expression(
             );
             result.install_parameter_occurrences();
 
-            // Walk the body for nested scopes
-            // Arrow function body is always a FunctionBody (not a variant)
-            // but may have expression property set for concise arrows
             if arrow.expression {
-                // Concise arrow: () => expr
-                // The expression is the first statement's expression
                 if let Some(Statement::ExpressionStatement(expr_stmt)) =
                     arrow.body.statements.first()
                 {
@@ -58,9 +51,12 @@ pub(in crate::script_parser) fn walk_expression(
                 }
             } else {
                 // Block arrow: () => { ... }
-                for stmt in arrow.body.statements.iter() {
-                    walk_statement(result, stmt, source);
-                }
+                super::super::ssr_functions::walk_body(
+                    result,
+                    &arrow.body.statements,
+                    source,
+                    arrow.body.span.end,
+                );
             }
 
             result.scopes.exit_scope();
@@ -68,6 +64,7 @@ pub(in crate::script_parser) fn walk_expression(
 
         // Function expressions create closure scopes
         Expression::FunctionExpression(func) => {
+            super::super::ssr_functions::note_function(result, func);
             if func.id.is_some() {
                 result.refuse_occurrences();
             }
@@ -90,11 +87,13 @@ pub(in crate::script_parser) fn walk_expression(
             );
             result.install_parameter_occurrences();
 
-            // Walk the body for nested scopes
             if let Some(body) = &func.body {
-                for stmt in body.statements.iter() {
-                    walk_statement(result, stmt, source);
-                }
+                super::super::ssr_functions::walk_body(
+                    result,
+                    &body.statements,
+                    source,
+                    body.span.end,
+                );
             }
 
             result.scopes.exit_scope();

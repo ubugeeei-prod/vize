@@ -52,19 +52,21 @@ impl Drawer {
     /// Return the ordinary Croquis and the separately-owned editor fact packet.
     #[doc(hidden)]
     pub fn finish_with_binding_occurrences(self) -> (crate::Croquis, Option<BindingOccurrences>) {
-        self.finish_occurrence_packet(true)
+        self.finish_occurrence_packet(true, true)
     }
 
     /// Preserve source-witnessed setup reads until the actual split-script join.
     #[doc(hidden)]
     pub fn finish_script_occurrences(self) -> (crate::Croquis, Option<BindingOccurrences>) {
-        self.finish_occurrence_packet(false)
+        self.finish_occurrence_packet(false, true)
     }
 
-    fn finish_occurrence_packet(
+    pub(super) fn finish_occurrence_packet(
         self,
         resolve: bool,
+        retain: bool,
     ) -> (crate::Croquis, Option<BindingOccurrences>) {
+        let demanded = self.occurrence_capture.is_some();
         let packet = self.occurrence_capture.and_then(|capture| {
             let mut capture = *capture;
             if !capture.valid {
@@ -77,7 +79,11 @@ impl Drawer {
             }
             Some(capture.packet)
         });
-        (self.croquis, packet)
+        let mut croquis = self.croquis;
+        if retain && demanded {
+            croquis.setup_context.set_ssr_occurrences(packet.clone());
+        }
+        (croquis, packet)
     }
 
     #[inline]

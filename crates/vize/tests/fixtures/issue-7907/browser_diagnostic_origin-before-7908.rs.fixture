@@ -51,9 +51,7 @@ fn assert_browser(
     );
     assert_eq!(
         diagnostic.suggestion.as_deref(),
-        Some(
-            "Wrap in onMounted() or guard with !import.meta.env.SSR, import.meta.client, or typeof window !== 'undefined'"
-        )
+        Some("Wrap in onMounted() or use import.meta.client check")
     );
 }
 

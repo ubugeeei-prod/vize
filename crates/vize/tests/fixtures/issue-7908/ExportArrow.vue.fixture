@@ -1,0 +1,6 @@
+<script lang="ts">
+export const readTitle = () => document.title;
+</script>
+<template>
+  <button type="button" @click="readTitle">Read</button>
+</template>

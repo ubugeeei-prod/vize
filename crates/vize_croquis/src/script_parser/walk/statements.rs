@@ -3,6 +3,7 @@
 //! Walks statement nodes to find block scopes (if, for, while, try/catch),
 //! nested function/class declarations, and variable declarations.
 
+use super::super::ssr_functions::walk_body;
 use oxc_ast::ast::Statement;
 
 use super::{
@@ -22,7 +23,6 @@ pub(in crate::script_parser) fn walk_statement(
     source: &str,
 ) {
     match stmt {
-        // An empty statement has no binding or authored read to capture.
         Statement::EmptyStatement(_) => {}
 
         Statement::ExpressionStatement(expr_stmt) => {
@@ -36,6 +36,7 @@ pub(in crate::script_parser) fn walk_statement(
             }
             // Add variable bindings to current scope and check for reactivity losses
             for decl in var_decl.declarations.iter() {
+                super::super::ssr_functions::note_initializer(result, &decl.id, decl.init.as_ref());
                 result.prepare_ref_value_declaration(decl);
                 add_binding_pattern_to_scope(result, &decl.id, decl.span.start);
                 if let Some(init) = &decl.init {
@@ -64,6 +65,7 @@ pub(in crate::script_parser) fn walk_statement(
         }
         // Nested function declarations
         Statement::FunctionDeclaration(func) => {
+            super::super::ssr_functions::note_function(result, func);
             result.refuse_function_type_reads(func);
             // Add function name as binding
             if let Some(id) = &func.id {
@@ -76,7 +78,6 @@ pub(in crate::script_parser) fn walk_statement(
                 );
             }
 
-            // Create closure scope
             let params = extract_function_params_with_occurrences(result, &func.params);
             let name = func
                 .id
@@ -97,9 +98,12 @@ pub(in crate::script_parser) fn walk_statement(
             result.install_parameter_occurrences();
 
             if let Some(body) = &func.body {
-                for stmt in body.statements.iter() {
-                    walk_statement(result, stmt, source);
-                }
+                super::super::ssr_functions::walk_body(
+                    result,
+                    &body.statements,
+                    source,
+                    body.span.end,
+                );
             }
 
             result.scopes.exit_scope();
@@ -124,15 +128,13 @@ pub(in crate::script_parser) fn walk_statement(
                 block.span.start,
                 block.span.end,
             );
-            for stmt in block.body.iter() {
-                walk_statement(result, stmt, source);
-            }
+            super::super::ssr_functions::walk_body(result, &block.body, source, block.span.end);
             result.scopes.exit_scope();
         }
         Statement::IfStatement(if_stmt) => {
+            super::super::ssr_guards::note_guard(result, stmt, None);
             walk_expression(result, &if_stmt.test, source);
 
-            // Consequent block
             result.scopes.enter_block_scope(
                 BlockScopeData {
                     kind: BlockKind::If,
@@ -143,7 +145,6 @@ pub(in crate::script_parser) fn walk_statement(
             walk_statement(result, &if_stmt.consequent, source);
             result.scopes.exit_scope();
 
-            // Alternate block (else/else if)
             if let Some(alt) = &if_stmt.alternate {
                 result.scopes.enter_block_scope(
                     BlockScopeData {
@@ -287,7 +288,6 @@ pub(in crate::script_parser) fn walk_statement(
             if let Some(capture) = result.occurrence_capture.as_mut() {
                 capture.refuse();
             }
-            // try block
             result.scopes.enter_block_scope(
                 BlockScopeData {
                     kind: BlockKind::Try,
@@ -295,12 +295,14 @@ pub(in crate::script_parser) fn walk_statement(
                 try_stmt.block.span.start,
                 try_stmt.block.span.end,
             );
-            for stmt in try_stmt.block.body.iter() {
-                walk_statement(result, stmt, source);
-            }
+            walk_body(
+                result,
+                &try_stmt.block.body,
+                source,
+                try_stmt.block.span.end,
+            );
             result.scopes.exit_scope();
 
-            // catch block
             if let Some(handler) = &try_stmt.handler {
                 result.scopes.enter_block_scope(
                     BlockScopeData {
@@ -320,13 +322,10 @@ pub(in crate::script_parser) fn walk_statement(
                         );
                     }
                 }
-                for stmt in handler.body.body.iter() {
-                    walk_statement(result, stmt, source);
-                }
+                walk_body(result, &handler.body.body, source, handler.body.span.end);
                 result.scopes.exit_scope();
             }
 
-            // finally block
             if let Some(finalizer) = &try_stmt.finalizer {
                 result.scopes.enter_block_scope(
                     BlockScopeData {
@@ -335,9 +334,7 @@ pub(in crate::script_parser) fn walk_statement(
                     finalizer.span.start,
                     finalizer.span.end,
                 );
-                for stmt in finalizer.body.iter() {
-                    walk_statement(result, stmt, source);
-                }
+                walk_body(result, &finalizer.body, source, finalizer.span.end);
                 result.scopes.exit_scope();
             }
         }

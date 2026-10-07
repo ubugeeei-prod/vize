@@ -75,6 +75,9 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
             // local or imported bindings and are only valid at module top
             // level, so lift them out of the synthetic `__setup` function.
             if export.declaration.is_none() {
+                if !export.export_kind.is_type() && !result.skip_diagnostics {
+                    result.setup_context.refuse_ssr_functions();
+                }
                 result.re_exports.push(ReExportInfo {
                     start: export.span.start,
                     end: export.span.end,
@@ -83,6 +86,9 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
             }
 
             if let Some(decl) = &export.declaration {
+                if !export.export_kind.is_type() && !result.skip_diagnostics {
+                    result.setup_context.refuse_ssr_functions();
+                }
                 // Check if the declaration itself is a type declaration
                 match decl {
                     Declaration::TSTypeAliasDeclaration(_)
@@ -183,6 +189,11 @@ fn process_variable_declaration(
     source: &str,
 ) {
     for declarator in decl.declarations.iter() {
+        super::super::ssr_functions::note_initializer(
+            result,
+            &declarator.id,
+            declarator.init.as_ref(),
+        );
         result.refuse_declarator_type_reads(declarator);
         result.note_lens_pattern(&declarator.id);
         super::super::extract::invalidate_default_expression(result, declarator.init.as_ref());
@@ -191,6 +202,7 @@ fn process_variable_declaration(
 }
 
 fn process_function_declaration(result: &mut ScriptParseResult, func: &Function<'_>, source: &str) {
+    super::super::ssr_functions::note_function(result, func);
     result.refuse_function_type_reads(func);
     if let Some(id) = &func.id {
         let name = id.name.as_str();
@@ -224,9 +236,7 @@ fn process_function_declaration(result: &mut ScriptParseResult, func: &Function<
     result.install_parameter_occurrences();
 
     if let Some(body) = &func.body {
-        for stmt in body.statements.iter() {
-            walk_statement(result, stmt, source);
-        }
+        super::super::ssr_functions::walk_body(result, &body.statements, source, body.span.end);
     }
 
     result.scopes.exit_scope();
