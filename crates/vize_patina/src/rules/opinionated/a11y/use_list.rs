@@ -62,6 +62,15 @@ const LIST_CONTEXT_TAGS: &[&str] = &["ul", "ol", "li", "pre", "code", "script", 
 pub struct UseList;
 
 impl UseList {
+    fn has_bullet_content(text: &str) -> bool {
+        let trimmed = text.trim_start();
+        BULLET_CHARS.iter().any(|prefix| {
+            trimmed
+                .strip_prefix(prefix)
+                .is_some_and(|content| !content.trim().is_empty())
+        })
+    }
+
     fn is_list_context_tag(tag: &str) -> bool {
         LIST_CONTEXT_TAGS.contains(&tag)
     }
@@ -101,11 +110,7 @@ impl UseList {
 
             match child {
                 MarkupNode::Text(text) => {
-                    let trimmed = text.content().trim_start();
-                    if BULLET_CHARS
-                        .iter()
-                        .any(|prefix| trimmed.starts_with(prefix))
-                    {
+                    if Self::has_bullet_content(text.content()) {
                         let message = ctx.t("a11y/use-list.message");
                         let help = ctx.t("a11y/use-list.help");
                         ctx.warn_at_with_help(message, text.range(), help);
@@ -185,11 +190,7 @@ impl Rule for UseList {
         // Check first text child for bullet prefix
         for child in &element.children {
             if let TemplateChildNode::Text(text) = child {
-                let trimmed = text.content.trim_start();
-                if BULLET_CHARS
-                    .iter()
-                    .any(|prefix| trimmed.starts_with(prefix))
-                {
+                if Self::has_bullet_content(text.content) {
                     let message = ctx.t("a11y/use-list.message");
                     let help = ctx.t("a11y/use-list.help");
                     ctx.warn_with_help(message, &text.loc, help);

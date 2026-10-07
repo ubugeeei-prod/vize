@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Named from "./Named.vue";
+
+const text = ref("");
+</script>
+
+<template>
+  <Named
+    v-model:title.trim.bogus.upper="text"
+  />
+</template>

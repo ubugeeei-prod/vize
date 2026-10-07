@@ -6,7 +6,13 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
-import { loadCases, RULE, sha256, wholeJson } from "./boolean-attribute-fix-reference.mjs";
+import {
+  fixedSource,
+  loadCases,
+  RULE,
+  sha256,
+  wholeJson,
+} from "./boolean-attribute-fix-reference.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -92,7 +98,11 @@ await test("source CLI applies the reported boolean edit once with complete unch
         assert.equal(run.signal, null, JSON.stringify(observation));
         assert.equal(run.status, 0, JSON.stringify(observation));
         assert.equal(observation.stderr, observation.expectedStderr, JSON.stringify(observation));
-        assert.equal(input.toString("utf8"), pass ? entry.fixed : entry.source, entry.id);
+        assert.equal(
+          input.toString("utf8"),
+          pass ? fixedSource(entry, entry.originalRules) : entry.source,
+          entry.id,
+        );
         observation.actual = JSON.parse(observation.stdout);
         persist();
         assert.deepEqual(observation.actual, expected);

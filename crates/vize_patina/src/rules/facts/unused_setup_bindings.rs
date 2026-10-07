@@ -34,7 +34,7 @@ impl FactConsumer for NoUnusedSetupBindings {
 }
 
 impl NoUnusedSetupBindings {
-    fn report(ctx: &mut LintContext<'_>, root: Option<&RootNode<'_>>) {
+    pub(crate) fn report(ctx: &mut LintContext<'_>, root: Option<&RootNode<'_>>) {
         let Some(view) = ctx.facts::<Self>() else {
             return;
         };
@@ -55,13 +55,18 @@ impl Rule for NoUnusedSetupBindings {
     }
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
-        if ctx.sfc_descriptor().is_some() {
+        if ctx.sfc_descriptor().is_some() && !has_art_variants(ctx) {
             Self::report(ctx, Some(root));
         }
     }
 
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
         if !ctx.is_rule_enabled(META.name) {
+            return;
+        }
+        if has_art_variants(ctx) {
+            // The Art pass reports once after every original variant has read
+            // the shared physical script's candidate relation.
             return;
         }
         let Some(descriptor) = ctx.sfc_descriptor() else {
@@ -113,10 +118,20 @@ fn diagnostics(
 }
 
 /// Identifiers read by `v-for` source expressions (`item in DAYS`, `(row, at) in rows`).
-fn v_for_source_reads(root: &RootNode<'_>) -> FxHashSet<CompactString> {
+pub(crate) fn v_for_source_reads(root: &RootNode<'_>) -> FxHashSet<CompactString> {
     let mut reads = FxHashSet::default();
     walk_v_for_sources(&root.children, root.source, &mut reads);
     reads
+}
+
+fn has_art_variants(ctx: &LintContext<'_>) -> bool {
+    ctx.filename.ends_with(".art.vue")
+        && ctx.sfc_descriptor().is_some_and(|descriptor| {
+            descriptor
+                .custom_blocks
+                .iter()
+                .any(|block| block.block_type.as_ref() == "art")
+        })
 }
 
 fn walk_v_for_sources(

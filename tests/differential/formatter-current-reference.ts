@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { compareBytes } from "./compare.mjs";
 import { sha256 } from "./manifest.mjs";
+import { huggedInterpolationCurrentReference } from "./formatter-hugged-interpolation-reference.ts";
 import { rootCommentCurrentReference } from "./formatter-root-comment-reference.ts";
 
 const ID = "capture/style-block-keeps-box-values-and-implicit-nested-selectors/sfc/0";
@@ -17,7 +18,12 @@ export function currentFormatterReference(
   input: Buffer,
   historical: Buffer,
 ) {
-  if (fixture.id !== ID) return rootCommentCurrentReference(root, fixture, input, historical);
+  if (fixture.id !== ID) {
+    const hugged = huggedInterpolationCurrentReference(root, fixture, input, historical);
+    return Object.hasOwn(hugged, "currentReference")
+      ? hugged
+      : rootCommentCurrentReference(root, fixture, input, historical);
+  }
   const bytes = fs.readFileSync(path.join(root, AUTHORITY));
   assert.equal(sha256(bytes), AUTHORITY_SHA256, "reviewed current-reference authority changed");
   const authority = JSON.parse(bytes.toString());
