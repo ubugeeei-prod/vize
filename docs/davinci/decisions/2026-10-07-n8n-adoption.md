@@ -57,7 +57,10 @@ disposable project. It prepares exact template definition/reference packets,
 component navigation through the barrel, an unsaved missing-property diagnostic
 and a clean diagnostic/navigation restore. A dedicated Actions job requires the
 current-source build receipt and real typechecker; missing dependencies fail
-closed. These assertions are prepared and unexecuted until that job passes.
+closed. These assertions first passed at source head `445b896bc2` in
+[run 37593020201](https://github.com/ubugeeei-prod/vize/actions/runs/37593020201),
+including the current-source receipt, real typechecker and zero skipped tests.
+The SDK-main refresh must pass again at its own exact head.
 The generic n8n matrix row still has no full authored LSP lifecycle oracle or
 whole-monorepo vue-tsc baseline; this small test grants no broader coverage or
 speed credit.
@@ -271,3 +274,11 @@ module AST; comments, strings, type imports and unknown identifiers cannot
 create edges. The original Vue file-origin expected packet remains unchanged.
 Fresh source execution must still finish barrel navigation and dirty/restore
 diagnostics; these partial reference passes grant no whole-oracle credit.
+
+Both branches are refreshed onto actual SDK merge
+`706a5b7886c363f6c67a03964ac55f26c5a2a341`: fixture parent
+`72aac62d7c2932c71075d579c76459b270d909da`, then its authored-editor child.
+All incoming canonical decision clauses are retained at 350 lines. A source
+diff confirms the previously passing authored production/test/fixture/workflow
+bytes are unchanged by the rebase. Fresh exact-head source Actions, protected
+Stack merge and public-package evidence remain required. No new PR was opened.
