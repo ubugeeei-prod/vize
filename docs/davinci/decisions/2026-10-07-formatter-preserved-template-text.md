@@ -30,3 +30,14 @@ This is reference evidence only. Fresh exact-source Actions must execute the
 actual formatter and CLI laws, all existing fixtures/history and unchanged
 protected instruction caps before actual merge. Installed release replay and
 Issue closure remain pending. No native migration or measured speed claim is made.
+
+The first exact-source Check 37590175249 passes the affected Rust build and all
+four Rust test shards. Tooling rejects a visibility-only change to the immutable
+whitespace-significant source witness and two new consumer inventory entries.
+Restore the original witness bytes instead of changing historical pins; reuse its
+existing raw-region writer and remove only that writer's complete-close layout
+newline. Unclosed and incomplete raw tails retain every authored byte, including
+an unmatched outer element with a complete nested close. Regenerate the consumer
+inventory from source, retain all original300 histories and qualification rules,
+and require fresh successor Actions; the earlier green Rust evidence does not
+qualify the changed successor.
