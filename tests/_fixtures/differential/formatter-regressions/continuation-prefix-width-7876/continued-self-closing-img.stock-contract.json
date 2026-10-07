@@ -1,0 +1,116 @@
+{
+  "schema": "vize.authored-stock-vue-whole-runtime-contract",
+  "version": 1,
+  "case": "continued-self-closing-img",
+  "inputSha256": "7068234eeffca947a869fdd5cfa698762d7ea19545e2c2eecd716a0706e475d6",
+  "expectedSourceSha256": "f93651e7e3229830f79c90009707de9c0e86873d5f47f5b5cdd5918ae602b816",
+  "stockVersions": {
+    "compilerDom": "3.5.35",
+    "compilerSsr": "3.5.35",
+    "compilerSfc": "3.5.35",
+    "renderer": "3.5.35",
+    "vue": "3.5.35",
+    "happyDom": "20.11.2"
+  },
+  "scope": "Whole DOM, text, SSR and event observations from independent original source. Authored without reading modified production or consulting Vize output. n is pages.length; visible is page > 0; no MyList is present, so emitted event count is exactly zero. No Vize build or replay credit.",
+  "observations": [
+    {
+      "state": {
+        "id": "false-page-zero",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 0
+      },
+      "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+      "domText": " AAAAAA 3 ",
+      "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "true-page-one",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 1
+      },
+      "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+      "domText": " AAAAAA 3 ",
+      "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "true-page-two",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 2
+      },
+      "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+      "domText": " AAAAAA 3 ",
+      "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "false-empty-pages",
+        "pages": [],
+        "page": 0
+      },
+      "domHtml": "<p> AAAAAA 0 <img src=\"x\" alt=\"x\"></p>",
+      "domText": " AAAAAA 0 ",
+      "ssrHtml": "<p> AAAAAA 0 <img src=\"x\" alt=\"x\"></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "true-page-unicode-items",
+        "pages": [
+          "日本語",
+          "a&b"
+        ],
+        "page": 10
+      },
+      "domHtml": "<p> AAAAAA 2 <img src=\"x\" alt=\"x\"></p>",
+      "domText": " AAAAAA 2 ",
+      "ssrHtml": "<p> AAAAAA 2 <img src=\"x\" alt=\"x\"></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "false-negative-page",
+        "pages": [
+          9
+        ],
+        "page": -1
+      },
+      "domHtml": "<p> AAAAAA 1 <img src=\"x\" alt=\"x\"></p>",
+      "domText": " AAAAAA 1 ",
+      "ssrHtml": "<p> AAAAAA 1 <img src=\"x\" alt=\"x\"></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "back-to-zero",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 0
+      },
+      "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+      "domText": " AAAAAA 3 ",
+      "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+      "emittedClickCalls": 0
+    }
+  ]
+}

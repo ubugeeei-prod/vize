@@ -1,0 +1,9 @@
+<template>
+  <p>
+    AAAAAA {{ n }}
+    <img
+      src="x"
+      alt="x"
+    />
+  </p>
+</template>

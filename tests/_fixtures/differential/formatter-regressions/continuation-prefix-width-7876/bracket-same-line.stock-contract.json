@@ -1,0 +1,116 @@
+{
+  "schema": "vize.authored-stock-vue-whole-runtime-contract",
+  "version": 1,
+  "case": "bracket-same-line",
+  "inputSha256": "44ca615826379faa8bc8dcedc19c05244c1f51238e71dd9749e4772bc89b3c41",
+  "expectedSourceSha256": "4dd8afce1bcbaecdae4b2b39b88dce455286cb3f8ee570719fdc45d2c869e32a",
+  "stockVersions": {
+    "compilerDom": "3.5.35",
+    "compilerSsr": "3.5.35",
+    "compilerSfc": "3.5.35",
+    "renderer": "3.5.35",
+    "vue": "3.5.35",
+    "happyDom": "20.11.2"
+  },
+  "scope": "Sealed stock Vue whole DOM/text/SSR observations from independent original input, before any Vize output. n is pages.length; visible is page > 0. No source-built/installed Vize credit.",
+  "observations": [
+    {
+      "state": {
+        "id": "false-page-zero",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 0
+      },
+      "domHtml": "<p> AAAA 3<!--v-if--></p>",
+      "domText": " AAAA 3",
+      "ssrHtml": "<p> AAAA 3<!----></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "true-page-one",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 1
+      },
+      "domHtml": "<p> AAAA 3 x</p>",
+      "domText": " AAAA 3 x",
+      "ssrHtml": "<p> AAAA 3<!--[--> x<!--]--></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "true-page-two",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 2
+      },
+      "domHtml": "<p> AAAA 3 x</p>",
+      "domText": " AAAA 3 x",
+      "ssrHtml": "<p> AAAA 3<!--[--> x<!--]--></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "false-empty-pages",
+        "pages": [],
+        "page": 0
+      },
+      "domHtml": "<p> AAAA 0<!--v-if--></p>",
+      "domText": " AAAA 0",
+      "ssrHtml": "<p> AAAA 0<!----></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "true-page-unicode-items",
+        "pages": [
+          "日本語",
+          "a&b"
+        ],
+        "page": 10
+      },
+      "domHtml": "<p> AAAA 2 x</p>",
+      "domText": " AAAA 2 x",
+      "ssrHtml": "<p> AAAA 2<!--[--> x<!--]--></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "false-negative-page",
+        "pages": [
+          9
+        ],
+        "page": -1
+      },
+      "domHtml": "<p> AAAA 1<!--v-if--></p>",
+      "domText": " AAAA 1",
+      "ssrHtml": "<p> AAAA 1<!----></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "back-to-zero",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 0
+      },
+      "domHtml": "<p> AAAA 3<!--v-if--></p>",
+      "domText": " AAAA 3",
+      "ssrHtml": "<p> AAAA 3<!----></p>",
+      "emittedClickCalls": 0
+    }
+  ]
+}
