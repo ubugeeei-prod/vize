@@ -1,0 +1,108 @@
+[
+  {
+    "id": "issue-7899",
+    "fixture": "issue-7899.vue.txt",
+    "rules": [
+      "script/prefer-computed",
+      "a11y/use-list"
+    ],
+    "warnings": 0
+  },
+  {
+    "id": "issue-7901",
+    "fixture": "issue-7901.vue.txt",
+    "rules": [
+      "script/prefer-computed",
+      "a11y/use-list"
+    ],
+    "warnings": 0
+  },
+  {
+    "id": "editable-v-model",
+    "fixture": "editable-v-model.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 0
+  },
+  {
+    "id": "editable-v-model-member",
+    "fixture": "editable-v-model-member.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 0
+  },
+  {
+    "id": "template-assignment",
+    "fixture": "template-assignment.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 0
+  },
+  {
+    "id": "template-update",
+    "fixture": "template-update.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 0
+  },
+  {
+    "id": "template-dom-ref",
+    "fixture": "template-dom-ref.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 0
+  },
+  {
+    "id": "template-read",
+    "fixture": "template-read.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 1
+  },
+  {
+    "id": "template-string",
+    "fixture": "template-string.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 1
+  },
+  {
+    "id": "template-comment",
+    "fixture": "template-comment.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 1
+  },
+  {
+    "id": "template-v-pre",
+    "fixture": "template-v-pre.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 1
+  },
+  {
+    "id": "template-dynamic-dom-ref",
+    "fixture": "template-dynamic-dom-ref.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 0
+  },
+  {
+    "id": "template-interpolation-assignment",
+    "fixture": "template-interpolation-assignment.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 0
+  }
+]
