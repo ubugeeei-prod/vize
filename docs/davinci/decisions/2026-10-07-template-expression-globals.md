@@ -62,3 +62,13 @@ caller is guarded by `any(test, feature = "native")`; match that exact gate on
 the import. This keeps structural production builds warning-free and retains
 existing structural unit tests. The initial native-only gate was incomplete;
 require both actual structural tests and production checks on the successor.
+
+The backlog refresh genuinely fetches main
+`c86c7a21f9b858122c0aa42f9771555e33a87c32` after local, remote and PR ownership
+checks of the original `64b79c2ab0` head. Replay only this PR's six commits;
+retain all incoming decision bytes and the 350-line canonical record. Preserve
+the now-merged common-attribute modules, checkout rules and whole native-event
+vectors alongside the globals extension. Standalone production/tests and the
+original corpus stay byte-identical. The previous head's successful source
+and native receipts are historical; require fresh exact-head source/native
+Actions on the genuine union before root-owned cohort admission and release.
