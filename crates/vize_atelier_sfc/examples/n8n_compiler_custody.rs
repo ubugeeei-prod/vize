@@ -42,7 +42,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     for case in paths {
         let path = case["path"].as_str().ok_or("missing case path")?;
         let source = fs::read_to_string(Path::new(fixture_root).join(path))?;
-        let descriptor = parse_sfc(&source, SfcParseOptions::default())?;
+        let descriptor = parse_sfc(&source, SfcParseOptions::default())
+            .map_err(|error| format!("original SFC parse failed: {error:?}"))?;
         let template = descriptor
             .template
             .as_ref()
