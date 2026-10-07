@@ -118,7 +118,10 @@ pub struct ConfigLintRuleOptions {
     #[serde(flatten)]
     stable: LintRuleOptions,
     /// Options for `vue/require-component-registration`.
-    #[serde(rename = "vue/require-component-registration")]
+    #[serde(
+        rename = "vue/require-component-registration",
+        skip_serializing_if = "Option::is_none"
+    )]
     require_component_registration: Option<component_registration::ComponentRegistrationOptions>,
     #[serde(
         rename = "html/no-empty-palpable-content",

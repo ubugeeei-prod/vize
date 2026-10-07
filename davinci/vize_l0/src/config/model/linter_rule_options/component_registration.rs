@@ -29,6 +29,12 @@ mod tests {
         assert_eq!(base.component_registration_globals().unwrap().len(), 0);
         assert!(base.no_mutating_props().unwrap().shallow_only);
         let unconfigured = ConfigLintRuleOptions::default();
+        assert!(
+            serde_json::to_value(&unconfigured)
+                .unwrap()
+                .get("vue/require-component-registration")
+                .is_none()
+        );
         base.merge_from(&unconfigured);
         assert!(base.component_registration_globals().is_some());
         assert!(
