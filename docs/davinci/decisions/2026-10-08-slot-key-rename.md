@@ -79,6 +79,38 @@ and all ceilings remain unchanged.
 
 ## Required qualification and boundaries
 
+[The typed-navigation decision](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6049100923)
+retains head `70f88db2de6cc27de5eadb2280ed6bfed12bd59e`, which actually passed the six
+quoted-key CLI transactions in Rust worker 113069756610. Its Check
+37701399470 and native 37701398673 still failed: TS-40 `static-slot-name`
+retained the old generated-expression hashes, and the unchanged typed-slot
+and upstream #3819 laws reported unused `@vue-expect-error` directives.
+Value indexing permits a missing property when `noImplicitAny` is false.
+Keep these authentic failures; this head has no overall qualification credit.
+
+The bounded correction uses a single indexed type query,
+`undefined as unknown as typeof owner['key']`, for non-identifier navigation.
+Independent unchanged native TypeScript 7.0.2 returns the same exact two
+owner references and edits from both origins, excluding unrelated/foreign
+keys, and restores TS2339 on the complete missing-key token. Whole modules,
+wire frames and diagnostics for valid and missing keys are retained in
+`native-key-diagnostics-7.0.2`; this primitive is not a Vize source result.
+Identifier emission, original twelve transactions and old typed-slot
+diagnostic assertions remain unchanged.
+
+The complete 17-file old static-slot capture reconstructs every frozen
+TS-40 record field exactly. Its partial archive retrieval verifies each
+selected file's SHA256/CRC32 and byte range, but does not authenticate the
+entire 84 MB ZIP digest. The complete new 3.8 MB archive's digest matches
+artifact 11518146779. Full modules differ only in the one navigation
+expression; source ranges, features, 16/12/17 mapping counts, 0/11/14 hit
+counts, anchors, semantic links and diagnostics remain exact. The declared
+snapshot changes only expression hashes and resulting generated positions
+and identity-probe window. The final indexed-type prefix adds 27 bytes
+relative to the frozen module; its expected record is source-derived and
+requires fresh hosted execution. `static-slot-projection-custody.json`
+distinguishes old, actual failed head and unexecuted successor vectors.
+
 The new real CLI integration target fixes full references and WorkspaceEdit
 vectors before querying. It runs declaration/outlet/consumer origins in LF
 and CRLF, applies actual edits, retains complete post-edit files/diagnostics,

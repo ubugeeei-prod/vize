@@ -196,10 +196,10 @@ fn emit_slot_references(
             ts.push_str("  const { ");
         } else {
             // Native quoted binding keys use string-literal search rather than
-            // the owner's property identity. A bracket read retains that identity.
+            // the owner's property identity. Indexed typeof also rejects missing keys.
             append!(
                 *ts,
-                "  const __vize_slot_nav_{idx}_{slot_index} = {slots_ref}["
+                "  const __vize_slot_nav_{idx}_{slot_index} = undefined as unknown as typeof {slots_ref}["
             );
         }
         let access_start = ts.len();

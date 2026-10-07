@@ -216,7 +216,7 @@ function __setup() {
   const __vize_props_nav_0 = undefined as unknown as __TrendChart_Props_0 & Record<string, unknown>;
   void __vize_props_nav_0.class;
   const __vize_slots_nav_0 = undefined as unknown as __VizeStructuralSlots<typeof TrendChart>;
-  const __vize_slot_nav_0_0 = __vize_slots_nav_0['area-gradient'];
+  const __vize_slot_nav_0_0 = undefined as unknown as typeof __vize_slots_nav_0['area-gradient'];
   void __vize_slot_nav_0_0;
 
   // Component props value checks (template scope)

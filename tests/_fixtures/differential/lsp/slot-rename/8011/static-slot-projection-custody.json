@@ -1,0 +1,630 @@
+{
+  "oldWholeRecordMatchesFrozenSnapshot": true,
+  "originalSourceExactAllThree": true,
+  "actual70Scope": "owned70; native source capture only, overall native FAILED snapshot",
+  "futureScope": "source-derived exact one-prefix replacement; UNEXECUTED until fresh Actions",
+  "originalMappingsCount": [16, 12, 17],
+  "originalAuthoredHitCount": [0, 11, 14],
+  "originalAnchorsAndErrorsUnchanged": true,
+  "files": [
+    {
+      "path": "canon/import-map.txt",
+      "old": {
+        "bytes": 35,
+        "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42"
+      },
+      "actual70": {
+        "bytes": 35,
+        "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42"
+      },
+      "sourceDerivedPending": {
+        "bytes": 35,
+        "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42"
+      }
+    },
+    {
+      "path": "canon/import-probes.txt",
+      "old": {
+        "bytes": 637618,
+        "sha256": "3f6f574413276fdd8e4ae87e7deff851496d0c2180a820d08294564ddce9a4a7"
+      },
+      "actual70": {
+        "bytes": 637514,
+        "sha256": "a1b22765352c00fdddbc61c6f7f5b2fddda4ad7fb481b5c689a0112b1739618e"
+      },
+      "sourceDerivedPending": {
+        "bytes": 638320,
+        "sha256": "d852278ca6b883b011d3a877bad5fdf500dfc7977bdb69e971066f8df2a0de91"
+      }
+    },
+    {
+      "path": "canon/mappings.txt",
+      "old": {
+        "bytes": 379,
+        "sha256": "88c42ab6f58ce7dfd3097d2b98af622272fc3ace25fd16f893938d0d3a692161"
+      },
+      "actual70": {
+        "bytes": 379,
+        "sha256": "2e1e43fa7b4370a5a3be7c4822776f16eb2bb3541ae8effec1b1439e96dd424b"
+      },
+      "sourceDerivedPending": {
+        "bytes": 379,
+        "sha256": "dc20a011280c2a7c48470858c13ed666bb51bb8e033341fb9f9b1b56233d8aaf"
+      }
+    },
+    {
+      "path": "canon/pre-rewrite-text.ts",
+      "old": {
+        "bytes": 26232,
+        "sha256": "e1baa204c0da9002fe79158258a8e7d9aa3498c199ed23fccfb780b4fdaa85a7"
+      },
+      "actual70": {
+        "bytes": 26228,
+        "sha256": "18a7c69a1a102ed2c17c2127a47661b31c631a1210e15615a5a31d75bda15d68"
+      },
+      "sourceDerivedPending": {
+        "bytes": 26259,
+        "sha256": "785f719fef6d76e336ee8129328ff16c90fc14f1cd829d708ad336e373fc8859"
+      }
+    },
+    {
+      "path": "canon/semantic-links.txt",
+      "old": {
+        "bytes": 50,
+        "sha256": "9091b8af1ff10f8f016fa5e36ef1373dc0d1b5dc379e9f29ec26f5dca9309a8b"
+      },
+      "actual70": {
+        "bytes": 50,
+        "sha256": "9091b8af1ff10f8f016fa5e36ef1373dc0d1b5dc379e9f29ec26f5dca9309a8b"
+      },
+      "sourceDerivedPending": {
+        "bytes": 50,
+        "sha256": "9091b8af1ff10f8f016fa5e36ef1373dc0d1b5dc379e9f29ec26f5dca9309a8b"
+      }
+    },
+    {
+      "path": "canon/text.ts",
+      "old": {
+        "bytes": 26232,
+        "sha256": "e1baa204c0da9002fe79158258a8e7d9aa3498c199ed23fccfb780b4fdaa85a7"
+      },
+      "actual70": {
+        "bytes": 26228,
+        "sha256": "18a7c69a1a102ed2c17c2127a47661b31c631a1210e15615a5a31d75bda15d68"
+      },
+      "sourceDerivedPending": {
+        "bytes": 26259,
+        "sha256": "785f719fef6d76e336ee8129328ff16c90fc14f1cd829d708ad336e373fc8859"
+      }
+    },
+    {
+      "path": "content-mapper/authored-hits.txt",
+      "old": {
+        "bytes": 391,
+        "sha256": "77bbc44cbbd0265ff7b5975f2cf9f10af8373e007574196543923e8ca0e8ce55"
+      },
+      "actual70": {
+        "bytes": 391,
+        "sha256": "cf6c4aebbac91993f728053805097091d69cef9a93cee40d8e7980dc594ab2de"
+      },
+      "sourceDerivedPending": {
+        "bytes": 391,
+        "sha256": "46956ae015071fa0c4b6fa627cdb1e3663efd3e28149a7019bd1a73e84c879d6"
+      }
+    },
+    {
+      "path": "content-mapper/diagnostics.txt",
+      "old": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "actual70": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "sourceDerivedPending": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "path": "content-mapper/mappings.txt",
+      "old": {
+        "bytes": 364,
+        "sha256": "63a21a194d3cbcb9e2c74437c1ad69e920f637ca968bed8494830c3eb3935aaf"
+      },
+      "actual70": {
+        "bytes": 364,
+        "sha256": "7c25a9edf2b3c2944f743391d3df7d0ba12e8995b3263b76bd8a3cc22caba44e"
+      },
+      "sourceDerivedPending": {
+        "bytes": 364,
+        "sha256": "64a0f6530d303c0acb894c3a6747284f4e664d07dbe9d247364b869addd5a3a2"
+      }
+    },
+    {
+      "path": "content-mapper/semantic-links.txt",
+      "old": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "actual70": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "sourceDerivedPending": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "path": "content-mapper/text.ts",
+      "old": {
+        "bytes": 26247,
+        "sha256": "007193604356b96f811653298e375ce097e9cc8564d0631eefe8e6c02ec0ca4c"
+      },
+      "actual70": {
+        "bytes": 26243,
+        "sha256": "8624e2dd0fb55013495a58098aa8a5b4943bdb828af4de0db275525c36aca501"
+      },
+      "sourceDerivedPending": {
+        "bytes": 26274,
+        "sha256": "e8767537770dc63b2f50796d1fa4d7b443a8f53155b94384bcd1bd60e48e30ee"
+      }
+    },
+    {
+      "path": "maestro/authored-hits.txt",
+      "old": {
+        "bytes": 3758,
+        "sha256": "f2be8a2473ea62b1dd01d4337966a8fa1bd89a5433759685fd335816398331f8"
+      },
+      "actual70": {
+        "bytes": 3758,
+        "sha256": "1308e4c8ee713fad40bfcd62e7c57739ace6dd4c851832dc2e3d9c5fdde48f41"
+      },
+      "sourceDerivedPending": {
+        "bytes": 3758,
+        "sha256": "b686037fc86d3fbb19c82e5cc65bfa23cc347bf60ad6a2704018ca6603d60e76"
+      }
+    },
+    {
+      "path": "maestro/mappings.txt",
+      "old": {
+        "bytes": 4611,
+        "sha256": "4d12c05ac6ecee0d0140e554adf4af09be016d8acd6fef5c1e80ec29c34317d9"
+      },
+      "actual70": {
+        "bytes": 4611,
+        "sha256": "71b96845f446804d185431f8bed6fe4261d8be6e36a4983bf29ec2cd4c47f415"
+      },
+      "sourceDerivedPending": {
+        "bytes": 4611,
+        "sha256": "8628b4d122f534571ca1d1921cbb6b3a90160c180e4d6ddac13fbc0b2332096d"
+      }
+    },
+    {
+      "path": "maestro/text.txt",
+      "old": {
+        "bytes": 314,
+        "sha256": "230ab0a5e31502b6c2c45036079eae71b036baa656b25d2ed93162102d414613"
+      },
+      "actual70": {
+        "bytes": 314,
+        "sha256": "fcd8fba4c8a438e6a182aeb2d3818c0e160e491eb8085647011ff30b77d09d47"
+      },
+      "sourceDerivedPending": {
+        "bytes": 314,
+        "sha256": "c1a8f74c1e651a74991ab77b8968d8c1c843539c44898723f0a25bfa03b81b6b"
+      }
+    },
+    {
+      "path": "maestro-document-0/text.ts",
+      "old": {
+        "bytes": 26232,
+        "sha256": "e1baa204c0da9002fe79158258a8e7d9aa3498c199ed23fccfb780b4fdaa85a7"
+      },
+      "actual70": {
+        "bytes": 26228,
+        "sha256": "18a7c69a1a102ed2c17c2127a47661b31c631a1210e15615a5a31d75bda15d68"
+      },
+      "sourceDerivedPending": {
+        "bytes": 26259,
+        "sha256": "785f719fef6d76e336ee8129328ff16c90fc14f1cd829d708ad336e373fc8859"
+      }
+    },
+    {
+      "path": "maestro-document-1/text.ts",
+      "old": {
+        "bytes": 150,
+        "sha256": "9bc67c331434ac1116c199370118b510da7608ffad5c6931240b73d2b0f9bd2a"
+      },
+      "actual70": {
+        "bytes": 150,
+        "sha256": "9bc67c331434ac1116c199370118b510da7608ffad5c6931240b73d2b0f9bd2a"
+      },
+      "sourceDerivedPending": {
+        "bytes": 150,
+        "sha256": "9bc67c331434ac1116c199370118b510da7608ffad5c6931240b73d2b0f9bd2a"
+      }
+    },
+    {
+      "path": "original.vue",
+      "old": {
+        "bytes": 272,
+        "sha256": "fcd5dde4e7f467046e06f62702b5cb6c423a831725c6023b3162f4faca129f6f"
+      },
+      "actual70": {
+        "bytes": 272,
+        "sha256": "fcd5dde4e7f467046e06f62702b5cb6c423a831725c6023b3162f4faca129f6f"
+      },
+      "sourceDerivedPending": {
+        "bytes": 272,
+        "sha256": "fcd5dde4e7f467046e06f62702b5cb6c423a831725c6023b3162f4faca129f6f"
+      }
+    }
+  ],
+  "baselinePartialRangeCustody": {
+    "artifactId": 11516888566,
+    "archiveSize": 84874830,
+    "rangeIdentity": "bytes 84809294-84874829/84874830",
+    "centralDirectorySha256": "c5c8fc1569d3da1c2207cbabec876a91eecb6a4085222f3b4b0348e2567bf1ec",
+    "selected": [
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/canon/import-map.txt",
+        "relativePath": "canon/import-map.txt",
+        "bytes": 35,
+        "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42",
+        "crc32": "57ae1774",
+        "compressionMethod": 8,
+        "compressedBytes": 37,
+        "localHeaderRange": "bytes 6970146-6970175/84874830",
+        "compressedBodyRange": "bytes 6970243-6970279/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/canon/import-probes.txt",
+        "relativePath": "canon/import-probes.txt",
+        "bytes": 637618,
+        "sha256": "3f6f574413276fdd8e4ae87e7deff851496d0c2180a820d08294564ddce9a4a7",
+        "crc32": "9392fddc",
+        "compressionMethod": 8,
+        "compressedBytes": 242221,
+        "localHeaderRange": "bytes 6970296-6970325/84874830",
+        "compressedBodyRange": "bytes 6970396-7212616/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/canon/mappings.txt",
+        "relativePath": "canon/mappings.txt",
+        "bytes": 379,
+        "sha256": "88c42ab6f58ce7dfd3097d2b98af622272fc3ace25fd16f893938d0d3a692161",
+        "crc32": "487c8158",
+        "compressionMethod": 8,
+        "compressedBytes": 165,
+        "localHeaderRange": "bytes 7212633-7212662/84874830",
+        "compressedBodyRange": "bytes 7212728-7212892/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/canon/pre-rewrite-text.ts",
+        "relativePath": "canon/pre-rewrite-text.ts",
+        "bytes": 26232,
+        "sha256": "e1baa204c0da9002fe79158258a8e7d9aa3498c199ed23fccfb780b4fdaa85a7",
+        "crc32": "3349c9da",
+        "compressionMethod": 8,
+        "compressedBytes": 5931,
+        "localHeaderRange": "bytes 7212909-7212938/84874830",
+        "compressedBodyRange": "bytes 7213011-7218941/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/canon/semantic-links.txt",
+        "relativePath": "canon/semantic-links.txt",
+        "bytes": 50,
+        "sha256": "9091b8af1ff10f8f016fa5e36ef1373dc0d1b5dc379e9f29ec26f5dca9309a8b",
+        "crc32": "b08ef0c3",
+        "compressionMethod": 8,
+        "compressedBytes": 46,
+        "localHeaderRange": "bytes 7218958-7218987/84874830",
+        "compressedBodyRange": "bytes 7219059-7219104/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/canon/text.ts",
+        "relativePath": "canon/text.ts",
+        "bytes": 26232,
+        "sha256": "e1baa204c0da9002fe79158258a8e7d9aa3498c199ed23fccfb780b4fdaa85a7",
+        "crc32": "3349c9da",
+        "compressionMethod": 8,
+        "compressedBytes": 5931,
+        "localHeaderRange": "bytes 7219121-7219150/84874830",
+        "compressedBodyRange": "bytes 7219211-7225141/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/content-mapper/authored-hits.txt",
+        "relativePath": "content-mapper/authored-hits.txt",
+        "bytes": 391,
+        "sha256": "77bbc44cbbd0265ff7b5975f2cf9f10af8373e007574196543923e8ca0e8ce55",
+        "crc32": "8f23057a",
+        "compressionMethod": 8,
+        "compressedBytes": 165,
+        "localHeaderRange": "bytes 7225158-7225187/84874830",
+        "compressedBodyRange": "bytes 7225267-7225431/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/content-mapper/diagnostics.txt",
+        "relativePath": "content-mapper/diagnostics.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "crc32": "00000000",
+        "compressionMethod": 8,
+        "compressedBytes": 2,
+        "localHeaderRange": "bytes 7225448-7225477/84874830",
+        "compressedBodyRange": "bytes 7225555-7225556/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/content-mapper/mappings.txt",
+        "relativePath": "content-mapper/mappings.txt",
+        "bytes": 364,
+        "sha256": "63a21a194d3cbcb9e2c74437c1ad69e920f637ca968bed8494830c3eb3935aaf",
+        "crc32": "07fbd323",
+        "compressionMethod": 8,
+        "compressedBytes": 128,
+        "localHeaderRange": "bytes 7225573-7225602/84874830",
+        "compressedBodyRange": "bytes 7225677-7225804/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/content-mapper/semantic-links.txt",
+        "relativePath": "content-mapper/semantic-links.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "crc32": "00000000",
+        "compressionMethod": 8,
+        "compressedBytes": 2,
+        "localHeaderRange": "bytes 7225821-7225850/84874830",
+        "compressedBodyRange": "bytes 7225931-7225932/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/content-mapper/text.ts",
+        "relativePath": "content-mapper/text.ts",
+        "bytes": 26247,
+        "sha256": "007193604356b96f811653298e375ce097e9cc8564d0631eefe8e6c02ec0ca4c",
+        "crc32": "0edce78a",
+        "compressionMethod": 8,
+        "compressedBytes": 5937,
+        "localHeaderRange": "bytes 7225949-7225978/84874830",
+        "compressedBodyRange": "bytes 7226048-7231984/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/maestro/authored-hits.txt",
+        "relativePath": "maestro/authored-hits.txt",
+        "bytes": 3758,
+        "sha256": "f2be8a2473ea62b1dd01d4337966a8fa1bd89a5433759685fd335816398331f8",
+        "crc32": "c090b55d",
+        "compressionMethod": 8,
+        "compressedBytes": 381,
+        "localHeaderRange": "bytes 7232001-7232030/84874830",
+        "compressedBodyRange": "bytes 7232103-7232483/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/maestro/mappings.txt",
+        "relativePath": "maestro/mappings.txt",
+        "bytes": 4611,
+        "sha256": "4d12c05ac6ecee0d0140e554adf4af09be016d8acd6fef5c1e80ec29c34317d9",
+        "crc32": "3968d91d",
+        "compressionMethod": 8,
+        "compressedBytes": 405,
+        "localHeaderRange": "bytes 7232500-7232529/84874830",
+        "compressedBodyRange": "bytes 7232597-7233001/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/maestro/text.txt",
+        "relativePath": "maestro/text.txt",
+        "bytes": 314,
+        "sha256": "230ab0a5e31502b6c2c45036079eae71b036baa656b25d2ed93162102d414613",
+        "crc32": "4c921a0e",
+        "compressionMethod": 8,
+        "compressedBytes": 191,
+        "localHeaderRange": "bytes 7233018-7233047/84874830",
+        "compressedBodyRange": "bytes 7233111-7233301/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/maestro-document-0/text.ts",
+        "relativePath": "maestro-document-0/text.ts",
+        "bytes": 26232,
+        "sha256": "e1baa204c0da9002fe79158258a8e7d9aa3498c199ed23fccfb780b4fdaa85a7",
+        "crc32": "3349c9da",
+        "compressionMethod": 8,
+        "compressedBytes": 5931,
+        "localHeaderRange": "bytes 7233318-7233347/84874830",
+        "compressedBodyRange": "bytes 7233421-7239351/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/maestro-document-1/text.ts",
+        "relativePath": "maestro-document-1/text.ts",
+        "bytes": 150,
+        "sha256": "9bc67c331434ac1116c199370118b510da7608ffad5c6931240b73d2b0f9bd2a",
+        "crc32": "e6363da6",
+        "compressionMethod": 8,
+        "compressedBytes": 119,
+        "localHeaderRange": "bytes 7239368-7239397/84874830",
+        "compressedBodyRange": "bytes 7239471-7239589/84874830"
+      },
+      {
+        "originalArchivePath": "template-emit-ts40-projection/static-slot-name/original.vue",
+        "relativePath": "original.vue",
+        "bytes": 272,
+        "sha256": "fcd5dde4e7f467046e06f62702b5cb6c423a831725c6023b3162f4faca129f6f",
+        "crc32": "3f5d3929",
+        "compressionMethod": 8,
+        "compressedBytes": 147,
+        "localHeaderRange": "bytes 7239606-7239635/84874830",
+        "compressedBodyRange": "bytes 7239695-7239841/84874830"
+      }
+    ],
+    "downloadEndpoint": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11516888566/zip",
+    "artifactApi": {
+      "id": 11516888566,
+      "node_id": "MDg6QXJ0aWZhY3QxMTUxNjg4ODU2Ng==",
+      "name": "typechecker-native-phases",
+      "size_in_bytes": 84874830,
+      "url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11516888566",
+      "archive_download_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11516888566/zip",
+      "expired": false,
+      "digest": "sha256:27b16d03ee0d047e464e985a4deac1d2ab49e057c81f7041cc687d7d65111e8b",
+      "created_at": "2026-10-07T23:11:46Z",
+      "updated_at": "2026-10-07T23:11:46Z",
+      "expires_at": "2026-11-06T23:11:40Z",
+      "workflow_run": {
+        "id": 37699396941,
+        "repository_id": 1123610216,
+        "head_repository_id": 1123610216,
+        "head_branch": "fix/lsp-slot-key-rename-8011",
+        "head_sha": "43958e1e832d46128486ec6e6f45880a088d28de"
+      }
+    },
+    "wholeZipDigestVerification": "NOT_VERIFIED_PARTIAL_RANGES_ONLY",
+    "centralDirectoryRange": "bytes 82890043-84874807/84874830"
+  },
+  "actual70WholeZipCustody": {
+    "artifactApi": {
+      "id": 11518146779,
+      "node_id": "MDg6QXJ0aWZhY3QxMTUxODE0Njc3OQ==",
+      "name": "typechecker-native-phases",
+      "size_in_bytes": 3865756,
+      "url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11518146779",
+      "archive_download_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11518146779/zip",
+      "expired": false,
+      "digest": "sha256:14736b65ca969b3b3f460fabbc1bf235973467d28e123b1d77d0fb0c4359ade2",
+      "created_at": "2026-10-07T23:27:59Z",
+      "updated_at": "2026-10-07T23:27:59Z",
+      "expires_at": "2026-11-06T23:27:59Z",
+      "workflow_run": {
+        "id": 37701398673,
+        "repository_id": 1123610216,
+        "head_repository_id": 1123610216,
+        "head_branch": "fix/lsp-slot-key-rename-8011",
+        "head_sha": "70f88db2de6cc27de5eadb2280ed6bfed12bd59e"
+      }
+    },
+    "zipSha256": "14736b65ca969b3b3f460fabbc1bf235973467d28e123b1d77d0fb0c4359ade2",
+    "wholeZipDigestVerified": true,
+    "selectedFiles": [
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/canon/import-map.txt",
+        "relativePath": "canon/import-map.txt",
+        "crc32": "57ae1774",
+        "bytes": 35,
+        "sha256": "8fb0b48e264b49d7d87ed152b0b8330a9f4f506a1b5d715d076e65d79aa4da42"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/canon/import-probes.txt",
+        "relativePath": "canon/import-probes.txt",
+        "crc32": "37911fff",
+        "bytes": 637514,
+        "sha256": "a1b22765352c00fdddbc61c6f7f5b2fddda4ad7fb481b5c689a0112b1739618e"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/canon/mappings.txt",
+        "relativePath": "canon/mappings.txt",
+        "crc32": "1be61420",
+        "bytes": 379,
+        "sha256": "2e1e43fa7b4370a5a3be7c4822776f16eb2bb3541ae8effec1b1439e96dd424b"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/canon/pre-rewrite-text.ts",
+        "relativePath": "canon/pre-rewrite-text.ts",
+        "crc32": "7171f720",
+        "bytes": 26228,
+        "sha256": "18a7c69a1a102ed2c17c2127a47661b31c631a1210e15615a5a31d75bda15d68"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/canon/semantic-links.txt",
+        "relativePath": "canon/semantic-links.txt",
+        "crc32": "b08ef0c3",
+        "bytes": 50,
+        "sha256": "9091b8af1ff10f8f016fa5e36ef1373dc0d1b5dc379e9f29ec26f5dca9309a8b"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/canon/text.ts",
+        "relativePath": "canon/text.ts",
+        "crc32": "7171f720",
+        "bytes": 26228,
+        "sha256": "18a7c69a1a102ed2c17c2127a47661b31c631a1210e15615a5a31d75bda15d68"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/content-mapper/authored-hits.txt",
+        "relativePath": "content-mapper/authored-hits.txt",
+        "crc32": "35c8b553",
+        "bytes": 391,
+        "sha256": "cf6c4aebbac91993f728053805097091d69cef9a93cee40d8e7980dc594ab2de"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/content-mapper/diagnostics.txt",
+        "relativePath": "content-mapper/diagnostics.txt",
+        "crc32": "00000000",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/content-mapper/semantic-links.txt",
+        "relativePath": "content-mapper/semantic-links.txt",
+        "crc32": "00000000",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/content-mapper/mappings.txt",
+        "relativePath": "content-mapper/mappings.txt",
+        "crc32": "ca43fe52",
+        "bytes": 364,
+        "sha256": "7c25a9edf2b3c2944f743391d3df7d0ba12e8995b3263b76bd8a3cc22caba44e"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/content-mapper/text.ts",
+        "relativePath": "content-mapper/text.ts",
+        "crc32": "47964fd0",
+        "bytes": 26243,
+        "sha256": "8624e2dd0fb55013495a58098aa8a5b4943bdb828af4de0db275525c36aca501"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/maestro/authored-hits.txt",
+        "relativePath": "maestro/authored-hits.txt",
+        "crc32": "b47334e0",
+        "bytes": 3758,
+        "sha256": "1308e4c8ee713fad40bfcd62e7c57739ace6dd4c851832dc2e3d9c5fdde48f41"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/maestro/mappings.txt",
+        "relativePath": "maestro/mappings.txt",
+        "crc32": "18c44976",
+        "bytes": 4611,
+        "sha256": "71b96845f446804d185431f8bed6fe4261d8be6e36a4983bf29ec2cd4c47f415"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/maestro/text.txt",
+        "relativePath": "maestro/text.txt",
+        "crc32": "6d3c7179",
+        "bytes": 314,
+        "sha256": "fcd8fba4c8a438e6a182aeb2d3818c0e160e491eb8085647011ff30b77d09d47"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/maestro-document-0/text.ts",
+        "relativePath": "maestro-document-0/text.ts",
+        "crc32": "7171f720",
+        "bytes": 26228,
+        "sha256": "18a7c69a1a102ed2c17c2127a47661b31c631a1210e15615a5a31d75bda15d68"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/maestro-document-1/text.ts",
+        "relativePath": "maestro-document-1/text.ts",
+        "crc32": "e6363da6",
+        "bytes": 150,
+        "sha256": "9bc67c331434ac1116c199370118b510da7608ffad5c6931240b73d2b0f9bd2a"
+      },
+      {
+        "archivePath": "template-emit-ts40-projection/static-slot-name/original.vue",
+        "relativePath": "original.vue",
+        "crc32": "3f5d3929",
+        "bytes": 272,
+        "sha256": "fcd5dde4e7f467046e06f62702b5cb6c423a831725c6023b3162f4faca129f6f"
+      }
+    ]
+  },
+  "retainedWholePacketRoot": "/tmp/vize-n8n-p0-20261007/8011-slot-first-red"
+}
