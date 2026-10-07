@@ -30,7 +30,7 @@ fn complete(result: &LintResult) -> Value {
 fn all_original_variants_share_script_reads_but_keep_local_scopes() {
     let corpus: Value = serde_json::from_str(CASES).unwrap();
     let cases = corpus["cases"].as_array().unwrap();
-    assert_eq!(cases.len(), 21);
+    assert_eq!(cases.len(), 22);
     for case in cases {
         let source = case["source"].as_str().unwrap();
         assert_eq!(source.len(), case["sourceBytes"].as_u64().unwrap() as usize);

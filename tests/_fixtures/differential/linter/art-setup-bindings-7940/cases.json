@@ -504,6 +504,22 @@
           }
         ]
       }
+    },
+    {
+      "id": "imported-props-completeness-uses-original-art-summary",
+      "source": "<script setup lang=\"ts\">import type { Props } from \"./props\"; defineProps<Props>();</script><art><variant name=\"One\">{{ someField }}</variant><variant name=\"Two\">{{ otherField }}</variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-undefined-refs"
+      ],
+      "sourceBytes": 194,
+      "sourceSha256": "a960d187a9438c0159e4a04c007bc9fb8956f848943bdbf4dabc914ea137816d",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
     }
   ]
 }

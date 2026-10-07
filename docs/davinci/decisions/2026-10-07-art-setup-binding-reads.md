@@ -25,7 +25,7 @@ rule; genuine browser globals remain findings in each original variant.
 
 The differential corpus in
 `tests/_fixtures/differential/linter/art-setup-bindings-7940/` preserves #7940's
-original SFC and #7900's original SSR SFC, hashes every input, and authors twenty-one
+original SFC and #7900's original SSR SFC, hashes every input, and authors twenty-two
 complete service results. Existing #7897/#7900 originals and the eleven
 registration laws remain unchanged. Controls cover all-variant unions, exactly
 one physical unused span, dual scripts/UTF-8/CRLF, local `v-for`/slot shadows,
@@ -51,3 +51,12 @@ the separate original script summary rather than the narrow fragment seed.
 The paired #7912 change in #8151 owns that fallback and must deliver before or
 with this Art consumer when both PRs remain outstanding. General complete Art
 macro/type analysis remains outside this bounded value-map correction.
+
+The Art child genuinely rebases onto #8151 source
+`b7b9aa25e2e3177f7f4c7ebf19af43a8a75b79b5`, retaining the original twenty
+whole input/result vectors byte-for-byte. The twenty-second control uses an
+actual Art descriptor with imported `Props`, demonstrating that the paired
+completeness fallback reads the original script macro metadata. The Stack
+order is #8146 -> #8151 -> #8163; root owns native Stack registration and queue
+admission. Fresh composed-source Actions and actual protected merge remain
+required; previous-source green is not transferred.
