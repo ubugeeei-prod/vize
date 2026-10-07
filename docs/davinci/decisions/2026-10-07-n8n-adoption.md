@@ -73,8 +73,8 @@ protected squash merges need not retain it; baseline-to-repair-anchor ancestry
 must pass. Complete raw packets are saved before parity/runtime assertions, so
 a failed gate retains its evidence and receives no completion credit.
 The immutable capture-only commit is
-`1f7b027ab26e2c031592f3c8546ea6fa7872eeeb`; the reviewed descending repair
-anchor is `ac09d4d3624d3e0fe5b1852300d9860af2172ba3`. Preserve their real
+`67e7d0f1392d8bdd08156ac4de900cf2065c98fd`; the reviewed descending repair
+anchor is `23cb9d52f752634c2c3c1d066ad2759bd01d1d0d`. Preserve their real
 commit chain when integrating the existing PR. The ordinary default-mode
 baseline has two complete legacy errors with missing locations; retain those
 `null` locations as failed historical evidence. Its two native diagnostics
@@ -82,6 +82,22 @@ already have byte spans. The official per-prior-branch law expands their full
 wire metadata to three without dropping stage, severity, parts, witness or
 debug values; current legacy locations independently match the frozen official
 UTF-16 positions converted to UTF-8 spans.
+
+The failed first source `744885f1b78f744db6b5772d6bf5ed1d335272ea`
+and its baseline `1f7b027ab26e2c031592f3c8546ea6fa7872eeeb` and repair
+anchor `ac09d4d3624d3e0fe5b1852300d9860af2172ba3` remain historical evidence.
+[The failed before/after run](https://github.com/ubugeeei-prod/vize/actions/runs/37607203124)
+retains artifact `11475138675`, including complete before-phase compiler stderr.
+The old baseline's example could not convert `SfcError` to `Box<dyn Error>`;
+no original before/after modules or runtime results were produced. Its new
+capture-only successor propagates the complete parse error through explicit
+conversion and is merged into the actual current chain. Separate current-source
+repairs borrow the retained allocator, remove extracted native imports and
+annotate trusted compiled test-module evaluation consistently with the existing
+runtime harness. All thirty-four capture-only paths, thirty-three identical
+driver files, original inputs and protected ceilings remain unchanged in scope.
+Fresh source compilation, before/after capture and behavior qualification are
+required; the failed run provides no behavior or completion credit.
 
 The independent reference is n8n's locked Vue/compiler-sfc 3.5.26 browser
 bundle, authenticated by SHA256. All ten complete originals retain parse,
