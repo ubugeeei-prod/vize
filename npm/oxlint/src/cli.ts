@@ -54,7 +54,7 @@ async function main(): Promise<void> {
     } catch (error) {
       // Preparation, spawn, mapping and JSON failures retain authored packets.
       if (transport?.originalResult) {
-        process.exitCode = Math.max(transport.originalResult.status ?? 1, 1);
+        process.exitCode = Math.max(transport.originalResult.status ?? 1, result?.status ?? 1, 1);
         await writeStream(process.stdout, transport.originalResult.stdout);
         await writeStream(
           process.stderr,

@@ -14,6 +14,7 @@ await Promise.all([
   import("../cli/scoped-config.test.ts"),
   import("../cli/scoped-discovery.test.ts"),
   import("../cli/project-checks.test.ts"),
+  import("../cli/project-json.test.ts"),
   import("../cli/project-failure.test.ts"),
   import("../cli/project-failure-cli.test.ts"),
   import("../project-transport.test.ts"),

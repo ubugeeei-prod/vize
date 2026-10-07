@@ -1,4 +1,5 @@
 import type { OxlintProcessResult } from "./scoped-selection.ts";
+import { joinProjectJson } from "./project-json.ts";
 
 export function unavailableProjectTransport(
   original: OxlintProcessResult,
@@ -79,7 +80,12 @@ export function mergeProjectOutput(
         );
       totals[key] = source[key] + template[key];
     }
-    stdout = `${JSON.stringify({ ...source, ...totals, diagnostics: [...source.diagnostics, ...template.diagnostics], number_of_rules: source.number_of_rules + template.number_of_rules, threads_count: Math.max(source.threads_count, template.threads_count), start_time: source.start_time + template.start_time })}\n`;
+    stdout = joinProjectJson(original.stdout, bridge.stdout, {
+      ...totals,
+      number_of_rules: source.number_of_rules + template.number_of_rules,
+      threads_count: Math.max(source.threads_count, template.threads_count),
+      start_time: source.start_time + template.start_time,
+    });
   }
   return {
     stdout,

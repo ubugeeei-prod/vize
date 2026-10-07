@@ -22,7 +22,10 @@ revision cache remain intact.
 
 The two complete reports are joined without diagnostic sorting, normalization or
 deduplication. Original diagnostic order, multiplicity, filenames, spans, unknown
-fields and original file count remain authoritative. An unavailable bridge must
+fields, reporter layout and original file count remain authoritative. Raw
+diagnostic JSON is retained; only top-level diagnostic/count values are joined.
+Escaped/nested fields and the existing native JSON snapshot remain exact.
+An unavailable bridge must
 retain original stdout and stderr while failing the run. This also applies after
 original linting when mirror preparation, selection, process startup or output
 mapping fails. Owned temporary configurations and carriers are removed.

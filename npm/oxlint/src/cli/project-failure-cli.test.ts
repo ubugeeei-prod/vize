@@ -17,7 +17,7 @@ const fixture = JSON.parse(
   ),
 ) as { original: Record<string, unknown> };
 
-for (const failure of ["preparation", "json", "unavailable"])
+for (const failure of ["preparation", "json", "unavailable", "metadata"])
   void test(`the packaged CLI retains original status 2 and raw packets after ${failure} failure`, (t) => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-project-cli-failure-"));
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));
@@ -40,11 +40,11 @@ for (const failure of ["preparation", "json", "unavailable"])
       if (args.includes('--debug')) { console.log(args.at(-1)); process.exit(0); }
       if (args.some(arg => arg.includes('oxlint-vize-original-'))) {
         process.stdout.write(${JSON.stringify(original)});
-        process.stderr.write('whole original stderr\\n'); process.exit(2);
+        process.stderr.write('whole original stderr\\n'); process.exit(${failure === "metadata" ? 1 : 2});
       }
-      process.stdout.write(${JSON.stringify(failure === "json" ? "{}\n" : "")});
+      process.stdout.write(${JSON.stringify(["json", "metadata"].includes(failure) ? "{}\n" : "")});
       process.stderr.write('authored bridge failure\\n');
-      process.exit(${failure === "json" ? 0 : 1});
+      process.exit(${failure === "json" ? 0 : failure === "metadata" ? 2 : 1});
     `,
     );
     const result = spawnSync(process.execPath, [cli, "-f", "json", "Original.vue"], {
