@@ -129,6 +129,7 @@ formatter	Formatter	source	crates/vize_glyph/src/style/stabilization.rs	9	l0	L0	
 formatter	Formatter	test/dev	crates/vize_glyph/src/style/stabilization.rs	240	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/src/template.rs	30	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/template/attributes.rs	5	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	source	crates/vize_glyph/src/template/attributes/render.rs	5	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/template/directives.rs	7	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/template/directives/normalize.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/template/formatter.rs	9	l0	L0	stage	vize_l0	preferred	1
