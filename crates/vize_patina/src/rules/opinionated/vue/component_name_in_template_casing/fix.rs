@@ -25,7 +25,7 @@ pub(super) fn element_fix(
         return None;
     }
     let replacement: String = match casing {
-        ComponentCasing::PascalCase => to_pascal_case(tag).into(),
+        ComponentCasing::PascalCase => to_pascal_case(tag),
         ComponentCasing::KebabCase => {
             let mut result = String::with_capacity(tag.len());
             for (index, byte) in tag.bytes().enumerate() {
