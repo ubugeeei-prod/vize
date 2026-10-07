@@ -51,6 +51,14 @@ replacements, untracked Vue additions, and changed bytes fail. The same proof an
 manifest are required after execution and across all three workers. Cached test
 conclusions receive no credit.
 
+The parent index and tracked worktree must also match the candidate HEAD before
+any identity is emitted. A quiet diff against HEAD rejects staged and unstaged
+source changes; fixture gitlinks keep their independent complete checks.
+Temporary Git controls retain unchanged HEAD and whole fixture bytes while
+mutating parent compiler source, then require refusal, restored-source acceptance,
+untracked generated-output acceptance, and complete committed fixture growth.
+This closes receipt custody only; it grants no hosted or throughput qualification.
+
 The historical 147-gitlink/42,998-file baseline is a parser control, not a fixed
 limit on legitimate committed fixture additions. Expected counts are derived from
 the complete pinned graph. Symlink files and directory aliases retain the original
@@ -140,5 +148,7 @@ retained diagnostics closes HEAD-only incomplete-hydration credit. The original
 Rust feature recipe and fixture coverage run as a required sibling after the
 verified archive producer, alongside all required archive shards. No compiler
 stage, serialization, budget increase, test waiver, or release acceptance changes.
+Parent tracked source and index must match candidate HEAD before any receipt;
+staged and unstaged drift refuse even with unchanged fixture bytes and HEAD.
 Historical protected Check took 20m26s; this proposal has no Actions runtime
 measurement yet. Publication remains held for root review and backlog drain.

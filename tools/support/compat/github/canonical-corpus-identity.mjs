@@ -41,6 +41,9 @@ export function checkoutIdentity(cwd, env = process.env) {
   assert(/^[0-9a-f]{40}$/.test(env.GITHUB_SHA), "Missing candidate SHA");
   assert.equal(sha, env.GITHUB_SHA, "Canonical checkout differs from candidate");
   assert.equal(env.GITHUB_REPOSITORY, "ubugeeei-prod/vize", "Foreign canonical repository");
+  // HEAD/tree custody also requires the tracked source bytes being executed.
+  // Fixture gitlinks/worktrees have their separate complete inventory checks.
+  execFileSync("git", ["diff", "--quiet", "--ignore-submodules=all", "HEAD", "--"], { cwd });
   const runId = Number(env.GITHUB_RUN_ID);
   const attempt = Number(env.GITHUB_RUN_ATTEMPT);
   assert(Number.isSafeInteger(runId) && runId > 0, "Missing canonical run ID");

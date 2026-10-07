@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
+  captureCorpus,
   collectFiles,
   corpusPlan,
   parseGitlinks,
@@ -19,6 +20,91 @@ const historicalFiles = 42998;
 const historicalGitlinks = 147;
 const original = execFileSync("git", ["ls-tree", "-rz", "HEAD", "--", "tests/_fixtures/_git"], {
   encoding: "utf8",
+});
+
+test("tracked parent drift refuses unchanged HEAD while restored source and committed growth pass", () => {
+  const temporary = mkdtempSync(join(tmpdir(), "canonical-parent-source-"));
+  const root = join(temporary, "root");
+  const fixture = join(temporary, "fixture");
+  const run = (cwd, ...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  const commit = (cwd) => {
+    run(cwd, "add", ".");
+    run(cwd, "commit", "--quiet", "-m", "authored source control");
+  };
+  try {
+    for (const cwd of [root, fixture]) {
+      mkdirSync(cwd);
+      run(cwd, "init", "--quiet", "--object-format=sha1");
+      run(cwd, "config", "user.name", "Source custody control");
+      run(cwd, "config", "user.email", "fixture@example.invalid");
+    }
+    writeFileSync(join(fixture, "Original.vue"), "<template>unchanged authored input</template>\n");
+    commit(fixture);
+    const path = "tests/_fixtures/_git/original";
+    run(root, "-c", "protocol.file.allow=always", "submodule", "add", "--quiet", fixture, path);
+    writeFileSync(join(root, "Cargo.lock"), "# authored source control\n");
+    writeFileSync(join(root, "rust-toolchain.toml"), '[toolchain]\nchannel="stable"\n');
+    const source = join(root, "compiler.rs");
+    const originalSource = "fn source() { original(); }\n";
+    writeFileSync(source, originalSource);
+    commit(root);
+    const env = {
+      GITHUB_SHA: run(root, "rev-parse", "HEAD"),
+      GITHUB_REPOSITORY: "ubugeeei-prod/vize",
+      GITHUB_REPOSITORY_ID: "99",
+      GITHUB_RUN_ID: "12",
+      GITHUB_RUN_ATTEMPT: "1",
+      GITHUB_EVENT_NAME: "merge_group",
+      GITHUB_REF: "refs/heads/gh-readonly-queue/main/pr-99",
+      GITHUB_EVENT_PATH: join(temporary, "event.json"),
+      RUNNER_OS: "Linux",
+      RUNNER_ARCH: "X64",
+      RUNNER_ENVIRONMENT: "self-hosted",
+    };
+    writeFileSync(
+      env.GITHUB_EVENT_PATH,
+      JSON.stringify({
+        repository: { id: 99, full_name: env.GITHUB_REPOSITORY, default_branch: "main" },
+        merge_group: {},
+      }),
+    );
+    const before = captureCorpus(root, env);
+    for (const staged of [false, true]) {
+      writeFileSync(source, "fn source() { changed_uncommitted_source(); }\n");
+      if (staged) run(root, "add", "compiler.rs");
+      assert.equal(run(root, "rev-parse", "HEAD"), env.GITHUB_SHA);
+      assert.throws(
+        () => corpusPlan(root, env),
+        (error) => error.status === 1,
+      );
+      assert.throws(
+        () => captureCorpus(root, env),
+        (error) => error.status === 1,
+      );
+      run(root, "restore", "--staged", "compiler.rs");
+      run(root, "restore", "compiler.rs");
+      writeFileSync(join(root, "generated-output.json"), '{"untracked":"allowed"}\n');
+      const restored = captureCorpus(root, env);
+      sameCorpus(before.identity, restored.identity);
+      assert.deepEqual(restored.files, before.files);
+      assert.equal(readFileSync(source, "utf8"), originalSource);
+    }
+    const checkout = join(root, path);
+    writeFileSync(join(checkout, "Added.vue"), "<template>committed growth</template>\n");
+    commit(checkout);
+    run(root, "add", path);
+    run(root, "commit", "--quiet", "-m", "complete committed fixture growth");
+    const expanded = captureCorpus(root, { ...env, GITHUB_SHA: run(root, "rev-parse", "HEAD") });
+    assert.equal(expanded.files.length, before.files.length + 1);
+    assert(expanded.files.some(([name]) => name === "original/Added.vue"));
+    assert.deepEqual(
+      expanded.files.find(([name]) => name === "original/Original.vue"),
+      before.files[0],
+    );
+    assert.throws(() => sameCorpus(before.identity, expanded.identity));
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
 });
 
 test("fixture object cache is committed-gitlink keyed and read-only for PR/queue sources", () => {
