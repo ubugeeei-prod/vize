@@ -427,6 +427,9 @@ fn compile_sfc_inner(
         }
     );
     let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings);
+    if let Some(program) = setup_program.as_ref() {
+        bindings::register_setup_enum_bindings(&mut script_bindings, program);
+    }
 
     // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution
     //    (Croquis doesn't resolve type references like `defineProps<Props>()`)

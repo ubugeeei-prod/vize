@@ -4,7 +4,7 @@
 //! and registering bindings from normal `<script>` blocks.
 
 use oxc_ast::ast::{
-    BindingPattern, Declaration, Expression, ImportDeclarationSpecifier, Statement,
+    BindingPattern, Declaration, Expression, ImportDeclarationSpecifier, Program, Statement,
     VariableDeclaration, VariableDeclarationKind,
 };
 use vize_l0::{ToCompactString, profile};
@@ -108,6 +108,9 @@ pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
                         .or_insert(BindingType::SetupConst);
                 }
             }
+            Statement::TSEnumDeclaration(enumeration) if !enumeration.declare => {
+                crate::script::register_enum(&mut bindings, enumeration);
+            }
             Statement::ExportNamedDeclaration(decl) => {
                 if let Some(ref declaration) = decl.declaration {
                     match declaration {
@@ -130,6 +133,9 @@ pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
                                     .or_insert(BindingType::SetupConst);
                             }
                         }
+                        Declaration::TSEnumDeclaration(enumeration) if !enumeration.declare => {
+                            crate::script::register_enum(&mut bindings, enumeration);
+                        }
                         _ => {}
                     }
                 }
@@ -139,6 +145,20 @@ pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
     }
 
     bindings
+}
+
+/// Preserve the script compiler's static enum classification in the template
+/// metadata. Croquis records runtime enum names as setup constants; the SFC
+/// compiler also knows which declarations can be hoisted as literal constants.
+/// Reuse the retained program instead of parsing the script again.
+pub(super) fn register_setup_enum_bindings(bindings: &mut BindingMetadata, program: &Program<'_>) {
+    for statement in &program.body {
+        if let Statement::TSEnumDeclaration(enumeration) = statement
+            && !enumeration.declare
+        {
+            crate::script::register_enum(bindings, enumeration);
+        }
+    }
 }
 
 fn register_variable_declaration(
