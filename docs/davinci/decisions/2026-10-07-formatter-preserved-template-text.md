@@ -37,7 +37,8 @@ whitespace-significant source witness and two new consumer inventory entries.
 Restore the original witness bytes instead of changing historical pins; reuse its
 existing raw-region writer and remove only that writer's complete-close layout
 newline. Unclosed and incomplete raw tails retain every authored byte, including
-an unmatched outer element with a complete nested close. Regenerate the consumer
+an unmatched outer element with a complete nested close. Incomplete ordinary
+closing tags also remain authored instead of acquiring a fabricated `>`. Regenerate the consumer
 inventory from source, retain all original300 histories and qualification rules,
 and require fresh successor Actions; the earlier green Rust evidence does not
 qualify the changed successor.

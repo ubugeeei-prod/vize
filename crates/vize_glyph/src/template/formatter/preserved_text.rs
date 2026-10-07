@@ -36,6 +36,7 @@ impl TemplateFormatter<'_> {
             }
             if source.get(pos..pos + 2) == Some(b"</".as_slice())
                 && let Some((tag_name, end)) = helpers::parse_closing_tag(source, pos)
+                && source.get(end.saturating_sub(1)) == Some(&b'>')
             {
                 output.extend_from_slice(b"</");
                 output.extend_from_slice(tag_name.as_bytes());
@@ -100,8 +101,9 @@ mod tests {
     use crate::{FormatOptions, VueVersion, template::format_template_content_preserving_text};
 
     #[test]
-    fn incomplete_raw_regions_retain_the_authored_tail() {
+    fn incomplete_regions_retain_the_authored_tail() {
         for source in [
+            "<p>  body </p\n",
             "<pre>  tail\n",
             "<pre><pre> nested </pre>\n",
             "<pre> body </pre\n",
