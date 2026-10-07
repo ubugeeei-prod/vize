@@ -11,6 +11,8 @@ use crate::diagnostic::LintDiagnostic;
 use crate::linter::config::{LintResult, Linter};
 use crate::linter::engine::tag_scan::{find_closing_tag, find_start_tag_end};
 
+mod analysis;
+
 impl Linter {
     pub(super) fn append_art_variant_template_diagnostics(
         &self,
@@ -33,15 +35,21 @@ impl Linter {
             &parsed
         };
         let source = descriptor.source.as_ref();
-        let summary = self
+        let mut summary = self
             .has_active_semantic_template_rules()
-            .then(|| super::super::analyze_descriptor_for_lint(descriptor, None, false, false));
+            .then(|| analysis::script_summary(self, descriptor));
         let mut extra = empty_lint_result(filename);
         for (start, end) in art_variant_ranges(source, descriptor) {
             let Some(inner) = source.get(start..end) else {
                 continue;
             };
-            let one = self.lint_art_variant(inner, filename, descriptor, summary.as_ref());
+            let one = self.lint_art_variant(inner, filename, descriptor, summary.as_mut());
+            extra = Self::merge_lint_results(extra, one);
+        }
+        if self.has_unused_bindings_demand()
+            && let Some(summary) = summary.as_ref()
+        {
+            let one = analysis::report_unused(self, filename, descriptor, summary);
             extra = Self::merge_lint_results(extra, one);
         }
         if extra.diagnostics.is_empty() {
@@ -56,7 +64,7 @@ impl Linter {
         source: &str,
         filename: &str,
         descriptor: &SfcDescriptor<'_>,
-        summary: Option<&Croquis>,
+        mut summary: Option<&mut Croquis>,
     ) -> LintResult {
         let offset = SourceRoot::new(descriptor.source.as_ref())
             .ok()
@@ -75,6 +83,10 @@ impl Linter {
         let allocator = Allocator::with_capacity((source.len() * 4).max(self.initial_capacity));
         let (root, errors) = Parser::new(&allocator, source).parse();
         let fatal = Self::has_fatal_template_parse_errors(&errors);
+        let analysis = summary
+            .as_deref()
+            .filter(|_| !fatal)
+            .map(|script| analysis::variant(&root, script, self.has_unused_bindings_demand()));
         let mut parsed = Self::template_parse_lint_result(filename, source.len(), &errors);
         offset_result(&mut parsed, offset);
         let linted = self.lint_template_root(
@@ -84,16 +96,30 @@ impl Linter {
             &root,
             if fatal {
                 TemplateAnalysis::Disabled
+            } else if let Some(analysis) = analysis.as_ref() {
+                TemplateAnalysis::Precomputed(analysis)
             } else {
                 TemplateAnalysis::Lazy
             },
             TemplateRuleEnv {
                 sfc_descriptor: Some(descriptor),
-                art_script_analysis: summary.filter(|_| !fatal),
+                art_script_analysis: summary.as_deref().filter(|_| !fatal),
                 dialect: vize_l0::dialect::VueDialect::Vue,
                 facade_rules: super::facade::RULES,
             },
         );
+        if self.has_unused_bindings_demand()
+            && let Some(summary) = summary.as_deref_mut()
+        {
+            if let Some(analysis) = analysis {
+                summary
+                    .unused_bindings
+                    .retain(|name| analysis.unused_bindings.contains(name));
+            } else {
+                // An invalid variant may contain reads we cannot establish.
+                summary.unused_bindings.clear();
+            }
+        }
         Self::merge_lint_results(parsed, linted)
     }
 }

@@ -1,0 +1,472 @@
+{
+  "schema": "vize.linter.art-setup-bindings-corpus",
+  "version": 1,
+  "issues": [
+    7940,
+    7900
+  ],
+  "authority": "Original report inputs and independently authored complete diagnostic vectors; no output recapture",
+  "cases": [
+    {
+      "id": "original-7940",
+      "source": "<script setup lang=\"ts\">\nimport MyIcon from \"./my-icon.vue\";\n\ndefineArt(\"./my-button.vue\", { title: \"MyButton\" });\n\nconst label = \"Save\";\n</script>\n\n<art>\n  <variant name=\"Default\" default>\n    <MyButton :label=\"label\" />\n    <MyIcon />\n  </variant>\n</art>\n",
+      "filename": "src/my-button.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings",
+        "vue/require-component-registration",
+        "ssr/no-browser-globals-in-ssr"
+      ],
+      "sourceBytes": 257,
+      "sourceSha256": "d1f8607db88fe78f24888641c8640a3c8f75192b953f4e3f18a1a576ef49625f",
+      "service": {
+        "filename": "src/my-button.art.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "original-7900",
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport Button from \"./Button.vue\";\n\nconst title = ref(\"Hello\");\n</script>\n\n<art title=\"Card\" component=\"./Card.vue\">\n  <variant name=\"Default\" default>\n    <Card :title=\"title\">\n      <Button>OK</Button>\n    </Card>\n  </variant>\n</art>\n",
+      "filename": "Card.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings",
+        "vue/require-component-registration",
+        "ssr/no-browser-globals-in-ssr"
+      ],
+      "sourceBytes": 288,
+      "sourceSha256": "520238f090463f6afcd5aacfffadcf43a9b69e22fb6e30422d9ebc101ecae0a3",
+      "service": {
+        "filename": "Card.art.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "original-7897-union",
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport MyIcon from \"./MyIcon.vue\";\n\ndefineArt(\"./MyButton.vue\", { title: \"MyButton\", category: \"Base\" });\n\nconst count = ref(0);\n</script>\n\n<art>\n  <variant name=\"Default\" default>\n    <MyButton @click=\"count++\">Clicked {{ count }}</MyButton>\n  </variant>\n\n  <variant name=\"WithIcon\">\n    <MyButton><MyIcon /> Icon</MyButton>\n  </variant>\n</art>\n",
+      "filename": "MyButton.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings",
+        "vue/require-component-registration",
+        "ssr/no-browser-globals-in-ssr"
+      ],
+      "sourceBytes": 398,
+      "sourceSha256": "9ee3bef2bcde05352ef488cd503c97fc4405fcd4b7d2581c27457dedfa4bede4",
+      "service": {
+        "filename": "MyButton.art.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "independent-variant-union",
+      "source": "<script setup>const first = 1; const second = 2; const unused = 3;</script><art><variant name=\"One\">{{ first }}</variant><variant name=\"Two\">{{ second }}</variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 169,
+      "sourceSha256": "99624949f8d9e09fa542bf071a87177b109ddc154db181be8584651fd918392d",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-unused-setup-bindings",
+            "severity": "warning",
+            "message": "Setup binding 'unused' is never read",
+            "start": 55,
+            "end": 61,
+            "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "duplicate-reads-one-physical-finding",
+      "source": "<!--界-->\r\n<script>export const plain = 0;</script>\r\n<script setup>const read = 1; const 雪 = 2;</script>\r\n<art><variant name=\"One\">{{ read }}</variant>\r\n<variant name=\"Two\">{{ read }}</variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 202,
+      "sourceSha256": "504651a3d38c4af74cc5ce06d74172db68f13204d722d06fef817d90eeda3f14",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-unused-setup-bindings",
+            "severity": "warning",
+            "message": "Setup binding '雪' is never read",
+            "start": 90,
+            "end": 93,
+            "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "v-for-shadow-is-not-a-script-read",
+      "source": "<script setup>const rows = [1]; const item = 2;</script><art><variant name=\"One\"><span v-for=\"item in rows\">{{ item }}</span></variant><variant name=\"Two\"><span>Other</span></variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 189,
+      "sourceSha256": "e7798b821dd7e76295bccc033f288a46891531a8e1c1543290e0690358e53cb8",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-unused-setup-bindings",
+            "severity": "warning",
+            "message": "Setup binding 'item' is never read",
+            "start": 38,
+            "end": 42,
+            "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "slot-shadow-is-not-a-script-read",
+      "source": "<script setup>const item = 2;</script><art><variant name=\"One\"><div><template #default=\"{ item }\">{{ item }}</template></div></variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 141,
+      "sourceSha256": "64e130a9ed38232e8670e78fd79430dd4e33f40c86a054e27f00d25aab4109ee",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-unused-setup-bindings",
+            "severity": "warning",
+            "message": "Setup binding 'item' is never read",
+            "start": 20,
+            "end": 24,
+            "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "component-directive-ref-reads",
+      "source": "<script setup>import * as Parts from \"./parts\"; const MyButton = {}; const vFocus = {}; const input = null;</script><art><variant name=\"One\"><my-button v-focus/><Parts.Icon/><input ref=\"input\"/></variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 210,
+      "sourceSha256": "80da45a3d3722126c4d28a4dd23c02292b30b16aa4f319b2da4d1ea6db8af316",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "v-for-source-read",
+      "source": "<script setup>const DAYS = [1]; const rows = [[1]]; const unused = 0;</script><art><variant name=\"One\"><div v-for=\"day in DAYS\">{{ day }}</div></variant><variant name=\"Two\"><div v-for=\"(row, at) in rows\">{{ row }} {{ at }}</div></variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 244,
+      "sourceSha256": "6edacea9f92d86b61329d98cbe2313d039b01904ef64e8c32c78bad85622d8eb",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-unused-setup-bindings",
+            "severity": "warning",
+            "message": "Setup binding 'unused' is never read",
+            "start": 58,
+            "end": 64,
+            "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "style-read-joins-variant",
+      "source": "<script setup>const tone = \"red\"; const title = \"Hello\"; const unused = 1;</script><art><variant name=\"One\">{{ title }}</variant></art><style>div { color: v-bind(tone); }</style>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 178,
+      "sourceSha256": "e1fca8d5c040954fbbb80c022c88e5b170efff7d9881215b84f7ea9b52d123a2",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-unused-setup-bindings",
+            "severity": "warning",
+            "message": "Setup binding 'unused' is never read",
+            "start": 63,
+            "end": 69,
+            "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "mixed-main-and-art-template",
+      "source": "<script setup>const main = 1; const art = 2; const unused = 3;</script><template>{{ main }}</template><art><variant name=\"One\">{{ art }}</variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 152,
+      "sourceSha256": "697c931d6ea921a2e2cf100b91c33f1b01c963f455db0859feb0cf80249ffc2b",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-unused-setup-bindings",
+            "severity": "warning",
+            "message": "Setup binding 'unused' is never read",
+            "start": 51,
+            "end": 57,
+            "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "eval-refuses-unused",
+      "source": "<script setup>const untouched = 1;</script><art><variant name=\"One\">{{ eval(\"untouched\") }}</variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 107,
+      "sourceSha256": "6da231c6fc1009f680305a77dfacc1640dd75153e976ddc8fc2f08b22e60b820",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "external-style-refuses-unused",
+      "source": "<script setup>const untouched = 1;</script><art><variant name=\"One\"><div/></variant></art><style src=\"./theme.css\"/>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 116,
+      "sourceSha256": "6b8e328e8e9a09de57890fefe9a934cab92cfacd4cc389d0259a822e4b85e461",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "script-directive-suppresses-physical-finding",
+      "source": "<script setup>\n// eslint-disable-next-line vue/no-unused-setup-bindings\nconst unused = 1;\n</script><art><variant name=\"One\"><div/></variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 146,
+      "sourceSha256": "92ac7074312a2ec50b673c2dbed90e9e235cf25ff2e3df8c1f01c6f93692262d",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "empty-art-retains-unused",
+      "source": "<script setup>const unused = 1;</script><art><variant name=\"Empty\"/></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 74,
+      "sourceSha256": "468afe74b1d263556fb0d9fa11ac35f486a755ef5f994172dde86aff60d8eb2c",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-unused-setup-bindings",
+            "severity": "warning",
+            "message": "Setup binding 'unused' is never read",
+            "start": 20,
+            "end": 26,
+            "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "art-filename-without-art-retains-script-unused",
+      "source": "<script setup>const unused = 1;</script>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 40,
+      "sourceSha256": "7de1df4071e3dd75d1029eaa67fcbfa0964f7848bfa7219451ca18888ffdf3e3",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-unused-setup-bindings",
+            "severity": "warning",
+            "message": "Setup binding 'unused' is never read",
+            "start": 20,
+            "end": 26,
+            "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "original-7900-ssr-shadow",
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport Panel from \"./Panel.vue\";\n\nconst isOpen = ref(true);\nconst close = (): void => {\n  isOpen.value = false;\n};\n</script>\n\n<art title=\"Panel\" component=\"./Panel.vue\">\n  <variant name=\"Default\" default>\n    <Panel v-if=\"isOpen\" @close=\"close\" />\n  </variant>\n</art>\n",
+      "filename": "Panel.art.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings",
+        "vue/require-component-registration",
+        "ssr/no-browser-globals-in-ssr"
+      ],
+      "sourceBytes": 320,
+      "sourceSha256": "b22c3e016af742a71e2af492e959c3fc8fb481904b731ffb242fb4455bf130bc",
+      "service": {
+        "filename": "Panel.art.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "ordinary-sfc-shadow-control",
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport Panel from \"./Panel.vue\";\n\nconst isOpen = ref(true);\nconst close = (): void => {\n  isOpen.value = false;\n};\n</script>\n\n<template>\n    <Panel v-if=\"isOpen\" @close=\"close\" />\n</template>\n",
+      "filename": "PanelHost.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings",
+        "vue/require-component-registration",
+        "ssr/no-browser-globals-in-ssr"
+      ],
+      "sourceBytes": 244,
+      "sourceSha256": "9ee120fe15be847321cedbb093f1685effe08f80d553fbd15aae74fad85ec89f",
+      "service": {
+        "filename": "PanelHost.vue",
+        "error_count": 0,
+        "warning_count": 0,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "ordinary-sfc-unused-control",
+      "source": "<script setup>const unused = 1;</script><template><div/></template>",
+      "filename": "Host.vue",
+      "rules": [
+        "vue/no-unused-setup-bindings"
+      ],
+      "sourceBytes": 67,
+      "sourceSha256": "63fbbe8c5176543188e5beb9adb8f5c7fbb948656aa8eb75f7b9f0c6cb2373e6",
+      "service": {
+        "filename": "Host.vue",
+        "error_count": 0,
+        "warning_count": 1,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-unused-setup-bindings",
+            "severity": "warning",
+            "message": "Setup binding 'unused' is never read",
+            "start": 20,
+            "end": 26,
+            "help": "Remove the binding or prefix its name with underscore if intentionally unused",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "browser-globals-remain-findings-in-every-variant",
+      "source": "<script setup>const unrelated = 1;</script><art><variant name=\"One\">{{ window }}</variant><variant name=\"Two\">{{ document }}</variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "ssr/no-browser-globals-in-ssr"
+      ],
+      "sourceBytes": 140,
+      "sourceSha256": "e1380da25f818ac2d622854000d74e3127b7e45b42b8297eccfb0058b244080e",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "ssr/no-browser-globals-in-ssr",
+            "severity": "warning",
+            "message": "'window' is a browser-only global and is not available in SSR",
+            "start": 68,
+            "end": 80,
+            "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "ssr/no-browser-globals-in-ssr",
+            "severity": "warning",
+            "message": "'document' is a browser-only global and is not available in SSR",
+            "start": 110,
+            "end": 124,
+            "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
+    }
+  ]
+}
