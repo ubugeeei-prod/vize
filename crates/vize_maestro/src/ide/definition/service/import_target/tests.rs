@@ -48,7 +48,7 @@ fn renamed_default_and_namespace_imports_bind() {
     );
     assert_eq!(
         super::bound_source_name("import Default, { x } from", "Default").as_deref(),
-        Some("Default"),
+        Some("default"),
     );
     assert_eq!(
         super::bound_source_name("import * as ns from", "ns").as_deref(),
@@ -102,11 +102,10 @@ import LazyChild from "./LazyChild.vue";
 fn reexports_cover_named_renames_and_stars() {
     let barrel =
         "export { default as UiButton } from \"./UiButton.vue\";\nexport * from \"./tokens\";\n";
-    // `default` has no locatable declaration name, so the hop keeps the
-    // requested name.
+    // Default exports retain their identity through a barrel hop.
     assert_eq!(
         super::reexport_specifier(barrel, "UiButton"),
-        Some(("./UiButton.vue".to_owned(), "UiButton".to_owned())),
+        Some(("./UiButton.vue".to_owned(), "default".to_owned())),
     );
     assert_eq!(
         super::reexport_specifier(barrel, "anything"),

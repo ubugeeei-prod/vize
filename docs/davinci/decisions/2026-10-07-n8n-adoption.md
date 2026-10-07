@@ -261,3 +261,13 @@ props declaration. It adds no parse, pipeline stage, code bytes or enum kind;
 the ineffective supplement is removed. The exact oracle queries both original
 script and template positions under both reference toggles. Fresh source
 execution remains required.
+
+The corrected shadow edge passes all four exact reference packets in source
+Actions. The next original oracle exposed a second defect: component-tag
+definition stopped at the import in n8n's real `import …; export default …`
+barrel. The existing bounded import walker now keeps the `default` export
+identity and authenticates imported default-export aliases from a valid OXC
+module AST; comments, strings, type imports and unknown identifiers cannot
+create edges. The original Vue file-origin expected packet remains unchanged.
+Fresh source execution must still finish barrel navigation and dirty/restore
+diagnostics; these partial reference passes grant no whole-oracle credit.
