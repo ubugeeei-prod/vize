@@ -59,3 +59,12 @@ source checks before independent squash admission. The protected full
 suites, unchanged instruction ceilings, actual signed merge and installed
 release proof remain separate obligations. No legacy replacement or native
 default-readiness claim follows from this configuration fix.
+
+## Checked policy authority
+
+[The bounded source correction](https://github.com/ubugeeei-prod/vize/issues/7935#issuecomment-6033453880) replaces a new unchecked
+index with complete input-coverage and checked index validation. An invalid
+resolved policy fails explicitly with CLI status 2, rather than dropping a
+configured file or substituting the default. The production resolver
+constructs one valid index per input; all expected inputs and reports stay
+unchanged. Fresh successor Actions must qualify this source independently.

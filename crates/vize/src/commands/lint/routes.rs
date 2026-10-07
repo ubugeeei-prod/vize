@@ -27,7 +27,10 @@ pub(super) fn apply_cross_file_lint(
         &ResolvedLinterRuleGroups,
     ),
 ) -> Option<vize_l0::String> {
-    let settings = CrossFileRuleSettings::new(files, resolved);
+    let settings = CrossFileRuleSettings::new(files, resolved).unwrap_or_else(|error| {
+        eprintln!("[vize] {error}");
+        std::process::exit(2);
+    });
     let (tree, complexity) = (args.cross_file_tree, args.cross_file_complexity);
     let report = apply_sfc_cross_file_lint(results, help_level, tree, complexity, &settings);
     apply_route_typing(results, help_level, Some(&settings));

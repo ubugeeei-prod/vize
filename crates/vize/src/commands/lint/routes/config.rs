@@ -1,7 +1,7 @@
 //! Apply the already-resolved host policy while appending project diagnostics.
 
 use std::path::{Path, PathBuf};
-use vize_l0::{FxHashMap, String, config::LintRuleSeverity};
+use vize_l0::{FxHashMap, String, config::LintRuleSeverity, cstr};
 use vize_patina::{LintDiagnostic, Severity};
 
 use super::super::entry_rules::ResolvedLinterRuleGroups;
@@ -26,7 +26,10 @@ impl<'a> CrossFileRuleSettings<'a> {
     pub(in crate::commands::lint) fn new(
         files: &'a [PathBuf],
         resolved: &'a ResolvedLinterRuleGroups,
-    ) -> Self {
+    ) -> Result<Self, String> {
+        if files.len() != resolved.file_config_indices.len() {
+            return Err("Resolved lint configuration does not cover every input file".into());
+        }
         let policies: Vec<_> = resolved
             .configs
             .iter()
@@ -46,13 +49,17 @@ impl<'a> CrossFileRuleSettings<'a> {
                 },
             })
             .collect();
-        Self {
-            files: files
-                .iter()
-                .zip(&resolved.file_config_indices)
-                .map(|(path, index)| (path.as_path(), policies[*index]))
-                .collect(),
-        }
+        let files = files
+            .iter()
+            .zip(&resolved.file_config_indices)
+            .map(|(path, index)| {
+                policies
+                    .get(*index)
+                    .map(|policy| (path.as_path(), *policy))
+                    .ok_or_else(|| cstr!("Invalid resolved lint configuration index {index}"))
+            })
+            .collect::<Result<_, _>>()?;
+        Ok(Self { files })
     }
 }
 
