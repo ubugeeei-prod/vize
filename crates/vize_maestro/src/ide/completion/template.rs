@@ -45,6 +45,7 @@ use tower_lsp::lsp_types::{CompletionItem, CompletionTextEdit, Position, Range, 
 use super::is_inside_html_comment;
 use crate::ide::IdeContext;
 
+#[cfg(feature = "native")]
 use bindings::analyzed_template_binding_completions;
 use components::builtin_component_completions;
 use globals::template_expression_completions;

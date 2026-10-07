@@ -39,3 +39,9 @@ The identifier provider also runs without native support. Share the existing
 pure member-position classifier across both builds (including its unchanged
 Unicode/numeric tests), so non-native compilation and expression boundaries
 retain the same contract; its OXC identifier dependency was already unconditional.
+
+Source run `37590146726` passed the native-off/on stdio corpus and all four
+tooling shards. Its actual non-native build emitted an unused import warning
+for the legacy helper import, whose remaining caller is native-only. Match
+that import to the caller feature gate; preserve all tests and require a fresh
+successor run and warnings-as-errors feature checks before delivery.
