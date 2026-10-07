@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const html = "<b>x</b>";
+debugger;
+</script>
+
+<template>
+  <div v-html="html" />
+</template>
