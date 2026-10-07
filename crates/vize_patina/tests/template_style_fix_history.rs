@@ -2,14 +2,9 @@
 
 use serde::Deserialize;
 use vize_patina::rules::{
-    opinionated::vue::{
-        ComponentCasing, ComponentNameInTemplateCasing, HtmlSelfClosing,
-        HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
-        NoBooleanAttrValue,
-    },
-    vue::VSlotStyle,
+    ComponentCasing, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions, HtmlSelfClosingStyle,
 };
-use vize_patina::{HelpLevel, JsxLang, LintResult, Linter, RuleRegistry, Severity};
+use vize_patina::{HelpLevel, JsxLang, LintPreset, LintResult, Linter, Severity};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -37,7 +32,14 @@ struct Case {
 }
 
 fn linter(rule: &str, policy: &str) -> Linter {
-    let mut registry = RuleRegistry::new();
+    let rule_name = if rule == "html" {
+        "vue/html-self-closing"
+    } else {
+        "vue/component-name-in-template-casing"
+    };
+    let linter = Linter::with_preset(LintPreset::Incremental)
+        .with_enabled_rules(Some(vec![rule_name.into()]))
+        .with_help_level(HelpLevel::Full);
     if rule == "html" {
         let options = if policy == "never" {
             HtmlSelfClosingOptions {
@@ -52,17 +54,14 @@ fn linter(rule: &str, policy: &str) -> Linter {
         } else {
             HtmlSelfClosingOptions::default()
         };
-        registry.register(Box::new(HtmlSelfClosing::new(options)));
+        linter.with_html_self_closing_options(options)
     } else {
-        registry.register(Box::new(ComponentNameInTemplateCasing::new(
-            if policy == "kebab" {
-                ComponentCasing::KebabCase
-            } else {
-                ComponentCasing::PascalCase
-            },
-        )));
+        linter.with_component_name_in_template_casing(if policy == "kebab" {
+            ComponentCasing::KebabCase
+        } else {
+            ComponentCasing::PascalCase
+        })
     }
-    Linter::with_registry(registry).with_help_level(HelpLevel::Full)
 }
 
 fn lint(linter: &Linter, source: &str, entry: &str) -> LintResult {
@@ -173,12 +172,12 @@ fn whole_authored_style_cases_preserve_diagnostics_edits_and_final_bytes() {
 fn all_four_original_requested_edits_are_complete_and_stable() {
     let source = include_str!("fixtures/issue-7905/CardList.vue.fixture");
     let expected = include_str!("fixtures/issue-7905/original-requested-all-four.vue.fixture");
-    let mut registry = RuleRegistry::new();
-    registry.register(Box::new(HtmlSelfClosing::default()));
-    registry.register(Box::new(ComponentNameInTemplateCasing::default()));
-    registry.register(Box::new(VSlotStyle::default()));
-    registry.register(Box::new(NoBooleanAttrValue));
-    let linter = Linter::with_registry(registry);
+    let linter = Linter::with_preset(LintPreset::Incremental).with_enabled_rules(Some(vec![
+        "vue/html-self-closing".into(),
+        "vue/component-name-in-template-casing".into(),
+        "vue/v-slot-style".into(),
+        "vue/no-boolean-attr-value".into(),
+    ]));
     let result = linter.lint_sfc(source, "CardList.vue");
     assert_eq!(result.diagnostics.len(), 4);
     let fixed = apply_edits(source, &result);

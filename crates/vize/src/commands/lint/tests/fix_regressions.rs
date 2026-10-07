@@ -1,6 +1,6 @@
 use super::super::fix::{apply_lint_fixes, fix_until_stable, lint_source_with_optional_fix};
 use std::{fs, path::Path};
-use vize_patina::{Fix, LintDiagnostic, LintPreset, LintResult, Linter, RuleRegistry, TextEdit};
+use vize_patina::{Fix, LintDiagnostic, LintPreset, LintResult, Linter, TextEdit};
 
 #[test]
 fn apply_lint_fixes_applies_existing_rule_fixes() {
@@ -60,17 +60,16 @@ fn overlapping_binding_fixes_converge_in_one_invocation() {
 
 #[test]
 fn overlapping_component_shape_and_casing_fixes_converge_with_original_file_bytes() {
-    use vize_patina::rules::opinionated::vue::{ComponentNameInTemplateCasing, HtmlSelfClosing};
     let source = include_str!(
         "../../../../../vize_patina/tests/fixtures/issue-7905-template-style/Combined.vue.txt"
     );
     let expected = include_str!(
         "../../../../../vize_patina/tests/fixtures/issue-7905-template-style/Combined.fixed.vue.txt"
     );
-    let mut registry = RuleRegistry::new();
-    registry.register(Box::new(HtmlSelfClosing::default()));
-    registry.register(Box::new(ComponentNameInTemplateCasing::default()));
-    let linter = Linter::with_registry(registry);
+    let linter = Linter::with_preset(LintPreset::Incremental).with_enabled_rules(Some(vec![
+        "vue/html-self-closing".into(),
+        "vue/component-name-in-template-casing".into(),
+    ]));
     let initial = linter.lint_sfc(source, "Combined.vue");
     assert_eq!(initial.error_count, 0);
     assert_eq!(initial.warning_count, 2);
