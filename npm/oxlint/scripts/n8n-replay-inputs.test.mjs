@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { expectedHostCalls } from "./n8n-host-replay.mjs";
 import {
   disabledFiles,
   editorPrefix,
@@ -53,6 +54,13 @@ void test("optional effective hints carry the whole final map; shared hints stay
   for (const override of effective.overrides) {
     const file = override.files[0].replace("**/*.vue", "Example.vue");
     assert.deepEqual(override.settings.vize.rules, effectiveRules(file));
+  }
+  // The native map is usable, but host override settings must remain an
+  // explicit rejected configuration rather than acquiring positive credit.
+  for (const file of ["packages/Other.vue", ...disabledFiles]) {
+    assert.equal(expectedHostCalls(file, "effective"), 0);
+    assert.equal(expectedHostCalls(file, "effective-original"), 0);
+    assert.equal(expectedHostCalls(file, "baseline"), disabledFiles.includes(file) ? 50 : 51);
   }
 });
 

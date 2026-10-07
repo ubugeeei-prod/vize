@@ -32,8 +32,12 @@ and source-built NAPI artifact. Complete stock native packets are compared to
 the foreign packets in every wrapper mode, preserving order, fatal
 multiplicity, unknown fields and status. All wrapper diagnostics and non-timing
 report fields are compared between modes. Every selected finding is also bound
-to its native message and original UTF-8 span. Original import/type-aware,
-script-safe guard and HTML controls continue to run unchanged.
+to its native message and complete original UTF-8 span, including line/column.
+Both hosts must retain the original rejection packet for `overrides[].settings`;
+that unsupported optional syntax grants no effective-map host coverage. Valid
+`override.rules` keeps all frozen option/severity scopes in the positive replay.
+Original import/type-aware, script-safe guard and HTML controls continue to run
+unchanged.
 
 Native load/call records bind the current source HEAD/tree, toolchain and
 physical binary SHA-256. Complete original source is stored once by digest;
@@ -50,7 +54,9 @@ timing credit. Record actual campaign timing without claiming an upstream
 
 Unfinished: frozen settings do not provide `settings.vize.rules`, so the
 unhinted 51-rule path still makes one native call per configured rule. Optional
-hint modes cannot satisfy that missing adoption requirement. Direct SDK
-scriptless callbacks remain unavailable in both pinned hosts; wrapper/native
+hint modes cannot satisfy that missing adoption requirement. SDK
+per-file effective-map batching also remains unmet until an actual-option
+collector qualifies the valid host configuration without override settings.
+Direct SDK scriptless callbacks remain unavailable in both pinned hosts; wrapper/native
 coverage is a separate contract. Retired rules, the excluded n8n-local plugins,
 full workspace configuration and installed release acceptance remain open.

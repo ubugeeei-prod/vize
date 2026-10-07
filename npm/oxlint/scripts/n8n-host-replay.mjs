@@ -79,6 +79,43 @@ export function qualifyN8nHost(engine, version, output, environment) {
       assert.ok([0, 1].includes(result.status), result.stderr);
       assert.equal(result.stderr, "");
       assert.equal(fs.readFileSync(configPath, "utf8"), bytes);
+      if (mode === "effective") {
+        // Neither pinned host accepts settings inside an override. Preserve
+        // this actual rejected packet; the native effective-map API remains
+        // independently qualified, but cannot grant host batching credit.
+        assert.equal(result.status, 1);
+        assert.match(result.stdout, /unknown field `settings`/u);
+        const originalStart = performance.now();
+        const originalResult = spawnSync(process.execPath, [engine, ...args.slice(1)], {
+          cwd: original,
+          encoding: "utf8",
+          timeout: 180_000,
+          maxBuffer: 64 * 1024 * 1024,
+          env: {
+            ...process.env,
+            ...environment,
+            VIZE_N8N_REPLAY_PHASE: `host:${version}:effective-original`,
+          },
+        });
+        capture.push({
+          mode: "effective-original",
+          engine,
+          version,
+          cwd: original,
+          args: [engine, ...args.slice(1)],
+          configBytes: bytes,
+          configSha256: sha256(bytes),
+          elapsedMs: performance.now() - originalStart,
+          ...originalResult,
+        });
+        save();
+        assert.equal(originalResult.error, undefined);
+        assert.equal(originalResult.signal, null);
+        assert.equal(originalResult.status, result.status);
+        assert.equal(originalResult.stdout, result.stdout);
+        assert.equal(originalResult.stderr, result.stderr);
+        continue;
+      }
       const report = (reports[mode] = JSON.parse(result.stdout));
       assert.ok(Array.isArray(report.diagnostics));
       assert.equal(report.number_of_files, inventory.files.length);
@@ -104,7 +141,7 @@ export function qualifyN8nHost(engine, version, output, environment) {
         }
       }
     }
-    for (const mode of ["shared", "effective"]) {
+    for (const mode of ["shared"]) {
       assert.deepEqual(
         reports[mode].diagnostics,
         reports.baseline.diagnostics,
@@ -142,7 +179,16 @@ export function qualifyN8nHost(engine, version, output, environment) {
             end = diagnostic.location.end.offset;
           assert.deepEqual(
             packets[index].labels,
-            [{ span: { offset: start, length: end - start } }],
+            [
+              {
+                span: {
+                  offset: start,
+                  length: end - start,
+                  line: diagnostic.location.start.line,
+                  column: diagnostic.location.start.column,
+                },
+              },
+            ],
             `${row.file}/${requested.rule}: complete original span`,
           );
         }
@@ -163,6 +209,7 @@ export function qualifyN8nHost(engine, version, output, environment) {
         "two n8n-local plugins and unrelated frontend/workspace layers excluded",
         "wrapper qualification does not repair direct SDK scriptless callbacks",
         "no-hint baseline retains per-rule calls; optional hint modes are separate",
+        "per-file effective host batching is unmet: override.settings is rejected; native effective maps are separate",
       ],
     };
     fs.writeFileSync(
@@ -223,7 +270,7 @@ export function verifyNativeCalls(custody, expectedPhases) {
 }
 
 export function expectedHostCalls(file, mode) {
-  if (mode === "stock") return 0;
+  if (["stock", "effective", "effective-original"].includes(mode)) return 0;
   if (mode === "baseline")
     return (
       51 -

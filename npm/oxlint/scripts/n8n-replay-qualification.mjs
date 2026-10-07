@@ -128,7 +128,9 @@ export function finishN8nReplay(replay) {
     "scopedEffectiveBatch",
   ];
   const hostPhases = replay.hosts.flatMap(({ version }) =>
-    ["stock", "baseline", "shared", "effective"].map((mode) => `host:${version}:${mode}`),
+    ["stock", "baseline", "shared", "effective", "effective-original"].map(
+      (mode) => `host:${version}:${mode}`,
+    ),
   );
   const observed = verifyNativeCalls(replay.custody, [
     ...bridgePhases,
@@ -142,7 +144,8 @@ export function finishN8nReplay(replay) {
     const mode = host ? phase.split(":")[2] : phase;
     const root = host ? host.original : replay.inventory.fixture;
     const counts = observed.counts.get(phase) ?? new Map();
-    assert.equal(counts.size, mode === "stock" ? 0 : replay.inventory.files.length);
+    const refused = ["stock", "effective", "effective-original"].includes(mode);
+    assert.equal(counts.size, refused ? 0 : replay.inventory.files.length);
     for (const { file } of replay.inventory.files) {
       const rules = mode.startsWith("frozen") ? manifest.adoption.rules : effectiveRules(file);
       const names = activeNames(rules);
@@ -162,17 +165,16 @@ export function finishN8nReplay(replay) {
       const perFile = observed.calls.get(phase)?.get(filename) ?? [];
       const shared = ["shared", "scopedSharedBatch"].includes(mode);
       const perRule = ["baseline", "frozenPerRule", "scopedPerRule"].includes(mode);
-      const selections =
-        mode === "stock"
-          ? []
-          : perRule
-            ? names.map((name) => [name])
-            : shared
-              ? [
-                  activeNames(manifest.adoption.rules),
-                  ...(file.startsWith(editorPrefix) ? [["vue/attribute-hyphenation"]] : []),
-                ]
-              : [names];
+      const selections = refused
+        ? []
+        : perRule
+          ? names.map((name) => [name])
+          : shared
+            ? [
+                activeNames(manifest.adoption.rules),
+                ...(file.startsWith(editorPrefix) ? [["vue/attribute-hyphenation"]] : []),
+              ]
+            : [names];
       // Hosts may schedule the registered rules in a different callback order.
       // Compare activation multiplicity here, retaining actual call order and
       // all diagnostic arrays verbatim in the separate raw event stream.
@@ -233,7 +235,8 @@ export function finishN8nReplay(replay) {
     hosts: replay.hosts,
     limits: [
       "frozen settings have no active-rule hint: per-rule calls remain unmet for one-call adoption",
-      "optional shared/effective hints are separate supported optimizations",
+      "optional root shared hints and native effective maps are separate supported optimizations",
+      "per-file effective host batching remains unmet; both hosts reject override.settings without native calls",
       "direct SDK scriptless callbacks remain externally unavailable in both pinned hosts",
       "two n8n-local plugins and unrelated native/frontend/workspace layers not qualified",
       "installed packages, retired rules and upstream timing not qualified by this campaign",
