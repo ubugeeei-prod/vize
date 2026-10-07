@@ -77,3 +77,26 @@ Actions receipt and require fresh successor qualification.
 The `ebcac2` JS check rejected two tooling line wraps. Apply the cached pinned
 formatter to only those lines; product behavior, reference bytes and every
 authority hash remain unchanged. Fresh successor Actions remain required.
+
+The complete `7baf12e598` source campaign passed, including four Rust workers,
+the new API/CLI laws, fourteen shared CLI cases, five historical CLI cases and
+the canonical corpus. Admission then encountered genuine current-main
+conflicts before queue entry; root disabled auto-merge. Rebase onto actual
+`b1b9895e21` preserves its trailing-comment and typed-arrow controls and all
+fifteen existing cases, then appends the unchanged #7876 case as case sixteen.
+No production conflict, original input/reference change or ceiling increase
+is involved. The old green campaign grants no successor execution credit.
+
+Preserve the complete incoming main manifest as exact `cb09a449` bytes beside
+the unchanged original thirteen-case `40acde7c` authority. A closed current
+`6ab3a71c` hash accepts only the sixteen-case union: identical original/main
+envelopes, the complete original thirteen-case prefix, main's exact fifteen
+cases and the named directive case. Explicit incoming IDs and both complete
+asset hashes reject dropped/reordered/drifted controls, metadata rebasing and
+symlink escapes. The historical audit still consumes only its original
+thirteen obligations. Incoming main had advanced that audit pin to fifteen;
+the strict authority correctly rejected it. Restore the audit's exact original
+thirteen-case pin and all original audit bytes, while retaining both later
+controls through the main snapshot and closed union. Peer review, regenerated
+current-source inventory and
+fresh exact-head Actions govern root's next admission attempt.

@@ -15,18 +15,22 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const manifest = "tests/_fixtures/differential/formatter/manifest.json";
 const asset =
   "tests/_fixtures/differential/formatter-regressions/directive-print-width-7876/shared-manifest.eed471b.original.json.txt";
+const mainAsset =
+  "tests/_fixtures/differential/formatter-regressions/directive-print-width-7876/shared-manifest.b1b9895.main.json.txt";
 const pin = {
   path: manifest,
   sha256: "40acde7c1eba953724a1a05b60f4744948bb5f48687ed43272981e30bf5c65a4",
   cases: 13,
 };
 
-void test("one closed current CLI extension preserves every original manifest byte", (t) => {
+void test("closed sixteen-case CLI union preserves original thirteen and incoming fifteen", (t) => {
   const current = fs.readFileSync(path.join(root, manifest));
   const original = fs.readFileSync(path.join(root, asset));
+  const main = fs.readFileSync(path.join(root, mainAsset));
   assert.deepEqual(preservedDirectiveWidthCliManifest(root, pin, current), original);
   assert.equal(sha256(original), pin.sha256);
   assert.equal(preservedDirectiveWidthCliManifest(root, pin, original), null);
+  assert.throws(() => preservedDirectiveWidthCliManifest(root, pin, main));
   for (const change of [
     { ...pin, sha256: "0".repeat(64) },
     { ...pin, cases: 14 },
@@ -42,6 +46,8 @@ void test("one closed current CLI extension preserves every original manifest by
     (copy) => copy.cases.reverse(),
     (copy) => (copy.cases[0].inputs.files[0].sha256 = "0".repeat(64)),
     (copy) => (copy.cases[0].expectations.legacy.artifacts[0].sha256 = "0".repeat(64)),
+    (copy) => (copy.cases[13].inputs.files[0].sha256 = "0".repeat(64)),
+    (copy) => (copy.cases[14].expectations.legacy.artifacts[0].sha256 = "0".repeat(64)),
     (copy) => (copy.adapterOptions.passes = 1),
     (copy) => (copy.cases.at(-1).adapters.native = "forged-native"),
   ]) {
@@ -56,15 +62,28 @@ void test("one closed current CLI extension preserves every original manifest by
   );
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "directive-width-cli-authority-"));
   t.after(() => fs.rmSync(scratch, { recursive: true, force: true }));
-  const target = path.join(scratch, asset);
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, original);
+  for (const [ref, bytes] of [
+    [asset, original],
+    [mainAsset, main],
+  ]) {
+    const target = path.join(scratch, ref);
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, bytes);
+  }
   assert.deepEqual(preservedDirectiveWidthCliManifest(scratch, pin, current), original);
-  fs.appendFileSync(target, "\n");
-  assert.throws(() => preservedDirectiveWidthCliManifest(scratch, pin, current));
-  fs.unlinkSync(target);
-  fs.symlinkSync(path.join(root, asset), target);
-  assert.throws(() => preservedDirectiveWidthCliManifest(scratch, pin, current));
+  for (const [ref, bytes] of [
+    [asset, original],
+    [mainAsset, main],
+  ]) {
+    const target = path.join(scratch, ref);
+    fs.appendFileSync(target, "\n");
+    assert.throws(() => preservedDirectiveWidthCliManifest(scratch, pin, current));
+    fs.unlinkSync(target);
+    fs.symlinkSync(path.join(root, ref), target);
+    assert.throws(() => preservedDirectiveWidthCliManifest(scratch, pin, current));
+    fs.unlinkSync(target);
+    fs.writeFileSync(target, bytes);
+  }
 });
 
 void test("historical audit rejects metadata rebasing and a redirected frozen manifest", () => {
@@ -72,7 +91,7 @@ void test("historical audit rejects metadata rebasing and a redirected frozen ma
   const current = fs.readFileSync(path.join(root, manifest));
   for (const changed of [
     { ...audit.cliManifestPin, path: asset },
-    { ...audit.cliManifestPin, sha256: sha256(current), cases: 14 },
+    { ...audit.cliManifestPin, sha256: sha256(current), cases: 16 },
   ]) {
     const copy = structuredClone(audit);
     copy.cliManifestPin = changed;
