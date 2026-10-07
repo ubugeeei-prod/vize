@@ -110,7 +110,7 @@ mod tests {
             "<div v-pre><div> nested </div>\n",
         ] {
             let options = FormatOptions::default();
-            let mut output = source.into();
+            let mut output: super::String = source.into();
             for _ in 0..3 {
                 output = format_template_content_preserving_text(&output, &options, VueVersion::V3)
                     .unwrap();

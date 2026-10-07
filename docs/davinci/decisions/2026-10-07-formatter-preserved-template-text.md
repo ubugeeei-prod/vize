@@ -42,3 +42,9 @@ closing tags also remain authored instead of acquiring a fabricated `>`. Regener
 inventory from source, retain all original300 histories and qualification rules,
 and require fresh successor Actions; the earlier green Rust evidence does not
 qualify the changed successor.
+
+Successor 17d90a39bc Check 37591888006 rejects the added incomplete-region test's
+ambiguous `Into` local as unsized `str`. Explicitly retain the formatter's existing
+compact-string type for the local. Production code, all five complete inputs and
+the three-pass assertions stay unchanged; fresh source compilation and execution
+are required again.
