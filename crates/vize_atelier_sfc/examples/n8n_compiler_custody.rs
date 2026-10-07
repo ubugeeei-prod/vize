@@ -17,10 +17,11 @@ use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
     StyleCompileOptions, TemplateCompileOptions, compile_sfc_for_adapter, parse_sfc,
 };
+#[path = "n8n_compiler_custody/native.rs"]
+mod native;
+
 use vize_l0::Allocator;
-use vize_l1_to_l2::{
-    DomEmitMode, DomEmitOptions, LegacyCaps, emit_dom_source_patch_facts_observed_with_options,
-};
+use vize_l1_to_l2::{DomEmitMode, DomEmitOptions};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = env::args().skip(1).collect::<Vec<_>>();
@@ -62,11 +63,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                     ..Default::default()
                 },
             );
-            let allocator = Allocator::new();
-            let native = emit_dom_source_patch_facts_observed_with_options(
-                &allocator,
+            let native = native::capture(
                 &template.content,
-                LegacyCaps::VUE3,
                 &DomEmitOptions {
                     prefix_identifiers: prefixed,
                     mode: if prefixed {
@@ -81,7 +79,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 "kind": "template", "prefixIdentifiers": prefixed,
                 "legacy": {"preamble": legacy.preamble, "code": legacy.code, "assembled": format!("{}\n{}", legacy.preamble, legacy.code),
                     "errors": errors.iter().map(|e| json!({"code": format!("{:?}", e.code), "message": e.message, "location": e.loc})).collect::<Vec<_>>()},
-                "native": match native { Ok(value) => json!({"assembled": value.emit.assembled(), "patchFactEntries": value.materialized_entries}), Err(error) => json!({"error": format!("{error:#?}")}) }
+                "native": native
             }));
         }
         for inline in [false, true] {
@@ -146,6 +144,33 @@ fn main() -> Result<(), Box<dyn Error>> {
             )?,
         )?;
     }
+    let source = include_str!(
+        "../../../tests/_fixtures/differential/compiler/n8n-default-slot-loop/template.vue.txt"
+    );
+    let allocator = Allocator::new();
+    let (_, errors, legacy) =
+        compile_template_legacy_with_options(&allocator, source, DomCompilerOptions::default());
+    let native = native::capture(source, &DomEmitOptions::DEFAULT);
+    fs::write(
+        Path::new(output_root).join("n8n-default-slot-loop.json"),
+        serde_json::to_vec_pretty(&json!({
+            "path": "tests/_fixtures/differential/compiler/n8n-default-slot-loop/template.vue.txt",
+            "originalSource": source,
+            "rows": [{"kind": "template", "prefixIdentifiers": false,
+                "legacy": {"preamble": legacy.preamble, "code": legacy.code,
+                    "assembled": format!("{}\n{}", legacy.preamble, legacy.code),
+                    "errors": errors.iter().map(|e| json!({"code": format!("{:?}", e.code),
+                        "message": e.message, "location": e.loc})).collect::<Vec<_>>()},
+                "native": native}]
+        }))?,
+    )?;
+    let diagnostic_contract: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/compiler/n8n-if-key-regression/diagnostics.json"
+    ))?;
+    fs::write(
+        Path::new(output_root).join("diagnostic-contract.json"),
+        serde_json::to_vec_pretty(&native::expected_contract(&diagnostic_contract)?)?,
+    )?;
     fs::write(
         Path::new(output_root).join("cases.json"),
         serde_json::to_vec_pretty(&cases)?,
