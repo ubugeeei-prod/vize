@@ -12,6 +12,8 @@
 
 mod support;
 
+use std::fmt::Write;
+
 use sha2::{Digest, Sha256};
 use toml::Value;
 use vize_l0::Span;
@@ -64,6 +66,14 @@ fn text<'a>(value: &'a Value, key: &str) -> &'a str {
     value[key].as_str().expect("capture string")
 }
 
+fn sha256(source: &str) -> std::string::String {
+    let mut hex = std::string::String::with_capacity(64);
+    for byte in Sha256::digest(source.as_bytes()).iter() {
+        write!(&mut hex, "{byte:02x}").expect("write digest byte to owned string");
+    }
+    hex
+}
+
 fn controls() -> Vec<Value> {
     CONTROLS
         .iter()
@@ -80,7 +90,7 @@ fn native_branch_keys_match_the_stock_default_and_prefix_verdicts() {
             "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec"
         );
         assert_eq!(
-            format!("{:x}", Sha256::digest(text(&control, "source").as_bytes())),
+            sha256(text(&control, "source")),
             text(&control, "source_sha256")
         );
         let modes = control["modes"].as_array().expect("two captured modes");
