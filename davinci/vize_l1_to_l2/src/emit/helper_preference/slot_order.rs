@@ -173,7 +173,11 @@ fn first_op_slot_order_marker(op: &Op<'_>) -> Option<SlotOrderMarker> {
         Op::Element(element) if slots::is_slot_template(element) => {
             first_slot_order_marker(&element.children)
         }
-        Op::Element(_) | Op::Component(_) => Some(SlotOrderMarker::VNode),
+        // Ordinary element VNode helpers follow their children's helpers.
+        Op::Element(element) => {
+            first_slot_order_marker(&element.children).or(Some(SlotOrderMarker::VNode))
+        }
+        Op::Component(_) => Some(SlotOrderMarker::VNode),
         Op::If(if_op) => if_op
             .branches
             .iter()

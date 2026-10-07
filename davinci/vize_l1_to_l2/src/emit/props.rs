@@ -123,7 +123,8 @@ pub(super) fn emit_bind_props(
         );
     }
     let pieces = pieces(attributes, bindings, skip_is)?;
-    let normalize = !for_item && has_dynamic_bind_name(bindings, if_key);
+    // The shipped branch emitter writes the keyed object directly.
+    let normalize = !for_item && if_key.is_none() && has_dynamic_bind_name(bindings, if_key);
     if normalize {
         cx.buf.use_normalize_props();
         cx.buf.push(Buf::normalize_props_alias());
