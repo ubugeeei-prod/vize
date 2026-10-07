@@ -29,6 +29,7 @@ const MIXED: &str = include_str!(
 );
 
 fn compile(
+    fixture: &str,
     source: &str,
     filename: &str,
     production: bool,
@@ -66,13 +67,37 @@ fn compile(
     };
     let plain = build(false);
     let mapped = build(true);
+    std::fs::write(
+        custody_file(&vize_l0::cstr!(
+            "vapor-setup-resolution-compile-{fixture}-{production}-{inline}.json"
+        )),
+        serde_json::to_vec(&json!({"fixture":fixture,"source":source,"filename":filename,"production":production,"inline":inline,"plain":plain,"mapped":mapped})).expect("whole compile packet"),
+    ).expect("retain before map assertion");
     assert!(plain.errors.is_empty(), "{:?}", plain.errors);
     assert!(plain.warnings.is_empty(), "{:?}", plain.warnings);
-    assert!(mapped.map.is_some(), "module map");
+    assert_eq!(
+        mapped.map.is_some(),
+        fixture != "Child",
+        "{fixture}: empty Child has no authored script anchors; nonempty modules require maps"
+    );
     let mut no_map = serde_json::to_value(mapped).expect("mapped result");
     *no_map.get_mut("map").expect("map field") = serde_json::Value::Null;
     assert_eq!(serde_json::to_value(&plain).expect("plain result"), no_map);
     plain
+}
+
+fn custody_file(name: &str) -> std::path::PathBuf {
+    let destination = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../target/nextest")
+        .join(
+            if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
+                "full"
+            } else {
+                "pr"
+            },
+        );
+    std::fs::create_dir_all(&destination).expect("custody directory");
+    destination.join(name)
 }
 
 #[test]
@@ -84,8 +109,8 @@ fn recursive_original_and_binding_precedence_mount_like_locked_vue() {
                 ("Imported", "Tree.vue", IMPORTED),
                 ("Mixed", "Mixed.vue", MIXED),
             ] {
-                let output = compile(source, filename, production, inline);
-                let child_output = compile(CHILD, "Child.vue", production, inline);
+                let output = compile(fixture, source, filename, production, inline);
+                let child_output = compile("Child", CHILD, "Child.vue", production, inline);
                 let input = json!({"fixture":fixture,"filename":filename,"source":source,"code":output.code,"child":{"filename":"Child.vue","source":CHILD,"code":child_output.code},"production":production,"inline":inline});
                 let runner = Path::new(env!("CARGO_MANIFEST_DIR"))
                     .join("../../tests/tooling/support/vapor-setup-resolution.mjs");
@@ -102,17 +127,7 @@ fn recursive_original_and_binding_precedence_mount_like_locked_vue() {
                     .expect("stdin")
                     .write_all(input.to_string().as_bytes());
                 let result = child.wait_with_output().expect("reap runtime process");
-                let destination = Path::new(env!("CARGO_MANIFEST_DIR"))
-                    .join("../../target/nextest")
-                    .join(
-                        if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
-                            "full"
-                        } else {
-                            "pr"
-                        },
-                    );
-                std::fs::create_dir_all(&destination).expect("custody directory");
-                std::fs::write(destination.join(vize_l0::cstr!("vapor-setup-resolution-{fixture}-{production}-{inline}.json")), serde_json::to_vec(&json!({"input":input,"success":result.status.success(),"stdout":result.stdout,"stderr":result.stderr,"stdinError":write.as_ref().err().map(ToString::to_string)})).expect("whole raw packet")).expect("retain before assertion");
+                std::fs::write(custody_file(&vize_l0::cstr!("vapor-setup-resolution-{fixture}-{production}-{inline}.json")), serde_json::to_vec(&json!({"input":input,"success":result.status.success(),"stdout":result.stdout,"stderr":result.stderr,"stdinError":write.as_ref().err().map(ToString::to_string)})).expect("whole raw packet")).expect("retain before assertion");
                 write.expect("complete packet");
                 assert!(
                     result.status.success(),

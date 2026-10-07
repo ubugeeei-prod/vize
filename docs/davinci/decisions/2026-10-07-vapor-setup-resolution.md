@@ -30,3 +30,18 @@ browsers and performance are not completion claims from this compatibility
 slice. Exact-source Actions, protected instruction ceilings, actual merge and
 installed publication remain pending. Global directives and experimental Self
 controls retain their existing resolution contracts.
+
+Initial `7ae93e5008` Check `37591830338` worker3 (`112697172268`) failed the
+new module-map-presence assertion before runtime execution. The authored Child
+has an empty setup block: the existing whole-module provenance only anchors
+authored script bytes, so Child requires no map while every nonempty original
+and control still requires one. Full map-on/off return-field equality remains;
+complete compiled packets are now retained before map assertions as well as
+before runtime assertions. The locked official parse uses `ignoreEmpty: false`
+to preserve that exact empty Child script for compileScript. No reported source
+or independent DOM/identity/cleanup expectation changes.
+
+Filename case normalization beyond the reported `Tree.vue` and matching kebab
+tag remains unqualified: the SFC owner currently supplies the raw filename stem,
+so lower-case/kebab filenames versus Pascal tags need a separate acceptance
+control. This TODO grants no closure or native migration credit.

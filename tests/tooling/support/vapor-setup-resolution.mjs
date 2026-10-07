@@ -40,7 +40,7 @@ for (const key of [
 const vue = await loadRuntime({ production: input.production });
 assert.equal(vue.version, compiler.version);
 function official(source, filename) {
-  const parsed = compiler.parse(source, { filename });
+  const parsed = compiler.parse(source, { filename, ignoreEmpty: false });
   assert.deepEqual(parsed.errors, []);
   const compiled = compiler.compileScript(parsed.descriptor, {
     id: filename,

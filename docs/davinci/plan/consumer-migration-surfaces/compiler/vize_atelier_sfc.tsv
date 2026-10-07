@@ -490,6 +490,6 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_refusals/mo
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_refusals/mod.rs	87	l1	L1	stage	vize_l1	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_refusals/mod.rs	87	l2	L2	stage	vize_l2	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_refusals/mod.rs	87	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_resolution.rs	115	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_resolution.rs	71	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_trailing_line_comments.rs	20	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/workspace_prop_types.rs	10	l0	L0	stage	vize_l0	preferred	2
