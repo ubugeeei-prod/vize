@@ -234,6 +234,10 @@ pub fn run(mut args: LintArgs) {
             elapsed,
             cross_file_report.as_deref(),
         );
+    } else if format == OutputFormat::Plain
+        && let Some(tree) = cross_file_report.as_deref()
+    {
+        stdout::write(cstr!("\n{tree}\n").as_bytes());
     }
 
     if args.profile {

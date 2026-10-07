@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { provide } from 'vue'
+import Provider from './Provider.vue'
+provide('upstream', 1)
+</script>
+
+<template>
+  <Provider />
+</template>

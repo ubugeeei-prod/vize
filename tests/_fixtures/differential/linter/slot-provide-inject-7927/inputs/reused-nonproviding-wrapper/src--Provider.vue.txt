@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { provide, ref } from 'vue'
+import Frame from './Frame.vue'
+import Consumer from './Consumer.vue'
+
+const count = ref(0)
+provide('count', count)
+</script>
+
+<template>
+  <Frame><Consumer /></Frame>
+</template>

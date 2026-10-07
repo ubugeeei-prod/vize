@@ -53,12 +53,12 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `EmitDefinition`             |     3 |     3 |
 | `FactConsumer`               |     1 |     4 |
 | `FactGroup`                  |     1 |     1 |
-| `InjectEntry`                |     4 |     8 |
+| `InjectEntry`                |     4 |     7 |
 | `InjectPattern`              |     3 |    13 |
 | `MacroKind`                  |     1 |     1 |
 | `PropDefinition`             |     3 |     3 |
-| `ProvideEntry`               |     2 |     7 |
-| `ProvideKey`                 |     9 |    52 |
+| `ProvideEntry`               |     4 |     9 |
+| `ProvideKey`                 |    11 |    53 |
 | `RaceConditionRisk`          |     2 |     4 |
 | `RaceConditionRiskKind`      |     2 |     3 |
 | `ReactiveKind`               |     5 |    33 |

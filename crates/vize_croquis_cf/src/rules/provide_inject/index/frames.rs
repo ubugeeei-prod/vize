@@ -27,4 +27,3 @@ pub(super) fn frame_contains(frames: &[AncestorFrame], mut index: usize, needle:
         index = parent;
     }
 }
-

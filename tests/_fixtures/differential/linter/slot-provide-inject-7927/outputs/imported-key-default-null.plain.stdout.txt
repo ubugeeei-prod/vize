@@ -1,0 +1,10 @@
+Patina lint report: No problems found in 4 file(s)
+
+## Provide/Inject Tree
+
+**App**
+  **Provider**
+    provide(`"KEY"`) → 1 consumer(s)
+    **Consumer**
+      inject(`"KEY"`) (has default) (provided)
+

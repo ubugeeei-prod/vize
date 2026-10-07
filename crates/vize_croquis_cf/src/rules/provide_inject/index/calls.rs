@@ -20,4 +20,8 @@ pub(super) fn matching_provider<'a>(
         .rev()
         .find(|provide| provide.key == *key)
 }
-
+impl super::ProvideInjectIndex {
+    pub(crate) fn tree_receiver(&self, file: crate::registry::FileId) -> bool {
+        self.slot_scopes.is_receiver(file)
+    }
+}

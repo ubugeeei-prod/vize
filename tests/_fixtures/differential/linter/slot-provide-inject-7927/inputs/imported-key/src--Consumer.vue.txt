@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { inject } from 'vue'
+import { KEY } from './keys'
+
+const count = inject(KEY)
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>

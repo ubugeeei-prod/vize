@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { inject } from 'vue'
+
+const count = inject('count')
+const owner = inject('owner')
+</script>
+
+<template>
+  <div>{{ count }} {{ owner }}</div>
+</template>
