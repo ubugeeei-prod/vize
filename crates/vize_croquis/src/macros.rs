@@ -365,6 +365,8 @@ pub struct MacroTracker {
     expose_incomplete: bool,
     /// Slots from defineSlots
     slots: Vec<SlotsDefinition>,
+    slot_declarations: Vec<Option<(u32, u32)>>,
+    slot_type_argument_range: Option<(u32, u32)>,
     /// Art metadata from defineArt
     art: Option<ArtDefinition>,
     define_options_name: Option<CompactString>,
@@ -470,6 +472,7 @@ impl MacroTracker {
     /// Add a slot definition
     #[inline]
     pub fn add_slot(&mut self, slot: SlotsDefinition) {
+        self.slot_declarations.push(None);
         self.slots.push(slot);
     }
 

@@ -1,6 +1,7 @@
 //! Public slot and expose aliases, captured from the setup and template scopes.
 
 use super::{emits::inner_type_of, generics::module_alias_generic_suffix};
+use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
 use vize_carton::{String, append, cstr};
 use vize_croquis::Croquis;
 
@@ -14,6 +15,7 @@ use vize_croquis::Croquis;
 pub(super) fn emit_slots_type(
     ts: &mut String,
     summary: &Croquis,
+    mut mappings: MacroTypeMappings<'_>,
     generic_injection: Option<&(String, Vec<String>)>,
     export_slots: bool,
     inferred_slots: bool,
@@ -25,7 +27,12 @@ pub(super) fn emit_slots_type(
     let is_generic = if let Some(type_args) = slots_type_args {
         let inner_type = inner_type_of(type_args);
         let suffix = module_alias_generic_suffix(generic_injection, inner_type);
-        append!(*ts, "type __VizeSlots{suffix} = {inner_type};\n");
+        append!(*ts, "type __VizeSlots{suffix} = ");
+        let start = ts.len();
+        ts.push_str(inner_type);
+        let end = ts.len();
+        ts.push_str(";\n");
+        mappings.map_slot_keys(start..end, &summary.macros);
         !suffix.is_empty()
     } else if inferred_slots {
         let (declaration, arguments) = generic_injection
