@@ -23,3 +23,7 @@ original corpus, 79 response answers, 534 acknowledgements, notification
 controls and immutable source/input custody remain unchanged. This admits the
 actual correctness change to the existing full comparison; it supplies no
 performance credit until the exact-source original gate actually executes.
+
+The authored Art fixture is included in the L3 remarks corpus file inventory.
+It has no ordinary template, so this adds membership without changing any
+extraction remarks, explanations or baseline assertions.
