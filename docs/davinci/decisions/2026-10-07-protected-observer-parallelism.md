@@ -176,3 +176,25 @@ stable default. Every invocation retains explicit Rust 1.98.0 and all features.
 The failed run's strict finalizer remained red. No corpus success, queue delivery,
 throughput or full-feature sibling execution is credited to that source head;
 fresh complete source and genuine protected qualification are still required.
+
+## Completed-worker metadata freshness
+
+Protected #8153 candidate 36f3 Check 37642758792 genuinely failed its Rust report
+at 15:39:33Z because the all-attempt API snapshot still marked a required shard
+step in progress; the latest worker itself had completed successfully at
+15:39:24Z. Preserve that failed report, original four Rust workers, full artifacts
+and strict success contract. Retry only when latest completed-success workers
+have exactly one of each required step, with queued/in-progress metadata and a
+null outcome/completion. All other worker and artifact identities, terminal
+outcomes, step order and known execution windows validate before any retry.
+Whole incomplete jobs, missing/duplicate artifacts, malformed/foreign metadata,
+cancellation or failure refuse immediately; no older green fallback is added.
+
+At most six fresh fully paginated all-attempt job/artifact reads use two-second
+delays. Each read verifies workflow source/attempt/repository before and after;
+the latest job IDs/attempts and complete selected artifact identity stay fixed
+across reads. No step is normalized or marked complete. When metadata is ready,
+run the original strict selector again before writing any receipt. Exhaustion
+remains a refusal, and existing output-clearing checks remain required. These
+local synthetic controls grant no repaired genuine protected execution credit;
+fresh hosted source and protected replay remain mandatory.
