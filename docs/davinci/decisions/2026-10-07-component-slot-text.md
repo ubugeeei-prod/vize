@@ -40,3 +40,12 @@ instruction probes, actual signed merge/footer and released installed verificati
 remain pending. Pure corpus custody and configured syntax/format checks provide
 no runtime acceptance. The critical dependency repair #8137 must be an actual
 signed ancestor before source publication; no dependency fix is duplicated here.
+
+Source Check 37588253079 at 20889e14 compiled the changed production libraries,
+then rejected the new test's ungrouped array-method expressions inside `json!`;
+the JS gate also rejected an explicit `undefined` parameter default. Local whole
+module strings and an implicit optional parameter correct those two test-only
+errors without changing production, inputs or assertions. This run executed no
+new Rust laws or DOM cells. Its separate dependency audit newly reports
+GHSA-6qxp-vccf-f47h in MCP SDK 1.30.0; the security owner must repair that actual
+dependency, with no advisory waiver or duplicated dependency edit here.

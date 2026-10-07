@@ -169,11 +169,14 @@ fn original_sfc_and_all_slot_controls_keep_whole_dom_through_updates() {
                     assert!(errors.is_empty(), "{source}: {errors:?}");
                     assert_eq!(current.code, old.code);
                     assert_eq!(current.preamble, old.preamble);
+                    let current_code =
+                        [current.preamble.as_str(), "\n", current.code.as_str()].concat();
+                    let retained_code = [old.preamble.as_str(), "\n", old.code.as_str()].concat();
                     cases.push(json!({ "name": fixture["name"], "source": source,
                         "whitespace": whitespace, "comments": comments,
-                        "current": { "code": [current.preamble.as_str(), "\n", current.code.as_str()].concat(),
+                        "current": { "code": current_code,
                             "errors": [], "map": current.map },
-                        "retained": { "code": [old.preamble.as_str(), "\n", old.code.as_str()].concat(), "map": old.map } }));
+                        "retained": { "code": retained_code, "map": old.map } }));
                 }
                 sfcs.push(json!({ "whitespace": whitespace, "comments": comments,
                     "appSource": APP, "childSource": CHILD,

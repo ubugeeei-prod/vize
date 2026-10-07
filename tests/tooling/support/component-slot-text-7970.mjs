@@ -115,7 +115,7 @@ async function load(code, child = null, module = false) {
   const result = await import(url(transformed));
   return module ? result.default : result.render;
 }
-function stockTemplate(source, row, bindings = undefined) {
+function stockTemplate(source, row, bindings) {
   const result = compiler.compileTemplate({
     source,
     filename: "App.vue",
