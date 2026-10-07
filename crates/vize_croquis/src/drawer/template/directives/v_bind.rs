@@ -31,7 +31,12 @@ impl Drawer {
                     compound_content.as_str()
                 }
             };
-            let loc = exp.loc();
+            // A camelized shorthand value is synthesized from the static
+            // argument; its expression location can be an empty parser span.
+            let loc = match dir.arg.as_ref() {
+                Some(ExpressionNode::Simple(arg)) if dir.shorthand && arg.is_static => &arg.loc,
+                _ => exp.loc(),
+            };
 
             // Collect expression
             if self.options.collect_template_expressions {
