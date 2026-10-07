@@ -32,7 +32,7 @@ transfer those numbers between commits.
 
 | Acceptance requirement         | Required evidence                                                                            | State                                                                     |
 | ------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Complete application fixture   | Pinned gitlink, all `packages/**/*.vue`, exact package/scriptless inventory                  | Added; Actions pending                                                    |
+| Complete application fixture   | Pinned gitlink, all `packages/**/*.vue`, exact package/scriptless inventory                  | Pinned inventory passed; acceptance unfinished                            |
 | Custom rules and options       | All 51 rules, casing/order options, editor-ui warning and six scoped overrides               | Frozen; source plugin acceptance pending                                  |
 | One native call per file       | Custom rule map batching, override/config/source invalidation, matched timing                | Pending [#8144](https://github.com/ubugeeei-prod/vize/issues/8144)        |
 | Accurate diagnostic locations  | Real template coordinates and valid Oxlint script positions; unchanged existing script spans | Pending exact-source adoption replay                                      |
@@ -74,7 +74,7 @@ must pass. Complete raw packets are saved before parity/runtime assertions, so
 a failed gate retains its evidence and receives no completion credit.
 The immutable capture-only commit is
 `f5699c195e627ad26aa1c8efd4a59266120cd9b9`; the reviewed descending repair
-anchor is `8f36b5f15e7f1227cc48232ff991a585a5741b24`. Preserve their real
+anchor is `311e3c8a0e1a42d91381ba3769ef9fcfc6c1f826`. Preserve their real
 commit chain when integrating the existing PR. The ordinary default-mode
 baseline has two complete legacy errors with missing locations; retain those
 `null` locations as failed historical evidence. Its two native diagnostics
@@ -220,3 +220,15 @@ the same source/dependency cohort before claiming a speed-up. n8n's remaining
 ESLint parse cost is separate from bridge overhead. Keep exact-head source,
 merge-queue and installed-package proof separate, and update the owning issue
 when each requirement gains real evidence.
+
+Exact source `9327e0698eb4049b058e6a50f8611ab621764a13` remains failed overall. Check `37628536484` evaluates synthetic merge `adc87b70b7a3a1c4bdb55358e49664366b3615f1`, whose authenticated tree is exactly the owned source tree `0c3b5fb69a862a8e8c6b2baf715dc77e0277023a`. Its complete canonical job `112816629817` passes the strict finalizer: 44,367 files, 43,993 templates, 43,977 comparisons, the unchanged sixteen old-error skips, zero native refusals, zero DOM differences and one diagnosed comparison. The full production scope has 43,992 templates and 37,345 inline/37,346 module whole-output comparisons, both with zero differences. Complete SSR also has zero differences. Artifact `11485889867` retains these current results; the earlier capped 265 DOM and 223 per-mode failures remain historically unclassified.
+
+Native run `37628535030` succeeds. Custody run `37628535012`, artifact `11484817829`, retains sixty complete source/official comparisons and successful hosted mounted runtime with distinct before/current producers. The separate SFC runtime also passes. The entire custody job still fails three of its four actually executed targets: spread-with-key module parity, an original TypeScript input's plain-JS prefix comparison count, and the corresponding helper-registration count. Check additionally fails the path-attributed test layout and single-line prop-comment padding regression. These failures remain fatal and receive no adoption, P0 completion, protected-merge or release credit.
+
+The successor must preserve all original inputs, runtime goldens, independent oracle packets, thirty-three immutable capture drivers, the sixteen-error allowlist and every ceiling. Authored TypeScript prefix comparison must use the original script's TypeScript mode; the unchanged generic plain-JS prefix recipe remains separate, with its actual complete refusal diagnostics retained and independently qualified. No refused mode receives successful module or runtime credit. Every successor requires fresh full source/native/custody/runtime/all-four and unchanged whole canonical zero-difference gates.
+
+The reviewed corrective anchor is `311e3c8a0e1a42d91381ba3769ef9fcfc6c1f826`, genuinely descending from capture baseline `f5699c195e627ad26aa1c8efd4a59266120cd9b9` and signed current main `486c390d81643c16b865754239a987cfe4c9861e`. Historical `8f36b5f15e7f1227cc48232ff991a585a5741b24` and its failed overall `9327` result remain separately recorded. The controlled source merge has no product conflicts. Preserve the complete frozen common decision text plus the signed main's additional cross-file rule configuration clause at line 208; all 350 lines remain intact. The old anchor sentence in that historical common record does not override this corrected immutable workflow pin.
+
+The bounded correction preserves merge-props selection when an authored child key was suppressed, trims only horizontal padding owned by terminal line comments while retaining newline layout, and moves the unchanged empty-props test into ordinary module discovery. Only the two named TypeScript originals opt into their actual SFC-language prefix recipe. All seventeen helper controls and the original one-input comparison counts remain strict; generic prefix JavaScript and all other recipes remain unchanged. Complete wrong-language refusal packets and independently pinned stock records are retained before assertions, separately from admitted typed modules. Source-derived current wrong-JS contracts remain unqualified until fresh hosted execution; old reused baseline packets grant no current-source credit.
+
+Metadata-only pinning changes no producer, immutable capture driver, original file, oracle, runtime golden, skip allowance or ceiling. Fresh source Check/native/custody/runtime/all-four and complete canonical production gates must qualify this corrected source. No adoption or original P0 criterion is closed; protected merge and public release remain required.
