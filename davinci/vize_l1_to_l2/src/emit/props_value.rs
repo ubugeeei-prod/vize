@@ -51,16 +51,22 @@ impl BindValue<'_> {
         // Admission has already retained the AST or safely converted a refused
         // trailing line comment. Layout comes from the original expression's
         // span, never from the converted block comment's byte length.
-        let (raw_source, padding) = match self {
-            Self::Js(js) => (
-                js_expr_source(js),
-                authored_value_padding(cx.source, bind, js.source, js.span),
-            ),
+        let (raw_source, padding, ends_in_line_comment) = match self {
+            Self::Js(js) => {
+                let source = js_expr_source(js);
+                let ends_in_line_comment = source.ends_in_line_comment();
+                (
+                    source,
+                    authored_value_padding(cx.source, bind, js.source, js.span),
+                    ends_in_line_comment,
+                )
+            }
             Self::RawJs(source) => (
                 RawJs::Borrowed(source.as_str()),
                 bind.value.and_then(|expr| {
                     authored_value_padding(cx.source, bind, expr.source(), expr.span())
                 }),
+                source.ends_in_line_comment(),
             ),
         };
         let decoded = raw_source
@@ -69,6 +75,14 @@ impl BindValue<'_> {
             .then(|| decode_html_entities(raw_source.as_str()));
         let source = decoded.as_deref().unwrap_or_else(|| raw_source.as_str());
         if let Some((leading, trailing)) = padding {
+            // Horizontal padding before a line terminator still belongs to the
+            // terminal line comment and was trimmed by the existing rewrite.
+            // Preserve the terminator and all layout bytes that follow it.
+            let trailing = if ends_in_line_comment {
+                trailing.trim_start_matches([' ', '\t', '\u{000B}', '\u{000C}'])
+            } else {
+                trailing
+            };
             cx.buf.push(leading);
             cx.buf.push(source);
             cx.buf.push(trailing);
