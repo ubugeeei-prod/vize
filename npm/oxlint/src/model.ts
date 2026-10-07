@@ -71,6 +71,8 @@ export interface PatinaSettings {
   preset?: PatinaPreset;
   typeAware?: boolean;
   corsaPath?: string;
+  /** Rules to evaluate together. Oxlint's own rules still control reporting. */
+  rules?: readonly string[] | Record<string, unknown>;
 }
 
 export interface PatinaRuleOptions {

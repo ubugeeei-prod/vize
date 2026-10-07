@@ -140,9 +140,9 @@ pub(super) fn generate_vue_virtual_ts(
         collect_script_parse_fallbacks(path, source, descriptor, has_script_projection);
     diagnostics.extend(script_diagnostics.diagnostics);
 
-    // Batch/content-mapper fallback stays intact. Editor projections retain
-    // authored scripts only for unfinished tags while the unusable template AST
-    // remains absent; native TypeScript owns syntax diagnostics for that script.
+    // Batch projections keep the fallback. Editor and Content Mapper projections
+    // retain authored scripts only for unfinished tags while the unusable template
+    // AST remains absent; native TypeScript owns syntax diagnostics for that script.
     if !has_script_projection {
         return Ok(GeneratedVueFile {
             typed_router_import: false,
