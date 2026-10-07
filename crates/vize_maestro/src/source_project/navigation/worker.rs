@@ -133,10 +133,17 @@ impl NavigationWorker {
         live: Arc<AtomicUsize>,
         profile: Profile,
     ) -> Result<Arc<Self>, NavigationRefusal> {
-        live.fetch_update(Ordering::AcqRel, Ordering::Acquire, |count| {
-            (count < WORKER_LIMIT).then_some(count + 1)
-        })
-        .map_err(|_| NavigationRefusal::Capacity)?;
+        let mut count = live.load(Ordering::Acquire);
+        loop {
+            if count >= WORKER_LIMIT {
+                return Err(NavigationRefusal::Capacity);
+            }
+            match live.compare_exchange_weak(count, count + 1, Ordering::AcqRel, Ordering::Acquire)
+            {
+                Ok(_) => break,
+                Err(observed) => count = observed,
+            }
+        }
         let slot = Slot(live);
         let (commands, receiver) = sync_channel(REQUEST_LIMIT);
         let control = Arc::new(Control {

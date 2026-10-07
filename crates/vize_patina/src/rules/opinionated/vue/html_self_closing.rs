@@ -20,10 +20,12 @@
 //! ```
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::{is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
 use vize_relief::{ElementNode, ElementType, Namespace};
+
+mod fix;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/html-self-closing",
@@ -171,17 +173,46 @@ fn check_element<'a>(
 
     match style {
         HtmlSelfClosingStyle::Always if !has_children && !is_self_closing => {
-            ctx.warn_with_help(message, &element.loc, ctx.t("vue/html-self-closing.help"));
+            report(
+                ctx,
+                element,
+                style,
+                message,
+                ctx.t("vue/html-self-closing.help"),
+            );
         }
         HtmlSelfClosingStyle::Never if is_self_closing => {
-            ctx.warn_with_help(
+            report(
+                ctx,
+                element,
+                style,
                 ctx.t("vue/html-self-closing.never"),
-                &element.loc,
                 ctx.t("vue/html-self-closing.never_help"),
             );
         }
         _ => {}
     }
+}
+
+fn report(
+    ctx: &mut LintContext<'_>,
+    element: &ElementNode<'_>,
+    style: HtmlSelfClosingStyle,
+    message: std::borrow::Cow<'_, str>,
+    help: std::borrow::Cow<'_, str>,
+) {
+    let span = element.loc.span;
+    let message: vize_l0::String = message.as_ref().into();
+    let mut diagnostic = LintDiagnostic::warn(ctx.current_rule, message, span.start, span.end);
+    if let Some(processed) = ctx.help_level().process(&help) {
+        diagnostic = diagnostic.with_help(processed);
+    }
+    if !ctx.is_petite_vue()
+        && let Some(fix) = fix::element_fix(ctx.source, element, style, &help)
+    {
+        diagnostic = diagnostic.with_fix(fix);
+    }
+    ctx.report(diagnostic);
 }
 
 #[derive(Clone, Copy)]

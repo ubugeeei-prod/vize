@@ -15,6 +15,8 @@ mod pr_ci;
 mod pr_contract;
 #[path = "../../support/release/pr_github.rs"]
 mod pr_github;
+#[path = "../../support/release/pr_pin.rs"]
+mod pr_pin;
 #[path = "../../support/release/pr_promote.rs"]
 mod pr_promote;
 #[path = "../../support/release/pr_start.rs"]
@@ -45,9 +47,28 @@ fn run() -> Result<(), String> {
         .as_slice()
     {
         ["start", bump] => pr_start::start(bump, &root),
+        ["start", bump, "--pin"] => pr_start::start_pinned(bump, &root),
         ["resume", number] => {
             pr_start::resume(number.parse().map_err(|_| "Invalid PR number")?, &root)
         }
+        ["resume", number, "--pin"] => {
+            pr_start::resume_pinned(number.parse().map_err(|_| "Invalid PR number")?, &root)
+        }
+        [command @ ("validate-pinned" | "wait-promotion-pinned"), number, head, tag] => {
+            let number = number.parse().map_err(|_| "Invalid PR number")?;
+            if *command == "validate-pinned" {
+                pr_ci::validate_pinned(number, head, tag, &root)
+            } else {
+                pr_ci::wait_for_promotion_pinned(number, head, tag, &root)
+            }
+        }
+        ["verify-pinned", number, head, tag, run_id] => pr_pin::verify_published(
+            number.parse().map_err(|_| "Invalid PR number")?,
+            head,
+            tag,
+            run_id.parse().map_err(|_| "Invalid release run number")?,
+            &root,
+        ),
         [command @ ("validate" | "wait-promotion"), number, head, tag] => {
             let number = number.parse().map_err(|_| "Invalid PR number")?;
             if *command == "validate" {
@@ -57,7 +78,7 @@ fn run() -> Result<(), String> {
             }
         }
         _ => Err(
-            "Usage: pr.rs start <bump> | resume <PR> | validate|wait-promotion <PR> <SHA> <tag>"
+            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run>"
                 .into(),
         ),
     }

@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 use futures::channel::oneshot;
 use futures::future::{Either, select};
 
-use super::{BoundedWorker, Job, WorkerError, deadline};
+use super::{BoundedWorker, Job, WorkerError, deadline, retirement};
 
 #[derive(Default)]
 struct JobState {
@@ -19,6 +19,7 @@ struct JobState {
 struct Lifetime {
     state: Arc<Mutex<JobState>>,
     abandoned: Arc<AtomicUsize>,
+    control: retirement::Control,
 }
 
 impl Lifetime {
@@ -29,6 +30,7 @@ impl Lifetime {
             .unwrap_or_else(std::sync::PoisonError::into_inner);
         if !state.finished && !state.abandoned {
             state.abandoned = true;
+            self.control.retire();
             self.abandoned.fetch_add(1, Ordering::AcqRel);
         }
     }
@@ -88,7 +90,7 @@ impl<T: Send + 'static> BoundedWorker<T> {
     /// Queue the requested semantic operation behind the retained IPC owner.
     /// Waiting for that owner consumes this operation's original deadline;
     /// cancellation still skips the operation if it has not entered the worker.
-    pub(in crate::corsa_bridge) async fn submit_ready_async<R, F>(
+    pub(crate) async fn submit_ready_async<R, F>(
         &self,
         duration: Duration,
         f: F,
@@ -113,6 +115,7 @@ impl<T: Send + 'static> BoundedWorker<T> {
         let lifetime = Lifetime {
             state: Arc::new(Mutex::new(JobState::default())),
             abandoned: Arc::clone(&self.abandoned),
+            control: retirement::Control::new(),
         };
         let cancellation = Cancellation(lifetime.clone());
         // Construct this before queueing: even a worker panic that drops its
@@ -123,7 +126,10 @@ impl<T: Send + 'static> BoundedWorker<T> {
             if completion.0.cancelled() {
                 return;
             }
-            let value = f(state);
+            let value = {
+                let _operation = completion.0.control.enter();
+                f(state)
+            };
             drop(completion);
             let _ = reply.send(value);
         });

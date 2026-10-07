@@ -1,0 +1,23 @@
+{
+  "schema": "vize.formatter-current-snapshot-refinement",
+  "version": 1,
+  "issue": 7866,
+  "law": "L090",
+  "function": "test_format_nested_css_at_rule",
+  "source": {
+    "path": "crates/vize_glyph/src/style.rs",
+    "originalSha256": "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61",
+    "functionSha256": "8e0bf6f220ae5a4835ee7f70023c216a1a4f1dea16990f1cda52af29e9b998e8"
+  },
+  "historicalSnapshot": {
+    "path": "tests/_fixtures/differential/formatter-history/snapshot-witnesses/nested-css-at-rule.pre-7866.snap",
+    "sha256": "aba736ea0f41a939bb08cc84885c82f46b0d80376b6cae388de83107691869d4"
+  },
+  "currentSnapshot": {
+    "path": "crates/vize_glyph/src/snapshots/vize_glyph__style__tests__format_nested_css_at_rule.snap",
+    "sha256": "5ea562b78c25145d1abfccafdf76698168fdc55563a24ccd196c4a633aede4f0"
+  },
+  "historicalExpected": "@media (min-width: 640px) {\n  .container {\n    color:red\n  }\n}\n",
+  "currentExpected": "@media (min-width: 640px) {\n  .container {\n    color: red;\n  }\n}\n",
+  "justification": "Recognized ordinary declaration gains one colon space and its final semicolon; the complete authored value red and rule layout remain exact. Original Rust law body and archived complete snapshot stay immutable; current live snapshot carries no original public-output byte credit."
+}

@@ -1,0 +1,368 @@
+[1m[92m    Updating[0m crates.io index
+[1m[92m    Updating[0m git repository `https://github.com/oxc-project/oxc`
+[1m[92m Downloading[0m crates ...
+[1m[92m  Downloaded[0m alloca v0.4.0
+[1m[92m  Downloaded[0m adler2 v2.0.1
+[1m[92m  Downloaded[0m cpufeatures v0.3.0
+[1m[92m  Downloaded[0m clap_lex v1.1.0
+[1m[92m  Downloaded[0m crypto-common v0.2.1
+[1m[92m  Downloaded[0m cow-utils v0.1.3
+[1m[92m  Downloaded[0m rustversion v1.0.22
+[1m[92m  Downloaded[0m cfg-if v1.0.4
+[1m[92m  Downloaded[0m psm v0.1.31
+[1m[92m  Downloaded[0m pastey v0.1.1
+[1m[92m  Downloaded[0m anstyle v1.0.14
+[1m[92m  Downloaded[0m hmac-sha1-compact v1.1.7
+[1m[92m  Downloaded[0m mimalloc v0.1.52
+[1m[92m  Downloaded[0m autocfg v1.5.0
+[1m[92m  Downloaded[0m ciborium-io v0.2.2
+[1m[92m  Downloaded[0m rustc-hash v2.1.3
+[1m[92m  Downloaded[0m crossbeam-deque v0.8.6
+[1m[92m  Downloaded[0m anes v0.1.6
+[1m[92m  Downloaded[0m criterion-plot v0.8.2
+[1m[92m  Downloaded[0m seq-macro v0.3.6
+[1m[92m  Downloaded[0m console v0.16.3
+[1m[92m  Downloaded[0m crossbeam-epoch v0.9.20
+[1m[92m  Downloaded[0m dashmap v6.2.1
+[1m[92m  Downloaded[0m block-buffer v0.12.0
+[1m[92m  Downloaded[0m cssparser-macros v0.7.0
+[1m[92m  Downloaded[0m outref v0.5.2
+[1m[92m  Downloaded[0m scopeguard v1.2.0
+[1m[92m  Downloaded[0m same-file v1.0.6
+[1m[92m  Downloaded[0m base64-simd v0.8.0
+[1m[92m  Downloaded[0m castaway v0.2.4
+[1m[92m  Downloaded[0m ciborium v0.2.2
+[1m[92m  Downloaded[0m allocator-api2 v0.2.21
+[1m[92m  Downloaded[0m dtoa-short v0.3.5
+[1m[92m  Downloaded[0m self_cell v1.2.2
+[1m[92m  Downloaded[0m const-oid v0.10.2
+[1m[92m  Downloaded[0m crossbeam-utils v0.8.21
+[1m[92m  Downloaded[0m cast v0.3.0
+[1m[92m  Downloaded[0m index_vec v0.1.4
+[1m[92m  Downloaded[0m percent-encoding v2.3.2
+[1m[92m  Downloaded[0m equivalent v1.0.2
+[1m[92m  Downloaded[0m cobs v0.3.0
+[1m[92m  Downloaded[0m serde v1.0.228
+[1m[92m  Downloaded[0m memoffset v0.9.1
+[1m[92m  Downloaded[0m either v1.15.0
+[1m[92m  Downloaded[0m serde_spanned v1.1.1
+[1m[92m  Downloaded[0m errno v0.3.14
+[1m[92m  Downloaded[0m ciborium-ll v0.2.2
+[1m[92m  Downloaded[0m phf_generator v0.13.1
+[1m[92m  Downloaded[0m embedded-io v0.6.1
+[1m[92m  Downloaded[0m embedded-io v0.4.0
+[1m[92m  Downloaded[0m nonmax v0.5.5
+[1m[92m  Downloaded[0m plotters-svg v0.3.7
+[1m[92m  Downloaded[0m phf_codegen v0.13.1
+[1m[92m  Downloaded[0m phf_shared v0.13.1
+[1m[92m  Downloaded[0m plotters-backend v0.3.7
+[1m[92m  Downloaded[0m unicode-linebreak v0.1.5
+[1m[92m  Downloaded[0m lock_api v0.4.14
+[1m[92m  Downloaded[0m owo-colors v4.3.0
+[1m[92m  Downloaded[0m phf_macros v0.14.0
+[1m[92m  Downloaded[0m digest v0.11.2
+[1m[92m  Downloaded[0m fastrand v2.4.1
+[1m[92m  Downloaded[0m find-msvc-tools v0.1.9
+[1m[92m  Downloaded[0m num-integer v0.1.46
+[1m[92m  Downloaded[0m phf_macros v0.13.1
+[1m[92m  Downloaded[0m dtoa v1.0.11
+[1m[92m  Downloaded[0m oxc_index v5.0.0
+[1m[92m  Downloaded[0m phf_shared v0.14.0
+[1m[92m  Downloaded[0m quote v1.0.45
+[1m[92m  Downloaded[0m smawk v0.3.2
+[1m[92m  Downloaded[0m oxc-miette-derive v3.0.1
+[1m[92m  Downloaded[0m page_size v0.6.0
+[1m[92m  Downloaded[0m phf v0.13.1
+[1m[92m  Downloaded[0m phf_generator v0.14.0
+[1m[92m  Downloaded[0m oorandom v11.1.5
+[1m[92m  Downloaded[0m ar_archive_writer v0.5.3
+[1m[92m  Downloaded[0m getrandom v0.3.4
+[1m[92m  Downloaded[0m once_cell v1.21.4
+[1m[92m  Downloaded[0m phf v0.14.0
+[1m[92m  Downloaded[0m stacker v0.1.25
+[1m[92m  Downloaded[0m which v8.0.5
+[1m[92m  Downloaded[0m cssparser v0.37.0
+[1m[92m  Downloaded[0m hybrid-array v0.4.10
+[1m[92m  Downloaded[0m postcard v1.1.3
+[1m[92m  Downloaded[0m parking_lot_core v0.9.12
+[1m[92m  Downloaded[0m bitflags v2.13.1
+[1m[92m  Downloaded[0m clap v4.6.6
+[1m[92m  Downloaded[0m dragonbox_ecma v0.1.12
+[1m[92m  Downloaded[0m half v2.7.1
+[1m[92m  Downloaded[0m json-escape-simd v3.0.2
+[1m[92m  Downloaded[0m num-traits v0.2.19
+[1m[92m  Downloaded[0m miniz_oxide v0.9.1
+[1m[92m  Downloaded[0m oxc_sourcemap v8.1.2
+[1m[92m  Downloaded[0m proc-macro2 v1.0.106
+[1m[92m  Downloaded[0m base64 v0.23.0
+[1m[92m  Downloaded[0m htmlize v1.1.0
+[1m[92m  Downloaded[0m shlex v1.3.0
+[1m[92m  Downloaded[0m siphasher v1.0.3
+[1m[92m  Downloaded[0m static_assertions v1.1.0
+[1m[92m  Downloaded[0m toml_writer v1.1.2+spec-1.1.0
+[1m[92m  Downloaded[0m cc v1.2.62
+[1m[92m  Downloaded[0m criterion v0.8.2
+[1m[92m  Downloaded[0m num-bigint v0.5.1
+[1m[92m  Downloaded[0m oxc-miette v3.0.1
+[1m[92m  Downloaded[0m ropey v1.6.1
+[1m[92m  Downloaded[0m sha2 v0.11.0
+[1m[92m  Downloaded[0m simdutf8 v0.1.5
+[1m[92m  Downloaded[0m str_indices v0.4.4
+[1m[92m  Downloaded[0m tinytemplate v1.2.1
+[1m[92m  Downloaded[0m toml_parser v1.1.3+spec-1.1.0
+[1m[92m  Downloaded[0m xxhash-rust v0.8.18
+[1m[92m  Downloaded[0m indexmap v2.14.0
+[1m[92m  Downloaded[0m thin-vec v0.2.20
+[1m[92m  Downloaded[0m thiserror v2.0.20
+[1m[92m  Downloaded[0m thiserror-impl v2.0.20
+[1m[92m  Downloaded[0m toml_datetime v1.1.1+spec-1.1.0
+[1m[92m  Downloaded[0m vsimd v0.8.0
+[1m[92m  Downloaded[0m walkdir v2.5.0
+[1m[92m  Downloaded[0m aho-corasick v1.1.4
+[1m[92m  Downloaded[0m compact_str v0.10.0
+[1m[92m  Downloaded[0m insta v1.48.0
+[1m[92m  Downloaded[0m oxc-browserslist v3.0.12
+[1m[92m  Downloaded[0m plotters v0.3.7
+[1m[92m  Downloaded[0m smallvec v1.15.2
+[1m[92m  Downloaded[0m clap_builder v4.6.6
+[1m[92m  Downloaded[0m hashbrown v0.14.5
+[1m[92m  Downloaded[0m unicode-id-start v1.4.0
+[1m[92m  Downloaded[0m hashbrown v0.17.1
+[1m[92m  Downloaded[0m itertools v0.13.0
+[1m[92m  Downloaded[0m itertools v0.15.0
+[1m[92m  Downloaded[0m unicode-ident v1.0.24
+[1m[92m  Downloaded[0m zmij v1.0.21
+[1m[92m  Downloaded[0m serde_core v1.0.228
+[1m[92m  Downloaded[0m similar v2.7.0
+[1m[92m  Downloaded[0m tempfile v3.27.0
+[1m[92m  Downloaded[0m libmimalloc-sys v0.1.49
+[1m[92m  Downloaded[0m toml_edit v0.25.11+spec-1.1.0
+[1m[92m  Downloaded[0m object v0.39.1
+[1m[92m  Downloaded[0m rayon-core v1.13.0
+[1m[92m  Downloaded[0m serde_derive v1.0.228
+[1m[92m  Downloaded[0m textwrap v0.16.2
+[1m[92m  Downloaded[0m toml v1.1.4+spec-1.1.0
+[1m[92m  Downloaded[0m zerocopy-derive v0.8.48
+[1m[92m  Downloaded[0m regex-lite v0.1.9
+[1m[92m  Downloaded[0m typenum v1.20.0
+[1m[92m  Downloaded[0m unicode-segmentation v1.13.3
+[1m[92m  Downloaded[0m libc v0.2.189
+[1m[92m  Downloaded[0m serde_json v1.0.149
+[1m[92m  Downloaded[0m rayon v1.12.0
+[1m[92m  Downloaded[0m winnow v1.0.1
+[1m[92m  Downloaded[0m unicode-width v0.2.2
+[1m[92m  Downloaded[0m rustix v1.1.4
+[1m[92m  Downloaded[0m zerocopy v0.8.48
+[1m[92m  Downloaded[0m syn v3.0.5
+[1m[92m  Downloaded[0m syn v2.0.117
+[1m[92m  Downloaded[0m linux-raw-sys v0.12.1
+[1m[92m   Compiling[0m proc-macro2 v1.0.106
+[1m[92m   Compiling[0m quote v1.0.45
+[1m[92m   Compiling[0m unicode-ident v1.0.24
+[1m[92m   Compiling[0m serde_core v1.0.228
+[1m[92m   Compiling[0m serde v1.0.228
+[1m[92m   Compiling[0m siphasher v1.0.3
+[1m[92m   Compiling[0m cfg-if v1.0.4
+[1m[92m   Compiling[0m zmij v1.0.21
+[1m[92m   Compiling[0m itoa v1.0.18
+[1m[92m   Compiling[0m fastrand v2.4.1
+[1m[92m   Compiling[0m memchr v2.8.3
+[1m[92m   Compiling[0m thiserror v2.0.20
+[1m[92m   Compiling[0m allocator-api2 v0.2.21
+[1m[92m   Compiling[0m rustversion v1.0.22
+[1m[92m   Compiling[0m rustc-hash v2.1.3
+[1m[92m   Compiling[0m shlex v1.3.0
+[1m[92m   Compiling[0m owo-colors v4.3.0
+[1m[92m   Compiling[0m find-msvc-tools v0.1.9
+[1m[92m   Compiling[0m str_indices v0.4.4
+[1m[92m   Compiling[0m smawk v0.3.2
+[1m[92m   Compiling[0m unicode-linebreak v0.1.5
+[1m[92m   Compiling[0m unicode-width v0.2.2
+[1m[92m   Compiling[0m unicode-segmentation v1.13.3
+[1m[92m   Compiling[0m static_assertions v1.1.0
+[1m[92m   Compiling[0m libc v0.2.189
+[1m[92m   Compiling[0m oxc_estree v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m autocfg v1.5.0
+[1m[92m   Compiling[0m dragonbox_ecma v0.1.12
+[1m[92m   Compiling[0m cow-utils v0.1.3
+[1m[92m   Compiling[0m nonmax v0.5.5
+[1m[92m   Compiling[0m unicode-id-start v1.4.0
+[1m[92m   Compiling[0m object v0.39.1
+[1m[92m   Compiling[0m serde_json v1.0.149
+[1m[92m   Compiling[0m percent-encoding v2.3.2
+[1m[92m   Compiling[0m once_cell v1.21.4
+[1m[92m   Compiling[0m simdutf8 v0.1.5
+[1m[92m   Compiling[0m phf_shared v0.14.0
+[1m[92m   Compiling[0m phf_shared v0.13.1
+[1m[92m   Compiling[0m cc v1.2.62
+[1m[92m   Compiling[0m xxhash-rust v0.8.18
+[1m[92m   Compiling[0m either v1.15.0
+[1m[92m   Compiling[0m dtoa v1.0.11
+[1m[92m   Compiling[0m crossbeam-utils v0.8.21
+[1m[92m   Compiling[0m seq-macro v0.3.6
+[1m[92m   Compiling[0m pastey v0.1.1
+[1m[92m   Compiling[0m textwrap v0.16.2
+[1m[92m   Compiling[0m self_cell v1.2.2
+[1m[92m   Compiling[0m equivalent v1.0.2
+[1m[92m   Compiling[0m dtoa-short v0.3.5
+[1m[92m   Compiling[0m adler2 v2.0.1
+[1m[92m   Compiling[0m vsimd v0.8.0
+[1m[92m   Compiling[0m regex-syntax v0.8.11
+[1m[92m   Compiling[0m outref v0.5.2
+[1m[92m   Compiling[0m phf v0.14.0
+[1m[92m   Compiling[0m phf_generator v0.14.0
+[1m[92m   Compiling[0m hashbrown v0.17.1
+[1m[92m   Compiling[0m phf_generator v0.13.1
+[1m[92m   Compiling[0m phf v0.13.1
+[1m[92m   Compiling[0m itertools v0.15.0
+[1m[92m   Compiling[0m miniz_oxide v0.9.1
+[1m[92m   Compiling[0m oxc_sourcemap v8.1.2
+[1m[92m   Compiling[0m json-escape-simd v3.0.2
+[1m[92m   Compiling[0m parking_lot_core v0.9.12
+[1m[92m   Compiling[0m scopeguard v1.2.0
+[1m[92m   Compiling[0m base64 v0.23.0
+[1m[92m   Compiling[0m num-traits v0.2.19
+[1m[92m   Compiling[0m hmac-sha1-compact v1.1.7
+[1m[92m   Compiling[0m memoffset v0.9.1
+[1m[92m   Compiling[0m phf_codegen v0.13.1
+[1m[92m   Compiling[0m lock_api v0.4.14
+[1m[92m   Compiling[0m crossbeam-epoch v0.9.20
+[1m[92m   Compiling[0m hashbrown v0.14.5
+[1m[92m   Compiling[0m zerocopy v0.8.48
+[1m[92m   Compiling[0m index_vec v0.1.4
+[1m[92m   Compiling[0m aho-corasick v1.1.4
+[1m[92m   Compiling[0m typenum v1.20.0
+[1m[92m   Compiling[0m thin-vec v0.2.20
+[1m[92m   Compiling[0m rayon-core v1.13.0
+[1m[92m   Compiling[0m getrandom v0.3.4
+[1m[92m   Compiling[0m winnow v1.0.1
+[1m[92m   Compiling[0m plotters-backend v0.3.7
+[1m[92m   Compiling[0m clap_lex v1.1.0
+[1m[92m   Compiling[0m rustix v1.1.4
+[1m[92m   Compiling[0m base64-simd v0.8.0
+[1m[92m   Compiling[0m anstyle v1.0.14
+[1m[92m   Compiling[0m ciborium-io v0.2.2
+[1m[92m   Compiling[0m castaway v0.2.4
+[1m[92m   Compiling[0m itertools v0.13.0
+[1m[92m   Compiling[0m plotters-svg v0.3.7
+[1m[92m   Compiling[0m cast v0.3.0
+[1m[92m   Compiling[0m toml_writer v1.1.2+spec-1.1.0
+[1m[92m   Compiling[0m same-file v1.0.6
+[1m[92m   Compiling[0m clap_builder v4.6.6
+[1m[92m   Compiling[0m const-oid v0.10.2
+[1m[92m   Compiling[0m linux-raw-sys v0.12.1
+[1m[92m   Compiling[0m regex-lite v0.1.9
+[1m[92m   Compiling[0m anes v0.1.6
+[1m[92m   Compiling[0m oorandom v11.1.5
+[1m[92m   Compiling[0m syn v2.0.117
+[1m[92m   Compiling[0m syn v3.0.5
+[1m[92m   Compiling[0m indexmap v2.14.0
+[1m[92m   Compiling[0m walkdir v2.5.0
+[1m[92m   Compiling[0m crossbeam-deque v0.8.6
+[1m[92m   Compiling[0m cpufeatures v0.3.0
+[1m[92m   Compiling[0m similar v2.7.0
+[1m[92m   Compiling[0m stacker v0.1.25
+[1m[92m   Compiling[0m libmimalloc-sys v0.1.49
+[1m[92m   Compiling[0m alloca v0.4.0
+[1m[92m   Compiling[0m which v8.0.5
+[1m[92m   Compiling[0m page_size v0.6.0
+[1m[92m   Compiling[0m console v0.16.3
+[1m[92m   Compiling[0m num-integer v0.1.46
+[1m[92m   Compiling[0m plotters v0.3.7
+[1m[92m   Compiling[0m hybrid-array v0.4.10
+[1m[92m   Compiling[0m num-bigint v0.5.1
+[1m[92m   Compiling[0m rayon v1.12.0
+[1m[92m   Compiling[0m toml_parser v1.1.3+spec-1.1.0
+[1m[92m   Compiling[0m block-buffer v0.12.0
+[1m[92m   Compiling[0m crypto-common v0.2.1
+[1m[92m   Compiling[0m regex-automata v0.4.18
+[1m[92m   Compiling[0m criterion-plot v0.8.2
+[1m[92m   Compiling[0m bitflags v2.13.1
+[1m[92m   Compiling[0m serde_spanned v1.1.1
+[1m[92m   Compiling[0m toml_datetime v1.1.1+spec-1.1.0
+[1m[92m   Compiling[0m digest v0.11.2
+[1m[92m   Compiling[0m toml_edit v0.25.11+spec-1.1.0
+[1m[92m   Compiling[0m toml v1.1.4+spec-1.1.0
+[1m[92m   Compiling[0m sha2 v0.11.0
+[1m[92m   Compiling[0m mimalloc v0.1.52
+[1m[92m   Compiling[0m clap v4.6.6
+[1m[92m   Compiling[0m htmlize v1.1.0
+[1m[92m   Compiling[0m thiserror-impl v2.0.20
+[1m[92m   Compiling[0m oxc_ast_macros v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m serde_derive v1.0.228
+[1m[92m   Compiling[0m oxc-miette-derive v3.0.1
+[1m[92m   Compiling[0m phf_macros v0.14.0
+[1m[92m   Compiling[0m phf_macros v0.13.1
+[1m[92m   Compiling[0m vize_l0_derive v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l0_derive)
+[1m[92m   Compiling[0m cssparser-macros v0.7.0
+[1m[92m   Compiling[0m zerocopy-derive v0.8.48
+[1m[92m   Compiling[0m ar_archive_writer v0.5.3
+[1m[92m   Compiling[0m tempfile v3.27.0
+[1m[92m   Compiling[0m regex v1.13.1
+[1m[92m   Compiling[0m cobs v0.3.0
+[1m[92m   Compiling[0m psm v0.1.31
+[1m[92m   Compiling[0m oxc-miette v3.0.1
+[1m[92m   Compiling[0m oxc_diagnostics v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m smallvec v1.15.2
+[1m[92m   Compiling[0m compact_str v0.10.0
+[1m[92m   Compiling[0m oxc_index v5.0.0
+[1m[92m   Compiling[0m postcard v1.1.3
+[1m[92m   Compiling[0m tinytemplate v1.2.1
+[1m[92m   Compiling[0m insta v1.48.0
+[1m[92m   Compiling[0m ropey v1.6.1
+[1m[92m   Compiling[0m cssparser v0.37.0
+[1m[92m   Compiling[0m oxc-browserslist v3.0.12
+[1m[92m   Compiling[0m dashmap v6.2.1
+[1m[92m   Compiling[0m oxc_data_structures v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m oxc_allocator v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m oxc_str v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m oxc_span v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m oxc_syntax v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m oxc_regular_expression v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m half v2.7.1
+[1m[92m   Compiling[0m ciborium-ll v0.2.2
+[1m[92m   Compiling[0m vize_l0 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l0)
+[1m[92m   Compiling[0m oxc_compat v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m ciborium v0.2.2
+[1m[92m   Compiling[0m oxc_ast v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m criterion v0.8.2
+[1m[92m   Compiling[0m vize_carton v0.435.1 (/home/runner/_work/vize/vize/crates/vize_carton)
+[1m[92m   Compiling[0m davinci_test_support v0.435.1 (/home/runner/_work/vize/vize/tests/davinci_test_support)
+[1m[92m   Compiling[0m davinci_harness v0.435.1 (/home/runner/_work/vize/vize/tools/benchmarks/crates/davinci_harness)
+[1m[92m   Compiling[0m oxc_ast_visit v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m oxc_ecmascript v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m vize_oxc_parser v0.435.1 (/home/runner/_work/vize/vize/vendor/oxc_parser)
+[1m[92m   Compiling[0m oxc_semantic v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m vize_relief v0.435.1 (/home/runner/_work/vize/vize/crates/vize_relief)
+[1m[92m   Compiling[0m oxc_traverse v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m oxc_codegen v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m vize_l1 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l1)
+[1m[92m   Compiling[0m oxc_transformer v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+[1m[92m   Compiling[0m vize_l2 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l2)
+[1m[92m   Compiling[0m vize_armature v0.435.1 (/home/runner/_work/vize/vize/crates/vize_armature)
+[1m[92m   Compiling[0m vize_l3 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l3)
+[1m[92m   Compiling[0m vize_l1_to_l2 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l1_to_l2)
+[1m[92m   Compiling[0m vize_croquis v0.435.1 (/home/runner/_work/vize/vize/crates/vize_croquis)
+[1m[92m   Compiling[0m vize_l2_to_l3 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l2_to_l3)
+[1m[92m   Compiling[0m vize_l4 v0.435.1 (/home/runner/_work/vize/vize/davinci/vize_l4)
+[1m[92m   Compiling[0m vize_atelier_core v0.435.1 (/home/runner/_work/vize/vize/crates/vize_atelier_core)
+[1m[92m   Compiling[0m vize_atelier_dom v0.435.1 (/home/runner/_work/vize/vize/crates/vize_atelier_dom)
+[1m[92m   Compiling[0m vize_atelier_ssr v0.435.1 (/home/runner/_work/vize/vize/crates/vize_atelier_ssr)
+[1m[92m   Compiling[0m vize_atelier_vapor v0.435.1 (/home/runner/_work/vize/vize/crates/vize_atelier_vapor)
+[1m[92m   Compiling[0m vize_atelier_sfc v0.435.1 (/home/runner/_work/vize/vize/crates/vize_atelier_sfc)
+[1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 35.48s
+[1m[92m     Running[0m tests/davinci_dom_corpus.rs (target/debug/deps/davinci_dom_corpus-4114028d2c586560)
+
+running 4 tests
+test canonical_invalid_fixture_allowlist_is_exact ... ok
+test unrelated_invalid_end_tag_still_blocks_old_lane_comparison ... ok
+test nested_anchor_and_button_recoveries_are_compared_not_skipped ... ok
+davinci-differential corpus scope: root=/home/runner/_work/vize/vize/tests/davinci_test_support/../../tests/_fixtures/_git scope=canonical closure_evidence=true submodules=147
+davinci DOM corpus sweep: files=37487 unreadable=0 parsed=37487 templates=37194 compared=37185 patch_fact_entries=349192 old_error_skips=9 s2_refusals=0 divergences=0
+davinci DOM corpus refusal reasons: {}
+davinci DOM corpus old-lane error reasons: {"ExtendPoint": 1, "InvalidEndTag": 16, "MissingEndTag": 10, "VElseNoAdjacentIf": 1, "VIfSameKey": 4, "VSlotDuplicateSlotNames": 1}
+davinci DOM corpus refusal samples: {}
+test dom_emit_agrees_on_sfc_templates ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 32.85s
+

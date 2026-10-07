@@ -11,9 +11,9 @@ pub(super) fn format_file_source(
     source: &str,
     options: &FormatOptions,
     allocator: &Allocator,
-    vue_version: VueVersion,
-    sort_imports: Option<&vize_glyph::ImportSortOptions>,
+    formatting: (VueVersion, Option<&vize_glyph::ImportSortOptions>, bool),
 ) -> Result<FormatResult, vize_glyph::FormatError> {
+    let (vue_version, sort_imports, preserve_template_whitespace) = formatting;
     if let Some(source_type) = script_source_type_for_path(path) {
         let code = profile!(
             "cli.fmt.file.format_script",
@@ -32,6 +32,7 @@ pub(super) fn format_file_source(
         "cli.fmt.file.format_sfc",
         GlyphFormatter::new_with_vue_version(options, allocator, vue_version)
             .with_sort_imports(sort_imports)
+            .with_template_whitespace_preserved(preserve_template_whitespace)
             .format(source)
     )
 }

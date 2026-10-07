@@ -109,12 +109,16 @@ void test("public native evidence remains reachable after prior build or package
   assert.equal(seam.if, selectedHistory);
   assert.equal(seam["continue-on-error"], undefined);
   assert.equal(history.runs.using, "composite");
-  assert.equal(history.runs.steps.length, 3);
-  const [execute, upload, oxlint] = history.runs.steps;
+  assert.equal(history.runs.steps.length, 5);
+  const [execute, qualification, upload, style, oxlint] = history.runs.steps;
   assert.equal(execute.if, "${{ success() && job.status == 'success' }}");
   assert.equal(execute.shell, "bash");
   assert.equal(execute.run, "vp run --workspace-root test:js");
   assert.equal(execute["continue-on-error"], undefined);
+  assert.equal(qualification.if, "${{ success() && job.status == 'success' }}");
+  assert.equal(qualification.shell, "bash");
+  assert.equal(qualification.run, "node npm/oxlint/scripts/check-project-transport.mjs");
+  assert.equal(qualification["continue-on-error"], undefined);
   assert.equal(upload.if, "${{ always() }}");
   assert.equal(upload.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
   assert.deepEqual(upload.with, {
@@ -123,11 +127,25 @@ void test("public native evidence remains reachable after prior build or package
     "if-no-files-found": "warn",
     "retention-days": 14,
   });
+  assert.equal(style.if, "${{ always() }}");
+  assert.equal(style.uses, upload.uses);
+  assert.deepEqual(style.with, {
+    name: "template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
+    path: "target/template-style-fixes-7905.json",
+    "if-no-files-found": "warn",
+    "retention-days": 14,
+  });
   assert.equal(oxlint.if, "${{ always() }}");
   assert.equal(oxlint.uses, upload.uses);
   assert.deepEqual(oxlint.with, {
     name: "oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
-    path: "target/oxlint-original-locations-7904.json",
+    path: [
+      "target/oxlint-original-locations-7904.json",
+      "target/oxlint-original-project-checks-7903.json",
+      "target/oxlint-script-safe-carrier-7903.json",
+      "target/oxlint-original-project-transport/**",
+      "",
+    ].join("\n"),
     "if-no-files-found": "warn",
     "retention-days": 14,
   });

@@ -8,6 +8,10 @@ runs:
       if: ${{ success() && job.status == 'success' }}
       shell: bash
       run: vp run --workspace-root test:js
+    - name: Qualify original project checks with both real Oxlint hosts
+      if: ${{ success() && job.status == 'success' }}
+      shell: bash
+      run: node npm/oxlint/scripts/check-project-transport.mjs
     - name: Preserve public native formatter evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -16,11 +20,23 @@ runs:
         path: npm/native/.artifacts/native/formatter-history/**
         if-no-files-found: warn
         retention-days: 14
+    - name: Preserve original template style fix observations
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}
+        path: target/template-style-fixes-7905.json
+        if-no-files-found: warn
+        retention-days: 14
     - name: Preserve original Oxlint bridge locations
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
         name: oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}
-        path: target/oxlint-original-locations-7904.json
+        path: |
+          target/oxlint-original-locations-7904.json
+          target/oxlint-original-project-checks-7903.json
+          target/oxlint-script-safe-carrier-7903.json
+          target/oxlint-original-project-transport/**
         if-no-files-found: warn
         retention-days: 14

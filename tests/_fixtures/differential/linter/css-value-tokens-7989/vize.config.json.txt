@@ -1,0 +1,11 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "script/prefer-ref-over-reactive": "warn",
+      "script/prefer-use-id": "warn",
+      "css/no-v-bind-performance": "warn",
+      "css/no-important": "warn"
+    }
+  }
+}

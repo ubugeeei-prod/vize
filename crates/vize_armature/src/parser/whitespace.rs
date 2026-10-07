@@ -284,7 +284,13 @@ fn ignore_first_newline(element: &mut ElementNode<'_>) {
 
 #[inline]
 fn is_whitespace_text(child: &TemplateChildNode<'_>) -> bool {
-    matches!(child, TemplateChildNode::Text(text) if text.content.chars().all(is_vue_whitespace))
+    // Every Vue whitespace character is ASCII; a non-ASCII UTF-8 byte cannot match.
+    matches!(
+        child,
+        TemplateChildNode::Text(text) if text.content.bytes().all(|byte| {
+            matches!(byte, b' ' | b'\t' | b'\n' | b'\x0C' | b'\r')
+        })
+    )
 }
 
 #[inline]
@@ -321,3 +327,6 @@ enum WhitespaceAction {
     /// Condense a run to a single space, or a migration line break.
     Condense(usize, bool),
 }
+
+#[cfg(test)]
+mod tests;

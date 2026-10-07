@@ -305,6 +305,7 @@ jobs:
           retention-days: 30
 
   davinci-dom-corpus:
+    permissions: { contents: read, actions: read }
     uses: ./.github/workflows/davinci-canonical-corpus.yml
     with:
       davinci_dom_corpus_mode: ${{ inputs.davinci_dom_corpus_mode || 'enforce' }}

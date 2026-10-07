@@ -47,8 +47,7 @@ export function readScopedConfig(cwd: string, args: readonly string[]): ScopedCo
   } catch {
     return undefined; // Let the actual engine retain its original parse error.
   }
-  if (!isRecord(value) || (value.ignorePatterns == null && value.overrides == null))
-    return undefined;
+  if (!isRecord(value)) return undefined;
   return { file, bytes, value, discovered };
 }
 

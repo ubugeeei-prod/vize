@@ -18,12 +18,14 @@
 //! ```
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::builtins::is_builtin_component;
 use vize_croquis::naming::{is_kebab_case_loose, is_pascal_case};
 use vize_l0::{is_html_tag, is_svg_tag};
 use vize_relief::ElementNode;
+
+mod fix;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/component-name-in-template-casing",
@@ -140,26 +142,36 @@ fn check_element<'a>(
         }
     }
 
-    match casing {
-        ComponentCasing::PascalCase => {
-            if !is_pascal_case(tag) {
-                ctx.warn_with_help(
-                    ctx.t("vue/component-name-in-template-casing.pascal"),
-                    &element.loc,
-                    ctx.t("vue/component-name-in-template-casing.help_pascal"),
-                );
-            }
-        }
-        ComponentCasing::KebabCase => {
-            if !is_kebab_case_loose(tag) {
-                ctx.warn_with_help(
-                    ctx.t("vue/component-name-in-template-casing.kebab"),
-                    &element.loc,
-                    ctx.t("vue/component-name-in-template-casing.help_kebab"),
-                );
-            }
-        }
+    let valid = match casing {
+        ComponentCasing::PascalCase => is_pascal_case(tag),
+        ComponentCasing::KebabCase => is_kebab_case_loose(tag),
+    };
+    if valid {
+        return;
     }
+    let (message, help) = match casing {
+        ComponentCasing::PascalCase => (
+            ctx.t("vue/component-name-in-template-casing.pascal"),
+            ctx.t("vue/component-name-in-template-casing.help_pascal"),
+        ),
+        ComponentCasing::KebabCase => (
+            ctx.t("vue/component-name-in-template-casing.kebab"),
+            ctx.t("vue/component-name-in-template-casing.help_kebab"),
+        ),
+    };
+    let span = element.loc.span;
+    let mut diagnostic = LintDiagnostic::warn(ctx.current_rule, message, span.start, span.end);
+    if let Some(processed) = ctx.help_level().process(&help) {
+        diagnostic = diagnostic.with_help(processed);
+    }
+    if !ctx.is_petite_vue()
+        && !ctx.filename.ends_with(".jsx")
+        && !ctx.filename.ends_with(".tsx")
+        && let Some(fix) = fix::element_fix(ctx.source, element, casing, &help)
+    {
+        diagnostic = diagnostic.with_fix(fix);
+    }
+    ctx.report(diagnostic);
 }
 
 fn is_nuxt_builtin_component(tag: &str) -> bool {

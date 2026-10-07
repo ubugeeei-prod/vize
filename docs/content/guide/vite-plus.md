@@ -8,6 +8,14 @@ Use one `defineConfig` for Vite+, the Vize compiler, native typechecker, native
 linter, formatter, and library declarations. Install `@vizejs/vite-plugin` and
 your preferred compatible `vite-plus` version in the project:
 
+```bash
+vp install -D @vizejs/vite-plugin
+```
+
+Keep the integration settings in **`vite.config.ts`**; no separate Vize config is
+required for these tasks. [Migrate an existing project](./migration.md) with literal
+import/plugin diffs, or follow [Getting Started](../getting-started.md).
+
 ```ts
 // vite.config.ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";

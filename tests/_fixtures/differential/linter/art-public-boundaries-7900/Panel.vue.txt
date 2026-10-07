@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineEmits<{ close: [] }>();
+</script>
+
+<template>
+  <button type="button" @click="$emit('close')">x</button>
+</template>

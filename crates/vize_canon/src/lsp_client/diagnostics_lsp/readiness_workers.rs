@@ -15,14 +15,20 @@ pub(super) fn run<T: Sync>(
     items: &[T],
     request: impl Fn(&T) -> Result<(), String> + Sync,
 ) -> Result<(), String> {
+    let control = crate::corsa_bridge::native_operation::capture();
+    control.checkpoint()?;
     match items {
         [] => return Ok(()),
-        [item] => return request(item),
+        [item] => {
+            let response = request(item);
+            return response.and_then(|()| control.checkpoint());
+        }
         _ => {}
     }
     let next = AtomicUsize::new(0);
     let failed = AtomicBool::new(false);
     let first_error = Mutex::new(None);
+    let retirement_error = Mutex::new(None);
     thread::scope(|scope| {
         let mut workers = Vec::with_capacity(items.len().min(MAX_IN_FLIGHT));
         for _ in 0..items.len().min(MAX_IN_FLIGHT) {
@@ -30,6 +36,11 @@ pub(super) fn run<T: Sync>(
                 .name("vize-lsp-readiness".into())
                 .spawn_scoped(scope, || {
                     while !failed.load(Ordering::Acquire) {
+                        if let Err(error) = control.checkpoint() {
+                            remember_error(&retirement_error, error);
+                            failed.store(true, Ordering::Release);
+                            break;
+                        }
                         let index = next.fetch_add(1, Ordering::Relaxed);
                         let Some(item) = items.get(index) else {
                             break;
@@ -37,8 +48,17 @@ pub(super) fn run<T: Sync>(
                         if failed.load(Ordering::Acquire) {
                             break;
                         }
-                        if let Err(error) = request(item) {
+                        // A checkpoint can race with admission: drain every committed RPC.
+                        let response = request(item);
+                        // A completed native error must reach the existing cleanup
+                        // policy even when another worker already observed retirement.
+                        if let Err(error) = response {
                             remember_error(&first_error, error);
+                            failed.store(true, Ordering::Release);
+                            break;
+                        }
+                        if let Err(error) = control.checkpoint() {
+                            remember_error(&retirement_error, error);
                             failed.store(true, Ordering::Release);
                             break;
                         }
@@ -69,9 +89,13 @@ pub(super) fn run<T: Sync>(
         Ok(error) => error,
         Err(poisoned) => poisoned.into_inner(),
     };
-    match error {
+    let retirement = match retirement_error.into_inner() {
+        Ok(error) => error,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+    match error.or(retirement) {
         Some(error) => Err(error),
-        None => Ok(()),
+        None => control.checkpoint(),
     }
 }
 
@@ -87,3 +111,6 @@ fn remember_error(errors: &Mutex<Option<String>>, error: String) {
 
 #[cfg(all(test, unix))]
 mod tests;
+
+#[cfg(all(test, unix))]
+mod retirement_tests;

@@ -1,8 +1,8 @@
 use crate::options::FormatOptions;
 use vize_l0::String;
 
-/// Indent rules and declarations without passing authored tokens through the
-/// CSS printer. This path keeps media queries, selectors, and values intact.
+/// Format rule layout and declaration punctuation without passing authored
+/// values through the CSS printer. Media queries and selectors stay intact.
 pub(super) fn format_layout_only(source: &str, options: &FormatOptions) -> String {
     let newline = options.newline_string();
     let indent = options.indent_string();
@@ -11,6 +11,7 @@ pub(super) fn format_layout_only(source: &str, options: &FormatOptions) -> Strin
     let mut depth = 0usize;
     let mut parens = 0usize;
     let mut brackets = 0usize;
+    let mut value_braces = 0usize;
     let mut quote = None;
     let mut start = 0usize;
     let mut index = 0usize;
@@ -46,6 +47,16 @@ pub(super) fn format_layout_only(source: &str, options: &FormatOptions) -> Strin
             b'[' => brackets += 1,
             b']' => brackets = brackets.saturating_sub(1),
             b'{' if parens == 0 && brackets == 0 => {
+                if value_braces > 0
+                    || (depth > 0
+                        && super::declaration::starts_custom_value(
+                            source.get(start..index).unwrap_or_default().trim(),
+                        ))
+                {
+                    value_braces += 1;
+                    index += 1;
+                    continue;
+                }
                 write_css_line(
                     &mut output,
                     source.get(start..index).unwrap_or_default().trim(),
@@ -62,20 +73,27 @@ pub(super) fn format_layout_only(source: &str, options: &FormatOptions) -> Strin
                 depth += 1;
                 start = index + 1;
             }
-            b';' if parens == 0 && brackets == 0 => {
-                let statement = source.get(start..index).unwrap_or_default().trim();
+            b';' if parens == 0 && brackets == 0 && value_braces == 0 => {
+                let statement = source.get(start..index).unwrap_or_default().trim_start();
                 if !statement.is_empty() {
                     write_css_indent(&mut output, depth, &indent);
-                    output.push_str(statement);
-                    output.push(';');
+                    if depth == 0 || !super::declaration::write(&mut output, statement) {
+                        output.push_str(statement.trim_end());
+                        output.push(';');
+                    }
                     output.push_str(newline);
                 }
                 start = index + 1;
             }
             b'}' if parens == 0 && brackets == 0 && depth > 0 => {
-                write_css_line(
+                if value_braces > 0 {
+                    value_braces -= 1;
+                    index += 1;
+                    continue;
+                }
+                write_css_statement(
                     &mut output,
-                    source.get(start..index).unwrap_or_default().trim(),
+                    source.get(start..index).unwrap_or_default().trim_start(),
                     depth,
                     &indent,
                     newline,
@@ -117,6 +135,22 @@ fn write_css_line(output: &mut String, content: &str, depth: usize, indent: &str
     if !content.is_empty() {
         write_css_indent(output, depth, indent);
         output.push_str(content);
+        output.push_str(newline);
+    }
+}
+
+fn write_css_statement(
+    output: &mut String,
+    content: &str,
+    depth: usize,
+    indent: &str,
+    newline: &str,
+) {
+    if !content.is_empty() {
+        write_css_indent(output, depth, indent);
+        if !super::declaration::write(output, content) {
+            output.push_str(content.trim_end());
+        }
         output.push_str(newline);
     }
 }

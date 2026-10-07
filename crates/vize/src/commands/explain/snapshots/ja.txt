@@ -3443,7 +3443,7 @@ script setup に vapor 属性を付けるよう提案する
 対象: the SFC's top-level blocks, their order and their attributes
 重大度: 警告
 カテゴリー: vapor
-自動修正: あり
+自動修正: なし
 ドキュメント: docs/content/rules/vapor.md
 === vue/a11y-img-alt
 vue/a11y-img-alt · lint ルール

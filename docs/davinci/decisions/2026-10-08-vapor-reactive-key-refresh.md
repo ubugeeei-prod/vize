@@ -32,3 +32,20 @@ builtins, transparent-template/shorthand keys, constant elision, SSR/hydration,
 browser and installed rc.10 controls, native L3/default migration, #6880 and
 whole #7883 completion remain unfinished. No additional parse, stage,
 serialization, DOM fallback or legacy-backed native shortcut is introduced.
+
+After Rust #8195 actually merged as signed
+`011d36439050dd0f5fa7113da7152205bd43ea15` at 22:12:28 UTC, refresh the
+qualified historical source `b9998da30f5e8a0b11d03c298681aca0850245c2` with
+genuine signed main `177933f33e75af1f696fdc468665e7850025d28b`, which also
+contains the actual LSP delivery. Only the anticipated insertion planner and
+derived inventory conflict: retain the reviewed reactive-key production walk,
+all eight original key controls and all five incoming complete authored
+placeholder vectors with their independent archived classifier. Incoming
+production bytes match the reviewed Rust source exactly. Regenerate the complete
+19-file inventory; preserve all incoming paths and all 17 original manifest pins
+and 23 whole fixture bytes. Rust 1.99 and fresh source/native/full-corpus/runtime
+plus original 100+4 instruction gates are pending for this refreshed head.
+Historical successful b999 tests and current-main Rust qualification do not
+qualify the new composition. Component refs #7882 remain a dependent unpublished
+child until this actual parent head qualifies; native Stack admission and actual
+merge remain distinct.

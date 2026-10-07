@@ -58,7 +58,7 @@ jobs:
         run: node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         if: ${{ steps.plan.outputs.rust == 'true' }}
-        with: { toolchain: "1.98.0" }
+        with: { toolchain: "1.99.0" }
       - name: Plan affected Rust crates
         id: rust-plan
         if: ${{ steps.plan.outputs.rust == 'true' }}
@@ -71,6 +71,7 @@ jobs:
           TOOLING_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
         run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json" --github-output
   canonical-corpus:
+    permissions: { contents: read, actions: read }
     needs: pr-source-plan
     if: ${{ !cancelled() && needs.pr-source-plan.result == 'success' && needs.pr-source-plan.outputs.canonical-corpus == 'true' }}
     uses: ./.github/workflows/davinci-canonical-corpus.yml
@@ -156,8 +157,7 @@ jobs:
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         with:
