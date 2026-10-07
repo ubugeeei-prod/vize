@@ -211,3 +211,12 @@ refusal, add exact logical/physical paths to existing cycle/foreign messages, an
 compare the authored Git graph with the unchanged original Rust walk before any
 policy repair. Full147 corpus success and new timing remain unqualified; no path,
 file, cycle or count is skipped to make the gate pass.
+
+## Collector repair split
+
+The bounded collector metadata repair ships independently in bottom #8201.
+This parallel-observer change remains the dependent top #8191, rebased onto the
+actual bottom source. Its hosted physical corpus walk currently refuses
+`jellyfin-vue/packaging/deb/root`, a symlink back to the project root. Full original
+corpus custody and the mandatory canonical and differential gates remain pending;
+the bottom collector repair does not depend on resolving that physical cycle.
