@@ -47,6 +47,11 @@ original fixtures and mandatory full reference/rename/post-edit vectors.
 Interface and withDefaults forms extend the correction's qualification without
 claiming completion before new Actions and protected execution pass.
 
+The empty-endpoint guard preserves the original parser workload for ordinary
+local renames. Public self-recursive shorthand occurrences that name the same
+prop in both key and value roles remain an explicit #7994/#7996 qualification
+TODO; the independent Parent-local controls do not prove that dual-role case.
+
 Stack #8184 delivered only parent #8166 at `2026-10-07T09:21:40Z`, commit
 `8bc19f1c15233fccef229b2fa9044ac62fed8ff2`; the child results-upload timeout
 left #8181 open. Its refreshed `dff7005` source is based on actual main and still

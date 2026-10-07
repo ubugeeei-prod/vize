@@ -126,7 +126,9 @@ async fn rename_strict_inner(
     } else {
         component_props.authored_definition_positions(ctx, &document)
     };
-    let property_arguments = if same_name_bindings::is_binding_declaration(ctx) {
+    let property_arguments = if component_props.positions.is_empty()
+        || same_name_bindings::is_binding_declaration(ctx)
+    {
         Vec::new()
     } else {
         component_props.authored_arguments(ctx, &document).ok_or(

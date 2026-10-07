@@ -76,6 +76,15 @@ local roles and empty diagnostics in both files. Fresh exact-head source Actions
 native qualification, protected queue execution, actual merge and release are
 required. The remaining #7994/#7996/#8011/#8010 obligations stay open.
 
+Keep the predecessor's empty-position short circuit: ordinary local renames
+with no matching component-prop endpoints do not need the reactive-binding
+parser/semantic walk. A self-recursive component whose one shorthand occurrence
+is both the public property key and that same property's local value needs a
+separate dual-role qualification. These Parent/Child controls deliberately keep
+the Parent local value independent and do not establish that recursive case;
+its full native key/value vectors and post-edit diagnostics remain TODO under
+#7994/#7996. No universal shorthand-role or measured speed claim follows.
+
 ## Actual Stack delivery
 
 GitHub native Stack #8184 contains #8166 at position 1 and #8181 at position 2.
