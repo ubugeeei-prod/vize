@@ -29,14 +29,29 @@ to both complete files, disk bytes and both versioned post-edit diagnostic
 notifications. Original same-name, alias and mixed-role fixtures and all
 existing mapping/refusal/native scope controls remain unchanged.
 
-This first source change prepares the fixtures and expected contracts only.
-Production is unchanged. There is no exact-current native binary locally;
-hosted source Actions must establish actual current responses before a
-production correction receives qualification. Historical binaries and
-predecessor green runs provide no current execution credit.
+The test-first source `b105a1f0f72931cafd6d0df005b331ba6ff57d92`
+reproduced the defect on Check `37644258658`: all 24 public-origin sessions
+returned complete references but expanded the recursive occurrence to
+`:field="id"`, leaving a native TS2339 diagnostic after applying the actual
+edits. The 16 Parent-local and same-file shadow sessions passed. Source
+workers set `VIZE_TEST_DISABLE_TSGO=1` for opt-out suites; these stdio fixtures
+have no skip branch and require the discovered native runtime in `corsaPath`.
+This is actual source reproduction, not protected `REQUIRE_TSGO=1` credit.
 
-TODO: preserve actual initial native responses; review and implement the
-smallest producer-authenticated role correction; qualify the unchanged whole
-40-session contract and original controls on its fresh exact source; attend
-protected execution, signed actual merge and the next release. Performance
-budgets, canonical source length and all gates remain unchanged.
+The correction retains the value role of scope-checked native edits before
+authored projection and deduplication. Only edits at definition-verified
+property arguments are considered. The existing generated-document AST must
+positively identify an expression reference or member access; contextual and
+type keys remain key-only. The parser result is reused once per generated
+document for the complete rename transaction. Unresolved provenance refuses
+the transaction. The existing shorthand rewrite changes both roles only
+when native edits selected both, preserving modifiers, annotations, versions,
+source geometry, all mapping/refusal guards and final coherent-edit checks.
+No new native query or source-spelling selection is introduced. Fresh source
+Actions and protected performance gates must qualify the correction.
+
+TODO: qualify the unchanged whole 40-session contract and original controls
+on the correction's fresh exact source; attend protected execution, signed
+actual merge and the next release. Historical binaries and predecessor green
+runs provide no current execution credit. Performance budgets, canonical
+source length and all gates remain unchanged.
