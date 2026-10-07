@@ -26,10 +26,14 @@ void test("Rust archives reject different source, baked paths, runner, nextest, 
     const context = {
       cwd,
       nextestVersion: "cargo-nextest 0.9.146",
-      rustcVersion: "rustc 1.98.0 (fixture)",
+      rustcVersion: "rustc 1.99.0 (fixture)",
       env: { VIZE_TEST_REQUIRE_TSGO: "1", VIZE_NUXT_CONFIG_ITERATIONS: "100" },
     };
     const receipt = await createArchiveReceipt(archive, context);
+    await assert.rejects(
+      createArchiveReceipt(archive, { ...context, rustcVersion: "rustc 1.98.0 (old producer)" }),
+      /pinned CI toolchain and TSGO runtime envelope/,
+    );
     await verifyArchiveReceipt(receipt, archive, context);
     for (const key of [
       "schemaVersion",
