@@ -100,8 +100,10 @@ jobs:
       - name: Verify source SFC default-slot runtime and iterator laws
         run: cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test n8n_default_slot_loops -- --nocapture
       - name: Verify every n8n compiler regression and changed-source refusal
+        env:
+          VIZE_N8N_CONTROL_PACKET_DIR: ${{ github.workspace }}/target/n8n-compiler-custody/${{ github.run_id }}-${{ github.run_attempt }}/authored
         run: |
-          cargo test --locked --profile ci -p vize_l1_to_l2 --features legacy-differential \
+          cargo test --locked --profile ci --no-fail-fast -p vize_l1_to_l2 --features legacy-differential \
             --test davinci_dom_n8n_diagnosed \
             --test davinci_dom_n8n_default_loops \
             --test davinci_dom_n8n_helper_props \

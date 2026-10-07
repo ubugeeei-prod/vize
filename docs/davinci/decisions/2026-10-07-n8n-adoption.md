@@ -160,8 +160,37 @@ exception, filtering or diagnostic projection is permitted. Native normal
 diagnostic arrays stay empty; whole SFC `Ok` results still require empty errors
 and complete equality. Existing SFC policy intentionally excludes this exact
 self-closing rewrite message from warnings; preserve the actual full warnings
-field rather than inventing propagation. Fresh hosted runtime, four regression
-targets, full corpus and protected delivery remain required.
+field rather than inventing propagation.
+
+Exact source `6a37d1d27006f75a6b414367513633d5c48cc2df` has terminal
+failed Check `37615725081` and custody `37615724363`, with successful native
+run `37615724317`. Artifact `11479619918` retains genuinely isolated source
+producers, complete original/official/template/SFC checks and successful hosted
+mounted-runtime traces. Those narrow results do not qualify the complete job:
+the next four-target invocation failed its empty-props control and did not
+execute the other three binaries. The canonical sweep still reported 44,367
+files, 43,993 templates, 43,977 compared, the unchanged sixteen old-error skips,
+zero refusals, 285 DOM divergences, one diagnosed comparison and 233 production
+differences in each inline/module mode. Capped windows leave 265 historical DOM
+and 223 per-mode production inputs unclassified; do not infer their families.
+
+The bounded successor restores authored slot-carrier helper registration at
+the existing VNode boundary, emits `null` when existing child-key suppression
+leaves no props, and preserves original multiline padding after safe prop
+comment conversion. Native output had dropped that padding; the original
+legacy module retains it. Authored parser-notice controls compare complete
+literal vectors separately from branch-key semantic diagnostics. All original
+inputs, independent official packets, complete assertions, capture drivers,
+the sixteen-error allowlist and every ceiling remain unchanged.
+
+The same four-target command uses `--no-fail-fast`: all four binaries execute
+and any failure remains fatal. Optional full authored control packets go into
+the existing uploaded custody directory, recording original bytes, exact
+options, whole legacy/native code/maps/errors and actual test-producer hashes.
+All twenty-four core key packets use the existing Rust-shard artifact. No
+additional stage or target is added. Fresh exact-source Check/native/custody,
+mounted runtime, all four regressions, whole corpus and protected delivery
+remain mandatory; the earlier narrow passes do not transfer to the successor.
 
 The independent reference is n8n's locked Vue/compiler-sfc 3.5.26 browser
 bundle, authenticated by SHA256. All ten complete originals retain parse,
