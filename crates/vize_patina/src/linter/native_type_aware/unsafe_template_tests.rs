@@ -20,6 +20,7 @@ fn original_typed_template_binding_corpus_is_safe() {
     let linter = Linter::new().with_rule(Box::new(NoUnsafeTemplateBinding::new()));
     let fixtures = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/unsafe-template-binding");
+    let mut failures = Vec::new();
     for relative in [
         "calls/src/App.vue",
         "component-values/ParentPanel.vue",
@@ -37,8 +38,80 @@ fn original_typed_template_binding_corpus_is_safe() {
                     || diagnostic.rule_name == "type/corsa-runtime"
             })
             .collect();
-        assert_eq!(diagnostics.len(), 0, "{relative}: {diagnostics:?}");
+        if !diagnostics.is_empty() {
+            failures.push((
+                relative,
+                diagnostics.into_iter().cloned().collect::<Vec<_>>(),
+            ));
+        }
     }
+    assert!(failures.is_empty(), "{failures:?}");
+}
+
+#[test]
+fn unresolved_component_imports_remain_unsafe() {
+    if !runtime_available() {
+        return;
+    }
+    let linter = Linter::new().with_rule(Box::new(NoUnsafeTemplateBinding::new()));
+    let source = "<script setup lang=\"ts\">\nimport Missing from './DefinitelyMissing.vue'\n</script>\n<template><component :is=\"Missing\" /></template>";
+    let result = lint_sfc_with_corsa(&linter, source, "MissingComponentControl.vue");
+    let start = source.rfind("Missing").unwrap() as u32;
+    let actual: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            (
+                diagnostic.rule_name.as_str(),
+                diagnostic.start,
+                diagnostic.end,
+                diagnostic.message.as_str(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        actual,
+        vec![(
+            RULE_NO_UNSAFE_TEMPLATE_BINDING,
+            start,
+            start + 7,
+            "Template binding resolves to an unsafe `any` or `unknown` type"
+        )]
+    );
+}
+
+#[test]
+fn authored_any_component_exports_remain_unsafe() {
+    if !runtime_available() {
+        return;
+    }
+    let linter = Linter::new().with_rule(Box::new(NoUnsafeTemplateBinding::new()));
+    let source = "<script setup lang=\"ts\">\nimport Unsafe from './controls/UnsafeComponent.vue'\n</script>\n<template><component :is=\"Unsafe\" /></template>";
+    let filename = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/unsafe-template-binding/UnsafeComponentControl.vue");
+    let result = lint_sfc_with_corsa(&linter, source, &filename.to_string_lossy());
+    let start = source.rfind("Unsafe").unwrap() as u32;
+    let actual: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            (
+                diagnostic.rule_name.as_str(),
+                diagnostic.start,
+                diagnostic.end,
+                diagnostic.message.as_str(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        actual,
+        vec![(
+            RULE_NO_UNSAFE_TEMPLATE_BINDING,
+            start,
+            start + 6,
+            "Template binding resolves to an unsafe `any` or `unknown` type"
+        )]
+    );
 }
 
 #[test]

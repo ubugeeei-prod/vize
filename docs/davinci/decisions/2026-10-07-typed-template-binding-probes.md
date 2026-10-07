@@ -15,6 +15,19 @@ and receives its own authored mapping. Reject malformed and multi-statement
 handler bodies as full-expression probes while retaining existing call queries.
 Do not borrow an unrelated expression binding from the preceding line.
 
+Full Check on `de1a204` exposed the imported-component follow-up: `ChildPanel`
+in dynamic `:is` still resolved to `any` because the Patina session did not load
+its sibling SFC. Generate reachable relative/absolute Vue dependencies from their
+actual sources with Canon's Options API projection, preserving authored default
+types. Mirror them inside the private session and translate checker query offsets
+through the import source map, including boolean batches. Leave missing or invalid
+dependencies unresolved and retain unsafe authored component exports. Reuse
+projections while their complete source text is unchanged, write only changed
+mirrors, remove retired mirrors, and terminate cyclic dependency traversal.
+The normal path without Vue imports avoids dependency projection and translation
+allocations. Fresh Actions must prove the original corpus and exact unsafe controls
+after this repair; the failing historical run grants no completion credit.
+
 Retain the complete original #7895/#7902 reproductions and both follow-up reports
 in the linter corpus. Runtime controls require exact warning ranges for unsafe
 call results, unsafe callback callees and unknown assignments, while boolean
