@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "./manifest.mjs";
+import { validateDeclarationSnapshotAuthority } from "./formatter-declaration-reference.ts";
 import {
   retainedFormatterFunction,
   validatePreservedFormatterWitness,
@@ -32,7 +33,7 @@ const OWNERS: Record<
   // #7704 changes production line endings; complete original law bodies are retained.
   "crates/vize_glyph/src/style.rs": {
     originalSha256: "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61",
-    actualMainSha256: "5c99c5fd5c17af14f7ba03482a910d7ec1e55c11fa7b98d279acd81bd48db748",
+    actualMainSha256: "42f4d9b0e90359faeab4f3e26fa3c3370f44681e191966e0d447f411478fb335",
     functions: {
       test_style_numbers_match_standalone_css_leading_zeroes:
         "768c1b2fee61409a7034b99c2a7a277d7ac19699302a94b36d58dd54912937cb",
@@ -129,6 +130,12 @@ const OWNERS: Record<
 };
 
 export function validateCurrentFormatterWitness(root: string, entry: any, name: string) {
+  if (
+    entry.path === "crates/vize_glyph/src/style.rs" &&
+    name === "test_format_nested_css_at_rule"
+  ) {
+    validateDeclarationSnapshotAuthority(root);
+  }
   if (validatePreservedFormatterWitness(root, entry, name)) return;
   const bytes = fs.readFileSync(path.join(root, entry.path));
   const actual = sha256(bytes);

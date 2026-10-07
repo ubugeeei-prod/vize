@@ -13,6 +13,8 @@ pub struct LoadedFormatterSnapshot {
     pub sort_imports: Option<SortImportsSetting>,
     pub entries: Vec<ConfigEntryFiles>,
     pub ignores: Vec<ConfigEntryIgnore>,
+    /// Explicit compiler whitespace mode from the same configuration evaluation.
+    pub compiler_whitespace: Option<&'static str>,
 }
 
 /// Load stable formatting options, Vue features, and import sorting in one parse.
@@ -31,6 +33,7 @@ pub fn try_load_formatter_snapshot(
 }
 
 fn snapshot(loaded: LoadedRawConfig) -> LoadedFormatterSnapshot {
+    let compiler_whitespace = loaded.config.compiler_whitespace();
     let sort_imports = loaded.config.formatter_sort_imports().cloned();
     let ignores = loaded.config.entry_ignores();
     let entries = loaded.config.clone().into_entry_files();
@@ -44,5 +47,6 @@ fn snapshot(loaded: LoadedRawConfig) -> LoadedFormatterSnapshot {
         sort_imports,
         entries,
         ignores,
+        compiler_whitespace,
     }
 }

@@ -12,7 +12,9 @@ const corpus = path.join(
   repository,
   "tests/_fixtures/differential/lint/oxlint-original-path-scope-7903",
 );
-const engine = path.join(repository, "node_modules/oxlint/bin/oxlint");
+const engine =
+  process.env.VIZE_OXLINT_TEST_ENTRYPOINT ??
+  path.join(repository, "node_modules/oxlint/bin/oxlint");
 const cli = path.join(packageDir, "dist/cli.mjs");
 const plugin = path.join(packageDir, "dist/index.mjs");
 
@@ -133,5 +135,56 @@ void test("discovered JSON and inherited MTS preserve original ignores, override
     assert.equal(fs.readFileSync(path.join(root, "vue-layer.mts"), "utf8"), layer);
     if (kind === "module")
       assert.equal(fs.readFileSync(path.join(root, "oxlint.config.mts"), "utf8"), module);
+  }
+});
+
+void test("rules-only JSON retains original VCS and CLI ignores without config ignore fields", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-rules-only-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(root, "node_modules/oxlint/bin"), { recursive: true });
+  fs.symlinkSync(engine, path.join(root, "node_modules/oxlint/bin/oxlint"));
+  fs.mkdirSync(path.join(root, ".git"));
+  fs.mkdirSync(path.join(root, "src"));
+  fs.mkdirSync(path.join(root, "dist"));
+  fs.writeFileSync(path.join(root, ".gitignore"), "dist/\nsrc/VcsIgnored.vue\n");
+  const source = fs.readFileSync(path.join(corpus, "Panel.vue.txt"), "utf8");
+  const files = ["src/Panel.vue", "src/CliIgnored.vue", "src/VcsIgnored.vue", "dist/Built.vue"];
+  for (const file of files) fs.writeFileSync(path.join(root, file), source);
+  const config = fs
+    .readFileSync(path.join(corpus, "rules-only.json.txt"), "utf8")
+    .replace('"PLUGIN_PATH"', JSON.stringify(plugin));
+  fs.writeFileSync(path.join(root, ".oxlintrc.json"), config);
+  const before = fs.readdirSync(root).sort();
+  for (const options of [[], ["--config", ".oxlintrc.json"]]) {
+    const args = [...options, "-f", "json", "--ignore-pattern", "src/CliIgnored.vue", "."];
+    const run = (entrypoint: string) => {
+      const result = spawnSync(process.execPath, [entrypoint, ...args], {
+        cwd: root,
+        encoding: "utf8",
+        timeout: 30_000,
+      });
+      assert.equal(result.error, undefined);
+      assert.equal(result.signal, null);
+      assert.equal(result.status, 0, result.stdout + result.stderr);
+      assert.equal(result.stderr, "");
+      return JSON.parse(result.stdout);
+    };
+    const stock = run(engine);
+    const wrapper = run(cli);
+    assert.equal(stock.number_of_files, 1);
+    assert.equal(wrapper.number_of_files, 1);
+    const core = (report: typeof stock) =>
+      report.diagnostics.filter((row: { code: string }) => !row.code.startsWith("vize("));
+    assert.deepEqual(core(wrapper), core(stock));
+    assert.equal(core(stock).length, 1);
+    assert.deepEqual(
+      wrapper.diagnostics
+        .filter((row: { code: string }) => row.code.startsWith("vize("))
+        .map((row: { filename: string }) => row.filename),
+      ["src/Panel.vue"],
+    );
+    assert.deepEqual(fs.readdirSync(root).sort(), before);
+    assert.equal(fs.readFileSync(path.join(root, ".oxlintrc.json"), "utf8"), config);
+    for (const file of files) assert.equal(fs.readFileSync(path.join(root, file), "utf8"), source);
   }
 });

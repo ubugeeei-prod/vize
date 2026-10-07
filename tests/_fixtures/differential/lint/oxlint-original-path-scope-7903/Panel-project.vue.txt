@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import "./Panel.vue";
+const html = "<b>x</b>";
+debugger;
+</script>
+
+<template>
+  <div v-html="html" />
+</template>

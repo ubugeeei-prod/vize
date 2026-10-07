@@ -136,7 +136,7 @@ void test("getLintTargets treats fix flags as booleans", () => {
   assert.deepEqual(getLintTargets(["--fix-suggestions", "src/App.vue"]), ["src/App.vue"]);
 });
 
-void test("scriptless workaround warns for fix flags whose edits are not copied back", () => {
+void test("scriptless transport refuses fix flags without original config authority", () => {
   for (const flag of ["--fix", "--fix-suggestions"] as const) {
     withTempWorkspace((root) => {
       writeFakeOxlintEntrypoint(root, HANDSHAKE_ONLY_SHIM);
@@ -144,8 +144,8 @@ void test("scriptless workaround warns for fix flags whose edits are not copied 
 
       const run = runOxlintVize(root, [flag, "Scriptless.vue"]);
 
-      assert.equal(run.exitCode, 0);
-      assert.match(run.stderr, /fixes are not applied back to original files/u);
+      assert.equal(run.exitCode, 1);
+      assert.match(run.stderr, /cannot preserve writes or LSP execution/u);
     });
   }
 });

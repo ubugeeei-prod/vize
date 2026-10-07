@@ -13,6 +13,10 @@ import {
   observeCss,
   validateDiagnostics,
 } from "./support/css-rule-layout-semantics.mjs";
+import {
+  multiValueReference,
+  multiValueComparisons,
+} from "./support/css-multi-value-reference.mjs";
 import { observeSemantics } from "./support/formatter-template-semantics.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -65,6 +69,7 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
     buildReceipt: receipt,
     nativeHandled: 0,
     cliQualified: 0,
+    currentReferenceQualified: 0,
     rows: [],
   };
   const persist = () => fs.writeFileSync(artifact, JSON.stringify(report, null, 2) + "\n");
@@ -81,6 +86,14 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
         assert.equal(sha256(input), fixture.sha256);
         assert.equal(expected.length, fixture.expectedBytes);
         assert.equal(sha256(expected), fixture.expectedSha256);
+        const qualification = multiValueReference(
+          root,
+          "css-rule-layout-7926-7966",
+          fixture,
+          input,
+          expected,
+          raw,
+        );
         const file = path.join(temporary, fixture.filename);
         fs.writeFileSync(file, input);
         const config = Buffer.from(JSON.stringify({ formatter: fixture.options ?? {} }) + "\n");
@@ -90,6 +103,8 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
           fixture,
           original: input.toString(),
           expected: expected.toString(),
+          currentReference: qualification.reference,
+          currentExpected: qualification.expected.toString(),
           attempts: [],
           diagnostics: [],
           css: [],
@@ -154,7 +169,7 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
           persist();
           assert.equal(capture.error, null);
           assert.equal(capture.signal, null);
-          const oracle = fixture.cliExpected[row.attempts.length - 1];
+          const oracle = qualification.cliExpected[row.attempts.length - 1];
           assert.equal(mode, oracle.mode);
           assert.equal(capture.status, oracle.status);
           assert.deepEqual(
@@ -171,12 +186,21 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
           return { capture, before, after };
         };
         const check = invoke("--check");
-        assert.equal(check.capture.status, input.equals(expected) ? 0 : 1);
+        assert.equal(check.capture.status, input.equals(qualification.expected) ? 0 : 1);
         assert.deepEqual(check.before, check.after, "initial check never writes");
         for (let pass = 1; pass <= 3; pass++) {
           const formatted = invoke("--write");
           assert.equal(formatted.capture.status, 0);
-          assert.deepEqual(formatted.after, expected, `whole authored output pass ${pass}`);
+          assert.deepEqual(
+            formatted.after,
+            qualification.expected,
+            `whole authored output pass ${pass}`,
+          );
+          formatted.capture.comparisons = multiValueComparisons(
+            qualification,
+            expected,
+            formatted.after,
+          );
           await observe(formatted.after.toString(), pass);
           assert.deepEqual(
             row.css.at(-1).cssRules,
@@ -191,7 +215,7 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
           assert.equal(row.css.at(-1).html, row.css[0].html);
         }
         if (fixture.states) {
-          row.formattedSemantics = await observeSemantics(expected.toString(), {
+          row.formattedSemantics = await observeSemantics(qualification.expected.toString(), {
             ...fixture,
             file: fixture.filename,
           });
@@ -207,11 +231,13 @@ await test("whole original CSS selector lists and adjacent rule gaps", async (t)
         assert.equal(row.attempts.length, 5);
         row.qualified = true;
         report.cliQualified++;
+        if (qualification.reference) report.currentReferenceQualified++;
         persist();
       });
     }
     assert.equal(report.rows.length, 17);
     assert.equal(report.cliQualified, 17);
+    assert.equal(report.currentReferenceQualified, 1);
     assert.equal(
       report.rows.reduce((count, row) => count + row.attempts.length, 0),
       85,

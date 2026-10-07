@@ -16,7 +16,7 @@ pub(super) fn format_chunk(trimmed: &str, options: &FormatOptions) -> Result<Str
         && !layout
             .as_ref()
             .is_some_and(|layout: &super::rule_layout::RuleLayout| {
-                layout.preludes.iter().any(|prelude| prelude.selector_list)
+                layout.multi_values || layout.preludes.iter().any(|prelude| prelude.selector_list)
             })
     {
         return Ok(formatted);

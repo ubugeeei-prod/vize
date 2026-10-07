@@ -41,6 +41,15 @@ pub fn format_template_content(
     format_template_content_with_vue_version(source, options, crate::VueVersion::V3)
 }
 
+/// Format only markup syntax while retaining every authored text-run byte.
+pub(crate) fn format_template_content_preserving_text(
+    source: &str,
+    options: &FormatOptions,
+    vue_version: crate::VueVersion,
+) -> Result<String, FormatError> {
+    TemplateFormatter::new(options, vue_version, 0).format_preserving_text(source.as_bytes())
+}
+
 pub(crate) fn format_template_content_with_vue_version(
     source: &str,
     options: &FormatOptions,
