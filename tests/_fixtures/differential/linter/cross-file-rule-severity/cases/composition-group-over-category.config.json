@@ -1,0 +1,11 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "cross-file": "warn"
+    },
+    "categories": {
+      "suspicious": "error"
+    }
+  }
+}

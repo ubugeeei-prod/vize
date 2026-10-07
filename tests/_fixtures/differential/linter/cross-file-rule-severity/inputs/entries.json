@@ -1,0 +1,34 @@
+[
+  {
+    "path": "src/App.vue",
+    "source": "inputs/entries/src/App.vue.txt"
+  },
+  {
+    "path": "src/Home.vue",
+    "source": "inputs/entries/src/Home.vue.txt"
+  },
+  {
+    "path": "src/Other.vue",
+    "source": "inputs/entries/src/Other.vue.txt"
+  },
+  {
+    "path": "src/main.ts",
+    "source": "inputs/entries/src/main.ts.txt"
+  },
+  {
+    "path": "src/matching/First.vue",
+    "source": "inputs/entries/src/matching/First.vue.txt"
+  },
+  {
+    "path": "src/matching/Ignored.vue",
+    "source": "inputs/entries/src/matching/Ignored.vue.txt"
+  },
+  {
+    "path": "src/matching/Second.vue",
+    "source": "inputs/entries/src/matching/Second.vue.txt"
+  },
+  {
+    "path": "src/router.ts",
+    "source": "inputs/entries/src/router.ts.txt"
+  }
+]

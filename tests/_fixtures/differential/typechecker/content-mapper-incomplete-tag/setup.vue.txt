@@ -1,0 +1,4 @@
+<script setup lang="ts">
+/* 😀 */ const café: number = 'broken';
+</script>
+<template><div>{{ café }}</div></template>

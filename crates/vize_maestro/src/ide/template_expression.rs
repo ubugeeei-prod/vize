@@ -37,7 +37,6 @@ pub(crate) fn is_in_vue_template_expression(content: &str, offset: usize) -> boo
 /// end in `?`/`!`, both of which that detector reports as an identifier. Widening
 /// it would change what hover, definition, and references see at the same
 /// position, so the routing question is answered here instead.
-#[cfg(feature = "native")]
 pub(crate) fn is_at_member_access_position(content: &str, offset: usize) -> bool {
     if content.is_empty() {
         return false;
@@ -83,7 +82,6 @@ pub(crate) fn is_at_member_access_position(content: &str, offset: usize) -> bool
 /// the finished number: a decimal point the literal already spent
 /// (`1.5.toFixed`, `.5.toFixed`), an exponent (`1e3.toFixed`, `1e-3.toFixed`), a
 /// radix prefix (`0xFF.toString`), or the BigInt suffix (`1n.toString`).
-#[cfg(feature = "native")]
 fn is_decimal_point(content: &str, dot: usize) -> bool {
     let start = identifier_start(content, dot);
     let Some(token) = content.get(start..dot) else {
@@ -114,7 +112,6 @@ fn is_decimal_point(content: &str, dot: usize) -> bool {
 
 /// Whether the text ending right before a run of decimal digits already closed
 /// the numeric literal those digits belong to.
-#[cfg(feature = "native")]
 fn closes_numeric_literal(before: &str) -> bool {
     // A decimal point the literal already spent (`1.5.`, `.5.`): the scan back
     // over identifier characters stops at that dot, so the digits behind the
@@ -137,7 +134,6 @@ fn closes_numeric_literal(before: &str) -> bool {
 }
 
 /// Walk back from `end` over identifier characters and return the token start.
-#[cfg(feature = "native")]
 fn identifier_start(content: &str, end: usize) -> usize {
     let mut start = end;
     while let Some(ch) = content
@@ -156,7 +152,6 @@ fn identifier_start(content: &str, end: usize) -> usize {
 /// have already typed into a member name: `is_alphanumeric` alone drops the
 /// combining marks of decomposed text (`café` as `cafe` + U+0301) and the
 /// zero-width joiners, both of which end the token one character too early.
-#[cfg(feature = "native")]
 fn is_identifier_char(ch: char) -> bool {
     oxc_syntax::identifier::is_identifier_part(ch)
 }
@@ -276,5 +271,4 @@ fn is_vue_expression_attribute(attr_name: &str) -> bool {
 }
 
 #[cfg(test)]
-#[cfg(feature = "native")]
 mod member_access_tests;
