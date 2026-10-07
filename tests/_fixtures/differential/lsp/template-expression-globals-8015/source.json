@@ -1,0 +1,32 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8015",
+  "issueAuthor": "ubugeeei",
+  "scope": "Vue identifier expression completion only; component attributes and generic prop hover remain separate work",
+  "vueGlobalsReference": "https://github.com/vuejs/core/blob/v3.5.43/packages/shared/src/globalsAllowList.ts",
+  "instanceReference": "https://github.com/vuejs/core/blob/v3.5.43/packages/runtime-core/src/componentPublicInstance.ts",
+  "queries": [
+    {
+      "file": "Comp.vue.txt",
+      "marker": "$e",
+      "offsetAfter": 2
+    },
+    {
+      "file": "Comp.vue.txt",
+      "marker": "{{ St",
+      "offsetAfter": 5
+    },
+    {
+      "file": "Comp.vue.txt",
+      "marker": "{{ Ma",
+      "offsetAfter": 5
+    }
+  ],
+  "sha256": {
+    "App.vue.txt": "b05179e7ef51972e3c30d6b634c204797244914b5d306d2cd4e3b2840a5b68f6",
+    "Child.vue.txt": "1707a95ea49617fc34c83b6c84dce436df5c111bbb80a35e53bbbd5a31bb359e",
+    "Comp.vue.txt": "5ba1d7054f32f1cd19515de8477843d43593d3e848b67a805e33336fe411b2df",
+    "List.vue.txt": "a1e5f669caebdcc2747db15a810bb446c692fcbb800579a32bc369614d1b21bf",
+    "globals.expected.json": "6239e8e660b70c45000830e7f46e6d83fa4a20ba11d2578de092126c2c3b74ab",
+    "original-issue.md": "668faffa7bbc09bcac7b1e76f8f68024ae260e8e5016063e3f23bb3935c6ab85"
+  }
+}

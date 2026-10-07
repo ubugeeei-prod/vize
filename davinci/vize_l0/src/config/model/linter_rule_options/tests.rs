@@ -304,3 +304,35 @@ fn invalid_vue_rule_options_are_rejected() {
     }"#;
     assert!(serde_json::from_str::<ConfigLintRuleOptions>(unknown_field).is_err());
 }
+
+#[test]
+fn props_destructuring_options_validate_and_merge() {
+    use super::PropsDestructureMode;
+    let mut options: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"script/define-props-destructuring": {}}"#)
+            .expect("default style option");
+    assert!(!options.is_empty());
+    assert_eq!(
+        options.define_props_destructuring(),
+        Some(PropsDestructureMode::OnlyWhenAssigned)
+    );
+    let overlay: ConfigLintRuleOptions =
+        serde_json::from_str(r#"{"script/define-props-destructuring": {"destructure":"never"}}"#)
+            .expect("explicit style option");
+    options.merge_from(&overlay);
+    assert_eq!(
+        options.define_props_destructuring(),
+        Some(PropsDestructureMode::Never)
+    );
+    options.merge_from(&ConfigLintRuleOptions::default());
+    assert_eq!(
+        options.define_props_destructuring(),
+        Some(PropsDestructureMode::Never)
+    );
+    for json in [
+        r#"{"script/define-props-destructuring": {"destructure":"sometimes"}}"#,
+        r#"{"script/define-props-destructuring": {"other":true}}"#,
+    ] {
+        assert!(serde_json::from_str::<ConfigLintRuleOptions>(json).is_err());
+    }
+}

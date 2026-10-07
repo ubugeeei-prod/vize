@@ -338,4 +338,6 @@ museaPreferDesignTokensOptionsDef: JsonSchema = new JsonSchema {
   additionalProperties = false
 }
 
+definePropsDestructuringOptionsDef: JsonSchema = LintRuleOptionsSchemaDefinitions.definePropsDestructuringOptionsDef
+
 lintRuleOptionsDef: JsonSchema = LintRuleOptionsSchemaDefinitions.lintRuleOptionsDef

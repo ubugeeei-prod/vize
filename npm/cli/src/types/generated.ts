@@ -247,6 +247,9 @@ export interface LinterConfig {
   };
 }
 export interface LintRuleOptions {
+  "script/define-props-destructuring"?: {
+    destructure?: "only-when-assigned" | "always" | "never";
+  };
   "html/no-empty-palpable-content"?: {
     contentDirectives?: string[];
   };

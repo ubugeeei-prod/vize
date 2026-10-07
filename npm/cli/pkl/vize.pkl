@@ -151,7 +151,13 @@ class ContentDirectivesOptions {
   contentDirectives: Listing<String> = new Listing {}
 }
 
+/// Style for props destructuring; matches eslint-plugin-vue's default.
+class DefinePropsDestructuringOptions {
+  destructure: "only-when-assigned"|"always"|"never" = "only-when-assigned"
+}
+
 class LintRuleOptions {
+  `script/define-props-destructuring`: DefinePropsDestructuringOptions? = null
   `html/no-empty-palpable-content`: ContentDirectivesOptions? = null
   `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null

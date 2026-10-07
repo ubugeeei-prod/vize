@@ -44,11 +44,12 @@ pub use linter_execution::LinterExecutionOptions;
 pub use linter_feature_flags::LinterFeatureFlags;
 pub use linter_rule_options::{
     ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,
-    CustomEventNameCasingOptions, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions,
-    HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions, MuseaDesignToken,
-    MuseaPreferDesignTokensOptions, NoMutatingPropsOptions, NoRestrictedGlobalsOptions,
-    NoRestrictedMembersOptions, RestrictedGlobal, RestrictedMember, SfcElementOrderGroup,
-    SfcElementOrderOptions, StrictBooleanExpressionsOptions, TemplateComponentNameCasing,
+    CustomEventNameCasingOptions, DefinePropsDestructuringOptions, HtmlSelfClosingHtmlOptions,
+    HtmlSelfClosingOptions, HtmlSelfClosingStyle, HyphenationStyle, LintRuleOptions,
+    MuseaDesignToken, MuseaPreferDesignTokensOptions, NoMutatingPropsOptions,
+    NoRestrictedGlobalsOptions, NoRestrictedMembersOptions, PropsDestructureMode, RestrictedGlobal,
+    RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions,
+    StrictBooleanExpressionsOptions, TemplateComponentNameCasing,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};
