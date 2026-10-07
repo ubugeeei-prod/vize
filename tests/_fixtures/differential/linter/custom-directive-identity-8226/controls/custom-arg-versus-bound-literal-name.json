@@ -1,0 +1,12 @@
+{
+  "id": "custom-arg-versus-bound-literal-name",
+  "source": "<div v-custom:arg=\"a\" :v-custom:arg=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "custom-arg-versus-bound-literal-name.vue",
+    "errorCount": 0,
+    "warningCount": 0,
+    "diagnostics": []
+  }
+}

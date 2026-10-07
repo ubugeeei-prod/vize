@@ -959,8 +959,10 @@ linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs	40	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs	27	l0	L0	stage	vize_l0	preferred	3
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs	27	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs	22	l0	L0	stage	vize_l0	preferred	4
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs	22	old_ast	old AST/parser	old	vize_relief	legacy	3
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs	24	l0	L0	stage	vize_l0	preferred	5
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs	24	old_ast	old AST/parser	old	vize_relief	legacy	3
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_duplicate_attributes/directive_identity.rs	2	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_duplicate_attributes/directive_identity.rs	2	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_invalid_html_attribute.rs	10	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_lone_template.rs	30	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_multi_spaces.rs	24	old_ast	old AST/parser	old	vize_relief	legacy	1
@@ -1111,6 +1113,7 @@ linter	Linter	test/dev	crates/vize_patina/tests/aria_hidden_static_focus.rs	4	ol
 linter	Linter	test/dev	crates/vize_patina/tests/content_directives_history.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/css_external_target_history.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/css_value_tokens_7989.rs	5	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/custom_directive_identity.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/davinci_authored_markup_budget.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/davinci_authored_markup_budget.rs	6	l1	L1	stage	vize_l1	preferred	2
 linter	Linter	test/dev	crates/vize_patina/tests/derived_watchers_7901.rs	4	l0	L0	stage	vize_l0	preferred	1

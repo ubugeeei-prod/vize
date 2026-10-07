@@ -1,0 +1,23 @@
+{
+  "id": "builtin-show-duplicate",
+  "source": "<p v-show=\"ok\" v-show=\"!ok\">x</p>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "builtin-show-duplicate.vue",
+    "errorCount": 1,
+    "warningCount": 0,
+    "diagnostics": [
+      {
+        "rule": "vue/no-duplicate-attributes",
+        "severity": "Error",
+        "message": "Duplicate attribute 'v-show'",
+        "start": 15,
+        "end": 27,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  }
+}
