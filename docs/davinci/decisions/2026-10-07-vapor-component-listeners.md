@@ -184,3 +184,11 @@ protected gates. The reference remains real pinned Vue 3.6.0-rc.9; requested
 rc.10, native-level, direct Vapor SSR/hydration, Chromium, installed release
 and performance acceptance remain unfinished. No old result transfers to the
 refreshed source, and the draft remains outside the queue until root admission.
+
+The subsequent genuine merge incorporates newer signed main
+`b1b9895e2132021bad64b6452df502bf4f50f033`, including the strict Rust-worker
+metadata freshness caller. The earlier `8f01ff9c` is a retained composition
+snapshot, not the publication baseline. All newer incoming source and complete
+canonical clauses are retained; no compiler product conflict is resolved by
+substitution and no canonical footer is appended. Fresh execution is still
+required for this combined source.

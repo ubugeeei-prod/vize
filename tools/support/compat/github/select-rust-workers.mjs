@@ -10,26 +10,63 @@ import {
 } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { setTimeout as delay } from "node:timers/promises";
 import { githubApiPages, githubApiRequest } from "./release-preflight-github.mjs";
-import { selectRustWorkers, verifyRustWorkerDirectories } from "./rust-worker-selection.mjs";
+import {
+  PendingRustWorkerMetadata,
+  rustWorkerSnapshotIdentity,
+  selectRustWorkers,
+  verifyRustWorkerDirectories,
+} from "./rust-worker-selection.mjs";
 
-export async function readRustWorkerSelection(context, options) {
+export async function readRustWorkerSelection(context, options = {}) {
   const resource = `actions/runs/${context.runId}`;
   const readRun = async () => JSON.parse((await githubApiRequest({ ...options, resource })).body);
-  const before = await readRun();
-  const [jobs, artifacts] = await Promise.all([
-    githubApiPages({
-      ...options,
-      resource: `${resource}/jobs`,
-      collection: "jobs",
-      query: { filter: "all" },
-    }),
-    githubApiPages({ ...options, resource: `${resource}/artifacts`, collection: "artifacts" }),
-  ]);
-  const first = selectRustWorkers(context, before, jobs, artifacts);
-  const after = selectRustWorkers(context, await readRun(), jobs, artifacts);
-  assert.deepEqual(after, first, "Rust workflow identity changed during selection");
-  return after;
+  let identity;
+  for (let read = 0; read < 6; read++) {
+    const before = await readRun();
+    const [jobs, artifacts] = await Promise.all([
+      githubApiPages({
+        ...options,
+        resource: `${resource}/jobs`,
+        collection: "jobs",
+        query: { filter: "all" },
+      }),
+      githubApiPages({ ...options, resource: `${resource}/artifacts`, collection: "artifacts" }),
+    ]);
+    const assess = (run) => {
+      try {
+        const selection = selectRustWorkers(context, run, jobs, artifacts, {
+          allowPendingMetadata: true,
+        });
+        return {
+          selection,
+          identity: rustWorkerSnapshotIdentity(selection, artifacts, run.repository.id),
+        };
+      } catch (error) {
+        if (!(error instanceof PendingRustWorkerMetadata)) throw error;
+        return { pending: error, identity: error.identity };
+      }
+    };
+    const first = assess(before);
+    const afterRun = await readRun();
+    const after = assess(afterRun);
+    assert.deepEqual(after, first, "Rust workflow identity changed during selection");
+    if (identity)
+      assert.deepEqual(
+        after.identity,
+        identity,
+        "Rust worker identity changed across metadata reads",
+      );
+    identity = after.identity;
+    if (after.selection) {
+      const strict = selectRustWorkers(context, afterRun, jobs, artifacts);
+      assert.deepEqual(strict, after.selection, "Pending assessment changed strict Rust selection");
+      return strict;
+    }
+    if (read === 5) throw after.pending;
+    await (options.waitImpl ?? delay)(2000);
+  }
 }
 
 export async function runRustWorkerSelection(argv, env = process.env, options = {}) {

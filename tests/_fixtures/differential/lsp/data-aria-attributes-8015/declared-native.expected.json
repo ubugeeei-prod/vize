@@ -1,0 +1,20 @@
+{
+  "vizeCompletion": {
+    "item": {
+      "data": {
+        "fileName": null,
+        "name": null,
+        "position": null
+      },
+      "filterText": null,
+      "insertText": null,
+      "kind": 5,
+      "label": null,
+      "sortText": "12"
+    },
+    "label": null,
+    "requestUri": null,
+    "revision": null,
+    "uri": null
+  }
+}

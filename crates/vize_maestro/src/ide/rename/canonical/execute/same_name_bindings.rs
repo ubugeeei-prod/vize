@@ -55,6 +55,17 @@ pub(super) fn rewrite(
     new_name: &str,
     property_arguments: &[Location],
 ) -> bool {
+    rewrite_roles(ctx, document, edit, new_name, property_arguments, &[])
+}
+
+pub(super) fn rewrite_roles(
+    ctx: &IdeContext<'_>,
+    document: &CanonicalVirtualDocument,
+    edit: &mut WorkspaceEdit,
+    new_name: &str,
+    property_arguments: &[Location],
+    value_arguments: &[Location],
+) -> bool {
     // Only edits already selected by the native symbol queries participate.
     // A parsed directive supplies its complete geometry and implicit value;
     // neither its spelling nor a generated helper name discovers an edit.
@@ -112,6 +123,9 @@ pub(super) fn rewrite(
         let property_argument = property_arguments
             .iter()
             .any(|argument| argument.uri == *uri && argument.range == argument_range);
+        let value_argument = value_arguments
+            .iter()
+            .any(|argument| argument.uri == *uri && argument.range == argument_range);
         let replacement = if property_argument {
             let relative = entry.argument.start - entry.directive.start
                 ..entry.argument.end - entry.directive.start;
@@ -124,7 +138,12 @@ pub(super) fn rewrite(
                 new_name.to_owned()
             };
             directive.replace_range(relative, &replacement);
-            cstr!("{directive}=\"{}\"", entry.expression)
+            let value = if value_argument {
+                new_name
+            } else {
+                entry.expression.as_str()
+            };
+            cstr!("{directive}=\"{value}\"")
         } else {
             cstr!("{original}=\"{new_name}\"")
         };
@@ -279,3 +298,7 @@ fn collect_document_edits<'a>(
 #[cfg(test)]
 #[path = "same_name_bindings_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "same_name_binding_roles_tests.rs"]
+mod role_tests;

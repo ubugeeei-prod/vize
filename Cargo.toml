@@ -3,6 +3,7 @@ resolver = "3"
 exclude = ["vendor/oxc_parser_compat"]
 members = [
   "vendor/oxc_parser",
+  "vendor/oxc_formatter",
   "crates/vize_carton",
   "crates/vize_relief",
   "crates/vize_armature",
@@ -114,7 +115,7 @@ oxc_codegen = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc"
 # `oxc_formatter_core` carries the language-agnostic option types (`IndentStyle`,
 # `IndentWidth`, `LineEnding`, `LineWidth`) that `oxc_formatter` takes but does not
 # re-export; it is `publish = false` upstream for the same reason.
-oxc_formatter = { version = "=0.60.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
+oxc_formatter = { package = "vize_oxc_formatter", version = "=0.435.0", path = "vendor/oxc_formatter" }
 oxc_formatter_core = { version = "=0.60.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }
 
 # Serialization and schema formats

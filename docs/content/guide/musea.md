@@ -6,13 +6,11 @@ title: Musea
 
 > **⚠️ Work in Progress:** Musea is still evolving. File formats, APIs, and UI behavior may change.
 
-Musea is Vize's art-file and component-gallery toolchain.
+Browse [UI examples](./ui/index.md), then use `*.art.vue` variants to compare your components in Musea's gallery.
 
-- `vize_musea` is the Rust core for parsing `*.art.vue`, generating docs, building prop palettes,
-  autogenerating variants, and preparing VRT data.
+- `vize_musea` parses `*.art.vue`, generates docs and prop palettes, autogenerates variants, and prepares VRT data.
 - `@vizejs/vite-plugin-musea` is the recommended gallery and dev-server workflow today.
-- `musea-vrt` is the CLI for visual regression snapshots, a11y audits, approvals, cleanup, and
-  generated art files.
+- `musea-vrt` provides visual regression snapshots, a11y audits, approvals, cleanup, and generated art files.
 
 ## Overview
 
@@ -28,36 +26,38 @@ Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/inst
 vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
 ```
 
-## Recommended Usage: Vite Plugin
+## Set up with Vite+
+
+Add `musea()` to your [Vite+ integration](./vite-plus.md). The helper configures Vize's Vue compiler.
 
 ```ts
 // vite.config.ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
-  plugins: [
-    vize(),
-    musea({
-      include: ["**/*.art.vue"],
-      basePath: "/__musea__",
-      previewCss: ["src/styles/main.css"],
-      previewSetup: "musea.preview.ts",
-    }),
-  ],
+  plugins: [musea({ include: ["**/*.art.vue"], basePath: "/__musea__" })],
 });
 ```
 
-Run your normal Vite dev server and open the configured Musea route:
+Replace these lines when migrating from `@vitejs/plugin-vue`; retain your other Vite options and plugins:
+
+```diff
+-import { defineConfig } from "vite-plus";
+-import vue from "@vitejs/plugin-vue";
++import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
++import { musea } from "@vizejs/vite-plugin-musea";
+-  plugins: [vue()],
++  plugins: [musea({ include: ["**/*.art.vue"] })],
+```
+
+Start the dev server and open the configured Musea route:
 
 ```bash
 vp dev
 ```
 
-```txt
-http://localhost:5173/__musea__
-```
+Open `http://localhost:5173/__musea__`.
 
 If you install the `vize` npm package, `vp exec vize musea` is a convenience wrapper around Vite:
 
@@ -68,8 +68,7 @@ vp exec vize musea --build
 
 ## Shared Config
 
-`musea()` options override shared config. Put stable project defaults in `vize.config.ts` and keep
-preview-only settings in `vite.config.ts`.
+`musea()` options override shared config. Put stable defaults in `vize.config.ts` when several tools need them, and keep preview settings in `vite.config.ts`.
 
 ```ts
 // vize.config.ts
