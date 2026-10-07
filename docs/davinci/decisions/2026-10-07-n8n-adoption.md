@@ -51,6 +51,17 @@ not establish custom plugin parity or a speed improvement. n8n dependency
 installation, vue-tsc parity and authored LSP oracles remain follow-up work;
 no typechecker performance baseline is claimed by this registration.
 
+The dependent authored-editor slice copies three complete, pinned master source
+files (NullEmptyCellRenderer, BlockUi and its actual TypeScript barrel) into a
+disposable project. It prepares exact template definition/reference packets,
+component navigation through the barrel, an unsaved missing-property diagnostic
+and a clean diagnostic/navigation restore. A dedicated Actions job requires the
+current-source build receipt and real typechecker; missing dependencies fail
+closed. These assertions are prepared and unexecuted until that job passes.
+The generic n8n matrix row still has no full authored LSP lifecycle oracle or
+whole-monorepo vue-tsc baseline; this small test grants no broader coverage or
+speed credit.
+
 The source tooling dependency unblock is [#8148](https://github.com/ubugeeei-prod/vize/pull/8148).
 It changes the SDK cohort independently; its success does not qualify the
 fixture, bridge, protected merge or installed-package acceptance by itself.
