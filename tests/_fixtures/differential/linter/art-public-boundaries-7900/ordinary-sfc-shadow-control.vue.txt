@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Panel from "./Panel.vue";
+
+const isOpen = ref(true);
+const close = (): void => {
+  isOpen.value = false;
+};
+</script>
+
+<template>
+    <Panel v-if="isOpen" @close="close" />
+</template>

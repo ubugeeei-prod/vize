@@ -5,6 +5,7 @@ on:
     inputs:
       release_pr: { type: string, required: false, default: "" }
       tag_name: { type: string, required: false, default: "" }
+      pinned: { type: boolean, required: false, default: false }
 
 permissions:
   actions: write
@@ -47,6 +48,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PR_NUMBER: ${{ inputs.release_pr }}
           RELEASE_TAG_NAME: ${{ inputs.tag_name }}
+          RELEASE_PINNED: ${{ inputs.pinned }}
         run: rust-script tools/commands/ci/github/release-preflight.rs
 
   validate-crates:

@@ -16,6 +16,9 @@
 mod common;
 #[path = "../../../support/release/preflight_matrix_evidence.rs"]
 mod matrix_evidence;
+#[cfg(test)]
+#[path = "../../../support/release/preflight_pinned_evidence_tests.rs"]
+mod pinned_evidence_tests;
 #[path = "../../../support/release/preflight_target.rs"]
 mod target;
 use target::*;
@@ -143,8 +146,9 @@ fn verify_release_preflight(bootstrap: bool) -> Result<(), String> {
         return Err("GITHUB_REPOSITORY and GITHUB_TOKEN are required".to_string());
     }
 
-    let evidence_shas = release_evidence_shas(&target);
-    if target.version_only {
+    let pinned = env::var("RELEASE_PINNED").is_ok_and(|value| value == "true");
+    let evidence_shas = release_evidence_shas(&target, pinned);
+    if target.version_only && !pinned {
         println!(
             "Release {} changed version metadata only; accepting {} evidence for {}.",
             target.tag,
@@ -293,8 +297,11 @@ fn release_changes_version_metadata_only(base_sha: &str, sha: &str) -> bool {
     is_version_metadata_only_release(&changed)
 }
 
-fn release_evidence_shas(target: &ReleaseTarget) -> BTreeMap<&'static str, Vec<String>> {
-    if !target.version_only {
+fn release_evidence_shas(
+    target: &ReleaseTarget,
+    pinned: bool,
+) -> BTreeMap<&'static str, Vec<String>> {
+    if pinned || !target.version_only {
         return BTreeMap::new();
     }
     PARENT_EVIDENCE_REUSABLE_WORKFLOWS

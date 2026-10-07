@@ -1,333 +1,84 @@
 ---
-title: Type & Script Rules
+title: Type and script rules
 ---
 
-# Type & Script Rules
-
-Type rules use the TypeScript checker when semantic information is needed. Vize reads the same
-project shape that TypeScript reads from `tsconfig.json`, so shared ambient names should come from
-`compilerOptions.types`, project references, or declaration files.
-
-Script rules are Patina rules for Composition API and Vapor-oriented code. They focus on patterns
-that are hard to compile efficiently or hard to reason about in Vapor mode.
-
-Type-aware linting is opt-in. Enable it with `linter.typeAware: true`, `vize lint --type-aware`, or
-by explicitly enabling a `type/*` rule. `type/no-reactivity-loss` can be enabled directly with
-`vize lint --strict-reactivity`. If Corsa cannot be started, Patina reports `type/corsa-runtime` and
-skips the checker-backed rule pass instead of silently dropping the configured rules.
-
-`--type-aware` uses the same Corsa executable resolution as `vize check`; configure
-`typeChecker.corsaPath` when the project needs an explicit `tsgo` or Corsa binary. Defaults stay
-zero-cost: Patina does not parse SFCs for checker-backed linting or start Corsa unless the flag,
-`linter.typeAware`, or an explicitly enabled `type/*` rule opts in.
-
-```ts
-export default defineConfig({
-  linter: { typeAware: true },
-});
-```
-
-## `type/require-typed-props`
-
-Requires `defineProps` to be typed instead of using a runtime array declaration.
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script setup lang="ts">
-const props = defineProps(["label", "count"]);
-</script>
-```
-
-Good:
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{
-  label: string;
-  count: number;
-}>();
-</script>
-```
-
-## `type/require-typed-emits`
-
-Requires `defineEmits` to describe the emitted event payloads.
-
-Default severity: `warning`  
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits(["save"]);
-
-emit("save", form.value);
-</script>
-```
-
-Good:
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{
-  save: [payload: FormValue];
-}>();
-
-emit("save", form.value);
-</script>
-```
-
-## `type/no-unsafe-template-binding`
-
-Reports template bindings that resolve to unsafe values such as `any`. The rule is checker-backed,
-so it follows imported types and project configuration.
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script setup lang="ts">
-const payload: any = await loadPayload();
-</script>
-
-<template>
-  <p>{{ payload.title }}</p>
-</template>
-```
-
-Good:
-
-```vue
-<script setup lang="ts">
-type Payload = { title: string };
-
-const payload = await loadPayload<Payload>();
-</script>
-
-<template>
-  <p>{{ payload.title }}</p>
-</template>
-```
-
-## `type/no-floating-promises`
-
-Reports promises that are created but not awaited, returned, or intentionally handled.
-The check covers both `<script>` and template expressions.
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script setup lang="ts">
-function submit() {
-  saveForm(form.value);
-}
-</script>
-
-<template>
-  <button @click="saveForm(form)">Save</button>
-  <p>{{ loadPreview() }}</p>
-</template>
-```
-
-Good:
-
-```vue
-<script setup lang="ts">
-type Preview = { title: string };
-
-async function submit() {
-  await saveForm(form.value);
-}
-
-const preview = ref<Preview | null>(null);
-
-async function loadPreviewIntoState() {
-  preview.value = await loadPreview();
-}
-</script>
-
-<template>
-  <button @click="void submit()">Save</button>
-  <button @click="void loadPreviewIntoState()">Preview</button>
-  <PreviewPanel v-if="preview" :preview="preview" />
-</template>
-```
-
-## `type/no-reactivity-loss`
-
-Reports plain snapshots of reactive values that are used across flows. The rule also runs when
-`vize lint --strict-reactivity` is enabled.
-
-Default severity: `warning`  
-Presets: `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ item: { name: string } }>();
-const item = props.item;
-</script>
-```
-
-Good:
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ item: { name: string } }>();
-const item = toRef(props, "item");
-</script>
-```
-
-## Checker Configuration
-
-The type-aware rules do not need a separate Vize `globals` field for TypeScript names. Prefer
-TypeScript-native configuration:
-
-Bad:
-
-```ts
-export default {
-  globals: ["definePageMeta", "process"],
-};
-```
-
-Good:
-
-```json
-{
-  "compilerOptions": {
-    "types": ["node", "nuxt/app"]
-  }
-}
-```
-
-## `script/no-options-api`
-
-Reports Options API component definitions in Vapor-oriented presets.
-
-Default severity: `error`  
-Presets: `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script lang="ts">
-export default {
-  data() {
-    return { count: 0 };
-  },
-};
-</script>
-```
-
-Good:
-
-```vue
-<script setup lang="ts" vapor>
-const count = ref(0);
-</script>
-```
-
-## `script/no-next-tick`
-
-Reports `nextTick()` in Vapor-oriented components. Prefer direct refs, lifecycle hooks, or state
-flow that does not depend on the next DOM flush.
-
-Default severity: `error`  
-Presets: `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script setup lang="ts" vapor>
-await nextTick();
-input.value?.focus();
-</script>
-```
-
-Good:
-
-```vue
-<script setup lang="ts" vapor>
-const input = useTemplateRef<HTMLInputElement>("input");
-
-onMounted(() => {
-  input.value?.focus();
-});
-</script>
-```
-
-## `script/no-get-current-instance`
-
-Reports `getCurrentInstance()` in Vapor-oriented components. It reaches into runtime internals that
-Vapor cannot safely optimize. The `opinionated` preset applies this rule to SFCs marked with
-`<script vapor>` or `<script setup vapor>`, and to projects configured for Vapor mode. Plain
-JavaScript and TypeScript files outside Vapor mode are not reported unless the rule is enabled
-explicitly.
-
-Default severity: `error`  
-Presets: `opinionated` in Vapor mode
-
-Bad:
-
-```vue
-<script setup lang="ts" vapor>
-const instance = getCurrentInstance();
-const app = instance?.appContext.app;
-</script>
-```
-
-Good:
-
-```vue
-<script setup lang="ts" vapor>
-const appConfig = useAppConfig();
-</script>
-```
-
-## `type/strict-boolean-expressions`
-
-This opt-in native type-aware rule checks conditions in inline SFC scripts
-and `v-if`, `v-else-if`, and `v-show`. It requires the existing Corsa runtime
-(TypeScript 7). Enable it explicitly; it belongs to no preset.
-
-```ts
-export default {
-  linter: {
-    typeAware: true,
-    rules: { "type/strict-boolean-expressions": "error" },
-    ruleOptions: {
-      "type/strict-boolean-expressions": {
-        allowString: false,
-        allowNumber: false,
-        allowNullableObject: false,
-      },
-    },
-  },
-};
-```
-
-The rule covers `if`, `while`, `do`, `for`, ternary tests, negation and logical
-operands. A logical right operand used only as a resulting value is allowed.
-Explicit comparisons and narrowed booleans are accepted. For example, use
-`el == null` instead of `!el` when nullable objects are forbidden,
-`count > 0` instead of `count`, and `title !== ""` instead of `title`.
-
-`allowString`, `allowNumber`, and `allowNullableObject` default to `true`.
-`allowNullableBoolean`, `allowNullableString`, `allowNullableNumber`,
-`allowNullableEnum`, and `allowAny` default to `false`. Options alone do not
-enable the rule. Non-nullable objects are always truthy; nullish values are
-always falsy. Mixed unions still require an explicit check. The native
-checker projection uses strict checking. Assertion functions, array
-predicates and external/Pug template conditions are outside this rule's scope.
+# Type and script rules
+
+Follow each rule for purpose, severity, scope, configuration, and Bad/Good examples. Individual pages are the reference for current support boundaries.
+
+Configure `lint.vize.rules` and run `vp run lint` with the Vite+ helper. Check each page for type-aware, filename, or additional-configuration prerequisites.
+
+| Rule | Purpose |
+| --- | --- |
+| [`script/component-options-name-casing`](./reference/script-component-options-name-casing.md) | Enforce PascalCase for the component `name` option |
+| [`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | Enforce camelCase for emitted custom event names |
+| [`script/define-emits-declaration`](./reference/script-define-emits-declaration.md) | Enforce the type-based defineEmits&lt;{}&gt;() form over the runtime/array form |
+| [`script/define-macros-order`](./reference/script-define-macros-order.md) | Enforce a consistent order of the Vue compiler macros in &lt;script setup&gt; |
+| [`script/define-props-declaration`](./reference/script-define-props-declaration.md) | Enforce type-based defineProps&lt;{ ... }&gt;() over the runtime/object form |
+| [`script/define-props-destructuring`](./reference/script-define-props-destructuring.md) | Enforce consistent style for defineProps destructuring in &lt;script setup&gt; |
+| [`script/no-arrow-functions-in-watch`](./reference/script-no-arrow-functions-in-watch.md) | Disallow arrow functions as Options API watch handlers |
+| [`script/no-async-in-computed`](./reference/script-no-async-in-computed.md) | Disallow async functions in computed properties |
+| [`script/no-boolean-default`](./reference/script-no-boolean-default.md) | Disallow a default on a Boolean prop |
+| [`script/no-deep-destructure-in-props`](./reference/script-no-deep-destructure-in-props.md) | Disallow deeply nested destructuring in defineProps |
+| [`script/no-deprecated-data-object-declaration`](./reference/script-no-deprecated-data-object-declaration.md) | Disallow an object literal as the component data option (Vue 3 requires a function) |
+| [`script/no-deprecated-destroyed-lifecycle`](./reference/script-no-deprecated-destroyed-lifecycle.md) | Disallow deprecated destroyed and beforeDestroy lifecycle hooks |
+| [`script/no-deprecated-dollar-listeners-api`](./reference/script-no-deprecated-dollar-listeners-api.md) | Disallow the $listeners instance property removed in Vue 3 (merged into $attrs) |
+| [`script/no-deprecated-dollar-scopedslots-api`](./reference/script-no-deprecated-dollar-scopedslots-api.md) | Disallow the $scopedSlots instance property removed in Vue 3 (use $slots) |
+| [`script/no-deprecated-events-api`](./reference/script-no-deprecated-events-api.md) | Disallow the removed Vue 2 events API ($on / $off / $once) |
+| [`script/no-deprecated-props-default-this`](./reference/script-no-deprecated-props-default-this.md) | Disallow `this` inside a prop default/validator function (removed in Vue 3) |
+| [`script/no-dupe-keys`](./reference/script-no-dupe-keys.md) | Disallow duplicate keys across Options API props/data/computed/methods/setup/inject |
+| [`script/no-duplicate-attr-inheritance`](./reference/script-no-duplicate-attr-inheritance.md) | Flag a component that applies its fallthrough attributes twice |
+| [`script/no-export-in-script-setup`](./reference/script-no-export-in-script-setup.md) | Disallow export statements inside &lt;script setup&gt; |
+| [`script/no-get-current-instance`](./reference/script-no-get-current-instance.md) | Disallow getCurrentInstance() in Vapor mode (returns null) |
+| [`script/no-import-compiler-macros`](./reference/script-no-import-compiler-macros.md) | Disallow importing Vue compiler macros that are auto-imported |
+| [`script/no-internal-imports`](./reference/script-no-internal-imports.md) | Disallow importing from Vue internal modules |
+| [`script/no-multiple-slot-args`](./reference/script-no-multiple-slot-args.md) | Disallow passing more than one argument to a scoped-slot function call |
+| [`script/no-next-tick`](./reference/script-no-next-tick.md) | Disallow nextTick() usage in Vapor-oriented components |
+| [`script/no-options-api`](./reference/script-no-options-api.md) | Disallow Options API patterns in Vapor mode |
+| [`script/no-potential-component-option-typo`](./reference/script-no-potential-component-option-typo.md) | Flag likely typos in Options API component option names |
+| [`script/no-reactive-destructure`](./reference/script-no-reactive-destructure.md) | Disallow destructuring reactive objects which loses reactivity |
+| [`script/no-ref-as-operand`](./reference/script-no-ref-as-operand.md) | Require ref-bound variables to be accessed via `.value` when used as an operand |
+| [`script/no-required-prop-with-default`](./reference/script-no-required-prop-with-default.md) | Disallow a prop that is both required: true and has a default |
+| [`script/no-reserved-identifiers`](./reference/script-no-reserved-identifiers.md) | Disallow using Vue compiler reserved identifiers |
+| [`script/no-reserved-keys`](./reference/script-no-reserved-keys.md) | Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys |
+| [`script/no-reserved-props`](./reference/script-no-reserved-props.md) | Disallow reserved names in a component's props declaration |
+| [`script/no-restricted-globals`](./reference/script-no-restricted-globals.md) | Disallow references to runtime-environment globals that must go through a typed wrapper |
+| [`script/no-restricted-members`](./reference/script-no-restricted-members.md) | Disallow project-configured object.property member accesses |
+| [`script/no-side-effects-in-computed-properties`](./reference/script-no-side-effects-in-computed-properties.md) | Disallow side effects in Options API computed getters |
+| [`script/no-top-level-ref-in-script`](./reference/script-no-top-level-ref-in-script.md) | Disallow top-level ref/reactive to prevent Cross-Request State Pollution |
+| [`script/no-unstable-nested-components`](./reference/script-no-unstable-nested-components.md) | Disallow component definitions inside setup or render functions |
+| [`script/no-unused-emit-declarations`](./reference/script-no-unused-emit-declarations.md) | Flag declared events that are never emitted |
+| [`script/no-use-computed-property-like-method`](./reference/script-no-use-computed-property-like-method.md) | Disallow calling an Options API computed property like a method |
+| [`script/no-with-defaults`](./reference/script-no-with-defaults.md) | Discourage withDefaults in favor of destructuring defaults (Vue 3.5+) |
+| [`script/prefer-computed`](./reference/script-prefer-computed.md) | Prefer computed() for derived reactive state |
+| [`script/prefer-define-options`](./reference/script-prefer-define-options.md) | Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs |
+| [`script/prefer-import-from-vue`](./reference/script-prefer-import-from-vue.md) | Prefer importing from 'vue' instead of internal packages |
+| [`script/prefer-ref-over-reactive`](./reference/script-prefer-ref-over-reactive.md) | Recommend using ref() over reactive() for state management |
+| [`script/prefer-use-attrs`](./reference/script-prefer-use-attrs.md) | Recommend using useAttrs() over context.attrs |
+| [`script/prefer-use-id`](./reference/script-prefer-use-id.md) | Recommend using useId() for generating unique IDs (Vue 3.5+) |
+| [`script/prefer-use-slots`](./reference/script-prefer-use-slots.md) | Recommend using useSlots() over context.slots |
+| [`script/prefer-use-template-ref`](./reference/script-prefer-use-template-ref.md) | Recommend useTemplateRef over ref for template references (Vue 3.5+) |
+| [`script/require-default-prop`](./reference/script-require-default-prop.md) | Require a default value for every optional, non-Boolean prop |
+| [`script/require-explicit-emits`](./reference/script-require-explicit-emits.md) | Require emitted events to be declared in defineEmits or the emits option |
+| [`script/require-explicit-slots`](./reference/script-require-explicit-slots.md) | Require slots consumed via useSlots() to be explicitly typed with defineSlots&lt;...&gt;() |
+| [`script/require-function-return-type`](./reference/script-require-function-return-type.md) | Require return type annotations on functions |
+| [`script/require-prop-type-constructor`](./reference/script-require-prop-type-constructor.md) | Require prop `type` values to be constructors rather than string literals |
+| [`script/require-prop-types`](./reference/script-require-prop-types.md) | Require every prop to declare a type |
+| [`script/require-symbol-provide`](./reference/script-require-symbol-provide.md) | Recommend using Symbol as injection key for provide/inject |
+| [`script/require-typed-object-prop`](./reference/script-require-typed-object-prop.md) | Require an explicit type on a prop whose runtime type is `Object` or `Array` |
+| [`script/require-typed-ref`](./reference/script-require-typed-ref.md) | Require an explicit type argument on a ref() initialized with no value, null, or undefined |
+| [`script/require-valid-default-prop`](./reference/script-require-valid-default-prop.md) | Require a prop's default value to be valid for its declared type |
+| [`script/return-in-computed-property`](./reference/script-return-in-computed-property.md) | Require a return value in every computed getter |
+| [`script/return-in-emits-validator`](./reference/script-return-in-emits-validator.md) | Require a return value in every Options API emits validator |
+| [`script/valid-define-emits`](./reference/script-valid-define-emits.md) | Enforce valid defineEmits() usage (no type+runtime args, no local references, single call) |
+| [`script/valid-define-options`](./reference/script-valid-define-options.md) | Enforce valid defineOptions() usage (single object arg, no props/emits/expose/slots) |
+| [`script/valid-define-props`](./reference/script-valid-define-props.md) | Enforce valid defineProps() usage (single call, not both type and runtime args, no local references) |
+| [`script/valid-next-tick`](./reference/script-valid-next-tick.md) | Require the result of a nextTick() call to be awaited, chained, or given a callback |
+| [`type/no-floating-promises`](./reference/type-no-floating-promises.md) | Disallow floating (unhandled) Promises |
+| [`type/no-reactivity-loss`](./reference/type-no-reactivity-loss.md) | Disallow plain snapshots of reactive values across assignments and calls |
+| [`type/no-unsafe-template-binding`](./reference/type-no-unsafe-template-binding.md) | Disallow template bindings that resolve to unsafe types |
+| [`type/require-typed-emits`](./reference/type-require-typed-emits.md) | Require type definition for defineEmits |
+| [`type/require-typed-props`](./reference/type-require-typed-props.md) | Require type definition for defineProps |
+| [`type/strict-boolean-expressions`](./reference/type-strict-boolean-expressions.md) | Require safe boolean expressions in script and template conditions |
+
+[All rules](./all.md) · [Rule Options](./options.md) · [ESLint migration map](./migration.md) · [Project checks](./cross-file.md)

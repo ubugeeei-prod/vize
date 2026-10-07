@@ -23,9 +23,13 @@ import { findStep, readCanonicalCorpusWorkflow } from "./support/real-project-ma
 const helperSource = readFileSync("tools/commands/fixtures/davinci-dom-corpus-workflow.rs", "utf8");
 
 test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
-  const job = readCanonicalCorpusWorkflow().jobs?.["davinci-dom-corpus"];
+  const workflow = readCanonicalCorpusWorkflow();
+  const job = workflow.jobs?.["davinci-dom-corpus"];
+  const worker = workflow.jobs?.["canonical-observers"];
   assert.ok(job, "missing davinci-dom-corpus job");
+  assert.ok(worker, "missing full canonical observers");
   const steps = job.steps ?? [];
+  const workerSteps = worker.steps ?? [];
 
   assert.equal(job.name, "s2 dom corpus");
   assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
@@ -45,10 +49,10 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   assert.ok(steps.some((step) => step.uses === "./.github/actions/setup-rust-script"));
   assert.ok(steps.some((step) => step.uses === "./.github/actions/setup-rust-sticky-cache"));
 
-  const hydrate = findStep(steps, "Select and hydrate full fixture corpus");
+  const hydrate = findStep(workerSteps, "Select and hydrate full fixture corpus");
   assert.equal(
-    hydrate.run,
-    "rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs hydrate",
+    hydrate.run?.trim(),
+    "set -o pipefail\nrust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs hydrate 2>&1 | tee real-project-davinci-dom-corpus/initial-hydration.log\nnode tools/support/compat/github/canonical-corpus-observer.mjs rehydrate",
   );
   for (const pattern of [
     /run_git\(&\["ls-files", "--stage", "--", CORPUS_ROOT\]/,
@@ -62,7 +66,7 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
     assert.match(helperSource, pattern);
   }
 
-  const corpus = findStep(steps, "Run L2 DOM differential corpus");
+  const corpus = findStep(workerSteps, "Run L2 DOM differential corpus");
   assert.equal(corpus.id, "davinci_dom_corpus");
   assert.equal(corpus["continue-on-error"], true);
   assert.equal(
@@ -79,7 +83,7 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   const finalize = findStep(steps, "Finalize L2 DOM corpus evidence");
   assert.equal(finalize.if, "${{ always() }}");
   assert.deepEqual(finalize.env, {
-    VIZE_DAVINCI_DOM_CORPUS_OUTCOME: "${{ steps.davinci_dom_corpus.outcome }}",
+    VIZE_DAVINCI_DOM_CORPUS_OUTCOME: "${{ steps.canonical_verification.outcome }}",
   });
   assert.equal(
     finalize.run,
@@ -108,6 +112,7 @@ test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   assert.equal(upload.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
   assert.deepEqual(upload.with, {
     name: "real-project-davinci-dom-corpus",
+    overwrite: true,
     path: "real-project-davinci-dom-corpus",
     "if-no-files-found": "error",
     "retention-days": 30,

@@ -11,7 +11,10 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_relief::SimpleExpressionNode;
 
-use super::{is_event_handler_reference_expression, is_function_expression};
+use super::{
+    is_event_handler_reference_expression, is_function_expression,
+    is_typescript_function_expression,
+};
 
 /// The handler-reference shape decision, shared by the string and retained
 /// entries (and the P1-7 differential comparator).
@@ -55,6 +58,16 @@ pub fn is_event_handler_reference_node(node: &SimpleExpressionNode<'_>) -> bool 
 
 /// Node-aware [`is_function_expression`] (P1-7); same gating as above.
 pub fn is_function_expression_node(node: &SimpleExpressionNode<'_>) -> bool {
+    function_expression_node(node, is_function_expression)
+}
+
+/// TypeScript-capable handler classification with the same exact-byte retained
+/// JavaScript fast path; rejected retained dialects get one complete TS parse.
+pub fn is_typescript_function_expression_node(node: &SimpleExpressionNode<'_>) -> bool {
+    function_expression_node(node, is_typescript_function_expression)
+}
+
+fn function_expression_node(node: &SimpleExpressionNode<'_>, fallback: fn(&str) -> bool) -> bool {
     match crate::retained::retained_whole_expression(node) {
         Some(js) if crate::retained::js_module_compatible(js) => {
             let result = is_function_shape(js.ast);
@@ -62,7 +75,7 @@ pub fn is_function_expression_node(node: &SimpleExpressionNode<'_>) -> bool {
             differential_shape_check(js.raw, result, is_function_shape);
             result
         }
-        _ => is_function_expression(node.content),
+        _ => fallback(node.content),
     }
 }
 
