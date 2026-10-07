@@ -80,3 +80,6 @@ tests/_fixtures/differential/formatter-regressions/hugged-interpolation-indent-7
 
 # Original #8015 SFC and Issue inputs retain authored checkout bytes.
 tests/_fixtures/differential/lsp/template-expression-globals-8015/** -text whitespace=cr-at-eol
+
+# Contextual data/ARIA controls preserve complete source and expected payload bytes.
+tests/_fixtures/differential/lsp/data-aria-attributes-8015/** -text whitespace=cr-at-eol
