@@ -14,7 +14,7 @@ import {
   verifyCorpus,
 } from "./n8n-replay-inputs.mjs";
 
-export function qualifyN8nHost(engine, version, output, environment) {
+export function qualifyN8nHost(engine, version, output, environment, reference) {
   const inventory = verifyCorpus();
   const original = fs.mkdtempSync(path.join(os.tmpdir(), "vize-n8n-original-project-"));
   const plugin = path.join(repository, "npm/oxlint/dist/index.mjs");
@@ -36,16 +36,19 @@ export function qualifyN8nHost(engine, version, output, environment) {
       assert.equal(sha256(fs.readFileSync(target)), expected);
     }
     const reports = {};
-    const modes = ["stock", "baseline", "shared", "effective"];
+    const modes = ["stock", "reference", "baseline", "shared", "effective"];
     for (const mode of modes) {
-      const config = replayConfig(plugin, mode);
+      const config = replayConfig(
+        mode === "reference" ? reference.plugin : plugin,
+        mode === "reference" ? "baseline" : mode,
+      );
       // This is the functional frozen native/Vize object projection, not a
       // redistributed adoption-branch source or a JSONC approximation.
       const bytes = `export default ${JSON.stringify(config, null, 2)};\n`;
       fs.writeFileSync(configPath, bytes);
       fs.writeFileSync(path.join(output, `${mode}.mts`), bytes);
       const args = [
-        mode === "stock" ? engine : wrapper,
+        mode === "stock" ? engine : mode === "reference" ? reference.wrapper : wrapper,
         "-c",
         configPath,
         "-f",
@@ -141,7 +144,7 @@ export function qualifyN8nHost(engine, version, output, environment) {
         }
       }
     }
-    for (const mode of ["shared"]) {
+    for (const mode of ["reference", "shared"]) {
       assert.deepEqual(
         reports[mode].diagnostics,
         reports.baseline.diagnostics,
@@ -208,8 +211,8 @@ export function qualifyN8nHost(engine, version, output, environment) {
         "native/Vize layer and six scopes on owned exact master copies",
         "two n8n-local plugins and unrelated frontend/workspace layers excluded",
         "wrapper qualification does not repair direct SDK scriptless callbacks",
-        "no-hint baseline retains per-rule calls; optional hint modes are separate",
-        "per-file effective host batching is unmet: override.settings is rejected; native effective maps are separate",
+        "no-hint source reference retains per-rule calls; current valid override.rules collector uses one call",
+        "override.settings is rejected; native effective maps and actual host collection are separate",
       ],
     };
     fs.writeFileSync(
@@ -271,7 +274,7 @@ export function verifyNativeCalls(custody, expectedPhases) {
 
 export function expectedHostCalls(file, mode) {
   if (["stock", "effective", "effective-original"].includes(mode)) return 0;
-  if (mode === "baseline")
+  if (mode === "reference")
     return (
       51 -
       Number(
@@ -283,5 +286,5 @@ export function expectedHostCalls(file, mode) {
           ].files.some((target) => file === "packages/frontend/@n8n/design-system/" + target),
       )
     );
-  return mode === "shared" && file.startsWith(editorPrefix) ? 2 : 1;
+  return 1;
 }

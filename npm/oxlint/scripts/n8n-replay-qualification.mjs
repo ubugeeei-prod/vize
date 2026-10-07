@@ -15,6 +15,7 @@ import {
   verifyCorpus,
 } from "./n8n-replay-inputs.mjs";
 import { expectedHostCalls, qualifyN8nHost, verifyNativeCalls } from "./n8n-host-replay.mjs";
+import { prepareReferenceSource } from "./n8n-reference-source.mjs";
 
 const activeNames = (rules) =>
   Object.entries(rules)
@@ -115,12 +116,13 @@ export function beginN8nReplay({ root, packageDir, artifacts, receipt, binary })
   assert.equal(result.error, undefined);
   assert.equal(result.signal, null);
   assert.equal(result.status, 0);
-  return { output, custody, environment, inventory, hosts: [] };
+  const reference = prepareReferenceSource(output);
+  return { output, custody, environment, inventory, reference, hosts: [] };
 }
 
 export function replayN8nHost(replay, engine, version) {
   const output = path.join(replay.output, version);
-  replay.hosts.push(qualifyN8nHost(engine, version, output, replay.environment));
+  replay.hosts.push(qualifyN8nHost(engine, version, output, replay.environment, replay.reference));
 }
 
 export function finishN8nReplay(replay) {
@@ -130,9 +132,10 @@ export function finishN8nReplay(replay) {
     "scopedPerRule",
     "scopedSharedBatch",
     "scopedEffectiveBatch",
+    "scopedCollected",
   ];
   const hostPhases = replay.hosts.flatMap(({ version }) =>
-    ["stock", "baseline", "shared", "effective", "effective-original"].map(
+    ["stock", "reference", "baseline", "shared", "effective", "effective-original"].map(
       (mode) => `host:${version}:${mode}`,
     ),
   );
@@ -167,8 +170,8 @@ export function finishN8nReplay(replay) {
         `${phase}/${file}: physical native call count`,
       );
       const perFile = observed.calls.get(phase)?.get(filename) ?? [];
-      const shared = ["shared", "scopedSharedBatch"].includes(mode);
-      const perRule = ["baseline", "frozenPerRule", "scopedPerRule"].includes(mode);
+      const shared = mode === "scopedSharedBatch";
+      const perRule = ["reference", "frozenPerRule", "scopedPerRule"].includes(mode);
       const selections = refused
         ? []
         : perRule
@@ -237,10 +240,11 @@ export function finishN8nReplay(replay) {
     processes: observed.processes,
     nativeCallsSha256: sha256(fs.readFileSync(replay.custody.calls)),
     hosts: replay.hosts,
+    reference: replay.reference,
     limits: [
-      "frozen settings have no active-rule hint: per-rule calls remain unmet for one-call adoption",
+      "valid frozen no-hint callbacks collect actual scoped options; original reference keeps per-rule calls",
       "optional root shared hints and native effective maps are separate supported optimizations",
-      "per-file effective host batching remains unmet; both hosts reject override.settings without native calls",
+      "unsupported override.settings is refused; valid override.rules batching is qualified separately",
       "direct SDK scriptless callbacks remain externally unavailable in both pinned hosts",
       "two n8n-local plugins and unrelated native/frontend/workspace layers not qualified",
       "installed packages, retired rules and upstream timing not qualified by this campaign",

@@ -141,7 +141,7 @@ for (const [version, types] of [
           "a tampered carrier reached native linting",
         );
         calls++;
-        if (event.args[1].enabledRules?.length === 51) batchCalls++;
+        if (event.hasRuleHint && event.args[1].enabledRules?.length === 51) batchCalls++;
       }
     }
     assert.ok(calls > 0, "no physical source-addon lint call was observed");

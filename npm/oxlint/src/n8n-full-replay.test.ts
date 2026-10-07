@@ -6,6 +6,8 @@ import { performance } from "node:perf_hooks";
 import type { Context } from "@oxlint/plugins";
 import { it, vi } from "vite-plus/test";
 import * as binding from "./binding.ts";
+import { qualifyCollectedCacheControls } from "./n8n-collected-cache-controls.ts";
+import { collectActiveRule, getActiveRuleDiagnostics } from "./active-rule-collection.ts";
 import {
   clearFileStateCache,
   getDiagnosticsForRule,
@@ -57,15 +59,24 @@ it("qualifies every licensed n8n input, all selected options and bounded revisio
       settings: { vize: settings },
       sourceCode: { text: fs.readFileSync(filename, "utf8") },
     }) as unknown as Context;
-  const vector = (ctx: Context, rules: Record<string, unknown>) => {
+  const vector = (ctx: Context, rules: Record<string, unknown>, collected = false) => {
     const selection = parseRuleSelection(rules)!;
     const state = getFileState(ctx);
+    const program = {};
+    if (collected) {
+      for (const name of selection.names)
+        collectActiveRule(ctx, program, name, selection.optionsByRule.get(name));
+    }
     return frozen.names.map((name) => ({
       rule: name,
       configured: rules["vize/" + name],
       options: selection.optionsByRule.get(name) ?? null,
       diagnostics: selection.optionsByRule.has(name)
-        ? [...getDiagnosticsForRule(ctx, state, name, selection.optionsByRule.get(name))]
+        ? [
+            ...(collected
+              ? getActiveRuleDiagnostics(ctx, program, name)!.diagnostics
+              : getDiagnosticsForRule(ctx, state, name, selection.optionsByRule.get(name))),
+          ]
         : [],
     }));
   };
@@ -75,6 +86,7 @@ it("qualifies every licensed n8n input, all selected options and bounded revisio
     "scopedPerRule",
     "scopedSharedBatch",
     "scopedEffectiveBatch",
+    "scopedCollected",
   ];
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-n8n-cache-controls-"));
   try {
@@ -97,10 +109,10 @@ it("qualifies every licensed n8n input, all selected options and bounded revisio
         });
         const start = performance.now(),
           before = nativeCalls;
-        const cold = vector(ctx, rules),
+        const cold = vector(ctx, rules, mode === "scopedCollected"),
           coldCalls = nativeCalls - before;
         const warmBefore = nativeCalls,
-          warm = vector(ctx, rules),
+          warm = vector(ctx, rules, mode === "scopedCollected"),
           warmCalls = nativeCalls - warmBefore;
         const elapsedMs = performance.now() - start;
         fs.appendFileSync(
@@ -136,6 +148,7 @@ it("qualifies every licensed n8n input, all selected options and bounded revisio
       // no sorting, deduplication, field removal or count-only comparison.
       assert.deepEqual(vectors.get("frozenBatch"), vectors.get("frozenPerRule"), entry.file);
       assert.deepEqual(vectors.get("scopedSharedBatch"), vectors.get("scopedPerRule"), entry.file);
+      assert.deepEqual(vectors.get("scopedCollected"), vectors.get("scopedPerRule"), entry.file);
       assert.deepEqual(
         vectors.get("scopedEffectiveBatch"),
         vectors.get("scopedPerRule"),
@@ -159,9 +172,10 @@ it("qualifies every licensed n8n input, all selected options and bounded revisio
       ctx: Context,
       selected: Record<string, unknown>,
       expected: number,
+      collected = false,
     ) => {
       const before = nativeCalls,
-        result = vector(ctx, selected),
+        result = vector(ctx, selected, collected),
         calls = nativeCalls - before;
       fs.appendFileSync(
         controlsPath,
@@ -230,6 +244,17 @@ it("qualifies every licensed n8n input, all selected options and bounded revisio
     assert.deepEqual(getFileStateCacheStats(), { capacity: 128, entries: 128 });
     observe("LRU resident warm", context(paths[128], settings), rules, 0);
     observe("LRU evicted cold", context(paths[0], settings), rules, 1);
+    qualifyCollectedCacheControls(
+      file,
+      source,
+      paths,
+      manifest.adoption.rules,
+      manifest.adoption.settings.vize,
+      context,
+      observe,
+      fallback,
+      withoutHtml,
+    );
     assert.deepEqual(
       verifyCorpus(),
       inventory,
@@ -246,7 +271,7 @@ it("qualifies every licensed n8n input, all selected options and bounded revisio
           vectorSha256: sha256(fs.readFileSync(vectorPath)),
           limits: [
             "native + bridge context qualification; not direct SDK callback coverage",
-            "frozen no-hint settings retain per-rule native calls",
+            "manual reference API keeps per-rule calls; actual callback collector is independently qualified",
             "explicit hint modes are separate optimizations",
             "two n8n-local plugins and unrelated workspace layers excluded",
             "no upstream 11-second timing claim",

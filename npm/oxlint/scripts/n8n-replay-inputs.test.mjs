@@ -60,7 +60,9 @@ void test("optional effective hints carry the whole final map; shared hints stay
   for (const file of ["packages/Other.vue", ...disabledFiles]) {
     assert.equal(expectedHostCalls(file, "effective"), 0);
     assert.equal(expectedHostCalls(file, "effective-original"), 0);
-    assert.equal(expectedHostCalls(file, "baseline"), disabledFiles.includes(file) ? 50 : 51);
+    assert.equal(expectedHostCalls(file, "reference"), disabledFiles.includes(file) ? 50 : 51);
+    assert.equal(expectedHostCalls(file, "baseline"), 1);
+    assert.equal(expectedHostCalls(file, "shared"), 1);
   }
 });
 

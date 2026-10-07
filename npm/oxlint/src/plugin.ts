@@ -1,10 +1,9 @@
 import { definePlugin, defineRule, type Diagnostic } from "@oxlint/plugins";
 import { getRuleOptions } from "./rule-options.js";
+import { collectActiveRule, getActiveRuleDiagnostics } from "./active-rule-collection.js";
 
 import { getPatinaRules } from "./binding.js";
 import {
-  getFileState,
-  getDiagnosticsForRule,
   getScriptMap,
   getSfcBlocks,
   markDiagnosticAsReported,
@@ -117,16 +116,22 @@ function createPatinaRule(ruleMeta: PatinaRuleMeta) {
             return;
           }
 
-          const helpLevel = settings.helpLevel ?? "full";
-          const state = getFileState(context);
-          const scriptMap = getScriptMap(state);
-          const ruleOptions = getRuleOptions(ruleMeta.name, contextOptions(context));
-          const diagnostics = getDiagnosticsForRule(
+          collectActiveRule(
             context,
-            state,
+            program,
             ruleMeta.name,
-            ruleOptions,
-          ).filter((diagnostic) => shouldReportForCurrentProgram(diagnostic, state, scriptMap));
+            getRuleOptions(ruleMeta.name, contextOptions(context)),
+          );
+        },
+        "Program:exit"(program) {
+          const collected = getActiveRuleDiagnostics(context, program, ruleMeta.name);
+          if (!collected) return;
+          const { state } = collected;
+          const helpLevel = getVizeSettings(context).helpLevel ?? "full";
+          const scriptMap = getScriptMap(state);
+          const diagnostics = collected.diagnostics.filter((diagnostic) =>
+            shouldReportForCurrentProgram(diagnostic, state, scriptMap),
+          );
           if (diagnostics.length === 0) {
             return;
           }
