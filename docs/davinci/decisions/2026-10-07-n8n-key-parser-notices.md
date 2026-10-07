@@ -18,6 +18,10 @@ The harness authenticates the literal twelve-case order and exact two-mode
 order, checks source equality against the unchanged independent official
 packet, and writes all 24 complete parse/transform/module packets before
 asserting their notice vectors and ordered branch-key diagnostics.
+Under the existing Rust shard environment, packets are written inside
+`target/nextest/$NEXTEST_PROFILE/compiler-fixtures/` so the existing shard
+artifact upload retains every complete vector and module, including on
+assertion failure. Direct Cargo runs use the existing test-receipts folder.
 It compares the complete notice objects; it neither drops compatibility
 diagnostics nor accepts unrelated `ExtendPoint` errors.
 

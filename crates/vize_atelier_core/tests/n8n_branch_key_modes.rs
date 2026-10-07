@@ -95,8 +95,15 @@ fn branch_key_shape_and_scope_match_pinned_official_modes() {
         }
     }
     assert_eq!(packets.len(), 24);
-    let receipt = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../target/test-receipts/n8n-retained-branch-key-modes.json");
+    let target = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target");
+    let directory = match std::env::var("NEXTEST_PROFILE") {
+        Ok(profile) => target
+            .join("nextest")
+            .join(profile)
+            .join("compiler-fixtures"),
+        Err(_) => target.join("test-receipts"),
+    };
+    let receipt = directory.join("n8n-retained-branch-key-modes.json");
     std::fs::create_dir_all(receipt.parent().expect("receipt directory")).expect("directory");
     std::fs::write(
         receipt,
