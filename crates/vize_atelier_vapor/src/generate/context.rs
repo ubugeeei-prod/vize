@@ -11,7 +11,7 @@ mod component_resolution;
 mod scopes;
 mod slot_defaults;
 pub(crate) use scopes::{ForScope, SlotScope};
-use vize_atelier_core::options::BindingMetadata;
+use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_atelier_core::steps::expression::is_template_global;
 use vize_carton::{FxHashMap, FxHashSet, String, ToCompactString, cstr};
 
@@ -194,6 +194,15 @@ impl<'a> GenerateContext<'a> {
             }
         }
 
+        // Literal constants, including static enums, are hoisted into the
+        // module scope. They do not belong to the component proxy.
+        if self
+            .binding_metadata
+            .and_then(|bindings| bindings.bindings.get(name))
+            == Some(&BindingType::LiteralConst)
+        {
+            return Some(name.to_compact_string());
+        }
         resolve_props_binding(self.binding_metadata, name)
     }
 

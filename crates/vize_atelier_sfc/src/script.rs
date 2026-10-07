@@ -41,7 +41,7 @@ pub use import_usage_check::{
     TemplateUsedIdentifiers, is_used_in_template, resolve_template_read_identifiers,
     resolve_template_used_identifiers, resolve_template_v_model_identifiers,
 };
-pub(crate) use static_expression::{is_static_enum, register_enum};
+pub(crate) use static_expression::{hoistable_literal_name, is_static_enum, register_enum};
 pub(crate) use type_resolution::{
     build_interface_type_source, resolve_type_args, resolve_type_to_object_body,
 };
