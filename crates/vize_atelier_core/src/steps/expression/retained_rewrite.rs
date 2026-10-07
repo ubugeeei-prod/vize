@@ -41,6 +41,7 @@ pub(super) fn rewrite_retained(
     let mut collector = IdentifierCollector::new_unwrapped(ctx, js.raw);
     oxc_ast_visit::Visit::visit_expression(&mut collector, js.ast);
 
+    let has_identifiers = collector.has_identifiers;
     let used_unref = collector.used_unref;
     let used_is_ref = collector.used_is_ref;
     // Content-relative spans: wrapper offset 0 (the legacy path subtracts 1).
@@ -50,6 +51,7 @@ pub(super) fn rewrite_retained(
         code: super::rewrite::rewrite_props_aliases(result, ctx),
         used_unref,
         used_is_ref,
+        has_identifiers,
         parse_error: None,
     };
 
