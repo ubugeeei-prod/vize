@@ -74,7 +74,7 @@ must pass. Complete raw packets are saved before parity/runtime assertions, so
 a failed gate retains its evidence and receives no completion credit.
 The immutable capture-only commit is
 `f5699c195e627ad26aa1c8efd4a59266120cd9b9`; the reviewed descending repair
-anchor is `670afc49ca9627e81b28713f1242507d16614b7e`. Preserve their real
+anchor is `8f36b5f15e7f1227cc48232ff991a585a5741b24`. Preserve their real
 commit chain when integrating the existing PR. The ordinary default-mode
 baseline has two complete legacy errors with missing locations; retain those
 `null` locations as failed historical evidence. Its two native diagnostics
