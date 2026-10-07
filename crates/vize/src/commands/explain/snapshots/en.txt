@@ -1924,12 +1924,10 @@ autofix: no
 docs: docs/content/rules/type-and-script.md
 
 invalid:
-  const { foo, bar } = defineProps<{ foo: string; bar?: number }>()
-  const [first] = defineProps<[string]>()
+  const props = defineProps<{ foo: string }>()
 
 valid:
-  const props = defineProps<{ foo: string }>()
-  // ...later: props.foo
+  const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
 === script/no-arrow-functions-in-watch
 script/no-arrow-functions-in-watch · lint rule
 Disallow arrow functions as Options API watch handlers

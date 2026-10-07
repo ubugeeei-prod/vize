@@ -338,16 +338,6 @@ museaPreferDesignTokensOptionsDef: JsonSchema = new JsonSchema {
   additionalProperties = false
 }
 
-definePropsDestructuringOptionsDef: JsonSchema = new JsonSchema {
-  type = "object"
-  properties {
-    ["destructure"] = new JsonSchema {
-      type = "string"
-      enum = new Listing { "only-when-assigned"; "always"; "never" }
-      default = "only-when-assigned"
-    }
-  }
-  additionalProperties = false
-}
+definePropsDestructuringOptionsDef: JsonSchema = LintRuleOptionsSchemaDefinitions.definePropsDestructuringOptionsDef
 
 lintRuleOptionsDef: JsonSchema = LintRuleOptionsSchemaDefinitions.lintRuleOptionsDef

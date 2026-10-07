@@ -4,10 +4,22 @@ module vize.jsonschema.LintRuleOptionsSchemaDefinitions
 import "@json_schema/JsonSchema.pkl"
 import "ConfigArtifactDefinitions.pkl"
 
+definePropsDestructuringOptionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["destructure"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "only-when-assigned"; "always"; "never" }
+      default = "only-when-assigned"
+    }
+  }
+  additionalProperties = false
+}
+
 lintRuleOptionsDef: JsonSchema = new JsonSchema {
   type = "object"
   properties {
-    ["script/define-props-destructuring"] = ConfigArtifactDefinitions.definePropsDestructuringOptionsDef
+    ["script/define-props-destructuring"] = definePropsDestructuringOptionsDef
     ["html/no-empty-palpable-content"] = new JsonSchema {
       type = "object"
       properties {

@@ -3,6 +3,16 @@
 //! Match Vue's props destructuring style preference. The default requires
 //! destructuring when assigned; `always` also checks bare calls and `never`
 //! preserves explicit props-object access. Vue 3.5 destructures remain reactive.
+//!
+//! ### Invalid
+//! ```ts
+//! const props = defineProps<{ foo: string }>()
+//! ```
+//!
+//! ### Valid
+//! ```ts
+//! const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
+//! ```
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};

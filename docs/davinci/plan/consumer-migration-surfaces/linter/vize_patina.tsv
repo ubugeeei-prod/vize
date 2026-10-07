@@ -628,10 +628,10 @@ linter	Linter	source	crates/vize_patina/src/rules/script/define_macros_order.rs	
 linter	Linter	source	crates/vize_patina/src/rules/script/define_macros_order.rs	42	raw_oxc	raw OXC	raw	oxc_ast	raw	3
 linter	Linter	source	crates/vize_patina/src/rules/script/define_props_declaration.rs	37	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/define_props_declaration.rs	37	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/define_props_destructuring.rs	9	l0	L0	stage	vize_l0	preferred	1
-linter	Linter	source	crates/vize_patina/src/rules/script/define_props_destructuring.rs	9	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/define_props_destructuring.rs	9	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
-linter	Linter	test/dev	crates/vize_patina/src/rules/script/define_props_destructuring.rs	160	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/script/define_props_destructuring.rs	19	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/script/define_props_destructuring.rs	19	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/define_props_destructuring.rs	19	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+linter	Linter	test/dev	crates/vize_patina/src/rules/script/define_props_destructuring.rs	170	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs	51	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs	51	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/no_async_in_computed.rs	40	raw_oxc	raw OXC	raw	oxc_ast	raw	1
