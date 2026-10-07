@@ -108,6 +108,7 @@ fn assert_rewrite_agrees(
     oxc_ast_visit::Visit::visit_expression(&mut collector, &legacy);
     let legacy_used_unref = collector.used_unref;
     let legacy_used_is_ref = collector.used_is_ref;
+    let legacy_has_identifiers = collector.has_identifiers;
     let mut all_rewrites: Vec<(usize, String, String)> = collector
         .rewrites
         .into_iter()
@@ -135,9 +136,15 @@ fn assert_rewrite_agrees(
         (
             retained.code.as_str(),
             retained.used_unref,
-            retained.used_is_ref
+            retained.used_is_ref,
+            retained.has_identifiers
         ),
-        (legacy_code.as_str(), legacy_used_unref, legacy_used_is_ref),
+        (
+            legacy_code.as_str(),
+            legacy_used_unref,
+            legacy_used_is_ref,
+            legacy_has_identifiers
+        ),
         "davinci-differential (P1-9): the AST-driven splice diverged from the legacy string rewrite for expression {:?}",
         js.raw
     );

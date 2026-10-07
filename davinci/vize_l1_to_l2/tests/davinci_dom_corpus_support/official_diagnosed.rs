@@ -104,7 +104,7 @@ pub(super) fn authenticate(
         return Err("exact eight official modes required".into());
     }
     let mut records = vec![Value::Null; 10];
-    records[9] = official["record"].clone();
+    *records.get_mut(9).ok_or("fixed official original index")? = official["record"].clone();
     let record_document = json!({"records":records});
     for (mode, name) in modes.iter().zip(MODES) {
         let raw: Value = serde_json::from_slice(

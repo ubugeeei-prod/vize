@@ -226,7 +226,7 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
             }
             oxc_ast_types::MemberExpression::PrivateFieldExpression(private) => {
                 self.visit_expression(&private.object);
-                // Private field name shouldn't be prefixed
+                self.has_identifiers = true;
             }
         }
     }

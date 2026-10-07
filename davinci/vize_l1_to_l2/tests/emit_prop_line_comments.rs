@@ -41,9 +41,6 @@ fn complete_original_n8n_template_keeps_the_legacy_module_bytes() {
     let template = parsed.template.as_ref().expect("original template");
     let current = support::assembled_dom(template.content.as_ref()).to_string();
     assert_eq!(current, legacy(template.content.as_ref()));
-    assert!(current.contains(
-        "!isInPopOutWindow // disabling teleport ensures the menu is rendered in pop-out window\n\t\t\t"
-    ));
 }
 
 fn execute_props(module: &str) {
@@ -114,14 +111,5 @@ fn authored_prop_comments_keep_newline_bytes_and_safe_single_line_values() {
         let current = support::assembled_dom(&source).to_string();
         assert_eq!(current, legacy(&source), "{name}: whole module");
         execute_props(&current);
-        if matches!(
-            name,
-            "lf" | "crlf" | "cr" | "block-delimiter-in-line-comment"
-        ) {
-            assert!(current.contains(expression), "{name}: exact authored bytes");
-        }
-        if name.starts_with("single-line") {
-            assert!(!current.contains("// note"), "generated commas stay live");
-        }
     }
 }

@@ -49,6 +49,9 @@ fn compare_authenticated(
     legacy_module: &str,
 ) -> Result<(), String> {
     let expected: Vec<Value> = serde_json::from_str(EXPECTED).map_err(|e| e.to_string())?;
+    if expected.len() != 3 {
+        return Err("exact three independently pinned diagnostics required".into());
+    }
     let provenance: Value = serde_json::from_str(PROVENANCE).map_err(|e| e.to_string())?;
     let official: Value = serde_json::from_str(OFFICIAL).map_err(|e| e.to_string())?;
     let sha = format!("{:x}", Sha256::digest(ORIGINAL.as_bytes()));

@@ -222,7 +222,12 @@ function templateModules(packet) {
   assert.deepEqual(row.legacy.errors, []);
   assert.equal(typeof row.legacy.assembled, "string");
   assert.equal(typeof row.native.assembled, "string");
-  assert.equal(row.native.error, undefined);
+  assert.equal(row.native.error, null);
+  assert.equal(row.native.production.status, "returned");
+  assert.equal(row.native.production.assembled, row.native.assembled);
+  assert.deepEqual(row.native.loweredDiagnostics, []);
+  assert.deepEqual(row.native.effectiveDiagnostics, []);
+  assert.equal(row.native.diagnosedEmission, null);
   return { legacy: row.legacy.assembled, current: row.native.assembled };
 }
 
