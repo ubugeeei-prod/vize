@@ -1,0 +1,7 @@
+file	spelling
+docs/scripts/rules/cross-extra.mjs	@save.stop
+docs/scripts/rules/manual-2.mjs	@keydown.enter
+docs/scripts/rules/manual-2.mjs	@keydown.enter
+docs/scripts/rules/manual-9.mjs	@click.ctrl
+docs/scripts/rules/manual-9.mjs	@click.exact
+docs/scripts/rules/manual-9.mjs	@click.ctrl

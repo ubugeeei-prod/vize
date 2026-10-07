@@ -72,3 +72,38 @@ The old `4fc8c793` source passed all 22 controls, 16,513 actual Rust testcases,
 canonical DOM and source report; that is historical evidence only. Require
 fresh Actions on this composed source, native Stack membership and protected
 actual merge before issue closure. Root retains queue and release ownership.
+
+The #7900 closure audit on actual main `a0f50992` verifies signed #7964
+(`3770956b`) and #8163 (`3ed1cc90`) are ancestors. Their authenticated
+22 service vectors and 11 registration/custody laws do not execute the
+reported CLI or Oxlint plugin. Keep the issue open until those public
+producers execute; historical service success is not public-boundary credit.
+
+Add a focused six-case public corpus using the complete original Card files
+and config, original Panel/PanelHost sources, and unchanged authored service
+oracles. Preserve genuine unused, unregistered-component and browser-global
+negative controls. The existing selected tooling job builds the CLI and
+source NAPI: validate both existing build receipts, reuse the physical frozen
+addon, pack the source plugin, and execute original plain CLI, whole JSON CLI,
+whole public NAPI, direct Oxlint plugin and the existing Oxlint wrapper.
+Retain raw output, complete expected/actual vectors and each physical addon
+load/call with the complete Art input and binary digest in the existing
+always-upload differential artifacts. No production behavior, old corpus,
+source gate, instruction budget, native migration or release acceptance is
+changed or inferred. Fresh exact-head/protected qualification and actual
+signed delivery are required; publication and installed replay remain pending.
+
+First source `4ed2ce06` fails before any Art producer executes: the generic
+`NAPI_RS_NATIVE_LIBRARY_PATH` also makes VP load Vize's addon (`run is not a
+function`). Scope that override to the workspace native package's own
+loader only, restoring it before unrelated addons load. The original inputs,
+whole expected vectors and product bytes remain unchanged; retain the failed
+raw capture and require fresh successor execution with no transferred credit.
+
+Successor `26e7fc49` genuinely executes the original Card, Art Panel and
+ordinary PanelHost through all four public producers, including physical
+source-addon calls. Its first unused negative control then rejects the
+authored Oxlint envelope because real Oxlint retains mandatory empty
+`causes`/`related` vectors. Add those explicit empty fields, retaining whole
+equality and every semantic span/message/count; the immutable failed artifact
+keeps partial evidence, while all six controls require fresh terminal execution.

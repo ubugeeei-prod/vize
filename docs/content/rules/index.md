@@ -8,12 +8,18 @@ Vize diagnostics are documented as rules, not as one large matrix. Each rule pag
 detection behavior close to the Bad/Good examples so the reference can be read like an ESLint rule
 manual.
 
+With Vite+, use `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `lint.vize`,
+and run `vp run lint` for Vize and Oxlint. Existing script-name collisions use `vp run vize:lint`.
+Built-in `vp lint` uses its own upstream checker.
+
 ## Pages
 
-- [All Patina rules](./all.md): one-page metadata table for every Patina rule implementation,
-  including GitHub source links.
-- [Rule Options](./options.md): typed `linter.ruleOptions` shapes, defaults, replacement
+- [All lint rules](./all.md): searchable index linking every implementation to its full
+  reference with purpose, scope, configuration, and Bad/Good examples.
+- [Rule Options](./options.md): typed `lint.vize.ruleOptions` shapes, defaults, replacement
   behavior, and examples for every configurable rule.
+- [ESLint migration map](./migration.md): mapped names, differences, unsupported rules, and
+  literal Vite+ configuration changes.
 - [Vue rules](./vue.md): SFC template structure, Vue directives, component conventions, and
   single-file Vue correctness checks.
 - [Type and script rules](./type-and-script.md): TypeScript checker-backed diagnostics and Vapor
@@ -27,7 +33,7 @@ manual.
   Vue Test Utils, and Void Vue.
 - [Musea and CSS rules](./musea-and-css.md): Musea art-block checks and style diagnostics.
 - [Cross-file rules](./cross-file.md): project-graph diagnostics emitted by
-  `vize lint --cross-file`.
+  `vp run lint` with `crossFile: true`, including complete typed Router projects.
 
 ## Presets
 

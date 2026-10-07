@@ -68,3 +68,10 @@ the style producer command/upload and require the exact five shared steps.
 This uses actual main, with no queued Art metadata or synthetic ancestry.
 All original style producer/corpus/control bytes remain unchanged. Fresh successor
 source and protected qualification are required; previous execution does not transfer.
+
+Integrate genuine signed main772 bilingual rule documentation. Resolve only the
+two generated table/category conflicts with the official rule-page generator.
+Keep all251 authored examples,252 migration mappings, options and full project
+inputs unchanged. Regeneration changes only Vapor fixability and the two changed
+source anchors in EN/JA metadata; the already truthful no-SFC-finding Vapor leaf
+remains byte-exact. Fresh successor Actions and protected qualification are required.

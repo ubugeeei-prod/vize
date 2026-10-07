@@ -1,116 +1,21 @@
 ---
-title: 蒸気のルール
+title: Vapor ルール
 ---
 
-<!-- Generated translation; source: rules/vapor.md -->
+# Vapor ルール
 
-# 蒸気ルール
+ルール名から、目的・重大度・適用範囲・設定・悪い例・良い例を確認できます。個別ページが現在の対応範囲を示す参照先です。
 
-これらのルールは、Vapor 指向のコンポーネントとアプリのテンプレート制約をカバーします。構成APIと
-スクリプトレベルの Vapor ガイダンスは [タイプとスクリプトのルール](./type-and-script.md) にあります。
+Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。
 
-## `vapor/no-vue-lifecycle-events`
+| ルール | 目的 |
+| --- | --- |
+| [`script/no-get-current-instance`](./reference/script-no-get-current-instance.md) | Vapor で null を返す getCurrentInstance() を検出します。 |
+| [`script/no-next-tick`](./reference/script-no-next-tick.md) | Vapor 向けコンポーネントの nextTick() 使用を検出します。 |
+| [`script/no-options-api`](./reference/script-no-options-api.md) | Vapor で Options API を使用する箇所を検出します。 |
+| [`vapor/no-inline-template`](./reference/vapor-no-inline-template.md) | Vapor で削除済みの inline-template 属性を検出します。 |
+| [`vapor/no-vue-lifecycle-events`](./reference/vapor-no-vue-lifecycle-events.md) | Vapor が対応しない要素の @vue:* lifecycle event を検出します。 |
+| [`vapor/prefer-static-class`](./reference/vapor-prefer-static-class.md) | 文字列リテラルの :class を静的 class に置き換えます。 |
+| [`vapor/require-vapor-attribute`](./reference/vapor-require-vapor-attribute.md) | Vapor 向けの script setup に vapor 属性を付ける方針を適用します。 |
 
-`@vue:mounted` などの要素ごとのライフサイクル イベントをレポートします。
-
-デフォルトの重大度: `error`
-プリセット: `happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <input @vue:mounted="focusInput" />
-</template>
-```
-
-良い：
-
-```vue
-<script setup lang="ts" vapor>
-const input = useTemplateRef<HTMLInputElement>("input");
-
-onMounted(() => {
-  input.value?.focus();
-});
-</script>
-
-<template>
-  <input ref="input" />
-</template>
-```
-
-## `vapor/require-vapor-attribute`
-
-プリセットが Vapor 互換コンポーネントを必要とする場合、`vapor` を `<script setup>` に追加することを提案します。
-
-デフォルトの重大度: `warning`
-プリセット: `nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<script setup lang="ts">
-const count = ref(0);
-</script>
-```
-
-良い：
-
-```vue
-<script setup lang="ts" vapor>
-const count = ref(0);
-</script>
-```
-
-## `vapor/no-inline-template`
-
-非推奨の `inline-template` 属性を報告します。
-
-デフォルトの重大度: `error`
-プリセット: `nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <LegacyCard inline-template>
-    <p>Profile</p>
-  </LegacyCard>
-</template>
-```
-
-良い：
-
-```vue
-<template>
-  <LegacyCard>
-    <template #default>
-      <p>Profile</p>
-    </template>
-  </LegacyCard>
-</template>
-```
-
-## `vapor/prefer-static-class`
-
-値が静的文字列リテラルである動的 `:class` バインディングをレポートします。
-
-デフォルトの重大度: `warning`
-プリセット: `nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <section :class="'panel panel-primary'">Profile</section>
-</template>
-```
-
-良い：
-
-```vue
-<template>
-  <section class="panel panel-primary">Profile</section>
-</template>
-```
+[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md)

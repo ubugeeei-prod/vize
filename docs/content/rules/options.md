@@ -4,37 +4,58 @@ title: Rule Options
 
 # Rule Options
 
+With Vite+, configure `lint.vize.ruleOptions` in `vite.config.ts` and run `vp run lint`. The standalone compatibility config uses the same values under `linter.ruleOptions`.
+
 `linter.ruleOptions` holds typed project-local settings for rules that accept options. Unknown
 option fields are rejected, and later matching config entries replace the full option object for the
 same rule. Set severity separately under `linter.rules`; options only describe how an enabled rule
 should behave unless noted below.
 
-```json
-{
-  "linter": {
-    "rules": {
-      "script/no-restricted-globals": "error",
-      "vue/html-self-closing": "warn",
-      "musea/prefer-design-tokens": "warn"
-    },
-    "ruleOptions": {
-      "script/no-restricted-globals": {
-        "globals": [
-          { "name": "process", "message": "Read env via a typed helper." },
-          { "name": "alert" }
-        ]
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  "lint": {
+    "vize": {
+      "rules": {
+        "script/no-restricted-globals": "error",
+        "vue/html-self-closing": "warn",
+        "musea/prefer-design-tokens": "warn"
       },
-      "vue/html-self-closing": {
-        "html": { "void": "always", "normal": "never", "component": "always" },
-        "svg": "always",
-        "math": "always"
-      },
-      "musea/prefer-design-tokens": {
-        "tokens": [{ "path": "color.primary", "value": "#3b82f6", "tier": "semantic" }]
+      "ruleOptions": {
+        "script/no-restricted-globals": {
+          "globals": [
+            {
+              "name": "process",
+              "message": "Read env via a typed helper."
+            },
+            {
+              "name": "alert"
+            }
+          ]
+        },
+        "vue/html-self-closing": {
+          "html": {
+            "void": "always",
+            "normal": "never",
+            "component": "always"
+          },
+          "svg": "always",
+          "math": "always"
+        },
+        "musea/prefer-design-tokens": {
+          "tokens": [
+            {
+              "path": "color.primary",
+              "value": "#3b82f6",
+              "tier": "semantic"
+            }
+          ]
+        }
       }
     }
   }
-}
+});
 ```
 
 | Rule | Option shape | Defaults and behavior |
@@ -44,6 +65,7 @@ should behave unless noted below.
 | `script/no-restricted-members` | `{ members?: Array<{ object: string; property: string; message?: string }> }` | Off unless `members` is configured and the rule is enabled. A missing `message` uses the generic diagnostic help. |
 | `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case" }` | Defaults to `PascalCase`. |
 | `script/custom-event-name-casing` | `{ casing?: "camelCase" \| "kebab-case" }` | Defaults to `camelCase`. |
+| `script/define-props-destructuring` | `{ mode?: "only-when-assigned" \| "always" \| "never" }` | Defaults to `only-when-assigned`. `always` also checks bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity. |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |
 | `vue/require-component-registration` | `{ globals?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule. |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank. |
@@ -62,6 +84,7 @@ should behave unless noted below.
   self-closing tags, event names, and attribute casing.
 - [Musea Rule Options](./options-musea.md): design-token inventory configuration.
 
+
 ## `html/no-empty-palpable-content`
 
 Custom directives may focus, style, or fill an element. List only the directives your project
@@ -70,13 +93,25 @@ do not change that name. Unlisted directives still leave an empty element report
 list restores the default behavior, and a matching scoped entry replaces the entire option object.
 This setting does not validate sanitization or enable the rule.
 
-```json
-{
-  "linter": {
-    "rules": { "html/no-empty-palpable-content": "error" },
-    "ruleOptions": { "html/no-empty-palpable-content": { "contentDirectives": ["safe-html"] } }
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  "lint": {
+    "vize": {
+      "rules": {
+        "html/no-empty-palpable-content": "error"
+      },
+      "ruleOptions": {
+        "html/no-empty-palpable-content": {
+          "contentDirectives": [
+            "safe-html"
+          ]
+        }
+      }
+    }
   }
-}
+});
 ```
 
 Bad (unlisted content source):
@@ -102,15 +137,26 @@ Each configured rule option object replaces the same root object; arrays such as
 For components supplied by application plugins or Musea `previewSetup`, configure
 `vue/require-component-registration` with explicit global names:
 
-```json
-{
-  "linter": {
-    "rules": { "vue/require-component-registration": "warn" },
-    "ruleOptions": {
-      "vue/require-component-registration": { "globals": ["MyButton", "MyIcon"] }
-    }
-  }
-}
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "rules": {
+        "vue/require-component-registration": "warn"
+      },
+      "ruleOptions": {
+        "vue/require-component-registration": {
+          "globals": [
+            "MyButton",
+            "MyIcon"
+          ]
+        }
+      }
+    },
+  },
+});
 ```
 
 A name permits its PascalCase and kebab-case template spellings. The list uses

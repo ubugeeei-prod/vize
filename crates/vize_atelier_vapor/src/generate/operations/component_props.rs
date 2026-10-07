@@ -1,5 +1,7 @@
 use crate::ir::{CreateComponentIRNode, IRProp, PropValueKind};
-use vize_atelier_core::steps::{is_event_handler_reference_node, is_function_expression_node};
+use vize_atelier_core::steps::{
+    expression::is_typescript_function_expression_node, is_event_handler_reference_node,
+};
 use vize_carton::{String, ToCompactString, cstr};
 
 use super::{
@@ -237,7 +239,7 @@ fn component_prop_expression_value(ctx: &GenerateContext, prop: &IRProp<'_>) -> 
             return cstr!("\"{}\"", escape_js_string_literal(first.content));
         }
         if prop.key.is_handler_key
-            && !is_function_expression_node(first)
+            && !is_typescript_function_expression_node(first)
             && !is_event_handler_reference_node(first)
         {
             resolve_inline_handler(ctx, first)

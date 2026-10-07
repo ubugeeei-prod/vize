@@ -9,16 +9,15 @@ use memchr::memchr3;
 use vize_l0::String;
 
 use super::{
-    attributes::{
-        AttributeLayout, render_attribute, should_use_multiline_attrs, sort_attributes,
-        write_rendered_attributes,
-    },
+    attributes::sort_attributes,
     helpers::{
         byte_at, find_bytes, is_void_element_str, is_whitespace, parse_closing_tag, sub_slice,
     },
 };
 
 mod interpolation;
+mod opening_attributes;
+mod preserved_text;
 mod suppression;
 mod tags;
 mod text;
@@ -154,57 +153,8 @@ impl<'a> TemplateFormatter<'a> {
                     output.push(b'<');
                     output.extend_from_slice(tag_name.as_bytes());
 
-                    let mut closing_bracket_on_own_line = false;
-                    if !sorted_attrs.is_empty() {
-                        // Render each attribute exactly once; both the
-                        // multiline decision and emission below reuse this.
-                        let mut rendered: Vec<String> = Vec::with_capacity(sorted_attrs.len());
-                        rendered.extend(sorted_attrs.iter().map(render_attribute));
-
-                        let use_multiline = should_use_multiline_attrs(
-                            self.options,
-                            &tag_name,
-                            &sorted_attrs,
-                            &rendered,
-                            depth,
-                            self.indent,
-                        );
-
-                        if use_multiline {
-                            let max_per_line = if self.options.single_attribute_per_line {
-                                1
-                            } else {
-                                self.options
-                                    .max_attributes_per_line
-                                    .unwrap_or(1) // default 1 when multiline
-                                    .max(1) as usize
-                            };
-
-                            write_rendered_attributes(
-                                &mut output,
-                                &sorted_attrs,
-                                &rendered,
-                                self.newline,
-                                self.indent,
-                                depth + 1,
-                                &AttributeLayout {
-                                    options: self.options,
-                                    base_depth: self.base_depth,
-                                    max_per_line,
-                                },
-                            );
-                            if !self.options.bracket_same_line {
-                                output.extend_from_slice(self.newline);
-                                self.write_indent(&mut output, depth);
-                                closing_bracket_on_own_line = true;
-                            }
-                        } else {
-                            for attr in &rendered {
-                                output.push(b' ');
-                                output.extend_from_slice(attr.as_bytes());
-                            }
-                        }
-                    }
+                    let closing_bracket_on_own_line =
+                        self.write_opening_attributes(&mut output, &tag_name, &sorted_attrs, depth);
 
                     // Compute once per opening tag; consumed in the two
                     // void-element branches below.

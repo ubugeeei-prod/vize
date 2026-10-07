@@ -14,20 +14,31 @@ rule reports `process`, `localStorage`, and `sessionStorage`. A non-empty `globa
 that built-in list; an empty list falls back to the built-ins so a config typo cannot silently
 disable the rule.
 
-```json
-{
-  "linter": {
-    "rules": { "script/no-restricted-globals": "error" },
-    "ruleOptions": {
-      "script/no-restricted-globals": {
-        "globals": [
-          { "name": "process", "message": "Read env through useRuntimeConfig()." },
-          { "name": "localStorage" }
-        ]
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  "lint": {
+    "vize": {
+      "rules": {
+        "script/no-restricted-globals": "error"
+      },
+      "ruleOptions": {
+        "script/no-restricted-globals": {
+          "globals": [
+            {
+              "name": "process",
+              "message": "Read env through useRuntimeConfig()."
+            },
+            {
+              "name": "localStorage"
+            }
+          ]
+        }
       }
     }
   }
-}
+});
 ```
 
 Bad:
@@ -50,20 +61,33 @@ Use this rule for project-local member access bans, such as moving browser APIs 
 helpers. The rule has no built-in deny list; it only reports when `members` is non-empty and the
 rule is enabled. Each entry matches a bare identifier receiver plus a static property name.
 
-```json
-{
-  "linter": {
-    "rules": { "script/no-restricted-members": "error" },
-    "ruleOptions": {
-      "script/no-restricted-members": {
-        "members": [
-          { "object": "window", "property": "localStorage", "message": "Use authStorage." },
-          { "object": "globalThis", "property": "process" }
-        ]
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  "lint": {
+    "vize": {
+      "rules": {
+        "script/no-restricted-members": "error"
+      },
+      "ruleOptions": {
+        "script/no-restricted-members": {
+          "members": [
+            {
+              "object": "window",
+              "property": "localStorage",
+              "message": "Use authStorage."
+            },
+            {
+              "object": "globalThis",
+              "property": "process"
+            }
+          ]
+        }
       }
     }
   }
-}
+});
 ```
 
 Bad:
@@ -86,15 +110,23 @@ Use this option when emitted custom events should follow one casing convention a
 and template usage. The default is `camelCase`; set `kebab-case` for projects that author emitted
 event names in their template-facing form.
 
-```json
-{
-  "linter": {
-    "rules": { "script/custom-event-name-casing": "error" },
-    "ruleOptions": {
-      "script/custom-event-name-casing": { "casing": "kebab-case" }
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  "lint": {
+    "vize": {
+      "rules": {
+        "script/custom-event-name-casing": "error"
+      },
+      "ruleOptions": {
+        "script/custom-event-name-casing": {
+          "casing": "kebab-case"
+        }
+      }
     }
   }
-}
+});
 ```
 
 Bad with the config above:
@@ -110,3 +142,49 @@ Good:
 const emit = defineEmits(["save-item"]);
 emit("save-item");
 ```
+
+## `script/define-props-destructuring`
+
+The default, `only-when-assigned`, requires a destructured binding when the result is assigned.
+A bare `defineProps<Props>()` is allowed. `always` also reports bare calls; `never` reports
+destructured bindings instead. Vue 3.5 preserves reactivity when destructuring props.
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      preset: "incremental",
+      rules: { "script/define-props-destructuring": "warn" },
+      ruleOptions: { "script/define-props-destructuring": { mode: "only-when-assigned" } },
+    },
+  },
+});
+```
+
+Bad:
+
+```vue
+<script setup lang="ts">
+const props = defineProps<{ size?: string }>();
+</script>
+```
+
+Good:
+
+```vue
+<script setup lang="ts">
+const { size = "md" } = defineProps<{ size?: string }>();
+</script>
+```
+
+When migrating from ESLint, use the Vize rule ID and typed options separately:
+
+```diff
+- rules: { "vue/define-props-destructuring": ["warn", "always"] }
++ rules: { "script/define-props-destructuring": "warn" },
++ ruleOptions: { "script/define-props-destructuring": { mode: "always" } }
+```
+
+Place the added entries inside `lint.vize` in the Vite+ config above.
