@@ -69,3 +69,9 @@ Hosted Actions must qualify the corrected exact head. The existing Content Mappe
 Conformance workflow supplies the pinned standard-tsgo runtime. Source-only
 formatting does not establish native runtime, whole-product migration, 10x
 performance, release or roadmap completion.
+
+## Actual-main refresh
+
+This existing PR is refreshed onto actual main `3ed1cc90908c88016310b90a855500c94a156f1f` with its original four-commit sequence retained. The seven Rust source/control files and four committed corpus files retain the exact bytes from historical qualified head `0d144483ecc4b3ff23306a37481a366a06b5d08b`. Current main attributes and both qualification workflows remain intact, and the shared decision record retains all current and owned clauses within its 350-line bound and exactly matches the root-reviewed common artifact SHA-256 `f4bd4c030fe794c89c7872cdfdcfaa3823d1dc93bdd44295b83fce11637b570d`.
+
+The historical Check and Content Mapper Conformance results at `0d144483` remain historical evidence. This combined source requires new exact-head Actions, including complete standard-tsgo CLI diagnostic vectors and all 24 native hover/range edit states across LF/CRLF astral UTF-16 inputs, as well as the unchanged project, editor and lifecycle controls. Official tsgo's syntactic-diagnostic bucket still suppresses project-wide CLI semantic collection when mapper parser diagnostics are present; combined diagnostics under #8158/#3984 and unsupported alias rename remain unfinished. Root controls protected admission, actual merge and release; no publication or performance acceptance follows from this local refresh.
