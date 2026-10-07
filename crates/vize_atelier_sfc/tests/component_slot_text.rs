@@ -188,6 +188,15 @@ fn original_sfc_and_all_slot_controls_keep_whole_dom_through_updates() {
     assert_eq!(cases.len(), 64);
     assert_eq!(sfcs.len(), 4);
     let input = json!({ "cases": cases, "sfcs": sfcs });
+    let input_bytes = serde_json::to_vec(&input).expect("complete observation bytes");
+    let profile = std::env::var("NEXTEST_PROFILE").unwrap_or_else(|_| "pr".into());
+    assert!(matches!(profile.as_str(), "pr" | "full"));
+    let evidence = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../target/nextest")
+        .join(profile)
+        .join("component-slot-text-7970");
+    std::fs::create_dir_all(&evidence).expect("whole source evidence directory");
+    std::fs::write(evidence.join("input.json"), &input_bytes).expect("whole source input custody");
     let runner = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/tooling/support/component-slot-text-7970.mjs");
     let mut child = Command::new("node")
@@ -198,16 +207,17 @@ fn original_sfc_and_all_slot_controls_keep_whole_dom_through_updates() {
         .stderr(Stdio::piped())
         .spawn()
         .expect("independent pinned Vue runtime");
-    child
+    let write_result = child
         .stdin
         .take()
         .expect("oracle stdin")
-        .write_all(&serde_json::to_vec(&input).expect("complete observation bytes"))
-        .expect("complete source modules");
+        .write_all(&input_bytes);
     let output = child.wait_with_output().expect("runtime exits");
+    std::fs::write(evidence.join("stdout.txt"), &output.stdout).expect("whole observer stdout");
+    std::fs::write(evidence.join("stderr.txt"), &output.stderr).expect("whole observer stderr");
     assert!(
-        output.status.success(),
-        "stdout: {}\nstderr: {}",
+        write_result.is_ok() && output.status.success(),
+        "stdin: {write_result:?}\nstdout: {}\nstderr: {}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );

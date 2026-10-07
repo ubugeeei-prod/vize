@@ -5,7 +5,6 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { Window } from "happy-dom";
-import { generateOutput } from "../../../npm/builder/vite/src/utils/index.ts";
 
 const root = new URL("../../../", import.meta.url);
 const corpus = new URL("tests/_fixtures/differential/compiler/component-slot-text-7970/", root);
@@ -149,13 +148,6 @@ function stockSfc(source, row, filename) {
   code += `\n${template.code}\n__component.render = render;\nexport default __component;\n`;
   return { code, script, template };
 }
-function adapterSfc(current) {
-  // The existing Vite assembler owns the template-only default export.
-  return generateOutput(
-    { ...current, hasScoped: false, scopeId: "", styles: [] },
-    { isProduction: true, isDev: false },
-  );
-}
 function children(parent) {
   return [...parent.childNodes].map((node) =>
     node.nodeType === 3 || node.nodeType === 8
@@ -237,6 +229,10 @@ async function observe(component, child, updates) {
   }
 }
 try {
+  const { assembleComponentOutput } =
+    await import("../../../npm/builder/vite/src/utils/component-output.ts");
+  const adapterSfc = (current) =>
+    assembleComponentOutput({ ...current, hasScoped: false, scopeId: "" }).emitted.code;
   const seen = new Set();
   for (const row of input.cases) {
     const key = `${row.whitespace}/${row.comments}/${row.name}`;
