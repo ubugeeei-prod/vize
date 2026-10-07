@@ -16,6 +16,16 @@ struct Case {
     mode: String,
     source: String,
     diagnostics: usize,
+    expected: Option<Expected>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Expected {
+    start: u32,
+    end: u32,
+    message: String,
+    help: String,
 }
 
 #[test]
@@ -45,10 +55,30 @@ fn props_destructuring_modes_match_corpus() {
             case.id,
             result.diagnostics
         );
-        for diagnostic in result.diagnostics {
+        if let Some(expected) = case.expected {
+            let diagnostic = result.diagnostics.first().expect("corpus diagnostic");
             assert_eq!(diagnostic.rule_name, "script/define-props-destructuring");
-            assert!(diagnostic.end as usize <= case.source.len());
-            assert!(!diagnostic.message.contains("drop reactivity"));
+            assert_eq!(
+                (diagnostic.start, diagnostic.end),
+                (expected.start, expected.end),
+                "{}",
+                case.id
+            );
+            assert_eq!(
+                diagnostic.message.as_str(),
+                expected.message.as_str(),
+                "{}",
+                case.id
+            );
+            assert_eq!(
+                diagnostic.help.as_deref(),
+                Some(expected.help.as_str()),
+                "{}",
+                case.id
+            );
+            assert!(diagnostic.fix.is_none());
+            assert_eq!(diagnostic.labels.len(), 0);
+            assert_eq!(diagnostic.severity, vize_patina::Severity::Warning);
         }
     }
 }

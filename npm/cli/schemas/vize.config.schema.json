@@ -455,9 +455,9 @@
           "type": "object",
           "properties": {
             "destructure": {
+              "default": "only-when-assigned",
               "type": "string",
-              "enum": ["only-when-assigned", "always", "never"],
-              "default": "only-when-assigned"
+              "enum": ["only-when-assigned", "always", "never"]
             }
           },
           "additionalProperties": false

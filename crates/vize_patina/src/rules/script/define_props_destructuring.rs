@@ -192,11 +192,11 @@ mod tests {
             0,
         );
         assert_eq!(result.warning_count, 1);
-        assert!(
-            result.diagnostics[0]
-                .help
-                .as_ref()
-                .is_some_and(|help| help.contains("style preference"))
+        assert_eq!(
+            result.diagnostics[0].help.as_deref(),
+            Some(
+                "Assign props to a single binding and access `props.foo` to follow the configured style preference."
+            )
         );
     }
 
