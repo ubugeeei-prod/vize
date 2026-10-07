@@ -34,5 +34,6 @@ const { tone = Tone.Info } = defineProps<{ tone?: Tone }>();
       setup: tone === SetupMode.Warn,
       setupTone: tone === SetupTone.Warn,
     }"
-  >{{ tone }}</span>
+    >{{ tone }}</span
+  >
 </template>
