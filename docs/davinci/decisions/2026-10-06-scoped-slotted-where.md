@@ -135,3 +135,11 @@ or borrowing older security acceptance. Fresh exact-head Actions, the full
 protected compiler/native/instruction suites, actual signed merge and an
 installed public replay are still required; root remains the sole queue and
 release owner.
+
+The fresh prepublication readback then advances to signed
+`523d1523a5285796addeaed2adfed9341bf46d0a` (#8208), whose actual parent is
+8d33. Merge this genuine main into the prepared 8d33 integration, retaining
+all 47 incoming complete props-style CLI fixtures, source law and decisions.
+This disjoint union changes no owned product, original reference or remarks
+entry. The same fresh source/protected/actual/installed qualifications remain
+required; no older green execution is transferred.
