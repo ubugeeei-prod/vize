@@ -33,3 +33,10 @@ and 18 notifications stay intact. Timing and output qualification are pending;
 source parse-count reduction does not establish a hover latency improvement or
 the requested 10x full-command result. Publication remains owned by the parent
 release lane after fresh source checks and protected actual merge.
+
+The clean owned #8140 branch is rebased onto genuine main
+`b27868776bbb872aba68873c29970f5c4ed77a2b` after SDK #8148 actually merged
+at 08:21:15Z and webcam #8139 at 08:27:24Z on 2026-10-07. The reviewed parse,
+original collector, whole differential vectors and original400 contracts remain
+unchanged. Fresh exact-head source/native/paired Actions and protected actual
+merge are required; historical green does not transfer to this new head.
