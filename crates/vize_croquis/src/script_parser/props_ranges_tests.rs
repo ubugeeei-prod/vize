@@ -64,3 +64,34 @@ fn shifting_macros_keeps_calls_and_prop_declarations_in_one_coordinate_space() {
         Some((declaration_before.0 + 17, declaration_before.1 + 17))
     );
 }
+
+#[test]
+fn local_alias_and_interface_props_retain_exact_owning_members() {
+    for declaration in [
+        "type Props = { hidden?: boolean; tone?: 'dark' | 'light' };",
+        "interface Props { hidden?: boolean; tone?: 'dark' | 'light' }",
+    ] {
+        for invocation in [
+            "defineProps<Props>();",
+            "withDefaults(defineProps<Props>(), { tone: 'light' });",
+            "const { tone = 'light' } = defineProps<Props>();",
+        ] {
+            let source = vize_carton::cstr!("{declaration}\n{invocation}");
+            let result = parse_script_setup(&source);
+            for (name, expected) in [
+                ("hidden", "hidden?: boolean;"),
+                ("tone", "tone?: 'dark' | 'light'"),
+            ] {
+                let (start, end) = result.macros.prop_declaration(name).unwrap();
+                assert_eq!(source.get(start as usize..end as usize), Some(expected));
+            }
+        }
+    }
+}
+
+#[test]
+fn repeated_members_do_not_claim_one_arbitrary_authored_owner() {
+    let source = "type Props = { shared: string } & { shared: number }; defineProps<Props>();";
+    let result = parse_script_setup(source);
+    assert!(result.macros.prop_declaration("shared").is_none());
+}

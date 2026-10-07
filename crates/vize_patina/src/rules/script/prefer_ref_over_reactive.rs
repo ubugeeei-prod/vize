@@ -34,7 +34,8 @@
 //! const userAge = ref(20)
 //! ```
 
-use memchr::memmem;
+use oxc_ast::ast::{CallExpression, Expression, Program};
+use oxc_ast_visit::{Visit, walk::walk_call_expression};
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -54,42 +55,44 @@ impl ScriptRule for PreferRefOverReactive {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        // Fast bailout
-        if memmem::find(bytes, b"reactive(").is_none() {
-            return;
-        }
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        PreferRefVisitor { offset, result }.visit_program(program);
+    }
+}
 
-        // Find all reactive() calls
-        let finder = memmem::Finder::new(b"reactive(");
-        let mut search_start = 0;
+struct PreferRefVisitor<'result> {
+    offset: usize,
+    result: &'result mut ScriptLintResult,
+}
 
-        while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
-            let abs_pos = search_start + pos;
-            search_start = abs_pos + 9;
-
-            // Make sure it's not part of another identifier like "shallowReactive"
-            if let Some(prev_char) = abs_pos.checked_sub(1).and_then(|prev| bytes.get(prev))
-                && (prev_char.is_ascii_alphanumeric() || *prev_char == b'_')
-            {
-                continue;
+impl<'a> Visit<'a> for PreferRefVisitor<'_> {
+    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+        let span = match call.callee.get_inner_expression() {
+            Expression::Identifier(identifier) if identifier.name == "reactive" => {
+                Some(identifier.span)
             }
-
-            // Skip if it's toRefs(reactive(...)) pattern
-            if let Some(before_start) = abs_pos.checked_sub(6)
-                && bytes.get(before_start..abs_pos) == Some(b"toRefs".as_slice())
-            {
-                continue;
+            Expression::StaticMemberExpression(member) if member.property.name == "reactive" => {
+                Some(member.property.span)
             }
-
-            result.add_diagnostic(
+            _ => None,
+        };
+        if let Some(span) = span {
+            self.result.add_diagnostic(
                 LintDiagnostic::warn(
                     META.name,
                     "Consider using ref() instead of reactive() for simpler state management",
-                    (offset + abs_pos) as u32,
-                    (offset + abs_pos + 8) as u32,
+                    self.offset as u32 + span.start,
+                    self.offset as u32 + span.end,
                 )
                 .with_help(
                     "ref() is more explicit with `.value` access, easier to pass around, \
@@ -98,6 +101,7 @@ impl ScriptRule for PreferRefOverReactive {
                 ),
             );
         }
+        walk_call_expression(self, call);
     }
 }
 

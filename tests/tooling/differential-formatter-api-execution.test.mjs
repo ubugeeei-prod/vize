@@ -13,7 +13,7 @@ import { validateFormatterHistoryExecution } from "../differential/formatter-his
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const packs = [
   ["script", 6, 4, 0, 2],
-  ["prepared", 82, 81, 1, 0],
+  ["prepared", 82, 79, 1, 0],
   ["literal", 84, 84, 0, 0],
   ["literal-extra", 34, 34, 0, 0],
   ["vue-version", 14, 14, 0, 0],
@@ -68,6 +68,7 @@ void test("shared formatter API history observes complete source-built output an
         legacyInternalObservations: internal,
         legacyErrorMatches: errors,
         legacyFailures: 0,
+        ...(name === "prepared" ? { currentReferenceMatches: 2 } : {}),
         ...(name === "capture" ? { currentReferenceMatches: 2 } : {}),
         ...(name === "capture-extra" ? { currentReferenceMatches: 1 } : {}),
         nativeUnsupported: count,

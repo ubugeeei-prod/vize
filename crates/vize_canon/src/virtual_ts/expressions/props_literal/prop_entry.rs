@@ -175,6 +175,13 @@ fn entry_sub_spans(
     key_gen_range: std::ops::Range<usize>,
     value_gen_range: std::ops::Range<usize>,
 ) -> Vec<VizeSubSpan> {
+    if let Some(spans) = crate::virtual_ts::expressions::model_modifiers::modifier_sub_spans(
+        source_context,
+        prop,
+        value_gen_range.clone(),
+    ) {
+        return spans;
+    }
     let Some(name_src_range) = prop_name_source_range(source_context, prop) else {
         return Vec::new();
     };

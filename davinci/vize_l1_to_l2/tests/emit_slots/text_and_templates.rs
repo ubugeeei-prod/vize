@@ -55,7 +55,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
-fn mixed_text_and_interpolation_are_separate_vnodes() {
+fn mixed_text_and_interpolation_share_one_vnode() {
     assert_eq!(
         assembled("<Foo>hello {{ msg }}</Foo>"),
         pin("\
@@ -66,8 +66,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   return (_openBlock(), _createBlock(_component_Foo, null, {
     default: _withCtx(() => [
-      _createTextVNode(\"hello \"),
-      _createTextVNode(_toDisplayString(msg), 1 /* TEXT */)
+      _createTextVNode(\"hello \" + _toDisplayString(msg), 1 /* TEXT */)
     ]),
     _: 1 /* STABLE */
   }))

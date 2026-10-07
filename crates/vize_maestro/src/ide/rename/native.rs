@@ -17,6 +17,13 @@ impl RenameService {
         match canonical::rename(ctx, new_name, corsa_bridge.as_deref()).await {
             canonical::Answer::Available(None) => return None,
             canonical::Answer::Available(Some(edit)) => {
+                // A component argument owns the public property identity. Its
+                // shorthand token also maps to a separate local value, which
+                // the structural provider must not add to this transaction.
+                if corsa::is_component_attribute_query(ctx) {
+                    return corsa::merge_missing_authored_rename(ctx, Some(edit), None)
+                        .filter(|edit| corsa::RenameScope::new(ctx).admits_authored(edit));
+                }
                 return corsa::merge_missing_authored_rename(
                     ctx,
                     Some(edit),

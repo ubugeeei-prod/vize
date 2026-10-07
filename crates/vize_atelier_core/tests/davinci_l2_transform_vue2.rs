@@ -22,6 +22,8 @@
 )]
 mod l2_support;
 
+mod slot_text_raw_compat;
+
 use l2_support::{
     Counters, HoistCounters, SlotCounters, SurfaceCounters, TextCounters, compare_with,
 };

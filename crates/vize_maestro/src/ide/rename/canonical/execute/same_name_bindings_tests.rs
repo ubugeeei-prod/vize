@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use tower_lsp::lsp_types::{
-    AnnotatedTextEdit, DocumentChanges, OneOf, OptionalVersionedTextDocumentIdentifier,
+    AnnotatedTextEdit, DocumentChanges, Location, OneOf, OptionalVersionedTextDocumentIdentifier,
     TextDocumentEdit, TextEdit, Url, WorkspaceEdit,
 };
 
@@ -62,7 +62,7 @@ fn local_rename_expands_component_and_native_shorthands_with_modifiers() {
             &document(&uri, source),
             &mut response,
             "title",
-            false
+            &[]
         ));
         assert!(coherent(&response));
         assert_eq!(
@@ -94,7 +94,10 @@ fn prop_rename_keeps_the_camelized_implicit_value_and_complete_argument() {
         &document(&uri, source),
         &mut response,
         "visible",
-        true
+        &[Location::new(
+            uri.clone(),
+            edit(source, "is-opened", "visible").range,
+        )]
     ));
     assert_eq!(
         response.changes.unwrap()[&uri],
@@ -104,6 +107,45 @@ fn prop_rename_keeps_the_camelized_implicit_value_and_complete_argument() {
             ":visible.camel=\"isOpened\""
         )]
     );
+}
+
+#[test]
+fn only_the_resolved_property_argument_changes_its_public_key() {
+    let source = "<script setup>const id = 'field';</script>\n<template><Child :id /><input :id /><Other :id /></template>";
+    let state = ServerState::new();
+    let uri = Url::parse("file:///workspace/App.vue").unwrap();
+    let ctx = IdeContext::testing(&state, &uri, 0, source.into());
+    let arguments = source
+        .match_indices(":id")
+        .map(|(start, _)| TextEdit {
+            range: super::super::super::event_rename::offset_range(source, start + 1..start + 3),
+            new_text: "field".into(),
+        })
+        .collect::<Vec<_>>();
+    let resolved = Location::new(uri.clone(), arguments[0].range);
+    let mut response = WorkspaceEdit {
+        changes: Some(HashMap::from([(uri.clone(), arguments)])),
+        ..Default::default()
+    };
+    assert!(rewrite(
+        &ctx,
+        &document(&uri, source),
+        &mut response,
+        "field",
+        &[resolved]
+    ));
+    assert!(coherent(&response));
+    let edits = response.changes.unwrap();
+    assert_eq!(edits[&uri][0], edit(source, ":id", ":field=\"id\""));
+    for (index, (start, _)) in source.match_indices(":id").enumerate().skip(1) {
+        assert_eq!(
+            edits[&uri][index],
+            TextEdit {
+                range: super::super::super::event_rename::offset_range(source, start..start + 3),
+                new_text: ":id=\"field\"".into(),
+            }
+        );
+    }
 }
 
 #[test]
@@ -131,7 +173,7 @@ fn truncated_alias_and_boundary_insertion_coalesce_after_utf16_crlf_expansion() 
         &document(&uri, source),
         &mut response,
         "visible",
-        false
+        &[]
     ));
     assert!(coherent(&response));
     let Some(DocumentChanges::Edits(edits)) = response.document_changes else {

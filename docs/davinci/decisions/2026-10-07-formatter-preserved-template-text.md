@@ -57,3 +57,15 @@ historical; only fresh union-source Actions and protected checks can qualify thi
 head. Root owns finite admission after the corrective change and verified release;
 merge, installed replay and Issue closure remain pending. No new PR or unpublished
 #7876 work is introduced.
+
+The next source preparation uses actual GitHub-signed main 8c772761, including
+merged #8134 and its regenerated source inventory. Keep every original17 path
+from the custody receipt: fifteen remain byte exact; the ordinary formatter
+adds only actual-main interpolation ownership and its existing safety comment,
+and the generated consumer inventory retains both new preserve-mode rows beside
+actual-main rows. All complete fixtures, options, expected outputs, three-pass
+API/CLI assertions and stock-runtime observers remain byte exact. Preserve all
+current canonical clauses and the complete #7871 decision history within350
+lines. Root reviews the exact conflict/custody plan before branch publication
+and fresh exact-source Actions; protected/runtime/actual-merge/installed gates
+remain unqualified by the earlier source green. No historical oracle is rewritten.

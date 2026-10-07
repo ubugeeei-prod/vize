@@ -17,6 +17,8 @@ impl CorsaTypeAwareSession {
         load_property_types: bool,
         load_signatures: bool,
     ) -> Result<Option<TypeProbe>, String> {
+        let generated_source = self.rewritten_source.as_deref().unwrap_or(generated_source);
+        let generated_offset = self.import_source_map.get_virtual_offset(generated_offset);
         let utf16_offset = profile!(
             "patina.corsa_session.byte_to_utf16",
             byte_offset_to_utf16_offset(generated_source, generated_offset)

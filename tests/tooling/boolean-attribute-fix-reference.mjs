@@ -73,13 +73,16 @@ export function wholeJson(entry, after = false, originalRules = false) {
         "vue/component-name-in-template-casing",
         "Component should use PascalCase",
       ),
-      message(
-        entry.source,
-        "v-slot:header",
-        "vue/v-slot-style",
-        "Expected '#header' instead of 'v-slot:header'",
-      ),
     );
+    if (!after)
+      messages.push(
+        message(
+          entry.source,
+          "v-slot:header",
+          "vue/v-slot-style",
+          "Expected '#header' instead of 'v-slot:header'",
+        ),
+      );
   }
   for (const finding of entry.diagnostics) {
     if (after && finding.fix) continue;
@@ -93,4 +96,9 @@ export function wholeJson(entry, after = false, originalRules = false) {
     );
   }
   return [{ file: entry.filename, messages, errorCount: 0, warningCount: messages.length }];
+}
+
+export function fixedSource(entry, originalRules = false) {
+  // The unchanged original config now applies both independently authored edits.
+  return originalRules ? entry.fixed.replace("v-slot:header", "#header") : entry.fixed;
 }
