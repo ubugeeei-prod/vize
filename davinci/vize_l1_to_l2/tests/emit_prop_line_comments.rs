@@ -33,7 +33,10 @@ fn legacy(source: &str) -> String {
 #[test]
 fn complete_original_n8n_template_keeps_the_legacy_module_bytes() {
     assert_eq!(
-        format!("{:x}", Sha256::digest(ORIGINAL.as_bytes())),
+        Sha256::digest(ORIGINAL.as_bytes())
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>(),
         "168e35ff13edb4dbce5d0a9e2ee12a5ff55baf830c00ffa7c270c8a1601c9b9b"
     );
     let parsed = vize_atelier_sfc::parse_sfc(ORIGINAL, Default::default())
