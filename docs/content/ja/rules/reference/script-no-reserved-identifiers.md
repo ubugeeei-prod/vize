@@ -37,9 +37,9 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
-const __props = { name: 'test' }
-const __emit = () => {}
-let __sfc__ = {}
+const __props = { name: "Ada" };
+const __emit = () => {};
+const __sfc__ = {};
 </script>
 ```
 
@@ -47,9 +47,9 @@ let __sfc__ = {}
 
 ```vue
 <script setup lang="ts">
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
-const myData = {}
+const props = defineProps<{ name: string }>();
+const emit = defineEmits<{ save: [] }>();
+const componentData = {};
 </script>
 ```
 

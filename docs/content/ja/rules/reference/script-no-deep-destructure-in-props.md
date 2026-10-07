@@ -37,11 +37,7 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
-// Deep nested destructuring
-const { user: { name, age } } = defineProps<{ user: User }>()
-
-// Very deep nesting
-const { config: { settings: { theme } } } = defineProps()
+const { user: { name } } = defineProps<{ user: { name: string } }>();
 </script>
 ```
 
@@ -49,12 +45,9 @@ const { config: { settings: { theme } } } = defineProps()
 
 ```vue
 <script setup lang="ts">
-// Simple destructuring (one level)
-const { name, count = 0 } = defineProps<{ name: string; count?: number }>()
-
-// Access nested properties in the component instead
-const props = defineProps<{ user: User }>()
-const userName = computed(() => props.user.name)
+import { computed } from "vue";
+const props = defineProps<{ user: { name: string } }>();
+const userName = computed(() => props.user.name);
 </script>
 ```
 

@@ -4,6 +4,43 @@ const script = (source) => vue(`<script setup lang="ts">\n${source}\n</script>`)
 const pair = (bad, good, name) => ({ bad, good, evidence: `crates/vize_patina/src/rules/${name}` });
 
 export const verifiedOverrides = {
+  "script/no-deep-destructure-in-props": pair(
+    script("const { user: { name } } = defineProps<{ user: { name: string } }>();"),
+    script(
+      'import { computed } from "vue";\nconst props = defineProps<{ user: { name: string } }>();\nconst userName = computed(() => props.user.name);',
+    ),
+    "script/no_deep_destructure_in_props.rs",
+  ),
+  "script/no-import-compiler-macros": pair(
+    script(
+      'import { defineProps, defineEmits } from "vue";\nconst props = defineProps<{ title: string }>();\nconst emit = defineEmits<{ save: [id: number] }>();',
+    ),
+    script(
+      "const props = defineProps<{ title: string }>();\nconst emit = defineEmits<{ save: [id: number] }>();",
+    ),
+    "script/no_import_compiler_macros.rs",
+  ),
+  "script/no-reserved-identifiers": pair(
+    script('const __props = { name: "Ada" };\nconst __emit = () => {};\nconst __sfc__ = {};'),
+    script(
+      "const props = defineProps<{ name: string }>();\nconst emit = defineEmits<{ save: [] }>();\nconst componentData = {};",
+    ),
+    "script/no_reserved_identifiers.rs",
+  ),
+  "script/no-with-defaults": pair(
+    script(
+      'const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { count: 0, name: "Ada" });',
+    ),
+    script('const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string }>();'),
+    "script/no_with_defaults.rs",
+  ),
+  "script/require-typed-object-prop": pair(
+    script("const props = defineProps({ user: Object, items: { type: Array } });"),
+    script(
+      'import type { PropType } from "vue";\ninterface User { name: string }\nconst props = defineProps({\n  user: Object as PropType<User>,\n  items: { type: Array as PropType<User[]> },\n});',
+    ),
+    "script/props_emits/require_typed_object_prop.rs",
+  ),
   "script/define-emits-declaration": pair(
     script('const emit = defineEmits(["change"]);\nemit("change", 1);'),
     script('const emit = defineEmits<{ change: [id: number] }>();\nemit("change", 1);'),

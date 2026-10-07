@@ -37,10 +37,9 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
-import { withDefaults } from 'vue'
-
-const props = defineProps<Props>()
+import { defineProps, defineEmits } from "vue";
+const props = defineProps<{ title: string }>();
+const emit = defineEmits<{ save: [id: number] }>();
 </script>
 ```
 
@@ -48,12 +47,8 @@ const props = defineProps<Props>()
 
 ```vue
 <script setup lang="ts">
-// No import needed - compiler macros are auto-imported
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
-
-// Regular imports are fine
-import { ref, computed } from 'vue'
+const props = defineProps<{ title: string }>();
+const emit = defineEmits<{ save: [id: number] }>();
 </script>
 ```
 

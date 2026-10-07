@@ -37,14 +37,7 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
-// Using withDefaults (verbose)
-const props = withDefaults(defineProps<{
-count?: number
-name?: string
-}>(), {
-count: 0,
-name: 'default'
-})
+const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { count: 0, name: "Ada" });
 </script>
 ```
 
@@ -52,14 +45,7 @@ name: 'default'
 
 ```vue
 <script setup lang="ts">
-// Using destructuring defaults (Vue 3.5+)
-const { count = 0, name = 'default' } = defineProps<{
-count?: number
-name?: string
-}>()
-
-// Or without destructuring if defaults not needed
-const props = defineProps<{ count: number }>()
+const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string }>();
 </script>
 ```
 

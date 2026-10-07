@@ -51,6 +51,10 @@ bindings, template markup inside a script, or a return outside a function. The d
 async-computed, reactive-destructuring, useId, and useSlots references now show one complete
 alternative per SFC. The existing Babel TypeScript parser checks every Good script in tooling;
 the public-linter Bad/Good assertions remain strict and still require actual rule findings.
+Five further inherited examples repeated defineProps or referenced undefined Props/Emits types.
+They now use one macro context and locally defined types. The already pinned Vue 3.5 oracle checks
+all Good SFC script contexts; this validates authored examples and makes no claim about Vize
+compiler output or parity. No new dependencies or product behavior are introduced.
 
 Validation pending: exact-head Actions must execute the example pairs and build the rendered
 English/Japanese reference before queue admission. The navigation companion owns the site-wide

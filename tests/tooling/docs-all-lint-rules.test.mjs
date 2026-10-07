@@ -5,6 +5,7 @@ import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { parseSync } from "@babel/core";
 import tsSyntax from "@babel/plugin-syntax-typescript";
+import { parse as parseSfc, compileScript } from "vue-computed-inlay-oracle/compiler-sfc";
 import { crossMetadata } from "../../docs/scripts/rules/project-metadata.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
@@ -89,6 +90,21 @@ await test("every Good script has valid module grammar and unique bindings", () 
     }
   }
   assert.ok(scripts > 100, "all authored script examples are parsed");
+});
+
+await test("Good Vue scripts use resolvable types and valid compiler-macro contexts", () => {
+  let scripts = 0;
+  for (const file of readdirSync(resolve(root, "docs/content/rules/reference"))) {
+    const page = read(`docs/content/rules/reference/${file}`);
+    const good = page.split("## Good\n")[1].match(/```(\w+)\n([\s\S]*?)\n```/);
+    if (good[1] !== "vue" || !/<script\b/.test(good[2])) continue;
+    scripts += 1;
+    const { descriptor, errors } = parseSfc(good[2], { filename: file.replace(/\.md$/, ".vue") });
+    assert.deepEqual(errors, [], file);
+    // This checks the authored example, not Vize compiler output or parity.
+    assert.doesNotThrow(() => compileScript(descriptor, { id: file }), file);
+  }
+  assert.ok(scripts > 90, "all Good SFC script contexts are checked");
 });
 
 await test("migration retains all mapped, divergent and unsupported ESLint identities", () => {

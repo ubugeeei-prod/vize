@@ -37,10 +37,7 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
-const props = defineProps({
-foo: Object,
-bar: { type: Array },
-})
+const props = defineProps({ user: Object, items: { type: Array } });
 </script>
 ```
 
@@ -48,13 +45,12 @@ bar: { type: Array },
 
 ```vue
 <script setup lang="ts">
+import type { PropType } from "vue";
+interface User { name: string }
 const props = defineProps({
-foo: Object as PropType<Foo>,
-bar: { type: Array as PropType<Bar[]> },
-})
-
-// Type-based form carries the element type directly.
-const typed = defineProps<{ foo: Foo; bar: Bar[] }>()
+  user: Object as PropType<User>,
+  items: { type: Array as PropType<User[]> },
+});
 </script>
 ```
 
