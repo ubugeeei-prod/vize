@@ -74,6 +74,10 @@ if (process.argv[2] === "prepare") {
     .split("\n")
     .filter(Boolean);
   const allowed = new Set([
+    // Art lint delivery retains the original 400-provider protocol corpus.
+    "crates/vize_maestro/src/ide/diagnostics/art_lint_tests.rs",
+    "crates/vize_maestro/src/ide/diagnostics/art_lint.rs",
+    "crates/vize_maestro/src/ide/diagnostics/service.rs",
     // Explicit global-component configuration retains the full original provider gate.
     "crates/vize/src/commands/lint/entry_rules.rs",
     "crates/vize/tests/lint_global_components_cli.rs",
