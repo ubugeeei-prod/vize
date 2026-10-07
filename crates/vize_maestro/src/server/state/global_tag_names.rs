@@ -15,7 +15,8 @@ use std::{
     time::SystemTime,
 };
 use tower_lsp::lsp_types::Url;
-use vize_l0::{String, ToCompactString, source_io as fs};
+use vize_carton::source_io as fs;
+use vize_l0::{String, ToCompactString};
 
 #[derive(PartialEq, Eq)]
 enum Stamp {

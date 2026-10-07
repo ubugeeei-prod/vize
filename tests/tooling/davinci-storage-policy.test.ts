@@ -108,7 +108,7 @@ test("stage storage has no opaque imports or unreviewed std paths", () => {
   for (const issue of foundationBridges.issues) {
     assert.match(
       issue,
-      /^davinci\/vize_l0\/src\/(?:allocator(?:\/tests)?|config\/[^:]+|path|pool(?:\/tests)?|profiler\/core|source_io|telegraph)\.rs: forbidden std storage (?:path|import): /u,
+      /^davinci\/vize_l0\/src\/(?:allocator(?:\/tests)?|config\/[^:]+|path|pool(?:\/tests)?|profiler\/core|telegraph)\.rs: forbidden std storage (?:path|import): /u,
     );
   }
   assert.deepEqual(measureInventory().issues.toSorted(), foundationBridges.issues.toSorted());

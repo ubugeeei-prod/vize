@@ -1,9 +1,6 @@
-//! UTF-8 validation at owned external source boundaries.
-//!
-//! File buffers are owned independently of the compile arena. Validation never
-//! decodes, normalizes or repairs bytes, so authored byte offsets stay exact.
+//! Owned source-file buffers at the host filesystem boundary.
+//! Authored bytes and standard filesystem errors are preserved.
 
-use core::str::Utf8Error;
 #[cfg(not(target_arch = "wasm32"))]
 use std::{io, path::Path};
 
@@ -14,20 +11,7 @@ use std::{io, path::Path};
 #[cfg(not(target_arch = "wasm32"))]
 use std::string::String as FileString;
 
-/// Validate source bytes, preserving the standard library's exact error type.
-///
-/// SIMD handles large inputs. Invalid inputs are rechecked by the standard
-/// library so `valid_up_to`, `error_len`, and diagnostic spelling stay exact.
-#[inline]
-pub fn decode_utf8(bytes: &[u8]) -> Result<&str, Utf8Error> {
-    if bytes.len() < 64 {
-        return core::str::from_utf8(bytes);
-    }
-    match simdutf8::compat::from_utf8(bytes) {
-        Ok(text) => Ok(text),
-        Err(_) => core::str::from_utf8(bytes),
-    }
-}
+pub use vize_l0::source_io::decode_utf8;
 
 /// Read a UTF-8 file without copying or validating its owned buffer twice.
 ///
@@ -48,4 +32,8 @@ pub fn read_to_string(path: impl AsRef<Path>) -> io::Result<FileString> {
 }
 
 #[cfg(all(test, not(target_arch = "wasm32")))]
+#[expect(
+    clippy::disallowed_methods,
+    reason = "The filesystem law compares the existing std diagnostic spelling"
+)]
 mod tests;

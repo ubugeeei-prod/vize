@@ -106,7 +106,7 @@ fn compile_sfc_batch_inner(
     );
     let read_inputs: Vec<_> = files
         .par_iter()
-        .map(|path| match vize_l0::source_io::read_to_string(path) {
+        .map(|path| match vize_carton::source_io::read_to_string(path) {
             Ok(source) => Ok((path.clone(), source)),
             Err(_) => Err(()),
         })

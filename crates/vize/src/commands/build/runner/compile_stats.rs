@@ -45,7 +45,7 @@ pub(super) fn compile_file_stats_with_cache(
 
     let source = match profile!(
         "cli.build.file.read",
-        vize_l0::source_io::read_to_string(path)
+        vize_carton::source_io::read_to_string(path)
     ) {
         Ok(source) => {
             global_profiler().record_fs_read_to_string(source.len());
