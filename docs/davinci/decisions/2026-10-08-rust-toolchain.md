@@ -19,3 +19,32 @@ Fact demand iteration now visits its present identities directly instead of scan
 Vapor placeholder planning removes an intermediate flattened list while preserving existing node classifications, transparent-template flattening, rendered-sibling visibility and final authored order. Five nested/template/comment/text/trailing-block controls accompany the source; the [Vapor lowering record](./2026-10-08-rust199-vapor-lowering.md) retains actual old hotspots and the fresh instruction/allocation qualification obligation. No new pipeline stage, input or budget waiver is added.
 
 The medium-parser correction classifies whitespace-only text using the exact five Vue ASCII bytes. Empty text, vertical-tab and excluded Unicode behavior stay the same; original Unicode borrowing/spans and whitespace between elements are frozen for both Condense/Preserve and both legacy-line-break modes. Existing mixed-text, preformatted and textarea processing is unchanged. The foundation controls also compile and pass on supported Rust 1.95.0. Whole source, compiler-output parity and measured instruction savings remain pending fresh 1.99.0 Actions.
+
+The native-feature 1.99.0 build identifies the newly deprecated atomic
+`fetch_update` in navigation capacity reservation. Retain MSRV 1.95.0 with an
+equivalent `compare_exchange_weak` loop: initial/failed observations use Acquire,
+success uses AcqRel, capacity refusal remains at 16, and the owned slot releases
+on the existing worker exit. No newer alias or deprecation suppression is used.
+Existing owner-exit/capacity/native navigation controls remain mandatory.
+
+Compose genuine signed main `8f01ff9c320f4b474b410efe7d66baed462df7aa`, including
+the delivered licensed n8n compiler fixture and existing Vapor fixes. Keep all
+33 immutable compiler capture drivers and their baseline/repair pins unchanged.
+The n8n custody job explicitly selects 1.99.0 for both genuine isolated source
+phases, including the frozen baseline whose source file still records 1.98.0.
+Within its existing capture step, require complete actual rustc/Cargo receipts
+to agree, pin the genuine 1.99.0 compiler identity and require distinct producer
+binary hashes. This changes the common execution compiler, never the archived
+baseline source or observed metadata. Fresh paired output/runtime and the entire
+unchanged corpus must pass on this source and compiler.
+
+The maintainer explicitly authorizes the necessary active instruction-methodology
+transition from 1.98.0 to 1.99.0. Preserve all 100 ordinary and four formatter
+numeric ceilings, original fixture paths/SHA256/window, Callgrind/libc/ci-opt
+settings, historical provenance and every other methodology field. Permit only
+this exact forward compiler transition aligned with the actual source toolchain;
+reject unrelated, backward, input, inventory, source-version or ceiling changes.
+Historical e24 synthetic source `1a3996963af208c13cd732420bdee586df88bf7a` has
+all 104 cases below their original ceilings in all three authenticated repeats;
+this is measured numerical evidence, not successful migration or new-source
+qualification. Fresh source/methodology/instruction gates remain required.
