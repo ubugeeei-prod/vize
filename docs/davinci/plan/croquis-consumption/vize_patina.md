@@ -11,7 +11,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | product                           | kind  | module              | files | sites |
 | --------------------------------- | ----- | ------------------- | ----: | ----: |
 | `COMPILER_MACRO_NAMES`            | type  | `croquis`           |     1 |     1 |
-| `Croquis`                         | type  | `croquis`           |    15 |    30 |
+| `Croquis`                         | type  | `croquis`           |    16 |    31 |
 | `Drawer`                          | type  | `drawer`            |     1 |     1 |
 | `ElementIdKind`                   | type  | `croquis::template` |     1 |     2 |
 | `OptionMember`                    | type  | `croquis`           |     2 |     3 |
@@ -23,8 +23,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis.component_registrations` | field | `croquis`           |     2 |     2 |
 | `Croquis.element_ids`             | field | `croquis`           |     1 |     2 |
 | `Croquis.import_statements`       | field | `croquis`           |     1 |     1 |
-| `Croquis.macros`                  | field | `croquis`           |     8 |    22 |
+| `Croquis.macros`                  | field | `croquis`           |     9 |    23 |
 | `Croquis.scopes`                  | field | `croquis`           |     2 |     4 |
+| `Croquis.types`                   | field | `croquis`           |     1 |     2 |
 
 ## Non-product `vize_croquis` imports
 
@@ -48,6 +49,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `SfcError`                                |     1 |     2 |
 | `SfcParseOptions`                         |    14 |    15 |
 | `SfcScriptBlock`                          |     2 |     2 |
+| `TypeDefinitions`                         |     1 |     1 |
 | `UndefinedRefs`                           |     1 |     2 |
 | `UnusedBindings`                          |     1 |     4 |
 | `collect_options_descriptor`              |     4 |     4 |
