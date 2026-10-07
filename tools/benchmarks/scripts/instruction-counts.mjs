@@ -7,6 +7,10 @@ import { fileURLToPath } from "node:url";
 import { parseTomlLite } from "../../support/compat/davinci/toml-lite.mjs";
 import { reportOverBudgetHotspots } from "./instruction-hotspots.ts";
 import {
+  verifyRepositoryInstructionBudgets,
+  verifyRepositoryInstructionSource,
+} from "./instruction-methodology-transition.mjs";
+import {
   levelInstructionSuites,
   formatterInstructionSuites,
 } from "./instruction-counts-suites.mjs";
@@ -78,6 +82,7 @@ function collect(out, registry, formatter) {
     rustc.startsWith(`rustc ${toolchain} `),
     "measurement must use the repository's pinned Rust",
   );
+  verifyRepositoryInstructionBudgets({ methodology: { rustc } }, root);
   const valgrind = command("valgrind", ["--version"]);
   assert.equal(valgrind, "valgrind-3.22.0", "use the pinned Ubuntu 24.04 Valgrind version");
   const report = {
@@ -303,6 +308,7 @@ try {
     collect(flag(args, "--out", output), registry, formatter);
   } else if (modes[0] === "--verify-budgets") {
     const budgets = loadBudgets(flag(args, "--budgets", budgetFile), registry);
+    verifyRepositoryInstructionBudgets(budgets, root);
     const base = flag(args, "--base-budgets");
     if (base) ratchetBudgets(budgets, loadBudgets(base));
     console.log(`instruction-counts: ${registry.size} pinned ceilings and ratchet verified`);
@@ -312,9 +318,11 @@ try {
       registry,
     );
     if (modes[0] === "--baseline") {
+      verifyRepositoryInstructionSource(report, root);
       fs.writeFileSync(flag(args, "--out", budgetFile), baselineToml(report));
     } else {
       const budgets = loadBudgets(flag(args, "--budgets", budgetFile), registry);
+      verifyRepositoryInstructionSource(report, root);
       const base = flag(args, "--base-budgets");
       // The base can have fewer rows when a new benchmark is introduced.
       if (base) ratchetBudgets(budgets, loadBudgets(base));

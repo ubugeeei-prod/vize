@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { ratchetInstructionMethodology } from "./instruction-methodology-transition.mjs";
 import { parseTomlLite } from "../../support/compat/davinci/toml-lite.mjs";
 
 export const ID = /^[A-Za-z0-9._-]+$/;
@@ -289,7 +290,7 @@ export function checkMeasurement(report, budget) {
 
 export function ratchetBudgets(current, base) {
   // A toolchain/environment refresh cannot silently replace a ratchet.
-  assert.deepEqual(current.methodology, base.methodology, "ratchet methodology changed");
+  ratchetInstructionMethodology(current, base);
   for (const [id, row] of Object.entries(base.instruction)) {
     assert.ok(current.instruction[id], `instruction budget dropped: ${id}`);
     assert.ok(
