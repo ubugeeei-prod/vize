@@ -7,11 +7,8 @@ import {
   forcedCheckoutArgs,
   validateHydration,
 } from "../../tools/support/compat/github/canonical-corpus-hydration.mjs";
-import {
-  expectedFiles,
-  observers,
-  sha256,
-} from "../../tools/support/compat/github/canonical-corpus-identity.mjs";
+import { observers, sha256 } from "../../tools/support/compat/github/canonical-corpus-identity.mjs";
+import { canonicalWorkerInventory } from "./support/canonical-corpus-worker-inventory.mjs";
 import {
   observerLogs,
   validateObserverLog,
@@ -237,15 +234,7 @@ test("foreign, expired, duplicate and non-upload-bound artifacts fail closed", (
 test("finalization rejects replaced full bytes, fixture identity and incomplete observer directories", () => {
   const root = mkdtempSync(join(tmpdir(), "canonical-artifacts-"));
   const selected = select();
-  const gitlinks = Array.from({ length: 147 }, (_, index) => ({
-    path: `tests/_fixtures/_git/project-${String(index).padStart(3, "0")}`,
-    sha: "d".repeat(40),
-  }));
-  const files = Array.from({ length: expectedFiles }, (_, index) => [
-    `project-${index}/Original.vue`,
-    "e".repeat(64),
-    31,
-  ]);
+  const { gitlinks, files, proof } = canonicalWorkerInventory();
   const identity = {
     schema: "vize.canonical-corpus-identity",
     version: 1,
@@ -254,8 +243,9 @@ test("finalization rejects replaced full bytes, fixture identity and incomplete 
     gitlinks,
     gitlinksSha256: sha256(JSON.stringify(gitlinks)),
     modulesSha256: "c".repeat(64),
-    files: expectedFiles,
+    files: files.length,
     filesSha256: sha256(JSON.stringify(files)),
+    committedSha256: sha256(JSON.stringify(proof)),
   };
   const selectedText = gitlinks.map((row) => row.path).join("\n") + "\n";
   const statusText = gitlinks.map((row) => ` ${row.sha} ${row.path}`).join("\n") + "\n";
@@ -269,6 +259,7 @@ test("finalization rejects replaced full bytes, fixture identity and incomplete 
       );
       write(join(path, "identity.json"), identity);
       write(join(path, "files.json"), files);
+      write(join(path, "committed-corpus.json"), proof);
       writeFileSync(join(path, "selected-gitlinks.txt"), selectedText);
       writeFileSync(join(path, "submodule-status.txt"), statusText);
       write(join(path, "hydration.json"), {
@@ -298,7 +289,7 @@ test("finalization rejects replaced full bytes, fixture identity and incomplete 
         logSha256: sha256(bytes),
         selectedSha256: sha256(selectedText),
         statusSha256: sha256(statusText),
-        counters: validateObserverLog(worker.observer, bytes),
+        counters: validateObserverLog(worker.observer, bytes, identity),
       });
     }
     assert.deepEqual(verifyCanonicalArtifacts(selected, root, identity), identity);

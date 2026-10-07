@@ -37,13 +37,38 @@ Ordinary PR producer/shard behavior and worker selection remain unchanged.
 ## Complete fixture ownership and hydration
 
 Cache only submodule Git object directories, keyed by committed `.gitmodules`
-bytes and the entire ordered 147-path gitlink vector. PR and merge-group events
+bytes and the entire ordered committed gitlink vector. PR and merge-group events
 restore only; trusted main events may save through the existing cache trust
 policy. Every worker checks candidate HEAD/tree, index gitlinks, committed URLs,
-each fixture HEAD, tracked-content cleanliness, and a full 42,998-file manifest
-of relative path, whole-byte SHA-256, and byte length. Enumeration/read errors
-and directory cycles fail. The same manifest is required after execution and
-across all three workers. Cached test conclusions receive no credit.
+each fixture HEAD, and tracked-content cleanliness. Expected Vue paths and Git
+blob identities come from every pinned commit's complete raw Git tree graph,
+authenticated against the committed gitlinks. Each proof includes the raw commit,
+all reachable trees, and symlink blobs; object hashes, full traversal, exact owners,
+and unused or missing objects are checked independently of physical enumeration.
+The physical manifest must match every expected path and blob exactly and also
+records whole-byte SHA-256 and byte length. Enumeration/read errors, omissions,
+replacements, untracked Vue additions, and changed bytes fail. The same proof and
+manifest are required after execution and across all three workers. Cached test
+conclusions receive no credit.
+
+The historical 147-gitlink/42,998-file baseline is a parser control, not a fixed
+limit on legitimate committed fixture additions. Expected counts are derived from
+the complete pinned graph. Symlink files and directory aliases retain the original
+walker's dereferenced contents and paths, including cross-fixture targets owned by
+the complete committed graph. Path components resolve in physical order before
+`..`; cycles, absolute or escaping targets, and foreign physical paths fail.
+Original `node_modules` and `_git-worktrees` exclusions apply before resolution.
+Nested unselected gitlinks remain empty directories, matching nonrecursive hydrate.
+
+Real temporary Git controls cover committed file and new-gitlink additions,
+omission of valid inputs without any known-invalid fixtures, replacements, raw
+object forgeries, and symlink ownership. A read-only check of n8n at committed
+`e882e8a483f433facb47bab9b407d0ec00a81172` derives all 1,369 Vue paths and confirms
+their physical blob identities exactly. The old 147-fixture object stores were
+unavailable at the supplied local paths; they were neither hydrated nor broadly
+searched. Full 148-fixture/44,367-file pipeline acceptance is unexecuted. The
+existing n8n fixture parent owns legitimate legacy producer/finalizer updates;
+this proposal preserves those older source files and adds no fixed-count veto.
 
 [Matrix 37617991549](https://github.com/ubugeeei-prod/vize/actions/runs/37617991549)
 on `8a9110229414769be71595d7888c6cbd8f3add88` observed 37,487 Vue files after a
@@ -54,6 +79,8 @@ correctly refused nine skips against the unchanged required sixteen; source
 compiler/parser/corpus files were identical. HEAD-only inventory cannot establish
 complete checkout. The precise historical filesystem loss cause is unavailable
 because the original helper discarded underlying Git stderr.
+The committed graph also refuses this 5,511-file loss if the omitted inputs are
+ordinary valid Vue files: exact coverage does not depend on the skip allowlist.
 
 Keep the original hydration helper and fallback controls byte identical. After it
 returns success, force checkout all selected committed submodules before taking
@@ -75,7 +102,7 @@ An older green job cannot hide a latest failure or incomplete job. A failed-only
 retry may carry an earlier successful execution only when the complete official
 execution signature is identical, retaining its original attempt-bound artifact.
 All three artifact bodies must agree on candidate/tree, complete committed
-gitlinks, metadata, whole file manifest, original sixteen skip reasons, full
+gitlinks, metadata, authenticated tree proof, whole file manifest, original sixteen skip reasons, full
 canonical counters, and zero divergence/refusal requirements. The finalizer
 reselects custody after downloading the exact artifact IDs with digest refusal.
 For pull requests, the verified event PR head is the API provider identity while
@@ -93,7 +120,7 @@ IDs, allowing a fork PR without crediting foreign base or artifact metadata.
   Existing finite cohorts and release recovery retain priority.
 - On future admission, pair the issue comment below with a bounded reference in
   the shared decision record in the same change. Its current 350-line canonical
-  layout and finite-five ownership remain untouched in this local proposal.
+  layout and root's current finite-cohort ownership remain untouched in this local proposal.
 - Attend fresh exact-head source and full protected merge-group Actions. Compare
   actual critical-path timestamps, complete file/counter receipts, every Rust
   result, and fresh merge identity before claiming a throughput improvement.
@@ -102,9 +129,12 @@ IDs, allowing a fork PR without crediting foreign base or artifact metadata.
 
 Protected CI can schedule the unchanged DOM, SSR/Pug, and production-reach
 observers independently, then require one custody-checking finalizer under the
-existing status name. All three must cover the same committed 147 submodules and
-42,998 whole-byte Vue inputs before and after execution; the original sixteen
-known-invalid inputs and all refusal/byte/budget gates remain required. Git-object
+existing status name. All three must cover the entire committed submodule vector
+and every Vue path/blob derived from complete authenticated pinned Git trees,
+with exact whole-byte manifests before and after execution. Legitimate committed
+fixture additions change the derived inventory; omissions and replacements fail.
+The historical 147/42,998 baseline, original sixteen known-invalid inputs, and
+all refusal/byte/budget gates remain required controls. Git-object
 caches are identity-keyed and PR/merge-group restore-only. A forced checkout with
 retained diagnostics closes HEAD-only incomplete-hydration credit. The original
 Rust feature recipe and fixture coverage run as a required sibling after the

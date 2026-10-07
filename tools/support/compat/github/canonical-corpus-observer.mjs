@@ -3,6 +3,7 @@ import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { recoverFixtureCheckout, validateHydration } from "./canonical-corpus-hydration.mjs";
+import { verifyCommittedInventory } from "./canonical-corpus-inventory.mjs";
 import {
   expectedOldErrorReasons,
   expectedOldErrorSkips,
@@ -13,8 +14,6 @@ import {
   artifactRoot,
   captureCorpus,
   corpusPlan,
-  expectedFiles,
-  expectedGitlinks,
   observers,
   sameCorpus,
   sha256,
@@ -39,8 +38,14 @@ function counter(line, name) {
   return Number(match[1]);
 }
 
-export function validateObserverLog(observer, bytes) {
+export function validateObserverLog(observer, bytes, identity) {
   assert(observers.includes(observer), "Unknown canonical observer");
+  const expectedFiles = identity.files;
+  const expectedGitlinks = identity.gitlinks.length;
+  assert(
+    Number.isSafeInteger(expectedFiles) && expectedFiles > 0 && expectedGitlinks > 0,
+    "Missing committed canonical log inventory",
+  );
   const lines = bytes
     .toString("utf8")
     .replace(ansiSequence, "")
@@ -48,11 +53,17 @@ export function validateObserverLog(observer, bytes) {
     .map((line) => line.replace(/^\d{4}-\d\d-\d\dT[\d:.]+Z /, ""));
   const closure = lines.filter((line) => line.startsWith("davinci-differential corpus scope:"));
   assert.equal(closure.length, observer === "ssr-pug" ? 2 : 1, "Incomplete canonical scope");
-  for (const line of closure)
+  for (const line of closure) {
     assert(
-      line.includes(`scope=canonical closure_evidence=true submodules=${expectedGitlinks}`),
+      line.includes("scope=canonical closure_evidence=true"),
       "Observer used a partial or foreign corpus",
     );
+    assert.equal(
+      counter(line, "submodules"),
+      expectedGitlinks,
+      "Observer omitted committed gitlinks",
+    );
+  }
   const harness = lines.filter((line) => line.startsWith("test result:"));
   assert.equal(harness.length, observer === "ssr-pug" ? 2 : 1, "Incomplete observer harness");
   const minimumTests = observer === "dom" ? [4] : observer === "ssr-pug" ? [3, 1] : [17];
@@ -144,11 +155,23 @@ export function validateObserverArtifact(observer, directory) {
     "Canonical hydration receipt was replaced",
   );
   const files = readJson(join(directory, "files.json"));
-  assert.equal(validateFiles(files), identity.filesSha256, "Canonical file manifest was replaced");
+  const proof = readJson(join(directory, "committed-corpus.json"));
+  assert.equal(
+    sha256(JSON.stringify(proof)),
+    identity.committedSha256,
+    "Committed tree proof was replaced",
+  );
+  const committedFiles = verifyCommittedInventory(proof, identity.gitlinks);
+  assert.equal(committedFiles.length, identity.files, "Committed corpus count changed");
+  assert.equal(
+    validateFiles(files, committedFiles),
+    identity.filesSha256,
+    "Canonical file manifest was replaced",
+  );
   const bytes = readFileSync(join(directory, observerLogs[observer]));
   assert.equal(sha256(bytes), receipt.logSha256, "Observer log was replaced");
   assert.deepEqual(
-    validateObserverLog(observer, bytes),
+    validateObserverLog(observer, bytes, identity),
     receipt.counters,
     "Observer counters changed",
   );
@@ -170,7 +193,7 @@ export function validateObserverArtifact(observer, directory) {
   const status = readFileSync(join(directory, "submodule-status.txt"), "utf8")
     .trimEnd()
     .split("\n");
-  assert.equal(status.length, expectedGitlinks, "Submodule status evidence is incomplete");
+  assert.equal(status.length, identity.gitlinks.length, "Submodule status evidence is incomplete");
   for (const [index, line] of status.entries()) {
     const prefix = ` ${identity.gitlinks[index].sha} ${identity.gitlinks[index].path}`;
     assert(
@@ -204,7 +227,7 @@ export function recordObserver(observer, outcome, cwd, env = process.env) {
     logSha256: sha256(bytes),
     selectedSha256: sha256(readFileSync(join(directory, "selected-gitlinks.txt"))),
     statusSha256: sha256(readFileSync(join(directory, "submodule-status.txt"))),
-    counters: validateObserverLog(observer, bytes),
+    counters: validateObserverLog(observer, bytes, identity),
   });
   return validateObserverArtifact(observer, directory);
 }
@@ -226,6 +249,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const capture = captureCorpus(cwd);
     writeJson(join(artifactRoot, "identity.json"), capture.identity);
     writeJson(join(artifactRoot, "files.json"), capture.files);
+    writeJson(join(artifactRoot, "committed-corpus.json"), capture.proof);
   } else if (mode === "record") {
     recordObserver(observer, process.env.OBSERVER_OUTCOME, cwd);
   } else {

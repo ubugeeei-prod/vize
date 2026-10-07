@@ -13,9 +13,10 @@ const inputs = [
   /^tests\/_fixtures\//,
   /^tests\/tooling\/(?:davinci-dom-corpus|davinci-canonical-corpus|fixture-)/,
   /^tests\/tooling\/fixtures\/canonical-observer-logs\//,
+  /^tests\/tooling\/support\/canonical-corpus-worker-inventory\.mjs$/,
   /^tools\/(?:commands\/fixtures|support\/compat\/fixtures|benchmarks)\//,
   /^tools\/support\/compat\/davinci\/lib\/corpus-baseline-contract\.mjs$/,
-  /^tools\/support\/compat\/github\/(?:canonical-corpus-(?:selection|identity|hydration|observer|workers)|comparison-base|plan-source-checks|require-needs-success|prepare-vue-benchmarks)\.mjs$/,
+  /^tools\/support\/compat\/github\/(?:canonical-corpus-(?:selection|identity|inventory|hydration|observer|workers)|comparison-base|plan-source-checks|require-needs-success|prepare-vue-benchmarks)\.mjs$/,
 ];
 
 export function canonicalCorpusRequired(paths, eventName) {

@@ -7,8 +7,6 @@ import { test } from "node:test";
 import {
   collectFiles,
   corpusPlan,
-  expectedFiles,
-  expectedGitlinks,
   parseGitlinks,
   sameCorpus,
   sha256,
@@ -17,6 +15,8 @@ import {
 import { validateObserverLog } from "../../tools/support/compat/github/canonical-corpus-observer.mjs";
 
 const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
+const historicalFiles = 42998;
+const historicalGitlinks = 147;
 const original = execFileSync("git", ["ls-tree", "-rz", "HEAD", "--", "tests/_fixtures/_git"], {
   encoding: "utf8",
 });
@@ -62,7 +62,7 @@ test("fixture object cache is committed-gitlink keyed and read-only for PR/queue
       assert.equal(plan.cacheTrusted, trusted);
       assert.equal(plan.providerSha, event === "pull_request" ? "e".repeat(40) : sha);
       assert.equal(plan.providerRepositoryId, event === "pull_request" ? 199 : 99);
-      assert.equal(plan.gitlinks.length, expectedGitlinks);
+      assert.deepEqual(plan.gitlinks, parseGitlinks(original));
       assert.equal(plan.tree, git("rev-parse", "HEAD^{tree}"));
       keys.add(plan.cacheKey);
       assert.throws(
@@ -94,10 +94,14 @@ test("fixture object cache is committed-gitlink keyed and read-only for PR/queue
   }
 });
 
-test("committed fixture parsing refuses missing, duplicate, conflict and foreign gitlinks", () => {
-  assert.equal(parseGitlinks(original).length, 147);
+test("committed fixture parsing refuses duplicate, conflict and foreign gitlinks", () => {
+  assert.equal(
+    parseGitlinks(original)
+      .map(({ path, sha }) => `160000 commit ${sha}\t${path}\0`)
+      .join(""),
+    original,
+  );
   for (const value of [
-    original.split("\0").slice(1).join("\0"),
     original + original.split("\0")[0] + "\0",
     original.replace("160000 commit", "100644 blob"),
     original.replace("tests/_fixtures/_git/", "../outside/"),
@@ -138,12 +142,14 @@ test("whole Vue bytes are observed and the original corpus exclusions remain", (
 });
 
 test("full file manifests refuse shrinkage, duplication, byte digest and path drift", () => {
-  const files = Array.from({ length: expectedFiles }, (_, index) => [
+  const files = Array.from({ length: historicalFiles }, (_, index) => [
     `project-${index}/Original.vue`,
     "a".repeat(64),
     31,
+    "e".repeat(40),
   ]);
-  const digest = validateFiles(files);
+  const committedFiles = files.map(([path, , , blob]) => [path, blob]);
+  const digest = validateFiles(files, committedFiles);
   assert.equal(digest, sha256(JSON.stringify(files)));
   for (const mutate of [
     (value) => value.pop(),
@@ -162,13 +168,14 @@ test("full file manifests refuse shrinkage, duplication, byte digest and path dr
   ]) {
     const forged = structuredClone(files);
     mutate(forged);
-    assert.throws(() => validateFiles(forged));
+    assert.throws(() => validateFiles(forged, committedFiles));
   }
   const identity = {
     schema: "vize.canonical-corpus-identity",
     version: 1,
-    files: expectedFiles,
+    files: historicalFiles,
     filesSha256: digest,
+    committedSha256: "e".repeat(64),
     sha: "b".repeat(40),
     tree: "c".repeat(40),
     runId: 12,
@@ -189,6 +196,7 @@ test("full file manifests refuse shrinkage, duplication, byte digest and path dr
     "gitlinksSha256",
     "filesSha256",
     "files",
+    "committedSha256",
   ])
     assert.throws(() => sameCorpus(identity, { ...identity, [key]: "foreign" }));
 });
@@ -202,6 +210,10 @@ test("historical raw observers are parser controls and all full counters remain 
   );
   assert.equal(capture.runId, 37612234749);
   assert.equal(capture.sha, "538370a5db8f4443538145c8ae891e5e84008328");
+  const inventory = {
+    files: historicalFiles,
+    gitlinks: Array.from({ length: historicalGitlinks }),
+  };
   const incomplete = JSON.parse(readFileSync(join(root, "incomplete-capture.json"), "utf8"));
   assert.equal(
     sha256(readFileSync(join(root, "incomplete-capture.json"))),
@@ -211,11 +223,11 @@ test("historical raw observers are parser controls and all full counters remain 
   assert.equal(incomplete.runId, 37617991549);
   assert.equal(incomplete.sha, "8a9110229414769be71595d7888c6cbd8f3add88");
   assert.equal(sha256(incompleteLog), incomplete.logSha256);
-  assert.throws(() => validateObserverLog("dom", incompleteLog), /whole corpus/);
+  assert.throws(() => validateObserverLog("dom", incompleteLog, inventory), /whole corpus/);
   for (const observer of ["dom", "ssr-pug", "reach"]) {
     const bytes = readFileSync(join(root, `${observer}.log`));
     assert.equal(sha256(bytes), capture.logs[observer]);
-    const counters = validateObserverLog(observer, bytes);
+    const counters = validateObserverLog(observer, bytes, inventory);
     assert(counters.length > 0);
     const text = bytes.toString("utf8");
     for (const forged of [
@@ -227,7 +239,7 @@ test("historical raw observers are parser controls and all full counters remain 
       text.replaceAll("test result: ok.", "test result: FAILED."),
     ]) {
       assert.throws(
-        () => validateObserverLog(observer, Buffer.from(forged)),
+        () => validateObserverLog(observer, Buffer.from(forged), inventory),
         `${observer}: forged counters`,
       );
     }

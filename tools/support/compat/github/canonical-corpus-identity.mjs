@@ -2,14 +2,17 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { join, relative, resolve, sep } from "node:path";
+import {
+  corpusRoot,
+  createCommittedInventory,
+  gitObjectId,
+} from "./canonical-corpus-inventory.mjs";
 import { rustCachePolicy } from "../../../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
 
-export const corpusRoot = "tests/_fixtures/_git";
+export { corpusRoot } from "./canonical-corpus-inventory.mjs";
 export const artifactRoot = "real-project-davinci-dom-corpus";
 export const observers = ["dom", "ssr-pug", "reach"];
-export const expectedFiles = 42998;
-export const expectedGitlinks = 147;
 export const sha256 = (value) => createHash("sha256").update(value).digest("hex");
 
 const git = (cwd, ...args) =>
@@ -28,7 +31,7 @@ export function parseGitlinks(output) {
       return { path: match[2], sha: match[1] };
     });
   rows.sort((left, right) => (left.path < right.path ? -1 : left.path > right.path ? 1 : 0));
-  assert.equal(rows.length, expectedGitlinks, "Canonical gitlink count changed");
+  assert(rows.length > 0, "Committed canonical gitlinks are empty");
   assert.equal(new Set(rows.map((row) => row.path)).size, rows.length, "Duplicate gitlink");
   return rows;
 }
@@ -121,32 +124,53 @@ export function corpusPlan(cwd, env = process.env) {
 export function collectFiles(root) {
   const files = [];
   const ancestors = new Set();
+  const ownershipRoot = realpathSync.native(root);
   const visit = (directory) => {
-    const physical = realpathSync(directory);
+    const physical = realpathSync.native(directory);
     assert(!ancestors.has(physical), "Canonical corpus contains a directory cycle");
     ancestors.add(physical);
     const children = readdirSync(directory).sort();
     for (const name of children) {
+      if (["node_modules", "_git-worktrees"].includes(name)) continue;
       const path = join(directory, name);
-      if (statSync(path).isDirectory()) {
-        if (!["node_modules", "_git-worktrees"].includes(name)) visit(path);
+      const directoryEntry = statSync(path).isDirectory();
+      const owner = realpathSync.native(path);
+      assert(
+        owner.startsWith(`${ownershipRoot}${sep}`) || owner === ownershipRoot,
+        "Foreign physical canonical path",
+      );
+      if (directoryEntry) {
+        visit(path);
       } else if (name.endsWith(".vue")) {
         const bytes = readFileSync(path);
-        files.push([relative(root, path).split("\\").join("/"), sha256(bytes), bytes.length]);
+        files.push([
+          relative(root, path).split(sep).join("/"),
+          sha256(bytes),
+          bytes.length,
+          gitObjectId("blob", bytes),
+        ]);
       }
     }
     ancestors.delete(physical);
   };
   visit(root);
+  files.sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0));
   return files;
 }
 
-export function validateFiles(files) {
-  assert(Array.isArray(files) && files.length === expectedFiles, "Canonical Vue corpus changed");
+export function validateFiles(files, committedFiles) {
+  assert(
+    Array.isArray(committedFiles) && committedFiles.length > 0,
+    "Missing committed Vue inventory",
+  );
+  assert(
+    Array.isArray(files) && files.length === committedFiles.length,
+    "Canonical Vue corpus changed",
+  );
   const paths = new Set();
   for (const row of files) {
-    assert(Array.isArray(row) && row.length === 3, "Invalid canonical file row");
-    const [path, hash, size] = row;
+    assert(Array.isArray(row) && row.length === 4, "Invalid canonical file row");
+    const [path, hash, size, blob] = row;
     assert(
       typeof path === "string" &&
         path.endsWith(".vue") &&
@@ -160,7 +184,13 @@ export function validateFiles(files) {
     paths.add(path);
     assert(/^[0-9a-f]{64}$/.test(hash), "Missing canonical file digest");
     assert(Number.isSafeInteger(size) && size >= 0, "Invalid canonical file size");
+    assert(/^[0-9a-f]{40}$/.test(blob), "Missing canonical Git blob identity");
   }
+  assert.deepEqual(
+    files.map(([path, , , blob]) => [path, blob]),
+    committedFiles,
+    "Canonical checkout omitted, replaced or changed committed Vue bytes",
+  );
   return sha256(JSON.stringify(files));
 }
 
@@ -175,7 +205,17 @@ export function captureCorpus(cwd, env = process.env) {
     execFileSync("git", ["diff", "--quiet", "HEAD", "--"], { cwd: join(cwd, row.path) });
   }
   const files = collectFiles(resolve(cwd, corpusRoot));
-  return { identity: { ...plan, files: files.length, filesSha256: validateFiles(files) }, files };
+  const committed = createCommittedInventory(cwd, plan.gitlinks);
+  return {
+    identity: {
+      ...plan,
+      files: committed.files.length,
+      filesSha256: validateFiles(files, committed.files),
+      committedSha256: sha256(JSON.stringify(committed.proof)),
+    },
+    files,
+    proof: committed.proof,
+  };
 }
 
 export function sameCorpus(left, right) {
@@ -195,6 +235,7 @@ export function sameCorpus(left, right) {
     "modulesSha256",
     "files",
     "filesSha256",
+    "committedSha256",
   ])
     assert.deepEqual(left[key], right[key], `Canonical corpus ${key} changed`);
   assert.deepEqual(left.gitlinks, right.gitlinks, "Canonical gitlink ownership changed");

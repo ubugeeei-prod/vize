@@ -13,7 +13,6 @@ import { githubApiPages, githubApiRequest } from "./release-preflight-github.mjs
 import {
   artifactRoot,
   corpusPlan,
-  expectedFiles,
   observers,
   sameCorpus,
   sha256,
@@ -251,7 +250,6 @@ export function verifyCanonicalArtifacts(selection, root, plan) {
       "Foreign canonical execution attempt",
     );
     assert.deepEqual(receipt.identity.gitlinks, plan.gitlinks, "Foreign canonical gitlink owners");
-    assert.equal(receipt.identity.files, expectedFiles, "Canonical corpus shrank");
     return { ...receipt.identity, attempt: selection.attempt };
   });
   for (const receipt of receipts.slice(1)) sameCorpus(receipts[0], receipt);
