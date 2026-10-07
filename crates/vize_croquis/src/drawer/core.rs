@@ -82,7 +82,10 @@ impl Drawer {
             ident_cache: FxHashMap::default(),
             occurrence_capture: None,
         };
-        if options.detect_undefined && options.collect_template_expressions {
+        if options.analyze_script
+            && options.detect_undefined
+            && options.collect_template_expressions
+        {
             drawer.with_binding_occurrences()
         } else {
             drawer
@@ -114,7 +117,10 @@ impl Drawer {
         };
         match packet {
             Some(packet) => drawer.with_binding_occurrence_packet(packet),
-            None if options.detect_undefined && options.collect_template_expressions => {
+            None if options.analyze_script
+                && options.detect_undefined
+                && options.collect_template_expressions =>
+            {
                 drawer.with_binding_occurrences()
             }
             None => drawer,

@@ -136,8 +136,9 @@ fn complete_originals_and_guarded_handler_watch_controls_preserve_all_producer_f
             } else { (plain.unwrap(), 0) };
             let relative = prefix + authored - block.start;
             let tail = input.get(authored as usize..).unwrap();
-            let api = if tail.starts_with("window") { "window" } else {
-                assert!(tail.starts_with("document")); "document"
+            let api = match tail.split_once('.').unwrap().0 {
+                api @ ("window" | "document") => api,
+                api => panic!("unexpected complete browser identifier: {api}"),
             };
             json!({
                 "kind":"BrowserApiInSsr", "api":api, "context":if api == "document" { "DOM API" } else { "Browser global" },

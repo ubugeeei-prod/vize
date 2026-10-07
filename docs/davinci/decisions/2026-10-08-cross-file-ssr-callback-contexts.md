@@ -94,5 +94,13 @@ old law; make new test helpers use checked ranges and explicit Results, retain
 every original assertion, and await all Node test registrations. All original
 462 Croquis laws, complete38 producer replay/two origin laws and strict
 test-target Clippy pass locally after these corrections.
+[The following hosted correction](https://github.com/ubugeeei-prod/vize/issues/7908#issuecomment-6048132969)
+also exercises the original SFC disabled-script law:
+automatic ownership capture must require `analyze_script` as well as full
+analysis demand. Keep that entire law unchanged and add its existing disabled
+gate to both constructors. Replace the new producer test's partial browser-name
+assertion with exact authored identifier-token validation; retain all 38 whole
+diagnostic vectors and the committed assertion allowlist unchanged. Hosted
+requalification, rather than a new heavy local build, verifies this correction.
 No performance improvement is claimed from local results. Actual queue merge,
 signed main, release and public distribution remain root-owned acceptance.
