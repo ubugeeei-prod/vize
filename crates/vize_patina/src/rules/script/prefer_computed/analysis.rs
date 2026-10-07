@@ -194,7 +194,7 @@ pub(super) fn derived_assignment<'a, 'b>(
     {
         return None;
     }
-    let Statement::ExpressionStatement(statement) = &body.statements[0] else {
+    let Statement::ExpressionStatement(statement) = body.statements.first()? else {
         return None;
     };
     let Expression::AssignmentExpression(assignment) = unwrap_expression(&statement.expression)

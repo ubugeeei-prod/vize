@@ -754,7 +754,6 @@ linter	Linter	source	crates/vize_patina/src/rules/script/prefer_computed/analysi
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_computed/template.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_computed/template.rs	3	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_computed/template.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/prefer_computed/template.rs	3	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_computed/template.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_define_options.rs	46	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/prefer_import_from_vue.rs	24	l0	L0	stage	vize_l0	preferred	2

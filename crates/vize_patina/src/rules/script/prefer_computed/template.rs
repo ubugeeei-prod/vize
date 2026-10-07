@@ -1,6 +1,5 @@
 //! Template writes only suppress advice; token ambiguity is conservative.
 use super::{SfcScriptContext, analysis::Inventory};
-use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{CompactString, FxHashSet};
