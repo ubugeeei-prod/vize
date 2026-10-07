@@ -7,7 +7,11 @@ use std::cmp::Ordering;
 use vize_carton::{FxHashMap, FxHashSet};
 use vize_croquis::provide::{InjectEntry, ProvideEntry, ProvideKey};
 
+mod calls;
+mod frames;
+use calls::{extract_provide_inject, matching_provider};
 mod parents;
+use frames::{frame_contains, path_from_frame};
 use parents::{runtime_component_parents, stable_file_order, stable_rank};
 
 #[derive(Debug)]
@@ -374,55 +378,6 @@ impl ProvideInjectIndex {
             .cmp(&stable_rank(&self.stable_file_order, right))
             .then_with(|| left.as_u32().cmp(&right.as_u32()))
     }
-}
-
-fn matching_provider<'a>(
-    component_provides: &'a [ProvideEntry],
-    key: &ProvideKey,
-) -> Option<&'a ProvideEntry> {
-    component_provides
-        .iter()
-        .rev()
-        .find(|provide| provide.key == *key)
-}
-
-fn path_from_frame(frames: &[AncestorFrame], mut index: usize) -> Vec<FileId> {
-    let mut path = Vec::new();
-    while let Some(&frame) = frames.get(index) {
-        path.push(frame.current);
-        let Some(parent) = frame.parent else {
-            break;
-        };
-        index = parent;
-    }
-    path
-}
-
-fn frame_contains(frames: &[AncestorFrame], mut index: usize, needle: FileId) -> bool {
-    loop {
-        let Some(&frame) = frames.get(index) else {
-            return false;
-        };
-        if frame.current == needle {
-            return true;
-        }
-        let Some(parent) = frame.parent else {
-            return false;
-        };
-        index = parent;
-    }
-}
-
-/// Extract provide/inject calls from a component's analysis.
-/// Uses the ProvideInjectTracker for precise static analysis - no heuristics.
-#[inline]
-fn extract_provide_inject(
-    analysis: &vize_croquis::Croquis,
-) -> (Vec<ProvideEntry>, Vec<InjectEntry>) {
-    // Use the actual provide/inject tracker data - precise static analysis
-    let provides = vize_croquis::facts::provide_entries(analysis);
-    let injects = vize_croquis::facts::inject_entries(analysis);
-    (provides, injects)
 }
 
 #[cfg(test)]
