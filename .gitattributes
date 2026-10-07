@@ -19,6 +19,9 @@ tests/_fixtures/_git/** linguist-vendored=true
 
 # Preserve the pinned upstream source bytes, including existing trailing spaces.
 tests/_fixtures/differential/compiler/cli-whitespace-7880/** -text
+
+# Full original component-slot report and owned source/DOM corpus (#7970).
+tests/_fixtures/differential/compiler/component-slot-text-7970/** -text
 tests/_fixtures/pattern-reference/upstream/** linguist-vendored whitespace=-blank-at-eol
 tests/_fixtures/vue-language-tools/upstream/** linguist-vendored whitespace=-blank-at-eol
 
@@ -65,6 +68,3 @@ tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/hab
 
 # Preserve full authored LF/CRLF CSS continuation originals and references.
 tests/_fixtures/differential/formatter-regressions/css-continuation-indent-7915/** -text whitespace=cr-at-eol
-
-# Full original component-slot report and owned source/DOM corpus (#7970).
-tests/_fixtures/differential/compiler/component-slot-text-7970/** -text
