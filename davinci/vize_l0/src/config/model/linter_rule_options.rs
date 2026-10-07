@@ -183,7 +183,6 @@ impl ConfigLintRuleOptions {
         self.strict_boolean_expressions.is_none()
             && self.no_empty_palpable_content.is_none()
             && self.stable.is_empty()
-            && self.require_component_registration.is_none()
             && self.component_name_in_template_casing.is_none()
             && self.custom_event_name_casing.is_none()
             && self.no_mutating_props.is_none()
@@ -192,6 +191,7 @@ impl ConfigLintRuleOptions {
             && self.v_on_event_hyphenation.is_none()
             && self.attribute_hyphenation.is_none()
             && self.musea_prefer_design_tokens.is_none()
+            && self.require_component_registration.is_none()
     }
 
     /// Globally registered components permitted by the registration rule.
@@ -285,9 +285,6 @@ impl ConfigLintRuleOptions {
     /// Apply a later config layer to this option set.
     pub fn merge_from(&mut self, overlay: &Self) {
         self.stable.merge_from(&overlay.stable);
-        if let Some(options) = &overlay.require_component_registration {
-            self.require_component_registration = Some(options.clone());
-        }
         if let Some(options) = &overlay.no_empty_palpable_content {
             self.no_empty_palpable_content = Some(options.clone());
         }
@@ -317,6 +314,9 @@ impl ConfigLintRuleOptions {
         }
         if let Some(options) = &overlay.musea_prefer_design_tokens {
             self.musea_prefer_design_tokens = Some(options.clone());
+        }
+        if let Some(options) = &overlay.require_component_registration {
+            self.require_component_registration = Some(options.clone());
         }
     }
 }
