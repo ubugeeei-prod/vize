@@ -72,6 +72,7 @@
 "tests/_fixtures/_projects/typecheck-vue-imports/src/ExistingPanel.vue"
 "tests/_fixtures/_projects/typecheck-vue-imports/src/MissingImport.vue"
 "tests/_fixtures/_projects/vue2-filter-build/src/LegacyFilters.vue"
+"tests/_fixtures/art-lsp-lint/Card.art.vue"
 "tests/_fixtures/davinci-fpfn/BaselineDrift.vue"
 "tests/_fixtures/davinci-fpfn/HelloCounter.vue"
 "tests/_fixtures/davinci-fpfn/PlainBadge.vue"

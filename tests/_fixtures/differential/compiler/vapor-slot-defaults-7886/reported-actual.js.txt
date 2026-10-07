@@ -1,0 +1,3 @@
+"default": (_slotProps0) => {
+  …
+  _renderEffect(() => _setText(n0, _toDisplayString(_slotProps0.label) + ":" + _toDisplayString(_slotProps0.count)))

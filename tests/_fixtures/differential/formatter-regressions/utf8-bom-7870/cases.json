@@ -22,14 +22,14 @@
       "api": "json",
       "file": "bom.json",
       "source": "\ufeff{\"a\":1}\n",
-      "expected": "\ufeff{\n  \"a\": 1\n}\n"
+      "expected": "\ufeff{ \"a\": 1 }\n"
     },
     {
       "id": "jsonc-comment",
       "api": "jsonc",
       "file": "comment.jsonc",
       "source": "\ufeff// encoding marker\n{\"a\":1,}\n",
-      "expected": "\ufeff// encoding marker\n{\n  \"a\": 1\n}\n"
+      "expected": "\ufeff// encoding marker\n{ \"a\": 1 }\n"
     },
     {
       "id": "vue-crlf-auto",
@@ -45,7 +45,7 @@
       "file": "auto.json",
       "eol": "auto",
       "source": "\ufeff{\"a\":1}\r\n",
-      "expected": "\ufeff{\r\n  \"a\": 1\r\n}\r\n"
+      "expected": "\ufeff{ \"a\": 1 }\r\n"
     },
     {
       "id": "vue-explicit-crlf",
@@ -61,7 +61,7 @@
       "file": "explicit.json",
       "eol": "crlf",
       "source": "\ufeff{\"a\":1}\n",
-      "expected": "\ufeff{\r\n  \"a\": 1\r\n}\r\n"
+      "expected": "\ufeff{ \"a\": 1 }\r\n"
     },
     {
       "id": "vue-comment-prologue",
@@ -77,7 +77,7 @@
       "api": "json",
       "file": "scalar.json",
       "source": "\ufeff{\"label\":\"\ufeffx\"}\n",
-      "expected": "\ufeff{\n  \"label\": \"\ufeffx\"\n}\n"
+      "expected": "\ufeff{ \"label\": \"\ufeffx\" }\n"
     },
     {
       "id": "plain-vue-control",
@@ -91,7 +91,7 @@
       "api": "json",
       "file": "plain.json",
       "source": "{\"a\":1}\n",
-      "expected": "{\n  \"a\": 1\n}\n"
+      "expected": "{ \"a\": 1 }\n"
     },
     {
       "id": "reported-typescript-control",

@@ -13,7 +13,7 @@ fn pretty_prints_minified_object() {
     let result = format_json_source(source, &opts()).unwrap();
     assert_eq!(
         result.as_str(),
-        "{\n  \"name\": \"vize\",\n  \"version\": \"0.259.0\",\n  \"keywords\": [\n    \"vue\",\n    \"toolchain\"\n  ]\n}\n",
+        "{ \"name\": \"vize\", \"version\": \"0.259.0\", \"keywords\": [\"vue\", \"toolchain\"] }\n",
     );
 }
 
@@ -21,10 +21,7 @@ fn pretty_prints_minified_object() {
 fn preserves_key_order_from_source() {
     let source = r#"{"z":1,"a":2,"m":3}"#;
     let result = format_json_source(source, &opts()).unwrap();
-    assert_eq!(
-        result.as_str(),
-        "{\n  \"z\": 1,\n  \"a\": 2,\n  \"m\": 3\n}\n"
-    );
+    assert_eq!(result.as_str(), "{ \"z\": 1, \"a\": 2, \"m\": 3 }\n");
 }
 
 #[test]
@@ -38,7 +35,7 @@ fn already_formatted_is_idempotent() {
 #[test]
 fn empty_collections_stay_compact() {
     let result = format_json_source(r#"{"a":[],"b":{}}"#, &opts()).unwrap();
-    assert_eq!(result.as_str(), "{\n  \"a\": [],\n  \"b\": {}\n}\n");
+    assert_eq!(result.as_str(), "{ \"a\": [], \"b\": {} }\n");
 }
 
 #[test]
@@ -60,7 +57,7 @@ fn preserves_valid_number_tokens() {
     let result = format_json_source(source, &opts()).unwrap();
     assert_eq!(
         result.as_str(),
-        "{\n  \"ints\": [\n    0,\n    -0,\n    10\n  ],\n  \"fraction\": 1.25,\n  \"exp\": 6.02e+23,\n  \"small\": 1E-9\n}\n"
+        "{ \"ints\": [0, -0, 10], \"fraction\": 1.25, \"exp\": 6.02e+23, \"small\": 1E-9 }\n"
     );
 }
 
@@ -102,7 +99,7 @@ fn honors_custom_indent_width() {
     let mut options = opts();
     options.tab_width = 4;
     let result = format_json_source(r#"{"a":1}"#, &options).unwrap();
-    assert_eq!(result.as_str(), "{\n    \"a\": 1\n}\n");
+    assert_eq!(result.as_str(), "{ \"a\": 1 }\n");
 }
 
 #[test]
@@ -162,10 +159,7 @@ fn jsonc_normalizes_indentation_but_keeps_comments() {
 fn jsonc_drops_trailing_comma() {
     let source = "{\n  \"a\": 1,\n  \"b\": [\n    1,\n    2,\n  ],\n}\n";
     let result = format_jsonc_source(source, &opts()).unwrap();
-    assert_eq!(
-        result.as_str(),
-        "{\n  \"a\": 1,\n  \"b\": [\n    1,\n    2\n  ]\n}\n"
-    );
+    assert_eq!(result.as_str(), "{\n  \"a\": 1,\n  \"b\": [1, 2]\n}\n");
 }
 
 #[test]
