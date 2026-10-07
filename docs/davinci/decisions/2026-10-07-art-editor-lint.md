@@ -16,3 +16,10 @@ CLI parity, original variant positions, an astral-character offset control,
 and lint-disabled behavior. Existing project configuration applies through
 the shared Patina constructor. This legacy regression adds no Davinci native
 acceptance credit; Art typechecking remains separately tracked.
+
+The paired original 400-provider qualification includes the exact Art lint test,
+collector and diagnostic-service source paths changed by this slice. The
+original corpus, 79 response answers, 534 acknowledgements, notification
+controls and immutable source/input custody remain unchanged. This admits the
+actual correctness change to the existing full comparison; it supplies no
+performance credit until the exact-source original gate actually executes.
