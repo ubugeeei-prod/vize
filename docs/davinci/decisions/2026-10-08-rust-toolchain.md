@@ -99,3 +99,16 @@ The final publication composition also genuinely includes signed latest main
 source, fixture, workflow and inventory changes. Every incoming byte and
 canonical clause is retained; original 104 registry/cap/input bytes and all 33
 compiler custody drivers remain identical to the owned source.
+
+Exact source `55c8925bca` passed all four required checks, complete source,
+16,765 Rust tests, original 104 ceilings, native phases, paired n8n custody/runtime
+and the full zero-divergence corpus. A pre-admission merge review still finds an
+adjacent canonical conflict with queued Art binding history. Relocate only this
+complete unmerged Rust suffix from row 324 to the existing Rust cache paragraph
+at row 333; preserve both original paragraphs, every prior decision and all
+350 rows. Genuinely incorporate signed actual main
+`fe94b4d0dfb018e3a10fbde7b083823c3eeb7cc3`, retaining all incoming product and
+original fixture bytes. This docs placement and faithful source union require
+fresh mandatory Actions and protected delivery; historical 55c success cannot
+qualify the successor or installed release. No separate measurement dispatch
+or compiler, input, capture driver, recipe, ceiling or gate change follows.
