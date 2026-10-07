@@ -9,3 +9,8 @@ diagnostic equality before and after batching, including custom options.
 vectors. `npm/oxlint/src/batched-rules.test.ts` drives all 51 rules over
 1,127 physical files and verifies one native call per file, together with
 option/config/source invalidation and override/type-aware controls.
+
+`NoSettings.vue.txt` and its complete Oxlint diagnostic vector freeze the
+inherited-settings gap: explicit `script/no-options-api` must execute when
+the runtime preset is absent. The authored `essential` preset's gate remains
+an independent negative control in the actual Oxlint integration suite.

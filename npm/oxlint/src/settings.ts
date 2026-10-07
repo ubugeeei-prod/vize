@@ -81,7 +81,9 @@ export function parseVizeSettings(vize: unknown): PatinaSettings {
 }
 
 export function getActivePreset(settings: PatinaSettings): PatinaPreset {
-  return settings.preset ?? "general-recommended";
+  // Oxlint already selected these rules. Inherited configs can lose settings,
+  // so an absent preset must not silently suppress that explicit selection.
+  return settings.preset ?? "incremental";
 }
 
 export function isIncrementalPreset(settings: PatinaSettings): boolean {

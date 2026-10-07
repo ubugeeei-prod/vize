@@ -190,7 +190,9 @@ Settings are passed through `settings.vize`:
 
 - `locale` controls the diagnostic language.
 - `preset` accepts `"general-recommended"`/`"happy-path"`, `"essential"`, `"ecosystem"`, `"incremental"`, `"opinionated"`, `"nuxt"`, or `"all"`.
-- `preset` defaults to `"general-recommended"`.
+- Without a runtime `preset`, the bridge runs explicitly configured rules as `"incremental"`.
+  This also applies when Oxlint does not propagate settings through `extends`.
+  The configuration helpers still default to the `"general-recommended"` bundle.
 - `incremental` runs only the rules you explicitly configure.
 - `rules` accepts rule names (with or without the `vize/` prefix) or an Oxlint rule map.
   It batches matching rules into one native lint call per file. Oxlint's top-level `rules`

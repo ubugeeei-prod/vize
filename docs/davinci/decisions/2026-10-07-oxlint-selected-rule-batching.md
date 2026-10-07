@@ -11,7 +11,10 @@ rules on a separate path.
 names or an Oxlint rule map. A map carries supported rule options into the
 same native call. Oxlint retains reporting, severity, and override authority;
 rules omitted from the hint or using different options take the existing
-individual path. Preset gates retain their existing meaning. Vite+ helpers
+individual path. Explicit preset gates retain their existing meaning. When
+`extends` drops runtime settings, an absent preset uses incremental native
+execution so Oxlint's explicitly activated rules remain authoritative; the
+helper's default rule bundle stays general-recommended. Vite+ helpers
 derive the hint from their final merged Vize rule map.
 
 The existing 128-file LRU and exact physical-source revision guard remain.

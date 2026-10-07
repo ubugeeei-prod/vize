@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import test from "node:test";
 
 import {
@@ -255,4 +256,28 @@ void test("a plugin copy that cannot resolve the native binding refuses to load"
     outcome: "threw",
     reason: "Failed to load the Vize native binding",
   });
+});
+
+void test("missing inherited settings execute explicit rules while authored presets remain gated", () => {
+  const corpus = new URL(
+    "../../../tests/_fixtures/differential/linter/oxlint-batched-selection/",
+    import.meta.url,
+  );
+  const source = fs.readFileSync(new URL("NoSettings.vue.txt", corpus), "utf8");
+  const expected = JSON.parse(fs.readFileSync(new URL("NoSettings.oxlint.json", corpus), "utf8"));
+  const config = createVizeLintConfig({
+    preset: "incremental",
+    rules: {
+      "no-unused-vars": "off",
+      "vize/script/no-options-api": "error",
+    },
+  });
+  // Oxlint's extends can retain rules while losing the layer's settings.
+  config.settings.vize = {};
+  assert.deepEqual(
+    lintWorkspaceFixture({ config, filename: "src/NoSettings.vue", source }),
+    expected,
+  );
+  config.settings.vize.preset = "essential";
+  assert.deepEqual(lintWorkspaceFixture({ config, filename: "src/NoSettings.vue", source }), []);
 });

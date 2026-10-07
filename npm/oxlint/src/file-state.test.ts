@@ -274,3 +274,29 @@ it("the selected n8n native pass preserves complete per-rule diagnostics and opt
     fs.rmSync(root, { force: true, recursive: true });
   }
 });
+
+it("a missing runtime preset retains explicit rules outside general-recommended", () => {
+  clearFileStateCache();
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-no-settings-"));
+  const source = fs.readFileSync(
+    new URL(
+      "../../../tests/_fixtures/differential/linter/oxlint-batched-selection/NoSettings.vue.txt",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const filename = path.join(root, "NoSettings.vue");
+  fs.writeFileSync(filename, source);
+  const context = createContext(filename, "\nexport default {};\n");
+  const rule = "script/no-options-api";
+  const expected = binding.lintPatina(source, filename, { preset: "incremental" }, [
+    rule,
+  ]).diagnostics;
+  assert.equal(expected.length, 1);
+  try {
+    assert.deepEqual(getDiagnosticsForRule(context, getFileState(context), rule), expected);
+  } finally {
+    clearFileStateCache();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});
