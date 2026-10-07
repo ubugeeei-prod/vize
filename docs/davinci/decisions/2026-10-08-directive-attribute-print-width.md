@@ -62,3 +62,14 @@ fourteen and admits only the new named pending authored reference beside the
 existing named pending reference. Captured baselines keep their original
 captured state; there is no broad pending-state exception. Pure validator
 tests run locally; source-built shared CLI execution stays on Actions.
+
+The `9a2656` tooling shard failed the historical audit's unchanged whole
+thirteen-case shared-manifest pin. Preserve that complete `eed471b` manifest
+as exact `40acde7c` bytes. A closed current `10f2e78e` qualification proves the
+fourteen-case manifest has the identical old envelope and thirteen-case prefix
+plus only the named new case. The audit still validates its original thirteen
+obligations; the added case receives no historical execution credit. Negative
+controls reject changed owners, envelopes, old/new rows, counts, byte suffixes
+and escaping symlinks. Original audit metadata, all source/API manifest pins,
+old captures and all 104 ceilings stay unchanged. Preserve the raw failed
+Actions receipt and require fresh successor qualification.
