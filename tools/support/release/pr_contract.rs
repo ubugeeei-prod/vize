@@ -65,6 +65,34 @@ pub fn candidate(
     release_tag: &str,
     allow_merged: bool,
 ) -> Result<Candidate, String> {
+    if pr.get("body").and_then(Value::as_str).is_some_and(|body| {
+        body.lines()
+            .any(|line| line.starts_with("<!-- vize-release-pin:"))
+    }) {
+        return Err(
+            "This source cut is pinned; resume with --pin. Legacy refresh is forbidden.".into(),
+        );
+    }
+    candidate_fields(
+        pr,
+        permission,
+        repository,
+        expected_head,
+        release_tag,
+        allow_merged,
+    )
+}
+
+/// Shared custody fields; callers choosing a protocol must independently
+/// authenticate that protocol's marker before any mutation.
+pub(super) fn candidate_fields(
+    pr: &Value,
+    permission: &Value,
+    repository: &str,
+    expected_head: &str,
+    release_tag: &str,
+    allow_merged: bool,
+) -> Result<Candidate, String> {
     maintainer(permission)?;
     sha(expected_head)?;
     tag(release_tag)?;

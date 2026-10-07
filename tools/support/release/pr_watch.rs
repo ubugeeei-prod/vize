@@ -13,6 +13,7 @@ pub fn release(
     bump: &str,
     base_version: &str,
     resume: bool,
+    operator: &super::pr_pin::lock::Operator,
     root: &Path,
 ) -> Result<(), String> {
     let started = Instant::now();
@@ -20,6 +21,7 @@ pub fn release(
     let mut attempted_resume = false;
     let mut promoted = false;
     loop {
+        operator.verify()?;
         let pr = github::protect_release_pr(repository, number, root)?;
         let head = github::git(&["rev-parse", "HEAD"], root)?;
         if !promoted && pr.get("merged").and_then(Value::as_bool) != Some(true) {
