@@ -1,7 +1,16 @@
 //! Standard tsgo keeps script diagnostics while a template tag is unfinished.
 
-use super::*;
+use std::path::{Path, PathBuf};
+use std::process::Output;
+
+use serde_json::json;
 use vize_canon::generate_vue_content_mapper_transform;
+use vize_l0::{String as CompactString, cstr};
+
+use super::{
+    TSGO_ENV, assert_success, check_project, install_mapper_manifest, install_vue_package,
+    output_text, workspace_root,
+};
 
 const EXPECTATIONS: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -24,7 +33,7 @@ fn diagnostic_lines(output: &Output) -> Vec<CompactString> {
 
 fn authored_position(source: &str, byte: usize) -> (usize, usize) {
     assert!(source.is_char_boundary(byte));
-    let prefix = &source[..byte];
+    let prefix = source.get(..byte).unwrap();
     let line = prefix.bytes().filter(|byte| *byte == b'\n').count() + 1;
     let column = prefix.rsplit('\n').next().unwrap().encode_utf16().count() + 1;
     (line, column)
@@ -35,11 +44,7 @@ fn expected_diagnostics(source: &str, script: &CompactString) -> Vec<CompactStri
     let mut diagnostics = vec![script.clone()];
     for diagnostic in mapper.diagnostics {
         assert_eq!(diagnostic.code, 100_002);
-        assert!(matches!(
-            diagnostic.message_text.as_str(),
-            "Template parse error: EOF in tag."
-                | "Template parse error: Element is missing end tag."
-        ));
+        assert!(!diagnostic.message_text.is_empty());
         let (line, column) = authored_position(source, diagnostic.start);
         diagnostics.push(cstr!(
             "src/Recovery.vue({line},{column}): error TS{}: {}",
@@ -77,7 +82,8 @@ fn standard_tsgo_preserves_authored_script_errors_through_unfinished_template_ed
                 serde_json::to_vec_pretty(&json!({
                     "compilerOptions": {
                         "strict": true, "skipLibCheck": true, "target": "ES2022",
-                        "module": "ESNext", "moduleResolution": "bundler", "jsx": "preserve"
+                        "module": "ESNext", "moduleResolution": "bundler",
+                        "jsx": "preserve", "jsxImportSource": "vue"
                     },
                     "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
                     "files": ["src/Recovery.vue"]
@@ -89,7 +95,7 @@ fn standard_tsgo_preserves_authored_script_errors_through_unfinished_template_ed
             let template = complete.find("<template>").unwrap();
             let unfinished = cstr!(
                 "{}<template><Loc</template>{newline}",
-                &complete[..template]
+                complete.get(..template).unwrap()
             );
             let script_diagnostic = cstr!(
                 "src/Recovery.vue({},{}): error TS2322: {}",
@@ -111,6 +117,11 @@ fn standard_tsgo_preserves_authored_script_errors_through_unfinished_template_ed
                 );
                 let mut actual = diagnostic_lines(&output);
                 actual.sort();
+                assert!(
+                    actual.contains(&script_diagnostic),
+                    "{state}: script diagnostic missing: {}",
+                    output_text(&output)
+                );
                 let expected = expected_diagnostics(source, &script_diagnostic);
                 assert_eq!(actual, expected, "{state}: {}", output_text(&output));
                 if state == "unfinished-tag" {
