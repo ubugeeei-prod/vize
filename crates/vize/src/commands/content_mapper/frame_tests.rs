@@ -1,9 +1,7 @@
 //! Framing laws independent of mapper projection and project semantics.
 
+use super::{MAX_MESSAGE_BYTES, cstr, read_frame};
 use std::io::{self, BufReader, Cursor, ErrorKind, Read};
-use vize_l0::cstr;
-
-use super::{MAX_MESSAGE_BYTES, read_frame};
 
 const HEADER_LIMIT: usize = 8 * 1024;
 
