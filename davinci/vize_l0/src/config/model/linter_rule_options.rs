@@ -16,6 +16,7 @@ mod content_directives;
 mod html_self_closing;
 mod hyphenation;
 mod no_mutating_props;
+mod props_destructuring;
 mod restrictions;
 mod sfc_element_order;
 mod strict_boolean;
@@ -29,6 +30,7 @@ pub use html_self_closing::{
 };
 pub use hyphenation::HyphenationStyle;
 pub use no_mutating_props::NoMutatingPropsOptions;
+pub use props_destructuring::{DefinePropsDestructuringOptions, PropsDestructureMode};
 pub use restrictions::{
     MuseaDesignToken, MuseaPreferDesignTokensOptions, NoRestrictedGlobalsOptions,
     NoRestrictedMembersOptions, RestrictedGlobal, RestrictedMember,
@@ -123,6 +125,9 @@ pub struct ConfigLintRuleOptions {
     no_empty_palpable_content: Option<content_directives::ContentDirectivesOptions>,
     #[serde(rename = "type/strict-boolean-expressions")]
     strict_boolean_expressions: Option<StrictBooleanExpressionsOptions>,
+    /// Options for `script/define-props-destructuring`.
+    #[serde(rename = "script/define-props-destructuring")]
+    define_props_destructuring: Option<DefinePropsDestructuringOptions>,
     /// Options for `vue/component-name-in-template-casing`.
     #[serde(rename = "vue/component-name-in-template-casing")]
     component_name_in_template_casing: Option<ComponentNameInTemplateCasingOptions>,
@@ -176,6 +181,7 @@ impl ConfigLintRuleOptions {
         self.strict_boolean_expressions.is_none()
             && self.no_empty_palpable_content.is_none()
             && self.stable.is_empty()
+            && self.define_props_destructuring.is_none()
             && self.component_name_in_template_casing.is_none()
             && self.custom_event_name_casing.is_none()
             && self.no_mutating_props.is_none()
@@ -203,6 +209,13 @@ impl ConfigLintRuleOptions {
     #[inline]
     pub fn restricted_members(&self) -> Vec<(String, String, Option<String>)> {
         self.stable.restricted_members()
+    }
+
+    /// Configured style for `script/define-props-destructuring`.
+    #[inline]
+    pub fn define_props_destructuring(&self) -> Option<PropsDestructureMode> {
+        self.define_props_destructuring
+            .map(|options| options.destructure)
     }
 
     /// Configured casing for `vue/component-name-in-template-casing`.
@@ -270,6 +283,9 @@ impl ConfigLintRuleOptions {
     /// Apply a later config layer to this option set.
     pub fn merge_from(&mut self, overlay: &Self) {
         self.stable.merge_from(&overlay.stable);
+        if let Some(options) = overlay.define_props_destructuring {
+            self.define_props_destructuring = Some(options);
+        }
         if let Some(options) = &overlay.no_empty_palpable_content {
             self.no_empty_palpable_content = Some(options.clone());
         }

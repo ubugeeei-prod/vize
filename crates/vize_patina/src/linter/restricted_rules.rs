@@ -22,6 +22,21 @@ use crate::rules::vue::{
 use vize_l0::String;
 
 impl Linter {
+    /// Configure `script/define-props-destructuring` without enabling the rule.
+    #[inline]
+    pub fn with_define_props_destructuring(
+        mut self,
+        mode: vize_l0::config::PropsDestructureMode,
+    ) -> Self {
+        self.script_rule_overrides.insert(
+            "script/define-props-destructuring",
+            Box::new(crate::rules::script::DefinePropsDestructuring::configured(
+                mode,
+            )),
+        );
+        self
+    }
+
     /// Configure known content-providing directives without enabling the rule.
     pub fn with_palpable_content_directives(mut self, names: Vec<String>) -> Self {
         if self.registry.has_rule("html/no-empty-palpable-content") {
