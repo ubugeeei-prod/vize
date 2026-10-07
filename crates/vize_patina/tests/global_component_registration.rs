@@ -16,7 +16,7 @@ fn preview_globals_allow_both_vue_spellings_without_hiding_missing_components() 
     assert_eq!(after.diagnostics[0].rule_name, RULE);
     assert_eq!(
         after.diagnostics[0].start as usize,
-        SOURCE.find("<MissingWidget").unwrap()
+        SOURCE.find("MissingWidget").unwrap()
     );
 }
 

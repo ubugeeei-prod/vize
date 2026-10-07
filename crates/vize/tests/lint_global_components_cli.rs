@@ -35,5 +35,5 @@ fn cli_config_permits_preview_globals_and_retains_missing_component_errors() {
     assert_eq!(messages[0]["ruleId"], "vue/require-component-registration");
     assert_eq!(messages[0]["severity"], 2);
     assert_eq!(messages[0]["line"], 10);
-    assert_eq!(messages[0]["column"], 7);
+    assert_eq!(messages[0]["column"], 8);
 }

@@ -37,21 +37,21 @@ should behave unless noted below.
 }
 ```
 
-| Rule                                    | Option shape                                                                                                                                                                                                                     | Defaults and behavior                                                                                                                                  |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `html/no-empty-palpable-content`        | `{ contentDirectives?: string[] }`                                                                                                                                                                                               | Defaults to an empty list. Exact bare names identify directives that supply visible content. Rule enablement remains separate.                         |
-| `script/no-restricted-globals`          | `{ globals?: Array<{ name: string; message?: string }> }`                                                                                                                                                                        | Without options, the built-in deny list is `process`, `localStorage`, and `sessionStorage`. A non-empty `globals` list replaces that built-in list.    |
-| `script/no-restricted-members`          | `{ members?: Array<{ object: string; property: string; message?: string }> }`                                                                                                                                                    | Off unless `members` is configured and the rule is enabled. A missing `message` uses the generic diagnostic help.                                      |
-| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case" }`                                                                                                                                                                                      | Defaults to `PascalCase`.                                                                                                                              |
-| `script/custom-event-name-casing`       | `{ casing?: "camelCase" \| "kebab-case" }`                                                                                                                                                                                       | Defaults to `camelCase`.                                                                                                                               |
-| `vue/no-mutating-props`                 | `{ shallowOnly?: boolean }`                                                                                                                                                                                                      | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment.                                                   |
-| `vue/require-component-registration`    | `{ globals?: string[] }`                                                                                                                                                                                                         | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule.                             |
-| `vue/sfc-element-order`                 | `{ order?: Array<string \| string[]> }`                                                                                                                                                                                          | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank.                            |
-| `vue/html-self-closing`                 | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"`                                                                                  | Defaults are `html.void: "always"`, `html.normal: "any"`, `html.component: "always"`, `svg: "always"`, and `math: "always"`.                           |
-| `vue/v-on-event-hyphenation`            | `"always" \| "never"`                                                                                                                                                                                                            | Configures whether event listener names should be hyphenated.                                                                                          |
-| `vue/attribute-hyphenation`             | `"always" \| "never"`                                                                                                                                                                                                            | Configures whether component prop attributes should be hyphenated in templates.                                                                        |
-| `musea/prefer-design-tokens`            | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }`                                                                                                                                                             | Off unless token data is configured and the rule is enabled or implicitly selected by a non-empty token list. `tier` defaults to `primitive`.          |
-| `type/strict-boolean-expressions`       | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`, `allowNumber`, and `allowNullableObject` default to `true`; the other options default to `false`. Explicit rule enablement is required. |
+| Rule | Option shape | Defaults and behavior |
+| --- | --- | --- |
+| `html/no-empty-palpable-content` | `{ contentDirectives?: string[] }` | Defaults to an empty list. Exact bare names identify directives that supply visible content. Rule enablement remains separate. |
+| `script/no-restricted-globals` | `{ globals?: Array<{ name: string; message?: string }> }` | Without options, the built-in deny list is `process`, `localStorage`, and `sessionStorage`. A non-empty `globals` list replaces that built-in list. |
+| `script/no-restricted-members` | `{ members?: Array<{ object: string; property: string; message?: string }> }` | Off unless `members` is configured and the rule is enabled. A missing `message` uses the generic diagnostic help. |
+| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case" }` | Defaults to `PascalCase`. |
+| `script/custom-event-name-casing` | `{ casing?: "camelCase" \| "kebab-case" }` | Defaults to `camelCase`. |
+| `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |
+| `vue/require-component-registration` | `{ globals?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule. |
+| `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank. |
+| `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"` | Defaults are `html.void: "always"`, `html.normal: "any"`, `html.component: "always"`, `svg: "always"`, and `math: "always"`. |
+| `vue/v-on-event-hyphenation` | `"always" \| "never"` | Configures whether event listener names should be hyphenated. |
+| `vue/attribute-hyphenation` | `"always" \| "never"` | Configures whether component prop attributes should be hyphenated in templates. |
+| `musea/prefer-design-tokens` | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }` | Off unless token data is configured and the rule is enabled or implicitly selected by a non-empty token list. `tier` defaults to `primitive`. |
+| `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`, `allowNumber`, and `allowNullableObject` default to `true`; the other options default to `false`. Explicit rule enablement is required. |
 
 ## Detailed Examples
 
@@ -97,7 +97,7 @@ When `entries` match a file, their `linter.ruleOptions` overlay the root options
 Each configured rule option object replaces the same root object; arrays such as `globals`,
 `members`, `order`, and `tokens` are not concatenated across entries.
 
-## Globally registered components
+## `vue/require-component-registration`
 
 For components supplied by application plugins or Musea `previewSetup`, configure
 `vue/require-component-registration` with explicit global names:
@@ -118,3 +118,15 @@ component names; regular expressions are not interpreted. The same options apply
 to regular SFCs and Musea Art variants. Options alone do not enable the rule, and
 unknown components continue to be reported. A later config layer replaces the
 list; an empty list clears an inherited list.
+
+Bad (unlisted component):
+
+```vue
+<MissingWidget />
+```
+
+Good (a configured global):
+
+```vue
+<MyButton />
+```

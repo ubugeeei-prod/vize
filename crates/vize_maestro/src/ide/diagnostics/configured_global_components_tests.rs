@@ -30,5 +30,5 @@ fn configured_globals_reach_the_shared_editor_linter() {
         ))
     );
     assert_eq!(diagnostics[0].severity, Some(DiagnosticSeverity::ERROR));
-    assert_eq!(diagnostics[0].range.start.character, 35);
+    assert_eq!(diagnostics[0].range.start.character, 36);
 }

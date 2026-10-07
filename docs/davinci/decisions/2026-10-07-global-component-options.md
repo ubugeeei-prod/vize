@@ -27,3 +27,9 @@ test paths. Every original input/source custody check, all 79 response answers,
 534 acknowledgements and notification controls remain required. The added
 source paths permit the existing full comparison to execute; no broader path
 wildcards, narrowed assertions or performance credit are introduced.
+
+A qualified config/lint source change also cleans the changed `vize_l0` and
+`vize_patina` packages before both builds. Cargo must attest those dependency
+artifacts as newly compiled; a baseline artifact cannot satisfy the after build.
+This adds dependency rebuild work and rejects stale artifacts without changing
+the shipping build recipe or any runtime comparison assertion.
