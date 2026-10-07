@@ -16,6 +16,7 @@ pub(super) fn write_template_block(
     options: &FormatOptions,
     source: &str,
     vue_version: crate::VueVersion,
+    preserve_whitespace: bool,
 ) -> Result<(), FormatError> {
     // The HTML template formatter owns HTML syntax only. Feeding Pug,
     // Haml, Markdown, or another preprocessor language through it turns
@@ -32,7 +33,7 @@ pub(super) fn write_template_block(
         block.content.as_ref(),
         opening_tag.as_ref(),
     );
-    let formatted_content = native_html
+    let formatted_content = (native_html && !preserve_whitespace)
         .then(|| template::format_template_content_with_vue_version(content, options, vue_version))
         .transpose()?;
 
@@ -46,6 +47,16 @@ pub(super) fn write_template_block(
         }
         write_remaining_attrs(output, &block.attrs, &["lang"]);
         output.push(b'>');
+    }
+    if native_html && preserve_whitespace {
+        // Layout-looking newlines and indentation can belong to rendered text
+        // under compiler.whitespace=preserve. Format tag syntax while leaving
+        // all bytes between tags and interpolation delimiters with their owner.
+        let formatted =
+            template::format_template_content_preserving_text(content, options, vue_version)?;
+        output.extend_from_slice(formatted.as_bytes());
+        output.extend_from_slice(b"</template>");
+        return Ok(());
     }
     output.extend_from_slice(options.newline_bytes());
 

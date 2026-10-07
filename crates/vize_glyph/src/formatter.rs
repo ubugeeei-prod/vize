@@ -37,6 +37,7 @@ pub struct GlyphFormatter<'a> {
     allocator: &'a Allocator,
     vue_version: VueVersion,
     sort_imports: Option<&'a crate::ImportSortOptions>,
+    preserve_template_whitespace: bool,
 }
 
 enum Block<'b> {
@@ -75,12 +76,20 @@ impl<'a> GlyphFormatter<'a> {
             allocator,
             vue_version,
             sort_imports: None,
+            preserve_template_whitespace: false,
         }
     }
 
     /// Apply validated import sorting to both script blocks.
     pub fn with_sort_imports(mut self, options: Option<&'a crate::ImportSortOptions>) -> Self {
         self.sort_imports = options;
+        self
+    }
+
+    /// Preserve the complete authored HTML template body when its compiler keeps
+    /// whitespace. Template layout cannot then change rendered text boundaries.
+    pub fn with_template_whitespace_preserved(mut self, preserve: bool) -> Self {
+        self.preserve_template_whitespace = preserve;
         self
     }
 
@@ -103,6 +112,7 @@ impl<'a> GlyphFormatter<'a> {
                         allocator: self.allocator,
                         vue_version: self.vue_version,
                         sort_imports: self.sort_imports,
+                        preserve_template_whitespace: self.preserve_template_whitespace,
                     }
                     .format_document(source)
                 });
@@ -232,6 +242,7 @@ impl<'a> GlyphFormatter<'a> {
                     self.options,
                     source,
                     self.vue_version,
+                    self.preserve_template_whitespace,
                 )?,
                 Block::Style(style) => {
                     style_block::write_style_block(&mut output, style, self.options, source)?
