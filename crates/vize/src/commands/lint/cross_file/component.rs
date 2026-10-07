@@ -124,14 +124,15 @@ pub(super) fn apply<S: AsRef<str>>(
             continue;
         };
         let index = file as usize;
-        let (Some(template), Some(result)) = (
+        let (Some((path, _)), Some(template), Some(result)) = (
+            files.get(index),
             templates.get(index).and_then(Option::as_ref),
             results.get_mut(index),
         ) else {
             continue;
         };
         if let Some(diagnostic) = describe(files, &templates, &finding, template, usage, help_level)
-            && let Some(diagnostic) = configure(settings, &files[index].0, RULE, diagnostic)
+            && let Some(diagnostic) = configure(settings, path, RULE, diagnostic)
         {
             result.diagnostics.push(diagnostic);
         }

@@ -68,3 +68,9 @@ resolved policy fails explicitly with CLI status 2, rather than dropping a
 configured file or substituting the default. The production resolver
 constructs one valid index per input; all expected inputs and reports stay
 unchanged. Fresh successor Actions must qualify this source independently.
+
+The authentic original compiler job also rejected a new unchecked owning
+file access in the composed HTML appender. Its existing checked
+file/template/result guard now supplies that same path, preserving the
+diagnostic and settings without a panic path. All whole corpus vectors
+remain unchanged; the authentic failed compiler raw is retained separately.
