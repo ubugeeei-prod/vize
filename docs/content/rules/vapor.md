@@ -40,26 +40,12 @@ onMounted(() => {
 
 ## `vapor/require-vapor-attribute`
 
-Suggests adding `vapor` to `<script setup>` when the preset expects Vapor-compatible components.
+This registered rule is currently a placeholder. It does not report diagnostics
+or provide autofixes. SFC-level implementation remains unfinished.
 
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`
-
-Bad:
-
-```vue
-<script setup lang="ts">
-const count = ref(0);
-</script>
-```
-
-Good:
-
-```vue
-<script setup lang="ts" vapor>
-const count = ref(0);
-</script>
-```
+Fixable: No
 
 ## `vapor/no-inline-template`
 

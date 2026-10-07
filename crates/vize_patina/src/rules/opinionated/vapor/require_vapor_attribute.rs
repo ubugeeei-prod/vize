@@ -18,7 +18,7 @@ static META: RuleMeta = RuleMeta {
     name: "vapor/require-vapor-attribute",
     description: "Suggest adding vapor attribute to script setup",
     category: RuleCategory::Vapor,
-    fixable: true,
+    fixable: false,
     default_severity: Severity::Warning,
 };
 

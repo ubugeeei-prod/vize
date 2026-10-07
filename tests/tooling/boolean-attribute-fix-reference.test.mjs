@@ -20,10 +20,11 @@ await test("7905 preserves whole originals and independent complete edit control
     path.join(directory, "original-requested-all-four.vue.fixture"),
     "utf8",
   );
-  assert.notEqual(original.fixed, requested, "the other three issue requests remain pending");
+  assert.notEqual(original.fixed, requested, "the rule-isolated boolean corpus remains unchanged");
   assert.equal(wholeJson(original, false, true)[0].messages.length, 4);
-  assert.equal(wholeJson(original, true, true)[0].messages.length, 2);
-  assert.equal(fixedSource(original, true), original.fixed.replace("v-slot:header", "#header"));
+  assert.equal(wholeJson(original, true, true)[0].messages.length, 0);
+  const complete = fixedSource(original, true);
+  assert.equal(complete.slice(complete.indexOf("<template>")), requested);
   const entries = [...new Set(cases.map((entry) => entry.entry))].sort((left, right) =>
     left < right ? -1 : left > right ? 1 : 0,
   );

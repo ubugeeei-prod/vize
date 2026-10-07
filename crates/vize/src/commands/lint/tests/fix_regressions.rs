@@ -1,6 +1,6 @@
 use super::super::fix::{apply_lint_fixes, fix_until_stable, lint_source_with_optional_fix};
 use std::{fs, path::Path};
-use vize_patina::{Fix, LintDiagnostic, LintPreset, LintResult, Linter, TextEdit};
+use vize_patina::{Fix, LintDiagnostic, LintPreset, LintResult, Linter, RuleRegistry, TextEdit};
 
 #[test]
 fn apply_lint_fixes_applies_existing_rule_fixes() {
@@ -56,6 +56,54 @@ fn overlapping_binding_fixes_converge_in_one_invocation() {
     assert_eq!(again.as_str(), expected);
     assert!(!changed);
     assert!(result.diagnostics.is_empty());
+}
+
+#[test]
+fn overlapping_component_shape_and_casing_fixes_converge_with_original_file_bytes() {
+    use vize_patina::rules::opinionated::vue::{ComponentNameInTemplateCasing, HtmlSelfClosing};
+    let source = include_str!(
+        "../../../../../vize_patina/tests/fixtures/issue-7905-template-style/Combined.vue.txt"
+    );
+    let expected = include_str!(
+        "../../../../../vize_patina/tests/fixtures/issue-7905-template-style/Combined.fixed.vue.txt"
+    );
+    let mut registry = RuleRegistry::new();
+    registry.register(Box::new(HtmlSelfClosing::default()));
+    registry.register(Box::new(ComponentNameInTemplateCasing::default()));
+    let linter = Linter::with_registry(registry);
+    let initial = linter.lint_sfc(source, "Combined.vue");
+    assert_eq!(initial.error_count, 0);
+    assert_eq!(initial.warning_count, 2);
+    assert_eq!(initial.diagnostics.len(), 2);
+    let intermediate = apply_lint_fixes(source, &initial).unwrap();
+    assert_eq!(
+        intermediate.as_str(),
+        source.replace(
+            "<my-card title=\"日本語 > 😀\"></my-card>",
+            "<my-card title=\"日本語 > 😀\" />"
+        )
+    );
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("Combined.vue");
+    fs::write(&path, source).unwrap();
+    let (mut fixed, result, changed) =
+        lint_source_with_optional_fix(&linter, &path, source.into(), "Combined.vue", true).unwrap();
+    assert!(changed);
+    assert_eq!(fixed.as_str(), expected);
+    assert_eq!(result.error_count, 0);
+    assert_eq!(result.warning_count, 0);
+    assert!(result.diagnostics.is_empty());
+    for _ in 0..3 {
+        let (again, result, changed) =
+            lint_source_with_optional_fix(&linter, &path, fixed, "Combined.vue", true).unwrap();
+        assert!(!changed);
+        assert_eq!(again.as_str(), expected);
+        assert_eq!(fs::read_to_string(&path).unwrap(), expected);
+        assert_eq!(result.error_count, 0);
+        assert_eq!(result.warning_count, 0);
+        assert!(result.diagnostics.is_empty());
+        fixed = again;
+    }
 }
 
 #[test]

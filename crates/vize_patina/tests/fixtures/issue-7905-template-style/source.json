@@ -1,0 +1,25 @@
+{
+  "issue": 7905,
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "originalCorpus": "../issue-7905/source.json",
+  "cases": {
+    "file": "cases.json",
+    "count": 23,
+    "sha256": "2a45bdf44664e795e03471bbdc367ab29c74f7b7f759547a86f95211a93d86ee"
+  },
+  "combined": [
+    {
+      "file": "Combined.vue.txt",
+      "bytes": 141,
+      "sha256": "dbcdd90e106ba6c385251cacd10c13624cc402aefdf41a049ac9e202f8667c92"
+    },
+    {
+      "file": "Combined.fixed.vue.txt",
+      "bytes": 132,
+      "sha256": "f8601546e656b02db41a831a35280619d6e8076d0c4ab036d09b0b20ea51f064"
+    }
+  ]
+}
