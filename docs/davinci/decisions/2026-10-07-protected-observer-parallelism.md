@@ -220,3 +220,42 @@ actual bottom source. Its hosted physical corpus walk currently refuses
 `jellyfin-vue/packaging/deb/root`, a symlink back to the project root. Full original
 corpus custody and the mandatory canonical and differential gates remain pending;
 the bottom collector repair does not depend on resolving that physical cycle.
+
+## Original Rust collector custody
+
+The previous capture refused the committed Jellyfin ancestor symlink before any
+observer ran. Keep that failed source historical. The repaired capture extracts
+the unchanged complete `collect_vue_files` function from the exact committed
+source, compiles its ordinary standard-library harness with the pinned toolchain,
+and records its complete ordered NUL-separated logical path vector. Archive the
+original module, exact harness, physical executable, full toolchain identity and
+raw vector with the existing run/head/tree/attempt-bound worker evidence.
+
+Before native traversal, authenticate the complete Git objects and physical
+symlink blobs. Only Jellyfin revision
+`6b35d977335cab224c4536d18dc22d15a63d5185`, with the original
+`packaging/deb/root` blob `c25bddb6dd4666c6eb8cc92e33f1d60f64c3162b`
+and exact `../..` target, may revisit its own project root. Arbitrary cycles,
+foreign/untracked links, missing Git objects and changed physical bytes refuse.
+The collector and observers retain every logical alias; no realpath-based
+visited set, regular-file-only filter, global sort or deduplication is introduced.
+
+The physical walk observes the runner's actual metadata `ELOOP` boundary and
+preceding successful traversal. The independent Git-object resolver counts every
+symlink in each whole logical path and must reproduce that exact rejected-path
+set and the entire ordered native vector. Missing or cropped boundaries, changed
+source/harness/binary/toolchain/vector, unreadable Vue inputs and other filesystem
+errors fail closed. An unobserved Linux limit or `ENAMETOOLONG` boundary has no
+qualification credit or fallback. Existing dependency-directory exclusions and
+all raw source bytes remain unchanged.
+
+Small authored controls execute the original Rust body on the local filesystem,
+including CRLF/Unicode bytes, distinct aliases and UTF8/OsStr ordering. They are
+separate from the read-only pinned-tree shape model and supply no complete
+licensed-corpus, Linux-runner, instruction-budget or speed claim. Historical147
+parser logs remain byte-exact; the synthetic current finalizer control explicitly
+grows its complete manifest to148 gitlinks/44367 files without lowering a gate.
+The genuine current-source Actions must run all three full canonical workers,
+the strict original finalizer, required full-feature Rust sibling and all104
+protected probes. Source readiness, actual protected merge, matched wall-time
+improvement and installed/release acceptance remain pending.

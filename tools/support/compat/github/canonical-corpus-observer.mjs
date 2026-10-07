@@ -3,6 +3,7 @@ import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { recoverFixtureCheckout, validateHydration } from "./canonical-corpus-hydration.mjs";
+import { validateNativeWalk } from "./canonical-corpus-native-walk.mjs";
 import { verifyCommittedInventory } from "./canonical-corpus-inventory.mjs";
 import {
   expectedOldErrorReasons,
@@ -168,6 +169,7 @@ export function validateObserverArtifact(observer, directory) {
     identity.filesSha256,
     "Canonical file manifest was replaced",
   );
+  validateNativeWalk(directory, identity, proof, files);
   const bytes = readFileSync(join(directory, observerLogs[observer]));
   assert.equal(sha256(bytes), receipt.logSha256, "Observer log was replaced");
   assert.deepEqual(

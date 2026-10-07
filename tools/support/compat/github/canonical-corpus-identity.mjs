@@ -12,9 +12,12 @@ import {
 import { join, relative, resolve, sep } from "node:path";
 import {
   corpusRoot,
-  createCommittedInventory,
+  createCommittedProof,
+  verifyCommittedInventory,
   gitObjectId,
 } from "./canonical-corpus-inventory.mjs";
+import { captureNativeWalk } from "./canonical-corpus-native-walk.mjs";
+import { needsNativeWalk } from "./canonical-corpus-logical-walk.mjs";
 import { rustCachePolicy } from "../../../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
 
 export { corpusRoot } from "./canonical-corpus-inventory.mjs";
@@ -250,17 +253,22 @@ export function captureCorpus(cwd, env = process.env) {
     );
     assertFixtureCheckout(join(cwd, row.path));
   }
-  const files = collectFiles(resolve(cwd, corpusRoot));
-  const committed = createCommittedInventory(cwd, plan.gitlinks);
+  const proof = createCommittedProof(cwd, plan.gitlinks);
+  const native = needsNativeWalk(plan.gitlinks)
+    ? captureNativeWalk(cwd, plan, proof, resolve(cwd, artifactRoot))
+    : { files: collectFiles(resolve(cwd, corpusRoot)) };
+  const files = native.files;
+  const committedFiles = verifyCommittedInventory(proof, plan.gitlinks);
   return {
     identity: {
       ...plan,
-      files: committed.files.length,
-      filesSha256: validateFiles(files, committed.files),
-      committedSha256: sha256(JSON.stringify(committed.proof)),
+      files: committedFiles.length,
+      filesSha256: validateFiles(files, committedFiles),
+      committedSha256: sha256(JSON.stringify(proof)),
+      ...(native.nativeWalk ? { nativeWalk: native.nativeWalk } : {}),
     },
     files,
-    proof: committed.proof,
+    proof,
   };
 }
 
@@ -282,6 +290,7 @@ export function sameCorpus(left, right) {
     "files",
     "filesSha256",
     "committedSha256",
+    "nativeWalk",
   ])
     assert.deepEqual(left[key], right[key], `Canonical corpus ${key} changed`);
   assert.deepEqual(left.gitlinks, right.gitlinks, "Canonical gitlink ownership changed");

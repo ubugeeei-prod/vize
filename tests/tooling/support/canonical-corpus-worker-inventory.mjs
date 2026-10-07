@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { gitObjectId } from "../../../tools/support/compat/github/canonical-corpus-inventory.mjs";
 import { sha256 } from "../../../tools/support/compat/github/canonical-corpus-identity.mjs";
 
@@ -30,4 +31,19 @@ export function canonicalWorkerInventory(fileCount = 42998, repositoryCount = 14
   files.sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0));
   const proof = { schema: "vize.canonical-committed-inventory", version: 1, repositories };
   return { files, proof, gitlinks: repositories.map(({ path, sha }) => ({ path, sha })) };
+}
+
+// Original historical logs remain byte-exact parser controls. This synthetic
+// finalizer control grows their file/gitlink fields to the committed current size.
+// Added synthetic inputs remain unverified; no native coverage is fabricated.
+export function canonicalWorkerLog(observer, fileCount, repositoryCount) {
+  return Buffer.from(
+    readFileSync(`tests/tooling/fixtures/canonical-observer-logs/${observer}.log`, "utf8")
+      .replaceAll("submodules=147", `submodules=${repositoryCount}`)
+      .replaceAll("42998", String(fileCount))
+      .replace(
+        /(davinci native-only acceptance:[^\n]*unverified=)(\d+)/g,
+        (_, prefix, count) => `${prefix}${Number(count) + fileCount - 42998}`,
+      ),
+  );
 }

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { join, posix } from "node:path";
+import { walkCommittedGraph } from "./canonical-corpus-logical-walk.mjs";
 
 export const corpusRoot = "tests/_fixtures/_git";
 const excluded = new Set(["node_modules", "_git-worktrees"]);
@@ -56,7 +57,7 @@ function objectMap(repository) {
   return objects;
 }
 
-export function verifyCommittedInventory(proof, gitlinks) {
+export function committedGraph(proof, gitlinks) {
   assert.equal(proof.schema, "vize.canonical-committed-inventory", "Foreign committed inventory");
   assert.equal(proof.version, 1, "Unknown committed inventory version");
   assert.deepEqual(
@@ -105,7 +106,7 @@ export function verifyCommittedInventory(proof, gitlinks) {
         const child = `${path}/${entry.name}`;
         const node = { mode: entry.mode, id: entry.id };
         if (entry.mode === "120000") node.target = decode(read(entry.id, "blob"));
-        add(child, node);
+        add(child, { ...node, repository: repository.path, revision: repository.sha });
         if (entry.mode === "40000") visit(child, entry.id);
       }
       active.delete(id);
@@ -113,6 +114,12 @@ export function verifyCommittedInventory(proof, gitlinks) {
     visit(prefix, match[1]);
     assert.equal(used.size, objects.size, "Foreign unused Git objects");
   }
+  return { nodes, children };
+}
+
+export function verifyCommittedInventory(proof, gitlinks) {
+  const { nodes, children } = committedGraph(proof, gitlinks);
+  if (proof.kernelBoundary) return walkCommittedGraph(nodes, children, proof.kernelBoundary).files;
   const resolveNode = (path, active = new Set()) => {
     assert(!path.startsWith("/") && !path.includes("\0"), "Foreign committed symlink path");
     let current = "";
@@ -193,11 +200,7 @@ function readObjects(repository, requests) {
   return objects;
 }
 
-export function createCommittedInventory(
-  cwd,
-  gitlinks,
-  repositoryFor = (row) => join(cwd, row.path),
-) {
+export function createCommittedProof(cwd, gitlinks, repositoryFor = (row) => join(cwd, row.path)) {
   const repositories = gitlinks.map((row) => {
     const repository = repositoryFor(row);
     const commit = execFileSync("git", ["-C", repository, "cat-file", "commit", row.sha], {
@@ -220,6 +223,10 @@ export function createCommittedInventory(
     }
     return { ...row, objects: readObjects(repository, [...requests]) };
   });
-  const proof = { schema: "vize.canonical-committed-inventory", version: 1, repositories };
+  return { schema: "vize.canonical-committed-inventory", version: 1, repositories };
+}
+
+export function createCommittedInventory(cwd, gitlinks, repositoryFor) {
+  const proof = createCommittedProof(cwd, gitlinks, repositoryFor);
   return { proof, files: verifyCommittedInventory(proof, gitlinks) };
 }

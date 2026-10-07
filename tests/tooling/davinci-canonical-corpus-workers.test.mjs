@@ -8,7 +8,10 @@ import {
   validateHydration,
 } from "../../tools/support/compat/github/canonical-corpus-hydration.mjs";
 import { observers, sha256 } from "../../tools/support/compat/github/canonical-corpus-identity.mjs";
-import { canonicalWorkerInventory } from "./support/canonical-corpus-worker-inventory.mjs";
+import {
+  canonicalWorkerInventory,
+  canonicalWorkerLog,
+} from "./support/canonical-corpus-worker-inventory.mjs";
 import {
   observerLogs,
   validateObserverLog,
@@ -234,7 +237,7 @@ await test("foreign, expired, duplicate and non-upload-bound artifacts fail clos
 await test("finalization rejects replaced full bytes, fixture identity and incomplete observer directories", () => {
   const root = mkdtempSync(join(tmpdir(), "canonical-artifacts-"));
   const selected = select();
-  const { gitlinks, files, proof } = canonicalWorkerInventory();
+  const { gitlinks, files, proof } = canonicalWorkerInventory(44367, 148);
   const identity = {
     schema: "vize.canonical-corpus-identity",
     version: 1,
@@ -254,9 +257,7 @@ await test("finalization rejects replaced full bytes, fixture identity and incom
     for (const worker of selected.workers) {
       const path = join(root, worker.artifactName);
       mkdirSync(path);
-      const bytes = readFileSync(
-        `tests/tooling/fixtures/canonical-observer-logs/${worker.observer}.log`,
-      );
+      const bytes = canonicalWorkerLog(worker.observer, files.length, gitlinks.length);
       write(join(path, "identity.json"), identity);
       write(join(path, "files.json"), files);
       write(join(path, "committed-corpus.json"), proof);
