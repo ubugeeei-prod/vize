@@ -138,6 +138,10 @@ pub(crate) struct DiagnosticFetch {
 /// so this classifier is deliberately narrow. Callers may rebuild a session
 /// once for these cases; semantic and configuration errors must propagate.
 fn lsp_transport_error_is_transient(error: &str) -> bool {
+    // Retired callers retain native/cleanup error text without authorizing retry.
+    if error.contains(crate::corsa_bridge::native_operation::INCOMPLETE) {
+        return false;
+    }
     error.contains("protocol error: EOF")
         || error.contains("EOF while parsing")
         || error.contains("process is closed: jsonrpc reader")
