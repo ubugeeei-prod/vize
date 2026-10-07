@@ -10,6 +10,7 @@ import {
   official,
 } from "./n8n-compiler-capture-paths.mjs";
 import { validateInstanceMode } from "./n8n-compiler-diagnostic-validation.mjs";
+import { validateTemplateNotices } from "./n8n-compiler-compatibility-validation.mjs";
 export {
   productSource,
   example,
@@ -205,7 +206,7 @@ export function validateAuthoredCapture(root) {
   return [{ packet: packetName, sha256: sha256(bytes), moduleHashes: moduleHashes(packet) }];
 }
 
-export function validateCurrentParity(root, manifest, diagnosticContract) {
+export function validateCurrentParity(root, manifest, diagnosticContract, compatibilityComparison) {
   const comparisons = [];
   for (const item of manifest.cases) {
     const packet = JSON.parse(read(root, `${path.basename(item.path)}.json`));
@@ -224,11 +225,7 @@ export function validateCurrentParity(root, manifest, diagnosticContract) {
           });
           continue;
         }
-        assert.deepEqual(
-          row.legacy.errors,
-          [],
-          `current original template diagnostics: ${item.path}`,
-        );
+        validateTemplateNotices(row, item.path, compatibilityComparison);
         assert.deepEqual(row.native.loweredDiagnostics, []);
         assert.deepEqual(row.native.effectiveDiagnostics, []);
         assert.equal(row.native.production.status, "returned");

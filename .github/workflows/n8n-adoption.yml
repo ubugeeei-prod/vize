@@ -99,8 +99,13 @@ jobs:
             "$RUNNER_TEMP/n8n-official-compiler.mjs"
       - name: Verify source SFC default-slot runtime and iterator laws
         run: cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test n8n_default_slot_loops -- --nocapture
-      - name: Verify complete diagnosed compiler corpus and changed-source refusal
-        run: cargo test --locked --profile ci -p vize_l1_to_l2 --features legacy-differential --test davinci_dom_n8n_diagnosed -- --nocapture
+      - name: Verify every n8n compiler regression and changed-source refusal
+        run: |
+          cargo test --locked --profile ci -p vize_l1_to_l2 --features legacy-differential \
+            --test davinci_dom_n8n_diagnosed \
+            --test davinci_dom_n8n_default_loops \
+            --test davinci_dom_n8n_helper_props \
+            --test davinci_dom_n8n_if_key_modes -- --nocapture
       - name: Upload complete source, official modules, maps and diagnostic vectors
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

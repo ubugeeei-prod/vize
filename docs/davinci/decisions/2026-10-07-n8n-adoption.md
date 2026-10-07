@@ -118,9 +118,10 @@ module directory and derives TypeScript mode from both original script blocks.
 Both legacy/native template modes record that flag; the judge checks it against
 the independently parsed pinned stock descriptor, rejecting missing or false
 plain-JS flags. Historical plain-JS packets remain raw evidence. All thirty-four
-capture paths and thirty-three identical drivers remain explicit. The diagnosed
-corpus target declares its existing differential feature and runs explicitly in
-the same job. Ordinary module layout, byte-wise digest formatting, an equivalent
+capture paths and thirty-three identical drivers remain explicit. All seven
+shared-support targets declare their existing differential feature. All four
+new n8n regression targets run explicitly in one hosted invocation; default
+feature skips earn no qualification. Ordinary module layout, byte-wise digest formatting, an equivalent
 exemption predicate and the [reviewed storage inventory](./2026-10-07-n8n-native-key-storage.md)
 preserve all input bytes, diagnostic metadata, assertions and instruction caps.
 
@@ -132,6 +133,34 @@ and the separately executed baseline-native trace. The unchanged current and
 stock six-phase golden still requires complete trees, keyed identity, one
 iterator call per render, updates, toggles, empty diagnostics and unmount cleanup.
 The before failure earns no successful runtime or performance credit.
+
+[The third custody run](https://github.com/ubugeeei-prod/vize/actions/runs/37612980317)
+retains complete source packets in artifact `11478485937`. Its authenticated
+`f569` before binary has SHA256
+`1c682f6a9e72af2aae35efcb57bfaaaad46832c5518995e1305bbcf9a3de6373`;
+the genuinely rebuilt `99d4839bde65afe26cc4afc89ec3f4a71a28894c` after binary
+has SHA256
+`37693807728bb8cab2b1a9e6904d61c41641d333f7f6122a2c5a8c94137ed4a4`.
+All forty complete current public SFC results were `Ok` and equal between
+selected and forced legacy, including code, CSS, maps, warnings, bindings and
+macro artifacts. All eighteen normal raw template modules were equal. The job
+still failed at an overly strict empty raw-notice assertion before hosted
+runtime execution. Local pinned-Vue replay of the actual authenticated packets
+passed the complete current/stock six-phase golden and historical failure
+golden; this does not make the failed hosted workflow complete.
+
+FormInput, DevPanel and WorkflowHistoryVersionSelect retain respectively two,
+four and one exact parser compatibility notices in both raw template modes.
+The assertion-only judge freezes every full historical/current vector, exact
+message and byte span at all three paths, and independently derives the seven
+self-closing nonvoid HTML elements from the pinned official original parse.
+All other normal raw notice arrays remain empty. No generic `ExtendPoint`
+exception, filtering or diagnostic projection is permitted. Native normal
+diagnostic arrays stay empty; whole SFC `Ok` results still require empty errors
+and complete equality. Existing SFC policy intentionally excludes this exact
+self-closing rewrite message from warnings; preserve the actual full warnings
+field rather than inventing propagation. Fresh hosted runtime, four regression
+targets, full corpus and protected delivery remain required.
 
 The independent reference is n8n's locked Vue/compiler-sfc 3.5.26 browser
 bundle, authenticated by SHA256. All ten complete originals retain parse,

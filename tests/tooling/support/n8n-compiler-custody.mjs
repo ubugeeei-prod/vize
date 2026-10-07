@@ -19,6 +19,7 @@ import {
   verifyInputs,
 } from "./n8n-compiler-custody-receipt.mjs";
 import { validateOfficial } from "./n8n-compiler-official-validation.mjs";
+import { validateCompatibilityNotices } from "./n8n-compiler-compatibility-validation.mjs";
 import {
   validateBaselineDiagnostics,
   validateDiagnosticContract,
@@ -172,10 +173,17 @@ try {
     path.join(output, "after/vize"),
     diagnosticContract,
   );
+  const compatibilityComparison = await validateCompatibilityNotices(
+    path.join(output, "before/vize"),
+    path.join(output, "after/vize"),
+    path.join(output, "after/official"),
+    manifest,
+  );
   const comparisons = validateCurrentParity(
     path.join(output, "after/vize"),
     manifest,
     diagnosticContract,
+    compatibilityComparison,
   );
   const runtimeLog = fs.openSync(path.join(output, "default-slot-runtime.log"), "w");
   try {
@@ -199,6 +207,7 @@ try {
     ...custody,
     comparisons,
     diagnosticComparison,
+    compatibilityComparison,
     runtimeReceiptSha256: sha256(read(output, "default-slot-runtime.json")),
     qualification:
       "Complete source/official parity and authored runtime passed; full unchanged corpus remains independently required.",
