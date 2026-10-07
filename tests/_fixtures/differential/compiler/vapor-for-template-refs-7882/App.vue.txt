@@ -1,0 +1,14 @@
+<script setup vapor>
+import { ref, onMounted } from "vue";
+import Child from "./Child.vue";
+const child = ref(null);
+const items = ref([]);
+const out = ref("");
+onMounted(() => { out.value = `${child.value?.hello} / ${items.value.length}`; });
+</script>
+
+<template>
+  <Child ref="child" />
+  <span v-for="i in 3" :key="i" ref="items">{{ i }}</span>
+  <p>{{ out }}</p>
+</template>

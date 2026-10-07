@@ -13,6 +13,8 @@
 //! The missing-param finding is a warning on purpose: Vue Router inherits
 //! required params from the current location, so the navigation throws
 //! only when that location lacks them — a claim this rule cannot prove.
+//! Application injection additionally needs the installed-root proof in
+//! [`super::application`]; merely discovering a router does not establish reachability.
 
 mod messages;
 
@@ -130,11 +132,17 @@ pub fn check(
     if routers.is_empty() {
         return Ok(Vec::new());
     }
+    let applications = super::application::collect(project, &routers);
     let mut out = Vec::new();
     for site in sites::collect(project, &routers) {
         let reachable: Vec<(u32, &RouterTree)> = routers
             .iter()
-            .filter(|(key, _)| site.target == Target::App || site.target == Target::Router(*key))
+            .filter(|(key, _)| match site.target {
+                Target::Router(router) => router == *key,
+                Target::App => applications
+                    .get(&site.module)
+                    .is_some_and(|keys| keys.contains(key)),
+            })
             .copied()
             .collect();
         let declared = reachable.iter().any(|(_, tree)| {

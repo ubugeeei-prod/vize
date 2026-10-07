@@ -44,3 +44,12 @@ as `b2786877`, replay the unchanged convergence source, original corpus and all
 authored oracles on that actual main. Retain the entire incoming 350-line record.
 Fresh source security/full Actions, protected acceptance, actual merge and the
 next finite publication still qualify delivery independently of prior receipts.
+
+The next-cohort preflight on actual `c86c7a21` finds only the shared canonical
+record conflict for existing #8149. Integrate that accepted main into the owned
+branch, retaining every incoming decision plus the exact original convergence
+clauses in the same 350 lines. Every production, reporter corpus and complete
+CLI/idempotence/bound/cycle oracle byte remains identical to qualified source
+`40226607`. Preserve those SHA-256 receipts and require new exact-head full
+Actions. Queue admission follows root's finite cohort/release scheduling; the
+independent HTML/casing preparation remains paused.

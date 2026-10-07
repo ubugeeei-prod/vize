@@ -23,6 +23,7 @@
 //! is recorded as an [`OpenReason`], and a consumer never claims what an open
 //! tree cannot prove.
 
+mod application;
 pub mod path;
 mod records;
 mod resolve;
