@@ -33,7 +33,9 @@ pub(super) fn write_template_block(
         opening_tag.as_ref(),
     );
     let formatted_content = native_html
-        .then(|| template::format_template_content_with_vue_version(content, options, vue_version))
+        .then(|| {
+            template::format_template_content_with_base_depth(content, options, vue_version, 1)
+        })
         .transpose()?;
 
     if let Some(opening_tag) = &opening_tag {

@@ -276,7 +276,7 @@ fn fmt_write_pretty_prints_json_inputs() {
     let contents = fs::read_to_string(project.path().join("package.json")).unwrap();
     assert_eq!(
         contents,
-        "{\n  \"name\": \"acme\",\n  \"version\": \"0.0.1\",\n  \"keywords\": [\n    \"vue\",\n    \"cli\"\n  ]\n}\n",
+        "{ \"name\": \"acme\", \"version\": \"0.0.1\", \"keywords\": [\"vue\", \"cli\"] }\n",
     );
 }
 

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+type Props = { id: string };
+defineProps<Props>();
+</script>
+
+<template>
+  <Recursive :id />
+  <input :id />
+</template>

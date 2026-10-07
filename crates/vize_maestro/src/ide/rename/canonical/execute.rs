@@ -11,6 +11,7 @@ use crate::ide::{IdeContext, corsa_support};
 mod component_props;
 mod patterns;
 mod same_name_bindings;
+mod shorthand_roles;
 
 use component_props::retain_component_prop_edits;
 
@@ -171,6 +172,8 @@ async fn rename_strict_inner(
         return Ok(Answer::Available(None));
     }
     let had_primary_response = response.is_some();
+    let mut shorthand_roles = shorthand_roles::ShorthandRoles::new(property_arguments);
+    shorthand_roles.capture(ctx, &document, response.as_ref())?;
     let mut linked = response
         .as_ref()
         .map(|response| linked_positions(&document, response))
@@ -254,6 +257,7 @@ async fn rename_strict_inner(
                 &mut component_props.source_cache,
             );
         }
+        shorthand_roles.capture(ctx, &document, Some(&extra))?;
         let Some(extra) = corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, extra)
         else {
             if component_prop_query {
@@ -280,7 +284,7 @@ async fn rename_strict_inner(
     record(&mut trace, || CanonicalRenameStage::Complete);
     Ok(Answer::Available(
         corsa_support::merge_canonical_workspace_edits(mapped).and_then(|mut edit| {
-            (same_name_bindings::rewrite(ctx, &document, &mut edit, new_name, &property_arguments)
+            (shorthand_roles.rewrite(ctx, &document, &mut edit, new_name)
                 && (!ctx.state.patterned_template_enabled()
                     || patterns::rewrite_shorthand_bindings(ctx, &document, &mut edit, new_name))
                 && same_name_bindings::coherent(&edit))

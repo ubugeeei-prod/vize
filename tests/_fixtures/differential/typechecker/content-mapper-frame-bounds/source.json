@@ -1,0 +1,8 @@
+{
+  "issue": 3984,
+  "authored": "Vize-owned raw standard content-mapper stdio frames",
+  "sourceBase": "eed471b4424b922b878bc35cac765dc7274e5736",
+  "headerLimitBytes": 8192,
+  "bodyLimitBytes": 67108864,
+  "scope": "Framing only; no project-semantic or installed-consumer completion credit"
+}

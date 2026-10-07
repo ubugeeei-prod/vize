@@ -1,0 +1,4 @@
+const ok = !(
+  value.kind === Kind.First
+  // trailing note
+);

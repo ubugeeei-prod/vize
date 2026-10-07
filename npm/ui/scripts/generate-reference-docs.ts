@@ -26,6 +26,7 @@ import {
 } from "./reference-docs/composables.ts";
 import { GENERATED_NOTICE, blocks, frontmatter } from "./reference-docs/markdown.ts";
 import { renderUiFamilyPage, uiIndexRows } from "./reference-docs/ui.ts";
+import { uiHub } from "./reference-docs/ui-hub.ts";
 
 const uiRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const composableRoot = path.resolve(uiRoot, "../compose/core");
@@ -36,8 +37,8 @@ export const docsContentRoot = path.resolve(uiRoot, "../../docs/content");
 const indexCopy = {
   en: {
     ui: [
-      "UI Reference",
-      "Every `@vizejs/ui` family: props, events, slots, exposed members, and the normative behavior contract, generated from the source.",
+      "Explore components",
+      "Build forms, navigation, dialogs, and feedback with @vizejs/ui. Copy real examples, try live previews, and inspect each component's API.",
     ],
     composables: [
       "Composables Reference",
@@ -46,8 +47,8 @@ const indexCopy = {
   },
   ja: {
     ui: [
-      "UI リファレンス",
-      "`@vizejs/ui` の全ファミリー: props、イベント、スロット、公開メンバー、規範的な振る舞い仕様をソースから生成しています (英語)。",
+      "コンポーネントを探す",
+      "@vizejs/ui でフォーム、ナビゲーション、ダイアログを作る。使用例、操作できるプレビュー、各コンポーネントの API を確認できます。",
     ],
     composables: [
       "コンポーザブル リファレンス",
@@ -118,7 +119,8 @@ export function renderReferenceDocs(): Map<string, string> {
         GENERATED_NOTICE,
         `# ${uiTitle}`,
         uiIntro,
-        uiIndexRows(uiRoot, uiFamilyCatalog, linkPrefix("ui")),
+        uiHub(locale, linkPrefix("ui")),
+        uiIndexRows(uiRoot, uiFamilyCatalog, linkPrefix("ui"), locale),
       ),
     );
     const [composableTitle, composableIntro] = copy.composables;
