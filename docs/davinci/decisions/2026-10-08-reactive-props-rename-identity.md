@@ -95,3 +95,35 @@ The new duplicate-declaration projection expansion used a declaration name witho
 Genuinely incorporate signed actual main `f3ed2ee49cd50619830b3db6a2ae2d946f18ec5e`, retaining the complete prior source ancestry and all incoming changes. Its pre-correction merge tree exactly equals the failed candidate's compiled tree `08cdc8a3fdff3f2eea7be79942285cde5484f7da`. Add the [complete original report controls](./2026-10-08-lsp-original-rename-reports.md) in this same existing #8188 correction: 16 new full stdio sessions with independent version-3 golden repair, preserving the original 32 and peer 40 cases. Original historical configurations remain frozen; the standard current native fixture and its actual configurations are explicitly recorded.
 
 Before readmission, fresh current-source hosted authority must genuinely execute the three old native bodies, all 16 original-report transactions, the existing 32/40 sessions and three geometry laws with REQUIRE_TSGO enabled and DISABLE_TSGO absent. Configured ordinary source checks cannot supply credit for optional native bodies they disable. Both #7994 and #7996 stay open until their complete original contracts receive current native qualification and actual delivery. Fresh protected runtime/corpus/104 instruction ceilings, signed merge, main ancestry and release remain separate requirements.
+
+## Per-unit mandatory native resolution
+
+Source `243f749cf8` passed ordinary source checks, all 16 original complete
+transactions and existing 32/40 sessions, native phases and its full Rust job.
+However, the three existing model/event/package resolver helpers could return
+`None` even when that full job set `VIZE_TEST_REQUIRE_TSGO=1`. Disable overrides,
+missing workspace ancestry and resolver errors all permitted a silent early
+return from the test body. A separate CLI process's successful native lookup
+cannot qualify those individual body entries. Preserve those historical result
+observations without claiming their old-three native admission authority.
+
+Genuinely merge signed actual main
+`3e0745b6277c00176178de6e9c15de2ee500a258`, preserving previous source ancestry
+and every incoming change. Make the three helpers share their existing lookup
+through a test-only requirement guard. Under the exact existing
+`VIZE_TEST_REQUIRE_TSGO=1` flag, contradictory `VIZE_TEST_DISABLE_TSGO`, missing
+workspace ancestry and executable lookup errors fail the individual test before
+its early return. After successful lookup, the existing startup, timeout and
+query assertions already fail closed. Ordinary optional/disabled native lookup
+retains its prior behavior.
+
+Four isolated refusal/compatibility laws exercise an actual nonexistent
+explicit executable, absent workspace, contradictory flags and ordinary
+optional absence. They do not mutate the process environment or alter any
+rename fixture, golden, edit count or native body. The original 16/32/40/three
+laws and old model/package/event vectors remain complete and unchanged. Fresh
+source Actions and one full Rust execution with REQUIRE_TSGO enabled and
+DISABLE_TSGO absent must qualify the repaired source before normal protected
+intake; unrelated optional coverage does not add a waiting gate. Protected
+runtime/corpus/instruction budgets, actual signed merge and release remain
+separate requirements.
