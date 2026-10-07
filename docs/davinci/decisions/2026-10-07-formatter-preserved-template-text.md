@@ -102,3 +102,8 @@ line and the full earlier #7871 history. Fresh exact-head source/native Actions,
 the original instruction recipe, protected qualification, actual merge and
 installed release replay remain required; old source and protected receipts do
 not qualify this union.
+
+The final remote refresh also incorporates actual main
+`a0f50992e2eb457933b81b951d462090e0af4811` after #8176 merged. Its incoming
+LSP/source/corpus records remain exact; all preserved-text implementation,
+configuration, API/CLI and runtime-observer bytes stay equal to frozen d776.
