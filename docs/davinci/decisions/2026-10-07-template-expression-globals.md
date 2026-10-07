@@ -91,3 +91,14 @@ passes remain historical. Fresh exact-head automatic source/native Actions
 must qualify this union before root-owned queue admission and release.
 No installed replay, whole-Issue completion or measured speed claim follows
 from the local refresh.
+
+## Full editor oracle follow-up
+
+The Element Plus badge cursor is `{{ val|ue.toUpperCase() }}` and the packaged
+Vim cursor is `<Child  :count="|total" />`; both request expression identifiers.
+The 41 Vue instance and allowed JavaScript globals added for #8015 are valid at
+these positions. Preserve the original ordered Element Plus `value`/`Message`
+answers and the complete Vim `Child`/`total` objects, then explicitly append all
+41 frozen global answers. Retain every original authored source, request position,
+hover, diagnostic, revision, formatting, code action and semantic-token control.
+No provider route or assertion is weakened; full Check must replay both scenarios.
