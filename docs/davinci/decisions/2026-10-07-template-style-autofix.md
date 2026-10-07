@@ -45,7 +45,9 @@ observations retain entire sources, JSON, statuses, stderr and file bytes.
 The two malformed inputs in the23-vector corpus retain their complete missing-end parser errors
 alongside the unchanged style warnings and no-edit oracles. Existing LSP selection
 controls retain every diagnostic/suppression/stale/refusal query and now require
-the complete authored HTML quickfix. Explain snapshots change only the Vapor
+the complete authored HTML quickfix. Keep the existing service order: all real
+fixes precede both unchanged suppressions; preserve full single-rule and combined
+payload comparisons without sorting observed results. Explain snapshots change only the Vapor
 metadata field in each locale; official Croquis and consumer inventories stay current.
 
 `vapor/require-vapor-attribute` is an explicit no-op placeholder in current main.

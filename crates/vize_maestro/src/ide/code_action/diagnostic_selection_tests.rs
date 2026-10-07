@@ -71,6 +71,14 @@ fn expected_actions(uri: &Url, diagnostic: &Diagnostic, attach: bool) -> Vec<Cod
     actions
 }
 
+fn expected_all(uri: &Url, diagnostics: &[Diagnostic], attach: bool) -> Vec<CodeActionOrCommand> {
+    assert_eq!(diagnostics.len(), 2);
+    // The unchanged service collects fixes first, then both suppressions.
+    let mut all = expected_actions(uri, &diagnostics[1], attach);
+    all.insert(1, expected(uri, &diagnostics[0], attach));
+    all
+}
+
 fn project() -> (tempfile::TempDir, ServerState, Url) {
     let directory = tempfile::tempdir().unwrap();
     std::fs::write(directory.path().join("vize.config.json"), CONFIG).unwrap();
@@ -93,10 +101,7 @@ fn same_range_rules_use_configured_diagnostic_identity_and_full_payload() {
             expected_actions(&uri, diagnostic, true)
         );
     }
-    let all = diagnostics
-        .iter()
-        .flat_map(|d| expected_actions(&uri, d, true))
-        .collect::<Vec<_>>();
+    let all = expected_all(&uri, &diagnostics, true);
     assert_eq!(actions(&state, &uri, &diagnostics), all);
     let mut reversed = diagnostics.clone();
     reversed.reverse();
@@ -105,10 +110,7 @@ fn same_range_rules_use_configured_diagnostic_identity_and_full_payload() {
     assert_eq!(actions(&state, &uri, &duplicated), all);
     assert_eq!(
         actions(&state, &uri, &[]),
-        diagnostics
-            .iter()
-            .flat_map(|d| expected_actions(&uri, d, false))
-            .collect::<Vec<_>>()
+        expected_all(&uri, &diagnostics, false)
     );
 }
 
@@ -157,12 +159,7 @@ fn current_buffer_and_config_refuse_obsolete_diagnostics_without_losing_repaired
     state
         .documents
         .open(uri.clone(), ORIGINAL.into(), 3, "vue".into());
-    assert_eq!(
-        actions(&state, &uri, &old),
-        old.iter()
-            .flat_map(|d| expected_actions(&uri, d, true))
-            .collect::<Vec<_>>()
-    );
+    assert_eq!(actions(&state, &uri, &old), expected_all(&uri, &old, true));
     std::fs::write(
         directory.path().join("vize.config.json"),
         "{\"linter\":{\"enabled\":false}}",
