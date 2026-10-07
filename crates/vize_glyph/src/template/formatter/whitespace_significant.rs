@@ -77,7 +77,11 @@ pub(super) fn is_whitespace_significant_element(tag_name: &str, attrs: &[ParsedA
 ///
 /// This is a tag-name aware scan so nested elements with the same tag are
 /// handled correctly (e.g. `<pre>...<pre>x</pre>...</pre>`).
-fn find_matching_close_tag(source: &[u8], start: usize, tag_name: &str) -> Option<usize> {
+pub(super) fn find_matching_close_tag(
+    source: &[u8],
+    start: usize,
+    tag_name: &str,
+) -> Option<usize> {
     let len = source.len();
     let tag_bytes = tag_name.as_bytes();
     let mut pos = start;

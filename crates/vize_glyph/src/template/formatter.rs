@@ -19,6 +19,7 @@ use super::{
 
 mod interpolation;
 mod opening_attributes;
+mod preserved_text;
 mod suppression;
 mod text;
 mod whitespace_significant;
