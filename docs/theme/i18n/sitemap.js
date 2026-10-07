@@ -36,13 +36,23 @@
   sitemap.navGroups = [
     {
       key: "start",
-      paths: [
-        "/",
-        "/getting-started",
-        "/guide/vite-plus",
-        "/guide/migration",
-        "/guide/configuration",
-      ],
+      paths: ["/", "/getting-started", "/guide/configuration"],
+      pathsByLocale: {
+        en: [
+          "/",
+          "/getting-started",
+          "/guide/vite-plus",
+          "/guide/migration",
+          "/guide/configuration",
+        ],
+        ja: [
+          "/",
+          "/getting-started",
+          "/guide/vite-plus",
+          "/guide/migration",
+          "/guide/configuration",
+        ],
+      },
     },
     {
       key: "projectSetup",
@@ -63,7 +73,6 @@
         "/guide/oxlint",
         "/guide/comment-annotations",
         "/integrations/vscode",
-        "/guide/vite-plus-editor",
       ],
     },
     {
@@ -71,7 +80,6 @@
       paths: [
         "/rules",
         "/rules/all",
-        "/rules/migration",
         "/rules/vue",
         "/rules/type-and-script",
         "/rules/html",
@@ -97,7 +105,6 @@
       key: "architecture",
       paths: [
         "/guide/cli",
-        "/guide/init",
         "/guide/troubleshooting",
         "/guide/lib-pull",
         "/guide/auto-imports",

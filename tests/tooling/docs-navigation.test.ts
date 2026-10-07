@@ -16,7 +16,7 @@ type LocaleStrings = {
 type Sitemap = {
   blogNavigationPaths: string[];
   hiddenPathPatterns: RegExp[];
-  navGroups: Array<{ key: string; paths: string[] }>;
+  navGroups: Array<{ key: string; paths: string[]; pathsByLocale?: Record<string, string[]> }>;
   supportedLocales: Array<{ code: string; name: string }>;
 };
 
@@ -122,16 +122,36 @@ void test("the sidebar groups the pages the site actually publishes", () => {
     "/guide/vite-plugin",
     "/integrations/nuxt",
     "/guide/workflows",
-    "/guide/configuration",
     "/guide/jsx",
     "/guide/jsx-babel-compat",
-    "/guide/troubleshooting",
     "/guide/unplugin",
   ]);
 
-  const navPaths = sitemap.navGroups.flatMap((group) => group.paths);
+  const start = sitemap.navGroups.find((group) => group.key === "start")!;
+  assert.deepEqual(start.paths, ["/", "/getting-started", "/guide/configuration"]);
+  assert.deepEqual(start.pathsByLocale, {
+    en: ["/", "/getting-started", "/guide/vite-plus", "/guide/migration", "/guide/configuration"],
+    ja: ["/", "/getting-started", "/guide/vite-plus", "/guide/migration", "/guide/configuration"],
+  });
+  // Every common path remains mandatory in all five locales. Authored locale
+  // overrides must retain those paths and publish every additional entry.
+  for (const group of sitemap.navGroups) {
+    for (const [locale, paths] of Object.entries(group.pathsByLocale ?? {})) {
+      assert.ok(localeCodes.includes(locale));
+      assert.deepEqual(
+        group.paths.filter((entry) => !paths.includes(entry)),
+        [],
+      );
+    }
+  }
+  const commonPaths = sitemap.navGroups.flatMap((group) => group.paths);
   for (const locale of localeCodes) {
-    const missing = navPaths.filter((navPath) => !hasContentPage(locale, navPath));
+    const navPaths = sitemap.navGroups.flatMap(
+      (group) => group.pathsByLocale?.[locale] ?? group.paths,
+    );
+    const missing = [...new Set([...commonPaths, ...navPaths])].filter(
+      (navPath) => !hasContentPage(locale, navPath),
+    );
     assert.deepEqual(missing, [], `${locale} is missing pages for sidebar entries`);
   }
 });
@@ -158,7 +178,10 @@ void test("every locale labels every sidebar entry", () => {
     );
   }
 
-  const navPaths = sitemap.navGroups.flatMap((group) => group.paths);
+  const navPaths = sitemap.navGroups.flatMap((group) => [
+    ...group.paths,
+    ...Object.values(group.pathsByLocale ?? {}).flat(),
+  ]);
   assert.deepEqual(
     navPaths.filter((navPath) => !(navPath in locales.en.labels)),
     [],

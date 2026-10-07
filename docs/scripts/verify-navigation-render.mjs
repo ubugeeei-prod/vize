@@ -70,6 +70,49 @@ try {
       const response = await page.goto(url, { waitUntil: "networkidle" });
       assert.equal(response.status(), 200, route);
       await page.locator("h1").first().waitFor();
+      await page.evaluate(() => document.fonts.ready);
+      let japaneseFonts = [];
+      if (route === "/ja/" || route.startsWith("/ja/")) {
+        const sample = await page.evaluate(() => {
+          const walker = document.createTreeWalker(
+            document.querySelector(".content") ?? document.body,
+            NodeFilter.SHOW_TEXT,
+          );
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            if (/[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}]/u.test(node.textContent)) {
+              const element = node.parentElement;
+              if (element.checkVisibility()) {
+                element.setAttribute("data-render-japanese-font", "");
+                return node.textContent;
+              }
+            }
+          }
+          return null;
+        });
+        assert(sample, `${route}: no visible Japanese text`);
+        const session = await page.context().newCDPSession(page);
+        await session.send("DOM.enable");
+        await session.send("CSS.enable");
+        const { root } = await session.send("DOM.getDocument");
+        const { nodeId } = await session.send("DOM.querySelector", {
+          nodeId: root.nodeId,
+          selector: "[data-render-japanese-font]",
+        });
+        ({ fonts: japaneseFonts } = await session.send("CSS.getPlatformFontsForNode", { nodeId }));
+        assert(
+          japaneseFonts.some((font) => font.glyphCount > 0),
+          `${route}: no rendered glyphs`,
+        );
+        if (process.platform === "linux") {
+          assert(
+            japaneseFonts.some(
+              (font) => /Noto Sans CJK/.test(font.familyName) && font.glyphCount > 0,
+            ),
+            `${route}: Japanese text did not use installed CJK fonts`,
+          );
+        }
+        await session.detach();
+      }
       const metrics = await page.evaluate(() => ({
         title: document.title,
         viewport: innerWidth,
@@ -128,7 +171,7 @@ try {
       const name = route.replace(/^\//, "").replaceAll("/", "-") || "home";
       const screenshot = `${name}-${device}.png`;
       await page.screenshot({ path: path.join(output, screenshot), fullPage: true });
-      reports.push({ route, device, screenshot, pageErrors, ...metrics });
+      reports.push({ route, device, screenshot, pageErrors, japaneseFonts, ...metrics });
       await page.close();
     }
   }

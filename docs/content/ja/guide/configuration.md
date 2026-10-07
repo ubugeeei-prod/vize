@@ -54,6 +54,10 @@ export default defineConfig({
 [ルールと具体例](../rules/all.md)から選べます。この統合では Vize と Oxlint が一緒に動作するため、
 `oxlint-plugin-vize` を別途登録する必要はありません。
 
+### Lint Rule Options
+
+ルールごとの設定値と具体例は [ルール オプション](../rules/options.md)を参照してください。
+
 ## 導入する機能を選ぶ
 
 `compiler`・`typecheck`・`lint.vize`・`fmt.vize` を `false` にすると、その機能を無効化できます。
@@ -111,3 +115,6 @@ export default defineConfig({
 [単独 CLI の設定リファレンス](./configuration-reference.md)に設定ファイルの検索・優先順位、
 JSON/PKL、スコープ別の設定、全コンパイラオプション、テンプレート構文、Vue の型解決、
 LSP・Musea の設定を残しています。型宣言やエディター設定は [Vite+ 統合](./vite-plus.md)を参照してください。
+
+実験的なコンパイラ機能は明示的に有効化します。[Experimentals](./experimentals.md)で
+対応する項目と現在の範囲を確認してください。

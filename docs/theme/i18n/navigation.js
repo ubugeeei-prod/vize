@@ -105,7 +105,8 @@ const vizeDocsI18nNavigation = (() => {
     const nextNav = document.createDocumentFragment();
     const used = new Set();
     for (const group of sitemap().navGroups) {
-      const items = group.paths
+      const paths = group.pathsByLocale?.[locale] ?? group.paths;
+      const items = paths
         .map((path) => {
           used.add(path);
           return itemsByPath.get(path);
@@ -114,7 +115,7 @@ const vizeDocsI18nNavigation = (() => {
 
       if (items.length > 0) {
         const current = canonicalPath(window.location.pathname);
-        const active = group.paths.some((path) =>
+        const active = paths.some((path) =>
           path === "/" ? current === "/" : current === path || current.startsWith(`${path}/`),
         );
         nextNav.append(createSection(ui.groups[group.key], items, group.key === "start" || active));

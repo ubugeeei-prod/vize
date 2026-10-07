@@ -16,7 +16,10 @@ package scripts cause names such as `vize:lint`, which replacement scripts must
 use to avoid calling themselves. No full diagnostic or plugin-option parity is
 claimed.
 
-Navigation groups describe user goals. Start and the current group open;
+Navigation groups describe user goals. Common paths remain mandatory in all five
+locales; explicit English/Japanese start-path overrides add the authored Vite+
+and migration pages without advertising missing translations. All additional
+paths must exist in their declared locale. Start and the current group open;
 other groups use native keyboard-operable disclosure. Generated component and
 rule detail pages remain reachable through their indexes without adding every
 leaf to the menu. Configuration details remain in linked standalone/compiler
@@ -39,6 +42,12 @@ width, page errors, keyboard disclosure, and mobile menu interaction. It saves
 actual Playwright PNGs and a JSON receipt. The existing Docs build runs it after
 the production build and uploads the evidence. Local preview disabled only OG
 generation to reuse cached dependencies; it grants no full Docs Actions credit.
+
+The first Linux screenshot artifact exposed missing Japanese glyphs despite a
+successful build. The Docs runner now installs CJK fonts before rendering, and
+the theme declares native CJK fallbacks. The browser receipt records the actual
+platform fonts used by visible authored Japanese text; Linux requires rendered
+Noto CJK glyphs. Text presence and a successful screenshot alone are insufficient.
 
 ## Remaining work
 

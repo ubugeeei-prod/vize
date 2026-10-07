@@ -84,7 +84,7 @@ export default defineConfig({
           },
 
           fonts: {
-            sans: '"Helvetica Neue", Helvetica, Arial, system-ui, sans-serif',
+            sans: '"Helvetica Neue", Helvetica, Arial, "Noto Sans CJK JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif',
             mono: '"JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
           },
 

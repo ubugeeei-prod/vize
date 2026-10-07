@@ -54,6 +54,10 @@ export default defineConfig({
 [Browse rules and examples](../rules/all.md). Vize's native linter already runs
 alongside Oxlint in this integration; no `oxlint-plugin-vize` registration is needed.
 
+### Lint Rule Options
+
+Use [Rule Options](../rules/options.md) for rule-specific option objects and complete examples.
+
 ## Choose which features to adopt
 
 Set `compiler`, `typecheck`, `lint.vize`, or `fmt.vize` to `false` to disable that
@@ -110,3 +114,6 @@ Use [CLI commands](./cli.md) for this path; it does not require Vite+ tasks.
 file discovery and precedence, JSON/PKL examples, scoped entries, all compiler
 options, template syntax modes, project Vue type resolution, and LSP/Musea settings.
 For library declarations or editor setup, use the [Vite+ integration guide](./vite-plus.md).
+
+Experimental compiler flags are opt-in; consult [Experimentals](./experimentals.md)
+for supported names and their current scope.
