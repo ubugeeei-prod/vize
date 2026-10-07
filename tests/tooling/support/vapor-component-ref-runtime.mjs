@@ -132,7 +132,10 @@ try {
       status: result.status,
       signal: result.signal,
       error: result.error
-        ? { ...result.error, message: result.error.message, stack: result.error.stack }
+        ? Object.assign({}, result.error, {
+            message: result.error.message,
+            stack: result.error.stack,
+          })
         : null,
       stdout: result.stdout ?? null,
       stderr: result.stderr ?? null,

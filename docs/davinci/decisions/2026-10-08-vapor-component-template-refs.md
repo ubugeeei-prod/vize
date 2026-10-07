@@ -90,3 +90,10 @@ starts its own Actions in parallel and retains **UNEXECUTED** status for the
 parent and child in one native Stack; intake and merge remain root-owned, after
 the ready prefix's mandatory exact-head gates pass. This supersedes the earlier
 publication hold without changing source, fixtures, expected vectors or gates.
+
+The first draft source check rejected a class-instance spread in the test-only
+spawn error packet. Copy its enumerable fields explicitly, retaining message
+and stack. An actual ENOENT process packet remains deeply identical, including
+code, errno, syscall, path and spawn arguments. Configured type-aware lint and
+format pass; original sources, expected vectors and product bytes are unchanged.
+The old warning failure remains retained, and the new head needs fresh Actions.
