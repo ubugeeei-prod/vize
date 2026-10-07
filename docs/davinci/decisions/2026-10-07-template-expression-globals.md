@@ -45,3 +45,13 @@ tooling shards. Its actual non-native build emitted an unused import warning
 for the legacy helper import, whose remaining caller is native-only. Match
 that import to the caller feature gate; preserve all tests and require a fresh
 successor run and warnings-as-errors feature checks before delivery.
+
+The historical `9668561b43` Rust shards exposed exactly two whole-response
+expression expectations in the existing native-event CLI tests: the original
+reporter's interpolation coordinate and quoted event-handler expressions.
+Keep the original four-candidate fixture byte-for-byte, then append the
+separately frozen 41-candidate globals vector for those two calls. The full
+response assertion remains exact; native tags, declared/native events, edits,
+mirror observations, hover, and unsaved declaration controls retain their
+original expectations. Require fresh successor Actions for both repaired
+expressions and all four Rust shards.
