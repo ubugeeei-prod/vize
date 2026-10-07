@@ -47,12 +47,16 @@ export function beginN8nReplay({ root, packageDir, artifacts, receipt, binary })
     assert.ok(!process.env[key], `ambient ${key} cannot qualify the replay`);
   const output = path.join(artifacts, "n8n");
   fs.mkdirSync(output, { recursive: true });
-  const laws = spawnSync(process.execPath, ["--test", "scripts/n8n-replay-inputs.test.mjs"], {
-    cwd: packageDir,
-    encoding: "utf8",
-    timeout: 30_000,
-    maxBuffer: 32 * 1024 * 1024,
-  });
+  const laws = spawnSync(
+    process.execPath,
+    ["--test", "scripts/n8n-replay-inputs.test.mjs", "scripts/n8n-native-custody.test.cjs"],
+    {
+      cwd: packageDir,
+      encoding: "utf8",
+      timeout: 30_000,
+      maxBuffer: 32 * 1024 * 1024,
+    },
+  );
   fs.writeFileSync(path.join(output, "input-laws.json"), JSON.stringify(laws, null, 2) + "\n");
   assert.equal(laws.error, undefined);
   assert.equal(laws.signal, null);

@@ -21,16 +21,9 @@ const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const binary = fs.realpathSync(custody.binary.path);
 assert.equal(hash(fs.readFileSync(binary)), custody.binary.sha256);
 fs.mkdirSync(custody.sources, { recursive: true });
-let callsDescriptor;
-process.once("exit", () => {
-  if (callsDescriptor !== undefined) fs.closeSync(callsDescriptor);
-});
-const event = (row) => {
-  // Keep synchronous, complete records in their original order. Reopening the
-  // same owned append-only ledger for every rule adds no source authority.
-  callsDescriptor ??= fs.openSync(custody.calls, "a");
+const event = (row) =>
   fs.appendFileSync(
-    callsDescriptor,
+    custody.calls,
     JSON.stringify({
       pid: process.pid,
       phase: process.env.VIZE_N8N_REPLAY_PHASE,
@@ -40,7 +33,6 @@ const event = (row) => {
       ...row,
     }) + "\n",
   );
-};
 const load = Module._extensions[".node"];
 Module._extensions[".node"] = (module, filename) => {
   const actual = fs.realpathSync(filename);
@@ -63,15 +55,10 @@ Module._extensions[".node"] = (module, filename) => {
     const sourceSha256 = hash(bytes);
     const sourcePath = path.join(custody.sources, sourceSha256 + ".vue");
     try {
-      assert.ok(fs.readFileSync(sourcePath).equals(bytes), "source digest collision or mutation");
+      fs.writeFileSync(sourcePath, bytes, { flag: "wx" });
     } catch (error) {
-      if (error.code !== "ENOENT") throw error;
-      try {
-        fs.writeFileSync(sourcePath, bytes, { flag: "wx" });
-      } catch (writeError) {
-        if (writeError.code !== "EEXIST") throw writeError;
-        assert.ok(fs.readFileSync(sourcePath).equals(bytes), "source digest collision or mutation");
-      }
+      if (error.code !== "EEXIST") throw error;
+      assert.ok(fs.readFileSync(sourcePath).equals(bytes), "source digest collision or mutation");
     }
     const capturedArgs = [{ sourceSha256, sourcePath }, ...args.slice(1)];
     try {

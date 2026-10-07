@@ -60,3 +60,30 @@ collector qualifies the valid host configuration without override settings.
 Direct SDK scriptless callbacks remain unavailable in both pinned hosts; wrapper/native
 coverage is a separate contract. Retired rules, the excluded n8n-local plugins,
 full workspace configuration and installed release acceptance remain open.
+
+## Preserve recorder authority with less repeated I/O
+
+Protected candidate `9b65b71b1ca05a2814d02080188551ff0407a3c5` passed the
+whole native campaign and original-host import/type-aware/carrier controls, but
+its first no-hint 1.78 host run reached the unchanged 180-second process bound.
+The complete failed packet has empty stdout/stderr, null status, SIGTERM and
+ETIMEDOUT after 180,103 ms; the failed candidate does not qualify delivery.
+The earlier complete source campaign remains historical source proof.
+
+Reuse one owned O_APPEND descriptor for synchronous complete ledger records
+and close it on normal or exceptional process exit. SIGTERM has no buffered
+records to lose; the kernel closes its process descriptors. Read and compare
+every existing source CAS object before every call; exclusively create missing
+objects and verify exact bytes after a creation race. Every physical-original
+byte check, full argument/result/error field, recorded call order, diagnostic
+vector, option, scope, process bound, workflow command and budget stays intact.
+This removes repeated ledger reopen/close and expected EEXIST exception
+construction, without granting native, timing or completion credit.
+
+The original observer source is retained byte-exact as an owned Vize fixture
+from `8ec57bb939a1d8206c4a3b73b7f4417a331cc44a`. Six authored recorder laws
+compare complete before/after record bytes and cover native throws, repeated
+physical/CAS mutation, exclusive creation races, failed appends, descriptor
+closure and actual SIGTERM with only completed records. They use a fake addon
+solely for recorder controls. Fresh full native/two-host source and protected
+qualification remain required; the 180-second bound is not increased.
