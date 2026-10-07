@@ -30,3 +30,7 @@ work. PR #8131's partial common-attribute change is independent and untouched.
 
 References: [Vue allowed globals](https://github.com/vuejs/core/blob/v3.5.43/packages/shared/src/globalsAllowList.ts)
 and [public instance surface](https://github.com/vuejs/core/blob/v3.5.43/packages/runtime-core/src/componentPublicInstance.ts).
+
+First exact-source run `37589426480` rejected a removed import still used by
+the existing legacy-Vue completion helper. Restore that import without changing
+its behavior or any fixture expectation; fresh successor Actions are required.
