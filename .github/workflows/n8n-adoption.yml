@@ -2,7 +2,6 @@ name: n8n adoption fixture
 
 on:
   pull_request:
-    branches: [main]
     paths:
       - .github/workflows/n8n-adoption.yml
       - .gitmodules
@@ -10,6 +9,14 @@ on:
       - tests/_fixtures/n8n-adoption.json
       - tests/_fixtures/vue-ecosystem-fixtures.json
       - tests/tooling/n8n-adoption-fixture.test.mjs
+      - tests/tooling/support/n8n-compiler-*.mjs
+      - tests/tooling/support/n8n-default-slot-loop*.mjs
+      - tests/_fixtures/differential/compiler/n8n-*/**
+      - tools/support/compat/n8n-official-compiler-custody.mjs
+      - crates/vize_atelier_sfc/**
+      - crates/vize_atelier_core/**
+      - crates/vize_atelier_dom/**
+      - davinci/vize_l1_to_l2/**
       - npm/oxlint/**
   merge_group:
     types: [checks_requested]
@@ -46,3 +53,56 @@ jobs:
         env:
           VIZE_N8N_FIXTURE_REQUIRED: "1"
         run: vp node --test tests/tooling/n8n-adoption-fixture.test.mjs
+
+  compiler-custody:
+    name: Complete n8n compiler source before and after
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      VIZE_N8N_CAPTURE_BASELINE: 1f7b027ab26e2c031592f3c8546ea6fa7872eeeb
+      VIZE_N8N_REPAIR_ANCHOR: ac09d4d3624d3e0fe5b1852300d9860af2172ba3
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: n8n-compiler-custody
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Hydrate the same licensed read-only originals
+        run: git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n
+      - name: Fetch the immutable capture-only source and pinned official compiler
+        run: |
+          git fetch origin "$VIZE_N8N_CAPTURE_BASELINE" "$VIZE_N8N_REPAIR_ANCHOR"
+          curl --fail --location --retry 5 --retry-all-errors \
+            --output "$RUNNER_TEMP/n8n-official-compiler.mjs" \
+            https://unpkg.com/@vue/compiler-sfc@3.5.26/dist/compiler-sfc.esm-browser.js
+          echo "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec  $RUNNER_TEMP/n8n-official-compiler.mjs" | sha256sum --check
+      - name: Build and capture both authenticated source states with the same recipe
+        run: |
+          vp node tests/tooling/support/n8n-compiler-custody.mjs \
+            "$VIZE_N8N_CAPTURE_BASELINE" \
+            "$VIZE_N8N_REPAIR_ANCHOR" \
+            tests/_fixtures/_git/n8n \
+            "target/n8n-compiler-custody/${{ github.run_id }}-${{ github.run_attempt }}" \
+            "$RUNNER_TEMP/n8n-official-compiler.mjs"
+      - name: Verify source SFC default-slot runtime and iterator laws
+        run: cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test n8n_default_slot_loops -- --nocapture
+      - name: Upload complete source, official modules, maps and diagnostic vectors
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: n8n-compiler-before-after-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/n8n-compiler-custody
+          if-no-files-found: error

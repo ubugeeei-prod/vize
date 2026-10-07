@@ -55,6 +55,49 @@ The source tooling dependency unblock is [#8148](https://github.com/ubugeeei-pro
 It changes the SDK cohort independently; its success does not qualify the
 fixture, bridge, protected merge or installed-package acceptance by itself.
 
+The unchanged n8n corpus exposed nine complete-template differences and two
+UserSelect production-module differences at fixture source
+`72aac62d7c2932c71075d579c76459b270d909da`; its compiler gate remains failed.
+The existing fixture PR retains all original files and the original 16-error
+allowlist and ceilings. Repair qualification requires the whole 43,000-plus
+template corpus, complete production code/maps/results, and authored runtime
+behavior. A matching result from two changed producers alone is insufficient.
+
+The before/after job authenticates an immutable capture-only ancestor against
+that original source and a reviewed immutable repair anchor that genuinely
+descends from the capture ancestor. The baseline's production and dependency
+bytes stay identical; both phases use identical capture drivers, input hashes
+and build recipes. The candidate's exact source tree, toolchain and binary hash
+remain recorded. Baseline-to-candidate ancestry is reported honestly because
+protected squash merges need not retain it; baseline-to-repair-anchor ancestry
+must pass. Complete raw packets are saved before parity/runtime assertions, so
+a failed gate retains its evidence and receives no completion credit.
+The immutable capture-only commit is
+`1f7b027ab26e2c031592f3c8546ea6fa7872eeeb`; the reviewed descending repair
+anchor is `ac09d4d3624d3e0fe5b1852300d9860af2172ba3`. Preserve their real
+commit chain when integrating the existing PR. The ordinary default-mode
+baseline has two complete legacy errors with missing locations; retain those
+`null` locations as failed historical evidence. Its two native diagnostics
+already have byte spans. The official per-prior-branch law expands their full
+wire metadata to three without dropping stage, severity, parts, witness or
+debug values; current legacy locations independently match the frozen official
+UTF-16 positions converted to UTF-8 spans.
+
+The independent reference is n8n's locked Vue/compiler-sfc 3.5.26 browser
+bundle, authenticated by SHA256. All ten complete originals retain parse,
+script metadata, unbound and real-binding template modes, inline component
+modules, maps and diagnostics. The assertion-only judge recomputes complete
+code, preamble, maps and metadata with the same pinned API/mode without adding
+a production stage or rewriting the retained official packet. Unexpected API
+refusals fail qualification; unsupported style preprocessing stays explicitly
+unqualified. InstanceAi is accepted in module/prefix mode, while function mode
+must retain its three ordered duplicate-key diagnostics and diagnosed code;
+that mode receives no successful module/runtime credit. Official UTF-16 offsets
+and Vize UTF-8 spans are distinct coordinate systems. The official maps-on
+shared-location anomaly remains raw evidence, separate from accurate authored
+source locations. Current source before/after, full corpus, protected merge and
+public consumer acceptance remain pending.
+
 The spike reports approximately 11 seconds of Vize overhead in editor-ui and
 one native lint call per rule/file. Measure the complete custom rule set against
 the same source/dependency cohort before claiming a speed-up. n8n's remaining
