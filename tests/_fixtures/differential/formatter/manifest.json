@@ -1771,6 +1771,147 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/typed-arrow-last-argument",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "typed-arrow-last-argument",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "88bba52a508253d81e30575a6306040d5c095ae226ffa8892ade14381f911fe2",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [
+          7868
+        ],
+        "commits": [
+          {
+            "sha": "e9eea64a35a7dd6fa729e1e0ab8b91a3e5103509",
+            "role": "pre-fix-base",
+            "paths": [
+              "vendor/oxc_formatter/src/print/call_like_expression/arguments.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 7868,
+            "path": "crates/vize_glyph/tests/typed_arrow_last_argument.rs",
+            "symbol": "complete_script_and_setup_carriers_keep_whole_outputs_and_changed_flags"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/typed_arrow_last_argument.rs",
+          "symbol": "complete_script_and_setup_carriers_keep_whole_outputs_and_changed_flags",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "3-pass-idempotence",
+            "FormatResult.changed"
+          ],
+          "limitations": [
+            "Exact-source Actions execution remains required."
+          ]
+        },
+        {
+          "path": "crates/vize/tests/fmt_typed_arrow_last_argument_cli.rs",
+          "symbol": "original_ts_and_sfc_hug_after_one_write_and_remain_stable_through_check",
+          "executor": "rust-test",
+          "asserts": [
+            "whole-original-input",
+            "LF/CRLF",
+            "full-output-bytes",
+            "3-writes",
+            "check-exit-and-streams",
+            "no-config"
+          ],
+          "limitations": [
+            "Current source-built CLI process execution remains required on Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "typescript",
+              "typed-last-argument-arrow"
+            ],
+            "selector": "default Vue version with --no-config"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with --no-config and three whole-output passes; the SFC script contains every byte of the original 191-byte TS program.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "typed-arrow-last-argument/reference.expected.txt",
+              "sha256": "6cb02c47e490ea8696e1f46bc4e2c7fdcaf7f56477fda0eab9e16aba46dd5ee1",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 7868,
+                "path": "crates/vize_glyph/tests/typed_arrow_last_argument.rs",
+                "symbol": "complete_script_and_setup_carriers_keep_whole_outputs_and_changed_flags",
+                "assertion": "Whole expected SFC retains every original token and expands only the typed object arrow body while hugging it to the call. Independently verified with Prettier 3.9.6 at width 100. Three public outputs agree; changed=true initially and false thereafter."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-7868-reported-hugged-arrow-reference; independently verified Prettier 3.9.6 at default width 100; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {

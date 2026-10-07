@@ -36,3 +36,16 @@ body, so a required nested logical group does not inherit a trailing comment's
 forced line break. The public control retains its independently authored whole
 output, also confirmed with Prettier 3.9.6; inline operand comments and long
 chains still break where required.
+
+## Typed last-argument arrows
+
+The additional private `print/call_like_expression/arguments.rs` change is the
+exact 44-line removal from official OXC commit
+`ca1ba71595d175da6b3b44b6100e09bfaa66f8e1`:
+https://github.com/oxc-project/oxc/commit/ca1ba71595d175da6b3b44b6100e09bfaa66f8e1
+
+Remove the obsolete type-reference return annotation veto from existing arrow
+argument grouping; retain body-based grouping and every supporting dependency
+revision. Vize [#7868](https://github.com/ubugeeei-prod/vize/issues/7868) retains
+the full original program, LF/CRLF carriers and whole independent references,
+with three public passes and real CLI checks and writes.
