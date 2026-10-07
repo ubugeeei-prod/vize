@@ -10,6 +10,7 @@ use crate::ide::{IdeContext, corsa_support};
 
 mod component_props;
 mod patterns;
+mod same_name_bindings;
 
 use component_props::retain_component_prop_edits;
 
@@ -125,6 +126,8 @@ async fn rename_strict_inner(
     } else {
         component_props.authored_definition_positions(ctx, &document)
     };
+    let property_rename =
+        !component_props.positions.is_empty() && !same_name_bindings::is_binding_declaration(ctx);
     let component_prop_positions = component_props
         .positions
         .iter()
@@ -265,8 +268,10 @@ async fn rename_strict_inner(
     record(&mut trace, || CanonicalRenameStage::Complete);
     Ok(Answer::Available(
         corsa_support::merge_canonical_workspace_edits(mapped).and_then(|mut edit| {
-            (!ctx.state.patterned_template_enabled()
-                || patterns::rewrite_shorthand_bindings(ctx, &document, &mut edit, new_name))
+            (same_name_bindings::rewrite(ctx, &document, &mut edit, new_name, property_rename)
+                && (!ctx.state.patterned_template_enabled()
+                    || patterns::rewrite_shorthand_bindings(ctx, &document, &mut edit, new_name))
+                && same_name_bindings::coherent(&edit))
             .then_some(edit)
             .filter(|edit| scope.admits_authored(edit))
         }),

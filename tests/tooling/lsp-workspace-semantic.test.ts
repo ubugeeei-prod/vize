@@ -6,6 +6,10 @@ import { pathToFileURL } from "node:url";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
+import {
+  assertOriginalSymbolSource,
+  scriptSetupSymbol,
+} from "./support/workspace-symbol-contract.ts";
 
 type SymbolInformation = {
   name: string;
@@ -21,16 +25,9 @@ async function queryWorkspaceSymbols(
   return (await session.request("workspace/symbol", { query })) as SymbolInformation[] | null;
 }
 
-/**
- * workspaceSymbol only indexes documents that are currently open in the
- * editor (the server iterates `state.documents`), and classifies script-setup
- * bindings by a lightweight shape heuristic:
- *   - `const x = ref(0)` / computed/reactive -> VARIABLE (13)
- *   - `function foo()` -> FUNCTION (12)
- *   - the component name derived from the file name -> CLASS (5)
- * An empty result set is returned as `null` (not an empty array).
- */
-test("vize lsp workspaceSymbol indexes open .vue docs and classifies binding kinds", async () => {
+/** Closed sources keep the original Vue kinds; open buffers override disk text.
+ * Variable=13, function=12, component=5; an unmatched query returns null. */
+test("vize lsp workspaceSymbol indexes closed and open .vue docs with the same binding kinds", async () => {
   const testRootDir = path.join(testOutputRoot, "lsp-workspace-symbol");
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
@@ -57,6 +54,7 @@ function handleSubmit() {}
   <button @click="handleSubmit">{{ myCounter }}</button>
 </template>
 `;
+    assertOriginalSymbolSource("Editor.vue", editorSource);
     const editorPath = path.join(workspaceDir, "Editor.vue");
     const editorUri = pathToFileURL(editorPath).href;
     fs.writeFileSync(editorPath, editorSource, "utf8");
@@ -71,13 +69,16 @@ const internalState = ref(1)
   <span>{{ internalState }}</span>
 </template>
 `;
+    assertOriginalSymbolSource("Widget.vue", widgetSource);
     const widgetPath = path.join(workspaceDir, "Widget.vue");
     const widgetUri = pathToFileURL(widgetPath).href;
     fs.writeFileSync(widgetPath, widgetSource, "utf8");
 
-    // Before any document is open the server has nothing to index.
+    // The original Vue producer classifies ref() as VARIABLE and anchors
+    // script symbols at the declaration line's start, with a zero range.
+    const expectedCounter = [scriptSetupSymbol("myCounter", 13, editorUri, 3)];
     const beforeOpen = await session.request("workspace/symbol", { query: "myCounter" });
-    assert.equal(beforeOpen, null);
+    assert.deepEqual(beforeOpen, expectedCounter);
 
     session.notify("textDocument/didOpen", {
       textDocument: {
@@ -108,12 +109,7 @@ const internalState = ref(1)
     const counterSymbols = (await session.request("workspace/symbol", {
       query: "myCounter",
     })) as SymbolInformation[] | null;
-    assert.ok(Array.isArray(counterSymbols), JSON.stringify(counterSymbols));
-    assert.equal(counterSymbols.length, 1, JSON.stringify(counterSymbols));
-    assert.equal(counterSymbols[0].name, "myCounter");
-    assert.equal(counterSymbols[0].kind, 13);
-    assert.equal(counterSymbols[0].containerName, "script setup");
-    assert.equal(counterSymbols[0].location.uri, editorUri);
+    assert.deepEqual(counterSymbols, expectedCounter);
 
     // A `function` declaration is classified as FUNCTION (12).
     const handlerSymbols = (await session.request("workspace/symbol", {
@@ -179,6 +175,8 @@ const freshName = 2
   <span>{{ freshName }}</span>
 </template>
 `;
+    assertOriginalSymbolSource("Lifecycle.vue", initialSource);
+    assertOriginalSymbolSource("Lifecycle.dirty.vue", changedSource);
     const filePath = path.join(workspaceDir, "Lifecycle.vue");
     const uri = pathToFileURL(filePath).href;
     fs.writeFileSync(filePath, initialSource, "utf8");
@@ -228,8 +226,11 @@ const freshName = 2
       isDiagnosticsForUri(params, uri),
     );
 
-    await t.test("closed documents are removed from the workspace symbol index", async () => {
+    await t.test("close removes unsaved symbols and restores original disk symbols", async () => {
       assert.equal(await queryWorkspaceSymbols(session, "freshName"), null);
+      assert.deepEqual(await queryWorkspaceSymbols(session, "staleName"), [
+        scriptSetupSymbol("staleName", 14, uri, 1),
+      ]);
     });
   } finally {
     await session.shutdown();

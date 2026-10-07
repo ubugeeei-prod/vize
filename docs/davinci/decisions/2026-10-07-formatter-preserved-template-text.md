@@ -48,3 +48,12 @@ ambiguous `Into` local as unsized `str`. Explicitly retain the formatter's exist
 compact-string type for the local. Production code, all five complete inputs and
 the three-pass assertions stay unchanged; fresh source compilation and execution
 are required again.
+
+Refresh exact owned source 2c7d9b44 onto fetched, signed actual main c86c7a21.
+Every original/config/stock-runtime observer and API/CLI control remains byte
+exact, with all incoming canonical350 clauses preserved beside the authored
+decision. The old source/native/canonical green and security refusal remain
+historical; only fresh union-source Actions and protected checks can qualify this
+head. Root owns finite admission after the corrective change and verified release;
+merge, installed replay and Issue closure remain pending. No new PR or unpublished
+#7876 work is introduced.

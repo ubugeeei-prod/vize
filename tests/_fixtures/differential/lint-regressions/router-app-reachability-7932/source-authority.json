@@ -1,0 +1,280 @@
+{
+  "base_commit": "97d5c26a153944e66439a3108746c19d7bf62220",
+  "qualification": "Static source-derived authored expectations; no local or hosted execution claimed by this corpus author.",
+  "sources": [
+    {
+      "path": "crates/vize_croquis_cf/src/providers/vue_router/typing.rs",
+      "git_blob": "250080d5b889daa02014ff704e92c3f50bb5e7cb",
+      "sha256": "987ec6efed6d1632ed007bc09f2a56a4e77b67cd6d0efcb68c4087a5f2744d57",
+      "bytes": 10988,
+      "lines": "123-290",
+      "authority": "Existing direct-router diagnostic conditions and severities; App selection intentionally changes in the companion production fix."
+    },
+    {
+      "path": "crates/vize_croquis_cf/src/providers/vue_router/typing/messages.rs",
+      "git_blob": "20012f2ec2bf21998048cb99e37a46da4cf24a11",
+      "sha256": "ea83e152a01af5dd546c4481f1ed631d8ef43baa6cf38ac299993823aed81970",
+      "bytes": 6633,
+      "lines": "14-203",
+      "authority": "Complete wording, route locations, help composition and typo threshold."
+    },
+    {
+      "path": "crates/vize_croquis_cf/src/providers/vue_router/path.rs",
+      "git_blob": "24a81e366797361830189228a6ff23ed658c58b4",
+      "sha256": "ee955d24d0fa9d239cb8d483a9c8e21953fd72bfa065b8f94d1ee7167ae84a0f",
+      "bytes": 6216,
+      "lines": "25-33",
+      "authority": "Required id accepts string | number."
+    },
+    {
+      "path": "crates/vize_croquis_cf/src/providers/vue_router/sites/location.rs",
+      "git_blob": "99814f767898f58565879dba309f71b7c19c8094",
+      "sha256": "9c660b10f00b2bec4825c16e545af0c44f03189c3ec804528f6aa370e498da61",
+      "bytes": 5878,
+      "lines": "56-125",
+      "authority": "Whole-file literal-name/key/value spans and params object interpretation."
+    },
+    {
+      "path": "crates/vize/src/commands/lint/routes.rs",
+      "git_blob": "543ccde207099f9c0de067a41478a1acff037f05",
+      "sha256": "ac4fcc081c96cf46b48a4786e3cab247e091722da96228a07bfeb55f7f5f0a65",
+      "bytes": 6829,
+      "lines": "22-126",
+      "authority": "Whole route diagnostics converted to CLI results; HelpLevel::Full."
+    },
+    {
+      "path": "crates/vize/src/commands/lint/aggregate.rs",
+      "git_blob": "9f6957cd377fa7f4b159591f2debb3b8ffb37c6f",
+      "sha256": "e386772551349461cbc6a4f601902b5f82d0d29bf728d5210c54bdee07fb5960",
+      "bytes": 10745,
+      "lines": "82-131",
+      "authority": "Whole file/diagnostic sorting."
+    },
+    {
+      "path": "crates/vize/src/commands/lint.rs",
+      "git_blob": "1a7cbc285ad5af7e844d0e4369e709bdeafcc7c8",
+      "sha256": "033fd1d8dcf0b5f64c2e0d07c2073801dc2954bf26facb751da87a9d7a4bd755",
+      "bytes": 13123,
+      "lines": "69-84,185-215,345-354",
+      "authority": "Default happy-path preset, full help, complete JSON output and exit status."
+    },
+    {
+      "path": "crates/vize_patina/src/output/json.rs",
+      "git_blob": "b91c9d7a73bc1bfb1618d25f4ec09344d45dd3e1",
+      "sha256": "32937f0714c101c226814a2fe3c3a3ae7aadab54a289aafcbe84809b7f146fdc",
+      "bytes": 2810,
+      "lines": "11-81",
+      "authority": "Every serialized file and diagnostic field, severity encoding and no terminal LF."
+    },
+    {
+      "path": "crates/vize_patina/src/output/shared.rs",
+      "git_blob": "d2e6035accdb173b993e324b0f009d1defcc6538",
+      "sha256": "5c41a5fb774e5acdeff210a2620abb727bdadcbcaafd0ae9ea0f35fd4b299e43",
+      "bytes": 7473,
+      "lines": "7-26,97-124,163-235",
+      "authority": "Ecosystem docs path and one-based source locations."
+    },
+    {
+      "path": "crates/vize/src/commands/lint/collect.rs",
+      "git_blob": "2ef25ec2283b2c2d222ae11f3deef4a3f8416224",
+      "sha256": "00d7ac71124476f75b3185b4591b55c1094db777203004a84f73e00f222eacb6",
+      "bytes": 10840,
+      "lines": "42-106,239-284",
+      "authority": "Both original globs enumerate all supplied Vue/TS source rows with relative paths."
+    },
+    {
+      "path": "crates/vize_patina/src/rule/happy_path.rs",
+      "git_blob": "2995d91b810bcd47e04a8f13ce6e7ee7c6d845df",
+      "sha256": "a067b0e7c336c273406ad4937d99068d044cb3b2256e32210039b267c68ce73c",
+      "bytes": 7185,
+      "lines": "10-114",
+      "authority": "Whole default lint pipeline remains enabled; no rule or output filtering."
+    },
+    {
+      "path": "crates/vize_patina/src/diagnostic/types.rs",
+      "git_blob": "ee72cda3f3047fd84b22f34ac7d67e196e2d665a",
+      "sha256": "a47ef156ff0078b7a4e873a68fc239550ff28ba1faa40ad0d665043cab45a040",
+      "bytes": 8296,
+      "lines": "246-254",
+      "authority": "Message prefix [vize:RULE]."
+    },
+    {
+      "path": "crates/vize_patina/src/diagnostic/formatting.rs",
+      "git_blob": "24846603154c852ad326fc9848abfffa4fc7b239",
+      "sha256": "42793dda2b251b2fa9048bce99280def9c3ca6c85eb60f32dd57c453a03fce82",
+      "bytes": 7532,
+      "lines": "177-227",
+      "authority": "Plain-text help strips inline-code backticks."
+    }
+  ],
+  "diagnostic_spans": [
+    {
+      "case": "installed-app-reachability",
+      "file": "src/components/UserLink.vue",
+      "start": 197,
+      "end": 199,
+      "slice": "[]",
+      "ruleId": "ecosystem/vue-router-param-type",
+      "line": 5,
+      "column": 48,
+      "endLine": 5,
+      "endColumn": 50
+    },
+    {
+      "case": "installed-app-reachability",
+      "file": "src/navigation.ts",
+      "start": 88,
+      "end": 102,
+      "slice": "\"preview-only\"",
+      "ruleId": "ecosystem/vue-router-unknown-route",
+      "line": 3,
+      "column": 21,
+      "endLine": 3,
+      "endColumn": 35
+    },
+    {
+      "case": "installed-app-reachability",
+      "file": "src/RouteView.vue",
+      "start": 113,
+      "end": 133,
+      "slice": "\"route-view-unknown\"",
+      "ruleId": "ecosystem/vue-router-unknown-route",
+      "line": 4,
+      "column": 21,
+      "endLine": 4,
+      "endColumn": 41
+    },
+    {
+      "case": "direct-router-controls",
+      "file": "src/direct.ts",
+      "start": 107,
+      "end": 127,
+      "slice": "\"absent-destination\"",
+      "ruleId": "ecosystem/vue-router-unknown-route",
+      "line": 3,
+      "column": 21,
+      "endLine": 3,
+      "endColumn": 41
+    },
+    {
+      "case": "direct-router-controls",
+      "file": "src/direct.ts",
+      "start": 152,
+      "end": 158,
+      "slice": "\"user\"",
+      "ruleId": "ecosystem/vue-router-missing-param",
+      "line": 4,
+      "column": 21,
+      "endLine": 4,
+      "endColumn": 27
+    },
+    {
+      "case": "direct-router-controls",
+      "file": "src/direct.ts",
+      "start": 210,
+      "end": 215,
+      "slice": "extra",
+      "ruleId": "ecosystem/vue-router-extra-param",
+      "line": 5,
+      "column": 48,
+      "endLine": 5,
+      "endColumn": 53
+    },
+    {
+      "case": "direct-router-controls",
+      "file": "src/direct.ts",
+      "start": 269,
+      "end": 271,
+      "slice": "[]",
+      "ruleId": "ecosystem/vue-router-param-type",
+      "line": 6,
+      "column": 43,
+      "endLine": 6,
+      "endColumn": 45
+    },
+    {
+      "case": "ssr-memory-installed",
+      "file": "src/App.vue",
+      "start": 169,
+      "end": 189,
+      "slice": "\"absent-destination\"",
+      "ruleId": "ecosystem/vue-router-unknown-route",
+      "line": 5,
+      "column": 21,
+      "endLine": 5,
+      "endColumn": 41
+    },
+    {
+      "case": "two-independent-apps",
+      "file": "src/alpha/App.vue",
+      "start": 171,
+      "end": 182,
+      "slice": "\"beta-home\"",
+      "ruleId": "ecosystem/vue-router-unknown-route",
+      "line": 5,
+      "column": 21,
+      "endLine": 5,
+      "endColumn": 32
+    },
+    {
+      "case": "two-independent-apps",
+      "file": "src/beta/App.vue",
+      "start": 170,
+      "end": 182,
+      "slice": "\"alpha-home\"",
+      "ruleId": "ecosystem/vue-router-unknown-route",
+      "line": 5,
+      "column": 21,
+      "endLine": 5,
+      "endColumn": 33
+    },
+    {
+      "case": "independent-project-alpha",
+      "file": "src/App.vue",
+      "start": 171,
+      "end": 182,
+      "slice": "\"beta-home\"",
+      "ruleId": "ecosystem/vue-router-unknown-route",
+      "line": 5,
+      "column": 21,
+      "endLine": 5,
+      "endColumn": 32
+    },
+    {
+      "case": "independent-project-beta",
+      "file": "src/App.vue",
+      "start": 170,
+      "end": 182,
+      "slice": "\"alpha-home\"",
+      "ruleId": "ecosystem/vue-router-unknown-route",
+      "line": 5,
+      "column": 21,
+      "endLine": 5,
+      "endColumn": 33
+    },
+    {
+      "case": "shared-component-two-apps",
+      "file": "src/SharedLink.vue",
+      "start": 256,
+      "end": 258,
+      "slice": "[]",
+      "ruleId": "ecosystem/vue-router-param-type",
+      "line": 6,
+      "column": 49,
+      "endLine": 6,
+      "endColumn": 51
+    },
+    {
+      "case": "shared-component-two-apps",
+      "file": "src/SharedLink.vue",
+      "start": 317,
+      "end": 322,
+      "slice": "extra",
+      "ruleId": "ecosystem/vue-router-extra-param",
+      "line": 7,
+      "column": 53,
+      "endLine": 7,
+      "endColumn": 58
+    }
+  ]
+}
