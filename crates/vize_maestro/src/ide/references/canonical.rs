@@ -64,7 +64,8 @@ pub(super) async fn references(
     } else {
         corsa_support::open_canonical_virtual_workspace_document(ctx, bridge).await?
     };
-    let (line, character) = match corsa_support::component_attribute_position(ctx, &document) {
+    let attribute = corsa_support::component_attribute_position(ctx, &document);
+    let (line, character) = match attribute {
         Some(Some(position)) => position,
         Some(None) => return Some(Vec::new()),
         None => corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?,
@@ -78,9 +79,11 @@ pub(super) async fn references(
             .await;
     locations.extend(prop_locations);
     let mut linked = linked_positions(&document, &locations);
-    linked.extend(corsa_support::materialized_semantic_positions(
-        &document, ctx.uri, ctx.offset,
-    ));
+    if attribute.is_none() {
+        linked.extend(corsa_support::materialized_semantic_positions(
+            &document, ctx.uri, ctx.offset,
+        ));
+    }
     linked.remove(&corsa_support::CanonicalSemanticPosition {
         request_uri: document.request_uri.clone(),
         line,

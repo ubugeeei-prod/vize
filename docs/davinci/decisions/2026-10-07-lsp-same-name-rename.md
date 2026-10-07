@@ -38,3 +38,54 @@ qualification obligations. No issue-completion, latency or typecheck speed
 claim follows from this preparation. #4075's standard tsgo Content Mapper lane
 still requires upstream support; the existing Vize bridge variants remain
 covered independently.
+
+## Mixed property and value roles
+
+An actual source-built native stdio control on #8181 head
+`dff7005a7a628541cd0922b48ccfb97cc7d6fa5f` confirmed that one transaction's
+property role cannot classify every selected shorthand. Renaming Child's public
+`id` declaration selected its intrinsic `<input :id>` value and Parent's
+`<Child :id>` key together. The global role changed both to `:field="id"`,
+leaving a stale Child value and a complete TS2339 diagnostic. A Parent attribute
+query additionally followed its implicit value into the unrelated Parent local
+declaration. All eight inline/alias, LF/CRLF and public-direction controls
+retained these complete failing transactions; four local-direction controls
+passed. Applying the complete expected sources in all twelve same-process
+controls returned empty diagnostic arrays. These are predecessor receipts,
+not qualification of the correction. A separate exact `c86c7a21` main producer
+with the same lock, Rust 1.98 and default/native/glyph envelope reproduced the
+identical three unsafe inline-declaration edits and TS2339; the complete expected
+sources returned empty diagnostics in that same session. Release promotion of
+that candidate remains held until corrective delivery and fresh full gates.
+
+Retain each definition-verified `VueComponentPropNavigation` endpoint's mapped
+authored argument geometry. A native-selected shorthand changes its public key
+only when that occurrence matches a resolved endpoint's URI and exact range;
+all other selected occurrences preserve their argument and rename the implicit
+value. Prefer the producer's public endpoint for component attribute queries,
+and use resolved endpoints for materialized property identities rather than
+querying the distinct value identity at the same authored token. This retains
+full result vectors without a spelling sweep, DOM-name heuristic or dropping
+the selected value edit. Existing scope admission and whole-edit refusal remain.
+
+The original reporter fixtures and four original stdio controls remain exact.
+Supplemental inline, alias, interface and withDefaults controls require full
+LF/CRLF reference and edit vectors from both public directions and the Parent
+local declaration, application of the actual returned edits, unchanged opposite
+local roles and empty diagnostics in both files. Fresh exact-head source Actions,
+native qualification, protected queue execution, actual merge and release are
+required. The remaining #7994/#7996/#8011/#8010 obligations stay open.
+
+## Actual Stack delivery
+
+GitHub native Stack #8184 contains #8166 at position 1 and #8181 at position 2.
+#8166 actually merged at `2026-10-07T09:21:40Z` as
+`8bc19f1c15233fccef229b2fa9044ac62fed8ff2`. Child #8181 remained open after
+its queue Check `37595968204` failed because Rust shard 1's completed 4,277-test
+results upload stalled and exceeded the unchanged twenty-minute job timeout.
+This is observed partial-prefix delivery, not atomic all-or-nothing merging.
+The child was refreshed onto actual `main` as `dff7005`, retained Stack position
+2, and completed source Check `37600083478` and native phases `37600082576`.
+Those green predecessor runs do not qualify the mixed-role correction. Every
+layer's actual `mergedAt` and merge commit must be verified independently; Stack
+membership, queue admission and green source checks alone are not completion.

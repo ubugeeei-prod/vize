@@ -126,8 +126,13 @@ async fn rename_strict_inner(
     } else {
         component_props.authored_definition_positions(ctx, &document)
     };
-    let property_rename =
-        !component_props.positions.is_empty() && !same_name_bindings::is_binding_declaration(ctx);
+    let property_arguments = if same_name_bindings::is_binding_declaration(ctx) {
+        Vec::new()
+    } else {
+        component_props.authored_arguments(ctx, &document).ok_or(
+            CanonicalFailure::UnmappedResponse("component prop argument"),
+        )?
+    };
     let component_prop_positions = component_props
         .positions
         .iter()
@@ -168,9 +173,14 @@ async fn rename_strict_inner(
         .as_ref()
         .map(|response| linked_positions(&document, response))
         .unwrap_or_default();
-    linked.extend(corsa_support::materialized_semantic_positions(
-        &document, ctx.uri, ctx.offset,
-    ));
+    // An attribute's producer key already selects its native identity. Its
+    // shorthand value shares the authored token but is a separate symbol.
+    // Public-key endpoints below cover matching materialized identities.
+    if attribute.is_none() {
+        linked.extend(corsa_support::materialized_semantic_positions(
+            &document, ctx.uri, ctx.offset,
+        ));
+    }
     linked.extend(definition_positions);
     linked.extend(component_props.positions);
     if matches!(rename_kind, Some(event_rename::RenameKind::Model))
@@ -268,7 +278,7 @@ async fn rename_strict_inner(
     record(&mut trace, || CanonicalRenameStage::Complete);
     Ok(Answer::Available(
         corsa_support::merge_canonical_workspace_edits(mapped).and_then(|mut edit| {
-            (same_name_bindings::rewrite(ctx, &document, &mut edit, new_name, property_rename)
+            (same_name_bindings::rewrite(ctx, &document, &mut edit, new_name, &property_arguments)
                 && (!ctx.state.patterned_template_enabled()
                     || patterns::rewrite_shorthand_bindings(ctx, &document, &mut edit, new_name))
                 && same_name_bindings::coherent(&edit))

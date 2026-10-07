@@ -6,6 +6,7 @@ use vize_l0::{FxHashMap, FxHashSet, String};
 use super::{CanonicalVirtualDocument, location_matches_uri};
 use crate::ide::diagnostics::VirtualTsResult;
 
+mod component_arguments;
 mod component_props;
 
 pub(crate) use component_props::{

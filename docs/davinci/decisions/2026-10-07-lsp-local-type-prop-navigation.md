@@ -36,3 +36,20 @@ alias chains, inherited/mapped/conditional properties, imported ownership,
 shorthand reactive prop alias parity (#7996), event/slot linkage and #4075's
 standard upstream Content Mapper lane remain independent obligations. This
 slice does not close all of #8011 and makes no measured speed claim.
+
+## Mixed-role qualification and delivery
+
+The source-built `dff7005` service accepted eight unsafe mixed-role transactions
+across inline/local-alias props, LF/CRLF and declaration/attribute directions.
+The supplemental [same-name decision](./2026-10-07-lsp-same-name-rename.md)
+records whole original receipts, per-occurrence endpoint custody, unchanged
+original fixtures and mandatory full reference/rename/post-edit vectors.
+Interface and withDefaults forms extend the correction's qualification without
+claiming completion before new Actions and protected execution pass.
+
+Stack #8184 delivered only parent #8166 at `2026-10-07T09:21:40Z`, commit
+`8bc19f1c15233fccef229b2fa9044ac62fed8ff2`; the child results-upload timeout
+left #8181 open. Its refreshed `dff7005` source is based on actual main and still
+occupies native Stack position 2. Submission of the Stack prefix did not prove
+atomic completion. Verify the child's fresh exact-head gates, native membership,
+protected candidate and actual merge receipt before claiming delivery.
