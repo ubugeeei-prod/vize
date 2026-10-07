@@ -654,6 +654,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     src,
                     check_props && !legacy_vue2,
                     &mut semantic_links,
+                    template_ref_unwraps.props_shadow_anchor(),
                 )
             });
             if options_api {

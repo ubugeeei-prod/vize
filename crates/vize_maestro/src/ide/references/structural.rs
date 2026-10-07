@@ -157,34 +157,6 @@ pub(super) fn references(ctx: &IdeContext<'_>, include_declaration: bool) -> Opt
     Some(spans.into_iter().map(|span| location(ctx, span)).collect())
 }
 
-/// Canonical macro aliases can map the template use while omitting its authored
-/// binding declaration. Add declarations only after an exact lexical occurrence
-/// agrees with the canonical result; spelling alone never joins symbol groups.
-#[cfg(feature = "native")]
-pub(super) fn missing_canonical_declarations(
-    ctx: &IdeContext<'_>,
-    canonical: &[Location],
-) -> Vec<Location> {
-    let Some(entries) = resolve(ctx, None) else {
-        return Vec::new();
-    };
-    if !entries.iter().any(|entry| {
-        !entry.declaration
-            && entry
-                .authored
-                .is_some_and(|span| canonical.contains(&location(ctx, span)))
-    }) {
-        return Vec::new();
-    }
-    entries
-        .into_iter()
-        .filter(|entry| entry.declaration)
-        .filter_map(|entry| entry.authored)
-        .map(|span| location(ctx, span))
-        .filter(|declaration| !canonical.contains(declaration))
-        .collect()
-}
-
 pub(in crate::ide) fn rename(
     ctx: &IdeContext<'_>,
     new_name: &str,

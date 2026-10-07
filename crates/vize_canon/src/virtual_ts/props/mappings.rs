@@ -96,6 +96,16 @@ impl<'a> PropBindingMappings<'a> {
         });
     }
 
+    /// The existing setup/template shadow edge also joins the props object.
+    /// Endpoints are recorded during emission, never inferred from spelling.
+    pub(super) fn link_setup_shadow(&mut self, source: Range<usize>, target: Range<usize>) {
+        self.semantic_links.push(VizeSemanticLink {
+            source_range: source,
+            target_range: target,
+            kind: VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
+        });
+    }
+
     fn authored_name_range(&self, name: &str) -> Option<Range<usize>> {
         let script = self.script_content?;
         let (start, end) = self.summary.macros.prop_declaration(name)?;

@@ -252,3 +252,12 @@ script-setup local symbol group; unrelated names and cross-file scope are not
 joined. The unchanged full n8n inputs now also check the false toggle. Both
 toggles, subsequent navigation, dirty diagnostics and repair require a fresh
 source run; the failed run grants no completed runtime credit.
+
+The first lexical supplement did not repair the source packet. Inspection of
+the complete virtual TypeScript confirmed separate original and synthetic
+`props` symbols. The final correction records their existing setup/template
+shadow edge at emission, from the existing pre-template anchor to the generated
+props declaration. It adds no parse, pipeline stage, code bytes or enum kind;
+the ineffective supplement is removed. The exact oracle queries both original
+script and template positions under both reference toggles. Fresh source
+execution remains required.

@@ -159,6 +159,7 @@ pub(crate) fn generate_props_variables(
     binding_mappings: &mut PropBindingMappings<'_>,
     summary: &Croquis,
     check_props: bool,
+    props_shadow_anchor: Option<&std::ops::Range<usize>>,
 ) {
     let model = TemplatePropsModel::new(summary);
     if !model.declares_props {
@@ -179,10 +180,15 @@ pub(crate) fn generate_props_variables(
 
     ts.push_str("  // Props are available in template as variables\n");
     ts.push_str("  // Access via `propName` or `props.propName`\n");
+    let props_start = ts.len() + "  const ".len();
     append!(
         *ts,
         "  const props: {template_props_type_ref} = {{}} as {template_props_type_ref};\n"
     );
+    if let Some(anchor) = props_shadow_anchor {
+        binding_mappings
+            .link_setup_shadow(anchor.clone(), props_start..props_start + "props".len());
+    }
     ts.push_str("  void props; // Mark as used to avoid TS6133\n");
 
     let mut emitted_names = FxHashSet::default();
