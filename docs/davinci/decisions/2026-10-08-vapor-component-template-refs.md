@@ -66,3 +66,16 @@ operation path without a second ref lookup. `ref_for`/`ref_key` alone and a
 computed argument named `ref` do not admit the setter. The existing extractor still scans admitted ref-bearing props and owns their
 selection. No allocation or separate stage is introduced; mapped/raw source
 and hosted runtime qualification remain pending.
+
+The local child now genuinely descends from the refreshed published parent
+`20311a900c3c36e122f0b7faefb2186276dbe951`, after Rust #8195 actually merged
+`011d36439050dd0f5fa7113da7152205bd43ea15`. Rebase only regenerated the derived
+compiler inventory. The component-ref production delta remains exactly the
+reviewed c62 delta; the incoming actual #8133 event-name helper is retained
+separately. All authored sources, expected packets and runtime/map helpers are
+byte-identical to the reviewed local child, as are all original parent and ref
+fixtures. The independently pinned stock-only six mounts and eighteen frames
+remain control observations, not Vize qualification. Keep the child unpublished
+until this actual parent head qualifies, then publish a native Stack child
+without waiting for the parent's actual merge. Current paired Vize mounts/maps,
+fresh source Actions and protected original instruction gates remain pending.
