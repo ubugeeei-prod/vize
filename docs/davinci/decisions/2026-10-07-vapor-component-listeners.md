@@ -240,3 +240,18 @@ and consumed scalar widths. Use standard borrowed `split_at` prefixes/suffixes
 with exactly the same boundaries; no lint allowance, fallback, extra scan,
 parser or change to any full expected name is introduced. Current execution
 and instruction acceptance remain pending the corrected source.
+
+Corrected source `c2abcf54` passed the single existing instruction dispatch
+37670159030, job 112959572681. All three original lowering measurements are
+75,014, below the unchanged 76,975 cap; all 100 plus four formatter rows
+fit their original ceilings with exact input/window/methodology identities.
+This is whole-source measurement, not an isolated helper speed ratio.
+
+Its tooling job 112960243327 in Check 37670168929 then failed only the
+observational directive import table: source `v_on.rs` now has one L0 import,
+while the table still expected two. The removed production utility import
+now belongs to test code. Record the actual source count one and both test
+rows at one, retaining exact preferred-name counts and zero compatibility
+imports for every path. The existing table law passes locally. Production,
+whole-name laws, originals, runtime expectations and every ceiling are byte-exact
+to measured `c2abcf54`; fresh source tests and protected delivery remain required.
