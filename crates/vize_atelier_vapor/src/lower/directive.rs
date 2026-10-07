@@ -79,7 +79,13 @@ pub(crate) fn transform_directive<'a>(
                         return;
                     }
 
-                    let key_content = super::merged_props::static_key(ctx, dir, key_exp.content);
+                    let key_content = super::merged_props::static_key(
+                        ctx,
+                        dir,
+                        key_exp.content,
+                        has_camel,
+                        has_prop,
+                    );
                     let key_node = SimpleExpressionNode::new(
                         key_content,
                         key_exp.is_static,

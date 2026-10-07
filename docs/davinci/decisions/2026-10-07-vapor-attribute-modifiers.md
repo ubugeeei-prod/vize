@@ -7,6 +7,10 @@ position whenever a force modifier prevents native admission.
 Keep forced attribute keys in the runtime's existing `^key` representation and
 consume that prefix before selecting `setAttr`. `.prop` retains `setDOMProp` and
 wins when both force modifiers occur. The public IR layout stays unchanged.
+Keep the retained static camel-key conversion byte-for-byte, including trailing
+hyphens and punctuation; the force-key helper reuses the already computed camel
+and prop flags. Replacing that conversion with the general utility would change
+unrelated keys, so its original implementation remains in this slice.
 For a DOM element that mixes an object with static `.attr`/`.prop` bindings,
 retain every attribute in the existing ordered merged-prop operation; forced
 keys use the runtime's `^key`/`.key` vocabulary. The selected native emitter

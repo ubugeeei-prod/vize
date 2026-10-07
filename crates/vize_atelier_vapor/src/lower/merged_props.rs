@@ -144,33 +144,56 @@ pub(super) fn transform<'a>(
     );
 }
 
-/// Keep forced attribute names in the runtime's existing `^key` vocabulary.
+/// Preserve retained camel keys and use the runtime's existing `^key` vocabulary.
 /// `.prop` wins if both force modifiers are authored, as in Vue's transform.
 pub(super) fn static_key<'a>(
     ctx: &mut TransformContext<'a>,
     dir: &DirectiveNode<'a>,
     name: &'a str,
+    camel: bool,
+    prop: bool,
 ) -> &'a str {
-    let name = if dir
-        .modifiers
-        .iter()
-        .any(|modifier| modifier.content == "camel")
-    {
-        ctx.interner.intern(&vize_carton::camelize(name))
+    let name = if camel {
+        ctx.interner.intern(&camelize(name))
     } else {
         name
     };
-    if dir
-        .modifiers
-        .iter()
-        .any(|modifier| modifier.content == "attr")
-        && !dir
+    if !prop
+        && dir
             .modifiers
             .iter()
-            .any(|modifier| modifier.content == "prop")
+            .any(|modifier| modifier.content == "attr")
     {
         ctx.interner.intern(&vize_carton::cstr!("^{name}"))
     } else {
         name
+    }
+}
+
+/// Retain the existing static camel spelling, including punctuation and tails.
+fn camelize(s: &str) -> vize_carton::String {
+    let mut result = vize_carton::String::default();
+    let mut capitalize_next = false;
+    for c in s.chars() {
+        if c == '-' {
+            capitalize_next = true;
+        } else if capitalize_next {
+            result.push(c.to_ascii_uppercase());
+            capitalize_next = false;
+        } else {
+            result.push(c);
+        }
+    }
+    result
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn retained_static_camel_key_spelling() {
+        assert_eq!(
+            ["view-box", "foo-", "a--b", "foo-.bar"].map(super::camelize),
+            ["viewBox", "foo", "aB", "foo.bar"].map(vize_carton::String::from)
+        );
     }
 }
