@@ -27,3 +27,8 @@ one additive SFC corpus case and preserve every prior source/reference byte.
 Fresh exact-head source/full corpus and protected Actions must pass before
 root-owned Stack-prefix queue admission and actual merge. Public installed
 release verification remains separate until a release includes the fix.
+
+The initial `10cbbf6d` source Check (37651827449, job 112896841289)
+rejected a missing generated preferred-L0 row for the new compact-string
+public test helper. Regenerate that exact formatter inventory row; preserve
+all production and original/reference bytes and require fresh Actions.
