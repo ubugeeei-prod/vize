@@ -93,3 +93,25 @@ fresh qualification. The earlier shell-quote fix is actual, but its green
 result does not accept this new advisory or the changed CSS source. Native
 Stack membership and protected actual delivery remain pending. #7989 stays
 open; no installed, native, history or performance completion is claimed.
+
+The [first hosted correction](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6033486602)
+retains failed `d5f3659549`/Check37588634096. Tooling rejects one new CLI
+legacy-storage import and css.rs606 versus its original605-line ratchet.
+The CLI now uses identical L0 reexports. A move-only commit relocates the
+entire old disable_tests module and its identical snapshot; the formatted
+whole inverse restores every old byte/name. The production file shrinks to
+424 lines and the moved test file is177, without increasing a limit.
+The new CLI physical pin guard also used one excess parent directory:
+CARGO_MANIFEST_DIR at crates/vize reaches workspace tests via ../../;
+compile-time includes retain their correct independent ../../../ relation.
+Only the physical constant changes; every pin and full comparison remains.
+
+Authenticated d5 artifacts prove all17 complete CSS service comparisons,
+all42 parent API and all42 parent CLI observations, including the whole
+original zero report. Four official ZIP size/digest/CRC checks and literal
+synthetic20c859/source-d5 whole-tree equality bind that evidence. The own18
+CLI observations remain unexecuted because their guard failed first.
+These scoped observations do not accept the failed aggregate, the current
+successor, protected instruction gates or installed distribution. Current
+SDK remediation, fresh full source proof and actual Stack delivery remain
+required, with every original/control oracle and budget unchanged.

@@ -3,9 +3,9 @@
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{fs, path::Path, process::Command};
-use vize_carton::{String, append, cstr};
+use vize_l0::{String, append, cstr};
 
-const FIXTURE: &str = "../../../tests/_fixtures/differential/linter/css-value-tokens-7989/";
+const FIXTURE: &str = "../../tests/_fixtures/differential/linter/css-value-tokens-7989/";
 const CASES: &str =
     include_str!("../../../tests/_fixtures/differential/linter/css-value-tokens-7989/cases.json");
 const CONFIG: &str = include_str!(
