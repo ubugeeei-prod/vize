@@ -7,7 +7,10 @@ const AUTHORITY: &str = include_str!(
 );
 
 fn digest(bytes: &[u8]) -> std::string::String {
-    format!("{:x}", Sha256::digest(bytes))
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
 }
 
 pub fn current_reference(
