@@ -1,0 +1,7 @@
+Patina lint report: 1 warning in 2 files
+
+MyBadgeB.vue
+  MyBadgeB.vue:2:7 warning script/define-props-destructuring Avoid destructuring the return value of defineProps().
+    Reference: docs/content/rules/type-and-script.md
+    Help:
+      Assign props to a single binding and access props.foo to follow the configured style preference.
