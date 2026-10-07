@@ -130,7 +130,8 @@ fn retained_native_process_preserves_whole_noop_leaf_shared_inverse_and_shutdown
     .unwrap();
     let revised_session = complete_check(&bridge, root.path(), &fixture["expected"]);
     let revised_life = control::native_lsp(root.path(), &native);
-    assert_ne!(revised_session.0, session.0);
+    // Server-generated API IDs need the physical process to identify an owner.
+    assert_ne!((&revised_session.0, &revised_life), (&session.0, &life));
     let mut revised_options = session.1.clone();
     revised_options["noUnusedLocals"] = serde_json::json!(true);
     assert_eq!(revised_session.1, revised_options);
@@ -142,7 +143,10 @@ fn retained_native_process_preserves_whole_noop_leaf_shared_inverse_and_shutdown
     std::fs::write(root.path().join("tsconfig.json"), &config).unwrap();
     let inverse_session = complete_check(&bridge, root.path(), &fixture["expected"]);
     let inverse_life = control::native_lsp(root.path(), &native);
-    assert_ne!(inverse_session.0, revised_session.0);
+    assert_ne!(
+        (&inverse_session.0, &inverse_life),
+        (&revised_session.0, &revised_life)
+    );
     assert_eq!(inverse_session.1, session.1);
     assert_ne!(
         (inverse_life.pid, inverse_life.birth),

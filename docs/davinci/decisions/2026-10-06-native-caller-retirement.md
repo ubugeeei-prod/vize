@@ -114,3 +114,14 @@ identity for both admitted versions before the Linux physical controls run.
 No grammar extension, runtime credit for refused bytes, input/cap reduction or
 legacy replacement is part of this correction; current native/protected/actual
 delivery remains unfinished.
+
+The [physical-owner correction](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6047965780) retains server-generated opaque
+API session IDs and qualifies cross-process comparisons with the complete
+executable/PID/kernel-birth life. The admittedbbd3 configuration case failed
+because distinct process observations can both return api-session-1; no complete
+configuration-inverse qualification is credited. Keep explicit different PID/birth,
+old-life reaping, whole effective options, exact inverses and same-owner no-ops.
+The two additive native workflow prefixes exit on their first failed cargo status;
+all original command/phase/receipt bytes and the350-row ceiling stay unchanged.
+This correction changes no production source, original fixture/answer or cap.
+Fresh exact-head native/full/protected execution and actual delivery remain pending.
