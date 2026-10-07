@@ -131,7 +131,7 @@ impl<'a> GenerateContext<'a> {
     }
 
     /// Resolve a name through active loop/slot scopes and prop metadata.
-    pub(super) fn resolve_scope_binding(&self, name: &str) -> Option<String> {
+    pub(super) fn resolve_scope_binding_inner(&self, name: &str) -> Option<String> {
         // Innermost scope first. Loop and slot scopes interleave, so a slot
         // parameter declared inside a loop shadows the loop's alias.
         let (mut loops, mut slots) = (self.for_scopes.len(), self.slot_scopes.len());

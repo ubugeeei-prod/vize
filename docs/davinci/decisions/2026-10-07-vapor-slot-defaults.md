@@ -79,3 +79,31 @@ Before publication, incorporate actual signed main
 `40970cc555968bb6d41bd7b93a55f10f2af228ec`, retaining the same complete owned
 product and fixture bytes. Apply the approved common decision record exactly;
 the resulting candidate requires its own source Actions and protected checks.
+
+Source `3e518991644f369d6016b3bef66841df63f56c7d` passed the original two-SFC
+runtime and seven authored controls, preserving all 58 phases under stock
+Vue 3.6.0-rc.9. Protected candidate
+`1a9b7f1654462485548990e8407bbf6ad0427fa0` then exceeded the unchanged Vapor
+lowering ceiling (77,267 > 76,975) and interpolation ceiling
+(5,340,780 > 5,340,048), alongside three Croquis ceilings, and was removed
+from the queue. Preserve those actual failures separately from source success.
+
+The corrective source merges genuine signed main
+`eed471b4424b922b878bc35cac765dc7274e5736`, retaining its complete approved
+350-line decision record and every original source, module, runtime expectation
+and registry entry. The original resolver body, including slot default read
+overrides and interleaved scope precedence, remains byte for byte unchanged
+under a renamed internal method. A small inline wrapper returns the same `None`
+when binding metadata is absent and both existing scope stacks are empty.
+Every other case calls the unchanged body; no modifier feature, new parse,
+pipeline stage, source scan, allocation or instruction ceiling is introduced.
+
+The same scope wrapper is part of separately tested PR #8172 source
+`0e79c0e452c95177b39a73a07a56e7a4cd563e08`, whose single authorized hosted
+instruction run `37644431734` passes all 100 ceilings with three identical
+executions, and whose native run `37644430713` succeeds. Those are whole-source
+results for that PR; they do not qualify this refreshed source or attribute
+its performance to the wrapper alone. Fresh exact-head Actions and protected
+measurement remain required here. Original rc.10 installed execution, Vize VDOM
+default initializer ownership, actual merge and released verification retain
+their unfinished status.
