@@ -10,11 +10,13 @@ impl EditorLspSession {
     pub(super) fn ready_document_uri(&mut self, document_uri: &str) -> Result<Uri, String> {
         let uri = self.document_uri(document_uri)?;
         self.ready_generation_barrier(Some(document_uri))?;
+        crate::corsa_bridge::native_operation::checkpoint()?;
         Ok(uri)
     }
 
     pub(super) fn ready_workspace_request(&mut self) -> Result<(), String> {
-        self.ready_generation_barrier(None)
+        self.ready_generation_barrier(None)?;
+        crate::corsa_bridge::native_operation::checkpoint()
     }
 
     fn ready_generation_barrier(&mut self, query_document: Option<&str>) -> Result<(), String> {
@@ -53,6 +55,7 @@ impl EditorLspSession {
             &readiness_uris,
         )
         .map_err(|error| cstr!("Failed to establish editor LSP generation readiness: {error}"))?;
+        crate::corsa_bridge::native_operation::checkpoint()?;
         phase.finish();
         self.dirty_documents.clear();
         self.query_barrier_required = false;
