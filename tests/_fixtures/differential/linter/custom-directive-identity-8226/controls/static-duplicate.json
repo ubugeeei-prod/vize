@@ -6,8 +6,18 @@
   "expected": {
     "filename": "static-duplicate.vue",
     "errorCount": 1,
-    "warningCount": 0,
+    "warningCount": 1,
     "diagnostics": [
+      {
+        "rule": "parser/template",
+        "severity": "Warning",
+        "message": "Duplicate attribute `id`. Keeping the repeated attribute so parsing can continue.",
+        "start": 12,
+        "end": 14,
+        "help": null,
+        "labels": [],
+        "fix": null
+      },
       {
         "rule": "vue/no-duplicate-attributes",
         "severity": "Error",

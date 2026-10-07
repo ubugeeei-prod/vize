@@ -5,7 +5,7 @@ use serde_json::{Value, json};
 use std::{fs, path::Path};
 use vize_l0::{String, cstr};
 use vize_patina::rules::vue::NoDuplicateAttributes;
-use vize_patina::{LintResult, Linter, Severity, rule::RuleRegistry};
+use vize_patina::{LintResult, Linter, RuleRegistry, Severity};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -80,7 +80,7 @@ fn complete_custom_and_historical_directive_packets_match_the_corpus() {
             }));
             let linter = Linter::with_registry(registry);
             let filename = cstr!("{id}.vue");
-            let result = linter.lint_template_rules_only(&case.source, &filename);
+            let result = linter.lint_template(&case.source, &filename);
             assert_eq!(complete(&result), case.expected, "{id}");
         }
     }
