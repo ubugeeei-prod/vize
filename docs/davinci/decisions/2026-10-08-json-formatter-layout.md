@@ -24,6 +24,8 @@ References were independently captured with cached Oxfmt 0.63.0, with
 passes and strict JSON value preservation; CLI tests check read-only verdicts,
 written bytes and the subsequent passing check. Existing BOM and JSONC corpus
 inputs remain intact while compact-output expectations follow this correction.
+The existing CLI package JSON case also retains its original input and command,
+with the complete compact output following the same generic JSON layout.
 
 The complete original JSON unit-test witness remains an immutable source asset.
 All twenty-two live law inputs remain original, including the minified custom
