@@ -195,6 +195,8 @@ Settings are passed through `settings.vize`:
   The configuration helpers still default to the `"general-recommended"` bundle.
 - `incremental` runs only the rules you explicitly configure.
 - `rules` accepts rule names (with or without the `vize/` prefix) or an Oxlint rule map.
+  A map with `vize/` keys selects only those entries; a native map supports
+  `vue/`, `script/`, `css/`, `style/`, `type/`, `nuxt/`, and `ecosystem/` names.
   It batches matching rules into one native lint call per file. Oxlint's top-level `rules`
   still controls which diagnostics are reported and their severity.
 - `all` is accepted as a settings alias for `incremental`; use `configs.all` or

@@ -8,7 +8,8 @@ Its rule map includes native options, so batching names alone would leave some
 rules on a separate path.
 
 `settings.vize.rules` is an optional batching hint: either native/plugin rule
-names or an Oxlint rule map. A map carries supported rule options into the
+names or an Oxlint rule map. Plugin-prefixed maps select only `vize/` entries;
+native maps also support the canonical `css/` namespace. A map carries supported rule options into the
 same native call. Oxlint retains reporting, severity, and override authority;
 rules omitted from the hint or using different options take the existing
 individual path. Explicit preset gates retain their existing meaning. When

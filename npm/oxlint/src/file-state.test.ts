@@ -300,3 +300,30 @@ it("a missing runtime preset retains explicit rules outside general-recommended"
     fs.rmSync(root, { force: true, recursive: true });
   }
 });
+
+it("a canonical CSS rule map preserves the native positive diagnostic vector", () => {
+  clearFileStateCache();
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "oxlint-css-map-"));
+  const source = fs.readFileSync(
+    new URL(
+      "../../../tests/_fixtures/differential/linter/oxlint-batched-selection/Css.vue.txt",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const filename = path.join(root, "Css.vue");
+  fs.writeFileSync(filename, source);
+  const rule = "css/no-important";
+  const settings = { preset: "incremental" as const, rules: { [rule]: "error" } };
+  const context = createContext(filename, 'const message = "hello";');
+  Object.assign(context, { settings: { vize: settings } });
+  const expected = binding.lintPatina(source, filename, settings, [rule]).diagnostics;
+  assert.equal(expected.length, 1);
+  assert.equal(expected[0]?.rule, rule);
+  try {
+    assert.deepEqual(getDiagnosticsForRule(context, getFileState(context), rule), expected);
+  } finally {
+    clearFileStateCache();
+    fs.rmSync(root, { force: true, recursive: true });
+  }
+});

@@ -37,7 +37,7 @@ export function parseRuleSelection(rules: PatinaSettings["rules"]): RuleSelectio
       // A complete Oxlint rule map can include core and other-plugin rules.
       if (
         !id.startsWith("vize/") &&
-        (usesPluginIds || !/^(vue|script|style|type|nuxt|ecosystem)\//u.test(id))
+        (usesPluginIds || !/^(vue|script|style|css|type|nuxt|ecosystem)\//u.test(id))
       ) {
         continue;
       }

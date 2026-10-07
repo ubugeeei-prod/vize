@@ -207,3 +207,16 @@ it("complete Oxlint maps select only Vize entries and ignore disabled rules", ()
     attributeHyphenation: "never",
   });
 });
+
+it("canonical CSS map entries join the same selected native batch", () => {
+  emptyNativeResult();
+  const rules = { "css/no-important": "error", "vue/no-v-html": "warn" };
+  const context = contextFor(writeFixture(), { preset: "incremental", rules });
+  const selection = parseRuleSelection(rules)!;
+  assert.deepEqual(selection.names, ["css/no-important", "vue/no-v-html"]);
+  for (const name of selection.names) {
+    assert.deepEqual(getDiagnosticsForRule(context, getFileState(context), name), []);
+  }
+  assert.equal(nativeLint.mock.calls.length, 1);
+  assert.deepEqual(nativeLint.mock.calls[0]?.[3], selection.names);
+});

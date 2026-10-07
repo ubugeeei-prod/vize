@@ -14,3 +14,7 @@ option/config/source invalidation and override/type-aware controls.
 inherited-settings gap: explicit `script/no-options-api` must execute when
 the runtime preset is absent. The authored `essential` preset's gate remains
 an independent negative control in the actual Oxlint integration suite.
+
+`Css.vue.txt` retains a positive `css/no-important` diagnostic for a native
+rule map without plugin prefixes. It must match the complete native vector
+and join the same batch as selected Vue rules.
