@@ -51,16 +51,20 @@ impl BindValue<'_> {
         let Self::Js(js) = self else {
             return self.emit(cx, bind);
         };
-        let raw_source = js_expr_source(js);
+        let padding = authored_value_padding(cx.source, bind, js.source, js.span);
+        let raw_source = if padding.is_some_and(|(_, trailing)| {
+            super::js_comment::authored_line_comments_are_terminated(js.source, trailing)
+        }) {
+            RawJs::Borrowed(js.source)
+        } else {
+            js_expr_source(js)
+        };
         let decoded = raw_source
             .as_str()
             .contains('&')
             .then(|| decode_html_entities(raw_source.as_str()));
         let source = decoded.as_deref().unwrap_or_else(|| raw_source.as_str());
-        let source_root = cx.source;
-        if let Some((leading, trailing)) =
-            authored_value_padding(source_root, bind, raw_source.as_str(), js.span)
-        {
+        if let Some((leading, trailing)) = padding {
             cx.buf.push(leading);
             cx.buf.push(source);
             cx.buf.push(trailing);
