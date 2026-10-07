@@ -467,6 +467,43 @@
           }
         ]
       }
+    },
+    {
+      "id": "original-script-values-resolve-and-genuine-unknowns-remain",
+      "source": "<script setup>const known = 1;</script><art><variant name=\"One\">{{ known }} {{ missing }}</variant><variant name=\"Two\">{{ missing }}</variant></art>",
+      "filename": "Gallery.art.vue",
+      "rules": [
+        "vue/no-undefined-refs"
+      ],
+      "sourceBytes": 148,
+      "sourceSha256": "c8d12d20d258c7cc674e9cf52533ed28db2ac1e2c69dd01ac408ce382ee480e1",
+      "service": {
+        "filename": "Gallery.art.vue",
+        "error_count": 0,
+        "warning_count": 2,
+        "diagnostics": [
+          {
+            "rule_name": "vue/no-undefined-refs",
+            "severity": "warning",
+            "message": "Variable 'missing' is not defined",
+            "start": 79,
+            "end": 86,
+            "help": "Define in <script setup> or ensure it's imported",
+            "labels": [],
+            "fix": null
+          },
+          {
+            "rule_name": "vue/no-undefined-refs",
+            "severity": "warning",
+            "message": "Variable 'missing' is not defined",
+            "start": 122,
+            "end": 129,
+            "help": "Define in <script setup> or ensure it's imported",
+            "labels": [],
+            "fix": null
+          }
+        ]
+      }
     }
   ]
 }
