@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import MyIcon from "./my-icon.vue";
+
+defineArt("./my-button.vue", { title: "MyButton" });
+
+const label = "Save";
+</script>
+
+<art>
+  <variant name="Default" default>
+    <MyButton :label="label" />
+    <MyIcon />
+  </variant>
+</art>

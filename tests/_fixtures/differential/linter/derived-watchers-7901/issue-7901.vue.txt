@@ -1,0 +1,48 @@
+<script setup lang="ts">
+import { ref, watch } from "vue";
+
+const { id, query } = defineProps<{ id: string; query: string }>();
+
+// 1. Async data loading: the result can't be a computed.
+const user = ref<unknown>(null);
+watch(
+  () => id,
+  async (next) => {
+    user.value = await fetch(`/api/users/${next}`).then((r) => r.json());
+  },
+);
+
+// 2. Resetting a flag that the template also sets.
+const confirming = ref(false);
+watch(
+  () => id,
+  () => {
+    confirming.value = false;
+  },
+);
+
+// 3. An editable copy (v-model below), re-synced when the prop changes.
+const draft = ref(query);
+watch(
+  () => query,
+  (next) => {
+    draft.value = next;
+  },
+);
+
+// 4. Writing a DOM element's `value` property.
+const input = ref<HTMLInputElement | null>(null);
+watch(
+  () => query,
+  (next) => {
+    if (input.value) input.value.value = next;
+  },
+);
+</script>
+
+<template>
+  <input ref="input" />
+  <input v-model="draft" />
+  <button type="button" @click="confirming = true">Delete</button>
+  <pre>{{ user }}</pre>
+</template>
