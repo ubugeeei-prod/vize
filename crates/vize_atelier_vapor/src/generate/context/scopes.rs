@@ -3,7 +3,7 @@
 use vize_carton::{String, cstr};
 
 use super::GenerateContext;
-use crate::generate::destructure::parse_destructure_names;
+use crate::generate::destructure::{DestructureBinding, parse_destructure_names};
 
 impl GenerateContext<'_> {
     /// Push a slot scope for scoped slots. Returns the slot props variable name.
@@ -21,6 +21,7 @@ impl GenerateContext<'_> {
                 slot_props_var: String::from(pattern),
                 for_depth: self.for_scopes.len(),
                 whole: true,
+                read_overrides: std::vec::Vec::new(),
             });
             return String::from(pattern);
         }
@@ -31,7 +32,11 @@ impl GenerateContext<'_> {
             slot_props_var: slot_props_var.clone(),
             for_depth: self.for_scopes.len(),
             whole: false,
+            read_overrides: std::vec::Vec::new(),
         });
+        if destructure_pattern.contains('=') {
+            self.resolve_slot_defaults(destructure_pattern, &slot_props_var);
+        }
         slot_props_var
     }
 
@@ -66,4 +71,6 @@ pub(crate) struct SlotScope {
     pub(crate) for_depth: usize,
     /// The pattern is a plain identifier naming the whole props object.
     pub(crate) whole: bool,
+    /// Authored default-bearing patterns retain their accessor and lazy default.
+    pub(super) read_overrides: std::vec::Vec<DestructureBinding>,
 }

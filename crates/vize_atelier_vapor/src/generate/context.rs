@@ -9,6 +9,7 @@ use vize_atelier_core::codegen::document::EmitDocument;
 
 mod component_resolution;
 mod scopes;
+mod slot_defaults;
 pub(crate) use scopes::{ForScope, SlotScope};
 use vize_atelier_core::options::BindingMetadata;
 use vize_atelier_core::steps::expression::is_template_global;
@@ -145,6 +146,13 @@ impl<'a> GenerateContext<'a> {
                     .iter()
                     .any(|slot_name| name == slot_name.as_str())
                 {
+                    if let Some(binding) = scope
+                        .read_overrides
+                        .iter()
+                        .find(|binding| name == binding.local.as_str())
+                    {
+                        return Some(binding.path.clone());
+                    }
                     return Some(if scope.whole {
                         scope.slot_props_var.clone()
                     } else {
