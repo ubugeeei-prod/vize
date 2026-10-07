@@ -73,3 +73,9 @@ independent runtime packs when joining the compiler registry. The common
 decision record is coordinated across the existing PRs. Previous source-green
 results remain historical until this exact refreshed source completes Actions
 and protected validation; merge and installed-release acceptance remain pending.
+
+Before publication, incorporate actual signed main
+`3ed1cc90908c88016310b90a855500c94a156f1f` through the clean local refresh
+`40970cc555968bb6d41bd7b93a55f10f2af228ec`, retaining the same complete owned
+product and fixture bytes. Apply the approved common decision record exactly;
+the resulting candidate requires its own source Actions and protected checks.
