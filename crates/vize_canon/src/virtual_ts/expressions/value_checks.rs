@@ -50,10 +50,19 @@ pub(crate) struct TemplateValueCheckTables {
 impl TemplateValueCheckTables {
     pub(crate) fn collect(summary: &Croquis, options: &ScopeGenerationOptions<'_, '_>) -> Self {
         let legacy_vue2 = options.legacy_vue2;
+        // Ordinary component props need no extra AST traversal or allocations.
+        let has_modifier_props = options.check_options.check_props
+            && !legacy_vue2
+            && summary.component_usages.iter().any(|usage| {
+                usage
+                    .props
+                    .iter()
+                    .any(|prop| prop.name.as_str().ends_with("Modifiers"))
+            });
         Self {
             model_modifiers: collect_model_modifier_bindings(
                 options.template_ast,
-                options.check_options.check_props && !legacy_vue2,
+                has_modifier_props,
             ),
             native_props: collect_native_prop_bindings(
                 options.template_ast,

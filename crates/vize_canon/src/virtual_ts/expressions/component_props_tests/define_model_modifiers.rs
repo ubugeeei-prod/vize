@@ -68,7 +68,7 @@ fn generated_model_modifier_keys_map_to_exact_authored_bytes() {
         for (generated, _) in output.code.match_indices(needle.as_str()) {
             let quoted_end = generated + needle.len() - ": true".len();
             let actual = crate::virtual_ts::mapping::map_generated_range_to_source(
-                &output.mappings,
+                output.mapping.spans(),
                 generated,
                 quoted_end,
             );
@@ -79,7 +79,7 @@ fn generated_model_modifier_keys_map_to_exact_authored_bytes() {
                 output.code
             );
             let contents = crate::virtual_ts::mapping::map_generated_range_to_source(
-                &output.mappings,
+                output.mapping.spans(),
                 generated + 1,
                 quoted_end - 1,
             );

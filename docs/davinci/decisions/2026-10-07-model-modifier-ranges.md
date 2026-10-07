@@ -11,7 +11,7 @@ also asserted that incorrect position.
 ## Decision
 
 Collect the authored modifier AST spans once with the existing per-file Canon
-check tables. Keep these private to emission rather than adding a field to
+check tables, skipping the AST walk for files with no modifier props. Keep these private to emission rather than adding a field to
 Croquis's public `PassedProp` struct. Both the individual prop assertion and the
 generic whole-props literal map each generated key to its own modifier token.
 String contents and quoted keys retain separate sub-spans for editor requests
@@ -43,3 +43,11 @@ completion. This change makes no performance improvement claim: the private
 mapping table adds no backend process, serialized representation or pipeline
 stage. It does not replace Canon with Davinci, close #6879, or complete the
 project-wide #3984 / production-readiness #3957 contracts.
+
+First source run `37589353338` rejected the new unit test's stale
+`VirtualTsOutput.mappings` field name before execution. Use the existing
+`output.mapping.spans()` accessor without changing any range assertions.
+The same run's production npm audit separately rejected the newly published
+`@modelcontextprotocol/sdk` advisory `GHSA-6qxp-vccf-f47h` (requires 1.31.0);
+that shared dependency repair is owned by the root delivery lane. Retain both
+failed logs and require fresh exact-head source/security proof.
