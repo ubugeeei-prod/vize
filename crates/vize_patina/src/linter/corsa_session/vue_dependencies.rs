@@ -199,7 +199,7 @@ fn dependency_target(session_root: &Path, project_root: &Path, source: &Path) ->
     source.hash(&mut hash);
     let parent = session_root
         .join("external-components")
-        .join(hash.finish().to_string());
+        .join(&*vize_l0::cstr!("{}", hash.finish()));
     virtual_file_path(
         &parent,
         source.parent().unwrap_or(source),

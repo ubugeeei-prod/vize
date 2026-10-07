@@ -79,6 +79,7 @@ linter	Linter	source	crates/vize_patina/src/linter/corsa_session/vue_dependencie
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/vue_dependencies.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/vue_dependencies.rs	4	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/vue_dependencies.rs	4	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/corsa_session/vue_dependencies.rs	202	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/vue_dependencies/specifiers.rs	1	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/vue_dependencies/specifiers.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/vue_dependencies/specifiers.rs	1	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
