@@ -7,12 +7,11 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
-use vize_canon::{
-    ImportSourceMap, SfcTypeCheckOptions, batch::OffsetAdjustment, type_check_sfc_with_options_api,
-};
+use vize_canon::{ImportSourceMap, batch::OffsetAdjustment};
 use vize_l0::{FxHashMap, String};
 
 use super::{errors::io_error_message, paths::virtual_file_path};
+use crate::linter::native_type_aware::document::project_component;
 
 mod specifiers;
 use specifiers::Specifiers;
@@ -53,10 +52,13 @@ pub(super) fn prepare(
         authored.clone(),
         virtual_file_path(session_root, project_root, filename),
     );
-    let mut queue = vec![(authored, String::from(source), None)];
-    while let Some((path, text, target)) = queue.pop() {
+    let mut queue = vec![(authored, String::from(source), None, SourceType::tsx())];
+    while let Some((path, text, target, source_type)) = queue.pop() {
         let allocator = Allocator::default();
-        let parsed = Parser::new(&allocator, &text, SourceType::tsx()).parse();
+        let parsed = Parser::new(&allocator, &text, source_type).parse();
+        if target.is_some() && !parsed.errors.is_empty() {
+            continue;
+        }
         let mut specifiers = Specifiers::default();
         specifiers.visit_program(&parsed.program);
         let mut edits = Vec::new();
@@ -98,7 +100,16 @@ pub(super) fn prepare(
                         target.set_extension("tsx");
                     }
                     visited.insert(dependency.clone(), target.clone());
-                    queue.push((dependency, document.generated.clone(), Some(target.clone())));
+                    queue.push((
+                        dependency,
+                        document.generated.clone(),
+                        Some(target.clone()),
+                        if document.suffix == ".tsx" {
+                            SourceType::tsx()
+                        } else {
+                            SourceType::ts()
+                        },
+                    ));
                     target
                 }
             } else if relative {
@@ -214,17 +225,20 @@ fn generate(path: &Path, source: &str) -> Option<CachedDocument> {
         .iter()
         .chain(descriptor.script_setup.iter())
         .any(|block| matches!(block.lang.as_deref(), Some("tsx" | "jsx")));
-    let result = type_check_sfc_with_options_api(
-        source,
-        &SfcTypeCheckOptions {
-            filename: path.to_string_lossy().as_ref().into(),
-            include_virtual_ts: true,
-            ..Default::default()
-        },
-    );
+    let allocator = vize_l0::Allocator::new();
+    let template = if let Some(template) = &descriptor.template {
+        let (root, errors) = vize_armature::parse(&allocator, &template.content);
+        if crate::Linter::has_fatal_template_parse_errors(&errors) {
+            return None;
+        }
+        Some(root)
+    } else {
+        None
+    };
+    let generated = project_component(&descriptor, template.as_ref(), &path.to_string_lossy());
     Some(CachedDocument {
         source: source.into(),
-        generated: result.virtual_ts?,
+        generated,
         suffix: if tsx { ".tsx" } else { ".ts" },
     })
 }

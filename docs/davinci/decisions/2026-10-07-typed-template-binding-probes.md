@@ -24,6 +24,11 @@ through the import source map, including boolean batches. Leave missing or inval
 dependencies unresolved and retain unsafe authored component exports. Reuse
 projections while their complete source text is unchanged, write only changed
 mirrors, remove retired mirrors, and terminate cyclic dependency traversal.
+Use the existing Patina projection helper for dependencies; skip dependency probe
+bindings and discarded runner validation. The public editor-document facade fixes
+`preserve_authored_component=false`, so it would replace an authored unsafe default
+with a synthetic constructor. Dependency generation therefore selects the existing
+Options API generator with authored-default preservation, including split scripts.
 The normal path without Vue imports avoids dependency projection and translation
 allocations. Fresh Actions must prove the original corpus and exact unsafe controls
 after this repair; the failing historical run grants no completion credit.

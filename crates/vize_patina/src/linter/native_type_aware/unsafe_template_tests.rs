@@ -86,32 +86,36 @@ fn authored_any_component_exports_remain_unsafe() {
         return;
     }
     let linter = Linter::new().with_rule(Box::new(NoUnsafeTemplateBinding::new()));
-    let source = "<script setup lang=\"ts\">\nimport Unsafe from './controls/UnsafeComponent.vue'\n</script>\n<template><component :is=\"Unsafe\" /></template>";
     let filename = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/unsafe-template-binding/UnsafeComponentControl.vue");
-    let result = lint_sfc_with_corsa(&linter, source, &filename.to_string_lossy());
-    let start = source.rfind("Unsafe").unwrap() as u32;
-    let actual: Vec<_> = result
-        .diagnostics
-        .iter()
-        .map(|diagnostic| {
-            (
-                diagnostic.rule_name.as_str(),
-                diagnostic.start,
-                diagnostic.end,
-                diagnostic.message.as_str(),
-            )
-        })
-        .collect();
-    assert_eq!(
-        actual,
-        vec![(
-            RULE_NO_UNSAFE_TEMPLATE_BINDING,
-            start,
-            start + 6,
-            "Template binding resolves to an unsafe `any` or `unknown` type"
-        )]
-    );
+    for component in ["UnsafeComponent", "UnsafeSplitComponent"] {
+        let source = vize_l0::cstr!(
+            "<script setup lang=\"ts\">\nimport Unsafe from './controls/{component}.vue'\n</script>\n<template><component :is=\"Unsafe\" /></template>"
+        );
+        let result = lint_sfc_with_corsa(&linter, &source, &filename.to_string_lossy());
+        let start = source.rfind("Unsafe").unwrap() as u32;
+        let actual: Vec<_> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| {
+                (
+                    diagnostic.rule_name.as_str(),
+                    diagnostic.start,
+                    diagnostic.end,
+                    diagnostic.message.as_str(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            actual,
+            vec![(
+                RULE_NO_UNSAFE_TEMPLATE_BINDING,
+                start,
+                start + 6,
+                "Template binding resolves to an unsafe `any` or `unknown` type"
+            )]
+        );
+    }
 }
 
 #[test]

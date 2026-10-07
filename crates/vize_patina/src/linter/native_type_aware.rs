@@ -9,7 +9,7 @@ use corsa::utils::{
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::{String, ToCompactString, profile};
 
-mod document;
+pub(in crate::linter) mod document;
 mod driver;
 mod expression_bindings;
 mod markers;
