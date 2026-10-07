@@ -6,6 +6,18 @@ use super::GenerateContext;
 use crate::generate::destructure::parse_destructure_names;
 
 impl GenerateContext<'_> {
+    /// Free names need no scoped resolution when no binding context is active.
+    #[inline]
+    pub(in crate::generate) fn resolve_scope_binding(&self, name: &str) -> Option<String> {
+        if self.binding_metadata.is_none()
+            && self.for_scopes.is_empty()
+            && self.slot_scopes.is_empty()
+        {
+            return None;
+        }
+        self.resolve_scope_binding_inner(name)
+    }
+
     /// Push a slot scope for scoped slots. Returns the slot props variable name.
     pub(crate) fn push_slot_scope(&mut self, destructure_pattern: &str) -> String {
         // A plain identifier names the whole props object, as upstream emits it:

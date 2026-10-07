@@ -72,7 +72,7 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
 
     while let Some(&b) = bytes.get(i) {
         match b {
-            b' ' | b'\t' | b'\r' | b'\n' => {
+            b' ' | b'\t' | b'\r' | b'\n' | 0x0b | 0x0c => {
                 i += 1;
                 continue;
             }

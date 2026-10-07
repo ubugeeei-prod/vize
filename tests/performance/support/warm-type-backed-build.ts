@@ -9,6 +9,10 @@ import {
   writeBuildReceipt,
 } from "../../differential/build-receipt.mjs";
 import { driverRoot, git, sha256, sourceIdentity } from "./warm-type-backed-source.ts";
+import {
+  assertChangedDependenciesBuilt,
+  changedSourceDependencies,
+} from "./warm-type-backed-dependency-custody.ts";
 
 const side = process.argv[2];
 assert.ok(side === "before" || side === "after");
@@ -51,7 +55,8 @@ function cargo(name: string, args: string[], command = "cargo") {
 }
 
 // Finite cuts clean the complete selected profile. The owned-source and harness-only
-// routes rebuild Canon and its Maestro/CLI consumers, retaining other artifacts.
+// routes rebuild Canon, its Maestro/CLI consumers and changed qualified dependencies.
+const changedDependencies = changedSourceDependencies(binding.production);
 const clean =
   binding.authority === "root-frozen-release-cut"
     ? ["clean", "--profile", profile, "--locked"]
@@ -66,6 +71,7 @@ const clean =
         "vize_maestro",
         "-p",
         "vize",
+        ...changedDependencies.flatMap((name) => ["-p", name]),
       ];
 const toolchain = {
   cargo: cargo("toolchain-cargo", ["--version"]),
@@ -103,6 +109,7 @@ const localArtifacts = messages
     };
   });
 assert.ok(localArtifacts.length >= 4);
+assertChangedDependenciesBuilt(changedDependencies, localArtifacts);
 const required = [
   { name: "vize_canon", kind: "lib", file: "lib.rs", features: ["native"] },
   { name: "vize_maestro", kind: "lib", file: "lib.rs", features: ["default", "glyph", "native"] },
@@ -184,5 +191,5 @@ assert.deepEqual(
 fs.copyFileSync(receiptPath, path.join(output, `${side}-build.json`));
 fs.writeFileSync(
   path.join(output, `${side}-cargo-custody.json`),
-  `${JSON.stringify({ side, source: sourceIdentity(root), toolchain, profile, target, clean, build, artifacts, localArtifacts, binary, binarySha256, cliVersion: receipt.cliVersion, launchBinary, dependencyArtifacts: binding.authority === "root-frozen-release-cut" ? "The complete selected profile is cleaned identically on both sides; every linked local compiler artifact is attested fresh. Other profile/toolchain artifacts are not attested by this receipt." : "Other unchanged dependencies reuse the existing Cargo target cache; only the four required Canon/Maestro/CLI compiler artifacts are attested fresh." }, null, 2)}\n`,
+  `${JSON.stringify({ side, source: sourceIdentity(root), toolchain, profile, target, clean, build, artifacts, localArtifacts, binary, binarySha256, cliVersion: receipt.cliVersion, launchBinary, changedDependencies, dependencyArtifacts: binding.authority === "root-frozen-release-cut" ? "The complete selected profile is cleaned identically on both sides; every linked local compiler artifact is attested fresh. Other profile/toolchain artifacts are not attested by this receipt." : "Other unchanged dependencies reuse the existing Cargo target cache; the four required Canon/Maestro/CLI and any changed qualified dependency artifacts are attested fresh." }, null, 2)}\n`,
 );

@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use crate::String;
 
 mod casing;
+mod component_registration;
 mod content_directives;
 mod html_self_closing;
 mod hyphenation;
@@ -118,6 +119,12 @@ impl LintRuleOptions {
 pub struct ConfigLintRuleOptions {
     #[serde(flatten)]
     stable: LintRuleOptions,
+    /// Options for `vue/require-component-registration`.
+    #[serde(
+        rename = "vue/require-component-registration",
+        skip_serializing_if = "Option::is_none"
+    )]
+    require_component_registration: Option<component_registration::ComponentRegistrationOptions>,
     #[serde(
         rename = "html/no-empty-palpable-content",
         skip_serializing_if = "Option::is_none"
@@ -190,6 +197,14 @@ impl ConfigLintRuleOptions {
             && self.v_on_event_hyphenation.is_none()
             && self.attribute_hyphenation.is_none()
             && self.musea_prefer_design_tokens.is_none()
+            && self.require_component_registration.is_none()
+    }
+
+    /// Globally registered components permitted by the registration rule.
+    pub fn component_registration_globals(&self) -> Option<&[String]> {
+        self.require_component_registration
+            .as_ref()
+            .map(|options| options.globals.as_slice())
     }
 
     /// Configured deny list for `script/no-restricted-globals`.
@@ -315,6 +330,9 @@ impl ConfigLintRuleOptions {
         }
         if let Some(options) = &overlay.musea_prefer_design_tokens {
             self.musea_prefer_design_tokens = Some(options.clone());
+        }
+        if let Some(options) = &overlay.require_component_registration {
+            self.require_component_registration = Some(options.clone());
         }
     }
 }

@@ -1,17 +1,23 @@
 ---
-title: 博物館
+title: Musea
 ---
 
-<!-- Generated translation; source: guide/musea.md -->
-
-# 美術館
+# Musea
 
 > **⚠️ 進行中の作業:**Musea はまだ進化中です。ファイル形式、API、UI の動作は変更される可能性があります。
 
-Musea は、Vize のアート ファイルおよびコンポーネント ギャラリーのツールチェーンです。
+Musea は、自分のコンポーネントをギャラリーで一覧し、状態の違いを比較・検証するためのツールです。
+[すぐに使える UI の使用例](./ui/index.md)を試してから、自分のコンポーネントのバリエーションを `*.art.vue` に書きます。
+カテゴリーごとに整理した使用例を、実際の Vue の状態とともに操作できます。
+
+| 目的                                           | 使う機能                                      |
+| ---------------------------------------------- | --------------------------------------------- |
+| 通常・loading・disabled・エラー状態を比較する  | 名前を付けたバリエーションを持つ art ファイル |
+| props とデザイントークンを確認する             | ギャラリーの props パレットとトークン画面     |
+| 見た目の変更やアクセシビリティの問題を検出する | CI での `musea-vrt`                           |
 
 - `vize_musea` は、`*.art.vue` の解析、ドキュメントの生成、小道具パレットの構築のための Rust コアです。
-  バリアントの自動生成と VRT データの準備。
+  バリエーションの自動生成と VRT データの準備。
 - `@vizejs/vite-plugin-musea` は、現在推奨されるギャラリーおよび開発サーバーのワークフローです。
 - `musea-vrt` は、視覚的な回帰スナップショット、監査、承認、クリーンアップ、および
   生成されたアートファイル。
@@ -30,28 +36,42 @@ Musea は、`*.art.vue` ファイルを使用して、Vue ネイティブ構文�
 vp install -D @vizejs/vite-plugin @vizejs/vite-plugin-musea vize
 ```
 
-## 推奨される使用法: Vite プラグイン
+## Vite+ で設定する
+
+[Vite+ 連携 (英語)](/guide/vite-plus/)を使うプロジェクトでは、既存の `plugins` に `musea()` を追加します。
+ヘルパーが Vize の Vue コンパイラーを設定します。
 
 ```ts
 // vite.config.ts
-import { defineConfig } from "vite";
-import vize from "@vizejs/vite-plugin";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
   plugins: [
-    vize(),
     musea({
       include: ["**/*.art.vue"],
       basePath: "/__musea__",
-      previewCss: ["src/styles/main.css"],
-      previewSetup: "musea.preview.ts",
     }),
   ],
 });
 ```
 
-通常の Vite dev サーバーを実行し、設定された Musea ルートを開きます。
+`@vitejs/plugin-vue` を使う既存の Vite+ プロジェクトからは、次の差分で移行できます。
+他の Vite オプションとプラグインは維持してください。
+
+```diff
+-import { defineConfig } from "vite-plus";
+-import vue from "@vitejs/plugin-vue";
++import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
++import { musea } from "@vizejs/vite-plugin-musea";
+
+ export default defineConfig({
+-  plugins: [vue()],
++  plugins: [musea({ include: ["**/*.art.vue"] })],
+ });
+```
+
+dev サーバーを起動して、設定した Musea のルートを開きます。
 
 ```bash
 vp dev
@@ -69,6 +89,9 @@ vp exec vize musea --build
 ```
 
 ## 共有構成
+
+複数のツールで既定値を共有したい場合は、共有設定を使います。
+Vite+ のギャラリーだけなら、上の `vite.config.ts` にオプションをまとめられます。
 
 `musea()` オプションは共有設定をオーバーライドします。安定したプロジェクトのデフォルトを `vize.config.ts` に入れて保持します。
 `vite.config.ts` のプレビュー専用設定。

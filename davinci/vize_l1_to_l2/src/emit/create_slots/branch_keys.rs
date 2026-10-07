@@ -1,4 +1,4 @@
-use vize_l2::op::{ForOp, IfOp, Op, Region};
+use vize_l2::op::{IfOp, Op, Region};
 
 use crate::emit::create_slots_walk::{
     advance_after_op, first_slot_template, is_slot_for, is_slot_if, slot_template_content,
@@ -6,15 +6,6 @@ use crate::emit::create_slots_walk::{
 use crate::emit::slots::is_whitespace_text;
 use crate::emit::{EmitCx, EmitError};
 use crate::pass::walk::PageWalk;
-
-pub(super) fn is_template_for_slot_outlet_entry(
-    cx: &EmitCx<'_>,
-    id: Option<vize_l0::id::NodeId>,
-    for_op: &ForOp<'_>,
-) -> bool {
-    id.and_then(|id| cx.for_wrappers.get(id)).is_some()
-        && matches!(for_op.region.ops.as_slice(), [Op::Slot(_)])
-}
 
 pub(super) fn peek_id(cx: &EmitCx<'_>) -> Option<vize_l0::id::NodeId> {
     let mut walk = cx.walk.clone();

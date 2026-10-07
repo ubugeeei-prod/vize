@@ -56,6 +56,7 @@ vize_l1 = { workspace = true }
 vize_l2 = { workspace = true }
 
 [dev-dependencies]
+serde_json = { workspace = true }
 vize_carton.workspace = true
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
@@ -90,6 +91,22 @@ required-features = ["legacy-differential"]
 
 [[test]]
 name = "davinci_dom_corpus_bindings"
+required-features = ["legacy-differential"]
+
+[[test]]
+name = "davinci_dom_n8n_diagnosed"
+required-features = ["legacy-differential"]
+
+[[test]]
+name = "davinci_dom_n8n_default_loops"
+required-features = ["legacy-differential"]
+
+[[test]]
+name = "davinci_dom_n8n_helper_props"
+required-features = ["legacy-differential"]
+
+[[test]]
+name = "davinci_dom_n8n_if_key_modes"
 required-features = ["legacy-differential"]
 
 [[test]]
