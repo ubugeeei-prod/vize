@@ -63,6 +63,16 @@ pub(super) fn emit_props_object(
         })
         .collect();
     let scope_id = cx.scope_id_here();
+    if cx.suppress_template_for_child_key
+        && is_plain_element
+        && !skip_normalize
+        && if_key.is_none()
+        && scope_id.is_none()
+        && visible.is_empty()
+    {
+        cx.buf.push("null");
+        return Ok(());
+    }
     if let Some(key) = if_key
         && visible.is_empty()
         && scope_id.is_none()

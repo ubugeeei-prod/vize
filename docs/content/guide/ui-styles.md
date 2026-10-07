@@ -4,6 +4,16 @@ title: UI styles
 
 # UI styles
 
+Use the [component examples](./ui/index.md) to choose a component, then add only
+the visual files you need. The preview below renders the real Button example;
+use **Style** to compare Paper, Signal, and Atelier.
+
+<iframe src="/component-previews/app/index.html?family=button" title="Button styles interactive preview" loading="lazy" width="100%" height="440" style="border:1px solid #8885;border-radius:8px"></iframe>
+
+[Open the style preview](/component-previews/app/index.html?family=button)
+
+## Add styles to a component
+
 `@vizejs/ui` components work without a visual stylesheet. To use Vize's
 optional styles, import the base, one palette, and the components your page uses:
 
@@ -31,12 +41,22 @@ import "@vizejs/ui/component-stepper.css";
 ```
 
 ```vue
+<script setup lang="ts">
+import { Button } from "@vizejs/ui/button";
+import "@vizejs/ui/base.css";
+import "@vizejs/ui/theme-preset-paper.css";
+import "@vizejs/ui/component-button.css";
+</script>
+
 <template>
   <main data-vize-theme="paper">
     <Button>Save changes</Button>
   </main>
 </template>
 ```
+
+This SFC works with the [Vite+ integration](./vite-plus.md). Put the CSS imports
+in your application entry instead when you want to load them once for all pages.
 
 `base.css` supplies semantic tokens, density, and the forced-colors policy; it
 is an alias for the existing `theme.css` export. It does not reset application

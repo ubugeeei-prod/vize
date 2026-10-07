@@ -1,0 +1,1 @@
+{ "linter": { "preset": "ecosystem", "rules": { "ecosystem/vue-router-unknown-route": "off" } } }

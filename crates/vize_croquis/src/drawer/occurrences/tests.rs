@@ -42,13 +42,17 @@ fn entire_reported_template_has_only_owned_binding_reads() {
             })
             .unwrap();
         assert_eq!(
-            &SCRIPT[binding.identity.start as usize..binding.identity.end as usize],
+            SCRIPT
+                .get(binding.identity.start as usize..binding.identity.end as usize)
+                .expect("binding range stays within authored UTF-8 boundaries"),
             name
         );
         for reference in references(&packet, name) {
             assert_eq!(reference.block, OccurrenceBlock::Template);
             assert_eq!(
-                &TEMPLATE[reference.start as usize..reference.end as usize],
+                TEMPLATE
+                    .get(reference.start as usize..reference.end as usize)
+                    .expect("reference range stays within authored UTF-8 boundaries"),
                 name
             );
         }
@@ -61,11 +65,12 @@ fn entire_reported_template_has_only_owned_binding_reads() {
         references(&packet, "hint")[0].start as usize,
         TEMPLATE.find("{{ hint").unwrap() + 3
     );
-    assert!(
-        references(&packet, "id")
-            .iter()
-            .all(|reference| { !TEMPLATE[..reference.start as usize].ends_with(':') })
-    );
+    assert!(references(&packet, "id").iter().all(|reference| {
+        !TEMPLATE
+            .get(..reference.start as usize)
+            .expect("reference prefix stays within authored UTF-8 boundaries")
+            .ends_with(':')
+    }));
 }
 
 #[test]

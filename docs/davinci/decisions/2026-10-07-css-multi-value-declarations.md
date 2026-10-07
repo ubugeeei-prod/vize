@@ -100,3 +100,25 @@ Fresh exact-head Actions, required native/protected full observer/API/CLI,
 unchanged budgets, actual Stack delivery and supported installed release proof
 remain pending. The common canonical union records this preparation separately
 from projected documentation and historical runtime evidence.
+
+## Recovery on the actual worker-metadata repair
+
+Refresh the existing Stack from frozen source `227912e35dc1d49e5a9c8bc71054d20a6b0298c8`
+by a genuine merge of signed actual main
+`b1b9895e2132021bad64b6452df502bf4f50f033`. Preserve the complete CSS
+implementation, original width and layout controls, authored punctuation, all
+twelve current reference entries (eleven continuation and one rule-layout),
+and complete historical/current output and CLI streams. Retain incoming pinned
+formatter vendor, Cargo integration, and bounded worker-metadata helper and
+workflow bytes. No expected vector, original law, budget or runtime cap changes.
+
+The earlier top candidate `19030b67372ce2ff07b26a2ffac01b2fd2910ed9`
+failed its report after observing an incomplete shard-upload step, despite four
+successful workers. That result is not a merge or a green qualification. The
+actual-main repair supplies bounded fresh metadata reads; its effect on this
+Stack still requires new exact-head source Actions and a new protected
+candidate. Retain all 27 API/22 CLI cases, the full Stack's 54 API/27 CLI cases,
+all original 300 historical cases and 29 controls, native execution and
+instruction budgets. Actual signed delivery and installed release qualification
+remain pending. New recovery links use canonical row 347 while its entire
+original prefix and every other main row remain unchanged.

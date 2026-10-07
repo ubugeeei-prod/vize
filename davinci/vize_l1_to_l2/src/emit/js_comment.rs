@@ -11,14 +11,19 @@ use vize_l2::expr::JsExpr;
 pub(super) enum RawJs<'a> {
     Borrowed(&'a str),
     Owned(String),
+    TrailingLineComment(String),
 }
 
 impl RawJs<'_> {
     pub(super) fn as_str(&self) -> &str {
         match self {
             Self::Borrowed(source) => source,
-            Self::Owned(source) => source.as_str(),
+            Self::Owned(source) | Self::TrailingLineComment(source) => source.as_str(),
         }
+    }
+
+    pub(super) const fn ends_in_line_comment(&self) -> bool {
+        matches!(self, Self::TrailingLineComment(_))
     }
 }
 
@@ -29,11 +34,15 @@ pub(super) fn line_comment_source_as_block<'a>(
     if !source.contains("//") {
         return None;
     }
-    let converted = convert_line_comments_to_block(source);
+    let (converted, ends_in_line_comment) = rewrite_line_comments(source);
     if converted == source || !source_is_js(converted.as_str(), span_start) {
         return None;
     }
-    Some(RawJs::Owned(converted))
+    Some(if ends_in_line_comment {
+        RawJs::TrailingLineComment(converted)
+    } else {
+        RawJs::Owned(converted)
+    })
 }
 
 pub(super) fn source_is_js(source: &str, span_start: u32) -> bool {
@@ -47,12 +56,17 @@ pub(super) fn source_is_js(source: &str, span_start: u32) -> bool {
 }
 
 pub(super) fn convert_line_comments_to_block(content: &str) -> String {
+    rewrite_line_comments(content).0
+}
+
+fn rewrite_line_comments(content: &str) -> (String, bool) {
     let bytes = content.as_bytes();
     // Every scan stops on an ASCII delimiter or at the end, so these
     // ranges are whole chars of `content`.
     let text = |start: usize, end: usize| content.get(start..end).unwrap_or_default();
     let mut result = String::with_capacity(content.len());
     let mut can_start_regex = true;
+    let mut ends_in_line_comment = false;
     let mut i = 0;
     while let Some(&byte) = bytes.get(i) {
         match byte {
@@ -68,6 +82,7 @@ pub(super) fn convert_line_comments_to_block(content: &str) -> String {
                 result.push_str("/* ");
                 result.push_str(text(start, end).trim_end().replace("*/", "* /").as_str());
                 result.push_str(" */");
+                ends_in_line_comment = end == bytes.len();
                 i = end;
             }
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
@@ -123,7 +138,7 @@ pub(super) fn convert_line_comments_to_block(content: &str) -> String {
             }
         }
     }
-    result
+    (result, ends_in_line_comment)
 }
 
 #[cfg(test)]

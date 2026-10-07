@@ -713,3 +713,7 @@
 	path = tests/_fixtures/_git/vue-benchmarks
 	url = https://github.com/pikax/vue-benchmarks
 	shallow = true
+[submodule "tests/_fixtures/_git/n8n"]
+	path = tests/_fixtures/_git/n8n
+	url = https://github.com/n8n-io/n8n
+	shallow = true

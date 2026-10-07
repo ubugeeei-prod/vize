@@ -1865,7 +1865,7 @@ defineProps にはランタイム・オブジェクト形式ではなく型ベ�
   const props = defineProps<Props>()
 === script/define-props-destructuring
 script/define-props-destructuring · lint ルール
-<script setup> で defineProps の戻り値を分割代入することを禁止する
+<script setup> で defineProps の分割代入スタイルを統一する
 
 精度: exact
 対象: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
@@ -1875,12 +1875,10 @@ script/define-props-destructuring · lint ルール
 ドキュメント: docs/content/rules/type-and-script.md
 
 不正な例:
-  const { foo, bar } = defineProps<{ foo: string; bar?: number }>()
-  const [first] = defineProps<[string]>()
+  const props = defineProps<{ foo: string }>()
 
 正しい例:
-  const props = defineProps<{ foo: string }>()
-  // ...later: props.foo
+  const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
 === script/no-arrow-functions-in-watch
 script/no-arrow-functions-in-watch · lint ルール
 Options API の watch ハンドラーにアロー関数を使うことを禁止する

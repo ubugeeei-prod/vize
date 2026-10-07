@@ -8,7 +8,6 @@
 /// }
 module vize.Config
 import "SortImportsConfig.pkl"
-
 typealias CompilerMode = "module" | "function"
 typealias TemplateSyntax = "standard" | "strict" | "quirks"
 typealias Whitespace = "condense" | "preserve" | "vue2-line-breaks"
@@ -25,7 +24,6 @@ typealias TrailingComma = "all" | "none" | "es5"
 typealias FilterPattern = String | Listing<String>
 typealias GlobalTypeValue = String | GlobalTypeDeclaration
 typealias ConfigExtends = String | Listing<String>
-
 class CompilerCompatibilityConfig {
   vueVersion: ("3" | "2.7" | "2" | "1" | "0.11" | "0.10")? = null
   hostCompiler: Boolean? = null
@@ -34,7 +32,6 @@ class CompilerCompatibilityConfig {
   nuxtVersion: Number? = null
   webpackVersion: Number? = null
 }
-
 class CompilerConfig {
   mode: CompilerMode? = null
   vapor: Boolean? = null
@@ -55,7 +52,6 @@ class CompilerConfig {
   runtimeGlobalName: String? = null
   compatibility: CompilerCompatibilityConfig?
 }
-
 class ExperimentalsConfig {
   vapor: Boolean? = null
   jsxVapor: Boolean? = null
@@ -67,7 +63,6 @@ class ExperimentalsConfig {
   strictSlotChildren: Boolean? = null
   serverScript: Boolean? = null
 }
-
 class VitePluginConfig {
   include: FilterPattern? = null
   exclude: FilterPattern? = null
@@ -101,6 +96,10 @@ class ComponentNameInTemplateCasingOptions {
 
 class CustomEventNameCasingOptions {
   casing: CustomEventNameCasing = "camelCase"
+}
+
+class RequireComponentRegistrationOptions {
+  globals: Listing<String> = new Listing {}
 }
 
 class NoMutatingPropsOptions {
@@ -151,7 +150,13 @@ class ContentDirectivesOptions {
   contentDirectives: Listing<String> = new Listing {}
 }
 
+/// Style for props destructuring; matches eslint-plugin-vue's default.
+class DefinePropsDestructuringOptions {
+  destructure: "only-when-assigned"|"always"|"never" = "only-when-assigned"
+}
+
 class LintRuleOptions {
+  `script/define-props-destructuring`: DefinePropsDestructuringOptions? = null
   `html/no-empty-palpable-content`: ContentDirectivesOptions? = null
   `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
@@ -159,6 +164,7 @@ class LintRuleOptions {
   `vue/component-name-in-template-casing`: ComponentNameInTemplateCasingOptions? = null
   `script/custom-event-name-casing`: CustomEventNameCasingOptions? = null
   `vue/no-mutating-props`: NoMutatingPropsOptions? = null
+  `vue/require-component-registration`: RequireComponentRegistrationOptions? = null
   `vue/sfc-element-order`: SfcElementOrderOptions? = null
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
   `vue/v-on-event-hyphenation`: HyphenationStyle? = null

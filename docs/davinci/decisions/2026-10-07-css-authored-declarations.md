@@ -98,3 +98,23 @@ remain required. Source preparation and pure custody checks grant no historical
 runtime transfer: fresh exact-head Actions, required native/protected full
 observer/API/CLI, unchanged budgets, actual Stack delivery and supported
 installed release proof remain pending.
+
+## Recovery on the actual worker-metadata repair
+
+Refresh frozen child `46660416f3f2e98e59e9683271424b36ec6793da` by a
+genuine merge of refreshed parent
+`65f0b326ecb5b91911bb9b29872a7a8a603a1b9e`, which contains signed actual
+main `b1b9895e2132021bad64b6452df502bf4f50f033`. Keep the complete original
+75-line moved law, its eight-manifest loader, all current reference and snapshot
+authorities, every authored declaration value and punctuation, and all original
+300 history cases and 29 controls unchanged. Preserve all 54 API/27 CLI plans,
+three public API passes and full check/dry/write/check CLI streams.
+
+Retain incoming pinned formatter vendor and the actual worker-metadata helper
+and workflow without changing instruction budgets or runtime caps. The earlier
+top candidate's report failure is retained as failed; its successful workers do
+not qualify this refreshed source or its next protected candidate. Fresh
+exact-head Actions, native execution, protected full observer/API/CLI results,
+actual signed Stack delivery and supported installed release proof remain
+required. This child appends only its recovery note to the parent's canonical
+row 347; every original main byte and parent note stays fixed.

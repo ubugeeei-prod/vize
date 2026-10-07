@@ -1,0 +1,42 @@
+# Captured from the official self-contained Vue 3.5.26 compiler browser bundle.
+# Complete authored SFC and complete compileTemplate code/error/map/tip outputs.
+package = "@vue/compiler-sfc"
+version = "3.5.26"
+url = "https://unpkg.com/@vue/compiler-sfc@3.5.26/dist/compiler-sfc.esm-browser.js"
+sha256 = "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec"
+name = "unrelated_orphan_else"
+filename = "unrelated_orphan_else.vue"
+id = "data-v-unrelated_orphan_else"
+entrypoint = "compileTemplate"
+isProd = false
+source_sha256 = "790aeaa0e576d3e7180b3e48d9d80c4c1ec006ea3d05a4992eac0579b31f65f1"
+source = "<script setup>const foo = 'same'; const chunks = []</script><template><p v-else>orphan</p></template>"
+template = "<p v-else>orphan</p>"
+
+[[modes]]
+mode = "function"
+prefixIdentifiers = false
+cacheHandlers = false
+hoistStatic = false
+comments = false
+sourceMap = false
+code = "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"p\", null, \"orphan\"))\n  }\n}"
+map_json = "null"
+tips_json = "[]"
+error_codes = [30]
+errors_json = "[{\"code\":30,\"message\":\"v-else/v-else-if has no adjacent v-if or v-else-if.\",\"loc\":{\"start\":{\"column\":1,\"line\":1,\"offset\":0},\"end\":{\"column\":21,\"line\":1,\"offset\":20},\"source\":\"<p v-else>orphan</p>\"}}]"
+error_spans = [[0, 20]]
+
+[[modes]]
+mode = "module"
+prefixIdentifiers = true
+cacheHandlers = false
+hoistStatic = false
+comments = false
+sourceMap = false
+code = "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"p\", null, \"orphan\"))\n}"
+map_json = "null"
+tips_json = "[]"
+error_codes = [30]
+errors_json = "[{\"code\":30,\"message\":\"v-else/v-else-if has no adjacent v-if or v-else-if.\",\"loc\":{\"start\":{\"column\":1,\"line\":1,\"offset\":0},\"end\":{\"column\":21,\"line\":1,\"offset\":20},\"source\":\"<p v-else>orphan</p>\"}}]"
+error_spans = [[0, 20]]
