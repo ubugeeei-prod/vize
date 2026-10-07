@@ -192,3 +192,43 @@ snapshot, not the publication baseline. All newer incoming source and complete
 canonical clauses are retained; no compiler product conflict is resolved by
 substitution and no canonical footer is appended. Fresh execution is still
 required for this combined source.
+
+## Protected lowering failure and bounded name construction
+
+The refreshed `d201d7c3` source passed its ordinary Actions. Signed producer
+`b7b3b754` retained all seven complete original sources and executed 16 request
+rows, 32 real mounts, 128 fixed whole-tree/event/identity/diagnostic/unmount
+frames and 32 complete map pairs. Those successful results are historical
+for any subsequent source change; the rc.10 and other listed limits remain.
+
+Protected producer `907462eb36f2ad459a6439cc19a77d8091f1bd6d`, tree
+`40ace8c573813cc54a1a66a92ebc32a06a6b836f`, failed the original lowering
+ceiling in Check 37665517495, job 112943599619. All three executions measured
+`atelier_vapor_lower_large` at 80,360 instructions against the unchanged
+76,975 cap. The complete original 30,828-byte `large.vue` has SHA256
+`de3a98116a638d0edc636b74c23d932a11361a7cda7b5aaaae2f030ba1903751`.
+Full artifacts 11503106181 and 11503500982 retain all 104 original rows,
+their exact input/window/methodology identities and 429 raw packets. The
+other 103 measured rows fit their existing caps, including the four formatter
+rows whose enforcing step was skipped after the lowering failure. Root removed
+the known-red candidate from the queue; it did not merge.
+
+This window measures only `transform_to_ir`, so the typed callback classifier
+does not execute in it. Five static component events (`close`, `generatePdf`,
+`generateImage`, `toggleAnnotator`, `copyAlt`) call the shared name helper.
+Its recorded inclusive cost is 7,383 instructions. The correction constructs
+the same complete name in one owned result: one existing character iteration
+preserves ASCII word characters after hyphens, first-output ASCII capitalization,
+all Unicode bytes and bulk copies of unchanged runs. It adds no preliminary
+scan, parser, stage, regex, backend fallback or numeric allowance. Independent
+fixed whole-name laws include the five measured events and empty, colon,
+leading/repeated/trailing hyphen and Unicode cases; 1,728 complete inputs also
+compare against the retained whole prior composition.
+
+The successor genuinely incorporates signed actual main `a4790f26`, including
+the delivered enum source. All seven original inputs, the complete typed-shape
+laws, full module/map/runtime expectations and every original budget remain
+byte-exact. Only the shared name construction and ordinary unit controls change
+product behavior internally. TODO: run fresh original compilation/runtime and
+all 104 instruction gates on the successor before root protected admission.
+No local Rust execution or performance improvement is claimed from source review.

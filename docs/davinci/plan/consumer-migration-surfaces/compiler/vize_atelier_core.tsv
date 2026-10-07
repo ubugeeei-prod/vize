@@ -229,7 +229,9 @@ compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_model.rs	5	l0	L0	s
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_model.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_model.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/steps/v_model.rs	295	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_on.rs	5	l0	L0	stage	vize_l0	preferred	2
+compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_on.rs	5	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/steps/v_on.rs	132	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/src/steps/v_on/name_tests.rs	2	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_once.rs	7	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/src/steps/v_once.rs	59	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_slot.rs	5	l0	L0	stage	vize_l0	preferred	1

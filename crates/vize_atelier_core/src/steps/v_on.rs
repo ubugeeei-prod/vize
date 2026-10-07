@@ -93,27 +93,43 @@ pub fn is_dynamic_event(dir: &DirectiveNode<'_>) -> bool {
     }
 }
 
-// Use utilities from L0.
-use vize_l0::{camelize, capitalize};
-
 /// Create on-event name from event name
 /// Converts kebab-case to camelCase (e.g., "select-koma" -> "onSelectKoma")
 pub fn create_on_name(event: &str) -> String {
-    let camel = camelize(event);
-    let cap = capitalize(&camel);
-    let mut result = String::with_capacity(2 + cap.len());
+    let mut result = String::with_capacity(2 + event.len());
     result.push_str("on");
-    result.push_str(&cap);
+    let mut chars = event.char_indices().peekable();
+    let mut start = 0;
+    let mut first = true;
+    while let Some((index, character)) = chars.next() {
+        if character == '-'
+            && let Some((next_index, next)) =
+                chars.next_if(|(_, next)| next.is_ascii_alphanumeric() || *next == '_')
+        {
+            result.push_str(&event[start..index]);
+            result.push(next.to_ascii_uppercase());
+            start = next_index + next.len_utf8();
+            first = false;
+        } else if first {
+            result.push(character.to_ascii_uppercase());
+            start = index + character.len_utf8();
+            first = false;
+        }
+    }
+    result.push_str(&event[start..]);
     result
 }
 
 #[cfg(test)]
+mod name_tests;
+
+#[cfg(test)]
 mod tests {
     use super::{
-        EventModifiers, SimpleExpressionNode, camelize, create_on_name, needs_guard,
-        parse_event_modifiers,
+        EventModifiers, SimpleExpressionNode, create_on_name, needs_guard, parse_event_modifiers,
     };
     use crate::SourceLocation;
+    use vize_l0::camelize;
 
     #[test]
     fn test_parse_modifiers() {
