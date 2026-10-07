@@ -1,11 +1,15 @@
 //! Recursive-descent parser for JSON / JSONC into the [`super::ast`] value tree.
 
-use super::ast::{Comment, Element, Member, Node, split_trailing};
-use super::{json_error, number, trim_end};
+use super::ast::{Comment, Element, Member, Node, has_blank_line, split_trailing};
+use super::{json_error, number};
+
+mod comments;
 use crate::error::FormatError;
 use vize_l0::{String, cstr};
 
 pub(super) struct Parser<'a> {
+    source: &'a str,
+    offset: usize,
     iter: std::iter::Peekable<std::str::Chars<'a>>,
     jsonc: bool,
 }
@@ -13,6 +17,8 @@ pub(super) struct Parser<'a> {
 impl<'a> Parser<'a> {
     pub(super) fn new(source: &'a str, jsonc: bool) -> Self {
         Self {
+            source,
+            offset: 0,
             iter: source.chars().peekable(),
             jsonc,
         }
@@ -23,7 +29,9 @@ impl<'a> Parser<'a> {
     }
 
     fn advance(&mut self) -> Option<char> {
-        self.iter.next()
+        let character = self.iter.next()?;
+        self.offset += character.len_utf8();
+        Some(character)
     }
 
     /// Skip whitespace, returning whether at least one newline was consumed.
@@ -50,54 +58,15 @@ impl<'a> Parser<'a> {
     pub(super) fn collect_comments(&mut self) -> Result<Vec<Comment>, FormatError> {
         let mut comments = Vec::new();
         loop {
+            let start = self.offset;
             let saw_newline = self.skip_whitespace();
             if !self.jsonc || self.peek() != Some('/') {
                 break;
             }
-            comments.push(self.parse_comment(saw_newline)?);
+            let blank_line_before = self.blank_line_since(Some(start));
+            comments.push(self.parse_comment(saw_newline, blank_line_before)?);
         }
         Ok(comments)
-    }
-
-    /// Parse a `//` or `/* */` comment. The leading `/` has not been consumed.
-    fn parse_comment(&mut self, own_line: bool) -> Result<Comment, FormatError> {
-        self.advance(); // consume '/'
-        match self.advance() {
-            Some('/') => {
-                let mut text = String::default();
-                while let Some(c) = self.peek() {
-                    if matches!(c, '\n' | '\r') {
-                        break;
-                    }
-                    text.push(c);
-                    self.advance();
-                }
-                Ok(Comment {
-                    block: false,
-                    text: trim_end(&text),
-                    own_line,
-                })
-            }
-            Some('*') => {
-                let mut text = String::default();
-                loop {
-                    match self.advance() {
-                        Some('*') if self.peek() == Some('/') => {
-                            self.advance(); // consume '/'
-                            return Ok(Comment {
-                                block: true,
-                                text,
-                                own_line,
-                            });
-                        }
-                        Some(c) => text.push(c),
-                        None => return Err(json_error("unterminated block comment")),
-                    }
-                }
-            }
-            Some(c) => Err(json_error(cstr!("unexpected character '{c}' after '/'"))),
-            None => Err(json_error("unexpected end of input after '/'")),
-        }
     }
 
     pub(super) fn parse_value(&mut self) -> Result<Node, FormatError> {
@@ -109,7 +78,11 @@ impl<'a> Parser<'a> {
             Some('t') => Ok(Node::Scalar(self.parse_keyword("true")?)),
             Some('f') => Ok(Node::Scalar(self.parse_keyword("false")?)),
             Some('n') => Ok(Node::Scalar(self.parse_keyword("null")?)),
-            Some('-' | '0'..='9') => Ok(Node::Scalar(number::parse(&mut self.iter)?)),
+            Some('-' | '0'..='9') => {
+                let number = number::parse(&mut self.iter)?;
+                self.offset += number.len();
+                Ok(Node::Scalar(number))
+            }
             Some(c) => Err(json_error(cstr!("unexpected character '{c}'"))),
             None => Err(json_error("unexpected end of input")),
         }
@@ -117,13 +90,17 @@ impl<'a> Parser<'a> {
 
     fn parse_object(&mut self) -> Result<Node, FormatError> {
         self.advance(); // consume '{'
+        let expanded = self.skip_whitespace();
         let mut members = Vec::new();
+        let mut previous_end = None;
         let mut carry: Vec<Comment> = Vec::new();
         let mut after_comma = false;
 
         loop {
             let mut leading = std::mem::take(&mut carry);
             leading.extend(self.collect_comments()?);
+            let blank_line_before =
+                self.blank_line_since(leading.last().map(|c| c.end).or(previous_end));
 
             match self.peek() {
                 Some('}') => {
@@ -133,6 +110,7 @@ impl<'a> Parser<'a> {
                     self.advance();
                     return Ok(Node::Object {
                         members,
+                        expanded,
                         dangling: leading,
                     });
                 }
@@ -145,6 +123,7 @@ impl<'a> Parser<'a> {
                     }
                     leading.extend(self.collect_comments()?); // between ':' and value
                     let value = self.parse_value()?;
+                    previous_end = Some(self.offset);
 
                     let (mut trailing, mut spill) = split_trailing(self.collect_comments()?);
                     match self.peek() {
@@ -159,6 +138,7 @@ impl<'a> Parser<'a> {
                             }
                             carry = spill;
                             members.push(Member {
+                                blank_line_before,
                                 leading,
                                 key,
                                 value,
@@ -168,6 +148,7 @@ impl<'a> Parser<'a> {
                         Some('}') => {
                             self.advance();
                             members.push(Member {
+                                blank_line_before,
                                 leading,
                                 key,
                                 value,
@@ -175,6 +156,7 @@ impl<'a> Parser<'a> {
                             });
                             return Ok(Node::Object {
                                 members,
+                                expanded,
                                 dangling: spill,
                             });
                         }
@@ -192,12 +174,15 @@ impl<'a> Parser<'a> {
     fn parse_array(&mut self) -> Result<Node, FormatError> {
         self.advance(); // consume '['
         let mut elements = Vec::new();
+        let mut previous_end = None;
         let mut carry: Vec<Comment> = Vec::new();
         let mut after_comma = false;
 
         loop {
             let mut leading = std::mem::take(&mut carry);
             leading.extend(self.collect_comments()?);
+            let blank_line_before =
+                self.blank_line_since(leading.last().map(|c| c.end).or(previous_end));
 
             match self.peek() {
                 Some(']') => {
@@ -213,6 +198,7 @@ impl<'a> Parser<'a> {
                 None => return Err(json_error("unterminated array")),
                 _ => {
                     let value = self.parse_value()?;
+                    previous_end = Some(self.offset);
 
                     let (mut trailing, mut spill) = split_trailing(self.collect_comments()?);
                     match self.peek() {
@@ -227,6 +213,7 @@ impl<'a> Parser<'a> {
                             }
                             carry = spill;
                             elements.push(Element {
+                                blank_line_before,
                                 leading,
                                 value,
                                 trailing,
@@ -235,6 +222,7 @@ impl<'a> Parser<'a> {
                         Some(']') => {
                             self.advance();
                             elements.push(Element {
+                                blank_line_before,
                                 leading,
                                 value,
                                 trailing,
@@ -251,6 +239,12 @@ impl<'a> Parser<'a> {
                 }
             }
         }
+    }
+
+    fn blank_line_since(&self, previous_end: Option<usize>) -> bool {
+        previous_end
+            .and_then(|start| self.source.get(start..self.offset))
+            .is_some_and(has_blank_line)
     }
 
     /// Copy a JSON string verbatim (including escape sequences and the

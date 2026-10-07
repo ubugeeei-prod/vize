@@ -598,7 +598,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 script_gen_start,
                 script.len(),
             );
-
             // Vue 2 only; see the bridge module doc for why Vue 3 skips it.
             if legacy_vue2 {
                 let offset = script_offset as usize;
@@ -654,6 +653,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     src,
                     check_props && !legacy_vue2,
                     &mut semantic_links,
+                    template_ref_unwraps.props_shadow_anchor(),
                 )
             });
             if options_api {

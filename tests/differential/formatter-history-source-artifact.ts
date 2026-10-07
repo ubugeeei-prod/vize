@@ -4,6 +4,10 @@ import path from "node:path";
 import { sha256 } from "./manifest.mjs";
 import { validateRootCommentSnapshotTransition } from "./formatter-root-comment-reference.ts";
 import { resolvePreservedLayoutSource } from "./formatter-history-layout-artifact.ts";
+import {
+  resolvePreservedJsonLayoutSource,
+  validatePreservedJsonLayoutWitness,
+} from "./formatter-json-layout-source.ts";
 import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.mjs";
 
 // This is an assertion-only source witness, never a formatter output oracle.
@@ -135,6 +139,8 @@ export function resolvePreservedFormatterSource(
   root: string,
   artifact: { path: string; sha256: string },
 ) {
+  const json = resolvePreservedJsonLayoutSource(root, artifact);
+  if (json) return json;
   const layout = resolvePreservedLayoutSource(root, artifact);
   if (layout) return layout;
   if (artifact.path !== PRESERVED_FORMATTER_SOURCE.owner) return null;
@@ -146,6 +152,7 @@ export function validatePreservedFormatterWitness(
   entry: { path: string; sha256: string; revisions: string[] },
   name: string,
 ) {
+  if (validatePreservedJsonLayoutWitness(root, entry, name)) return true;
   if (entry.path !== PRESERVED_FORMATTER_SOURCE.owner) return false;
   assert.deepEqual(
     entry.revisions,

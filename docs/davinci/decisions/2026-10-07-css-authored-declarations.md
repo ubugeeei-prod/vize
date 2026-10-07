@@ -103,8 +103,8 @@ installed release proof remain pending.
 
 Refresh frozen child `46660416f3f2e98e59e9683271424b36ec6793da` by a
 genuine merge of refreshed parent
-`65f0b326ecb5b91911bb9b29872a7a8a603a1b9e`, which contains signed actual
-main `b1b9895e2132021bad64b6452df502bf4f50f033`. Keep the complete original
+`160cffef1bb8e5c86b3a6ce9120db645c442dc45`, which contains signed actual
+main `a0f50992e2eb457933b81b951d462090e0af4811`. Keep the complete original
 75-line moved law, its eight-manifest loader, all current reference and snapshot
 authorities, every authored declaration value and punctuation, and all original
 300 history cases and 29 controls unchanged. Preserve all 54 API/27 CLI plans,
@@ -118,3 +118,11 @@ exact-head Actions, native execution, protected full observer/API/CLI results,
 actual signed Stack delivery and supported installed release proof remain
 required. This child appends only its recovery note to the parent's canonical
 row 347; every original main byte and parent note stays fixed.
+
+The unchanged eight-manifest loader derives twelve complete current references:
+five shared references, six incoming JSON references and one CSS declaration
+reference. Preserve all six frozen child authorities and all eleven incoming
+authorities, their complete current outputs, and all 300 original identities,
+inputs and historical oracles. Update only the combined tooling count and name;
+no fixture, output, CLI plan or budget is rewritten. Exhaustive identity and
+complete input/oracle/reference object hashes authenticate the exact union.

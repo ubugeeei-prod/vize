@@ -33,9 +33,9 @@ const cases = packs.flatMap(
 );
 const qualified = cases.filter((row) => row.currentReference);
 
-void test("six reviewed current references keep all original300 source and captured outputs", () => {
+void test("twelve reviewed current references keep all original300 source and captured outputs", () => {
   assert.equal(cases.length, 300);
-  assert.equal(qualified.length, 6);
+  assert.equal(qualified.length, 12);
   const fixture = qualified.find((row) => row.currentReference.issue === 7826);
   assert.equal(fixture.api, "format_sfc");
   assert.equal(fixture.currentReference.issue, 7826);
