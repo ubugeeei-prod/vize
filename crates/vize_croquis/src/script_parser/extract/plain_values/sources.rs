@@ -172,7 +172,7 @@ pub(super) fn reactive_member_destructure_source(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_origin(root.as_str().is_some())
+                || result.reactive_origin(root.as_str()).is_some()
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
@@ -184,7 +184,7 @@ pub(super) fn reactive_member_destructure_source(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_origin(root.as_str().is_some())
+                || result.reactive_origin(root.as_str()).is_some()
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
@@ -226,7 +226,7 @@ pub(super) fn reactive_expression_label_for_spread(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_origin(root.as_str().is_some())
+                || result.reactive_origin(root.as_str()).is_some()
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
@@ -241,7 +241,7 @@ pub(super) fn reactive_expression_label_for_spread(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_origin(root.as_str().is_some())
+                || result.reactive_origin(root.as_str()).is_some()
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
