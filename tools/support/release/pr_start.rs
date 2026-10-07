@@ -19,7 +19,7 @@ pub fn start(bump: &str, root: &Path) -> Result<(), String> {
     finish(result, &work, root)
 }
 
-fn worktree(revision: &str, root: &Path) -> Result<PathBuf, String> {
+pub(super) fn worktree(revision: &str, root: &Path) -> Result<PathBuf, String> {
     let path = env::temp_dir().join(format!(
         "vize-release-{}-{}",
         process::id(),
@@ -110,6 +110,8 @@ fn prepare_and_open(bump: &str, repository: &str, work: &Path) -> Result<(), Str
     let base_version = github::version(work)?;
     prepare(bump, work)?;
     let tag = format!("v{}", github::version(work)?);
+    let operator =
+        super::pr_pin::lock::acquire(&tag, &github::git(&["rev-parse", "HEAD"], work)?, work)?;
     let branch = format!("release/{tag}");
     if !github::git(
         &[
@@ -161,7 +163,16 @@ fn prepare_and_open(bump: &str, repository: &str, work: &Path) -> Result<(), Str
         .next()
         .and_then(|v| v.parse::<u64>().ok())
         .ok_or("Could not read the created PR number")?;
-    pr_watch::release(repository, number, &tag, bump, &base_version, false, work)
+    pr_watch::release(
+        repository,
+        number,
+        &tag,
+        bump,
+        &base_version,
+        false,
+        &operator,
+        work,
+    )
 }
 
 pub fn resume(number: u64, root: &Path) -> Result<(), String> {
@@ -172,6 +183,7 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
     let head = pr_contract::field(&pr, "/head/sha")?;
     let branch = pr_contract::field(&pr, "/head/ref")?;
     let tag = branch.strip_prefix("release/").ok_or("Not a release PR")?;
+    super::pr_pin::lock::reject_pinned(tag, root)?;
     let author = pr_contract::field(&pr, "/user/login")?;
     pr_contract::candidate(
         &pr,
@@ -194,14 +206,24 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
         root,
     )?;
     let work = worktree(head, root)?;
+    let operator = super::pr_pin::lock::acquire(tag, head, root)?;
     finish(
-        pr_watch::release(&repository, number, tag, &bump, &base_version, true, &work),
+        pr_watch::release(
+            &repository,
+            number,
+            tag,
+            &bump,
+            &base_version,
+            true,
+            &operator,
+            &work,
+        ),
         &work,
         root,
     )
 }
 
-fn marker(body: &str, key: &str) -> Result<String, String> {
+pub(super) fn marker(body: &str, key: &str) -> Result<String, String> {
     let prefix = format!("<!-- {key}: ");
     body.lines()
         .find_map(|line| {
@@ -212,7 +234,7 @@ fn marker(body: &str, key: &str) -> Result<String, String> {
         .ok_or_else(|| format!("Release PR is missing {key}"))
 }
 
-fn finish(result: Result<(), String>, work: &Path, root: &Path) -> Result<(), String> {
+pub(super) fn finish(result: Result<(), String>, work: &Path, root: &Path) -> Result<(), String> {
     match result {
         Ok(()) => {
             github::git(
@@ -230,4 +252,13 @@ fn finish(result: Result<(), String>, work: &Path, root: &Path) -> Result<(), St
             work.display()
         )),
     }
+}
+
+/// The opt-in protocol keeps the source cut independent of the moving main.
+pub fn start_pinned(bump: &str, root: &Path) -> Result<(), String> {
+    super::pr_pin::start(bump, root)
+}
+
+pub fn resume_pinned(number: u64, root: &Path) -> Result<(), String> {
+    super::pr_pin::resume(number, root)
 }

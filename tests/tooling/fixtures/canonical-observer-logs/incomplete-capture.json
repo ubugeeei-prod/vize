@@ -1,0 +1,14 @@
+{
+  "purpose": "historical incomplete corpus negative control; no current-source acceptance",
+  "runId": 37617991549,
+  "jobId": 112780916788,
+  "sha": "8a9110229414769be71595d7888c6cbd8f3add88",
+  "files": 37487,
+  "expectedFiles": 42998,
+  "sameGitlinks": 147,
+  "oldErrorSkips": 9,
+  "expectedOldErrorSkips": 16,
+  "logSha256": "16d7c804df028f51a1705c62b3cc856449a9a398db132b2fcd39b8e6721ea9c8",
+  "selectedSha256": "94996e36b7da3ce4dc6364f47fcb20acf014ea14ccbfc159c10a03d8f3f33999",
+  "statusSha256": "8f72af9f2d5aaf01c73076180ec05ca736918db3cec34c743c537268bf0e8d01"
+}

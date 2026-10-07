@@ -39,65 +39,31 @@ const accessibilityRules = [
   "vue/use-unique-element-ids",
 ];
 
-const locales = [
-  {
-    label: "English",
-    paths: [
-      path.join(repoRoot, "docs/content/rules/accessibility.md"),
-      path.join(repoRoot, "docs/content/rules/accessibility-core.md"),
-      path.join(repoRoot, "docs/content/rules/accessibility-structure.md"),
-      path.join(repoRoot, "docs/content/rules/accessibility-interactions.md"),
-      path.join(repoRoot, "docs/content/rules/accessibility-integrity.md"),
-    ],
-    severityLabel: "Default severity:",
-    presetsLabel: "Presets:",
-    optionsLabel: "Options:",
-    badLabel: "Bad:",
-    goodLabel: "Good:",
-    forbiddenHeading: /^## Additional Accessibility Rules$/m,
-  },
-  {
-    label: "Japanese",
-    paths: [path.join(repoRoot, "docs/content/ja/rules/accessibility.md")],
-    severityLabel: "既定の重大度:",
-    presetsLabel: "プリセット:",
-    optionsLabel: "オプション:",
-    badLabel: "悪い:",
-    goodLabel: "良い:",
-    forbiddenHeading: /^## 追加のアクセシビリティ ルール$/m,
-  },
-];
-
-for (const locale of locales) {
-  test(`${locale.label} accessibility docs expand every rule with examples`, () => {
-    const source = readDocs(locale.paths);
-    assert.doesNotMatch(
-      source,
-      locale.forbiddenHeading,
-      "accessibility docs must not group rules into a compact Additional section",
+for (const locale of ["", "ja/"]) {
+  test(`${locale || "English"} accessibility reference gives every rule a complete page`, () => {
+    const overview = fs.readFileSync(
+      path.join(repoRoot, `docs/content/${locale}rules/accessibility.md`),
+      "utf8",
     );
-
-    const documentedRules = [...source.matchAll(/^## `([^`]+)`$/gm)].map((match) => match[1]);
-    assert.deepEqual(documentedRules, accessibilityRules);
-
-    for (let index = 0; index < accessibilityRules.length; index += 1) {
-      const ruleId = accessibilityRules[index];
-      const start = source.indexOf(`## \`${ruleId}\``);
-      const nextRule = accessibilityRules[index + 1];
-      const end = nextRule === undefined ? source.length : source.indexOf(`## \`${nextRule}\``);
-      const section = source.slice(start, end);
-
-      assert.ok(section.includes(locale.severityLabel), `${ruleId} must document severity`);
-      assert.ok(section.includes(locale.presetsLabel), `${ruleId} must document preset membership`);
-      assert.ok(section.includes(locale.optionsLabel), `${ruleId} must document rule options`);
-      assert.ok(section.includes(locale.badLabel), `${ruleId} must include a bad example`);
-      assert.ok(section.includes(locale.goodLabel), `${ruleId} must include a good example`);
-      const examples = [...section.matchAll(/```vue\n[\s\S]*?\n```/gu)];
-      assert.ok(examples.length >= 2, `${ruleId} must include bad and good Vue examples`);
+    const links = [...overview.matchAll(/^\| \[`([^`]+)`\]\(\.\/reference\/([^)]*)\)/gm)];
+    assert.deepEqual(
+      links.map((row) => row[1]).sort((a, b) => a.localeCompare(b)),
+      [...accessibilityRules].sort((a, b) => a.localeCompare(b)),
+    );
+    for (const [_, ruleId, file] of links) {
+      const section = fs.readFileSync(
+        path.join(repoRoot, `docs/content/${locale}rules/reference/${file}`),
+        "utf8",
+      );
+      assert.ok(section.includes(`# \`${ruleId}\``));
+      for (const label of locale
+        ? ["既定の重大度:", "プリセット:", "オプション:", "## 悪い", "## 良い"]
+        : ["Default severity:", "Presets:", "Options:", "## Bad", "## Good"])
+        assert.ok(section.includes(label), `${ruleId}: ${label}`);
+      assert.ok(
+        [...section.matchAll(/```vue\n[\s\S]*?\n```/gu)].length >= 2,
+        `${ruleId}: two complete Vue witnesses`,
+      );
     }
   });
-}
-
-function readDocs(paths: string[]): string {
-  return paths.map((filePath) => fs.readFileSync(filePath, "utf8")).join("\n");
 }

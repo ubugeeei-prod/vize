@@ -34,6 +34,9 @@ const recipe = parse(
 const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
   jobs: Record<string, Job>;
 };
+const differential = parse(readRepoFile(".github", "workflows", "pr-rust-differential.yml")) as {
+  jobs: Record<string, Job>;
+};
 const actionPath = "./.github/actions/test-rust-workspace-differential";
 const lanes = [
   "pr-source-plan",
@@ -114,13 +117,19 @@ test("queue Rust retains full doctests and the unchanged feature tail beside req
   const workspace = steps.findIndex((step) =>
     /cargo test --workspace --profile ci --doc(?:;|$)/m.test(step.run ?? ""),
   );
-  const tail = steps.findIndex((step) => step.uses === actionPath);
-  const coverage = steps.findIndex((step) => step.name === "Check fixture coverage");
-  assert.ok(pkl >= 0 && pkl < workspace && workspace < tail && tail < coverage);
+  const sibling = differential.jobs["differential"].steps ?? [];
+  const tail = sibling.findIndex((step) => step.uses === actionPath);
+  const coverage = sibling.findIndex((step) => step.name === "Check fixture coverage");
+  assert.ok(pkl >= 0 && pkl < workspace && tail >= 0 && tail < coverage);
   assert.equal(steps[workspace].env?.VIZE_TEST_REQUIRE_TSGO, "1");
-  assert.equal(steps[tail].if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
-  assert.equal(steps[tail].with?.["workspace-already-tested"], "true");
-  assert.notEqual(steps[tail]["continue-on-error"], true);
+  assert.equal(rust.jobs["merge-rust-differential"].needs, "merge-rust-source");
+  assert.equal(
+    rust.jobs["merge-rust-differential"].uses,
+    "./.github/workflows/pr-rust-differential.yml",
+  );
+  assert.equal(sibling[tail].if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
+  assert.equal(sibling[tail].with?.["workspace-already-tested"], "true");
+  assert.notEqual(sibling[tail]["continue-on-error"], true);
   const manual = check.jobs["clippy-and-test"].steps?.find((step) => step.name === "Test");
   assert.equal(manual?.uses, actionPath);
   assert.equal(manual?.with?.["workspace-already-tested"], undefined);

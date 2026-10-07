@@ -5,6 +5,7 @@ on:
       release_pr: { type: string, required: true }
       expected_sha: { type: string, required: true }
       tag_name: { type: string, required: true }
+      pinned: { type: boolean, required: false, default: false }
 permissions: { contents: read, pull-requests: read }
 jobs:
   promotion:
@@ -23,4 +24,10 @@ jobs:
           RELEASE_PR: ${{ inputs.release_pr }}
           RELEASE_SHA: ${{ inputs.expected_sha }}
           RELEASE_TAG: ${{ inputs.tag_name }}
-        run: rust-script tools/commands/release/pr.rs wait-promotion "$RELEASE_PR" "$RELEASE_SHA" "$RELEASE_TAG"
+          RELEASE_PINNED: ${{ inputs.pinned }}
+        run: |
+          if [ "$RELEASE_PINNED" = true ]; then
+            rust-script tools/commands/release/pr.rs wait-promotion-pinned "$RELEASE_PR" "$RELEASE_SHA" "$RELEASE_TAG"
+          else
+            rust-script tools/commands/release/pr.rs wait-promotion "$RELEASE_PR" "$RELEASE_SHA" "$RELEASE_TAG"
+          fi

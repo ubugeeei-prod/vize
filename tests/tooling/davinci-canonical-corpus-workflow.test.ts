@@ -51,6 +51,13 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tools/support/compat/fixtures/davinci-dom-corpus-workflow.mjs",
     "tools/support/compat/davinci/lib/corpus-baseline-contract.mjs",
     "tools/support/compat/github/canonical-corpus-selection.mjs",
+    "tools/support/compat/github/canonical-corpus-identity.mjs",
+    "tools/support/compat/github/canonical-corpus-inventory.mjs",
+    "tools/support/compat/github/canonical-corpus-hydration.mjs",
+    "tools/support/compat/github/canonical-corpus-observer.mjs",
+    "tools/support/compat/github/canonical-corpus-workers.mjs",
+    "tests/tooling/support/canonical-corpus-worker-inventory.mjs",
+    "tests/tooling/fixtures/canonical-observer-logs/dom.log",
     "tools/support/compat/github/comparison-base.mjs",
     "tools/benchmarks/scripts/vue-benchmarks-current-typecheck.mjs",
     ".github/workflows/davinci-canonical-corpus.yml",
@@ -118,11 +125,23 @@ await test("ordinary source and queue reports require the strict reusable execut
   const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml"));
   const corpus = parse(readRepoFile(".github", "workflows", "davinci-canonical-corpus.yml"));
   const matrix = parse(readRepoFile(".github", "workflows", "real-project-matrix.yml"));
+  const worker = corpus.jobs["canonical-observers"];
+  assert.equal(corpus.jobs["davinci-dom-corpus"].needs, "canonical-observers");
+  assert.equal(corpus.jobs["davinci-dom-corpus"].if, "${{ always() }}");
+  assert.equal(worker.strategy["fail-fast"], false);
+  assert.equal(worker.strategy["max-parallel"], 3);
+  assert.deepEqual(worker.strategy.matrix.observer, ["dom", "ssr-pug", "reach"]);
+  assert.equal(
+    worker.steps.find((step) => step.name === "Upload required observer evidence").with.overwrite,
+    undefined,
+  );
   assert.deepEqual(matrix.jobs["davinci-dom-corpus"], {
+    permissions: { contents: "read", actions: "read" },
     uses: "./.github/workflows/davinci-canonical-corpus.yml",
     with: { davinci_dom_corpus_mode: "${{ inputs.davinci_dom_corpus_mode || 'enforce' }}" },
   });
   assert.deepEqual(source.jobs["canonical-corpus"], {
+    permissions: { contents: "read", actions: "read" },
     needs: "pr-source-plan",
     if: "${{ !cancelled() && needs.pr-source-plan.result == 'success' && needs.pr-source-plan.outputs.canonical-corpus == 'true' }}",
     uses: "./.github/workflows/davinci-canonical-corpus.yml",

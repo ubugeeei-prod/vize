@@ -144,14 +144,13 @@ pub(super) fn verify_git_release_target(tag: &str, sha: &str, version: &str) -> 
     if let Ok(number) = env::var("RELEASE_PR_NUMBER")
         && !number.is_empty()
     {
+        let command = if env::var("RELEASE_PINNED").is_ok_and(|value| value == "true") {
+            "validate-pinned"
+        } else {
+            "validate"
+        };
         let status = Command::new("rust-script")
-            .args([
-                "tools/commands/release/pr.rs",
-                "validate",
-                &number,
-                sha,
-                tag,
-            ])
+            .args(["tools/commands/release/pr.rs", command, &number, sha, tag])
             .current_dir(&root)
             .status()
             .map_err(|error| error.to_string())?;

@@ -100,16 +100,17 @@ void test("Rust tier gate rejects failed, cancelled, absent, and skipped require
   const success = { result: "success" };
   const needs = {
     "merge-rust-source": success,
+    "merge-rust-differential": success,
     "pr-rust-build": success,
     "pr-rust-shard": success,
   };
   assert.equal(requireRustTier("pull_request", "true", needs).exitCode, 0);
   for (const [event, jobs] of [
     ["pull_request", ["pr-rust-build", "pr-rust-shard"]],
-    ["merge_group", ["merge-rust-source", "pr-rust-shard"]],
+    ["merge_group", ["merge-rust-source", "merge-rust-differential", "pr-rust-shard"]],
   ])
     for (const job of jobs) {
-      for (const result of ["failure", "cancelled", "skipped"]) {
+      for (const result of ["failure", "cancelled", "skipped", "unknown"]) {
         assert.equal(requireRustTier(event, "true", { ...needs, [job]: { result } }).exitCode, 1);
       }
       const absent = { ...needs };

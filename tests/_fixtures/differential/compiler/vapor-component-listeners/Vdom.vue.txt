@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Child from "./Child.vue";
+const log = ref<string[]>([]);
+</script>
+
+<template>
+  <Child
+    @typed="(a: number) => log.push('typed ' + a)"
+    @plain="(a) => log.push('plain ' + a)"
+    @update-thing="log.push('kebab')"
+  />
+  <p>{{ log }}</p>
+</template>

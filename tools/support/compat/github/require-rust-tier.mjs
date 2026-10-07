@@ -10,7 +10,7 @@ export function requireRustTier(event, runRust, needs) {
     throw new Error("Merge queue must select the complete Rust workspace");
   const required =
     event === "merge_group"
-      ? ["merge-rust-source", "pr-rust-shard"]
+      ? ["merge-rust-source", "merge-rust-differential", "pr-rust-shard"]
       : runRust === "true"
         ? ["pr-rust-build", "pr-rust-shard"]
         : [];

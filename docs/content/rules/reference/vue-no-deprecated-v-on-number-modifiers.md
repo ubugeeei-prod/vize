@@ -1,0 +1,57 @@
+---
+title: "vue/no-deprecated-v-on-number-modifiers"
+---
+
+# `vue/no-deprecated-v-on-number-modifiers`
+
+Disallow deprecated numeric `keyCode` modifiers on `v-on`
+
+Default severity: `error`  
+Presets: _none_  
+Automatic fix: None; review the suggested change  
+Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
+Options: No rule-specific options. Severity and preset selection are configurable.
+
+## Configuration (Vite+)
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "preset": "incremental",
+      "rules": {
+        "vue/no-deprecated-v-on-number-modifiers": "error"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## Bad
+
+```vue
+<template>
+<input @keyup.13="submit" />
+<input v-on:keyup.27="cancel" />
+<input @keyup.13.stop="submit" />
+</template>
+```
+
+## Good
+
+```vue
+<template>
+<input @keyup.enter="submit" />
+<input @keyup.esc="cancel" />
+</template>
+```
+
+Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs#L43) · [All rules](../all.md)
