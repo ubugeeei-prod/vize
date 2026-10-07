@@ -1,3 +1,4 @@
+mod authored_element;
 mod component_name_in_template_casing;
 mod html_button_has_type;
 mod html_self_closing;

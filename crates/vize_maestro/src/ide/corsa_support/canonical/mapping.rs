@@ -30,6 +30,62 @@ pub(super) fn source_offset_to_virtual_generated_offset(
     )
 }
 
+/// Public declarations can be emitted both in the exported component type and
+/// in the original setup statement. Keep every exact reverse-mapped identity;
+/// selecting only the narrowest row loses native destructure property edits.
+pub(super) fn source_range_to_virtual_positions(
+    result: &VirtualTsResult,
+    source: &str,
+    authored_range: &std::ops::Range<usize>,
+) -> Vec<(u32, u32)> {
+    if authored_range.start >= authored_range.end || authored_range.end > source.len() {
+        return Vec::new();
+    }
+    let Some(expected) = source_range(source, authored_range.start, authored_range.end) else {
+        return Vec::new();
+    };
+    let mut positions = Vec::new();
+    for mapping in &result.source_mappings {
+        let contains = |range: &std::ops::Range<usize>| {
+            range.start <= authored_range.start && authored_range.end <= range.end
+        };
+        if !contains(&mapping.src_range)
+            && !mapping
+                .sub_spans
+                .iter()
+                .any(|span| contains(&span.src_range))
+        {
+            continue;
+        }
+        let start = result
+            .import_source_map
+            .get_virtual_offset(
+                map_source_offset_to_generated(mapping, authored_range.start) as u32,
+            );
+        let end = result
+            .import_source_map
+            .get_virtual_offset(map_source_offset_to_generated(mapping, authored_range.end) as u32);
+        let (line, character) = LineBreaks::Lsp.offset_to_position(&result.code, start as usize);
+        let (end_line, end_character) =
+            LineBreaks::Lsp.offset_to_position(&result.code, end as usize);
+        let range = vize_canon::LspRange {
+            start: vize_canon::LspPosition { line, character },
+            end: vize_canon::LspPosition {
+                line: end_line,
+                character: end_character,
+            },
+        };
+        if map_virtual_result_lsp_range_to_source(source, result, &range)
+            .is_some_and(|mapped| mapped == expected)
+        {
+            positions.push((line, character));
+        }
+    }
+    positions.sort_unstable();
+    positions.dedup();
+    positions
+}
+
 pub(super) fn materialized_source_offset_to_generated_offset(
     source: &CanonicalMaterializedSource,
     source_offset: usize,
@@ -248,5 +304,36 @@ mod tests {
             let mapping = mapping_for_source_offset(&mappings, 32).expect("property key");
             assert_eq!(map_source_offset_to_generated(mapping, 32), 151);
         }
+    }
+    #[test]
+    fn public_declaration_keeps_exported_and_setup_native_identities() {
+        use crate::ide::DiagnosticService;
+        use tower_lsp::lsp_types::Url;
+
+        let source = "<script setup lang=\"ts\">\nconst { label } = defineProps<{ label: string }>();\n</script>";
+        let uri = Url::parse("file:///workspace/Child.vue").expect("URI");
+        let result = DiagnosticService::generate_virtual_ts(&uri, source, false, false)
+            .expect("virtual document");
+        let start = source.rfind("label").expect("public declaration");
+        let positions =
+            super::source_range_to_virtual_positions(&result, source, &(start..start + 5));
+        assert!(
+            positions.len() >= 2,
+            "all public identities: {positions:?}; {}",
+            result.code
+        );
+        for (line, character) in positions {
+            let offset = crate::ide::position_to_offset(&result.code, line, character)
+                .expect("generated position");
+            assert_eq!(result.code.get(offset..offset + 5), Some("label"));
+        }
+        assert!(
+            super::source_range_to_virtual_positions(
+                &result,
+                source,
+                &(source.len()..source.len() + 1)
+            )
+            .is_empty()
+        );
     }
 }

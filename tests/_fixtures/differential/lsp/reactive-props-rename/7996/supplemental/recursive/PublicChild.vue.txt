@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Self from "./Child.vue";
+const { heading: label } = defineProps<{ heading: string }>();
+</script>
+
+<template>
+  <Self :heading="label" />
+  <input :id="label" />
+  {{ label }}
+</template>

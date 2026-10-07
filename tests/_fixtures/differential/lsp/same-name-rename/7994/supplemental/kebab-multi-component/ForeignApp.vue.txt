@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Panel from "./Panel.vue";
+import Wrapper from "./Wrapper.vue";
+</script>
+
+<template>
+  <Panel :is-opened="true" />
+  <Wrapper :expanded="false" />
+</template>

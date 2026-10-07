@@ -3603,7 +3603,7 @@ vapor/require-vapor-attribute · lint 规则
 适用范围: the SFC's top-level blocks, their order and their attributes
 严重级别: 警告
 类别: vapor
-自动修复: 支持
+自动修复: 不支持
 文档: docs/content/rules/vapor.md
 === vue/a11y-img-alt
 vue/a11y-img-alt · lint 规则

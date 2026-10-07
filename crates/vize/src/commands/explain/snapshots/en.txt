@@ -3492,7 +3492,7 @@ tier: exact
 domain: the SFC's top-level blocks, their order and their attributes
 severity: warning
 category: vapor
-autofix: yes
+autofix: no
 docs: docs/content/rules/vapor.md
 === vue/a11y-img-alt
 vue/a11y-img-alt · lint rule

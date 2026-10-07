@@ -43,7 +43,7 @@ test("source planning installs the declared Node runtime before TypeScript impor
   for (const step of [steps[toolchain], steps[metadata]]) {
     assert.equal(step.if, "${{ steps.plan.outputs.rust == 'true' }}");
   }
-  assert.equal(steps[toolchain].with?.toolchain, "1.98.0");
+  assert.equal(steps[toolchain].with?.toolchain, "1.99.0");
   assert.equal(plan.outputs?.tooling, "${{ steps.tooling-plan.outputs.tooling }}");
   assert.equal(
     plan.outputs?.["tooling-matrix"],

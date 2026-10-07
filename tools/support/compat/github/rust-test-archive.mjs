@@ -30,7 +30,7 @@ export async function createArchiveReceipt(
     ? env.VIZE_TEST_DISABLE_TSGO
     : null;
   if (
-    !rustcVersion?.startsWith("rustc 1.98.0 ") ||
+    !rustcVersion?.startsWith("rustc 1.99.0 ") ||
     !nextestVersion?.includes("0.9.146") ||
     !(
       (requireTsgo === "1" && disableTsgo === null) ||

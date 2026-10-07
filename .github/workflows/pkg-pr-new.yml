@@ -34,8 +34,8 @@ jobs:
       - name: Install rust-script
         run: |
           set -euo pipefail
-          rustup toolchain install 1.98.0 --profile minimal --no-self-update
-          rustup default 1.98.0
+          rustup toolchain install 1.99.0 --profile minimal --no-self-update
+          rustup default 1.99.0
           if command -v rust-script >/dev/null 2>&1; then
             rust_script_version="$(rust-script --version)"
             printf '%s\n' "$rust_script_version"

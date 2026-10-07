@@ -101,19 +101,25 @@ async function fixture() {
   const archive = join(archiveRoot, "tests.tar.zst");
   writeFileSync(archive, "exact producer archive bytes");
   const receiptPath = join(archiveRoot, "receipt.json");
+  const compiler = job.steps.find((step) => step.uses?.startsWith("dtolnay/rust-toolchain@"));
+  const rustcVersion = `rustc ${compiler.with.toolchain} (fixture)`;
   const context = {
     cwd,
     nextestVersion: "cargo-nextest 0.9.146",
-    rustcVersion: "rustc 1.98.0 (fixture)",
+    rustcVersion,
     env: job.env,
   };
+  await assert.rejects(
+    createArchiveReceipt(archive, { ...context, rustcVersion: "rustc 1.98.0 (fixture)" }),
+    /Rust archive requires the pinned CI toolchain and TSGO runtime envelope/,
+  );
   const receipt = await createArchiveReceipt(archive, context);
   writeFileSync(receiptPath, JSON.stringify(receipt));
   const bin = join(cwd, "bin");
   const log = join(cwd, "commands.jsonl");
   mkdirSync(bin);
   writeFileSync(log, "");
-  writeFileSync(join(bin, "rustc"), "#!/bin/sh\nprintf 'rustc 1.98.0 (fixture)\\n'\n", {
+  writeFileSync(join(bin, "rustc"), `#!/bin/sh\nprintf '%s\\n' '${rustcVersion}'\n`, {
     mode: 0o755,
   });
   const simulated = `#!/bin/sh

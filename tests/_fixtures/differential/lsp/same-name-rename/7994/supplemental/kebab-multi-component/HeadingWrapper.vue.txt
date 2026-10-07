@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import Panel from "./Panel.vue";
+
+const { isOpened } = defineProps<{ isOpened: boolean }>();
+const caption = "Title";
+</script>
+
+<template>
+  <Panel
+    :is-opened
+    :heading="caption"
+  />
+</template>

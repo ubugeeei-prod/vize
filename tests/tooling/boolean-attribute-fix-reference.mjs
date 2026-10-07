@@ -58,17 +58,18 @@ function message(source, target, rule, text) {
 }
 
 export function wholeJson(entry, after = false, originalRules = false) {
+  const source = after ? fixedSource(entry, originalRules) : entry.source;
   const messages = [];
-  if (originalRules) {
+  if (originalRules && !after) {
     messages.push(
       message(
-        entry.source,
+        source,
         "<MyCard>",
         "vue/html-self-closing",
         "Empty component should be self-closing",
       ),
       message(
-        entry.source,
+        source,
         "<my-card />",
         "vue/component-name-in-template-casing",
         "Component should use PascalCase",
@@ -77,7 +78,7 @@ export function wholeJson(entry, after = false, originalRules = false) {
     if (!after)
       messages.push(
         message(
-          entry.source,
+          source,
           "v-slot:header",
           "vue/v-slot-style",
           "Expected '#header' instead of 'v-slot:header'",
@@ -88,7 +89,7 @@ export function wholeJson(entry, after = false, originalRules = false) {
     if (after && finding.fix) continue;
     messages.push(
       message(
-        entry.source,
+        source,
         finding.target,
         RULE,
         `Boolean attribute "${finding.name}" should not have value "${finding.value}"`,
@@ -99,6 +100,10 @@ export function wholeJson(entry, after = false, originalRules = false) {
 }
 
 export function fixedSource(entry, originalRules = false) {
-  // The unchanged original config now applies both independently authored edits.
-  return originalRules ? entry.fixed.replace("v-slot:header", "#header") : entry.fixed;
+  return originalRules
+    ? entry.fixed
+        .replace("v-slot:header", "#header")
+        .replace("<MyCard></MyCard>", "<MyCard />")
+        .replace("<my-card />", "<MyCard />")
+    : entry.fixed;
 }

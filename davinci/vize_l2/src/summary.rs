@@ -213,7 +213,6 @@ impl SfcSummary {
     }
 
     /// Every declaration, in `(facet, name)` order: facet, name, contract.
-    #[must_use]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = (Facet, &str, &str)> + '_ {
         self.declarations
             .iter()

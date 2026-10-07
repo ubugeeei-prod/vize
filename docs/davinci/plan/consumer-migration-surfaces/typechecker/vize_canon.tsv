@@ -593,7 +593,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	13	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	13	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	13	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	244	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/expressions/prop_sources.rs	262	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/props_literal.rs	19	carton	Carton host/compatibility	old	vize_carton	legacy	5
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/props_literal.rs	19	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/props_literal/prop_entry.rs	13	carton	Carton host/compatibility	old	vize_carton	legacy	1
