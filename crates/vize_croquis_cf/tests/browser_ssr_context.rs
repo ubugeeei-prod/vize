@@ -42,7 +42,7 @@ fn scripts(source: &str) -> Result<Vec<Script<'_>>, &'static str> {
 }
 
 fn draw(script: &Script<'_>) -> Croquis {
-    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_binding_occurrences();
     if script.setup {
         analyzer.analyze_script_setup(script.content);
     } else {

@@ -75,7 +75,10 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
             // local or imported bindings and are only valid at module top
             // level, so lift them out of the synthetic `__setup` function.
             if export.declaration.is_none() {
-                if !export.export_kind.is_type() && !result.skip_diagnostics {
+                if !export.export_kind.is_type()
+                    && !result.skip_diagnostics
+                    && result.occurrence_capture.is_some()
+                {
                     result.setup_context.refuse_ssr_functions();
                 }
                 result.re_exports.push(ReExportInfo {
@@ -86,7 +89,10 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
             }
 
             if let Some(decl) = &export.declaration {
-                if !export.export_kind.is_type() && !result.skip_diagnostics {
+                if !export.export_kind.is_type()
+                    && !result.skip_diagnostics
+                    && result.occurrence_capture.is_some()
+                {
                     result.setup_context.refuse_ssr_functions();
                 }
                 // Check if the declaration itself is a type declaration

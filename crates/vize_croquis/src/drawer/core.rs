@@ -66,7 +66,7 @@ impl Drawer {
     /// Create drawer with specific options
     #[inline]
     pub fn with_options(options: DrawerOptions) -> Self {
-        let drawer = Self {
+        Self {
             options,
             track_unused_bindings: false,
             options_api: false,
@@ -81,14 +81,6 @@ impl Drawer {
             template_source: CompactString::default(),
             ident_cache: FxHashMap::default(),
             occurrence_capture: None,
-        };
-        if options.analyze_script
-            && options.detect_undefined
-            && options.collect_template_expressions
-        {
-            drawer.with_binding_occurrences()
-        } else {
-            drawer
         }
     }
 
@@ -117,12 +109,6 @@ impl Drawer {
         };
         match packet {
             Some(packet) => drawer.with_binding_occurrence_packet(packet),
-            None if options.analyze_script
-                && options.detect_undefined
-                && options.collect_template_expressions =>
-            {
-                drawer.with_binding_occurrences()
-            }
             None => drawer,
         }
     }

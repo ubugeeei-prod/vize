@@ -104,3 +104,27 @@ diagnostic vectors and the committed assertion allowlist unchanged. Hosted
 requalification, rather than a new heavy local build, verifies this correction.
 No performance improvement is claimed from local results. Actual queue merge,
 signed main, release and public distribution remain root-owned acceptance.
+
+## Protected instruction regression and explicit demand
+
+[Paired issue decision](https://github.com/ubugeeei-prod/vize/issues/7908#issuecomment-6048944211) records this correction.
+
+The first protected candidate `24e5aea5` failed five genuine Croquis full-analysis
+ceilings in job `113062557255`: small 193881/184254, large 3002042/2786473,
+stress-deep 269206/263737, stress-wide 653599/626201 and stress-interp
+1475400/1320076. The immediately preceding `7ceb8747` job `113061732264`
+passed all 100 level and four formatter ceilings. Retain both complete raw logs
+and measured artifacts; the red candidate was removed from the queue.
+
+Automatic full-mode occurrence capture made ordinary compiler/type-checker
+analysis allocate and resolve facts that only a cross-file diagnostic requested.
+Restore demand-only Drawer construction and retain inherited complete packets.
+The actual cross-file SFC, Doctor, raw-module and native producer adapters use the
+existing occurrence-capture APIs explicitly; new SSR AST note helpers also
+require that demand. This adds no parse, compiler stage, public option or
+serialization. Keep all 38 whole vectors, the complete 450-line original corpus,
+all original laws, benchmark inputs and 104 ceilings unchanged. The new full-mode
+law verifies absent ordinary capture and equal complete public outputs under
+explicit capture. Fresh hosted source/runtime and standalone instruction
+measurements, followed by a newly composed protected candidate, remain required;
+the repaired instruction counts are unmeasured until those Actions complete.

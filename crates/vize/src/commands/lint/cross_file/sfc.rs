@@ -6,7 +6,7 @@ use std::path::Path;
 use vize_armature::Parser;
 use vize_atelier_sfc::{
     SfcParseOptions,
-    croquis::{SfcCroquisOptions, analyze_sfc_descriptor},
+    croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_occurrences as capture_sfc},
     parse_sfc,
 };
 use vize_croquis::Croquis;
@@ -85,9 +85,13 @@ pub(super) fn analyze_sfc_for_cross_file(
             offsets.fallthrough_root = fallthrough_root(&root);
             Some(&root)
         };
-        analyze_sfc_descriptor(&descriptor, template_ast, SfcCroquisOptions::full())
+        capture_sfc(&descriptor, template_ast, SfcCroquisOptions::full())
+            .0
+            .croquis
     } else {
-        analyze_sfc_descriptor(&descriptor, None, SfcCroquisOptions::full())
+        capture_sfc(&descriptor, None, SfcCroquisOptions::full())
+            .0
+            .croquis
     };
 
     if offsets.fallthrough_root.is_some() || analysis.template_info.inherit_attrs_disabled {

@@ -18,7 +18,7 @@ pub(super) fn note_guard(
     stmt: &Statement<'_>,
     following_end: Option<u32>,
 ) {
-    if result.skip_diagnostics {
+    if result.skip_diagnostics || result.occurrence_capture.is_none() {
         return;
     }
     let Statement::IfStatement(branch) = stmt else {

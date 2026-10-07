@@ -7,7 +7,7 @@ use super::ScriptParseResult;
 
 /// Record callback candidates; complete final occurrences establish Vue identity.
 pub(super) fn note_call(result: &mut ScriptParseResult, call: &CallExpression<'_>) {
-    if result.skip_diagnostics {
+    if result.skip_diagnostics || result.occurrence_capture.is_none() {
         return;
     }
     let Expression::Identifier(identifier) = call.callee.get_inner_expression() else {

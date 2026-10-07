@@ -5,7 +5,7 @@ use oxc_ast::ast::{BindingPattern, Expression, Function, Statement};
 use oxc_span::GetSpan;
 
 pub(super) fn note_function(result: &mut ScriptParseResult, function: &Function<'_>) {
-    if !result.skip_diagnostics {
+    if !result.skip_diagnostics && result.occurrence_capture.is_some() {
         result.setup_context.note_ssr_function(
             (function.span.start, function.span.end),
             function.id.as_ref().map(|id| (id.span.start, id.span.end)),
@@ -14,7 +14,7 @@ pub(super) fn note_function(result: &mut ScriptParseResult, function: &Function<
 }
 
 pub(super) fn note_arrow(result: &mut ScriptParseResult, expression: &Expression<'_>) {
-    if !result.skip_diagnostics {
+    if !result.skip_diagnostics && result.occurrence_capture.is_some() {
         let span = expression.span();
         result
             .setup_context
@@ -27,7 +27,7 @@ pub(super) fn note_initializer(
     pattern: &BindingPattern<'_>,
     expression: Option<&Expression<'_>>,
 ) {
-    if result.skip_diagnostics {
+    if result.skip_diagnostics || result.occurrence_capture.is_none() {
         return;
     }
     let (BindingPattern::BindingIdentifier(id), Some(expression)) = (pattern, expression) else {
