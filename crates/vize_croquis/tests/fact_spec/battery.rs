@@ -23,11 +23,11 @@ import { ref } from "vue";
 function helper() {}
 class Model {}
 enum Color { Red }
-const enum Erased { A }
+const enum Preserved { A }
 declare enum Declared { B }
 declare function ambient(): void;
 </script>
-<template><p>{{ named }} {{ renamed }} {{ value }} {{ Color.Red }}</p></template>
+<template><p>{{ named }} {{ renamed }} {{ value }} {{ Color.Red }} {{ Preserved.A }}</p></template>
 "#;
 
 const INITIALIZERS: &str = r#"<script setup lang="ts">

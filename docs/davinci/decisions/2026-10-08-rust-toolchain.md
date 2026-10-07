@@ -66,3 +66,25 @@ main `cd7adbdd1bcf6dd8bc92734a9a4108da6eb3284f`, preserving all incoming product
 formatter/vendor/dependency and original fixture bytes alongside these owned
 changes. Keep the mandatory target and full source/native/corpus/instruction
 gates; adding no missing-target skip or test waiver.
+
+Protected candidate `ad413976a3bb1de21852174e0bd2fb0416ab737b` authentically
+passes n8n compiler/runtime/authored navigation, all 104 original ceilings and
+the full zero-divergence corpus. Its four Rust workers still fail the incoming
+typechecker observation verifier: a hardcoded 1.98 compiler assertion rejects
+the genuine 1.99 producer. Preserve that failed candidate as historical proof;
+neither its passing subset nor source `fbf3671a34` completes protected delivery.
+
+Genuinely incorporate signed current main
+`f3ed2ee49cd50619830b3db6a2ae2d946f18ec5e`, preserving all incoming source,
+original fixtures and the delivered authored n8n workflow alongside the owned
+Rust changes. Worker and aggregate receipt validation now derives its compiler
+from `rust-toolchain.toml` at the exact committed source revision. Only reviewed
+source pins 1.98 and 1.99 are supported; actual compiler banners must match that
+source pin. Missing, stale, malformed and unsupported source/compiler stamps
+fail, and an uncommitted working-tree pin cannot change the authority. Keep all
+other receipt/source/tree/executable/JUnit/observation/four-worker guards exact.
+The current synthetic accounting producer follows its committed source pin;
+all stored historical 1.98 fixtures and metadata stay unchanged. Original plus
+new transport controls pass locally, without runtime acceptance credit. Fresh
+whole-source, all four workers, original 104 ceilings, native, n8n and protected
+corpus gates remain mandatory before actual delivery.

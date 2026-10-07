@@ -1,0 +1,3 @@
+<template>
+  <Widget @click="state.openCurrentEditor()" other="x" />
+</template>

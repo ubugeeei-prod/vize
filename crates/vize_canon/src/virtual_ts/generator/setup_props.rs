@@ -172,6 +172,7 @@ impl SetupPropsPlan {
         source: PropsSource<'_>,
         check_props: bool,
         semantic_links: &mut Vec<crate::virtual_ts::VizeSemanticLink>,
+        props_shadow_anchor: Option<&std::ops::Range<usize>>,
     ) {
         let summary = source.summary;
         let mut binding_mappings = PropBindingMappings::new(
@@ -181,7 +182,13 @@ impl SetupPropsPlan {
             source.script,
             source.offset,
         );
-        generate_props_variables(ts, &mut binding_mappings, summary, check_props);
+        generate_props_variables(
+            ts,
+            &mut binding_mappings,
+            summary,
+            check_props,
+            props_shadow_anchor,
+        );
     }
 
     pub(super) fn component_props_type_ref(&self) -> &'static str {

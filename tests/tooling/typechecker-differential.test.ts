@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +16,7 @@ import {
 import {
   aggregateTypecheckerWorkers,
   passedFixtureTests,
+  typecheckerSourceIdentity,
 } from "../differential/typechecker-shards.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -215,10 +215,7 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
   t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
   const artifacts = path.join(directory, "artifacts");
   const outputDir = path.join(directory, "output");
-  const git = (...args: string[]) =>
-    execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim();
-  const sha = git("rev-parse", "HEAD");
-  const tree = git("rev-parse", "HEAD^{tree}");
+  const { sha, tree, toolchain } = typecheckerSourceIdentity(root);
   const actualReceipt = Buffer.from(
     JSON.stringify({
       schemaVersion: 3,
@@ -226,7 +223,7 @@ test("four-worker reconciliation rejects missing workers, stale sources and dupl
       tree,
       cargoProfile: "ci",
       nextestVersion: "0.9.146",
-      rustcVersion: "rustc 1.98.0 synthetic-unit-test",
+      rustcVersion: `rustc ${toolchain} synthetic-unit-test`,
       requireTsgo: "1",
       disableTsgo: null,
       nuxtIterations: "100",

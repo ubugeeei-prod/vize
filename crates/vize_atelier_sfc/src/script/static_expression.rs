@@ -1,8 +1,46 @@
 //! Vue-compatible static expression classification for TypeScript enums.
 
-use oxc_ast::ast::{Expression, TSEnumDeclaration};
+use oxc_ast::ast::{
+    BindingPattern, Expression, Statement, TSEnumDeclaration, VariableDeclarationKind,
+};
 
 use crate::types::{BindingMetadata, BindingType};
+
+/// The declaration shape that the SFC assembler can move to module scope.
+/// Literal binding metadata alone also covers literals that stay in setup.
+pub(crate) fn hoistable_literal_name<'s>(statement: &'s Statement<'_>) -> Option<&'s str> {
+    let Statement::VariableDeclaration(declaration) = statement else {
+        return None;
+    };
+    let [declarator] = declaration.declarations.as_slice() else {
+        return None;
+    };
+    if declaration.kind != VariableDeclarationKind::Const {
+        return None;
+    }
+    let BindingPattern::BindingIdentifier(identifier) = &declarator.id else {
+        return None;
+    };
+    let mut expression = declarator.init.as_ref()?;
+    loop {
+        expression = match expression {
+            Expression::ParenthesizedExpression(inner) => &inner.expression,
+            Expression::TSAsExpression(inner) => &inner.expression,
+            Expression::TSSatisfiesExpression(inner) => &inner.expression,
+            Expression::TSNonNullExpression(inner) => &inner.expression,
+            _ => break,
+        };
+    }
+    matches!(
+        expression,
+        Expression::NumericLiteral(_)
+            | Expression::StringLiteral(_)
+            | Expression::BooleanLiteral(_)
+            | Expression::BigIntLiteral(_)
+            | Expression::NullLiteral(_)
+    )
+    .then_some(identifier.name.as_str())
+}
 
 pub(crate) fn is_static_enum(declaration: &TSEnumDeclaration<'_>) -> bool {
     declaration

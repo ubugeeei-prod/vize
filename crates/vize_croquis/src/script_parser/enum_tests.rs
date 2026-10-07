@@ -26,7 +26,7 @@ fn runtime_enum_binding_span_is_captured() {
 }
 
 #[test]
-fn const_and_declare_enums_stay_type_only() {
+fn const_enums_are_runtime_bindings_and_declare_enums_stay_type_only() {
     let result = parse_script_setup(
         r#"
 const enum ConstStatus {
@@ -38,6 +38,9 @@ declare enum AmbientStatus {
 "#,
     );
 
-    assert!(!result.bindings.contains("ConstStatus"));
+    assert_eq!(
+        result.bindings.get("ConstStatus"),
+        Some(BindingType::SetupConst)
+    );
     assert!(!result.bindings.contains("AmbientStatus"));
 }
