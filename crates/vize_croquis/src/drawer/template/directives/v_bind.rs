@@ -19,7 +19,7 @@ impl Drawer {
     pub(in crate::drawer) fn handle_v_bind_directive(
         &mut self,
         dir: &vize_relief::DirectiveNode<'_>,
-        _el: &ElementNode<'_>,
+        el: &ElementNode<'_>,
         scope_vars: &mut Vec<CompactString>,
     ) {
         if let Some(ref exp) = dir.exp {
@@ -31,10 +31,16 @@ impl Drawer {
                     compound_content.as_str()
                 }
             };
-            // A camelized shorthand value is synthesized from the static
-            // argument; its expression location can be an empty parser span.
+            // A component shorthand's camelized value is synthesized from
+            // its argument. DOM/slot checks retain their AST expression keys.
             let loc = match dir.arg.as_ref() {
-                Some(ExpressionNode::Simple(arg)) if dir.shorthand && arg.is_static => &arg.loc,
+                Some(ExpressionNode::Simple(arg))
+                    if dir.shorthand
+                        && arg.is_static
+                        && el.tag_type == vize_relief::ElementType::Component =>
+                {
+                    &arg.loc
+                }
                 _ => exp.loc(),
             };
 

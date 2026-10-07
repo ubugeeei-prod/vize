@@ -59,9 +59,10 @@ complete transactions matched too. Panel's `v-if` is present. These exact
 packets and the complete [failed worker log](https://github.com/ubugeeei-prod/vize/actions/runs/37673937304/job/112975443433)
 preserve the independent pre-query goldens. This source is unqualified.
 
-The parser-marked same-name binding owns the authored static argument, even
-when its synthesized camelized expression has an empty location. Record that
-argument's complete source location in the template expression. Component prop
+For parser-classified components, a parser-marked same-name binding owns the
+authored static argument, even when its synthesized camelized expression has an
+empty location. Record that argument's complete source location in the template
+expression. Component prop
 value emission previously searched the raw attribute for `isOpened`, which is
 absent from `:is-opened`; lacking a value range, the props literal lost both
 key/value subspans and mapped through the broad fallback. For a retained dynamic
@@ -75,3 +76,23 @@ removed by zero length, spelling or endpoint count. Fresh complete source and
 REQUIRE_TSGO execution must rerun all four failing sessions, the other original
 12, existing reactive/recursive controls and the three old native bodies before
 normal readmission. No prior edit-only success qualifies the reference contract.
+
+## Preserve native check table ownership
+
+Source `c49d8021f8` genuinely passed all 16 complete original-report packets:
+references, WorkspaceEdit, actual source/disk/version-2 diagnostics and the
+independent version-3 repair. Existing 32 reactive/intersection and 40 recursive
+sessions plus three geometry laws also passed through current source workers.
+Those observations remain bound to that exact source and do not qualify a
+successor; optional native model/package/event bodies still need actual full
+execution.
+
+Restrict the expression-location correction to parser-classified component
+nodes with static parser-marked shorthand. Native DOM and slot typed-check
+tables use their original AST expression ranges as join keys; retaining those
+locations preserves their existing check routes. This is a source-ownership
+preservation guard, without an inferred DOM runtime failure or returned-range
+filter. Preserve all independent 16/32/40/three oracles and existing meaningful
+DOM/native controls byte for byte. Before readmission, require one fresh exact
+source full REQUIRE_TSGO execution and normal source Actions, then the new
+protected candidate, actual signed merge and separate release verification.
