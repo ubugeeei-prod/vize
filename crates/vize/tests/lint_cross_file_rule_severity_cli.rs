@@ -69,18 +69,35 @@ fn custody(root: &Path) {
         assert_eq!(json!(hash(&bytes)), file["sha256"]);
     }
     let report = fs::read_to_string(root.join("issue-7932.md")).unwrap();
-    for path in [
-        "inputs/reported-nuxt/src/components/user-link.vue.txt",
-        "inputs/reported-nuxt/src/components/user-link.test.ts.txt",
+    for (language, path) in [
+        (
+            "vue",
+            "inputs/reported-nuxt/src/components/user-link.vue.txt",
+        ),
+        (
+            "ts",
+            "inputs/reported-nuxt/src/components/user-link.test.ts.txt",
+        ),
     ] {
         let source = fs::read_to_string(root.join(path)).unwrap();
-        assert!(report.contains(&source));
+        assert_eq!(fenced_blocks(&report, language), [source]);
     }
     let report = fs::read_to_string(root.join("issue-7935.md")).unwrap();
-    for path in ["original-vize.config.json.txt", "original-command.txt"] {
+    for (language, path) in [
+        ("json", "original-vize.config.json.txt"),
+        ("sh", "original-command.txt"),
+    ] {
         let source = fs::read_to_string(root.join(path)).unwrap();
-        assert!(report.contains(&source));
+        assert_eq!(fenced_blocks(&report, language), [source]);
     }
+}
+
+fn fenced_blocks(report: &str, language: &str) -> Vec<String> {
+    report
+        .split(&format!("```{language}\n"))
+        .skip(1)
+        .map(|block| block.split("```").next().unwrap().to_owned())
+        .collect()
 }
 
 #[test]

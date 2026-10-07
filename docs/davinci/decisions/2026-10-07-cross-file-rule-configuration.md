@@ -74,3 +74,15 @@ file access in the composed HTML appender. Its existing checked
 file/template/result guard now supplies that same path, preserving the
 diagnostic and settings without a panic path. All whole corpus vectors
 remain unchanged; the authentic failed compiler raw is retained separately.
+
+Source tooling also requires the consumer surface shard to reflect the
+changed imports and removes the original production-file assertion-debt
+exemption after the move. Regeneration uses the unchanged existing
+generator; only the obsolete exemption is removed. No checker, allowlist
+expansion, corpus denominator or expected report changes. The original
+whole current-head tooling failures remain retained.
+
+Original-input custody now compares the complete supplied code-block
+arrays with the complete fixture bytes, replacing two new substring
+checks. Whole issue bodies remain catalog-pinned and all 74 process
+contracts stay exact. No exemption or checker change is introduced.
