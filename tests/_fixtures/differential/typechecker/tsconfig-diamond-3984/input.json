@@ -1,0 +1,82 @@
+{
+  "issue": 3984,
+  "externalOracle": {
+    "compiler": "typescript6.0.3",
+    "sourceProjectConfiguration": "The same configs/shared.json, configs/first.json, configs/second.json and TS/JS inputs are used by the preserved full official --showConfig oracle; Vue is an additional Vize-only authored root.",
+    "officialReference": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html#supporting-multiple-configuration-files-in-extends"
+  },
+  "files": {
+    "configs/first.json": "{\n  \"extends\": \"./shared.json\",\n  \"compilerOptions\": {\n    \"rootDir\": \"../src/first\",\n    \"allowJs\": true,\n    \"declarationMap\": false,\n    \"declarationDir\": \"../types-first\",\n    \"outDir\": \"../dist-first\"\n  },\n  \"include\": [\n    \"../src/first/**/*\"\n  ],\n  \"exclude\": [\n    \"../src/first/skip.ts\"\n  ]\n}\n",
+    "configs/second.json": "{\n  \"extends\": \"./shared.json\",\n  \"compilerOptions\": {\n    \"noUnusedParameters\": true\n  }\n}\n",
+    "configs/shared.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"rootDir\": \"../src/base\",\n    \"allowJs\": false,\n    \"declaration\": true,\n    \"declarationMap\": true,\n    \"declarationDir\": \"../types-base\",\n    \"outDir\": \"../dist-base\",\n    \"noEmit\": true\n  },\n  \"include\": [\n    \"../src/base/**/*\"\n  ],\n  \"exclude\": [\n    \"../src/base/skip.ts\"\n  ]\n}\n",
+    "src/first/first.ts": "export const first = \"ok\";\n",
+    "src/first/skip.ts": "export const firstSkipped: string = 42;\n",
+    "src/base/main.ts": "export const value: string = 42;\n",
+    "src/base/main.js": "/** @type {string} */ export const jsValue = 42;\n",
+    "src/base/skip.ts": "export const skipped: string = 42;\n",
+    "tsconfig.json": "{\n  \"extends\": [\n    \"./configs/first.json\",\n    \"./configs/second.json\"\n  ]\n}\n",
+    "src/base/App.vue": "<script setup lang=\"ts\">\nexport interface PublicProps { label: string }\ndefineProps<PublicProps>()\n</script>\n<template>{{ label }}</template>\n"
+  },
+  "repair": "export const value: string = \"ok\";\n",
+  "consumer": "import { value } from \"@scope/diamond\";\nimport App from \"@scope/diamond/App.vue\";\ntype Props = InstanceType<typeof App>[\"$props\"];\nconst text: typeof value = \"ok\";\nconst props: Props = { label: text };\nvoid props;\n",
+  "consumerBroken": "import { value } from \"@scope/diamond\";\nimport App from \"@scope/diamond/App.vue\";\ntype Props = InstanceType<typeof App>[\"$props\"];\nconst text: typeof value = 42;\nconst props: Props = { label: text };\nvoid props;\n",
+  "expected": {
+    "brokenFiles": [
+      {
+        "file": "src/base/App.vue",
+        "diagnostics": []
+      },
+      {
+        "file": "src/base/main.ts",
+        "diagnostics": [
+          "error:1:14 [TS2322] Type 'number' is not assignable to type 'string'."
+        ]
+      }
+    ],
+    "programFiles": [
+      "src/base/App.vue",
+      "src/base/main.ts"
+    ],
+    "compilerOptions": {
+      "strict": true,
+      "target": "ES2022",
+      "module": "ESNext",
+      "moduleResolution": "bundler",
+      "rootDir": "src/base",
+      "allowJs": false,
+      "declaration": true,
+      "declarationMap": true,
+      "declarationDir": "types-base",
+      "outDir": "dist-base",
+      "noEmit": true,
+      "noUnusedParameters": true
+    },
+    "declarations": [
+      "types-base/App.vue.d.ts",
+      "types-base/__vize_helpers.d.ts",
+      "types-base/main.d.ts"
+    ],
+    "consumerBrokenFiles": [
+      {
+        "file": "src/index.ts",
+        "diagnostics": [
+          "error:4:7 [TS2322] Type 'number' is not assignable to type 'string'."
+        ]
+      }
+    ],
+    "reverseCompilerOptions": {
+      "strict": true,
+      "target": "ES2022",
+      "module": "ESNext",
+      "moduleResolution": "bundler",
+      "rootDir": "src/first",
+      "allowJs": true,
+      "declaration": true,
+      "declarationMap": false,
+      "declarationDir": "types-first",
+      "outDir": "dist-first",
+      "noEmit": true,
+      "noUnusedParameters": true
+    }
+  }
+}
