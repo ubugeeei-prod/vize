@@ -143,3 +143,9 @@ all 47 incoming complete props-style CLI fixtures, source law and decisions.
 This disjoint union changes no owned product, original reference or remarks
 entry. The same fresh source/protected/actual/installed qualifications remain
 required; no older green execution is transferred.
+
+The final genuine prepublication main is
+`67e537cbec83b7971767f7d28d570a34f1a5afcb`, after actual #8174 and #8206.
+Retain their complete incoming source, fixtures and decision history through
+another clean real-parent merge. Owned product/vector bytes and the derived
+498-file remarks union remain unchanged; qualify the final head afresh.
