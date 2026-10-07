@@ -88,6 +88,28 @@ fn apply_edits(source: &str, result: &LintResult) -> String {
     fixed
 }
 
+fn assert_parser_baseline(result: &LintResult, case: &Case) -> usize {
+    let missing_end = matches!(
+        case.id.as_str(),
+        "missing-end-refusal" | "missing-end-casing-refusal"
+    );
+    let count = usize::from(missing_end);
+    assert_eq!(result.error_count, count, "{}", case.id);
+    if missing_end {
+        // Public lint_template has always retained this complete parser error.
+        // The authored23 style oracle is separate and stays byte-exact.
+        let parser = &result.diagnostics[0];
+        assert_eq!(parser.rule_name, "parser/template", "{}", case.id);
+        assert_eq!(parser.severity, Severity::Error, "{}", case.id);
+        assert_eq!(parser.message, "Element is missing end tag.", "{}", case.id);
+        assert_eq!((parser.start, parser.end), (0, case.end), "{}", case.id);
+        assert!(parser.help.is_none());
+        assert!(parser.labels.is_empty());
+        assert!(parser.fix.is_none());
+    }
+    count
+}
+
 #[test]
 fn whole_authored_style_cases_preserve_diagnostics_edits_and_final_bytes() {
     let cases: Vec<Case> = serde_json::from_str(include_str!(
@@ -108,10 +130,10 @@ fn whole_authored_style_cases_preserve_diagnostics_edits_and_final_bytes() {
             "{}",
             case.id
         );
-        assert_eq!(result.error_count, 0, "{}", case.id);
+        let parser_count = assert_parser_baseline(&result, &case);
         assert_eq!(result.warning_count, 1, "{}", case.id);
-        assert_eq!(result.diagnostics.len(), 1, "{}", case.id);
-        let d = &result.diagnostics[0];
+        assert_eq!(result.diagnostics.len(), 1 + parser_count, "{}", case.id);
+        let d = &result.diagnostics[parser_count];
         assert_eq!(
             d.rule_name,
             if case.rule == "html" {
@@ -152,9 +174,16 @@ fn whole_authored_style_cases_preserve_diagnostics_edits_and_final_bytes() {
         );
         for _ in 0..3 {
             let final_result = lint(&linter, &case.fixed, &case.entry);
+            assert_parser_baseline(&final_result, &case);
             assert_eq!(
                 final_result.warning_count,
                 usize::from(case.edits.is_empty()),
+                "{}",
+                case.id
+            );
+            assert_eq!(
+                final_result.diagnostics.len(),
+                parser_count + usize::from(case.edits.is_empty()),
                 "{}",
                 case.id
             );

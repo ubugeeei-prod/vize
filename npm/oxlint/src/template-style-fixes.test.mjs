@@ -66,6 +66,30 @@ const diagnostics = findings.map(([rule, target, message]) => {
 });
 const ordered = (items) =>
   [...items].sort((a, b) => (a.rule ?? a.code).localeCompare(b.rule ?? b.code));
+function publicNativeReport(after) {
+  const report = wholeJson({ ...original, filename: file }, after, true);
+  const source = after ? expected : original.source;
+  const target = after ? "<input disabled />" : '<input disabled="disabled" />';
+  const start = source.indexOf(target);
+  assert.equal(source.indexOf(target, start + 1), -1);
+  assert.ok(start >= 0);
+  const from = position(source, start);
+  const to = position(source, start + target.length);
+  // Opinionated also enables the unchanged, nonfixable accessibility rule.
+  // Preserve its complete finding instead of suppressing or fixing reporter input.
+  report[0].messages.splice(after ? 0 : 3, 0, {
+    ruleId: "a11y/form-control-has-label",
+    ruleDocsPath: "docs/content/rules/accessibility.md",
+    severity: 1,
+    message: "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+    line: from.line,
+    column: from.column,
+    endLine: to.line,
+    endColumn: to.column,
+  });
+  report[0].warningCount += 1;
+  return report;
+}
 const config =
   JSON.stringify(
     {
@@ -206,13 +230,10 @@ try {
       "warningCount",
     ]);
     assert.equal(actual.errorCount, 0);
-    assert.equal(actual.warningCount, pass === 0 ? 4 : 0);
+    assert.equal(actual.warningCount, pass === 0 ? 5 : 1);
     assert.equal(actual.fileCount, 1);
     assert.ok(Number.isFinite(actual.timeMs) && actual.timeMs >= 0);
-    assert.deepEqual(
-      JSON.parse(actual.output),
-      wholeJson({ ...original, filename: file }, pass > 0, true),
-    );
+    assert.deepEqual(JSON.parse(actual.output), publicNativeReport(pass > 0));
     assert.equal(bytes, pass === 0 ? original.source : expected);
     assert.equal(fs.readFileSync(path.join(fixture, ".oxlintrc.json"), "utf8"), config);
   }

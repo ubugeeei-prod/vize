@@ -109,8 +109,8 @@ void test("public native evidence remains reachable after prior build or package
   assert.equal(seam.if, selectedHistory);
   assert.equal(seam["continue-on-error"], undefined);
   assert.equal(history.runs.using, "composite");
-  assert.equal(history.runs.steps.length, 3);
-  const [execute, upload, oxlint] = history.runs.steps;
+  assert.equal(history.runs.steps.length, 4);
+  const [execute, upload, style, oxlint] = history.runs.steps;
   assert.equal(execute.if, "${{ success() && job.status == 'success' }}");
   assert.equal(execute.shell, "bash");
   assert.equal(execute.run, "vp run --workspace-root test:js");
@@ -120,6 +120,14 @@ void test("public native evidence remains reachable after prior build or package
   assert.deepEqual(upload.with, {
     name: "public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
     path: "npm/native/.artifacts/native/formatter-history/**",
+    "if-no-files-found": "warn",
+    "retention-days": 14,
+  });
+  assert.equal(style.if, "${{ always() }}");
+  assert.equal(style.uses, upload.uses);
+  assert.deepEqual(style.with, {
+    name: "template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
+    path: "target/template-style-fixes-7905.json",
     "if-no-files-found": "warn",
     "retention-days": 14,
   });

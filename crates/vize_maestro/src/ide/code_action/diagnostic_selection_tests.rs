@@ -46,6 +46,31 @@ fn expected(uri: &Url, diagnostic: &Diagnostic, attach: bool) -> CodeActionOrCom
     })
 }
 
+fn expected_actions(uri: &Url, diagnostic: &Diagnostic, attach: bool) -> Vec<CodeActionOrCommand> {
+    let mut actions = Vec::new();
+    if diagnostic.code == Some(NumberOrString::String("vue/html-self-closing".into())) {
+        actions.push(CodeActionOrCommand::CodeAction(CodeAction {
+            title: "Fix: Use self-closing syntax".into(),
+            kind: Some(CodeActionKind::QUICKFIX),
+            diagnostics: attach.then(|| vec![diagnostic.clone()]),
+            edit: Some(WorkspaceEdit {
+                changes: Some(std::collections::HashMap::from([(
+                    uri.clone(),
+                    vec![TextEdit {
+                        range: Range::new(Position::new(1, 2), Position::new(1, 23)),
+                        new_text: "<img src=\"/logo.png\" />".into(),
+                    }],
+                )])),
+                ..Default::default()
+            }),
+            is_preferred: Some(true),
+            ..Default::default()
+        }));
+    }
+    actions.push(expected(uri, diagnostic, attach));
+    actions
+}
+
 fn project() -> (tempfile::TempDir, ServerState, Url) {
     let directory = tempfile::tempdir().unwrap();
     std::fs::write(directory.path().join("vize.config.json"), CONFIG).unwrap();
@@ -65,12 +90,12 @@ fn same_range_rules_use_configured_diagnostic_identity_and_full_payload() {
     for diagnostic in &diagnostics {
         assert_eq!(
             actions(&state, &uri, std::slice::from_ref(diagnostic)),
-            vec![expected(&uri, diagnostic, true)]
+            expected_actions(&uri, diagnostic, true)
         );
     }
     let all = diagnostics
         .iter()
-        .map(|d| expected(&uri, d, true))
+        .flat_map(|d| expected_actions(&uri, d, true))
         .collect::<Vec<_>>();
     assert_eq!(actions(&state, &uri, &diagnostics), all);
     let mut reversed = diagnostics.clone();
@@ -82,7 +107,7 @@ fn same_range_rules_use_configured_diagnostic_identity_and_full_payload() {
         actions(&state, &uri, &[]),
         diagnostics
             .iter()
-            .map(|d| expected(&uri, d, false))
+            .flat_map(|d| expected_actions(&uri, d, false))
             .collect::<Vec<_>>()
     );
 }
@@ -112,7 +137,7 @@ fn foreign_rule_source_numeric_code_and_stale_range_do_not_select_lint_actions()
     }
     assert_eq!(
         actions(&state, &uri, std::slice::from_ref(&original)),
-        vec![expected(&uri, &original, true)]
+        expected_actions(&uri, &original, true)
     );
 }
 
@@ -135,7 +160,7 @@ fn current_buffer_and_config_refuse_obsolete_diagnostics_without_losing_repaired
     assert_eq!(
         actions(&state, &uri, &old),
         old.iter()
-            .map(|d| expected(&uri, d, true))
+            .flat_map(|d| expected_actions(&uri, d, true))
             .collect::<Vec<_>>()
     );
     std::fs::write(

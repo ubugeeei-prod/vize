@@ -90,9 +90,19 @@ test("source LSP selects each same-range original diagnostic and preserves valid
     const diagnostics: LspDiagnostic[] = reference.diagnostics;
     const range: LspRange = reference.diagnostics[0].range;
     const [alt, style] = diagnostics;
-    const expected = diagnostics.map((diagnostic) => suppression(diagnostic, 1));
+    const expected = [
+      suppression(alt, 1),
+      {
+        title: "Fix: Use self-closing syntax",
+        kind: "quickfix",
+        diagnostics: [style],
+        edit: { changes: { [uri]: [{ range, newText: '<img src="/logo.png" />' }] } },
+        isPreferred: true,
+      },
+      suppression(style, 1),
+    ];
     assert.deepEqual(await request(uri, range, [alt]), [expected[0]]);
-    assert.deepEqual(await request(uri, range, [style]), [expected[1]]);
+    assert.deepEqual(await request(uri, range, [style]), expected.slice(1));
     assert.deepEqual(await request(uri, range, diagnostics), expected);
     assert.deepEqual(await request(uri, range, [...diagnostics].reverse()), expected);
     assert.deepEqual(await request(uri, range, [...diagnostics, ...diagnostics]), expected);

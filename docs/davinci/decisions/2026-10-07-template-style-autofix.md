@@ -32,12 +32,21 @@ qualification.
 
 The source-built public native `lint(patterns, {fix: true})` exercises the full
 original CardList and three stable passes. Public structured native diagnostics
-and the built production Oxlint plugin compare all four original findings and
+retain the requested four-rule scope, while the file API's broader Opinionated
+preset also retains its unchanged nonfixable accessibility finding (five before,
+one after all four edits) with complete messages and recalculated authored spans.
+No original input gains a label or suppresses that existing warning. The built
+production Oxlint plugin also compares all four original findings and
 three complete fixed-source empty reports, preserving default API shape. The
 plugin's temporary Vue bridge still does not write fixes back to original files;
 that feature remains unfinished and is not claimed by these diagnostic controls.
 Native preparation validates the live exact-source build receipt; captured
 observations retain entire sources, JSON, statuses, stderr and file bytes.
+The two malformed inputs in the23-vector corpus retain their complete missing-end parser errors
+alongside the unchanged style warnings and no-edit oracles. Existing LSP selection
+controls retain every diagnostic/suppression/stale/refusal query and now require
+the complete authored HTML quickfix. Explain snapshots change only the Vapor
+metadata field in each locale; official Croquis and consumer inventories stay current.
 
 `vapor/require-vapor-attribute` is an explicit no-op placeholder in current main.
 Mark its metadata nonfixable and document the unfinished SFC-level producer.
