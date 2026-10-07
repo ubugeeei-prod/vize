@@ -98,6 +98,18 @@ name = "davinci_dom_n8n_diagnosed"
 required-features = ["legacy-differential"]
 
 [[test]]
+name = "davinci_dom_n8n_default_loops"
+required-features = ["legacy-differential"]
+
+[[test]]
+name = "davinci_dom_n8n_helper_props"
+required-features = ["legacy-differential"]
+
+[[test]]
+name = "davinci_dom_n8n_if_key_modes"
+required-features = ["legacy-differential"]
+
+[[test]]
 name = "davinci_remarks_corpus"
 required-features = ["legacy-differential"]
 
