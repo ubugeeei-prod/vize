@@ -259,3 +259,23 @@ The genuine current-source Actions must run all three full canonical workers,
 the strict original finalizer, required full-feature Rust sibling and all104
 protected probes. Source readiness, actual protected merge, matched wall-time
 improvement and installed/release acceptance remain pending.
+
+## Attribute placement and genuine-main refresh
+
+Move only the exact three-line historical observer-log attribute block from EOF
+to the existing header after `npm/fresco-native/index.d.ts`, before formatter
+history declarations. Every other attribute byte stays intact, and the effective
+`text` and `whitespace` attributes for all six raw parser controls are unchanged.
+The move-only commit precedes a clean merge of genuine signed main7557. Preserve
+every incoming source, old observer implementation and original log blob; a future
+CSS queue tree is used only for read-only merge preflight, never source ancestry.
+
+The historical014 source Actions artifacts now authenticate all three full
+DOM, SSR/Pug and reach observers:148 gitlinks and44367 complete ordered inputs,
+whole native/physical/Git-object bytes, original counters and actual Linux ELOOP41.
+Their canonical interval from first worker to finalizer was14m53s. The comparison
+with the old source differs in twelve LSP production files, so no matched timing
+improvement is established; three32-vCPU workers also increase peak capacity.
+Updated source readiness and protected full-suite delivery still require fresh
+exact-head Actions. All original commands, input vectors and100+4 ceilings stay
+unchanged.
