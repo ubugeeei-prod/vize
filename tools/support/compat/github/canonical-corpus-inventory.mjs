@@ -132,7 +132,7 @@ export function verifyCommittedInventory(proof, gitlinks) {
       const node = nodes.get(next);
       assert(node, "Missing committed symlink target");
       if (node.mode === "120000") {
-        assert(!active.has(next), "Committed symlink cycle");
+        assert(!active.has(next), `Committed symlink cycle: ${next} -> ${node.target}`);
         active.add(next);
         assert(node.target && !node.target.startsWith("/"), "Foreign committed symlink path");
         current = resolveNode(`${posix.dirname(next)}/${node.target}`, active).path;
@@ -143,7 +143,10 @@ export function verifyCommittedInventory(proof, gitlinks) {
   };
   const files = [];
   const walk = (logical, directory, ancestors = new Set()) => {
-    assert(!ancestors.has(directory.path), "Committed directory cycle");
+    assert(
+      !ancestors.has(directory.path),
+      `Committed directory cycle: ${logical} -> ${directory.path}`,
+    );
     ancestors.add(directory.path);
     for (const name of [...children.get(directory.path)].sort((left, right) =>
       left < right ? -1 : left > right ? 1 : 0,

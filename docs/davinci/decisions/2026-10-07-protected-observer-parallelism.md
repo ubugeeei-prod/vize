@@ -204,3 +204,10 @@ one inferred-array comparison warning in the new committed inventory walker.
 Use an explicit string code-unit comparator, preserving the previous JavaScript
 default order, all paths/blobs and every corpus requirement. Fresh source and
 protected qualification remain required; there is no warning-budget waiver.
+
+The 52cf hosted canonical capture subsequently passed the raw fixture guard and
+refused a physical directory cycle before any observer executed. Preserve this
+refusal, add exact logical/physical paths to existing cycle/foreign messages, and
+compare the authored Git graph with the unchanged original Rust walk before any
+policy repair. Full147 corpus success and new timing remain unqualified; no path,
+file, cycle or count is skipped to make the gate pass.

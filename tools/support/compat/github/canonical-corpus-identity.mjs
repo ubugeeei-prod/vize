@@ -137,7 +137,10 @@ export function collectFiles(root) {
   const ownershipRoot = realpathSync.native(root);
   const visit = (directory) => {
     const physical = realpathSync.native(directory);
-    assert(!ancestors.has(physical), "Canonical corpus contains a directory cycle");
+    assert(
+      !ancestors.has(physical),
+      `Canonical corpus contains a directory cycle: ${directory} -> ${physical}`,
+    );
     ancestors.add(physical);
     const children = readdirSync(directory).sort();
     for (const name of children) {
@@ -147,7 +150,7 @@ export function collectFiles(root) {
       const owner = realpathSync.native(path);
       assert(
         owner.startsWith(`${ownershipRoot}${sep}`) || owner === ownershipRoot,
-        "Foreign physical canonical path",
+        `Foreign physical canonical path: ${path} -> ${owner}`,
       );
       if (directoryEntry) {
         visit(path);
