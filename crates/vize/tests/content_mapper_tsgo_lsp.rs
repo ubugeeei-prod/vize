@@ -6,14 +6,15 @@ use std::time::Duration;
 use corsa_lsp::{LspClient, LspSpawnConfig, VirtualDocument, jsonrpc::InboundEvent};
 use lsp_types::Uri;
 use serde_json::json;
+use vize_l0::cstr;
 
 pub mod content_mapper_lsp_support;
 use content_mapper_lsp_support::raw_requests::{
     RawInitialize, RawInitialized, RawSetContentMapperContributions,
 };
 use content_mapper_lsp_support::{
-    EditorResponder, StopOnDrop, copy_fixture, editor_capabilities, file_uri, install_packages,
-    pull_diagnostics, workspace_root,
+    EditorResponder, StopOnDrop, assert_hover, copy_fixture, editor_capabilities, file_uri, hover,
+    install_packages, pull_diagnostics, workspace_root,
 };
 
 const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
@@ -124,9 +125,58 @@ fn standard_tsgo_lsp_accepts_authored_vue_content_mapper_contribution() {
 
             let clean = pull_diagnostics(&client, &child_uri).await;
             assert_eq!(clean["items"], json!([]), "{clean:#}");
+            assert_script_hover_during_template_recovery(&client, project.path()).await;
             stop.store(true, Ordering::Relaxed);
             client.graceful_close().await.unwrap();
             responder.join().unwrap();
         });
     });
+}
+
+async fn assert_script_hover_during_template_recovery(client: &LspClient, project: &Path) {
+    let corpus = workspace_root()
+        .join("tests/_fixtures/differential/typechecker/content-mapper-incomplete-tag");
+    let oracle: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(corpus.join("expectations.json")).unwrap())
+            .unwrap();
+    let path = project.join("src/Recovery.vue");
+    let uri_text = file_uri(&path);
+    let uri = Uri::from_str(&uri_text).unwrap();
+    let overlay = client.overlay();
+    for case in oracle["cases"].as_array().unwrap() {
+        let original =
+            std::fs::read_to_string(corpus.join(case["file"].as_str().unwrap())).unwrap();
+        for newline in ["\n", "\r\n"] {
+            let complete = original.replace('\n', newline);
+            std::fs::write(&path, &complete).unwrap();
+            overlay
+                .open(VirtualDocument::new(uri.clone(), "vue", complete.as_str()))
+                .unwrap();
+            let template = complete.find("<template>").unwrap();
+            let unfinished = cstr!(
+                "{}<template><Loc</template>{newline}",
+                complete.get(..template).unwrap()
+            );
+            let repaired = complete.replace("'broken'", "1");
+            let start = json!({
+                "line": case["line"].as_u64().unwrap() - 1,
+                "character": case["column"].as_u64().unwrap() - 1
+            });
+            let end = json!({
+                "line": case["line"].as_u64().unwrap() - 1,
+                "character": case["column"].as_u64().unwrap() + 3
+            });
+            for (state, source) in [
+                ("complete", complete.as_str()),
+                ("unfinished-tag", unfinished.as_str()),
+                ("template-repaired", complete.as_str()),
+                ("script-repaired", repaired.as_str()),
+            ] {
+                overlay.replace(&uri, source).unwrap();
+                let actual = hover(client, &uri_text, &start).await;
+                assert_hover(&actual, &start, &end, oracle["scriptHover"].clone(), state);
+            }
+            overlay.close(&uri).unwrap();
+        }
+    }
 }

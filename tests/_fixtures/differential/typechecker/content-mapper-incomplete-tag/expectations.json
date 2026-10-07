@@ -5,10 +5,20 @@
   "positions": "authored UTF-16, one-based",
   "states": ["complete", "unfinished-tag", "template-repaired", "script-repaired"],
   "scriptMessage": "Type 'string' is not assignable to type 'number'.",
+  "nativeCliSemanticDiagnosticsOnTemplateError": false,
+  "nativeCliGate": "Official tsgo appends mapper diagnostics to syntactic diagnostics and suppresses semantic checking for the entire project; combined CLI diagnostics remain unfinished under #8158 and #3984.",
+  "scriptHover": { "kind": "plaintext", "value": "const café: number" },
+  "templateDiagnostics": [
+    {
+      "column": 15,
+      "message": "Template parse error: Unexpected end of input inside a tag; inferred the missing tag close so parsing can continue."
+    },
+    { "column": 11, "message": "Template parse error: Element is missing end tag." }
+  ],
   "cases": [
-    { "file": "setup.vue.txt", "line": 2, "column": 16 },
-    { "file": "normal.vue.txt", "line": 2, "column": 23 },
-    { "file": "split.vue.txt", "line": 5, "column": 16 }
+    { "file": "setup.vue.txt", "line": 2, "column": 16, "templateLine": 4 },
+    { "file": "normal.vue.txt", "line": 2, "column": 23, "templateLine": 5 },
+    { "file": "split.vue.txt", "line": 5, "column": 16, "templateLine": 7 }
   ],
   "lineEndings": ["LF", "CRLF"],
   "unsupported": "No whole-product native acceptance or alias-rename credit."

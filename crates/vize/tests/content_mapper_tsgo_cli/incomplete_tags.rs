@@ -1,10 +1,9 @@
-//! Standard tsgo keeps script diagnostics while a template tag is unfinished.
+//! Pin standard-tsgo parser diagnostics and script diagnostics after repair.
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Output;
 
 use serde_json::json;
-use vize_canon::generate_vue_content_mapper_transform;
 use vize_l0::{String as CompactString, cstr};
 
 use super::{
@@ -31,33 +30,31 @@ fn diagnostic_lines(output: &Output) -> Vec<CompactString> {
         .collect()
 }
 
-fn authored_position(source: &str, byte: usize) -> (usize, usize) {
-    assert!(source.is_char_boundary(byte));
-    let prefix = source.get(..byte).unwrap();
-    let line = prefix.bytes().filter(|byte| *byte == b'\n').count() + 1;
-    let column = prefix.rsplit('\n').next().unwrap().encode_utf16().count() + 1;
-    (line, column)
-}
-
-fn expected_diagnostics(source: &str, script: &CompactString) -> Vec<CompactString> {
-    let mapper = generate_vue_content_mapper_transform(Path::new("Recovery.vue"), source).unwrap();
-    let mut diagnostics = vec![script.clone()];
-    for diagnostic in mapper.diagnostics {
-        assert_eq!(diagnostic.code, 100_002);
-        assert!(!diagnostic.message_text.is_empty());
-        let (line, column) = authored_position(source, diagnostic.start);
-        diagnostics.push(cstr!(
-            "src/Recovery.vue({line},{column}): error TS{}: {}",
-            diagnostic.code,
-            diagnostic.message_text
-        ));
+fn expected_diagnostics(
+    oracle: &serde_json::Value,
+    case: &serde_json::Value,
+    script: &CompactString,
+    unfinished: bool,
+) -> Vec<CompactString> {
+    let mut diagnostics = Vec::new();
+    if unfinished {
+        for diagnostic in oracle["templateDiagnostics"].as_array().unwrap() {
+            diagnostics.push(cstr!(
+                "src/Recovery.vue({},{}): error vize100002: {}",
+                case["templateLine"].as_u64().unwrap(),
+                diagnostic["column"].as_u64().unwrap(),
+                diagnostic["message"].as_str().unwrap()
+            ));
+        }
+    } else {
+        diagnostics.push(script.clone());
     }
     diagnostics.sort();
     diagnostics
 }
 
 #[test]
-fn standard_tsgo_preserves_authored_script_errors_through_unfinished_template_edits() {
+fn standard_tsgo_pins_unfinished_template_diagnostics_and_restored_script_errors() {
     let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
         eprintln!("skipping exact Content Mapper conformance: {TSGO_ENV} is not set");
         return;
@@ -117,18 +114,18 @@ fn standard_tsgo_preserves_authored_script_errors_through_unfinished_template_ed
                 );
                 let mut actual = diagnostic_lines(&output);
                 actual.sort();
-                assert!(
-                    actual.contains(&script_diagnostic),
-                    "{state}: script diagnostic missing: {}",
-                    output_text(&output)
+                let expected = expected_diagnostics(
+                    &oracle,
+                    case,
+                    &script_diagnostic,
+                    state == "unfinished-tag",
                 );
-                let expected = expected_diagnostics(source, &script_diagnostic);
                 assert_eq!(actual, expected, "{state}: {}", output_text(&output));
                 if state == "unfinished-tag" {
-                    assert!(
-                        expected.len() > 1,
-                        "unfinished tag must still report parser errors"
-                    );
+                    // Official tsgo treats mapper diagnostics as syntactic errors
+                    // and skips semantic diagnostics project-wide. Pin that
+                    // provider limit without dropping the authored parser errors.
+                    assert_eq!(expected.len(), 2);
                 } else {
                     assert_eq!(expected, vec![script_diagnostic.clone()]);
                 }

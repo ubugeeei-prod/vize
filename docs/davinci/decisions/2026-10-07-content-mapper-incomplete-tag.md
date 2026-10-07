@@ -3,11 +3,12 @@
 Owning issue: [#8158](https://github.com/ubugeeei-prod/vize/issues/8158), a bounded
 acceptance slice under #3984 and #3953.
 
-The Content Mapper currently sets `preserve_script_on_template_error` to false.
+At the reviewed baseline, the Content Mapper sets
+`preserve_script_on_template_error` to false.
 When the parser reports an unfinished tag, the existing virtual-TS generator
-therefore replaces the entire file with a fallback module, hiding an unrelated
-authored script diagnostic. The editor projection already uses the same
-parser-owned recovery to preserve scripts.
+therefore replaces the entire file with a fallback module and loses authored
+script source mappings. The editor projection already uses the same parser-owned
+recovery to preserve scripts.
 
 Use that existing recovery for the Content Mapper. Its admission requires
 `EofInTag` and permits only the established recovery codes or `MissingEndTag`.
@@ -19,9 +20,25 @@ The committed differential corpus covers setup, normal and split scripts. Each
 puts an astral character before the diagnosed identifier and runs with LF and
 CRLF. The pinned standard tsgo oracle exercises complete, unfinished-tag,
 template-repaired and script-repaired states. Every returned diagnostic is
-compared; the independent script expectation stays TS2322 at its authored UTF-16
-position until the script is repaired. Whole script-only mapper code, mappings
-and semantic links are compared through the public transform API.
+compared against committed messages and authored UTF-16 positions. Both template
+diagnostics remain visible during the unfinished tag; script TS2322 returns after
+template repair and disappears after script repair. Actual standard-tsgo LSP hover
+contents and complete authored UTF-16 ranges must survive all four states. Whole
+script-only mapper code, mappings and semantic links are compared through the
+public transform API.
+
+Combined CLI script and parser diagnostics remain unfinished under #8158/#3984.
+The [actual pinned-tsgo run](https://github.com/ubugeeei-prod/vize/actions/runs/37590925043)
+at `5e6230d9e0` returns only the two parser errors for the unfinished tag despite
+Vize retaining the script projection. Official
+[`contentmapper/transform.go` lines 65–71](https://github.com/microsoft/TypeScript/blob/d6c4afddb2c55f4a9dea7b59293a99a8fdea1799/tsc/internal/contentmapper/transform.go#L65-L71)
+appends mapper diagnostics to the source file's syntactic diagnostics.
+[`compiler/program.go` lines 1960–1983](https://github.com/microsoft/TypeScript/blob/d6c4afddb2c55f4a9dea7b59293a99a8fdea1799/tsc/internal/compiler/program.go#L1960-L1983)
+skips all semantic collection for the project when any syntactic diagnostic
+exists. Official latest `d61a7d235906e78be9b111de0ba060e28e67ecfa` keeps the same
+gate. Pinning that exact current CLI output records the provider limitation; it
+does not establish the missing combined-diagnostics acceptance. Keep parser
+diagnostics visible and preserve the upstream read-only boundary.
 
 Existing batch fallback, scriptless-template and complete-malformed-template
 controls remain mandatory. The original TS40 malformed template remains on its
@@ -29,8 +46,15 @@ existing fallback. #4075's unsupported alias rename remains unchanged.
 
 ## Validation
 
-The initial regression-only commit intentionally precedes the production change.
-Hosted Actions must demonstrate its failure, then qualify the corrected exact
-head. The existing Content Mapper Conformance workflow supplies the pinned
-standard-tsgo runtime. Source-only formatting does not establish native runtime,
-whole-product migration, 10x performance, release or roadmap completion.
+The initial regression-only commit `85cf830aad` intentionally precedes the
+production change. Its [hosted Rust test shard](https://github.com/ubugeeei-prod/vize/actions/runs/37589797736/job/112690308051)
+fails the public mapper comparison: the unfinished document returns the fallback
+stub while its script-only control retains the authored script. The unrelated
+batch and negative controls remain passing. The first standard-tsgo attempt
+exposed an incorrect short-message expectation: the parser's `EofInTag` owns a
+longer documented recovery explanation, now committed in the corpus.
+
+Hosted Actions must qualify the corrected exact head. The existing Content Mapper
+Conformance workflow supplies the pinned standard-tsgo runtime. Source-only
+formatting does not establish native runtime, whole-product migration, 10x
+performance, release or roadmap completion.
