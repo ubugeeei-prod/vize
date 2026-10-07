@@ -36,7 +36,7 @@ fn complete_check(
         .as_array()
         .unwrap()
         .iter()
-        .map(|_| Some("answer"))
+        .map(|_| Some("return"))
         .collect();
     assert_eq!(spans, authored);
     assert_eq!(std::fs::read(&path).unwrap(), source.as_bytes());

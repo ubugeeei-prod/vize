@@ -13,11 +13,15 @@ pub struct ProcessLife {
     pub executable: PathBuf,
 }
 
-pub fn fixture() -> serde_json::Value {
+pub fn original_fixture() -> serde_json::Value {
     serde_json::from_str(include_str!(
         "../../../../tests/_fixtures/differential/typechecker/original-diagnosing-process-7698/input.json"
     ))
     .unwrap()
+}
+
+pub fn fixture() -> serde_json::Value {
+    original_fixture()["admitted"].clone()
 }
 
 pub fn write_fixture(root: &Path, fixture: &serde_json::Value) {

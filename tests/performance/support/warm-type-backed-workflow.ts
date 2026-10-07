@@ -156,6 +156,7 @@ if (process.argv[2] === "prepare") {
     "crates/vize_canon/src/lsp_client/editor_lsp/original_program/key_tests.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/original_program/process_tests.rs",
     "crates/vize_canon/tests/original_program_check/process_reuse.rs",
+    "crates/vize_canon/tests/original_program_check/process_admission.rs",
     "crates/vize_canon/tests/support/original_diagnosing_process.rs",
   ]);
   const harnessOnly = !cut && production.length === 0;

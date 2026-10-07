@@ -101,3 +101,16 @@ process/project-reference work, not proof of true NativeProgram reuse or the ful
 10x target. The legacy product routes remain in place while #6879/#6883 are open.
 Fresh exact-source native/full/protected execution, actual merge, latency evidence
 and public release acceptance remain unfinished. The [paired decision](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6047368965) records this source slice on actual signed main3e with declared Rust1.98; an incoming protected candidate after the Rust migration must independently qualify1.99. Source/historical success cannot substitute for its fresh protected proof.
+
+The [admission correction](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6047729116) retains the originally
+unadmitted exported-variable fixture, every original top-level value and its
+whole expected report as a negative/historical control. The first4cc native
+qualification failed before the backend: require the exact unit17 bytes50..72
+UnsupportedSyntax issue and typed IncompleteFile refusal with an absent backend.
+Add a separate admitted primitive-return Module, complete TS2322 return-token
+report at line1 UTF16 35..41, number-return/shared-string edits and exact inverses.
+Ordinary cross-platform tests require complete genuine File/projection/source
+identity for both admitted versions before the Linux physical controls run.
+No grammar extension, runtime credit for refused bytes, input/cap reduction or
+legacy replacement is part of this correction; current native/protected/actual
+delivery remains unfinished.

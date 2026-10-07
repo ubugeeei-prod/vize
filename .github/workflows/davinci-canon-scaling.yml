@@ -41,6 +41,7 @@ on:
       - "crates/vize_canon/src/corsa_server/reuse_tests.rs"
       - "crates/vize_canon/tests/original_program_check.rs"
       - "crates/vize_canon/tests/original_program_check/process_reuse.rs"
+      - "crates/vize_canon/tests/original_program_check/process_admission.rs"
       - "crates/vize_canon/tests/support/original_diagnosing_process.rs"
       - "tests/_fixtures/differential/typechecker/original-diagnosing-process-7698/**"
       - ".github/workflows/davinci-canon-scaling.yml"

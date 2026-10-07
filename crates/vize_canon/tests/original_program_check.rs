@@ -23,6 +23,8 @@ mod array_annotations;
 mod optional_parameters;
 #[path = "original_program_check/primitive_returns.rs"]
 mod primitive_returns;
+#[path = "original_program_check/process_admission.rs"]
+mod process_admission;
 #[cfg(test)]
 #[cfg(target_os = "linux")]
 #[path = "original_program_check/process_reuse.rs"]
