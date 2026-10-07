@@ -29,6 +29,11 @@ bindings and discarded runner validation. The public editor-document facade fixe
 `preserve_authored_component=false`, so it would replace an authored unsafe default
 with a synthetic constructor. Dependency generation therefore selects the existing
 Options API generator with authored-default preservation, including split scripts.
+Escape rewritten module paths for the authored string delimiter in both relative
+import projection and private dependency mirrors. Keep import-map adjustments in
+bytes, then convert against the final text for UTF-16 checker queries. A projected
+parent under a directory containing both quotes and an emoji must still parse,
+resolve its actual child, and keep its query offset for either import delimiter.
 The normal path without Vue imports avoids dependency projection and translation
 allocations. Fresh Actions must prove the original corpus and exact unsafe controls
 after this repair; the failing historical run grants no completion credit.

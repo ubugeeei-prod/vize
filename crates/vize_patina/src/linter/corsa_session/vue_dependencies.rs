@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use vize_canon::{ImportSourceMap, batch::OffsetAdjustment};
 use vize_l0::{FxHashMap, String};
 
-use super::{errors::io_error_message, paths::virtual_file_path};
+use super::{errors::io_error_message, escape_specifier, paths::virtual_file_path};
 use crate::linter::native_type_aware::document::project_component;
 
 mod specifiers;
@@ -117,11 +117,13 @@ pub(super) fn prepare(
             } else {
                 continue;
             };
-            edits.push((
-                start,
-                end,
-                String::from(replacement.to_string_lossy().replace('\\', "/")),
-            ));
+            let quote = text
+                .as_bytes()
+                .get(start as usize - 1)
+                .copied()
+                .unwrap_or(b'\'');
+            let replacement = replacement.to_string_lossy().replace('\\', "/");
+            edits.push((start, end, escape_specifier(&replacement, quote)));
         }
         edits.sort_unstable_by_key(|edit| edit.0);
         let source_map = ImportSourceMap::new(

@@ -62,7 +62,7 @@ fn unresolved_component_imports_remain_unsafe() {
         .iter()
         .map(|diagnostic| {
             (
-                diagnostic.rule_name.as_str(),
+                diagnostic.rule_name,
                 diagnostic.start,
                 diagnostic.end,
                 diagnostic.message.as_str(),
@@ -99,7 +99,7 @@ fn authored_any_component_exports_remain_unsafe() {
             .iter()
             .map(|diagnostic| {
                 (
-                    diagnostic.rule_name.as_str(),
+                    diagnostic.rule_name,
                     diagnostic.start,
                     diagnostic.end,
                     diagnostic.message.as_str(),
