@@ -11,6 +11,8 @@
 
 mod art;
 #[cfg(test)]
+mod attribute_extension_tests;
+#[cfg(test)]
 mod attribute_value_tests;
 mod bindings;
 mod component_cache;
@@ -23,6 +25,11 @@ mod components;
 mod css_modules;
 mod directives;
 mod event_union;
+#[cfg(test)]
+mod global_attribute_tests;
+mod globals;
+#[cfg(test)]
+mod globals_tests;
 mod native;
 #[cfg(test)]
 mod native_tests;
@@ -40,8 +47,10 @@ use tower_lsp::lsp_types::{CompletionItem, CompletionTextEdit, Position, Range, 
 use super::is_inside_html_comment;
 use crate::ide::IdeContext;
 
+#[cfg(any(test, feature = "native"))]
 use bindings::analyzed_template_binding_completions;
 use components::builtin_component_completions;
+use globals::template_expression_completions;
 
 pub(crate) use art::{complete_art, complete_inline_art};
 pub(crate) use component_cache::CachedComponentMetadata;
@@ -91,18 +100,18 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
             // name once the prefix contains `=`).
             if let Some(name) = tag_ctx.current_token.strip_suffix('=') {
                 return if is_expression_valued_attribute(name) {
-                    analyzed_template_binding_completions(ctx, true)
+                    template_expression_completions(ctx)
                 } else {
                     native::native_element_attribute_value_completions(&tag_ctx.tag_name, name)
                 };
             }
 
             let mut items_vec = contextual_directive_completions(ctx);
-            items_vec.extend(native::native_element_attribute_completions(ctx));
-            event_union::append_component_surface(
-                &mut items_vec,
-                component_meta::component_surface_completions(ctx),
-            );
+            let component = component_meta::component_surface_completions(ctx);
+            items_vec.extend(native::native_element_attribute_completions(
+                ctx, &component,
+            ));
+            event_union::append_component_surface(&mut items_vec, component);
             return prepare_open_tag_completions(ctx, &tag_ctx, items_vec);
         }
 
@@ -112,7 +121,7 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
     }
 
     if is_template_expression {
-        return analyzed_template_binding_completions(ctx, true);
+        return template_expression_completions(ctx);
     }
 
     let mut items_vec = Vec::new();

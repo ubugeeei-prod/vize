@@ -3,6 +3,7 @@ import fs from "node:fs";
 import type { Context } from "@oxlint/plugins";
 
 import { lintPatina } from "./binding.js";
+import { parseRuleSelection, ruleOptionsKey, type RuleSelection } from "./rule-selection.js";
 import type { PatinaDiagnostic, PatinaRuleOptions, SfcBlock, SingleScriptMap } from "./model.js";
 import { extractSfcBlocks } from "./sfc-blocks.js";
 import { createSingleScriptMap } from "./script-map.js";
@@ -29,6 +30,8 @@ export interface FileState {
   partialDiagnosticsByRule: Map<string, readonly PatinaDiagnostic[]>;
   requestedRules: Set<string>;
   reportedTypeAwareRuntimeDiagnostic: boolean;
+  ruleSelection: RuleSelection | undefined;
+  selectedDiagnosticsByRule: Map<string, PatinaDiagnostic[]> | null;
 }
 
 interface SourceRevisionIdentity {
@@ -84,6 +87,8 @@ export function getFileState(context: Context): FileState {
     partialDiagnosticsByRule: new Map(),
     requestedRules: new Set(),
     reportedTypeAwareRuntimeDiagnostic: false,
+    ruleSelection: parseRuleSelection(settings.rules),
+    selectedDiagnosticsByRule: null,
   };
   fileStateCache.set(cacheKey, {
     state,
@@ -111,6 +116,31 @@ export function getDiagnosticsForRule(
   ruleName: string,
   ruleOptions?: PatinaRuleOptions,
 ): readonly PatinaDiagnostic[] {
+  const selection = state.ruleSelection;
+  if (
+    selection?.optionsByRule.has(ruleName) &&
+    ruleOptionsKey(selection.optionsByRule.get(ruleName)) === ruleOptionsKey(ruleOptions)
+  ) {
+    if (state.selectedDiagnosticsByRule === null) {
+      const settings = getVizeSettings(context);
+      state.selectedDiagnosticsByRule = indexDiagnosticsByRule(
+        lintPatina(
+          state.source,
+          state.filename,
+          {
+            ...settings,
+            typeAware: settings.typeAware === true || selection.names.some(isTypeAwareRuleName),
+          },
+          selection.names,
+          selection.options,
+        ).diagnostics,
+      );
+    }
+    return diagnosticsForRule(state, state.selectedDiagnosticsByRule, ruleName);
+  }
+
+  // Package/file overrides can add rules or change their options after the
+  // shared selection was authored. Never silently suppress those diagnostics.
   if (ruleOptions != null) {
     return getConfiguredRuleDiagnostics(context, state, ruleName, ruleOptions);
   }
@@ -196,42 +226,7 @@ function getConfiguredRuleDiagnostics(
 }
 
 function configuredRuleCacheKey(ruleName: string, ruleOptions: PatinaRuleOptions): string {
-  return [
-    ruleName,
-    ruleOptions.componentNameInTemplateCasing ?? "",
-    ruleOptions.customEventNameCasing ?? "",
-    ruleOptions.noMutatingProps == null ? "" : noMutatingPropsCacheKey(ruleOptions.noMutatingProps),
-    ruleOptions.sfcElementOrder == null ? "" : sfcElementOrderCacheKey(ruleOptions.sfcElementOrder),
-    ruleOptions.htmlSelfClosing == null ? "" : htmlSelfClosingCacheKey(ruleOptions.htmlSelfClosing),
-    ruleOptions.vOnEventHyphenation ?? "",
-    ruleOptions.attributeHyphenation ?? "",
-  ].join("\0");
-}
-
-function noMutatingPropsCacheKey(
-  options: NonNullable<PatinaRuleOptions["noMutatingProps"]>,
-): string {
-  return options.shallowOnly === true ? "1" : "0";
-}
-
-function sfcElementOrderCacheKey(
-  options: NonNullable<PatinaRuleOptions["sfcElementOrder"]>,
-): string {
-  return (options.order ?? [])
-    .map((group) => (Array.isArray(group) ? group.join("\u001f") : group))
-    .join("\u001e");
-}
-
-function htmlSelfClosingCacheKey(
-  options: NonNullable<PatinaRuleOptions["htmlSelfClosing"]>,
-): string {
-  return [
-    options.html?.void ?? "",
-    options.html?.normal ?? "",
-    options.html?.component ?? "",
-    options.svg ?? "",
-    options.math ?? "",
-  ].join("/");
+  return `${ruleName}\0${ruleOptionsKey(ruleOptions)}`;
 }
 
 export function getScriptMap(state: FileState): SingleScriptMap | null {

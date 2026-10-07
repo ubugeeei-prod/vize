@@ -1,15 +1,17 @@
 mod names;
 pub(in crate::script_parser) use names::snapshot_in_reexecuted_scope;
-use names::{
-    composable_call_name, is_intentional_discard, is_mutating_method, root_identifier,
-    spread_writes_back,
-};
+use names::{composable_call_name, is_intentional_discard, root_identifier, spread_writes_back};
 
+mod mutations;
+pub use mutations::{
+    check_reactive_plain_assignment_mutation, check_reactive_plain_call_mutation,
+    check_reactive_plain_update_mutation,
+};
 mod reassignment;
 mod records;
 mod sources;
 
-use oxc_ast::ast::{AssignmentTarget, CallExpression, Expression, SimpleAssignmentTarget};
+use oxc_ast::ast::{AssignmentTarget, CallExpression, Expression};
 use oxc_span::GetSpan;
 
 use vize_carton::{CompactString, FxHashMap};
@@ -151,7 +153,7 @@ pub fn check_getter_call_extraction(
         start: init.span().start,
         end: init.span().end,
     });
-    result.reactive_value_origins.insert(
+    result.record_reactive_origin(
         CompactString::new(target_name),
         ReactiveValueOrigin::GetterCall {
             context_name,
@@ -184,6 +186,7 @@ pub fn check_reactive_plain_alias_extraction(
         return;
     }
 
+    let live = result.keeps_live_ref_origin(value.argument_name.as_str());
     result.reactivity.record_plain_value_alias(
         value.source_name.clone(),
         value.argument_name,
@@ -191,12 +194,13 @@ pub fn check_reactive_plain_alias_extraction(
         value.start,
         value.end,
     );
-    result.reactive_value_origins.insert(
+    result.record_reactive_origin(
         CompactString::new(target_name),
         ReactiveValueOrigin::PlainAlias {
             source_name: value.source_name,
         },
     );
+    result.record_live_ref_origin(target_name, live);
 }
 
 /// Check `alias = count` where `count` is already a plain reactive snapshot.
@@ -221,6 +225,7 @@ pub fn check_reactive_plain_assignment_alias(
         return;
     }
 
+    let live = result.keeps_live_ref_origin(value.argument_name.as_str());
     result.reactivity.record_plain_value_alias(
         value.source_name.clone(),
         value.argument_name,
@@ -228,94 +233,13 @@ pub fn check_reactive_plain_assignment_alias(
         value.start,
         value.end,
     );
-    result.reactive_value_origins.insert(
+    result.record_reactive_origin(
         CompactString::new(target_name),
         ReactiveValueOrigin::PlainAlias {
             source_name: value.source_name,
         },
     );
-}
-
-/// Check member writes through a plain snapshot of reactive state.
-#[inline]
-pub fn check_reactive_plain_assignment_mutation(
-    result: &mut ScriptParseResult,
-    target: &AssignmentTarget<'_>,
-    source: &str,
-) {
-    if result.reactive_value_origins.is_empty() {
-        return;
-    }
-
-    let Some(value) = sources::reactive_plain_value_from_assignment_target(result, target, source)
-    else {
-        return;
-    };
-
-    result.reactivity.record_plain_value_mutation(
-        value.source_name,
-        value.argument_name,
-        value.start,
-        value.end,
-    );
-}
-
-/// Check updates of plain-snapshot bindings or their members.
-#[inline]
-pub fn check_reactive_plain_update_mutation(
-    result: &mut ScriptParseResult,
-    target: &SimpleAssignmentTarget<'_>,
-    source: &str,
-) {
-    if result.reactive_value_origins.is_empty() {
-        return;
-    }
-
-    let Some(value) =
-        sources::reactive_plain_value_from_simple_assignment_target(result, target, source)
-    else {
-        return;
-    };
-
-    result.reactivity.record_plain_value_mutation(
-        value.source_name,
-        value.argument_name,
-        value.start,
-        value.end,
-    );
-}
-
-/// Check mutating method calls like `alias.push(...)`, `alias.set(...)`, or
-/// `alias.items.splice(...)` on a plain snapshot.
-#[inline]
-pub fn check_reactive_plain_call_mutation(
-    result: &mut ScriptParseResult,
-    call: &CallExpression<'_>,
-    source: &str,
-) {
-    if result.reactive_value_origins.is_empty() {
-        return;
-    }
-
-    let Expression::StaticMemberExpression(member) = &call.callee else {
-        return;
-    };
-    if !is_mutating_method(member.property.name.as_str()) {
-        return;
-    }
-
-    let Some(value) =
-        sources::reactive_plain_value_from_mutated_expression(result, &member.object, source)
-    else {
-        return;
-    };
-
-    result.reactivity.record_plain_value_mutation(
-        value.source_name,
-        value.argument_name,
-        call.span.start,
-        call.span.end,
-    );
+    result.record_live_ref_origin(target_name, live);
 }
 
 #[inline]
@@ -416,7 +340,7 @@ pub fn check_ref_value_extraction(
                     end: member.span.end,
                 });
             }
-            result.reactive_value_origins.insert(
+            result.record_reactive_origin(
                 CompactString::new(target_name),
                 ReactiveValueOrigin::RefValue {
                     source_name: ref_name,
@@ -456,7 +380,7 @@ pub fn check_reactive_property_extraction(
                 end: init.span().end,
             });
         }
-        result.reactive_value_origins.insert(
+        result.record_reactive_origin(
             CompactString::new(target_name),
             ReactiveValueOrigin::ReactiveProperty {
                 source_name,
@@ -487,7 +411,7 @@ pub fn check_reactive_property_extraction(
             init.span().end,
         );
     }
-    result.reactive_value_origins.insert(
+    result.record_reactive_origin(
         CompactString::new(target_name),
         ReactiveValueOrigin::ReactiveProperty {
             source_name,

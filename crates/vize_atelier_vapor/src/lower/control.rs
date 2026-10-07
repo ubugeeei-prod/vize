@@ -231,12 +231,14 @@ fn transform_for_node_with_options<'a>(
     // Consume ID for the render block
     let _render_block_id = ctx.next_id();
 
-    // Transform children as render block
+    // Refs on the loop root and all descendants belong to this loop body.
+    ctx.for_depth += 1;
     let render = super::transform_children_with_keys(
         ctx,
         &for_node.children,
         for_node.parse_result.match_scope,
     );
+    ctx.for_depth -= 1;
 
     let ir_for = ForIRNode {
         id: for_id,

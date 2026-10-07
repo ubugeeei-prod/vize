@@ -76,7 +76,7 @@
           "componentFile": "packages/effects/layouts/src/widgets/theme-toggle/theme-button.vue",
           "tagName": "ThemeButton",
           "tagAnchor": "<ThemeButton\n          ",
-          "completionItemCount": 31,
+          "completionItemCount": 40,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -106,9 +106,18 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "type", "rank": 28 },
-            { "label": "model-value", "rank": 29 },
-            { "label": "@update:modelValue", "rank": 30 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "type", "rank": 37 },
+            { "label": "model-value", "rank": 38 },
+            { "label": "@update:modelValue", "rank": 39 }
           ],
           "dependencyEdit": {
             "anchor": "  type?: 'icon' | 'normal';\n",
@@ -184,7 +193,7 @@
           "componentFile": "packages/hoppscotch-common/src/components/graphql/ExplorerSection.vue",
           "tagName": "ExplorerSection",
           "tagAnchor": "<ExplorerSection ",
-          "completionItemCount": 29,
+          "completionItemCount": 37,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -214,7 +223,15 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "title", "rank": 28 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "role", "rank": 31 },
+            { "label": "tabindex", "rank": 32 },
+            { "label": "aria-label", "rank": 33 },
+            { "label": "ref", "rank": 34 },
+            { "label": "key", "rank": 35 },
+            { "label": "title", "rank": 36 }
           ],
           "dependencyEdit": {
             "anchor": "  title: ExplorerSectionTitle\n",
@@ -281,7 +298,7 @@
           "componentFile": "packages/components/cascader-panel/src/node.vue",
           "tagName": "el-cascader-node",
           "tagAnchor": "<el-cascader-node\n            ",
-          "completionItemCount": 31,
+          "completionItemCount": 40,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -311,9 +328,18 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "node", "rank": 28 },
-            { "label": "menu-id", "rank": 29 },
-            { "label": "@expand", "rank": 30 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "node", "rank": 37 },
+            { "label": "menu-id", "rank": 38 },
+            { "label": "@expand", "rank": 39 }
           ],
           "dependencyEdit": {
             "anchor": "  menuId?: string\n",
@@ -368,7 +394,7 @@
           "componentFile": "components/drawer/demo/descriptionItem/index.vue",
           "tagName": "description-item",
           "tagAnchor": "<description-item title=\"Full Name\" ",
-          "completionItemCount": 30,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -398,8 +424,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "title", "rank": 28 },
-            { "label": "content", "rank": 29 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "role", "rank": 31 },
+            { "label": "tabindex", "rank": 32 },
+            { "label": "aria-label", "rank": 33 },
+            { "label": "ref", "rank": 34 },
+            { "label": "key", "rank": 35 },
+            { "label": "title", "rank": 36 },
+            { "label": "content", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "  content?: string;\n",
@@ -454,7 +488,7 @@
           "componentFile": "packages/core/src/Toolbar/ToolbarButton.vue",
           "tagName": "ToolbarButton",
           "tagAnchor": "<ToolbarButton\n",
-          "completionItemCount": 31,
+          "completionItemCount": 40,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -484,9 +518,18 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "as-child", "rank": 28 },
-            { "label": "as", "rank": 29 },
-            { "label": "disabled", "rank": 30 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "as-child", "rank": 37 },
+            { "label": "as", "rank": 38 },
+            { "label": "disabled", "rank": 39 }
           ],
           "dependencyEdit": {
             "anchor": "  disabled?: boolean\n",
@@ -559,7 +602,7 @@
           "componentFile": "packages/primevue/src/badge/Badge.vue",
           "tagName": "Badge",
           "tagAnchor": "            <Badge ",
-          "completionItemCount": 28,
+          "completionItemCount": 37,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -588,7 +631,16 @@
             { "label": "@focus", "rank": 24 },
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
-            { "label": "@mouseleave", "rank": 27 }
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 }
           ],
           "dependencyEdit": {
             "anchor": "    computed: {",
@@ -670,7 +722,7 @@
           "componentFile": "apps/volt/volt/Button.vue",
           "tagName": "Button",
           "tagAnchor": "            <Button ",
-          "completionItemCount": 28,
+          "completionItemCount": 37,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -699,7 +751,16 @@
             { "label": "@focus", "rank": 24 },
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
-            { "label": "@mouseleave", "rank": 27 }
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 }
           ],
           "dependencyEdit": {
             "anchor": "interface Props extends /* @vue-ignore */ ButtonProps {}",
@@ -754,7 +815,7 @@
           "componentFile": "apps/showcase/components/doc/DocCopyMarkdown.vue",
           "tagName": "DocCopyMarkdown",
           "tagAnchor": "                            <DocCopyMarkdown ",
-          "completionItemCount": 30,
+          "completionItemCount": 39,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -784,8 +845,17 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "doc-type", "rank": 28 },
-            { "label": "component-name", "rank": 29 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "doc-type", "rank": 37 },
+            { "label": "component-name", "rank": 38 }
           ],
           "dependencyEdit": {
             "anchor": "        docType: {\n            type: String,\n            default: 'component'\n        }\n",
@@ -855,7 +925,7 @@
           "componentFile": "packages/docs/src/components/home/SnipsExample.vue",
           "tagName": "SnipsExample",
           "tagAnchor": "              <SnipsExample ",
-          "completionItemCount": 28,
+          "completionItemCount": 37,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -884,7 +954,16 @@
             { "label": "@focus", "rank": 24 },
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
-            { "label": "@mouseleave", "rank": 27 }
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 }
           ],
           "dependencyEdit": {
             "anchor": "<script setup>\n  const items = [\n",
@@ -949,7 +1028,7 @@
           "componentFile": "demo/utils/CopyCodeButton.vue",
           "tagName": "CopyCodeButton",
           "tagAnchor": "<CopyCodeButton\n            ",
-          "completionItemCount": 33,
+          "completionItemCount": 42,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -979,11 +1058,20 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "text", "rank": 28 },
-            { "label": "code", "rank": 29 },
-            { "label": "size", "rank": 30 },
-            { "label": "success-text", "rank": 31 },
-            { "label": "depth", "rank": 32 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "text", "rank": 37 },
+            { "label": "code", "rank": 38 },
+            { "label": "size", "rank": 39 },
+            { "label": "success-text", "rank": 40 },
+            { "label": "depth", "rank": 41 }
           ],
           "dependencyEdit": {
             "anchor": "    depth: String\n",
@@ -1038,7 +1126,7 @@
           "componentFile": "src/components/Base/BaseButton.vue",
           "tagName": "BaseButton",
           "tagAnchor": "      <BaseButton ",
-          "completionItemCount": 32,
+          "completionItemCount": 41,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1068,10 +1156,19 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "label", "rank": 28 },
-            { "label": "icon", "rank": 29 },
-            { "label": "disabled", "rank": 30 },
-            { "label": "variant", "rank": 31 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "label", "rank": 37 },
+            { "label": "icon", "rank": 38 },
+            { "label": "disabled", "rank": 39 },
+            { "label": "variant", "rank": 40 }
           ],
           "dependencyEdit": {
             "anchor": "  variant?: \"default\" | \"primary\" | \"danger\";\n",
@@ -1138,7 +1235,7 @@
           "componentFile": "app/components/list/AccountSearchResult.vue",
           "tagName": "AccountSearchResult",
           "tagAnchor": "<AccountSearchResult\n",
-          "completionItemCount": 30,
+          "completionItemCount": 39,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1168,8 +1265,17 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "result", "rank": 28 },
-            { "label": "active", "rank": 29 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "result", "rank": 37 },
+            { "label": "active", "rank": 38 }
           ],
           "dependencyEdit": {
             "anchor": "  active: boolean\n",
@@ -1239,7 +1345,7 @@
           "componentFile": "packages/frontend/src/components/MkTooltip.vue",
           "tagName": "MkTooltip",
           "tagAnchor": "<MkTooltip ",
-          "completionItemCount": 38,
+          "completionItemCount": 47,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1269,16 +1375,25 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "showing", "rank": 28 },
-            { "label": "anchor-element", "rank": 29 },
-            { "label": "x", "rank": 30 },
-            { "label": "y", "rank": 31 },
-            { "label": "text", "rank": 32 },
-            { "label": "as-mfm", "rank": 33 },
-            { "label": "max-width", "rank": 34 },
-            { "label": "direction", "rank": 35 },
-            { "label": "inner-margin", "rank": 36 },
-            { "label": "@closed", "rank": 37 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "showing", "rank": 37 },
+            { "label": "anchor-element", "rank": 38 },
+            { "label": "x", "rank": 39 },
+            { "label": "y", "rank": 40 },
+            { "label": "text", "rank": 41 },
+            { "label": "as-mfm", "rank": 42 },
+            { "label": "max-width", "rank": 43 },
+            { "label": "direction", "rank": 44 },
+            { "label": "inner-margin", "rank": 45 },
+            { "label": "@closed", "rank": 46 }
           ],
           "dependencyEdit": {
             "anchor": "\tinnerMargin?: number;\n",
@@ -1374,7 +1489,7 @@
           "componentFile": "app/src/interfaces/presentation-header/helper-text.vue",
           "tagName": "HelperText",
           "tagAnchor": "\t\t\t\t\t<HelperText ",
-          "completionItemCount": 29,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1404,7 +1519,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "content", "rank": 28 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "content", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "\tcontent: string;",
@@ -1449,7 +1573,7 @@
           "componentFile": "playground/nuxt/pages/number-counter/AdditionIcon.vue",
           "tagName": "AdditionIcon",
           "tagAnchor": "<AdditionIcon type=\"minus\" ",
-          "completionItemCount": 29,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1479,7 +1603,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "type", "rank": 28 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "type", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "  type: 'plus' | 'minus'\n",
@@ -1529,7 +1662,7 @@
           "componentFile": "apps/v4/styles/reka-luma/ui/scroll-area/ScrollBar.vue",
           "tagName": "ScrollBar",
           "tagAnchor": "<ScrollBar ",
-          "completionItemCount": 33,
+          "completionItemCount": 41,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1559,11 +1692,19 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "as-child", "rank": 28 },
-            { "label": "as", "rank": 29 },
-            { "label": "orientation", "rank": 30 },
-            { "label": "force-mount", "rank": 31 },
-            { "label": "class", "rank": 32 }
+            { "label": "id", "rank": 28 },
+            { "label": "style", "rank": 29 },
+            { "label": "title", "rank": 30 },
+            { "label": "role", "rank": 31 },
+            { "label": "tabindex", "rank": 32 },
+            { "label": "aria-label", "rank": 33 },
+            { "label": "ref", "rank": 34 },
+            { "label": "key", "rank": 35 },
+            { "label": "as-child", "rank": 36 },
+            { "label": "as", "rank": 37 },
+            { "label": "orientation", "rank": 38 },
+            { "label": "force-mount", "rank": 39 },
+            { "label": "class", "rank": 40 }
           ],
           "dependencyEdit": {
             "anchor": "ScrollAreaScrollbarProps & { class?: HTMLAttributes['class'] }",
@@ -1607,7 +1748,7 @@
           "componentFile": "app/components/common/dial-kit/DialKitConfigPanel.vue",
           "tagName": "DialKitConfigPanel",
           "tagAnchor": "      <DialKitConfigPanel ",
-          "completionItemCount": 28,
+          "completionItemCount": 37,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1636,7 +1777,16 @@
             { "label": "@focus", "rank": 24 },
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
-            { "label": "@mouseleave", "rank": 27 }
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 }
           ],
           "dependencyEdit": {
             "anchor": "import { DialRoot } from \"dialkit/vue\";\n",
@@ -1682,7 +1832,7 @@
           "componentFile": "playground/nuxt/app/components/ui/chart/ChartTooltipContent.vue",
           "tagName": "ChartTooltipContent",
           "tagAnchor": "<ChartTooltipContent\n                ",
-          "completionItemCount": 37,
+          "completionItemCount": 46,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1712,15 +1862,24 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "active", "rank": 28 },
-            { "label": "payload", "rank": 29 },
-            { "label": "label", "rank": 30 },
-            { "label": "label-formatter", "rank": 31 },
-            { "label": "name-key", "rank": 32 },
-            { "label": "indicator", "rank": 33 },
-            { "label": "hide-label", "rank": 34 },
-            { "label": "hide-indicator", "rank": 35 },
-            { "label": "label-key", "rank": 36 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "active", "rank": 37 },
+            { "label": "payload", "rank": 38 },
+            { "label": "label", "rank": 39 },
+            { "label": "label-formatter", "rank": 40 },
+            { "label": "name-key", "rank": 41 },
+            { "label": "indicator", "rank": 42 },
+            { "label": "hide-label", "rank": 43 },
+            { "label": "hide-indicator", "rank": 44 },
+            { "label": "label-key", "rank": 45 }
           ],
           "dependencyEdit": {
             "anchor": "  labelKey?: string\n",
@@ -1765,7 +1924,7 @@
           "componentFile": "packages/vaul-vue/src/DrawerRoot.vue",
           "tagName": "DrawerRoot",
           "tagAnchor": "<DrawerRoot\n",
-          "completionItemCount": 45,
+          "completionItemCount": 54,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1795,23 +1954,32 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "active-snap-point", "rank": 28 },
-            { "label": "close-threshold", "rank": 29 },
-            { "label": "should-scale-background", "rank": 30 },
-            { "label": "set-background-color-on-scale", "rank": 31 },
-            { "label": "scroll-lock-timeout", "rank": 32 },
-            { "label": "fixed", "rank": 33 },
-            { "label": "dismissible", "rank": 34 },
-            { "label": "modal", "rank": 35 },
-            { "label": "open", "rank": 36 },
-            { "label": "default-open", "rank": 37 },
-            { "label": "nested", "rank": 38 },
-            { "label": "direction", "rank": 39 },
-            { "label": "no-body-styles", "rank": 40 },
-            { "label": "handle-only", "rank": 41 },
-            { "label": "prevent-scroll-restoration", "rank": 42 },
-            { "label": "snap-points", "rank": 43 },
-            { "label": "fade-from-index", "rank": 44 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "active-snap-point", "rank": 37 },
+            { "label": "close-threshold", "rank": 38 },
+            { "label": "should-scale-background", "rank": 39 },
+            { "label": "set-background-color-on-scale", "rank": 40 },
+            { "label": "scroll-lock-timeout", "rank": 41 },
+            { "label": "fixed", "rank": 42 },
+            { "label": "dismissible", "rank": 43 },
+            { "label": "modal", "rank": 44 },
+            { "label": "open", "rank": 45 },
+            { "label": "default-open", "rank": 46 },
+            { "label": "nested", "rank": 47 },
+            { "label": "direction", "rank": 48 },
+            { "label": "no-body-styles", "rank": 49 },
+            { "label": "handle-only", "rank": 50 },
+            { "label": "prevent-scroll-restoration", "rank": 51 },
+            { "label": "snap-points", "rank": 52 },
+            { "label": "fade-from-index", "rank": 53 }
           ],
           "dependencyEdit": {
             "anchor": "defineProps<DrawerRootProps>(), {",
@@ -1856,7 +2024,7 @@
           "componentFile": "docs/src/components/SideMenuButton.vue",
           "tagName": "SideMenuButton",
           "tagAnchor": "      <SideMenuButton ",
-          "completionItemCount": 29,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1886,7 +2054,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "model-value", "rank": 28 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "model-value", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "  modelValue: {\n    type: Boolean,\n    required: true,\n  },",
@@ -1931,7 +2108,7 @@
           "componentFile": "template/code/typescript-default/src/components/HelloWorld.vue",
           "tagName": "HelloWorld",
           "tagAnchor": "<HelloWorld ",
-          "completionItemCount": 29,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -1961,7 +2138,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "msg", "rank": 28 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "msg", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "  msg: string\n",
@@ -2006,7 +2192,7 @@
           "componentFile": "packages/router/src/tests/data-loaders/ComponentWithLoader.vue",
           "tagName": "ComponentWithLoader",
           "tagAnchor": "<ComponentWithLoader ",
-          "completionItemCount": 28,
+          "completionItemCount": 37,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -2035,7 +2221,16 @@
             { "label": "@focus", "rank": 24 },
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
-            { "label": "@mouseleave", "rank": 27 }
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 }
           ],
           "dependencyEdit": {
             "anchor": "<script lang=\"ts\" setup>\n",
@@ -2080,7 +2275,7 @@
           "componentFile": "packages/online-playground/src/VersionSelect.vue",
           "tagName": "VersionSelect",
           "tagAnchor": "<VersionSelect v-model=\"store.state.typescriptVersion\" ",
-          "completionItemCount": 32,
+          "completionItemCount": 41,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -2110,10 +2305,19 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "pkg", "rank": 28 },
-            { "label": "label", "rank": 29 },
-            { "label": "model-value", "rank": 30 },
-            { "label": "@update:modelValue", "rank": 31 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "pkg", "rank": 37 },
+            { "label": "label", "rank": 38 },
+            { "label": "model-value", "rank": 39 },
+            { "label": "@update:modelValue", "rank": 40 }
           ],
           "dependencyEdit": {
             "anchor": "  label?: string\n",
@@ -2158,7 +2362,7 @@
           "componentFile": "examples/basic-template/src/counter.vue",
           "tagName": "Counter",
           "tagAnchor": "<Counter ",
-          "completionItemCount": 28,
+          "completionItemCount": 37,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -2187,7 +2391,16 @@
             { "label": "@focus", "rank": 24 },
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
-            { "label": "@mouseleave", "rank": 27 }
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 }
           ],
           "dependencyEdit": {
             "anchor": "<script setup lang=\"ts\">\n",
@@ -2239,7 +2452,7 @@
           "componentFile": "playground/src/components/DominoHalf.vue",
           "tagName": "DominoHalf",
           "tagAnchor": "<template v-for=\"(half, index) in row\" :key=\"`top-${rowIndex}-${index}`\">\n        <Text :bg=\"BOARD\">{{ spaces(gapBeforeHalf(row, index)) }}</Text>\n        <DominoHalf ",
-          "completionItemCount": 30,
+          "completionItemCount": 39,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -2269,8 +2482,17 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "value", "rank": 28 },
-            { "label": "state", "rank": 29 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "value", "rank": 37 },
+            { "label": "state", "rank": 38 }
           ],
           "dependencyEdit": {
             "anchor": "    state?: TileState\n",
@@ -2315,7 +2537,7 @@
           "componentFile": "src/components/Share/DropdownMenu.vue",
           "tagName": "dropdown-menu",
           "tagAnchor": "    <dropdown-menu ",
-          "completionItemCount": 30,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -2345,8 +2567,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "title", "rank": 28 },
-            { "label": "items", "rank": 29 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "role", "rank": 31 },
+            { "label": "tabindex", "rank": 32 },
+            { "label": "aria-label", "rank": 33 },
+            { "label": "ref", "rank": 34 },
+            { "label": "key", "rank": 35 },
+            { "label": "title", "rank": 36 },
+            { "label": "items", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "    title: {\n      type: String,\n      default: 'vue'\n    }\n",
@@ -2500,7 +2730,7 @@
           "componentFile": "packages/vant/src/form/demo/BasicUsage.vue",
           "tagName": "basic-usage",
           "tagAnchor": "  <basic-usage ",
-          "completionItemCount": 28,
+          "completionItemCount": 37,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -2529,7 +2759,16 @@
             { "label": "@focus", "rank": 24 },
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
-            { "label": "@mouseleave", "rank": 27 }
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 }
           ],
           "dependencyEdit": {
             "anchor": "const t = useTranslate({\n",
@@ -2835,7 +3074,7 @@
           "componentFile": "packages/vue-virtual-scroller/src/components/ItemView.vue",
           "tagName": "ItemView",
           "tagAnchor": "      <ItemView\n        ",
-          "completionItemCount": 30,
+          "completionItemCount": 39,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -2865,8 +3104,17 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "view", "rank": 28 },
-            { "label": "item-tag", "rank": 29 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "view", "rank": 37 },
+            { "label": "item-tag", "rank": 38 }
           ],
           "dependencyEdit": {
             "anchor": "  itemTag: string\n}>()",
@@ -3029,7 +3277,7 @@
           "componentFile": "packages/docs/src/components/StackBlitzEdit.vue",
           "tagName": "StackBlitzEdit",
           "tagAnchor": "                <StackBlitzEdit ",
-          "completionItemCount": 30,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -3059,8 +3307,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "title", "rank": 28 },
-            { "label": "code", "rank": 29 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "role", "rank": 31 },
+            { "label": "tabindex", "rank": 32 },
+            { "label": "aria-label", "rank": 33 },
+            { "label": "ref", "rank": 34 },
+            { "label": "key", "rank": 35 },
+            { "label": "title", "rank": 36 },
+            { "label": "code", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "        title: String",
@@ -3458,7 +3714,7 @@
           "componentFile": "documentation/src/components/CodeDemoAndExample.vue",
           "tagName": "CodeDemoAndExample",
           "tagAnchor": "    <CodeDemoAndExample ",
-          "completionItemCount": 29,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -3488,7 +3744,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "demo-name", "rank": 28 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "demo-name", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "    demoName: {\n      type: String,\n      required: true\n    }\n",
@@ -3626,7 +3891,7 @@
           "componentFile": "docs/examples/connectionline/CustomConnectionLine.vue",
           "tagName": "CustomConnectionLine",
           "tagAnchor": "      <CustomConnectionLine ",
-          "completionItemCount": 32,
+          "completionItemCount": 41,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -3656,10 +3921,19 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "source-x", "rank": 28 },
-            { "label": "source-y", "rank": 29 },
-            { "label": "target-x", "rank": 30 },
-            { "label": "target-y", "rank": 31 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "source-x", "rank": 37 },
+            { "label": "source-y", "rank": 38 },
+            { "label": "target-x", "rank": 39 },
+            { "label": "target-y", "rank": 40 }
           ],
           "dependencyEdit": {
             "anchor": "  targetY: {\n    type: Number,\n    required: true,\n  },",
@@ -3947,7 +4221,7 @@
           "componentFile": "packages/varlet-ui-playground/src/Header.vue",
           "tagName": "Header",
           "tagAnchor": "\n  <Header ",
-          "completionItemCount": 31,
+          "completionItemCount": 40,
           "completionItems": [
             {
               "label": "v-if",
@@ -4061,17 +4335,26 @@
               "label": "@mouseleave",
               "rank": 27
             },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
             {
               "label": "store",
-              "rank": 28
+              "rank": 37
             },
             {
               "label": "theme",
-              "rank": 29
+              "rank": 38
             },
             {
               "label": "@update:theme",
-              "rank": 30
+              "rank": 39
             }
           ],
           "dependencyEdit": {
@@ -4131,7 +4414,7 @@
           "componentFile": "src/components/Select.vue",
           "tagName": "v-select",
           "tagAnchor": "    <v-select ",
-          "completionItemCount": 67,
+          "completionItemCount": 75,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -4161,45 +4444,53 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "reset-on-options-change", "rank": 28 },
-            { "label": "select-on-tab", "rank": 29 },
-            { "label": "map-keydown", "rank": 30 },
-            { "label": "get-option-key", "rank": 31 },
-            { "label": "taggable", "rank": 32 },
-            { "label": "options", "rank": 33 },
-            { "label": "push-tags", "rank": 34 },
-            { "label": "clearable", "rank": 35 },
-            { "label": "placeholder", "rank": 36 },
-            { "label": "label", "rank": 37 },
-            { "label": "components", "rank": 38 },
-            { "label": "deselect-from-dropdown", "rank": 39 },
-            { "label": "filter-by", "rank": 40 },
-            { "label": "dropdown-should-open", "rank": 41 },
-            { "label": "append-to-body", "rank": 42 },
-            { "label": "create-option", "rank": 43 },
-            { "label": "filterable", "rank": 44 },
-            { "label": "clear-search-on-blur", "rank": 45 },
-            { "label": "searchable", "rank": 46 },
-            { "label": "transition", "rank": 47 },
-            { "label": "autocomplete", "rank": 48 },
-            { "label": "selectable", "rank": 49 },
-            { "label": "no-drop", "rank": 50 },
-            { "label": "dir", "rank": 51 },
-            { "label": "close-on-select", "rank": 52 },
-            { "label": "get-option-label", "rank": 53 },
-            { "label": "on-tab", "rank": 54 },
-            { "label": "clear-search-on-select", "rank": 55 },
-            { "label": "disabled", "rank": 56 },
-            { "label": "uid", "rank": 57 },
-            { "label": "multiple", "rank": 58 },
-            { "label": "select-on-key-codes", "rank": 59 },
-            { "label": "value", "rank": 60 },
-            { "label": "calculate-position", "rank": 61 },
-            { "label": "tabindex", "rank": 62 },
-            { "label": "reduce", "rank": 63 },
-            { "label": "filter", "rank": 64 },
-            { "label": "search-input-query-selector", "rank": 65 },
-            { "label": "input-id", "rank": 66 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "aria-label", "rank": 33 },
+            { "label": "ref", "rank": 34 },
+            { "label": "key", "rank": 35 },
+            { "label": "reset-on-options-change", "rank": 36 },
+            { "label": "select-on-tab", "rank": 37 },
+            { "label": "map-keydown", "rank": 38 },
+            { "label": "get-option-key", "rank": 39 },
+            { "label": "taggable", "rank": 40 },
+            { "label": "options", "rank": 41 },
+            { "label": "push-tags", "rank": 42 },
+            { "label": "clearable", "rank": 43 },
+            { "label": "placeholder", "rank": 44 },
+            { "label": "label", "rank": 45 },
+            { "label": "components", "rank": 46 },
+            { "label": "deselect-from-dropdown", "rank": 47 },
+            { "label": "filter-by", "rank": 48 },
+            { "label": "dropdown-should-open", "rank": 49 },
+            { "label": "append-to-body", "rank": 50 },
+            { "label": "create-option", "rank": 51 },
+            { "label": "filterable", "rank": 52 },
+            { "label": "clear-search-on-blur", "rank": 53 },
+            { "label": "searchable", "rank": 54 },
+            { "label": "transition", "rank": 55 },
+            { "label": "autocomplete", "rank": 56 },
+            { "label": "selectable", "rank": 57 },
+            { "label": "no-drop", "rank": 58 },
+            { "label": "dir", "rank": 59 },
+            { "label": "close-on-select", "rank": 60 },
+            { "label": "get-option-label", "rank": 61 },
+            { "label": "on-tab", "rank": 62 },
+            { "label": "clear-search-on-select", "rank": 63 },
+            { "label": "disabled", "rank": 64 },
+            { "label": "uid", "rank": 65 },
+            { "label": "multiple", "rank": 66 },
+            { "label": "select-on-key-codes", "rank": 67 },
+            { "label": "value", "rank": 68 },
+            { "label": "calculate-position", "rank": 69 },
+            { "label": "tabindex", "rank": 70 },
+            { "label": "reduce", "rank": 71 },
+            { "label": "filter", "rank": 72 },
+            { "label": "search-input-query-selector", "rank": 73 },
+            { "label": "input-id", "rank": 74 }
           ],
           "dependencyEdit": {
             "anchor": "  props: {\n",
@@ -4283,7 +4574,7 @@
           "componentFile": "example/components/infra/nested.vue",
           "tagName": "nested-draggable",
           "tagAnchor": "      <nested-draggable ",
-          "completionItemCount": 29,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -4313,7 +4604,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "tasks", "rank": 28 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "tasks", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "    tasks: {\n      required: true,\n      type: Array\n    }\n",
@@ -4400,7 +4700,7 @@
           "componentFile": "src/components/landing/Features/FeatureIcon.vue",
           "tagName": "FeatureIcon",
           "tagAnchor": "--1\">\n      <div class=\"ln-feat-orbit-node--top ln-feat-orbit-node\"><FeatureIcon ",
-          "completionItemCount": 31,
+          "completionItemCount": 40,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -4430,9 +4730,18 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "name", "rank": 28 },
-            { "label": "size", "rank": 29 },
-            { "label": "stroke-width", "rank": 30 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "name", "rank": 37 },
+            { "label": "size", "rank": 38 },
+            { "label": "stroke-width", "rank": 39 }
           ],
           "dependencyEdit": {
             "anchor": "  strokeWidth?: number;\n",
@@ -4516,7 +4825,7 @@
           "componentFile": "src/__docs__/nested/NestedComponent.vue",
           "tagName": "nested-draggable",
           "tagAnchor": "<nested-draggable ",
-          "completionItemCount": 29,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -4546,7 +4855,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "model-value", "rank": 28 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "model-value", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "  modelValue: IList[]\n",
@@ -4630,7 +4948,7 @@
           "componentFile": "packages/docs/src/components/Tab.vue",
           "tagName": "Tabs",
           "tagAnchor": "<Tabs ",
-          "completionItemCount": 33,
+          "completionItemCount": 42,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -4660,11 +4978,20 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "count", "rank": 28 },
-            { "label": "npm", "rank": 29 },
-            { "label": "vue", "rank": 30 },
-            { "label": "html", "rank": 31 },
-            { "label": "css", "rank": 32 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "count", "rank": 37 },
+            { "label": "npm", "rank": 38 },
+            { "label": "vue", "rank": 39 },
+            { "label": "html", "rank": 40 },
+            { "label": "css", "rank": 41 }
           ],
           "dependencyEdit": {
             "anchor": "    props: {\n      count: {\n        default: 2\n      },\n",
@@ -4722,7 +5049,7 @@
           "componentFile": "example/components/toggle/source-comp.vue",
           "tagName": "portal-source",
           "tagAnchor": "      <portal-source ",
-          "completionItemCount": 28,
+          "completionItemCount": 37,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -4751,7 +5078,16 @@
             { "label": "@focus", "rank": 24 },
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
-            { "label": "@mouseleave", "rank": 27 }
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 }
           ],
           "dependencyEdit": {
             "anchor": "  name: 'Source',",
@@ -5068,7 +5404,7 @@
           "componentFile": "manual-testing/src/components/TheWelcome.vue",
           "tagName": "TheWelcome",
           "tagAnchor": "<TheWelcome ",
-          "completionItemCount": 28,
+          "completionItemCount": 37,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -5097,7 +5433,16 @@
             { "label": "@focus", "rank": 24 },
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
-            { "label": "@mouseleave", "rank": 27 }
+            { "label": "@mouseleave", "rank": 27 },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 }
           ],
           "dependencyEdit": {
             "file": "manual-testing/src/components/TheWelcome.vue",
@@ -5158,7 +5503,7 @@
           "componentFile": "src/components/highlight-message.vue",
           "tagName": "highlight-message",
           "tagAnchor": "    &lt;/splitpanes&gt;\n\n  highlight-message",
-          "completionItemCount": 31,
+          "completionItemCount": 40,
           "completionItems": [
             {
               "label": "v-if",
@@ -5272,17 +5617,26 @@
               "label": "@mouseleave",
               "rank": 27
             },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
             {
               "label": "tag",
-              "rank": 28
+              "rank": 37
             },
             {
               "label": "type",
-              "rank": 29
+              "rank": 38
             },
             {
               "label": "no-icon",
-              "rank": 30
+              "rank": 39
             }
           ],
           "dependencyEdit": {
@@ -5345,7 +5699,7 @@
           "componentFile": "src/components/ToggleSwitch.vue",
           "tagName": "ToggleSwitch",
           "tagAnchor": "          <ToggleSwitch\n            ",
-          "completionItemCount": 31,
+          "completionItemCount": 40,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -5375,9 +5729,18 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "value", "rank": 28 },
-            { "label": "label", "rank": 29 },
-            { "label": "name", "rank": 30 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "value", "rank": 37 },
+            { "label": "label", "rank": 38 },
+            { "label": "name", "rank": 39 }
           ],
           "dependencyEdit": {
             "anchor": "    label: {\n      type: String,\n      required: false\n    }\n",
@@ -5463,7 +5826,7 @@
           "componentFile": "src/components/btn.vue",
           "tagName": "uploader-btn",
           "tagAnchor": "        <uploader-btn ",
-          "completionItemCount": 31,
+          "completionItemCount": 40,
           "completionItems": [
             {
               "label": "v-if",
@@ -5577,17 +5940,26 @@
               "label": "@mouseleave",
               "rank": 27
             },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
             {
               "label": "directory",
-              "rank": 28
+              "rank": 37
             },
             {
               "label": "single",
-              "rank": 29
+              "rank": 38
             },
             {
               "label": "attrs",
-              "rank": 30
+              "rank": 39
             }
           ],
           "dependencyEdit": {
@@ -5804,7 +6176,7 @@
           "componentFile": "packages/lib/src/VueDatePicker/components/Common/ArrowBtn.vue",
           "tagName": "ArrowBtn",
           "tagAnchor": "class=\"dp--month-year-wrap\">\n        <ArrowBtn\n          ",
-          "completionItemCount": 34,
+          "completionItemCount": 42,
           "completionItems": [
             {
               "label": "v-if",
@@ -5918,29 +6290,37 @@
               "label": "@mouseleave",
               "rank": 27
             },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "ref", "rank": 34 },
+            { "label": "key", "rank": 35 },
             {
               "label": "aria-label",
-              "rank": 28
+              "rank": 36
             },
             {
               "label": "el-name",
-              "rank": 29
+              "rank": 37
             },
             {
               "label": "disabled",
-              "rank": 30
+              "rank": 38
             },
             {
               "label": "inactive",
-              "rank": 31
+              "rank": 39
             },
             {
               "label": "@activate",
-              "rank": 32
+              "rank": 40
             },
             {
               "label": "@set-ref",
-              "rank": 33
+              "rank": 41
             }
           ],
           "dependencyEdit": {
@@ -6001,7 +6381,7 @@
           "componentFile": "src/components/LayoutEditor.vue",
           "tagName": "LayoutEditor",
           "tagAnchor": "\n  <LayoutEditor ",
-          "completionItemCount": 29,
+          "completionItemCount": 38,
           "completionItems": [
             {
               "label": "v-if",
@@ -6115,9 +6495,18 @@
               "label": "@mouseleave",
               "rank": 27
             },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
             {
               "label": "save-design",
-              "rank": 28
+              "rank": 37
             }
           ],
           "dependencyEdit": {
@@ -6203,7 +6592,7 @@
           "componentFile": "docs/layout/LewCodeHighlighter.vue",
           "tagName": "LewCodeHighlighter",
           "tagAnchor": "    <LewCodeHighlighter :code=\"pre1\" ",
-          "completionItemCount": 31,
+          "completionItemCount": 40,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -6233,9 +6622,18 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "code", "rank": 28 },
-            { "label": "lang", "rank": 29 },
-            { "label": "max-height", "rank": 30 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "code", "rank": 37 },
+            { "label": "lang", "rank": 38 },
+            { "label": "max-height", "rank": 39 }
           ],
           "dependencyEdit": {
             "anchor": "  maxHeight: {\n    type: String,\n    default: '500px',\n  },",
@@ -6294,7 +6692,7 @@
           "componentFile": "app/components/icons/CopyIcon.vue",
           "tagName": "CopyIcon",
           "tagAnchor": "        <CopyIcon v-else ",
-          "completionItemCount": 29,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -6324,7 +6722,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "size", "rank": 28 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "size", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "defineProps({\n  size: {\n    type: Number,\n    default: 14\n  }\n})",
@@ -6382,7 +6789,7 @@
           "componentFile": "apps/docs/.vitepress/components/ChangelogTag.vue",
           "tagName": "ChangelogTag",
           "tagAnchor": "            <ChangelogTag ",
-          "completionItemCount": 30,
+          "completionItemCount": 39,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -6412,8 +6819,17 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "type", "rank": 28 },
-            { "label": "size", "rank": 29 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "type", "rank": 37 },
+            { "label": "size", "rank": 38 }
           ],
           "dependencyEdit": {
             "anchor": "  size?: 'small' | 'default' | 'large';\n",
@@ -6524,7 +6940,7 @@
           "componentFile": "src/components/Modal/EditQueue.vue",
           "tagName": "EditQueue",
           "tagAnchor": "        <EditQueue ",
-          "completionItemCount": 29,
+          "completionItemCount": 38,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -6554,7 +6970,16 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "name", "rank": 28 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "name", "rank": 37 }
           ],
           "dependencyEdit": {
             "anchor": "    name: {\n      type: String\n    }\n",
@@ -6688,7 +7113,7 @@
           "componentFile": "src/documentation/components/highlight-message.vue",
           "tagName": "highlight-message",
           "tagAnchor": "  highlight-message",
-          "completionItemCount": 31,
+          "completionItemCount": 40,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -6718,9 +7143,18 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "tag", "rank": 28 },
-            { "label": "type", "rank": 29 },
-            { "label": "no-icon", "rank": 30 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "tag", "rank": 37 },
+            { "label": "type", "rank": 38 },
+            { "label": "no-icon", "rank": 39 }
           ],
           "dependencyEdit": {
             "anchor": "    noIcon: { type: Boolean, default: false }\n",
@@ -6783,7 +7217,7 @@
           "componentFile": "apps/stage-web/src/pages/settings/characters/components/CharacterItem.vue",
           "tagName": "CharacterItem",
           "tagAnchor": "      <CharacterItem\n        ",
-          "completionItemCount": 31,
+          "completionItemCount": 40,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
@@ -6813,9 +7247,18 @@
             { "label": "@blur", "rank": 25 },
             { "label": "@mouseenter", "rank": 26 },
             { "label": "@mouseleave", "rank": 27 },
-            { "label": "character", "rank": 28 },
-            { "label": "is-active", "rank": 29 },
-            { "label": "is-selected", "rank": 30 }
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
+            { "label": "character", "rank": 37 },
+            { "label": "is-active", "rank": 38 },
+            { "label": "is-selected", "rank": 39 }
           ],
           "dependencyEdit": {
             "anchor": "  isSelected: boolean\n}",
@@ -6876,7 +7319,7 @@
           "componentFile": "app/components/AppMasthead.vue",
           "tagName": "AppMasthead",
           "tagAnchor": "<AppMasthead ",
-          "completionItemCount": 29,
+          "completionItemCount": 38,
           "completionItems": [
             {
               "label": "v-if",
@@ -6990,9 +7433,18 @@
               "label": "@mouseleave",
               "rank": 27
             },
+            { "label": "id", "rank": 28 },
+            { "label": "class", "rank": 29 },
+            { "label": "style", "rank": 30 },
+            { "label": "title", "rank": 31 },
+            { "label": "role", "rank": 32 },
+            { "label": "tabindex", "rank": 33 },
+            { "label": "aria-label", "rank": 34 },
+            { "label": "ref", "rank": 35 },
+            { "label": "key", "rank": 36 },
             {
               "label": "stats",
-              "rank": 28
+              "rank": 37
             }
           ],
           "dependencyEdit": {
@@ -7265,6 +7717,35 @@
         "lsp"
       ],
       "diff": "curator-compare"
+    },
+    {
+      "id": "n8n",
+      "displayName": "n8n",
+      "kind": "application",
+      "fixturePath": "tests/_fixtures/_git/n8n",
+      "repository": "https://github.com/n8n-io/n8n",
+      "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+      "license": {
+        "spdx": "LicenseRef-Sustainable-Use AND LicenseRef-n8n-Enterprise",
+        "files": [
+          "LICENSE.md",
+          "LICENSE_EE.md"
+        ]
+      },
+      "vueGlobs": [
+        "packages/**/*.vue"
+      ],
+      "tsconfig": "packages/frontend/editor-ui/tsconfig.json",
+      "coverage": [
+        "compiler",
+        "linter",
+        "typechecker",
+        "formatter",
+        "syntax-highlighter",
+        "lsp"
+      ],
+      "diff": "e2e-vrt",
+      "note": "Licensed master corpus; read-only n8n adoption PR40393 requirements are tracked separately in n8n-adoption.json and issue #8142. Enterprise files are used only as development/testing inputs. Generic tool coverage does not establish custom-rule adoption acceptance."
     }
   ]
 }

@@ -10,6 +10,8 @@ use crate::ide::{IdeContext, corsa_support};
 
 mod component_props;
 mod patterns;
+mod same_name_bindings;
+mod shorthand_roles;
 
 use component_props::retain_component_prop_edits;
 
@@ -125,6 +127,15 @@ async fn rename_strict_inner(
     } else {
         component_props.authored_definition_positions(ctx, &document)
     };
+    let property_arguments = if component_props.positions.is_empty()
+        || same_name_bindings::is_binding_declaration(ctx)
+    {
+        Vec::new()
+    } else {
+        component_props.authored_arguments(ctx, &document).ok_or(
+            CanonicalFailure::UnmappedResponse("component prop argument"),
+        )?
+    };
     let component_prop_positions = component_props
         .positions
         .iter()
@@ -161,13 +172,20 @@ async fn rename_strict_inner(
         return Ok(Answer::Available(None));
     }
     let had_primary_response = response.is_some();
+    let mut shorthand_roles = shorthand_roles::ShorthandRoles::new(property_arguments);
+    shorthand_roles.capture(ctx, &document, response.as_ref())?;
     let mut linked = response
         .as_ref()
         .map(|response| linked_positions(&document, response))
         .unwrap_or_default();
-    linked.extend(corsa_support::materialized_semantic_positions(
-        &document, ctx.uri, ctx.offset,
-    ));
+    // An attribute's producer key already selects its native identity. Its
+    // shorthand value shares the authored token but is a separate symbol.
+    // Public-key endpoints below cover matching materialized identities.
+    if attribute.is_none() {
+        linked.extend(corsa_support::materialized_semantic_positions(
+            &document, ctx.uri, ctx.offset,
+        ));
+    }
     linked.extend(definition_positions);
     linked.extend(component_props.positions);
     if matches!(rename_kind, Some(event_rename::RenameKind::Model))
@@ -239,6 +257,7 @@ async fn rename_strict_inner(
                 &mut component_props.source_cache,
             );
         }
+        shorthand_roles.capture(ctx, &document, Some(&extra))?;
         let Some(extra) = corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, extra)
         else {
             if component_prop_query {
@@ -265,8 +284,10 @@ async fn rename_strict_inner(
     record(&mut trace, || CanonicalRenameStage::Complete);
     Ok(Answer::Available(
         corsa_support::merge_canonical_workspace_edits(mapped).and_then(|mut edit| {
-            (!ctx.state.patterned_template_enabled()
-                || patterns::rewrite_shorthand_bindings(ctx, &document, &mut edit, new_name))
+            (shorthand_roles.rewrite(ctx, &document, &mut edit, new_name)
+                && (!ctx.state.patterned_template_enabled()
+                    || patterns::rewrite_shorthand_bindings(ctx, &document, &mut edit, new_name))
+                && same_name_bindings::coherent(&edit))
             .then_some(edit)
             .filter(|edit| scope.admits_authored(edit))
         }),

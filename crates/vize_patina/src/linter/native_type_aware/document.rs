@@ -37,6 +37,50 @@ pub(super) fn project_type_aware<'a>(
     template_offset: u32,
     filename: &str,
 ) -> TypeAwareDocument {
+    project(
+        descriptor,
+        script_content,
+        template,
+        script_offset,
+        template_offset,
+        filename,
+        false,
+    )
+}
+
+pub(in crate::linter) fn project_component<'a>(
+    descriptor: &SfcDescriptor<'a>,
+    template: Option<&RootNode<'a>>,
+    filename: &str,
+) -> String {
+    let script = descriptor
+        .script_setup
+        .as_ref()
+        .or(descriptor.script.as_ref());
+    project(
+        descriptor,
+        script.map_or("", |block| block.content.as_ref()),
+        template,
+        script.map_or(0, |block| block.loc.start as u32),
+        descriptor
+            .template
+            .as_ref()
+            .map_or(0, |block| block.loc.start as u32),
+        filename,
+        true,
+    )
+    .content
+}
+
+fn project<'a>(
+    descriptor: &SfcDescriptor<'a>,
+    script_content: &str,
+    template: Option<&RootNode<'a>>,
+    script_offset: u32,
+    template_offset: u32,
+    filename: &str,
+    component_only: bool,
+) -> TypeAwareDocument {
     // Lint analysis skips template expressions. The checker document needs
     // them so a probe can type the expression the author wrote.
     //
@@ -60,7 +104,9 @@ pub(super) fn project_type_aware<'a>(
     let script_text = owned_script.as_deref().unwrap_or(script_content);
     let split = analysis.split_script_setup_offsets(descriptor);
     let ts_options = VirtualTsOptions::default();
-    let output = if use_options_api {
+    // The editor-document facade disables preserve_authored_component. Its
+    // synthetic constructor would hide an authored `any` dependency default.
+    let output = if use_options_api || component_only {
         generate_virtual_ts_with_offsets_options_api(
             &analysis.croquis,
             Some(script_text),
@@ -94,7 +140,9 @@ pub(super) fn project_type_aware<'a>(
         mapping: output.mapping,
     };
     super::expression_bindings::hoist_type_imports(&mut document, script_text);
-    super::expression_bindings::bind_template_expressions(&mut document);
+    if !component_only {
+        super::expression_bindings::bind_template_expressions(&mut document);
+    }
     super::relative_imports::absolutize_relative_imports(&mut document, filename);
     // An unresolved `Ref` is `any` to this check, and the stock alias then
     // forces that prop through the boolean intersection. The alias text is

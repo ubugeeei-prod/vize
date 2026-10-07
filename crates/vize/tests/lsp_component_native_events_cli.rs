@@ -41,7 +41,17 @@ fn original_complete_response_keeps_declared_types_and_all_other_candidates() {
             position(&app, " />"),
             json!({ "line": 11, "character": 12 })
         );
-        let original = project.original_response(parse(ORIGINAL), newline == "\n");
+        let mut expected = parse(ORIGINAL);
+        let globals = parse(include_str!(
+            "../../../tests/_fixtures/differential/lsp/component-global-attributes-8015/common.expected.json"
+        ));
+        // Preserve the complete original 29-item bank; only the nine newly
+        // offered common component attributes enter before declared props.
+        expected
+            .as_array_mut()
+            .unwrap()
+            .splice(26..26, globals.as_array().unwrap().clone());
+        let original = project.original_response(expected, newline == "\n");
         project.assert_response(
             "textDocument/completion",
             json!({ "line": 11, "character": 12 }),
@@ -52,7 +62,7 @@ fn original_complete_response_keeps_declared_types_and_all_other_candidates() {
         project.assert_response(
             "textDocument/completion",
             json!({ "line": 12, "character": 12 }),
-            parse(LITERAL),
+            expression_bindings_with_globals(),
         );
         assert_native_hover(&mut project, &app, newline);
         project.shutdown();
@@ -143,7 +153,7 @@ fn native_elements_and_runtime_js_component_events_keep_their_full_contracts() {
             project.assert_response(
                 "textDocument/completion",
                 position(&changed, "toggle\" />"),
-                parse(LITERAL),
+                expression_bindings_with_globals(),
             );
         }
         project.shutdown();
@@ -200,6 +210,20 @@ fn assert_native_hover(project: &mut Project, original: &str, newline: &str) {
 
 fn parse(text: &str) -> Value {
     serde_json::from_str(text).unwrap()
+}
+
+// Keep the original whole local-binding vector and explicitly append the
+// separately frozen globals now available in interpolation/handler expressions.
+fn expression_bindings_with_globals() -> Value {
+    let globals = include_str!(
+        "../../../tests/_fixtures/differential/lsp/template-expression-globals-8015/globals.expected.json"
+    );
+    let mut items = parse(LITERAL);
+    items
+        .as_array_mut()
+        .unwrap()
+        .extend(parse(globals).as_array().unwrap().clone());
+    items
 }
 
 // Candidate identities, complete documentation and replacement snippets are

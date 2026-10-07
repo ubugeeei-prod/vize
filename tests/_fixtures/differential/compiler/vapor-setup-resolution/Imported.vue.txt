@@ -1,0 +1,8 @@
+<script setup vapor>
+import Tree from "./Child.vue";
+const vMark = (el) => { el.dataset.mark = "local"; };
+</script>
+
+<template>
+  <div v-mark><Tree /></div>
+</template>

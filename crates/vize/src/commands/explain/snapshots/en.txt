@@ -1914,7 +1914,7 @@ valid:
   const props = defineProps<Props>()
 === script/define-props-destructuring
 script/define-props-destructuring · lint rule
-Disallow destructuring the return value of defineProps in <script setup>
+Enforce consistent style for defineProps destructuring in <script setup>
 
 tier: exact
 domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
@@ -1924,12 +1924,10 @@ autofix: no
 docs: docs/content/rules/type-and-script.md
 
 invalid:
-  const { foo, bar } = defineProps<{ foo: string; bar?: number }>()
-  const [first] = defineProps<[string]>()
+  const props = defineProps<{ foo: string }>()
 
 valid:
-  const props = defineProps<{ foo: string }>()
-  // ...later: props.foo
+  const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
 === script/no-arrow-functions-in-watch
 script/no-arrow-functions-in-watch · lint rule
 Disallow arrow functions as Options API watch handlers

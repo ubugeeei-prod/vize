@@ -36,9 +36,9 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "script/define-props-destructuring.description",
-        "Disallow destructuring the return value of defineProps in <script setup>",
-        "<script setup> で defineProps の戻り値を分割代入することを禁止する",
-        "禁止在 <script setup> 中解构 defineProps 的返回值",
+        "Enforce consistent style for defineProps destructuring in <script setup>",
+        "<script setup> で defineProps の分割代入スタイルを統一する",
+        "强制 <script setup> 中 defineProps 解构风格保持一致",
     ),
     (
         "script/no-arrow-functions-in-watch.description",

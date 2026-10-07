@@ -171,12 +171,17 @@ pub(crate) fn generate_vapor_with_spans(
 
     let custom_directives = collect_custom_directives(&ir.block);
     if !custom_directives.is_empty() {
-        ctx.use_helper("resolveDirective");
         for directive in custom_directives {
+            let binding = ctx
+                .resolve_directive_binding_expr(&directive)
+                .unwrap_or_else(|| {
+                    ctx.use_helper("resolveDirective");
+                    vize_carton::cstr!("_resolveDirective(\"{}\")", directive)
+                });
             ctx.push_line(&vize_carton::cstr!(
-                "const _directive_{} = _resolveDirective(\"{}\")",
+                "const _directive_{} = {}",
                 directive_resolution_ident(directive.as_str()),
-                directive
+                binding
             ));
         }
     }

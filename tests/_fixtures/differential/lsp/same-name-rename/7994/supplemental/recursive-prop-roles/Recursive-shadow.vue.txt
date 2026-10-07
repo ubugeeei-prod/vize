@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineProps<{ id: string }>();
+const id = "own-local";
+</script>
+
+<template>
+  <Recursive :id />
+  <input :id />
+</template>

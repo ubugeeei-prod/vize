@@ -22,6 +22,8 @@ pub(crate) struct TransformContext<'a> {
     pub(crate) element_template_map: FxHashMap<usize, usize>,
     pub(crate) standalone_text_elements: FxHashSet<usize>,
     non_reactive_scopes: usize,
+    /// Lexical loop bodies, including descendants of transparent templates.
+    pub(crate) for_depth: usize,
     /// Inline native/template descendants retain key-only once ownership.
     pub(crate) non_reactive_keys: bool,
     /// Preserve authored text anchors in structural slot bodies.
@@ -43,6 +45,7 @@ impl<'a> TransformContext<'a> {
             element_template_map: FxHashMap::default(),
             standalone_text_elements: FxHashSet::default(),
             non_reactive_scopes: 0,
+            for_depth: 0,
             non_reactive_keys: false,
             structural_slot_spans: false,
             diagnostics: std::vec::Vec::new(),

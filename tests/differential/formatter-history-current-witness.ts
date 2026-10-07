@@ -120,7 +120,7 @@ const OWNERS: Record<
   },
   "crates/vize_glyph/src/template/formatter/suppression.rs": {
     originalSha256: "94b99ca1dcf0833d5706b73f95e41c9cdf280160e1dccdb751340ad86607b675",
-    actualMainSha256: "6ed649ce147cb3979b3ee76bbc9eb90d4e5848eb252a487d4660b2ff8c5dc10e",
+    actualMainSha256: "063a95ec1ea384135471ed21bcc20ab22c96ac7991562199aff136e14ff0bec8",
     functions: {
       ranges_track_pragma_placement:
         "8120d76a61ca7b815e73c633c93431ba5399f1227d8274a699d09c7d2a5a5400",

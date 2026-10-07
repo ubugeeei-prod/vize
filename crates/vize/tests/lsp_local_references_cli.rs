@@ -36,7 +36,7 @@ fn document_references_preserve_shadowed_identity_and_unsaved_edits() {
 }
 
 #[test]
-fn document_references_exclude_importers_but_cross_file_mode_keeps_them() {
+fn exported_references_include_importers_independently_of_cross_file_lint() {
     let source = "<script lang=\"ts\">\nexport const shared = 1;\nconst copy = shared;\n</script>\n<template><div /></template>\n";
     let importer = "<script setup lang=\"ts\">\nimport { shared } from './App.vue';\nconst copy = shared;\n</script>\n<template>{{ shared }}</template>\n";
     for cross_file in [false, true] {
@@ -53,14 +53,12 @@ fn document_references_exclude_importers_but_cross_file_mode_keeps_them() {
                 .skip(usize::from(!include_declaration))
                 .map(|needle| json!({ "uri": fixture.uri, "range": token_range(source, needle, "shared") }))
                 .collect();
-            if cross_file {
-                expected.extend(
-                    ["shared }", "shared;", "shared }}"]
-                        .into_iter()
-                        .skip(usize::from(!include_declaration))
-                        .map(|needle| json!({ "uri": importer_uri, "range": token_range(importer, needle, "shared") })),
-                );
-            }
+            expected.extend(
+                ["shared }", "shared;", "shared }}"]
+                    .into_iter()
+                    .skip(usize::from(!include_declaration))
+                    .map(|needle| json!({ "uri": importer_uri, "range": token_range(importer, needle, "shared") })),
+            );
             assert_eq!(
                 fixture.request_with(
                     "textDocument/references",

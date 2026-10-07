@@ -1,0 +1,7 @@
+<script setup>
+import First from "./matching/First.vue";
+import Second from "./matching/Second.vue";
+import Ignored from "./matching/Ignored.vue";
+import Other from "./Other.vue";
+</script>
+<template><div><First /><Second /><Ignored /><Other /></div></template>

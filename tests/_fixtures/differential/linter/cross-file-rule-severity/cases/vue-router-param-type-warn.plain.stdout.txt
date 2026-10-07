@@ -1,0 +1,11 @@
+Patina lint report: 2 errors, 2 warnings in 4 files
+
+src/App.vue
+  src/App.vue:4:21 error ecosystem/vue-router-unknown-route unknown route name `absent`
+    Reference: docs/content/rules/ecosystem.md
+  src/App.vue:5:37 warning ecosystem/vue-router-missing-param navigation to `user` does not pass required param `id`
+    Reference: docs/content/rules/ecosystem.md
+  src/App.vue:6:48 error ecosystem/vue-router-extra-param route `user` has no param `extra`
+    Reference: docs/content/rules/ecosystem.md
+  src/App.vue:7:43 warning ecosystem/vue-router-param-type param `id` of route `user` is an array, but `:id` is not repeatable
+    Reference: docs/content/rules/ecosystem.md

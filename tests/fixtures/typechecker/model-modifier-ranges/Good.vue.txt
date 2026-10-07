@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Field from "./Field.vue";
+import Named from "./Named.vue";
+
+const text = ref("");
+</script>
+
+<template>
+  <Field v-model.trim.upper="text" />
+  <Named v-model:title.upper="text" />
+  <Field :model-modifiers="{ trim: true }" v-model="text" />
+  <input v-model.lazy="text" />
+</template>

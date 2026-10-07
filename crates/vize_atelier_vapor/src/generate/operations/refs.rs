@@ -20,10 +20,7 @@ pub(super) fn generate_set_template_ref(
     };
 
     if set_ref.ref_for {
-        ctx.push_line_fmt(format_args!(
-            "_setRef({}, {}, undefined, true)",
-            element, value
-        ));
+        ctx.push_line_fmt(format_args!("_setRef({}, {}, true)", element, value));
     } else {
         ctx.push_line_fmt(format_args!("_setRef({}, {})", element, value));
     }

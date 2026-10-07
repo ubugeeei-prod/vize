@@ -73,6 +73,61 @@ test("write validates all protected manifests before modifying earlier files", (
   }
 });
 
+test("rename checks the final eligible entry after a tracked inventory larger than one MiB", () => {
+  const checkout = mkdtempSync(path.join(os.tmpdir(), "vize-feature-inventory-control-"));
+  try {
+    execFileSync("git", ["init", "-q"], { cwd: checkout });
+    const blob = execFileSync("git", ["hash-object", "-w", "--stdin"], {
+      cwd: checkout,
+      input: "",
+      encoding: "utf8",
+    }).trim();
+    const padding = Array.from(
+      { length: 5_000 },
+      (_, index) => `tests/fixtures/${"padding".repeat(29)}-${String(index).padStart(6, "0")}.rs`,
+    );
+    execFileSync("git", ["update-index", "--add", "-z", "--index-info"], {
+      cwd: checkout,
+      input: padding.map((file) => `100644 ${blob}\t${file}\0`).join(""),
+    });
+    const relative = "tests/tooling/zzzz-inventory.ts";
+    const final = path.join(checkout, relative);
+    const original = `// ${oldName}\n`;
+    mkdirSync(path.dirname(final), { recursive: true });
+    writeFileSync(final, original);
+    execFileSync("git", ["add", relative], { cwd: checkout });
+    const args = ["ls-files", "-z", "--", "tests"];
+    const inventory = execFileSync("git", args, { cwd: checkout, maxBuffer: 4 * 1024 * 1024 });
+    assert.ok(inventory.byteLength > 1024 * 1024);
+    assert.equal(inventory.toString("utf8").split("\0").at(-2), relative);
+    assert.throws(
+      () => execFileSync("git", args, { cwd: checkout }),
+      (error: unknown) => (error as NodeJS.ErrnoException).code === "ENOBUFS",
+    );
+    assert.equal(run("--check", checkout), 1);
+    assert.equal(readFileSync(final, "utf8"), original);
+    assert.equal(run("--write", checkout), 0);
+    assert.equal(readFileSync(final, "utf8"), "// legacy-differential\n");
+    assert.equal(run("--check", checkout), 0);
+  } finally {
+    rmSync(checkout, { recursive: true, force: true });
+  }
+});
+
+test("Git inventory failure rejects write before changing any file", () => {
+  const checkout = mkdtempSync(path.join(os.tmpdir(), "vize-feature-inventory-failure-"));
+  try {
+    const file = path.join(checkout, "crates/probe.rs");
+    const original = `// ${oldName}\n`;
+    mkdirSync(path.dirname(file), { recursive: true });
+    writeFileSync(file, original);
+    assert.throws(() => run("--write", checkout), /not a git repository/);
+    assert.equal(readFileSync(file, "utf8"), original);
+  } finally {
+    rmSync(checkout, { recursive: true, force: true });
+  }
+});
+
 test("locked Cargo metadata retains published and current SSR benchmark edges", () => {
   const metadata = JSON.parse(
     execFileSync(

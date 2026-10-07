@@ -9,9 +9,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l2::op::{Op, Region};
 
-use self::branch_keys::{
-    default_branch_key_count, is_template_for_slot_outlet_entry, peek_id, with_branch_key,
-};
+use self::branch_keys::{default_branch_key_count, peek_id, with_branch_key};
 use super::EmitCx;
 use super::EmitError;
 use super::buf::Buf;
@@ -117,17 +115,6 @@ fn collect(
                     entries.push(with_branch_key(cx, &mut entry_branch_key, |cx| {
                         capture(cx, |cx| entry::emit_for_entry(cx, for_op, &site))
                     })?);
-                } else if is_template_for_slot_outlet_entry(cx, id, for_op) {
-                    let walk_before = cx.walk.clone();
-                    with_branch_key(cx, &mut default_branch_key, |cx| {
-                        collect_default(cx, &mut defaults, op)
-                    })?;
-                    let walk_after_default = cx.walk.clone();
-                    cx.walk = walk_before;
-                    entries.push(with_branch_key(cx, &mut entry_branch_key, |cx| {
-                        capture(cx, |cx| entry::emit_empty_for_slot_outlet_entry(cx, for_op))
-                    })?);
-                    cx.walk = walk_after_default;
                 } else {
                     with_branch_key(cx, &mut default_branch_key, |cx| {
                         collect_default(cx, &mut defaults, op)

@@ -9,6 +9,8 @@ use vize_croquis::facts::{Demand, FactConsumer, FactGroup, UndefinedRefs};
 use vize_l0::cstr;
 use vize_relief::RootNode;
 
+mod props;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/no-undefined-refs",
     description: "Disallow undefined variable references in templates",
@@ -32,6 +34,15 @@ impl Rule for NoUndefinedRefs {
     }
 
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
+        // Imported props can declare any of the otherwise unresolved names.
+        // A single-file pass cannot prove they are absent from that shape.
+        if ctx
+            .art_script_analysis
+            .or_else(|| ctx.analysis())
+            .is_some_and(props::has_unresolved_props)
+        {
+            return;
+        }
         let Some(view) = ctx.facts::<Self>() else {
             return;
         };
@@ -53,9 +64,10 @@ impl Rule for NoUndefinedRefs {
             .collect();
 
         for (name, start, end) in undefined_refs {
-            // vue-router installs these on the component proxy. They are not
-            // script bindings, but templates may read them (#7214, #7235).
-            if matches!(name.as_str(), "$route" | "$router") {
+            // Plugins install `$`-prefixed properties on the component proxy
+            // through app.config.globalProperties. Single-file binding facts
+            // cannot enumerate these values (#7214, #7235, #7896).
+            if name.starts_with('$') {
                 continue;
             }
             ctx.report(

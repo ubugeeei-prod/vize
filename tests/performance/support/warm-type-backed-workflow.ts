@@ -74,12 +74,18 @@ if (process.argv[2] === "prepare") {
     .split("\n")
     .filter(Boolean);
   const allowed = new Set([
+    // Art lint delivery retains the original 400-provider protocol corpus.
+    "crates/vize_maestro/src/ide/diagnostics/art_lint_tests.rs",
+    "crates/vize_maestro/src/ide/diagnostics/art_lint.rs",
+    "crates/vize_maestro/src/ide/diagnostics/service.rs",
     "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/readiness.rs",
     "crates/vize_canon/src/corsa_bridge.rs",
     "crates/vize_canon/src/corsa_bridge/preparation_trace.rs",
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/prepare.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
     "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs",
+    "crates/vize_canon/src/lsp_client/diagnostics_lsp/readiness_workers.rs",
+    "crates/vize_canon/src/lsp_client/diagnostics_lsp/readiness_workers/tests.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/readiness.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/synchronize.rs",
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context.rs",
@@ -88,9 +94,17 @@ if (process.argv[2] === "prepare") {
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/catalog.rs",
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/fingerprint.rs",
     "crates/vize_canon/src/corsa_bridge/vue_document.rs",
+    "crates/vize_canon/src/corsa_bridge/script_document.rs",
+    "crates/vize_canon/src/corsa_bridge/bridge/documents.rs",
     "crates/vize_canon/src/corsa_bridge/vue_document/build.rs",
     "crates/vize_canon/src/corsa_bridge/vue_document/build/tests.rs",
     "crates/vize_canon/src/corsa_bridge/vue_document/types.rs",
+    "crates/vize_canon/src/batch/import_rewriter.rs",
+    "crates/vize_canon/src/batch/import_rewriter_dependency_tests.rs",
+    "crates/vize_canon/src/corsa_bridge/vue_dependencies.rs",
+    "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias.rs",
+    "crates/vize_canon/src/corsa_bridge/vue_dependency_specifiers.rs",
+    "crates/vize_canon/src/corsa_bridge/vue_dependency_specifiers/original.rs",
     "crates/vize_maestro/src/ide/corsa_support/canonical/open.rs",
     "crates/vize_maestro/src/ide/diagnostics.rs",
     "crates/vize_maestro/src/ide/diagnostics/assembly_parity_tests.rs",
@@ -105,6 +119,23 @@ if (process.argv[2] === "prepare") {
     "crates/vize_maestro/src/server/state/global_components/editor_options.rs",
     "crates/vize_maestro/src/server/state/global_components/editor_options/custody.rs",
     "crates/vize_maestro/src/server/state/global_components/editor_options/tests.rs",
+    // Explicit global-component configuration retains the full original provider gate.
+    "crates/vize/src/commands/lint/entry_rules.rs",
+    "crates/vize/tests/lint_global_components_cli.rs",
+    "crates/vize_maestro/src/ide/diagnostics/configured_global_components_tests.rs",
+    "crates/vize_maestro/src/ide/diagnostics/linter_options.rs",
+    "crates/vize_patina/src/linter/restricted_rules.rs",
+    "crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs",
+    "crates/vize_patina/tests/fixtures/global-component-registration/Card.art.vue",
+    "crates/vize_patina/tests/fixtures/global-component-registration/vize.config.json",
+    "crates/vize_patina/tests/global_component_registration.rs",
+    "davinci/vize_l0/src/config/model/linter_rule_options.rs",
+    "davinci/vize_l0/src/config/model/linter_rule_options/component_registration.rs",
+    "npm/cli/pkl/LinterConfig.pkl",
+    "npm/cli/pkl/jsonschema/LintRuleOptionsSchemaDefinitions.pkl",
+    "npm/cli/pkl/vize.pkl",
+    "npm/cli/schemas/vize.config.schema.json",
+    "npm/cli/src/types/generated.ts",
   ]);
   const harnessOnly = !cut && production.length === 0;
   if (harnessOnly) {
@@ -224,7 +255,7 @@ if (process.argv[2] === "prepare") {
           ? "Literal published v0.433 and root-frozen release cut; complete changed Git-entry manifest, independent driver, identical fresh ci builds, original400 and one recorded runtime"
           : harnessOnly
             ? "Same production source; closed reviewed harness-only delta and unchanged original inputs/locks. Qualification only, no performance or source-effect gain."
-            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack or shared editor reference-options delta; one worker, identical release recipe, original400 inputs and current locked runtime",
+            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack, shared editor reference-options or owned document-batch transfer delta; one worker, identical release recipe, original400 inputs and current locked runtime",
       },
       null,
       2,

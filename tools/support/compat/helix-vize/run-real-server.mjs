@@ -89,6 +89,15 @@ const expectedCompletion = [
     labelDetails: { detail: " (literal)" },
     sortText: "0total",
   },
+  ...JSON.parse(
+    fs.readFileSync(
+      new URL(
+        "../../../../tests/_fixtures/differential/lsp/template-expression-globals-8015/globals.expected.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ),
 ];
 
 const expectedHover = {

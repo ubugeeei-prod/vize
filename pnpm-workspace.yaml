@@ -63,7 +63,7 @@ overrides:
   nuxt: "4.5.1"
   qs: "6.16.0"
   "readdir-glob>minimatch": "10.2.5"
-  shell-quote: "1.9.0"
+  shell-quote: "1.11.0"
   # v4 removes unsafe argument forms; Devtools' default import is patched below.
   simple-git: "4.0.1"
   "simple-git>@simple-git/argv-parser": "2.0.1"
@@ -193,7 +193,7 @@ catalogs:
 
   # External framework integrations and native build helpers.
   integrations:
-    "@modelcontextprotocol/sdk": "1.30.0"
+    "@modelcontextprotocol/sdk": "1.31.0"
     "@napi-rs/cli": "3.6.2"
     "@nuxt/kit": "4.5.2"
     "@ox-content/vite-plugin": "2.81.0"

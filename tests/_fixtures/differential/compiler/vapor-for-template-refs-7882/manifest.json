@@ -1,0 +1,69 @@
+{
+  "issue": 7882,
+  "reporter": "ubugeeei",
+  "reporterId": 71201308,
+  "upstream": "pikax/vue-benchmarks",
+  "revision": "0e3c360a4780e74e9dd4888cb6a56a24372020d4",
+  "upstreamBlob": "73049b5d0fa71f196bdcff0c925ee7cc4647c4b2",
+  "upstreamWholeSha256": "0c54b88dbab6837ab2b60e4345c6c0db778dbd6b190eaecb3d148c33989f9e79",
+  "scope": "v-for native element refs; component-ref clause remains open",
+  "files": {
+    "App.vue.txt": {
+      "bytes": 380,
+      "sha256": "b6a68a1787929e832d791d4db059dc7066317f11a7392b212e4d8ce971bcbc0f"
+    },
+    "Child.vue.txt": {
+      "bytes": 104,
+      "sha256": "ae1918329a460b092103a57eb8191720e654ea9d56c5c68fdfb4472607f4436a"
+    },
+    "callback.vue.txt": {
+      "bytes": 567,
+      "sha256": "f105446b5d7f907e19dbb2c41c293766a5127127479fd4be838fb753604a6f4c"
+    },
+    "dynamic.vue.txt": {
+      "bytes": 419,
+      "sha256": "05d6932fbd9b4085d1ea2f55a54eb972ff94517cae6a922fb2a8edc3bafede08"
+    },
+    "issue.json": {
+      "bytes": 2269,
+      "sha256": "b404f9ec19788097569b59d78e8d1aece52441a94560cfc73e5f27feb4d267bd"
+    },
+    "loop-only.vue.txt": {
+      "bytes": 274,
+      "sha256": "ff740d3dc52d520ee33e45fc2a4d1905f70a2d086963b79566d46751117c946a"
+    },
+    "nested.vue.txt": {
+      "bytes": 628,
+      "sha256": "5118fbd6fab685d5556fbd831551278ad5b69b83b0c0eea78b93455da1593ddd"
+    },
+    "object-shadow.vue.txt": {
+      "bytes": 248,
+      "sha256": "5fef7847ce5af07bfba572d9288aa5b40ee3f2d300af316e724a31376f724b4d"
+    },
+    "removal.vue.txt": {
+      "bytes": 518,
+      "sha256": "e6c9dfd64435385e7af0cf4b9c0913b7ab1f3e2a3994b9425a5a9db6ace478fb"
+    },
+    "single.vue.txt": {
+      "bytes": 230,
+      "sha256": "272631c5a6518c21545545e8cf9d176fe1a6cbacafdab33992518b1c59615597"
+    },
+    "upstream-plant.mjs.txt": {
+      "bytes": 965,
+      "sha256": "107f3b963db7aa8d7355c834b7334e45693522a7e77587c13f44485ddad62f82"
+    },
+    "upstream.vue.txt": {
+      "bytes": 418,
+      "sha256": "f9fbf73b19942b16670926de8df0b9f93c12eda39be79681127d90a3e4d50862"
+    }
+  },
+  "derivatives": {
+    "loop-only.vue.txt": "exact App minus component half; preserves numeric For/onMounted/read",
+    "removal.vue.txt": "exact upstream plus remove and clear operations/exposure",
+    "dynamic.vue.txt": "retained first failed broad direct-ref control; existing Vize DOM unwraps the Ref; not an admitted positive or universal Vue refusal",
+    "single.vue.txt": "independently authored loop-free scalar-ref control",
+    "nested.vue.txt": "independently authored transparent/nested-loop + scalar sibling after loop control",
+    "callback.vue.txt": "independently authored function-ref positive; map holds actual mounted elements and each callback removes its own key on null",
+    "object-shadow.vue.txt": "exact scalar positive plus authored Object declaration; compiler bootstrap must not resolve the user lexical intrinsic"
+  }
+}

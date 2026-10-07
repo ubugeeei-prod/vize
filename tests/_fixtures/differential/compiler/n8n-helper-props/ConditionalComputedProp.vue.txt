@@ -1,0 +1,5 @@
+<template>
+  <div v-if="visible" :[DEV_PANEL_ROOT_ATTR]="true" class="dev-panel-root">
+    <span>{{ message }}</span>
+  </div>
+</template>

@@ -143,10 +143,11 @@ impl RequireComponentRegistration {
 
         FRAMEWORK_GLOBALS.contains(&lower.as_str())
             || FRAMEWORK_GLOBALS.contains(&kebab.as_str())
-            || self
-                .ignore_globals
-                .iter()
-                .any(|g| g.eq_ignore_ascii_case(tag) || g.eq_ignore_ascii_case(&kebab))
+            || self.ignore_globals.iter().any(|g| {
+                g.eq_ignore_ascii_case(tag)
+                    || g.eq_ignore_ascii_case(&kebab)
+                    || component_name_matches(tag, g)
+            })
     }
 
     /// Whether `tag` refers to the component itself.

@@ -1,0 +1,767 @@
+[
+  {
+    "id": "original-card-list",
+    "filename": "CardList.vue",
+    "entry": "sfc",
+    "source": "<script setup lang=\"ts\">\nimport MyCard from \"./MyCard.vue\";\n</script>\n\n<template>\n  <MyCard></MyCard>\n  <my-card />\n  <MyCard>\n    <template v-slot:header>Title</template>\n  </MyCard>\n  <input disabled=\"disabled\" />\n</template>\n",
+    "fixed": "<script setup lang=\"ts\">\nimport MyCard from \"./MyCard.vue\";\n</script>\n\n<template>\n  <MyCard></MyCard>\n  <my-card />\n  <MyCard>\n    <template #header>Title</template>\n  </MyCard>\n  <input disabled=\"disabled\" />\n</template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 141,
+        "end": 154,
+        "utf16": {
+          "start": {
+            "line": 8,
+            "character": 14
+          },
+          "end": {
+            "line": 8,
+            "character": 27
+          }
+        },
+        "edit": {
+          "start": 141,
+          "end": 148,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "named-valueless",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot:header>Title</template></Card></template>\n",
+    "fixed": "<template><Card><template #header>Title</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 26,
+        "end": 39,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 39
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 33,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "named-double-quoted",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot:header=\"{ item }\">{{ item }}</template></Card></template>\n",
+    "fixed": "<template><Card><template #header=\"{ item }\">{{ item }}</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header=\"{ item }\"",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 26,
+        "end": 50,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 50
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 33,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "named-single-quoted",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot:header='props'>{{ props }}</template></Card></template>\n",
+    "fixed": "<template><Card><template #header='props'>{{ props }}</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header='props'",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 26,
+        "end": 47,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 47
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 33,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "named-unquoted-value",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot:header=props>{{ props }}</template></Card></template>\n",
+    "fixed": "<template><Card><template #header=props>{{ props }}</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header=props",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 26,
+        "end": 45,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 45
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 33,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "bare-template-default",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot=\"props\">{{ props }}</template></Card></template>\n",
+    "fixed": "<template><Card><template #default=\"props\">{{ props }}</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot=\"props\"",
+        "message": "Expected '#default' instead of 'v-slot'",
+        "start": 26,
+        "end": 40,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 40
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 32,
+          "newText": "#default"
+        }
+      }
+    ]
+  },
+  {
+    "id": "explicit-template-default",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot:default=\"props\">{{ props }}</template></Card></template>\n",
+    "fixed": "<template><Card><template #default=\"props\">{{ props }}</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:default=\"props\"",
+        "message": "Expected '#default' instead of 'v-slot:default'",
+        "start": 26,
+        "end": 48,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 48
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 33,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "component-shorthand-default",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card #default=\"{ item }\">{{ item }}</Card></template>\n",
+    "fixed": "<template><Card v-slot=\"{ item }\">{{ item }}</Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "#default=\"{ item }\"",
+        "message": "Expected 'v-slot' instead of '#default'",
+        "start": 16,
+        "end": 35,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 16
+          },
+          "end": {
+            "line": 0,
+            "character": 35
+          }
+        },
+        "edit": {
+          "start": 16,
+          "end": 24,
+          "newText": "v-slot"
+        }
+      }
+    ]
+  },
+  {
+    "id": "component-longform-default",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card v-slot:default=\"{ item }\">{{ item }}</Card></template>\n",
+    "fixed": "<template><Card v-slot=\"{ item }\">{{ item }}</Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:default=\"{ item }\"",
+        "message": "Expected 'v-slot' instead of 'v-slot:default'",
+        "start": 16,
+        "end": 41,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 16
+          },
+          "end": {
+            "line": 0,
+            "character": 41
+          }
+        },
+        "edit": {
+          "start": 16,
+          "end": 30,
+          "newText": "v-slot"
+        }
+      }
+    ]
+  },
+  {
+    "id": "dynamic-name",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot:[name]=\"props\">{{ props }}</template></Card></template>\n",
+    "fixed": "<template><Card><template #[name]=\"props\">{{ props }}</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:[name]=\"props\"",
+        "message": "Expected '#[name]' instead of 'v-slot:[name]'",
+        "start": 26,
+        "end": 47,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 47
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 33,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "dynamic-nested-index",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot:[state.names[state.index]]=\"props\">{{ props }}</template></Card></template>\n",
+    "fixed": "<template><Card><template #[state.names[state.index]]=\"props\">{{ props }}</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:[state.names[state.index]]=\"props\"",
+        "message": "Expected '#[state.names[state.index]]' instead of 'v-slot:[state.names[state.index]]'",
+        "start": 26,
+        "end": 67,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 67
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 33,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "dynamic-string-bracket",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot:[state.keys[']']]=\"props\">{{ props }}</template></Card></template>\n",
+    "fixed": "<template><Card><template #[state.keys[']']]=\"props\">{{ props }}</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:[state.keys[']']]=\"props\"",
+        "message": "Expected '#[state.keys[']']]' instead of 'v-slot:[state.keys[']']]'",
+        "start": 26,
+        "end": 58,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 58
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 33,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "unicode-static-name",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot:見出し=\"props\">日本語</template></Card></template>\n",
+    "fixed": "<template><Card><template #見出し=\"props\">日本語</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:見出し=\"props\"",
+        "message": "Expected '#見出し' instead of 'v-slot:見出し'",
+        "start": 26,
+        "end": 50,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 44
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 33,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "unicode-prefix-offset",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><!-- 🚀 é 日本語 --><Card><template v-slot:header=\"props\">日本語</template></Card></template>\n",
+    "fixed": "<template><!-- 🚀 é 日本語 --><Card><template #header=\"props\">日本語</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header=\"props\"",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 52,
+        "end": 73,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 43
+          },
+          "end": {
+            "line": 0,
+            "character": 64
+          }
+        },
+        "edit": {
+          "start": 52,
+          "end": 59,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "crlf-whitespace",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<script setup lang=\"ts\">\r\nimport Card from \"./MyCard.vue\";\r\n</script>\r\n<template>\r\n  <Card>\r\n    <template v-slot:header = 'props'>Title</template>\r\n  </Card>\r\n</template>\r\n",
+    "fixed": "<script setup lang=\"ts\">\r\nimport Card from \"./MyCard.vue\";\r\n</script>\r\n<template>\r\n  <Card>\r\n    <template #header = 'props'>Title</template>\r\n  </Card>\r\n</template>\r\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header = 'props'",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 107,
+        "end": 130,
+        "utf16": {
+          "start": {
+            "line": 5,
+            "character": 14
+          },
+          "end": {
+            "line": 5,
+            "character": 37
+          }
+        },
+        "edit": {
+          "start": 107,
+          "end": 114,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "multiline-value-separator",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template\n v-slot:header\n = \"{ item }\"\n data-keep=\"yes\">{{ item }}</template></Card></template>\n",
+    "fixed": "<template><Card><template\n #header\n = \"{ item }\"\n data-keep=\"yes\">{{ item }}</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header\n = \"{ item }\"",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 27,
+        "end": 54,
+        "utf16": {
+          "start": {
+            "line": 1,
+            "character": 1
+          },
+          "end": {
+            "line": 2,
+            "character": 13
+          }
+        },
+        "edit": {
+          "start": 27,
+          "end": 34,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "formfeed-separator",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template\fv-slot:header=\"props\"\fdata-keep=\"yes\">H</template></Card></template>\n",
+    "fixed": "<template><Card><template\f#header=\"props\"\fdata-keep=\"yes\">H</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header=\"props\"",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 26,
+        "end": 47,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 47
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 33,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "named-component",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card v-slot:header=\"props\">H</Card></template>\n",
+    "fixed": "<template><Card #header=\"props\">H</Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header=\"props\"",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 16,
+        "end": 37,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 16
+          },
+          "end": {
+            "line": 0,
+            "character": 37
+          }
+        },
+        "edit": {
+          "start": 16,
+          "end": 23,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "two-independent-slots",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot:header>H</template><template v-slot:footer>F</template></Card></template>\n",
+    "fixed": "<template><Card><template #header>H</template><template #footer>F</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 26,
+        "end": 39,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 39
+          }
+        },
+        "edit": {
+          "start": 26,
+          "end": 33,
+          "newText": "#"
+        }
+      },
+      {
+        "target": "v-slot:footer",
+        "message": "Expected '#footer' instead of 'v-slot:footer'",
+        "start": 62,
+        "end": 75,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 62
+          },
+          "end": {
+            "line": 0,
+            "character": 75
+          }
+        },
+        "edit": {
+          "start": 62,
+          "end": 69,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ordinary-vue-html",
+    "filename": "Slot.html",
+    "entry": "html",
+    "source": "<my-card><template v-slot:header=\"props\">{{ props }}</template></my-card>\n",
+    "fixed": "<my-card><template #header=\"props\">{{ props }}</template></my-card>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header=\"props\"",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 19,
+        "end": 40,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 19
+          },
+          "end": {
+            "line": 0,
+            "character": 40
+          }
+        },
+        "edit": {
+          "start": 19,
+          "end": 26,
+          "newText": "#"
+        }
+      }
+    ]
+  },
+  {
+    "id": "shorthand-already-correct",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template #header=\"props\">{{ props }}</template></Card></template>\n",
+    "fixed": "<template><Card><template #header=\"props\">{{ props }}</template></Card></template>\n",
+    "diagnostics": []
+  },
+  {
+    "id": "component-bare-already-correct",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card v-slot=\"props\">{{ props }}</Card></template>\n",
+    "fixed": "<template><Card v-slot=\"props\">{{ props }}</Card></template>\n",
+    "diagnostics": []
+  },
+  {
+    "id": "non-slot-directives",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><div v-if=\"ok\" :class=\"name\" @click=\"run\">H</div></template>\n",
+    "fixed": "<template><div v-if=\"ok\" :class=\"name\" @click=\"run\">H</div></template>\n",
+    "diagnostics": []
+  },
+  {
+    "id": "modifier-refusal",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot:header.foo=\"props\">H</template></Card></template>\n",
+    "fixed": "<template><Card><template v-slot:header.foo=\"props\">H</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header.foo=\"props\"",
+        "message": "Expected '#header.foo' instead of 'v-slot:header.foo'",
+        "start": 26,
+        "end": 51,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 51
+          }
+        },
+        "edit": null
+      }
+    ]
+  },
+  {
+    "id": "bare-modifier-refusal",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template><Card><template v-slot.foo=\"props\">H</template></Card></template>\n",
+    "fixed": "<template><Card><template v-slot.foo=\"props\">H</template></Card></template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot.foo=\"props\"",
+        "message": "Expected '#default' instead of 'v-slot.foo'",
+        "start": 26,
+        "end": 44,
+        "utf16": {
+          "start": {
+            "line": 0,
+            "character": 26
+          },
+          "end": {
+            "line": 0,
+            "character": 44
+          }
+        },
+        "edit": null
+      }
+    ]
+  },
+  {
+    "id": "pug-authored-edit-refusal",
+    "filename": "Slot.vue",
+    "entry": "sfc",
+    "source": "<template lang=\"pug\">\nCard\n  template(v-slot:header) Title\n</template>\n",
+    "fixed": "<template lang=\"pug\">\nCard\n  template(v-slot:header) Title\n</template>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 38,
+        "end": 51,
+        "utf16": {
+          "start": {
+            "line": 2,
+            "character": 11
+          },
+          "end": {
+            "line": 2,
+            "character": 24
+          }
+        },
+        "edit": null
+      }
+    ]
+  },
+  {
+    "id": "petite-vue-edit-refusal",
+    "filename": "Slot.html",
+    "entry": "html",
+    "source": "<script type=\"module\">import \"petite-vue\";</script>\n<my-card><template v-slot:header>H</template></my-card>\n",
+    "fixed": "<script type=\"module\">import \"petite-vue\";</script>\n<my-card><template v-slot:header>H</template></my-card>\n",
+    "diagnostics": [
+      {
+        "target": "v-slot:header",
+        "message": "Expected '#header' instead of 'v-slot:header'",
+        "start": 71,
+        "end": 84,
+        "utf16": {
+          "start": {
+            "line": 1,
+            "character": 19
+          },
+          "end": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        "edit": null
+      }
+    ]
+  },
+  {
+    "id": "jsx-standard-attribute-control",
+    "filename": "Slot.jsx",
+    "entry": "jsx",
+    "source": "export const Slot = () => <Card><span slot=\"header\">H</span></Card>;\n",
+    "fixed": "export const Slot = () => <Card><span slot=\"header\">H</span></Card>;\n",
+    "diagnostics": []
+  },
+  {
+    "id": "tsx-standard-attribute-control",
+    "filename": "Slot.tsx",
+    "entry": "tsx",
+    "source": "export const Slot = (): JSX.Element => <Card><span slot=\"header\">H</span></Card>;\n",
+    "fixed": "export const Slot = (): JSX.Element => <Card><span slot=\"header\">H</span></Card>;\n",
+    "diagnostics": []
+  }
+]

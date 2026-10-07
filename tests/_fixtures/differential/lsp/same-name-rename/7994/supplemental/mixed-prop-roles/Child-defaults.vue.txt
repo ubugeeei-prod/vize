@@ -1,0 +1,8 @@
+<script setup lang="ts">
+type Props = { id: string; tone?: string };
+withDefaults(defineProps<Props>(), { tone: "light" });
+</script>
+
+<template>
+  <input :id />
+</template>
