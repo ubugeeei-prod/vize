@@ -1,10 +1,8 @@
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
+import { generateRulePages } from "./rules/render.mjs";
+import { readdirSync, readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
-const require = createRequire(import.meta.url);
 const workspaceRoot = resolve(import.meta.dirname, "../..");
 const rulesRoot = resolve(workspaceRoot, "crates/vize_patina/src/rules");
-const githubBlobBase = "https://github.com/ubugeeei-prod/vize/blob/main/";
 const categoryOrder =
   "Essential StronglyRecommended Recommended Accessibility HtmlConformance TypeAware Vapor Ecosystem CSS Musea Script".split(
     " ",
@@ -24,15 +22,7 @@ const categoryLabels = {
   Vapor: "Vapor",
 };
 
-const presetLabels = { "general-recommended": "happy-path" };
-const configurableRuleOptions = new Set(
-  "musea/prefer-design-tokens script/custom-event-name-casing script/no-restricted-globals script/no-restricted-members vue/attribute-hyphenation vue/component-name-in-template-casing vue/html-self-closing vue/no-mutating-props vue/sfc-element-order vue/v-on-event-hyphenation".split(
-    " ",
-  ),
-);
-
 const existingRulePresetsByName = readExistingRulePresets();
-const nativeRulesByName = loadNativeRulesByName();
 const sourceRulesByName = readPatinaSourceRules();
 const scriptRegistryByName = readScriptRegistry();
 const cssPresetRules = readOpinionatedCssRules();
@@ -58,72 +48,7 @@ const sortedCategories = [
     .sort((a, b) => a.localeCompare(b)),
 ];
 
-const lines = [
-  "---",
-  "title: All Patina Rules",
-  "---",
-  "",
-  "# All Patina Rules",
-  "",
-  `This page lists all ${rules.length} Patina rule implementations declared under \`crates/vize_patina/src/rules\`. The category pages keep the longer examples; this page is the compact reference for coverage, default severity, preset membership, fixability, rule-option support, and source implementation.`,
-  "",
-  "Preset names use Vize CLI terminology. The oxlint plugin metadata name `general-recommended` is shown here as `happy-path`. `_none_` means the rule is opt-in, host-driven, or outside the bundled lint presets.",
-  "",
-  "Rules marked with `ruleOptions` accept typed project-local settings under `linter.ruleOptions`; see [Rule Options](./options.md) for the complete option shapes.",
-  "",
-  "## Categories",
-  "",
-  "| Category | Rules |",
-  "| --- | ---: |",
-];
-
-for (const category of sortedCategories) {
-  const label = categoryLabels[category] ?? category;
-  const count = groupedRules.get(category).length;
-  lines.push(`| [${label}](#${slugify(`${label} ${count}`)}) | ${count} |`);
-}
-
-for (const category of sortedCategories) {
-  const group = groupedRules.get(category);
-  const label = categoryLabels[category] ?? category;
-  lines.push(
-    "",
-    `## ${label} (${group.length})`,
-    "",
-    "| Rule | Severity | Presets | Fixable | Options | Implementation | Description |",
-    "| --- | --- | --- | --- | --- | --- | --- |",
-  );
-
-  for (const rule of group) {
-    lines.push(
-      [
-        code(rule.name),
-        code(rule.defaultSeverity),
-        formatPresets(rule.presets),
-        rule.fixable ? "Yes" : "No",
-        formatRuleOptions(rule),
-        implementationLink(rule),
-        escapeCell(rule.description),
-      ]
-        .join(" | ")
-        .replace(/^/, "| ")
-        .replace(/$/, " |"),
-    );
-  }
-}
-
-lines.push("");
-
-writeFileSync(resolve(import.meta.dirname, "../content/rules/all.md"), lines.join("\n"));
-
-function loadNativeRulesByName() {
-  try {
-    const { getPatinaRules } = require("../../npm/native");
-    return new Map(getPatinaRules().map((rule) => [rule.name, rule]));
-  } catch {
-    return new Map();
-  }
-}
+generateRulePages({ workspaceRoot, rules, groupedRules, sortedCategories, categoryLabels });
 
 function readPatinaSourceRules() {
   const rulesByName = new Map();
@@ -223,19 +148,17 @@ function readOpinionatedCssRules() {
 }
 
 function mergeRuleMetadata(sourceRule) {
-  const nativeRule = nativeRulesByName.get(sourceRule.name);
   const scriptRegistry = scriptRegistryByName.get(sourceRule.name);
   const cssPresets = cssPresetRules.has(sourceRule.name) ? ["opinionated", "nuxt"] : null;
   const existingPresets = existingRulePresetsByName.get(sourceRule.name);
 
   return {
     ...sourceRule,
-    category:
-      scriptRegistry?.category ?? sourceRule.category ?? nativeRule?.category ?? "Recommended",
-    defaultSeverity: sourceRule.defaultSeverity ?? nativeRule?.defaultSeverity ?? "warning",
-    description: sourceRule.description || nativeRule?.description || "",
-    fixable: scriptRegistry?.fixable ?? sourceRule.fixable ?? nativeRule?.fixable ?? false,
-    presets: scriptRegistry?.presets ?? cssPresets ?? nativeRule?.presets ?? existingPresets ?? [],
+    category: scriptRegistry?.category ?? sourceRule.category ?? "Recommended",
+    defaultSeverity: sourceRule.defaultSeverity ?? "warning",
+    description: sourceRule.description || "",
+    fixable: scriptRegistry?.fixable ?? sourceRule.fixable ?? false,
+    presets: scriptRegistry?.presets ?? cssPresets ?? existingPresets ?? [],
   };
 }
 
@@ -245,7 +168,7 @@ function readExistingRulePresets() {
       readFileSync(resolve(import.meta.dirname, "../content/rules/all.md"), "utf8")
         .split("\n")
         .flatMap((line) => {
-          const match = line.match(/^\| `([^`]+)` \| `[^`]+` \| (.*?) \| /);
+          const match = line.match(/^\| (?:\[)?`([^`]+)`(?:\]\([^)]*\))? \| `[^`]+` \| (.*?) \| /);
           return match
             ? [[match[1], [...match[2].matchAll(/`([^`]+)`/g)].map((preset) => preset[1])]]
             : [];
@@ -309,41 +232,4 @@ function inferCategory(metaType) {
 function categorySortIndex(category) {
   const index = categoryOrder.indexOf(category);
   return index === -1 ? categoryOrder.length : index;
-}
-
-function code(value) {
-  return `\`${escapeCell(value)}\``;
-}
-
-function escapeCell(value) {
-  return String(value)
-    .replaceAll("|", "\\|")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function formatPresets(presets) {
-  if (presets.length === 0) return "_none_";
-  return presets
-    .map((preset) => presetLabels[preset] ?? preset)
-    .map(code)
-    .join(", ");
-}
-
-function formatRuleOptions(rule) {
-  return configurableRuleOptions.has(rule.name) ? "[`ruleOptions`](./options.md)" : "No";
-}
-
-function implementationLink(rule) {
-  const url = `${githubBlobBase}${rule.implementationPath}#L${rule.implementationLine}`;
-  return `[source](${url})`;
-}
-
-function slugify(value) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
 }

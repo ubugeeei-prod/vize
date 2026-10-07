@@ -1,0 +1,65 @@
+---
+title: "script/define-props-declaration"
+---
+
+# `script/define-props-declaration`
+
+defineProps を型による宣言形式に揃えます。
+
+既定の重大度: `warning`  
+プリセット: _none_  
+自動修正: なし。修正内容を確認してください  
+適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+
+## 設定（Vite+）
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "preset": "incremental",
+      "rules": {
+        "script/define-props-declaration": "warn"
+      }
+    },
+  },
+});
+```
+
+```sh
+vp run lint
+```
+
+## 悪い
+
+```vue
+<script setup lang="ts">
+// Runtime / object form
+const props = defineProps({
+kind: { type: String },
+count: { type: Number, default: 0 },
+})
+
+// Runtime / array form
+const props = defineProps(['kind', 'count'])
+</script>
+```
+
+## 良い
+
+```vue
+<script setup lang="ts">
+// Type-based form
+const props = defineProps<{ kind: string; count?: number }>()
+
+// Type-based with a referenced interface
+const props = defineProps<Props>()
+</script>
+```
+
+良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_declaration.rs#L40) · [全ルール](../all.md)
