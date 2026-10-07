@@ -310,6 +310,10 @@ pub fn check_reactive_plain_call_mutation(
         return;
     };
 
+    if sources::keeps_live_ref_value(result, value.source_name.as_str()) {
+        return;
+    }
+
     result.reactivity.record_plain_value_mutation(
         value.source_name,
         value.argument_name,

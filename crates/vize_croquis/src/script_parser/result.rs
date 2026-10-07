@@ -99,6 +99,10 @@ pub struct ScriptParseResult {
     /// Private lexical provenance; the name map above keeps the debug contract.
     pub(crate) scoped_reactive_value_origins:
         FxHashMap<ScopeId, FxHashMap<CompactString, ReactiveValueOrigin>>,
+    /// Ref value member writes that retain a proxy or point at a template node.
+    pub(crate) live_ref_value_sources: FxHashSet<CompactString>,
+    /// Known markRaw values, including aliases used as ref initializers.
+    pub(crate) raw_ref_value_sources: FxHashSet<CompactString>,
     /// Call results that were constructed from getter arguments.
     pub(crate) reactive_getter_contexts: FxHashMap<CompactString, ReactiveGetterContext>,
     /// Setup context violation tracking, plus script browser-global reads.

@@ -489,6 +489,9 @@ fn reactive_plain_value_from_mutated_member(
     end: u32,
 ) -> Option<ReactivePlainValue> {
     let mut value = reactive_plain_value_from_mutated_expression(result, object, source)?;
+    if keeps_live_ref_value(result, value.source_name.as_str()) {
+        return None;
+    }
     value.argument_name =
         super::super::common::expression_label(source, oxc_span::Span::new(start, end));
     value.start = start;
@@ -597,4 +600,12 @@ fn plain_origin_labels(
             (source_name.clone(), CompactString::new(binding_name))
         }
     }
+}
+
+/// Member writes through deep refs and template nodes do not lose a subscription.
+pub(super) fn keeps_live_ref_value(result: &ScriptParseResult, source_name: &str) -> bool {
+    let Some((root, suffix)) = source_name.split_once(".value") else {
+        return false;
+    };
+    (suffix.is_empty() || suffix.starts_with('.')) && result.live_ref_value_sources.contains(root)
 }
