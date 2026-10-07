@@ -240,7 +240,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_core/src/steps/v_slot/tests.rs	8	
 compiler	Compiler	source	crates/vize_atelier_core/src/steps/v_slot/validate.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/concatenated_string_bind_patch_flags.rs	4	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/conditional_named_slots.rs	4	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_l2_transform_vue2.rs	28	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_l2_transform_vue2.rs	31	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_l2_transform.rs	119	l0	L0	stage	vize_l0	preferred	9
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_l2_transform.rs	119	l1	L1	stage	vize_l1	preferred	3
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/davinci_l2_transform.rs	119	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	12
@@ -294,6 +294,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_core/tests/legacy_event_modifiers
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/legacy_filters.rs	22	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/legacy_template_sugar.rs	22	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/scoped_slot_shadowing.rs	17	l0	L0	stage	vize_l0	preferred	3
+compiler	Compiler	test/dev	crates/vize_atelier_core/tests/slot_text_raw_compat.rs	20	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/upstream_pure_comment_assertion.rs	9	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/upstream_pure_comment_assertion.rs	9	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_core/tests/upstream_pure_comment_assertion.rs	9	raw_oxc	raw OXC	raw	oxc_parser	raw	1

@@ -10,6 +10,15 @@ pub(in crate::codegen::slots) fn generate_slot_children(
     ctx: &mut CodegenContext,
     children: &[TemplateChildNode<'_>],
 ) {
+    // Preserve the preexisting wholly-textual legacy raw branch. Raw values
+    // deliberately bypass ToDisplayString, so extending `+` to other bodies
+    // would change numeric coercion rather than merely joining text nodes.
+    #[cfg(feature = "legacy")]
+    if children.iter().any(is_raw) && children.iter().all(is_text) {
+        ctx.newline();
+        generate_slot_text_run(ctx, children);
+        return;
+    }
     generate_slot_children_where(ctx, children, |_| true);
 }
 
@@ -18,6 +27,12 @@ pub(in crate::codegen::slots) fn generate_slot_children_where(
     children: &[TemplateChildNode<'_>],
     selected: impl Fn(&TemplateChildNode<'_>) -> bool,
 ) {
+    #[cfg(feature = "legacy")]
+    let merge = !children
+        .iter()
+        .any(|child| selected(child) && is_raw(child));
+    #[cfg(not(feature = "legacy"))]
+    let merge = true;
     let mut index = 0;
     let mut first = true;
     while let Some(child) = children.get(index) {
@@ -30,7 +45,7 @@ pub(in crate::codegen::slots) fn generate_slot_children_where(
         }
         first = false;
         ctx.newline();
-        if is_text(child) {
+        if merge && is_text(child) {
             let start = index;
             index += 1;
             while children
@@ -45,6 +60,11 @@ pub(in crate::codegen::slots) fn generate_slot_children_where(
             index += 1;
         }
     }
+}
+
+#[cfg(feature = "legacy")]
+fn is_raw(child: &TemplateChildNode<'_>) -> bool {
+    matches!(child, TemplateChildNode::Interpolation(interp) if interp.raw)
 }
 
 fn is_text(child: &TemplateChildNode<'_>) -> bool {

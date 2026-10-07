@@ -50,6 +50,10 @@
     {
       "path": "runtime.expected.json",
       "sha256": "00db92563bdc542b8a0fa0efc93b9c7a361d6feb81de556e6ad52d20cd7289cb"
+    },
+    {
+      "path": "raw-cases.json",
+      "sha256": "db88ebc9449147dadb63702441bb272bb8757863a7b148882edd9120a80c4844"
     }
   ],
   "oracle": {

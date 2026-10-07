@@ -40,12 +40,16 @@
           {
             "path": "runtime.expected.json",
             "sha256": "00db92563bdc542b8a0fa0efc93b9c7a361d6feb81de556e6ad52d20cd7289cb"
+          },
+          {
+            "path": "raw-cases.json",
+            "sha256": "db88ebc9449147dadb63702441bb272bb8757863a7b148882edd9120a80c4844"
           }
         ]
       },
       "custody": {
         "path": "component-slot-text-7970/custody.json",
-        "sha256": "c3503478fb16fd92d96cacd7d52a97c79819f22791db9d8b224dda813240ed07"
+        "sha256": "32c640093dcaa6d0cb0d02fed57d74e3e4e1bd343cf295c150a00aae6f862f43"
       },
       "reference": {
         "path": "component-slot-text-7970/runtime.expected.json",
@@ -59,7 +63,13 @@
         "originalSfcCells": 4,
         "updatesPerTemplate": 2,
         "lockedVue": "3.5.35",
-        "nativeHandled": 0
+        "nativeHandled": 0,
+        "legacyRawCompatibility": {
+          "rustTarget": "crates/vize_atelier_core/tests/davinci_l2_transform_vue2.rs",
+          "helper": "tests/tooling/support/slot-text-raw-7970.mjs",
+          "cells": 5,
+          "qualification": "existing legacy feature target; actual Vue3 runtime observes retained Vue1 source coercion, not Vue1 runtime equivalence"
+        }
       }
     }
   ]

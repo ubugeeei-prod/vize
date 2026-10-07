@@ -49,3 +49,17 @@ errors without changing production, inputs or assertions. This run executed no
 new Rust laws or DOM cells. Its separate dependency audit newly reports
 GHSA-6qxp-vccf-f47h in MCP SDK 1.30.0; the security owner must repair that actual
 dependency, with no advisory waiver or duplicated dependency edit here.
+
+Independent source review identified a legacy-only widening: raw interpolations
+bypass `ToDisplayString`, so grouping two numeric raw values changes `1` and `2`
+into `3`. Any selected raw child now retains the complete old per-child implicit
+or mixed path. The already-combined explicit wholly-textual raw path keeps its
+original spelling and sum; this PR does not correct that separate legacy behavior.
+Five full authored Vue 1 sources, mapped/unmapped modules, complete DOM nodes/HTML,
+numeric updates and diagnostics are required in the existing protected
+`davinci_l2_transform_vue2` feature target. Its real Vue 3.5.35 runtime measures
+retained coercion only, granting no Vue 1 runtime equivalence or native credit.
+The ordinary 64-cell authored child now invokes both default and header outlets,
+so named-slot and conditional updates are actually observable; all original SFCs,
+sixteen original controls and authored references remain unchanged. These new
+source/runtime qualifications are pending fresh Actions.

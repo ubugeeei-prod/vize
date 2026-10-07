@@ -241,7 +241,7 @@ try {
     const graph = mapGraph(row.retained.code, row.retained.map, row.source);
     const official = stockTemplate(row.source, row);
     const childSource =
-      '<template><h2 class="my-title"><slot :label="\'owned\'"></slot></h2></template>';
+      '<template><h2 class="my-title"><slot :label="\'owned\'"></slot><slot name="header" :label="\'owned\'"></slot></h2></template>';
     const child = await load(stockSfc(childSource, row, "MyTitle.vue").code, null, true);
     const actualRender = await load(row.current.code);
     const officialRender = await load(official.code);
