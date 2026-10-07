@@ -2,6 +2,7 @@
 
 mod collector;
 mod collector_targets;
+mod function_shape;
 mod inline_handler;
 pub(crate) mod nesting;
 mod parse_checks;
@@ -20,6 +21,7 @@ use vize_l0::{Allocator, Box, String, cstr};
 
 use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
 
+pub use function_shape::is_typescript_function_expression;
 pub use inline_handler::process_inline_handler;
 pub use nesting::{
     MAX_EXPRESSION_NESTING_DEPTH, expression_exceeds_max_depth, expression_has_balanced_delimiters,
@@ -52,16 +54,6 @@ pub fn is_function_expression(content: &str) -> bool {
     with_whole_expression(
         content,
         SourceType::default().with_module(true),
-        is_function_shape,
-    )
-    .unwrap_or(false)
-}
-
-/// Classify a complete callback in a TypeScript-capable template handler.
-pub fn is_typescript_function_expression(content: &str) -> bool {
-    with_whole_expression(
-        content,
-        SourceType::ts().with_module(true),
         is_function_shape,
     )
     .unwrap_or(false)
