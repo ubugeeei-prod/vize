@@ -48,3 +48,11 @@ record preserves the full slice clause alongside all incoming decisions. Earlier
 source success does not qualify this composition: fresh exact-head Actions,
 protected gates and actual merge remain required, with the rc.10 runtime and
 computed/component boundaries above still unfinished.
+
+After the protected preceding cohort actually merged, the same local source
+chain incorporates signed main `3ed1cc90908c88016310b90a855500c94a156f1f`.
+That incoming main changes no owned Vapor or SFC modifier source or fixture;
+the complete owned byte census remains exact. The approved common 350-line
+record is identical across the prepared backlog. This genuine main union still
+requires fresh exact-head Actions and protected actual delivery; projected
+merge analysis is never a source ancestor or execution witness.
