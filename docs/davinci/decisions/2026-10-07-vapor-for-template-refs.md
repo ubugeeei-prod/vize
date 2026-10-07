@@ -127,3 +127,25 @@ Source receipt SHA256
 is bound only to 524a/Check37493212500; that whole workflow still had the obsolete
 security lock failure. The genuine ef848 union must pass its own fresh Actions
 and full protected queue, signed merge and installed consumer gates.
+
+Fresh ac1 source execution (Check37588012881) independently passes all four
+Rust workers and all nine new laws. Four authenticated small ZIPs retain all
+16518 cases and the exact 36 source/module/process packets/114 whole phases;
+full input bodies, modes and complete phased vectors equal the prior authored
+controls. Source proof SHA256
+af4cb0bc2cfdf4c60bfcb552193f36394de18a4a1c6619f14a3474b275a07e5e
+is specific to ac1 and its generated dcb1 checkout, with no protected/install
+credit. The same run's two tooling failures identify our missing generated
+Croquis BindingType consumption row: the new retained-metadata helper changes
+17 files/133 sites to 18 files/140 sites. Run the existing whole-source Node
+generator and check; it changes only that SFC shard row, not product code,
+fixture inputs, assertions, provider APIs or instruction ceilings.
+
+The fresh security gate also detects new GHSA-6qxp-vccf-f47h in the actually
+locked @modelcontextprotocol/sdk 1.30.0 under npm/mcp-musea; the primary report
+requires >=1.31.0. The delivered shell-quote fix is already incorporated.
+Keep this existing PR Draft/off queue while the security owner repairs the
+new advisory; do not waive or raise its exact accepted-high list. Incorporate
+the actual dependency merge and require fresh current-source/protected tests,
+actual signed merge and installed replay. The component-ref half of #7882
+and broader direct-array binding remain unfinished.
