@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { Window } from "happy-dom";
+import { generateOutput } from "../../../npm/builder/vite/src/utils/index.ts";
 
 const root = new URL("../../../", import.meta.url);
 const corpus = new URL("tests/_fixtures/differential/compiler/component-slot-text-7970/", root);
@@ -148,6 +149,13 @@ function stockSfc(source, row, filename) {
   code += `\n${template.code}\n__component.render = render;\nexport default __component;\n`;
   return { code, script, template };
 }
+function adapterSfc(current) {
+  // The existing Vite assembler owns the template-only default export.
+  return generateOutput(
+    { ...current, hasScoped: false, scopeId: "", styles: [] },
+    { isProduction: true, isDev: false },
+  );
+}
 function children(parent) {
   return [...parent.childNodes].map((node) =>
     node.nodeType === 3 || node.nodeType === 8
@@ -277,15 +285,25 @@ try {
     }
     const officialChild = stockSfc(originalChild, row, "MyTitle.vue");
     const officialApp = stockSfc(originalApp, row, "App.vue");
-    const actualChild = await load(row.child.code, null, true);
+    const adapterChild = adapterSfc(row.child);
+    const adapterApp = adapterSfc(row.app);
+    const actualChild = await load(adapterChild, null, true);
     const referenceChild = await load(officialChild.code, null, true);
-    const actual = await observe(await load(row.app.code, actualChild, true), actualChild, []);
+    const actual = await observe(await load(adapterApp, actualChild, true), actualChild, []);
     const reference = await observe(
       await load(officialApp.code, referenceChild, true),
       referenceChild,
       [],
     );
-    evidence.sfcs.push({ ...row, officialApp, officialChild, actual, reference });
+    evidence.sfcs.push({
+      ...row,
+      adapterApp,
+      adapterChild,
+      officialApp,
+      officialChild,
+      actual,
+      reference,
+    });
     assert.deepEqual(actual, reference);
     assert.deepEqual(actual.snapshots[0].titles, expected.reportedDom);
     if (row.whitespace === "condense")

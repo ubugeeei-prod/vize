@@ -76,3 +76,17 @@ original fields, assert exact module reassembly and validate the unchanged map
 against its actual render owner. Full input frames are retained before validation
 so early failure preserves all generated modules/maps/SFC results. No source-map
 production change, segment removal or partial DOM acceptance follows.
+
+Actual `0e5f0da` Check 37591913211 passes all 64 complete template DOM cells
+and the 32 whole-module law; it qualifies zero of the four original SFC pairs.
+The saved first failure retains both complete SFC results: template-only
+`MyTitle.vue` exports `render` without a default export, while the test loader
+incorrectly reads its missing default. The existing Vite `generateOutput` owns
+that assembly and adds the real render-bearing component. The observer now calls
+that unchanged production assembler for both original SFC outputs, retaining raw
+seven-field results and complete assembled modules before real imports/mounts.
+No source, fixture, output reference or comparison is replaced. Current corrected
+execution remains unknown. The separate MCP advisory is actually repaired by
+signed merge `706a5b7` (#8148); incorporate that genuine main once and require
+fresh source checks, unchanged protected ceilings/full Rust and installed release
+qualification rather than transferring these historical partial results.
