@@ -1,0 +1,7 @@
+<script>
+const note="😀";
+const broken = ;
+</script>
+<template>
+<div v-html="html"/>
+</template>

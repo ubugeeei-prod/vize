@@ -81,3 +81,6 @@ tests/_fixtures/differential/formatter-regressions/hugged-interpolation-indent-7
 
 # Original #8015 SFC and Issue inputs retain authored checkout bytes.
 tests/_fixtures/differential/lsp/template-expression-globals-8015/** -text whitespace=cr-at-eol
+
+# Whole malformed and Unicode #7903 carriers retain the authored source bytes.
+tests/_fixtures/differential/lint/oxlint-script-safe-carrier-7903/** -text whitespace=cr-at-eol
