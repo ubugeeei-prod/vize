@@ -1,0 +1,13 @@
+<script setup>
+import { ref } from 'vue'
+const items = ref(['a', 'b'])
+const itemElements = new Map()
+function setItemElement(item, node) {
+  if (node) itemElements.set(item, node)
+  else itemElements.delete(item)
+}
+function add() { items.value.push('c') }
+function referencedText() { return [...itemElements.values()].map((node) => node.textContent).sort().join(',') }
+defineExpose({ add, referencedText })
+</script>
+<template><ul><li v-for="item in items" :key="item" :ref="(node) => setItemElement(item, node)" data-plant="ref-item">{{ item }}</li></ul></template>
