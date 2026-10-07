@@ -11,21 +11,11 @@ async コンポーネントが Suspense 境界なしで描画されています�
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
 
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/async-no-suspense": "warn" },
-    },
-  },
-});
-```
+Current support: `no-source-async-fact`
 
-```sh
-vp run lint
-```
+生成元は macros.is_async() を読みますが、現在のソース解析は top-level await を script-setup の scope に記録します。そのため以下の完全な悪い例・良い例では、現在の CLI は async-no-suspense を検出しません。Suspense の使い方を説明する例で、必要な macro 情報を渡す処理は今後の実装課題です。
 
 ## 共通のプロジェクト ファイル
 

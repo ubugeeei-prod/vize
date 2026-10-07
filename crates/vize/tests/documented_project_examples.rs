@@ -12,19 +12,25 @@ fn documented_cli_project_bad_and_good_pairs_match_the_supported_findings() {
         .collect();
     pages.sort();
     let mut checked = 0;
+    let mut unavailable = 0;
     let mut failures = Vec::new();
     for path in pages {
         let page = fs::read_to_string(path).expect("project page");
         // Reserved contracts, library-only codes and graph-only scenarios do
         // not claim a currently executable public CLI Bad/Good witness.
-        if !page.contains("## Shared project files") || !page.contains("vp run lint") {
-            continue;
-        }
         let id = page
             .lines()
             .find_map(|line| line.strip_prefix("# `").and_then(|id| id.strip_suffix('`')))
             .expect("published rule ID");
+        let no_source_finding = page.contains("Current support: `no-source-async-fact`");
+        assert_eq!(no_source_finding, id == "vize:croquis/cf/async-no-suspense");
+        if !page.contains("## Shared project files")
+            || (!page.contains("vp run lint") && !no_source_finding)
+        {
+            continue;
+        }
         checked += 1;
+        unavailable += usize::from(no_source_finding);
         let shared = section(&page, "## Shared project files", "## Bad");
         for (heading, next, should_report) in [("## Bad", "## Good", true), ("## Good", "", false)]
         {
@@ -76,6 +82,7 @@ fn documented_cli_project_bad_and_good_pairs_match_the_supported_findings() {
                                 .is_some_and(|text| text.contains(id)))
                 })
                 .count();
+            let should_report = should_report && !no_source_finding;
             if (count > 0) != should_report {
                 failures.push(cstr!(
                     "{id} {heading}: expected report={should_report}, found {count}; {reports}"
@@ -94,7 +101,11 @@ fn documented_cli_project_bad_and_good_pairs_match_the_supported_findings() {
     }
     assert_eq!(
         checked, 25,
-        "19 directly emitted codes and six project lint IDs"
+        "18 emitted codes, one audited source-fact gap and six project lint IDs"
+    );
+    assert_eq!(
+        unavailable, 1,
+        "only the audited async macro input-fact gap"
     );
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
@@ -122,7 +133,10 @@ fn files(section: &str) -> Vec<(String, String)> {
             })
             .expect("complete example filename");
         let (language, source) = block.split_once('\n').expect("source language");
-        assert!(["ts", "vue", "html"].contains(&language));
+        match language {
+            "ts" | "vue" | "html" => {}
+            other => panic!("unsupported documentation source language: {other}"),
+        }
         inputs.push((file.into(), source.into()));
     }
     inputs

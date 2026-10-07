@@ -26,11 +26,11 @@ vp run lint
 
 CLI では vize lint --cross-file で同じ検査を実行できます。表示コード vize:croquis/cf/* は、lint.vize.rules には vize: を除いた croquis/cf/* として指定します。information / hint は CLI では warning として表示されます。関連位置から提供元と使用側の関係を確認できます。
 
-公開されている 60 のコードは対応範囲が異なります。20 は CLI の検査で生成され、15 は実験的な Rust analyzer に実装があるものの CLI では個別コードとして生成されません。25 は現在の生成元がない公開契約です。ルール名を設定しても未対応の生成元は有効になりません。
+公開されている 60 のコードは対応範囲が異なります。19 は CLI の検査対象（18 の完全なソースの例と 1 つの参照構成の例）で、16 は実験的な Rust analyzer に実装があるものの CLI では個別コードとして生成されません。25 は現在の生成元がない公開契約です。ルール名を設定しても未対応の生成元は有効になりません。
 
 ## プロジェクト固有の lint ID
 
-| Rule | 重大度 |
+| ルール | 重大度 |
 | --- | --- |
 | [`ecosystem/vue-router-unknown-route`](./project/ecosystem-vue-router-unknown-route.md) | error |
 | [`ecosystem/vue-router-extra-param`](./project/ecosystem-vue-router-extra-param.md) | error |
@@ -41,11 +41,11 @@ CLI では vize lint --cross-file で同じ検査を実行できます。表示�
 
 ## 公開 analyzer コード
 
-| Code | 対応状況 |
+| コード | 対応状況 |
 | --- | --- |
 | [`vize:croquis/cf/array-mutation`](./project/vize-croquis-cf-array-mutation.md) | 契約のみ。現在の生成元なし |
 | [`vize:croquis/cf/async-boundary`](./project/vize-croquis-cf-async-boundary.md) | CLI |
-| [`vize:croquis/cf/async-no-suspense`](./project/vize-croquis-cf-async-no-suspense.md) | CLI |
+| [`vize:croquis/cf/async-no-suspense`](./project/vize-croquis-cf-async-no-suspense.md) | Rust analyzer。CLI は別の表示または未有効 |
 | [`vize:croquis/cf/browser-api-ssr`](./project/vize-croquis-cf-browser-api-ssr.md) | CLI |
 | [`vize:croquis/cf/circular-dep`](./project/vize-croquis-cf-circular-dep.md) | 契約のみ。現在の生成元なし |
 | [`vize:croquis/cf/circular-reactive-dependency`](./project/vize-croquis-cf-circular-reactive-dependency.md) | CLI |

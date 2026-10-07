@@ -8,7 +8,7 @@ title: HTML ルール
 
 Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。
 
-| Rule | 目的 |
+| ルール | 目的 |
 | --- | --- |
 | [`html/deprecated-attr`](./reference/html-deprecated-attr.md) | 非推奨の HTML 属性を検出します。 |
 | [`html/deprecated-element`](./reference/html-deprecated-element.md) | 非推奨の HTML 要素を検出します。 |

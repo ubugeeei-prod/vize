@@ -8,7 +8,7 @@ title: Vue ルール
 
 Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。
 
-| Rule | 目的 |
+| ルール | 目的 |
 | --- | --- |
 | [`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 画像に代替テキストの alt 属性を指定します。 |
 | [`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | コンポーネントの prop 属性名を設定した形式に揃えます。 |

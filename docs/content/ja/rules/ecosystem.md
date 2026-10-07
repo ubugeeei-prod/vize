@@ -8,7 +8,7 @@ title: エコシステム ルール
 
 Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。
 
-| Rule | 目的 |
+| ルール | 目的 |
 | --- | --- |
 | [`ecosystem/nuxt-prefer-nuxt-link`](./reference/ecosystem-nuxt-prefer-nuxt-link.md) | Nuxt の内部リンクに NuxtLink を使います。 |
 | [`ecosystem/pinia-prefer-store-to-refs`](./reference/ecosystem-pinia-prefer-store-to-refs.md) | Pinia store の分割代入に storeToRefs() を使います。 |

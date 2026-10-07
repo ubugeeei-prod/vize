@@ -27,6 +27,8 @@ export default defineConfig({
 vp run lint
 ```
 
+この検査は提供元と使用側の明示的な型注釈を比較し、リテラルからの型推論は使いません。この例の提供元の as string 注釈を残してください。
+
 ## 共通のプロジェクト ファイル
 
 以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
@@ -54,7 +56,7 @@ createApp(Root).mount("#app");
 <script setup lang="ts">
 import { provide } from "vue";
 import Child from "./Child.vue";
-provide("title", "Hello");
+provide("title", "Hello" as string);
 </script>
 <template><Child /></template>
 ```
@@ -77,7 +79,7 @@ const title = inject<number>("title");
 <script setup lang="ts">
 import { provide } from "vue";
 import Child from "./Child.vue";
-provide("title", "Hello");
+provide("title", "Hello" as string);
 </script>
 <template><Child /></template>
 ```

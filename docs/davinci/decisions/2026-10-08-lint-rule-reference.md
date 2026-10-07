@@ -20,7 +20,7 @@ and parser diagnostics; unrelated rules can still report. Four SFC catalog entri
 marked as non-emitted (the empty Vapor attribute callback and three unsupported header checks),
 and their tests assert that current boundary. Invalid attribute spelling documents the actual
 parser/template diagnostic before the defensive rule, rather than claiming a second finding. Six type-aware pairs require the actual
-Corsa Actions runtime. Generating and checking the reference requires source files, not a stale
+Corsa Actions runtime, with a targeted invocation in the existing PR native-phases lane. Generating and checking the reference requires source files, not a stale
 local native binary. Generated EN/JA code blocks are identical.
 
 The ESLint migration map retains all 252 pinned identifiers: 123 mapped rules, two intentional
@@ -31,7 +31,18 @@ show where renamed rule IDs and `ruleOptions` belong.
 Project diagnostics require complete graph context. Active cross-file findings document shared
 files and exact Bad/Good changes. Published diagnostic contracts without a current producer are
 identified explicitly; an illustrative risk/fix scenario must not claim that enabling a flag
-produces that code. Typed Router examples include reachable router declarations and entry files.
+produces that code. Typed Router examples include reachable router declarations and entry files. The 60 cross-file
+codes comprise 19 CLI surfaces (18 source pairs and one tracked-flow scenario), 16 library-only
+producers, and 25 reserved contracts. The async-no-suspense producer reads macro async facts,
+while source parsing currently records async on the script-setup scope; its full source pair is
+explicitly non-emitted and the actual CLI test asserts that boundary. The 25 complete project
+pairs stay exercised (24 Bad findings plus that one non-emitted pair); none are silently dropped.
+
+Runtime qualification also exposed exact source prerequisites: provide/inject types need explicit
+annotations, uncaught-error scans template expressions, and hydration-risk currently uses the
+prop-to-ref producer rather than an unconstructed non-reactive-watch variant. The emits validator
+example uses a block-body arrow that passes the current SFC prefilter; method shorthand dispatch
+remains implementation follow-up work. No production behavior or allowlists change here.
 
 Validation pending: exact-head Actions must execute the example pairs and build the rendered
 English/Japanese reference before queue admission. The navigation companion owns the site-wide

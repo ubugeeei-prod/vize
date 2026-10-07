@@ -4,7 +4,7 @@ title: "vize:croquis/cf/hydration-risk"
 
 # `vize:croquis/cf/hydration-risk`
 
-このコードは非リアクティブな watch の監視対象など、複数のリアクティビティ検出をまとめています。ファイル間検査がすべての Date.now() 式を検出するという意味ではありません。
+このコードはprop を ref にコピーする操作など、複数のリアクティビティ検出をまとめています。ファイル間検査がすべての Date.now() 式を検出するという意味ではありません。
 
 既定の重大度: error  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -35,8 +35,8 @@ vp run lint
 
 ```ts
 import { createApp } from "vue";
-import App from "./App.vue";
-createApp(App).mount("#app");
+import Root from "./App.vue";
+createApp(Root).mount("#app");
 ```
 
 `index.html`
@@ -52,9 +52,18 @@ createApp(App).mount("#app");
 
 ```vue
 <script setup lang="ts">
-import { ref, watch } from "vue";
-const count = ref(0);
-watch(count.value, () => {});
+import Child from "./Child.vue";
+</script>
+<template><Child :count="0" /></template>
+```
+
+`Child.vue`
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+const props = defineProps<{ count: number }>();
+const count = ref(props.count);
 </script>
 <template><p>{{ count }}</p></template>
 ```
@@ -65,9 +74,18 @@ watch(count.value, () => {});
 
 ```vue
 <script setup lang="ts">
-import { ref, watch } from "vue";
-const count = ref(0);
-watch(() => count.value, () => {});
+import Child from "./Child.vue";
+</script>
+<template><Child :count="0" /></template>
+```
+
+`Child.vue`
+
+```vue
+<script setup lang="ts">
+import { toRef } from "vue";
+const props = defineProps<{ count: number }>();
+const count = toRef(props, "count");
 </script>
 <template><p>{{ count }}</p></template>
 ```

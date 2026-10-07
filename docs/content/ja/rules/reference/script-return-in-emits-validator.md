@@ -12,6 +12,8 @@ Options API の emits validator に戻り値を用意します。
 適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
+現在の SFC フィルターが対象とする block-body arrow を使います。validator 本体には method shorthand の処理もありますが、現在の SFC prefilter はその形を確実には実行しません。
+
 ## 設定（Vite+）
 
 ```ts
@@ -37,7 +39,7 @@ vp run lint
 
 ```vue
 <script lang="ts">
-export default { emits: { submit(payload: unknown) { console.log(payload); } } };
+export default { emits: { submit: (payload: unknown) => { console.log(payload); } } };
 </script>
 ```
 
@@ -45,7 +47,7 @@ export default { emits: { submit(payload: unknown) { console.log(payload); } } }
 
 ```vue
 <script lang="ts">
-export default { emits: { submit(payload: unknown) { return payload != null; } } };
+export default { emits: { submit: (payload: unknown) => { return payload != null; } } };
 </script>
 ```
 

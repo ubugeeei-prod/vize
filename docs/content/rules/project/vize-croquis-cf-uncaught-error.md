@@ -27,6 +27,8 @@ export default defineConfig({
 vp run lint
 ```
 
+The current producer scans template expressions such as JSON.parse(input). It does not report a throw statement that exists only in the script block.
+
 ## Shared project files
 
 Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
@@ -61,9 +63,9 @@ import Child from "./Child.vue";
 
 ```vue
 <script setup lang="ts">
-throw new Error("Request failed");
+const input = "{";
 </script>
-<template><p>Content</p></template>
+<template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
 ## Good
@@ -83,9 +85,9 @@ onErrorCaptured(() => false);
 
 ```vue
 <script setup lang="ts">
-throw new Error("Request failed");
+const input = "{";
 </script>
-<template><p>Content</p></template>
+<template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
 Good avoids this finding; other diagnostics can still apply to the complete project.

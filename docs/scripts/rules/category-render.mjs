@@ -61,7 +61,7 @@ export function generateCategoryPages(root, rules, checking) {
           ? "Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。"
           : "Configure `lint.vize.rules` and run `vp run lint` with the Vite+ helper. Check each page for type-aware, filename, or additional-configuration prerequisites.",
         "",
-        "| Rule | " + (ja ? "目的" : "Purpose") + " |",
+        ja ? "| ルール | 目的 |" : "| Rule | Purpose |",
         "| --- | --- |",
       ];
       for (const rule of rules

@@ -42,12 +42,27 @@ export const extra = {
     },
   ),
   "uncaught-error": child(
-    sfc('throw new Error("Request failed");'),
-    sfc('throw new Error("Request failed");'),
+    sfc('const input = "{";', '<button @click="JSON.parse(input)">Parse</button>'),
+    sfc('const input = "{";', '<button @click="JSON.parse(input)">Parse</button>'),
   ),
   "provide-inject-type": child(
     sfc('import { inject } from "vue";\nconst title = inject<number>("title");'),
     sfc('import { inject } from "vue";\nconst title = inject<string>("title");'),
+  ),
+  "hydration-risk": project(
+    {
+      "App.vue": sfc('import Child from "./Child.vue";', '<Child :count="0" />'),
+      "Child.vue": sfc(
+        'import { ref } from "vue";\nconst props = defineProps<{ count: number }>();\nconst count = ref(props.count);',
+        "<p>{{ count }}</p>",
+      ),
+    },
+    {
+      "Child.vue": sfc(
+        'import { toRef } from "vue";\nconst props = defineProps<{ count: number }>();\nconst count = toRef(props, "count");',
+        "<p>{{ count }}</p>",
+      ),
+    },
   ),
   "missing-required-prop": project(
     {
@@ -155,7 +170,7 @@ extra["uncaught-error"].good["App.vue"] = sfc(
 );
 for (const side of ["bad", "good"])
   extra["provide-inject-type"][side]["App.vue"] = sfc(
-    'import { provide } from "vue";\nimport Child from "./Child.vue";\nprovide("title", "Hello");',
+    'import { provide } from "vue";\nimport Child from "./Child.vue";\nprovide("title", "Hello" as string);',
     "<Child />",
   );
 export const composed = {

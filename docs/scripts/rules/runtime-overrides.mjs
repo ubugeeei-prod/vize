@@ -49,9 +49,18 @@ export const runtimeOverrides = {
     "crates/vize_patina/src/rules/script/prefer_use_attrs.rs",
   ),
   "script/return-in-emits-validator": pair(
-    script("export default { emits: { submit(payload: unknown) { console.log(payload); } } };"),
-    script("export default { emits: { submit(payload: unknown) { return payload != null; } } };"),
+    script(
+      "export default { emits: { submit: (payload: unknown) => { console.log(payload); } } };",
+    ),
+    script(
+      "export default { emits: { submit: (payload: unknown) => { return payload != null; } } };",
+    ),
     "crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator/tests.rs",
+    {
+      note: "Use a block-body arrow for the currently supported SFC filter. The underlying validator also handles method shorthand, but the current SFC prefilter does not reliably dispatch that shape.",
+      noteJa:
+        "現在の SFC フィルターが対象とする block-body arrow を使います。validator 本体には method shorthand の処理もありますが、現在の SFC prefilter はその形を確実には実行しません。",
+    },
   ),
   "vue/no-template-shadow": pair(
     template(

@@ -4,7 +4,7 @@ title: "vize:croquis/cf/hydration-risk"
 
 # `vize:croquis/cf/hydration-risk`
 
-This code groups several reactivity findings, including a non-reactive watch source. It does not imply that every Date.now() expression is detected by the cross-file pass.
+This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.
 
 Default severity: error  
 Applies to: Analyzed component graph and the supported facts described below  
@@ -35,8 +35,8 @@ Use these unchanged files in both Bad and Good. Install Vue (and vue-router for 
 
 ```ts
 import { createApp } from "vue";
-import App from "./App.vue";
-createApp(App).mount("#app");
+import Root from "./App.vue";
+createApp(Root).mount("#app");
 ```
 
 `index.html`
@@ -52,9 +52,18 @@ createApp(App).mount("#app");
 
 ```vue
 <script setup lang="ts">
-import { ref, watch } from "vue";
-const count = ref(0);
-watch(count.value, () => {});
+import Child from "./Child.vue";
+</script>
+<template><Child :count="0" /></template>
+```
+
+`Child.vue`
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+const props = defineProps<{ count: number }>();
+const count = ref(props.count);
 </script>
 <template><p>{{ count }}</p></template>
 ```
@@ -65,9 +74,18 @@ watch(count.value, () => {});
 
 ```vue
 <script setup lang="ts">
-import { ref, watch } from "vue";
-const count = ref(0);
-watch(() => count.value, () => {});
+import Child from "./Child.vue";
+</script>
+<template><Child :count="0" /></template>
+```
+
+`Child.vue`
+
+```vue
+<script setup lang="ts">
+import { toRef } from "vue";
+const props = defineProps<{ count: number }>();
+const count = toRef(props, "count");
 </script>
 <template><p>{{ count }}</p></template>
 ```

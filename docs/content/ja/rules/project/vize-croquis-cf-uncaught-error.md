@@ -27,6 +27,8 @@ export default defineConfig({
 vp run lint
 ```
 
+現在の生成元は JSON.parse(input) などのテンプレート式を検査します。script ブロックだけにある throw 文は対象外です。
+
 ## 共通のプロジェクト ファイル
 
 以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
@@ -61,9 +63,9 @@ import Child from "./Child.vue";
 
 ```vue
 <script setup lang="ts">
-throw new Error("Request failed");
+const input = "{";
 </script>
-<template><p>Content</p></template>
+<template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
 ## 良い
@@ -83,9 +85,9 @@ onErrorCaptured(() => false);
 
 ```vue
 <script setup lang="ts">
-throw new Error("Request failed");
+const input = "{";
 </script>
-<template><p>Content</p></template>
+<template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
 良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。

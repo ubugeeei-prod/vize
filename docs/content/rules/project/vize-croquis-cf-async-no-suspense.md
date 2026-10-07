@@ -11,21 +11,11 @@ Applies to: Analyzed component graph and the supported facts described below
 Automatic fix: None; review related files and apply the repair  
 Options: No per-code options; supported CLI findings accept severity overrides
 
-```ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.
 
-export default defineConfig({
-  lint: {
-    vize: { preset: "incremental", crossFile: true,
-      rules: { "croquis/cf/async-no-suspense": "warn" },
-    },
-  },
-});
-```
+Current support: `no-source-async-fact`
 
-```sh
-vp run lint
-```
+The boundary producer reads macros.is_async(), but source parsing currently records top-level await on the script-setup scope instead. The complete Bad/Good source pair below therefore produces no async-no-suspense finding through the current CLI. It explains the Suspense convention; supplying the missing macro fact is implementation follow-up work.
 
 ## Shared project files
 

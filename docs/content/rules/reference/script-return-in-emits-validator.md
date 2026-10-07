@@ -12,6 +12,8 @@ Automatic fix: None; review the suggested change
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
+Use a block-body arrow for the currently supported SFC filter. The underlying validator also handles method shorthand, but the current SFC prefilter does not reliably dispatch that shape.
+
 ## Configuration (Vite+)
 
 ```ts
@@ -37,7 +39,7 @@ vp run lint
 
 ```vue
 <script lang="ts">
-export default { emits: { submit(payload: unknown) { console.log(payload); } } };
+export default { emits: { submit: (payload: unknown) => { console.log(payload); } } };
 </script>
 ```
 
@@ -45,7 +47,7 @@ export default { emits: { submit(payload: unknown) { console.log(payload); } } }
 
 ```vue
 <script lang="ts">
-export default { emits: { submit(payload: unknown) { return payload != null; } } };
+export default { emits: { submit: (payload: unknown) => { return payload != null; } } };
 </script>
 ```
 

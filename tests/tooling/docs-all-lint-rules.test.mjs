@@ -90,8 +90,8 @@ await test("project references retain every code and distinguish actual CLI prod
   const codes = crossMetadata(root);
   assert.equal(codes.length, 60);
   for (const [status, count] of [
-    ["cli", 20],
-    ["library", 15],
+    ["cli", 19],
+    ["library", 16],
     ["contract", 25],
   ])
     assert.equal(codes.filter((code) => code.status === status).length, count);

@@ -47,13 +47,13 @@ fn verify_examples(type_aware: bool) {
         let no_finding = page.contains("Current support: `no-sfc-finding`");
         assert_eq!(
             no_finding,
-            [
-                "vapor/require-vapor-attribute",
-                "vue/no-template-lang",
-                "vue/no-preprocessor-lang",
-                "vue/no-script-non-standard-lang"
-            ]
-            .contains(&rule),
+            matches!(
+                rule,
+                "vapor/require-vapor-attribute"
+                    | "vue/no-template-lang"
+                    | "vue/no-preprocessor-lang"
+                    | "vue/no-script-non-standard-lang"
+            ),
             "only the audited unsupported SFC boundaries"
         );
         unavailable += usize::from(no_finding);

@@ -26,7 +26,7 @@ vp run lint
 
 The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `lint.vize.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.
 
-The 60 published cross-file codes have different support boundaries: 20 are produced by the CLI pass; 15 have experimental Rust analyzer producers but are not individually emitted by that pass; 25 are published contracts without a current diagnostic producer. Enabling a rule ID does not activate an unavailable producer.
+The 60 published cross-file codes have different support boundaries: 19 belong to the CLI pass (18 complete source pairs and one reactive-graph scenario); 16 have experimental Rust analyzer producers but are not individually emitted by that pass; 25 are published contracts without a current diagnostic producer. Enabling a rule ID does not activate an unavailable producer.
 
 ## Project-specific lint IDs
 
@@ -45,7 +45,7 @@ The 60 published cross-file codes have different support boundaries: 20 are prod
 | --- | --- |
 | [`vize:croquis/cf/array-mutation`](./project/vize-croquis-cf-array-mutation.md) | Contract only; no current producer |
 | [`vize:croquis/cf/async-boundary`](./project/vize-croquis-cf-async-boundary.md) | CLI |
-| [`vize:croquis/cf/async-no-suspense`](./project/vize-croquis-cf-async-no-suspense.md) | CLI |
+| [`vize:croquis/cf/async-no-suspense`](./project/vize-croquis-cf-async-no-suspense.md) | Rust analyzer; CLI uses a different surface or disables this pass |
 | [`vize:croquis/cf/browser-api-ssr`](./project/vize-croquis-cf-browser-api-ssr.md) | CLI |
 | [`vize:croquis/cf/circular-dep`](./project/vize-croquis-cf-circular-dep.md) | Contract only; no current producer |
 | [`vize:croquis/cf/circular-reactive-dependency`](./project/vize-croquis-cf-circular-reactive-dependency.md) | CLI |

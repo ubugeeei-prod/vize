@@ -8,7 +8,7 @@ title: Musea と CSS のルール
 
 Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。
 
-| Rule | 目的 |
+| ルール | 目的 |
 | --- | --- |
 | [`css/no-display-none`](./reference/css-no-display-none.md) | 表示切り替えに display: none を使う箇所で v-show を検討します。 |
 | [`css/no-hardcoded-values`](./reference/css-no-hardcoded-values.md) | CSS の直接指定値を CSS 変数にまとめます。 |

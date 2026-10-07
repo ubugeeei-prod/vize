@@ -70,7 +70,7 @@ export function generateRulePages({
       "",
       `## ${ja ? "カテゴリ" : "Categories"}`,
       "",
-      "| Category | Rules |",
+      ja ? "| カテゴリ | ルール数 |" : "| Category | Rules |",
       "| --- | ---: |",
     ];
     for (const category of sortedCategories) {
@@ -85,7 +85,9 @@ export function generateRulePages({
         "",
         `## ${label} (${group.length})`,
         "",
-        "| Rule | Severity | Presets | Fixable | Options | Implementation | Description |",
+        ja
+          ? "| ルール | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 |"
+          : "| Rule | Severity | Presets | Fixable | Options | Implementation | Description |",
         "| --- | --- | --- | --- | --- | --- | --- |",
       );
       for (const rule of group) {
@@ -93,7 +95,7 @@ export function generateRulePages({
         const example = ruleExamples(workspaceRoot, rule);
         if (!purposeJa[rule.name]) throw new Error(`Missing Japanese purpose for ${rule.name}`);
         lines.push(
-          `| [\`${rule.name}\`](./reference/${path}) | \`${rule.defaultSeverity}\` | ${presets(rule.presets)} | ${rule.fixable ? "Yes" : "No"} | ${configurableRules.has(rule.name) ? "[`ruleOptions`](./options.md)" : "No"} | ${implementation(rule)} | ${cell(ja ? purposeJa[rule.name] : rule.description)} |`,
+          `| [\`${rule.name}\`](./reference/${path}) | \`${rule.defaultSeverity}\` | ${presets(rule.presets)} | ${rule.fixable ? (ja ? "あり" : "Yes") : ja ? "なし" : "No"} | ${configurableRules.has(rule.name) ? "[`ruleOptions`](./options.md)" : ja ? "なし" : "No"} | ${implementation(rule)} | ${cell(ja ? purposeJa[rule.name] : rule.description)} |`,
         );
         output(resolve(directory, "reference", path), detail(rule, example, ja), checking);
       }

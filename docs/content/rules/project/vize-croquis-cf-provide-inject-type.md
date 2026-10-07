@@ -27,6 +27,8 @@ export default defineConfig({
 vp run lint
 ```
 
+This check compares explicit provider/consumer type annotations, not inferred literal value types. Keep the provider's `as string` annotation in this example.
+
 ## Shared project files
 
 Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
@@ -54,7 +56,7 @@ createApp(Root).mount("#app");
 <script setup lang="ts">
 import { provide } from "vue";
 import Child from "./Child.vue";
-provide("title", "Hello");
+provide("title", "Hello" as string);
 </script>
 <template><Child /></template>
 ```
@@ -77,7 +79,7 @@ const title = inject<number>("title");
 <script setup lang="ts">
 import { provide } from "vue";
 import Child from "./Child.vue";
-provide("title", "Hello");
+provide("title", "Hello" as string);
 </script>
 <template><Child /></template>
 ```

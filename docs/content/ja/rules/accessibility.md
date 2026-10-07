@@ -8,7 +8,7 @@ title: アクセシビリティ ルール
 
 Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。
 
-| Rule | 目的 |
+| ルール | 目的 |
 | --- | --- |
 | [`a11y/alt-text`](./reference/a11y-alt-text.md) | 画像などのメディアに代替テキストを用意します。 |
 | [`a11y/anchor-has-content`](./reference/a11y-anchor-has-content.md) | リンクに支援技術で読める内容を用意します。 |

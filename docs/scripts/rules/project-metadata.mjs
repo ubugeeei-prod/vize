@@ -43,6 +43,7 @@ export function crossMetadata(root) {
     const name = code.slice(prefix.length);
     const producer = sources.get(code) ?? [];
     const library = [
+      "async-no-suspense",
       "inherit-attrs-unused",
       "multi-root-attrs",
       "unused-attrs",

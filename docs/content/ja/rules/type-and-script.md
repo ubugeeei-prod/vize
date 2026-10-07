@@ -8,7 +8,7 @@ title: 型と script のルール
 
 Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。
 
-| Rule | 目的 |
+| ルール | 目的 |
 | --- | --- |
 | [`script/component-options-name-casing`](./reference/script-component-options-name-casing.md) | コンポーネントの name オプションを PascalCase に揃えます。 |
 | [`script/custom-event-name-casing`](./reference/script-custom-event-name-casing.md) | emit するカスタムイベント名を指定した形式に揃えます。 |

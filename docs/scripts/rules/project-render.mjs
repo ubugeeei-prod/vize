@@ -40,13 +40,13 @@ export function generateProjectPages(root, checking) {
       ),
       "",
       label(
-        "The 60 published cross-file codes have different support boundaries: 20 are produced by the CLI pass; 15 have experimental Rust analyzer producers but are not individually emitted by that pass; 25 are published contracts without a current diagnostic producer. Enabling a rule ID does not activate an unavailable producer.",
-        "公開されている 60 のコードは対応範囲が異なります。20 は CLI の検査で生成され、15 は実験的な Rust analyzer に実装があるものの CLI では個別コードとして生成されません。25 は現在の生成元がない公開契約です。ルール名を設定しても未対応の生成元は有効になりません。",
+        "The 60 published cross-file codes have different support boundaries: 19 belong to the CLI pass (18 complete source pairs and one reactive-graph scenario); 16 have experimental Rust analyzer producers but are not individually emitted by that pass; 25 are published contracts without a current diagnostic producer. Enabling a rule ID does not activate an unavailable producer.",
+        "公開されている 60 のコードは対応範囲が異なります。19 は CLI の検査対象（18 の完全なソースの例と 1 つの参照構成の例）で、16 は実験的な Rust analyzer に実装があるものの CLI では個別コードとして生成されません。25 は現在の生成元がない公開契約です。ルール名を設定しても未対応の生成元は有効になりません。",
       ),
       "",
       `## ${label("Project-specific lint IDs", "プロジェクト固有の lint ID")}`,
       "",
-      `| Rule | ${label("Severity", "重大度")} |`,
+      `| ${label("Rule", "ルール")} | ${label("Severity", "重大度")} |`,
       "| --- | --- |",
     ];
     for (const [id, example] of [...Object.entries(routerExamples), ...Object.entries(composed)]) {
@@ -62,7 +62,7 @@ export function generateProjectPages(root, checking) {
       "",
       `## ${label("Published analyzer codes", "公開 analyzer コード")}`,
       "",
-      `| Code | ${label("Status", "対応状況")} |`,
+      `| ${label("Code", "コード")} | ${label("Status", "対応状況")} |`,
       "| --- | --- |",
     );
     for (const rule of metadata) {
@@ -110,8 +110,8 @@ function crossDetail(root, rule, ja) {
   const info = explanation(root, code, ja);
   if (name === "hydration-risk")
     info.purpose = label(
-      "This code groups several reactivity findings, including a non-reactive watch source. It does not imply that every Date.now() expression is detected by the cross-file pass.",
-      "このコードは非リアクティブな watch の監視対象など、複数のリアクティビティ検出をまとめています。ファイル間検査がすべての Date.now() 式を検出するという意味ではありません。",
+      "This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.",
+      "このコードはprop を ref にコピーする操作など、複数のリアクティビティ検出をまとめています。ファイル間検査がすべての Date.now() 式を検出するという意味ではありません。",
     );
   const lines = [
     "---",
@@ -138,6 +138,32 @@ function crossDetail(root, rule, ja) {
         status === "contract"
           ? "この公開診断コードには現在の生成元がありません。悪い例・良い例はリスクと修正の説明です。このコードを検出させる設定は現在ありません。"
           : "実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。",
+      ),
+      "",
+    );
+  if (name === "async-no-suspense")
+    lines.push(
+      "Current support: `no-source-async-fact`",
+      "",
+      label(
+        "The boundary producer reads macros.is_async(), but source parsing currently records top-level await on the script-setup scope instead. The complete Bad/Good source pair below therefore produces no async-no-suspense finding through the current CLI. It explains the Suspense convention; supplying the missing macro fact is implementation follow-up work.",
+        "生成元は macros.is_async() を読みますが、現在のソース解析は top-level await を script-setup の scope に記録します。そのため以下の完全な悪い例・良い例では、現在の CLI は async-no-suspense を検出しません。Suspense の使い方を説明する例で、必要な macro 情報を渡す処理は今後の実装課題です。",
+      ),
+      "",
+    );
+  if (name === "provide-inject-type")
+    lines.push(
+      label(
+        "This check compares explicit provider/consumer type annotations, not inferred literal value types. Keep the provider's `as string` annotation in this example.",
+        "この検査は提供元と使用側の明示的な型注釈を比較し、リテラルからの型推論は使いません。この例の提供元の as string 注釈を残してください。",
+      ),
+      "",
+    );
+  if (name === "uncaught-error")
+    lines.push(
+      label(
+        "The current producer scans template expressions such as JSON.parse(input). It does not report a throw statement that exists only in the script block.",
+        "現在の生成元は JSON.parse(input) などのテンプレート式を検査します。script ブロックだけにある throw 文は対象外です。",
       ),
       "",
     );
