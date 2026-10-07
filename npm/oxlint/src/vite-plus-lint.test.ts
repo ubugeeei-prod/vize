@@ -56,6 +56,10 @@ void test("createVizeLintConfig emits the whole Vite+ lint block, including jsPl
         vize: {
           helpLevel: "none",
           preset: "incremental",
+          rules: {
+            "vize/vue/require-v-for-key": "error",
+            "vize/vue/no-v-html": "warn",
+          },
         },
       },
     },
@@ -130,7 +134,7 @@ void test('createVizeLintConfig keeps the rule map and settings.vize.preset in l
   // "all" spans every bundle, so the runtime gate has to be disabled entirely.
   // Gating an all-bundles rule map by any single preset silently suppresses the
   // rules that only belong to the other bundles.
-  assert.deepEqual(config.settings, { vize: { preset: "incremental" } });
+  assert.deepEqual(config.settings, { vize: { preset: "incremental", rules: config.rules } });
   assert.equal(config.rules["vize/ecosystem/router-link-require-to"], "error");
   assert.equal(config.rules["vize/script/no-options-api"], "error");
 });
@@ -138,7 +142,9 @@ void test('createVizeLintConfig keeps the rule map and settings.vize.preset in l
 void test('createVizeLintConfig accepts the CLI "happy-path" preset alias', () => {
   const config = createVizeLintConfig({ preset: "happy-path" });
 
-  assert.deepEqual(config.settings, { vize: { preset: "general-recommended" } });
+  assert.deepEqual(config.settings, {
+    vize: { preset: "general-recommended", rules: config.rules },
+  });
   assert.equal(config.rules["vize/script/valid-define-props"], "error");
   assert.equal(config.rules["vize/script/no-import-compiler-macros"], "error");
   assert.equal(config.rules["vize/script/no-duplicate-attr-inheritance"], "warn");
@@ -150,7 +156,7 @@ void test('createVizeLintConfig accepts the CLI "happy-path" preset alias', () =
 void test("createVizeLintConfig keeps essential narrower than happy-path", () => {
   const config = createVizeLintConfig({ preset: "essential" });
 
-  assert.deepEqual(config.settings, { vize: { preset: "essential" } });
+  assert.deepEqual(config.settings, { vize: { preset: "essential", rules: config.rules } });
   assert.equal(config.rules["vize/script/valid-define-props"], "error");
   assert.equal(config.rules["vize/script/no-import-compiler-macros"], "error");
   assert.equal(config.rules["vize/script/no-duplicate-attr-inheritance"], undefined);

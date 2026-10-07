@@ -1,4 +1,10 @@
-import { hasOnlyKeys, isRecord, isString, optionField, optionalBooleanField } from "./plugin-option-guards.js";
+import {
+  hasOnlyKeys,
+  isRecord,
+  isString,
+  optionField,
+  optionalBooleanField,
+} from "./plugin-option-guards.js";
 import type {
   ComponentNameInTemplateCasingOption,
   CustomEventNameCasingOption,
@@ -106,4 +112,3 @@ function isHtmlSelfClosingOption(value: unknown): value is HtmlSelfClosingOption
 function isHyphenationStyle(value: unknown): value is HyphenationStyle {
   return value === "always" || value === "never";
 }
-
