@@ -120,6 +120,8 @@ export async function trace(Vue, code, official = false) {
       return state.rows;
     },
   });
+  // Execute complete modules from the fixed fixture and checksum-pinned official compiler.
+  // oxlint-disable-next-line typescript/no-implied-eval
   const render = new Function(
     "Vue",
     "state",
