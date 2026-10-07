@@ -1,0 +1,9 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "croquis/cf/unmatched-inject": "error",
+      "croquis/cf/inject-without-symbol": "off"
+    }
+  }
+}

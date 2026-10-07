@@ -1,0 +1,4 @@
+<script setup>
+import Child from "./Child.vue";
+</script>
+<template><Child class="overlay" /></template>
