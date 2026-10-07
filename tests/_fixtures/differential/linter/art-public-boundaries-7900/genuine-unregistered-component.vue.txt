@@ -1,0 +1,1 @@
+<script setup>const title = "Hello";</script><art title="Card" component="./Card.vue"><variant><Card :title="title"><MissingButton /></Card></variant></art>

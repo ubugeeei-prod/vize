@@ -112,3 +112,9 @@ original fixture bytes. This docs placement and faithful source union require
 fresh mandatory Actions and protected delivery; historical 55c success cannot
 qualify the successor or installed release. No separate measurement dispatch
 or compiler, input, capture driver, recipe, ceiling or gate change follows.
+
+The faithful composition also includes signed actual Art delivery
+`67e537cbec83b7971767f7d28d570a34f1a5afcb`; both complete adjacent Art/Page
+paragraphs match that main byte for byte. The sole owned canonical suffix now
+occupies row 333, unchanged. All 33 capture drivers, four original cap/input
+registries and current compiler-observation guards retain exact 55c bytes.
