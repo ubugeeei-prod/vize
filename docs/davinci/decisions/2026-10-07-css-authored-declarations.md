@@ -78,3 +78,23 @@ source-witness and current-reference paths enforce this custody. Pure forgery
 laws pass; fresh hosted snapshot/runtime qualification remains required. The
 child is actually rebased onto parent `454853f3c6`, inheriting the same exact
 12-row Rust continuation/rule current-reference controls.
+
+## Actual-main Stack source preparation
+
+The existing #8182 source branches from the genuinely replayed #8178 on signed
+actual main `8c7727613de6213e0a52cde96eeb295d01c9bef5`. Retain incoming hugged
+reference ownership before exact declaration ownership and the existing
+root-comment fallback. Preserve every reference-authority byte, all original300
+history cases and strict historical/current mismatch separation.
+
+Move only the complete unchanged 75-line declaration custody law from
+`differential-formatter-current-reference.test.mjs` into the existing child-only
+`differential-formatter-declaration-snapshot.test.mjs`, retaining the same eight
+history-manifest loader scope. The whole law SHA256 remains
+`b0ed4ffdde134f7dadabaa7f08dd0454394299f4f44045882d317469d6a105b9`;
+existing hugged and named-snapshot controls remain complete, with unchanged350
+ceilings. All original 54 API/27 CLI plans and three public passes per API case
+remain required. Source preparation and pure custody checks grant no historical
+runtime transfer: fresh exact-head Actions, required native/protected full
+observer/API/CLI, unchanged budgets, actual Stack delivery and supported
+installed release proof remain pending.
