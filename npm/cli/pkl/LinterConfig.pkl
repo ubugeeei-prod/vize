@@ -54,11 +54,11 @@ class CustomEventNameCasingOptions {
   casing: CustomEventNameCasing = "camelCase"
 }
 
-/// Options for `vue/no-mutating-props`.
 class RequireComponentRegistrationOptions {
   globals: Listing<String> = new Listing {}
 }
 
+/// Options for `vue/no-mutating-props`.
 class NoMutatingPropsOptions {
   shallowOnly: Boolean = false
 }
