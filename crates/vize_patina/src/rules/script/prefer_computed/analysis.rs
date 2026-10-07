@@ -1,8 +1,8 @@
 //! Conservative derived-state proof; ambiguity suppresses advice.
 use super::unwrap_expression;
 use oxc_ast::ast::{
-    BindingIdentifier, BindingPattern, CallExpression, Expression, IdentifierReference, Program,
-    SimpleAssignmentTarget, Statement, UnaryExpression,
+    AssignmentTargetPropertyIdentifier, BindingIdentifier, BindingPattern, CallExpression,
+    Expression, IdentifierReference, Program, SimpleAssignmentTarget, Statement, UnaryExpression,
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_syntax::operator::{AssignmentOperator, UnaryOperator};
@@ -99,9 +99,37 @@ impl<'a> Visit<'a> for Inventory {
                     self.write(name);
                 }
             }
+            SimpleAssignmentTarget::TSAsExpression(expression) => {
+                if let Some(name) = root_name(&expression.expression) {
+                    self.write(name);
+                }
+            }
+            SimpleAssignmentTarget::TSSatisfiesExpression(expression) => {
+                if let Some(name) = root_name(&expression.expression) {
+                    self.write(name);
+                }
+            }
+            SimpleAssignmentTarget::TSNonNullExpression(expression) => {
+                if let Some(name) = root_name(&expression.expression) {
+                    self.write(name);
+                }
+            }
+            SimpleAssignmentTarget::TSTypeAssertion(expression) => {
+                if let Some(name) = root_name(&expression.expression) {
+                    self.write(name);
+                }
+            }
             _ => {}
         }
         walk::walk_simple_assignment_target(self, target);
+    }
+
+    fn visit_assignment_target_property_identifier(
+        &mut self,
+        target: &AssignmentTargetPropertyIdentifier<'a>,
+    ) {
+        self.write(target.binding.name.as_str());
+        walk::walk_assignment_target_property_identifier(self, target);
     }
 
     fn visit_unary_expression(&mut self, expression: &UnaryExpression<'a>) {
