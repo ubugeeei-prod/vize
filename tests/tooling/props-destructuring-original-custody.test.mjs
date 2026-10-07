@@ -10,7 +10,7 @@ const directory = path.join(root, "crates/vize/tests/fixtures/props-destructurin
 const read = (name) => fs.readFileSync(path.join(directory, name), "utf8");
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
-test("props style CLI corpus retains whole original inputs, config, command and authored vectors", () => {
+await test("props style CLI corpus retains whole original inputs, config, command and authored vectors", () => {
   const source = JSON.parse(read("source.json"));
   assert.equal(source.issue, 7988);
   assert.deepEqual(source.author, { login: "ubugeeei", id: 71201308 });
