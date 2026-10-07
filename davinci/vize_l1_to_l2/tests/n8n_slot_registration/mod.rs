@@ -7,6 +7,7 @@
     clippy::indexing_slicing,
     reason = "complete authored and independently pinned compiler packets"
 )]
+use super::davinci_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
@@ -86,8 +87,61 @@ fn authored_slot_carriers_preserve_complete_legacy_helper_registration() {
         .iter()
         .map(|(name, source)| (*name, source.as_str()))
         .collect::<Vec<_>>();
-    // This compares complete native and forced-legacy output in all three
-    // shipped option lanes. Stock import ordering is retained independently;
+    // FormInput explicitly opts into its SFC's TypeScript language under prefixing;
+    // the other controls and canonical shipped-lane sweeps keep their recipes.
+    // Stock import ordering is retained independently;
     // it is not substituted for Vize's legacy byte contract.
-    super::assert_all_lanes(&inputs);
+    assert_slot_registration_recipes(&inputs);
+}
+
+fn assert_slot_registration_recipes(cases: &[(&str, &str)]) {
+    for recipe in ["default", "prefixed-authored-sfc-language", "bindings"] {
+        let mut report = Report::default();
+        for (name, source) in cases {
+            match recipe {
+                "prefixed-authored-sfc-language" if *name == "n8n-FormInput" => {
+                    super::n8n_typed_prefixed::compare_authored_sfc_ts_prefixed(
+                        name,
+                        source,
+                        &mut report,
+                    );
+                }
+                _ => compare_sfc_template_lane(
+                    name,
+                    source,
+                    &mut report,
+                    match recipe {
+                        "default" => Lane::Default,
+                        "bindings" => Lane::Bindings,
+                        _ => Lane::Prefixed,
+                    },
+                ),
+            }
+        }
+        assert_eq!(report.files, 17, "{recipe}");
+        assert_eq!(report.parsed, 17, "{recipe}");
+        assert_eq!(report.templates, 17, "{recipe}");
+        assert_eq!(report.compared, 17, "{recipe}");
+        assert_eq!(report.old_error_skips, 0, "{recipe}");
+        assert_eq!(report.unexpected_old_error_skips, 0, "{recipe}");
+        assert_eq!(report.s2_refusal_count, 0, "{recipe}");
+        assert_eq!(report.divergence_count, 0, "{recipe}");
+        assert_eq!(report.s2_refusals, Vec::<String>::new());
+        assert_eq!(report.divergences, Vec::<String>::new());
+    }
+}
+
+#[test]
+fn original_form_input_wrong_js_recipe_retains_complete_refusal_contract() {
+    let stock: Value = serde_json::from_str(STOCK).expect("whole independent stock packets");
+    let original = stock["originals"]
+        .as_array()
+        .expect("originals")
+        .iter()
+        .find(|row| row["name"] == "n8n-FormInput")
+        .expect("unchanged original FormInput");
+    super::n8n_typed_prefixed::assert_original_js_refusal(
+        "n8n-FormInput",
+        original["source"].as_str().expect("whole original SFC"),
+    );
 }
