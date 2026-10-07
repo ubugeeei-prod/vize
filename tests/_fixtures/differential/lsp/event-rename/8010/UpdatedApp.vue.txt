@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Toggle from "./Toggle.vue";
+
+function onChange(value: boolean) {
+  console.log(value);
+}
+</script>
+
+<template>
+  <Toggle @update="onChange" />
+</template>
