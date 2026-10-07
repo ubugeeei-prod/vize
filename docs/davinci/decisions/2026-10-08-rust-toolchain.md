@@ -48,3 +48,12 @@ Historical e24 synthetic source `1a3996963af208c13cd732420bdee586df88bf7a` has
 all 104 cases below their original ceilings in all three authenticated repeats;
 this is measured numerical evidence, not successful migration or new-source
 qualification. Fresh source/methodology/instruction gates remain required.
+
+Fresh source `3c8ab916` passed the strict instruction gate and the complete
+same-compiler n8n custody/runtime job. Its real hotspot CLI test correctly failed
+because the synthetic report claimed an unrelated source revision. Derive only
+that test report's source from the actual checkout, explicitly reject its old
+synthetic revision first, and retain the original over-ceiling, malformed-dump
+and under-ceiling laws. This corrects test context; no source guard or ceiling
+changes. The separate authored Vapor raw-template premise needs its own literal
+AST/original-algorithm proof, and all fresh source gates remain required.

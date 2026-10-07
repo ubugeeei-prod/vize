@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import {
@@ -150,6 +150,10 @@ void test("real strict CLI reports completed-dump hotspots and keeps the origina
     };
     const report = {
       ...metadata,
+      source_commit: execFileSync("git", ["rev-parse", "HEAD"], {
+        cwd: root,
+        encoding: "utf8",
+      }).trim(),
       runs: Array.from({ length: 3 }, () => ({ over_budget: record(92) })),
     };
     const budget = {
@@ -176,7 +180,16 @@ void test("real strict CLI reports completed-dump hotspots and keeps the origina
         ],
         { encoding: "utf8" },
       );
+    fs.writeFileSync(
+      path.join(directory, "measurement.json"),
+      JSON.stringify({ ...report, source_commit: metadata.source_commit }),
+    );
     let result = run();
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /measurement source is not current checkout/u);
+    assert.doesNotMatch(result.stdout, /instruction-hotspot/u);
+    fs.writeFileSync(path.join(directory, "measurement.json"), JSON.stringify(report));
+    result = run();
     assert.equal(result.status, 1);
     assert.match(result.stdout, /instruction-hotspot: .*"function":"leaf"/u);
     assert.match(result.stderr, /instruction budget exceeded:[\s\S]*over_budget: 92 > 90/u);
