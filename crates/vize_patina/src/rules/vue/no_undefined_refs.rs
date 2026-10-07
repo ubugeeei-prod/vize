@@ -36,7 +36,11 @@ impl Rule for NoUndefinedRefs {
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
         // Imported props can declare any of the otherwise unresolved names.
         // A single-file pass cannot prove they are absent from that shape.
-        if ctx.analysis().is_some_and(props::has_unresolved_props) {
+        if ctx
+            .art_script_analysis
+            .or_else(|| ctx.analysis())
+            .is_some_and(props::has_unresolved_props)
+        {
             return;
         }
         let Some(view) = ctx.facts::<Self>() else {
