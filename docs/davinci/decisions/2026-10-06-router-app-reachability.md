@@ -173,3 +173,17 @@ follow before admission. This current result and containment are paired in
 [the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6033648522).
 No current protected, installed-public, page-table or performance credit is
 claimed. These source passes remain historical after a later composition.
+
+The MCP SDK repair actually merged as signed 706a on 2026-10-07 at
+08:21:15 UTC, with sole parent signed ef848. All nine existing authored
+commits genuinely replay onto that actual main; all route production,
+original sources, complete vectors and capture assertions remain byte-exact.
+Full author/date/message/reporter records and the held installed-replay refs
+are preserved, with no unmerged queue source. Removing only the complete own
+clause recovers every incoming canonical byte and all 350 physical lines.
+This actual incorporation is paired in
+[the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6033985894).
+Both authentic earlier failed full Checks and scoped passing evidence remain
+historical. Fresh exact source Actions, clean current prefix composition and
+actual protected delivery must qualify this dependency composition; no audit
+waiver or old runtime, installed-public or performance credit transfers.
