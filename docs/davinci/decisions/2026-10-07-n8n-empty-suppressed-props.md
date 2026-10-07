@@ -52,3 +52,40 @@ cargo test -p vize_l1_to_l2 --profile ci --features legacy-differential --test d
 Fresh entire canonical DOM/reach parity remains required. Historical285 DOM
 and233-per-mode reach divergences have not all been classified from capped
 snippets, and native workflow success does not qualify those gates.
+
+The fresh `9327e0698eb4049b058e6a50f8611ab621764a13` entire canonical gate
+did compare43977 templates with the unchanged16 old-error skips and zero
+native refusals, DOM divergences, or production reach divergences. The
+inline37345 and module37346 production comparisons were both exact. Those
+results qualify that source only; every source correction below needs fresh
+entire-corpus proof.
+
+The same source executed all four dedicated targets and rejected the unchanged
+`spread_with_key` control: its whole legacy516-byte module uses
+`_mergeProps(row.props)`, whereas the native590-byte module uses
+`_normalizeProps(_guardReactiveProps(row.props))`. The original source SHA256
+is `cf90afb2e428ca911bf73c610213beb0c2b76ae3072bb7a24f65b0f1bb64ff81`.
+The complete actual packet SHA256 is
+`642367b96168c8b5583a4c6fe4abd954e58cc5da27fa712e37d8d9a845b17dde`;
+its native producer binary SHA256 is
+`7967a345ff86df756a616ed960953e43ea190235ed9e5c58a8fdb4f01109f885`.
+This Default recipe is function mode without identifier prefixing or TS.
+Stock error33 for that complete authored control remains unchanged and grants
+no successful stock or runtime credit.
+
+Legacy records an authored key in its props scan before omitting that key from
+the rendered props. That scan has already selected merge semantics. Native
+had discarded the existing suppression flag and reclassified the remaining
+argument as a lone spread. The native merge writer now returns that same
+precomputed flag with its ordered arguments, retaining `_mergeProps` when an
+authored key was actually suppressed. Unsuppressed spreads keep their existing
+normalization route. No new scan, parse, stage, allocation, retained IR field,
+public API, instruction ceiling, fixture, or expected packet is added or
+changed. The existing eleven full controls and scoped control still apply.
+
+The tooling gate also rejected the new `#[path]` test declaration. A move-only
+commit relocates its byte-identical module to `tests/empty_props/mod.rs`; the
+following change uses ordinary `mod empty_props;`. This preserves test names,
+input bytes, relative fixture resolution, and the explicit feature target.
+Both bounded corrections remain pending fresh hosted execution, including all
+four targets, broad Rust, native, and the complete canonical gates.

@@ -98,7 +98,7 @@ pub(super) fn merge_args<'a>(
     if_key: Option<&'a str>,
     skip_is: bool,
     suppress_key: bool,
-) -> Result<StdVec<Arg<'a>>, EmitError> {
+) -> Result<(StdVec<Arg<'a>>, bool), EmitError> {
     let mut args = StdVec::new();
     let mut current = StdVec::new();
     let mut suppressed_authored_key = false;
@@ -140,7 +140,7 @@ pub(super) fn merge_args<'a>(
             ),
         }
     }
-    Ok(args)
+    Ok((args, suppressed_authored_key))
 }
 
 fn has_branch_object_with_props_before_spread(args: &[Arg<'_>]) -> bool {
