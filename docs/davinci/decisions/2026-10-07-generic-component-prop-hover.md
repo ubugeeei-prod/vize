@@ -40,3 +40,17 @@ canonical entries remain intact. The canonical record and native workflow each
 retain 350 lines. Previous original stdio and native-signature successes remain
 historical receipts; fresh exact-head source/native Actions are mandatory.
 Admission remains held for corrective #8181 and verified release delivery.
+
+The next reviewed existing-PR replay incorporates actual signed main
+`3ed1cc90908c88016310b90a855500c94a156f1f`, including the actual corrective
+#8181 and project-context #8140 merges. All eleven owned source/control blobs
+remain byte-identical to the previously qualified `320c98688b` head. Preserve
+main's model-modifier native target/filter and compiler/formatter corpus
+attribute rules alongside the original generic-hover target and triggers.
+The root-approved common canonical union retains its exact 350-line bytes;
+prospective analysis objects supplied only decision prose and never source
+ancestry. Previous 16,550-test, original stdio, native and corpus outcomes remain
+historical until this genuine union's fresh exact-head Actions pass. Root owns
+finite queue admission, protected qualification, actual merge and release
+delivery. Contextual data/ARIA completion and combined #8015 delivery remain
+unfinished.
