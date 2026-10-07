@@ -60,3 +60,15 @@ completeness fallback reads the original script macro metadata. The Stack
 order is #8146 -> #8151 -> #8163; root owns native Stack registration and queue
 admission. Fresh composed-source Actions and actual protected merge remain
 required; previous-source green is not transferred.
+
+After the shared dependency repair actually merged, rebase the same child onto
+the genuine #8151 head `74bae6ac0716c10d47078524c87061ffd5b830d8`, which includes
+actual main `b27868776bbb872aba68873c29970f5c4ed77a2b`. SHA-256 custody retains
+all nine owned production/corpus/integration and existing registration files.
+Rename only the new integration file to `art_variant_setup_bindings.rs` in a
+separate move-only commit with identical bytes. Regenerate the composed owner
+inventories and retain every incoming canonical decision byte within 350 lines.
+The old `4fc8c793` source passed all 22 controls, 16,513 actual Rust testcases,
+canonical DOM and source report; that is historical evidence only. Require
+fresh Actions on this composed source, native Stack membership and protected
+actual merge before issue closure. Root retains queue and release ownership.
