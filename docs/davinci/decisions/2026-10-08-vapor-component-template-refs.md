@@ -49,6 +49,6 @@ The existing component-prop walk retains a boolean for an actual static `ref`
 attribute or bind argument. Only that existing metadata admits the reused ref
 lowering after component creation; components without refs retain their old
 operation path without a second ref lookup. `ref_for`/`ref_key` alone and a
-computed argument named `ref` do not admit the setter. No allocation, new walk
-or separate stage is introduced; mapped/raw source and hosted runtime
-qualification remain pending.
+computed argument named `ref` do not admit the setter. The existing extractor still scans admitted ref-bearing props and owns their
+selection. No allocation or separate stage is introduced; mapped/raw source
+and hosted runtime qualification remain pending.

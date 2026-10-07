@@ -84,7 +84,6 @@ qualify this source. Fresh Actions and protected measurements must
 establish the resulting counts before delivery; the filename and native
 custom-directive boundaries above remain unfinished.
 
-
 ## Actual original source delivery
 
 PR #8183 signed-merged as `2c5817d518a1e84b90821e8053affff7c6cb7eaa` at 2026-10-07 16:29:10 UTC. Protected Check 37648958149 passed all four actual Rust workers, the required aggregate, canonical comparisons and original 104 instruction ceilings. The exact 237-byte original Tree and unchanged Imported/Mixed/Child sources qualify sixteen complete compile/map pairs and twelve mounted modules across both production and inline modes. The locked rc.9 oracle agrees on complete recursive data-mark yes / depths 0,1,2 nodes, props updates/removal/restoration, directive/import precedence, empty diagnostics and unmount. Full serialized map-on/off fields agree after removing only map; empty Child has a genuine null map, with no decoded-map accuracy claim.

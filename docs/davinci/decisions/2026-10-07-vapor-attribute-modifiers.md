@@ -74,7 +74,6 @@ metadata without changing outputs or raising ceilings. Fresh
 Actions and protected measurements must establish the resulting counts before
 this PR can be delivered; previous source success does not qualify the repair.
 
-
 ## Actual original source delivery
 
 PR #8172 signed-merged as `1476c1921c0dd4026a64260dda26cbe89a9a1429` at 2026-10-07 16:27:51 UTC. Protected Check 37648954615 passed all four actual Rust workers, the required aggregate, canonical comparisons and original 104 instruction ceilings. The exact 192-byte original App and 434-byte Reactive source run eight whole compiled modules across both production and inline modes. The locked rc.9 oracle agrees on the reported value/title attributes, later static id precedence and authored reverse-order object precedence; full ordered attribute/property vectors, updates, node identity, empty diagnostics and unmount pass. These attribute observations do not claim recursive HTML or decoded-map accuracy.
