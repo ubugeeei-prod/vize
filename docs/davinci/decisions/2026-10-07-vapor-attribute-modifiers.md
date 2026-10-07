@@ -56,3 +56,20 @@ the complete owned byte census remains exact. The approved common 350-line
 record is identical across the prepared backlog. This genuine main union still
 requires fresh exact-head Actions and protected actual delivery; projected
 merge analysis is never a source ancestor or execution witness.
+
+The unchanged original module/runtime controls and source Actions passed on
+`1f6926e10255b6de55bb4ca92df71b1ca6f6395a`, but protected candidate
+`8f54a4b864850a482e1171fef72f28c9d0098c23` exceeded the existing Vapor
+lowering ceiling (77,308 > 76,975) and interpolation ceiling
+(5,340,840 > 5,340,048), alongside three Croquis ceilings. The candidate was
+removed from the queue; these measured failures remain historical evidence.
+The corrective source composes genuine signed main
+`eed471b4424b922b878bc35cac765dc7274e5736` without compiler product conflicts
+and retains the approved complete 350-line record and every original fixture.
+Empty retained modifier lists now avoid static-key flag and prefix work; the
+existing camel and force helper remains exact. Empty loop and slot stacks with
+absent binding metadata return the same `None` through a small inline wrapper;
+every other scope uses the unchanged resolution body. These paths use existing
+metadata without changing outputs or raising ceilings. Fresh
+Actions and protected measurements must establish the resulting counts before
+this PR can be delivered; previous source success does not qualify the repair.
