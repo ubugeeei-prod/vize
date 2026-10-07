@@ -92,3 +92,23 @@ an ancestor of this genuine main. This establishes the plugin-global delivery
 prerequisite for #7896; the enum delivery prerequisite still remains open.
 The approved common decision record is applied byte-for-byte at 350 lines,
 SHA256 `f4bd4c030fe794c89c7872cdfdcfaa3823d1dc93bdd44295b83fce11637b570d`.
+
+## Original CLI and runtime qualification
+
+The existing PR tooling job discovers
+`tests/tooling/cli-build-enum-bindings-7893.test.mjs` and runs it against the
+source-built CLI with its validated current-SHA/binary-hash receipt. The test
+executes the unchanged original `build Badge.vue -o out` command in DOM, SSR
+and Vapor modes. An independent child compiles that complete original through
+locked Vue 3.5.35 for DOM/SSR and the targeted Vue 3.6.0-rc.9 for Vapor, then
+compares whole default/info/warn HTML and diagnostic vectors; mounted controls
+also require an empty host after unmount. The CLI outputs are evaluated as
+JavaScript; only the official compiler's TypeScript module is downcompiled.
+Full source, commands, CLI stdout/stderr, emitted modules, official options,
+bindings/maps and runtime observations are retained under
+`target/differential/enum-template-bindings-7893/whole-observations.json` by the
+existing tooling artifact uploader. No workflow stage or gate is added. The
+authored six-form Rust matrix and every original enum production/test/fixture
+byte remain unchanged. Hosted execution of these new controls is pending;
+only its fresh complete result can remove the earlier CLI/runtime validation
+boundary. Actual enum delivery and protected qualification remain pending.
