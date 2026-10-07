@@ -142,6 +142,16 @@ fn configure(rule: &str, config: &Value) -> Linter {
                 .collect(),
         );
     }
+    if rule == "vue/require-component-registration"
+        && let Some(globals) = options["globals"].as_array()
+    {
+        linter = linter.with_component_registration_globals(
+            globals
+                .iter()
+                .map(|name| name.as_str().expect("explicit component name").into())
+                .collect(),
+        );
+    }
     if let Some(tokens) = options["tokens"].as_array() {
         linter = linter.with_musea_design_tokens(
             tokens

@@ -9,6 +9,17 @@ const noSfcFinding = {
     "このカタログ項目は現在の SFC lint では固有の検出を生成しません。悪い例・良い例は意図した規約の説明で、実行すると検出される例ではありません。ID を設定しても未対応の SFC 検査は追加されません。",
 };
 export const runtimeOverrides = {
+  "vue/require-component-registration": pair(
+    template("<MissingWidget />"),
+    template("<MyButton />"),
+    "crates/vize_patina/tests/global_component_registration.rs",
+    {
+      ruleOptions: { globals: ["MyButton", "MyIcon"] },
+      note: "List explicit component names supplied by application plugins or Musea previewSetup. PascalCase and kebab-case spellings are accepted; regular expressions are not interpreted. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.",
+      noteJa:
+        "application plugin や Musea previewSetup が登録する component 名を明示します。PascalCase と kebab-case を許可し、正規表現は解釈しません。option だけではルールは有効になりません。後の設定は list 全体を置き換え、空 list は継承した名前を消します。",
+    },
+  ),
   "a11y/click-events-have-key-events": pair(
     template('<div @click="activate">Activate</div>'),
     template('<button @click="activate">Activate</button>'),

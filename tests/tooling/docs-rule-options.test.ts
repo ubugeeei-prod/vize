@@ -17,6 +17,7 @@ const configurableRuleOptions = [
   "vue/component-name-in-template-casing",
   "vue/html-self-closing",
   "vue/no-mutating-props",
+  "vue/require-component-registration",
   "vue/sfc-element-order",
   "vue/v-on-event-hyphenation",
 ];
@@ -159,6 +160,7 @@ test("strict boolean rows render within the complete option and type-aware table
     "script/custom-event-name-casing",
     "script/define-props-destructuring",
     "vue/no-mutating-props",
+    "vue/require-component-registration",
     "vue/sfc-element-order",
     "vue/html-self-closing",
     "vue/v-on-event-hyphenation",

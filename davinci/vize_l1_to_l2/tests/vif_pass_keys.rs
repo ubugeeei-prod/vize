@@ -125,23 +125,12 @@ fn a_dynamic_key_extracts_without_leaving_the_surface() {
 }
 
 #[test]
-fn dynamic_key_collisions_are_kind_blind_text_equality() {
-    // The legacy `extract_key_value_str` compares the expression text
-    // under the default dialect, static and dynamic alike: `key="dup"`
-    // and `:key="dup"` collide.
+fn static_and_dynamic_keys_with_equal_text_have_distinct_kinds() {
     let source = r#"<p v-if="a" key="dup">1</p><p v-else :key="dup">2</p>"#;
     with_transformed(source, |lowered, _, _, _| {
-        assert_eq!(lowered.diagnostics.len(), 1);
-        assert_eq!(
-            lowered.diagnostics[0].message.as_str(),
-            vif::SAME_KEY_MESSAGE
-        );
-        assert_eq!(
-            lowered.diagnostics[0].span,
-            span_of(source, r#":key="dup""#, 0)
-        );
+        assert_eq!(lowered.diagnostics, vec![]);
     });
-    assert_transformed_sound(source, "kind-blind-collision");
+    assert_transformed_sound(source, "distinct-key-kinds");
 }
 
 #[test]

@@ -143,6 +143,19 @@ impl Linter {
         self
     }
 
+    /// Configure global component names without enabling the rule.
+    pub fn with_component_registration_globals(mut self, globals: Vec<String>) -> Self {
+        if self.registry.has_rule("vue/require-component-registration") {
+            self.registry.replace(Box::new(
+                crate::rules::opinionated::vue::RequireComponentRegistration {
+                    ignore_globals: globals,
+                    nuxt_mode: matches!(self.preset, Some(LintPreset::Nuxt)),
+                },
+            ));
+        }
+        self
+    }
+
     /// Configure `vue/sfc-element-order`.
     #[inline]
     pub fn with_sfc_element_order_options(mut self, options: SfcElementOrderOptions) -> Self {

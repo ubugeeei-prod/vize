@@ -1,0 +1,92 @@
+{
+  "compiler": {
+    "version": "3.5.26",
+    "entrypoint": "@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js",
+    "url": "https://unpkg.com/@vue/compiler-sfc@3.5.26/dist/compiler-sfc.esm-browser.js",
+    "sha256": "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec"
+  },
+  "name": "pure_key_only",
+  "filename": "pure_key_only.vue",
+  "source": "<template><template v-for=\"row in rows\"><span :key=\"row.id\">{{ row.label }}</span></template></template>",
+  "sourceSha256": "3f453c1c2422ec7710acc021fe5a8dab6139a729e807d08f1e4376367de91e7c",
+  "template": "<template v-for=\"row in rows\"><span :key=\"row.id\">{{ row.label }}</span></template>",
+  "parseErrors": [],
+  "outputs": [
+    {
+      "options": {
+        "source": "<template v-for=\"row in rows\"><span :key=\"row.id\">{{ row.label }}</span></template>",
+        "filename": "pure_key_only.vue",
+        "id": "pure_key_only",
+        "compilerOptions": {
+          "mode": "function",
+          "prefixIdentifiers": false,
+          "cacheHandlers": false,
+          "sourceMap": false
+        },
+        "sourceMap": false
+      },
+      "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { renderList: _renderList, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, toDisplayString: _toDisplayString } = _Vue\n\n    return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(rows, (row) => {\n      return (_openBlock(), _createElementBlock(\"span\", { key: row.id }, _toDisplayString(row.label), 1 /* TEXT */))\n    }), 256 /* UNKEYED_FRAGMENT */))\n  }\n}",
+      "codeSha256": "b86246dc8db86ee78dae6ead9ea58aacb632d6b74631c82378df0ffb0320cf8b",
+      "errors": [
+        {
+          "name": "SyntaxError",
+          "message": "<template v-for> key should be placed on the <template> tag.",
+          "code": 33,
+          "loc": {
+            "start": {
+              "column": 37,
+              "line": 1,
+              "offset": 36
+            },
+            "end": {
+              "column": 50,
+              "line": 1,
+              "offset": 49
+            },
+            "source": ":key=\"row.id\""
+          }
+        }
+      ],
+      "tips": [],
+      "map": null
+    },
+    {
+      "options": {
+        "source": "<template v-for=\"row in rows\"><span :key=\"row.id\">{{ row.label }}</span></template>",
+        "filename": "pure_key_only.vue",
+        "id": "pure_key_only",
+        "compilerOptions": {
+          "mode": "module",
+          "prefixIdentifiers": true,
+          "cacheHandlers": false,
+          "sourceMap": false
+        },
+        "sourceMap": false
+      },
+      "code": "import { renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.rows, (row) => {\n    return (_openBlock(), _createElementBlock(\"span\", {\n      key: row.id\n    }, _toDisplayString(row.label), 1 /* TEXT */))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+      "codeSha256": "a090890c4d0bb311d2db6a882ced81a63f6db4afddd85c981c079d9479562dd0",
+      "errors": [
+        {
+          "name": "SyntaxError",
+          "message": "<template v-for> key should be placed on the <template> tag.",
+          "code": 33,
+          "loc": {
+            "start": {
+              "column": 37,
+              "line": 1,
+              "offset": 36
+            },
+            "end": {
+              "column": 50,
+              "line": 1,
+              "offset": 49
+            },
+            "source": ":key=\"row.id\""
+          }
+        }
+      ],
+      "tips": [],
+      "map": null
+    }
+  ]
+}

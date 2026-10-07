@@ -42,7 +42,9 @@ Runtime qualification also exposed exact source prerequisites: provide/inject ty
 annotations, uncaught-error scans template expressions, and hydration-risk currently uses the
 prop-to-ref producer rather than an unconstructed non-reactive-watch variant. The emits validator
 example uses a block-body arrow that passes the current SFC prefilter; method shorthand dispatch
-remains implementation follow-up work. No production behavior or allowlists change here.
+remains implementation follow-up work. No production behavior or allowlists change here. Genuine signed main 8f01ff9c is incorporated;
+the newly shipped component-registration globals are retained in both option references, generated
+rule configuration, and the public runtime test. All 14 typed rule-option entries are documented.
 
 Validation pending: exact-head Actions must execute the example pairs and build the rendered
 English/Japanese reference before queue admission. The navigation companion owns the site-wide

@@ -68,6 +68,7 @@ export default defineConfig({
 | `script/custom-event-name-casing` | `{ casing?: "camelCase" \| "kebab-case" }` | 既定は `camelCase` です。 |
 | `script/define-props-destructuring` | `{ mode?: "only-when-assigned" \| "always" \| "never" }` | 既定は `only-when-assigned` です。`always` は代入しない呼び出しも検査し、`never` は props オブジェクトでの参照を要求します。Vue 3.5 の分割代入は反応性を保ちます。 |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | 既定は `false` です。`true` では direct prop replacement を禁止したまま nested mutation は許可します。 |
+| `vue/require-component-registration` | `{ globals?: string[] }` | application plugin や previewSetup が登録する component 名を指定します。PascalCase と kebab-case を許可します。rule は別途有効にしてください。 |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | 既定は `[["script", "template"], "style"]` です。ネストした配列は、その rank でどの selector でもよいことを表します。 |
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"` | 既定は `html.void: "always"`、`html.normal: "any"`、`html.component: "always"`、`svg: "always"`、`math: "always"` です。 |
 | `vue/v-on-event-hyphenation` | `"always" \| "never"` | component 上の static event listener 名を hyphenation するかを設定します。 |
@@ -611,4 +612,44 @@ ESLint からの移行では、ルール名とオプションの指定位置を�
 - rules: { "vue/define-props-destructuring": ["warn", "always"] }
 + rules: { "script/define-props-destructuring": "warn" },
 + ruleOptions: { "script/define-props-destructuring": { mode: "always" } }
+```
+
+## `vue/require-component-registration`
+
+application plugin や Musea `previewSetup` が登録する component 名を明示します。
+PascalCase と kebab-case を許可し、正規表現は解釈しません。option だけでは
+rule は有効になりません。scoped entry は list 全体を置き換え、空 list で reset します。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      "rules": {
+        "vue/require-component-registration": "warn"
+      },
+      "ruleOptions": {
+        "vue/require-component-registration": {
+          "globals": [
+            "MyButton",
+            "MyIcon"
+          ]
+        }
+      }
+    },
+  },
+});
+```
+
+悪い（未登録の component）:
+
+```vue
+<MissingWidget />
+```
+
+良い（設定した global）:
+
+```vue
+<MyButton />
 ```

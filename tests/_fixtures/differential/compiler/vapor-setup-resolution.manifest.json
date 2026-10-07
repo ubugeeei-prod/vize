@@ -1,0 +1,34 @@
+{
+  "schema": "vize.differential.vapor-setup-resolution",
+  "version": 1,
+  "issue": 7884,
+  "files": [
+    {
+      "path": "Tree.vue.txt",
+      "bytes": 237,
+      "sha256": "3e0ce9e5e3461d5fc514859c5fda1ad26c4ecabd8af4afbb05675abe8a9de349"
+    },
+    {
+      "path": "Imported.vue.txt",
+      "bytes": 170,
+      "sha256": "801de0c674734a4591654d9f01f7d82925b1c978f81a7fc38dc4ee864fbf3349"
+    },
+    {
+      "path": "Child.vue.txt",
+      "bytes": 73,
+      "sha256": "a2ae74b29223636371fce7c317055ede204d5d53c095491e8daca70a541a673c"
+    },
+    {
+      "path": "Mixed.vue.txt",
+      "bytes": 159,
+      "sha256": "a820c6d2d468fc499c1e25068e8669fdf61a569f591219556a8b97be7ebf7099"
+    },
+    {
+      "path": "issue-body.md",
+      "bytes": 1955,
+      "sha256": "55108f5a25bc61b300e33e8503326b85b1f93703220efea63a2f3939340bf0ff"
+    }
+  ],
+  "runtime": "crates/vize_atelier_sfc/tests/vapor_setup_resolution.rs",
+  "boundary": "Filename recursion/import precedence and setup directive resolution; native custom-directive admission and whole native SFC remain separate."
+}

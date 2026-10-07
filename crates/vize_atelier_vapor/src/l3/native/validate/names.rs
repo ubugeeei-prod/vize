@@ -18,7 +18,13 @@ pub(super) fn named<'a>(
     let name = one(values, Role::Name)?;
     let mut modifiers = Vec::new_in(&retained.allocator());
     for value in values.iter().filter(|value| value.role == Role::Modifier) {
-        if !event || value.value.kind != ValueKind::Literal || !event_name(value.value.text) {
+        if value.value.kind != ValueKind::Literal
+            || if event {
+                !event_name(value.value.text)
+            } else {
+                !matches!(value.value.text, "attr" | "prop")
+            }
+        {
             return Err(LegacyReason::Binding.into());
         }
         modifiers.push(value.value.text);
@@ -40,6 +46,11 @@ pub(super) fn named<'a>(
         }
         _ => return Err(LegacyReason::Binding.into()),
     };
+    // Computed modifier keys need a separate retained-expression transform.
+    // This slice admits the reported static argument semantics only.
+    if !event && dynamic.is_some() && !modifiers.is_empty() {
+        return Err(LegacyReason::Binding.into());
+    }
     Ok((name.value.text, dynamic, modifiers))
 }
 

@@ -10,7 +10,9 @@ Default severity: `warning`
 Presets: `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Options: See [typed options and defaults](../options.md).
+
+List explicit component names supplied by application plugins or Musea previewSetup. PascalCase and kebab-case spellings are accepted; regular expressions are not interpreted. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.
 
 ## Configuration (Vite+)
 
@@ -23,6 +25,14 @@ export default defineConfig({
       "preset": "incremental",
       "rules": {
         "vue/require-component-registration": "warn"
+      },
+      "ruleOptions": {
+        "vue/require-component-registration": {
+          "globals": [
+            "MyButton",
+            "MyIcon"
+          ]
+        }
       }
     },
   },
@@ -36,24 +46,16 @@ vp run lint
 ## Bad
 
 ```vue
-<script setup lang="ts">
-// MyButton is never imported.
-</script>
-
 <template>
-  <MyButton>Save</MyButton>
+<MissingWidget />
 </template>
 ```
 
 ## Good
 
 ```vue
-<script setup lang="ts">
-import MyButton from "./MyButton.vue";
-</script>
-
 <template>
-  <MyButton>Save</MyButton>
+<MyButton />
 </template>
 ```
 
