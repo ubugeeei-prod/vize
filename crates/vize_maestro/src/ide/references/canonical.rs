@@ -66,7 +66,8 @@ pub(super) async fn references(
     // its references live in this SFC and the already-open project surface;
     // materializing every workspace SFC for it takes minutes on a
     // component-library-sized workspace and cannot add hits.
-    let document = if is_script_setup_local_binding(ctx) {
+    let local_binding = is_script_setup_local_binding(ctx);
+    let document = if local_binding {
         corsa_support::open_canonical_virtual_navigation_project_document_strict(ctx, bridge)
             .await
             .ok()
@@ -119,6 +120,11 @@ pub(super) async fn references(
         locations.extend(extra);
     }
     let mut mapped = corsa_support::map_canonical_corsa_locations(ctx, &document, locations);
+    if include_declaration && local_binding {
+        mapped.extend(super::structural::missing_canonical_declarations(
+            ctx, &mapped,
+        ));
+    }
     mapped.extend(style_locations(ctx, &document, &mapped));
     mapped.sort_by(|left, right| {
         left.uri

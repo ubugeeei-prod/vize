@@ -83,6 +83,16 @@ test("n8n original component and TS barrel retain navigation and dirty/restore t
         { uri: bindingUri, range: usage },
       ]),
     );
+    assert.deepEqual(
+      locations(
+        await session.request("textDocument/references", {
+          ...query(bindingUri, usage.start),
+          context: { includeDeclaration: false },
+        }),
+        "n8n props references without declaration",
+      ),
+      [{ uri: bindingUri, range: usage }],
+    );
     open(childUri, "vue", fs.readFileSync(path.join(workspace, "N8nBlockUi/BlockUi.vue"), "utf8"));
     open(
       importerUri,

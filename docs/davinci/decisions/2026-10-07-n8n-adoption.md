@@ -243,3 +243,12 @@ The reviewed corrective anchor is `311e3c8a0e1a42d91381ba3769ef9fcfc6c1f826`, ge
 The bounded correction preserves merge-props selection when an authored child key was suppressed, trims only horizontal padding owned by terminal line comments while retaining newline layout, and moves the unchanged empty-props test into ordinary module discovery. Only the two named TypeScript originals opt into their actual SFC-language prefix recipe. All seventeen helper controls and the original one-input comparison counts remain strict; generic prefix JavaScript and all other recipes remain unchanged. Complete wrong-language refusal packets and independently pinned stock records are retained before assertions, separately from admitted typed modules. Source-derived current wrong-JS contracts remain unqualified until fresh hosted execution; old reused baseline packets grant no current-source credit.
 
 Metadata-only pinning changes no producer, immutable capture driver, original file, oracle, runtime golden, skip allowance or ceiling. Fresh source Check/native/custody/runtime/all-four and complete canonical production gates must qualify this corrected source. No adoption or original P0 criterion is closed; protected merge and public release remain required.
+
+The first authored source run built the current CLI but failed the exact props
+reference packet: `includeDeclaration: true` omitted the real `defineProps`
+variable declaration. The correction adds missing declarations only when
+Canonical references agree with an exact OXC lexical occurrence in the same
+script-setup local symbol group; unrelated names and cross-file scope are not
+joined. The unchanged full n8n inputs now also check the false toggle. Both
+toggles, subsequent navigation, dirty diagnostics and repair require a fresh
+source run; the failed run grants no completed runtime credit.
