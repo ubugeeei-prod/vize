@@ -1,7 +1,7 @@
 # Protected observer parallelism: local proposal
 
-Status: unpublished local implementation for root review. No PR, remote branch,
-Actions dispatch, queue mutation, or release operation belongs to this change.
+Status: reviewed implementation authorized for an independent conventional PR.
+Root owns protected queue admission and actual merge/release decisions.
 Actual throughput improvement remains **unmeasured** until exact-head Actions.
 The delivery policy in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830#issuecomment-6037135723)
 continues to govern finite cohort admission and verified release completion.
@@ -124,16 +124,16 @@ IDs, allowing a fork PR without crediting foreign base or artifact metadata.
 - Local focused tests, syntax/format/correctness lint, capped-file inventory, and
   frozen-source preservation are review evidence; they do not prove full corpus
   execution, Actions compatibility, or throughput.
-- Root reviews this concrete implementation before any remote/public action.
-  Existing finite cohorts and release recovery retain priority.
-- On future admission, pair the issue comment below with a bounded reference in
-  the shared decision record in the same change. Its current 350-line canonical
-  layout and root's current finite-cohort ownership remain untouched in this local proposal.
+- Root reviewed the concrete implementation and authorized publication after the
+  tracked-source custody guard and its negative controls. Preserve the genuine
+  current-main source union and all original fixture bytes.
+- Pair the issue comment below with the shared decision record's paragraph 326.
+  Only that paragraph gains an additive reference; the other 349 rows remain exact.
 - Attend fresh exact-head source and full protected merge-group Actions. Compare
   actual critical-path timestamps, complete file/counter receipts, every Rust
   result, and fresh merge identity before claiming a throughput improvement.
 
-## Paired #6830 issue-comment draft (not posted)
+## Paired #6830 issue-comment
 
 Protected CI can schedule the unchanged DOM, SSR/Pug, and production-reach
 observers independently, then require one custody-checking finalizer under the
@@ -151,4 +151,5 @@ stage, serialization, budget increase, test waiver, or release acceptance change
 Parent tracked source and index must match candidate HEAD before any receipt;
 staged and unstaged drift refuse even with unchanged fixture bytes and HEAD.
 Historical protected Check took 20m26s; this proposal has no Actions runtime
-measurement yet. Publication remains held for root review and backlog drain.
+measurement yet. Fresh exact-head source, full protected execution and actual
+merge proof remain required; root owns queue admission.
