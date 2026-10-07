@@ -44,3 +44,11 @@ coverage, native-only compiler migration, reporter rc.10 execution, SSR,
 hydration, browsers and installed-release acceptance remain unfinished.
 
 The paired local preparation decision is [#7882 comment6046345987](https://github.com/ubugeeei-prod/vize/issues/7882#issuecomment-6046345987). Read-only pinned stock compilation accepts all eight complete modules (three inputs plus Child, development and production); their full descriptors, script outputs, modules and maps are retained locally. Mounted stock/current runtime remains unexecuted because the local read-only dependencies lack happy-dom; this does not change the hosted recipe or grant runtime credit.
+
+The existing component-prop walk retains a boolean for an actual static `ref`
+attribute or bind argument. Only that existing metadata admits the reused ref
+lowering after component creation; components without refs retain their old
+operation path without a second ref lookup. `ref_for`/`ref_key` alone and a
+computed argument named `ref` do not admit the setter. No allocation, new walk
+or separate stage is introduced; mapped/raw source and hosted runtime
+qualification remain pending.
