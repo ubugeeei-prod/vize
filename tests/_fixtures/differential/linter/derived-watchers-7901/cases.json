@@ -96,5 +96,13 @@
       "script/prefer-computed"
     ],
     "warnings": 0
+  },
+  {
+    "id": "template-interpolation-assignment",
+    "fixture": "template-interpolation-assignment.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 0
   }
 ]

@@ -15,7 +15,8 @@ The shared script Program supplies declarations, import aliases and mutation
 evidence. Top-level ref declarations are eligible; same-named bindings anywhere
 make resolution ambiguous and suppress advice. Vue imports and unbound
 auto-import names are supported; unrelated locally bound factories are excluded.
-The already shared template AST supplies `v-model`, inline assignments/updates
+The already shared template AST supplies `v-model`, directive/interpolation
+assignments and updates
 and static/bound template-ref evidence. HTML comments, ordinary text, static attributes and
 `v-pre` do not manufacture writes. Ambiguous template expressions can only
 suppress advice; token over-collection never creates a finding. Components with
