@@ -1,0 +1,1 @@
+_setText(n0, _toDisplayString(_getDefaultValue(_slotProps0.label, () => ('fallback'))) + ":" + _toDisplayString(_slotProps0.count))

@@ -13,6 +13,9 @@
 
 #[cfg(all(test, feature = "native"))]
 mod art_dependency_typecheck_tests;
+mod art_lint;
+#[cfg(test)]
+mod art_lint_tests;
 #[cfg(all(test, feature = "native"))]
 mod art_variant_typecheck_tests;
 #[cfg(all(test, feature = "native"))]

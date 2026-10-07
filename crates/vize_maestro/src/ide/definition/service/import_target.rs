@@ -19,6 +19,7 @@ use crate::ide::definition::{helpers, import_resolver::resolve_import_specifier,
 
 #[cfg(any(test, feature = "native"))]
 mod alias;
+mod default_export;
 #[cfg(test)]
 mod pug_tests;
 
@@ -167,8 +168,8 @@ fn find_specifier_span(rest: &str) -> Option<(usize, &str, &str)> {
 
 /// The name the target module exports for local binding `word` — the left
 /// side of an `as` rename in a named-import clause. `None` when the clause
-/// does not bind `word`. Default and namespace imports have no exported name
-/// to follow, so the local binding stays the lookup key.
+/// does not bind `word`. Default imports use the target's `default` identity;
+/// namespace imports keep their local lookup key.
 fn bound_source_name(clause: &str, word: &str) -> Option<String> {
     if let (Some(open), Some(close)) = (clause.find('{'), clause.find('}')) {
         for part in clause.get(open + 1..close).unwrap_or_default().split(',') {
@@ -180,17 +181,19 @@ fn bound_source_name(clause: &str, word: &str) -> Option<String> {
         }
     }
     let head = clause.split('{').next().unwrap_or(clause);
-    head.split(',')
-        .any(|part| {
-            let part = part
-                .trim()
-                .trim_start_matches("import")
-                .trim()
-                .trim_end_matches("from")
-                .trim();
-            part == word || part.strip_prefix("* as ").map(str::trim) == Some(word)
-        })
-        .then(|| word.to_owned())
+    head.split(',').find_map(|part| {
+        let part = part
+            .trim()
+            .trim_start_matches("import")
+            .trim()
+            .trim_end_matches("from")
+            .trim();
+        if part == word {
+            Some("default".to_owned())
+        } else {
+            (part.strip_prefix("* as ").map(str::trim) == Some(word)).then(|| word.to_owned())
+        }
+    })
 }
 
 /// `(source, bound)` for a specifier-list entry: `Widget as LocalWidget`
@@ -225,6 +228,31 @@ fn locate_export(ctx: &IdeContext<'_>, target: &Path, word: &str, hops: usize) -
         .documents
         .text(&uri)
         .or_else(|| fs::read_to_string(target).ok())?;
+
+    if word == "default" {
+        match default_export::target(&content, target)? {
+            default_export::Target::Import {
+                specifier,
+                exported,
+            } if hops > 0 => {
+                let next = resolve_import_specifier(&uri, &specifier)?;
+                return locate_export(ctx, &next, &exported, hops - 1);
+            }
+            default_export::Target::Declaration(span) => {
+                let (line, character) = helpers::offset_to_position(&content, span.start as usize);
+                let (end_line, end_character) =
+                    helpers::offset_to_position(&content, span.end as usize);
+                return Some(Location {
+                    uri,
+                    range: Range::new(
+                        Position::new(line, character),
+                        Position::new(end_line, end_character),
+                    ),
+                });
+            }
+            _ => return None,
+        }
+    }
 
     // A barrel both names the word and points elsewhere; the re-export hop
     // comes first so the jump lands on the real declaration, not the alias.
@@ -286,15 +314,7 @@ fn reexport_specifier(content: &str, word: &str) -> Option<(String, String)> {
             None
         };
         if let Some(source) = source {
-            // `default` is not a locatable declaration name, so keep the
-            // requested name for that hop — `export { default as UiButton }`
-            // still lands on the module the way it did before.
-            let exported = if source == "default" {
-                word.to_owned()
-            } else {
-                source
-            };
-            return Some((specifier.to_owned(), exported));
+            return Some((specifier.to_owned(), source));
         }
     }
     None

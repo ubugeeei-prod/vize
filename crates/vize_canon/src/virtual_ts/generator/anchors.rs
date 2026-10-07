@@ -1,6 +1,7 @@
 //! Setup binding anchor emission for template-used names.
 
 use super::imports::{IdentifierUsage, collect_setup_binding_anchor_names};
+use std::ops::Range;
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis};
 
@@ -33,15 +34,18 @@ pub(super) fn emit_props_shadow_anchor(
     ts: &mut String,
     summary: &Croquis,
     template_referenced_names: &FxHashSet<String>,
-) {
+) -> Option<Range<usize>> {
     if crate::virtual_ts::script_facts::binding_type(summary, "props")
         .as_ref()
         .is_some_and(is_setup_variable)
         && template_referenced_names.contains("props")
     {
         ts.push_str("  // Anchor before the template scope shadows `props`\n");
+        let start = ts.len() + "  void ".len();
         ts.push_str("  void props;\n");
+        return Some(start..start + "props".len());
     }
+    None
 }
 
 /// True for bindings declared as variables in `<script setup>` scope
