@@ -33,3 +33,8 @@ cases and reference bytes remain intact.
 Exact-head Actions, all existing formatter/history suites and unchanged
 protected instruction ceilings must pass before actual merge. Installed
 release verification remains separate until a release contains this change.
+
+The initial source Check (37644756787, `6c0f3f3c`) exposed two retained
+upstream `match_same_arms` expectations without their enabling lint. Restore
+that exact lint in the vendored policy; preserve all implementation bodies
+and fixtures, and require fresh successor Actions.
