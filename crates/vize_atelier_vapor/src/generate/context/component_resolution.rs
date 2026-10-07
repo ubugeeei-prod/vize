@@ -56,6 +56,7 @@ impl<'a> GenerateContext<'a> {
         if self.experimental_self_component
             && component == "Self"
             && let Some(component_name) = self.component_name
+            && !component_name.is_empty()
         {
             component_name.to_compact_string()
         } else {

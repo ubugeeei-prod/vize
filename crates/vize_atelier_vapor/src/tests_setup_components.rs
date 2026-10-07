@@ -245,3 +245,23 @@ fn setup_directives_resolve_locally_and_registry_directives_stay_global() {
         ]
     );
 }
+
+#[test]
+fn empty_component_name_keeps_experimental_self_registry_resolution() {
+    let allocator = Allocator::new();
+    let result = compile_vapor_with_experimental_options(
+        &allocator,
+        "<Self />",
+        VaporCompilerOptions::default(),
+        VaporCompilerExperimentalOptions {
+            component_name: Some("".into()),
+            self_component: true,
+            ..Default::default()
+        },
+    );
+    assert_eq!(result.error_messages.len(), 0);
+    assert_eq!(
+        component_resolution_lines(&result.code),
+        vec!["const _component_Self = _resolveComponent(\"Self\")"]
+    );
+}
