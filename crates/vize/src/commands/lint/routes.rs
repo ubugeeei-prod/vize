@@ -10,6 +10,11 @@ use vize_l0::CompactString;
 use vize_l0::diag::{PartKind, Severity};
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
 
+mod project_rules;
+use super::entry_rules::ResolvedLinterRuleGroups;
+use project_rules::ProjectRuleConfigs;
+use std::path::PathBuf;
+
 use super::cross_file::{CliLintFileResult, apply_sfc_cross_file_lint, merge_lint_result};
 
 /// The whole `--cross-file` lane: the SFC cross-file analyzer, then route
@@ -18,15 +23,32 @@ pub(super) fn apply_cross_file_lint(
     results: &mut [CliLintFileResult],
     help_level: HelpLevel,
     args: &super::LintArgs,
+    files: &[PathBuf],
+    rules: &ResolvedLinterRuleGroups,
 ) -> Option<vize_l0::String> {
     let (tree, complexity) = (args.cross_file_tree, args.cross_file_complexity);
-    let report = apply_sfc_cross_file_lint(results, help_level, tree, complexity);
-    apply_route_typing(results, help_level);
+    let configs = ProjectRuleConfigs::new(files, rules);
+    let report =
+        apply_sfc_cross_file_lint(results, help_level, tree, complexity, |path, result| {
+            configs.apply(path, result)
+        });
+    apply_route_typing_configured(results, help_level, |path, result| {
+        configs.apply(path, result)
+    });
     report
 }
 
 /// Run route typing over every linted file and merge its findings.
+#[cfg(test)]
 fn apply_route_typing(results: &mut [CliLintFileResult], help_level: HelpLevel) {
+    apply_route_typing_configured(results, help_level, |_, _| {});
+}
+
+fn apply_route_typing_configured(
+    results: &mut [CliLintFileResult],
+    help_level: HelpLevel,
+    configure: impl Fn(&std::path::Path, &mut LintResult),
+) {
     let mut project = ProjectSources::new();
     let mut indexes = Vec::new();
     for (index, (path, _, source, _)) in results.iter().enumerate() {
@@ -38,18 +60,19 @@ fn apply_route_typing(results: &mut [CliLintFileResult], help_level: HelpLevel) 
         return;
     };
     for finding in findings {
-        let Some((_, filename, source, result)) = indexes
+        let Some((path, filename, source, result)) = indexes
             .get(finding.module.index())
             .and_then(|&index| results.get_mut(index))
         else {
             continue;
         };
-        let extra = LintResult {
+        let mut extra = LintResult {
             filename: filename.clone(),
             error_count: usize::from(finding.diagnostic.severity() == Severity::Error),
             warning_count: usize::from(finding.diagnostic.severity() != Severity::Error),
             diagnostics: vec![to_lint(&finding, source.len(), help_level)],
         };
+        configure(path, &mut extra);
         merge_lint_result(result, extra);
     }
 }

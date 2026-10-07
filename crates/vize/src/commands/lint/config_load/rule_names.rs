@@ -33,6 +33,9 @@ pub(super) fn validate(plan: &LinterConfigPlan) -> Result<(), String> {
     known.extend(builtin_script_rules().into_iter().map(|rule| rule.name));
     known.extend(builtin_css_rules().into_iter().map(|rule| rule.name));
     known.extend(builtin_musea_rules().into_iter().map(|rule| rule.name));
+    known.extend(vize_croquis_cf::providers::vue_router::typing::RULE_CODES);
+    known.extend(vize_croquis_cf::CrossFileDiagnostic::CODES);
+    known.insert("cross-file");
 
     let mut problems = Vec::new();
     for (scope, names) in [("linter.rules", root), ("entries[].linter.rules", entries)] {

@@ -37,6 +37,9 @@ pub const PARAM_TYPE: &str = "ecosystem/vue-router-param-type";
 /// A required param left to inheritance from the current route.
 pub const MISSING_PARAM: &str = "ecosystem/vue-router-missing-param";
 
+/// Public route-typing rule IDs emitted by the project lint pass.
+pub const RULE_CODES: [&str; 4] = [UNKNOWN_ROUTE, EXTRA_PARAM, PARAM_TYPE, MISSING_PARAM];
+
 /// The rule's contract: `sound` over its declared domain.
 pub static CONTRACT: RuleContract = RuleContract::new(
     Tier::Sound,

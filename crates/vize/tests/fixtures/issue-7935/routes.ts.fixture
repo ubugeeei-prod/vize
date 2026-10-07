@@ -1,0 +1,12 @@
+import { createMemoryHistory, createRouter } from 'vue-router';
+const router = createRouter({
+  history: createMemoryHistory(),
+  routes: [
+    { path: '/', name: 'home', component: {} },
+    { path: '/users/:id', name: 'user', component: {} },
+  ],
+});
+router.push({ name: 'missing' });
+router.push({ name: 'home', params: { extra: 'x' } });
+router.push({ name: 'user', params: { id: {} } });
+router.push({ name: 'user' });

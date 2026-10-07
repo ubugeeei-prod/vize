@@ -153,6 +153,34 @@ pub(super) fn collect_patina_rule_metadata() -> Vec<PatinaRuleMetaNapi<'static>>
         });
     }
 
+    for name in vize_croquis_cf::providers::vue_router::typing::RULE_CODES {
+        let (description, default_severity) = match name {
+            "ecosystem/vue-router-unknown-route" => (
+                "Reject unknown named routes in the project route table",
+                "error",
+            ),
+            "ecosystem/vue-router-extra-param" => {
+                ("Reject params absent from a named route's path", "error")
+            }
+            "ecosystem/vue-router-param-type" => (
+                "Require named route params to match their path shape",
+                "error",
+            ),
+            _ => (
+                "Warn when a required named route param is omitted",
+                "warning",
+            ),
+        };
+        rules.push(PatinaRuleMetaNapi {
+            name,
+            description,
+            category: "Ecosystem",
+            fixable: false,
+            default_severity,
+            presets: Vec::new(),
+        });
+    }
+
     rules
 }
 

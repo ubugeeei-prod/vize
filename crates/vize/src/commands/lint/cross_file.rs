@@ -29,6 +29,7 @@ pub(super) fn apply_sfc_cross_file_lint(
     help_level: HelpLevel,
     include_tree: bool,
     include_complexity: bool,
+    configure: impl Fn(&Path, &mut LintResult),
 ) -> Option<String> {
     let targets: Vec<_> = results
         .iter()
@@ -54,8 +55,9 @@ pub(super) fn apply_sfc_cross_file_lint(
         output.complexity_report.as_deref(),
     );
 
-    for (target_index, cross_result) in targets.into_iter().zip(output.results) {
-        if let Some((_, _, _, result)) = results.get_mut(target_index) {
+    for (target_index, mut cross_result) in targets.into_iter().zip(output.results) {
+        if let Some((path, _, _, result)) = results.get_mut(target_index) {
+            configure(path, &mut cross_result);
             merge_lint_result(result, cross_result);
         }
     }

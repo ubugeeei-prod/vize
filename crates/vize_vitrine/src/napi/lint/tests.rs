@@ -87,3 +87,24 @@ fn patina_rule_metadata_includes_opinionated_css_rules() {
         10
     );
 }
+
+#[test]
+fn project_route_rules_are_discoverable_without_claiming_single_file_preset_membership() {
+    let rules = collect_patina_rule_metadata();
+    for code in vize_croquis_cf::providers::vue_router::typing::RULE_CODES {
+        let rule = rules
+            .iter()
+            .find(|rule| rule.name == code)
+            .expect("project rule metadata");
+        assert_eq!(rule.category, "Ecosystem");
+        assert_eq!(rule.presets, Vec::<&'static str>::new());
+        assert_eq!(
+            rule.default_severity,
+            if code.ends_with("missing-param") {
+                "warning"
+            } else {
+                "error"
+            }
+        );
+    }
+}

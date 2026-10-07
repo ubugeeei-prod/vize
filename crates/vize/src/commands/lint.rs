@@ -179,7 +179,7 @@ pub fn run(mut args: LintArgs) {
     if cross_file_enabled {
         cross_file_report = profile!(
             "cli.lint.cross_file.build",
-            apply_cross_file_lint(&mut results, help_level, &args)
+            apply_cross_file_lint(&mut results, help_level, &args, &files, &resolved_rules)
         );
     }
     let cross_file_time = cross_file_start
