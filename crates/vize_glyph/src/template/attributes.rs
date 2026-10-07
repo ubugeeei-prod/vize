@@ -8,7 +8,7 @@ use super::directives::should_format_expression;
 mod render;
 #[cfg(test)]
 use render::write_rendered_attribute;
-pub(crate) use render::write_rendered_attributes;
+pub(crate) use render::{AttributeLayout, write_rendered_attributes};
 
 /// Parsed attribute with structured information for sorting and rendering.
 #[derive(Debug, Clone)]

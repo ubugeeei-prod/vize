@@ -10,7 +10,8 @@ use vize_l0::String;
 
 use super::{
     attributes::{
-        render_attribute, should_use_multiline_attrs, sort_attributes, write_rendered_attributes,
+        AttributeLayout, render_attribute, should_use_multiline_attrs, sort_attributes,
+        write_rendered_attributes,
     },
     helpers::{
         byte_at, find_bytes, is_void_element_str, is_whitespace, parse_closing_tag, sub_slice,
@@ -36,16 +37,22 @@ pub(crate) struct TemplateFormatter<'a> {
     vue_version: crate::VueVersion,
     indent: &'static [u8],
     newline: &'static [u8],
+    base_depth: usize,
 }
 
 impl<'a> TemplateFormatter<'a> {
     #[inline]
-    pub(crate) fn new(options: &'a FormatOptions, vue_version: crate::VueVersion) -> Self {
+    pub(crate) fn new(
+        options: &'a FormatOptions,
+        vue_version: crate::VueVersion,
+        base_depth: usize,
+    ) -> Self {
         Self {
             options,
             vue_version,
             indent: options.indent_bytes(),
             newline: options.newline_bytes(),
+            base_depth,
         }
     }
 
@@ -180,7 +187,11 @@ impl<'a> TemplateFormatter<'a> {
                                 self.newline,
                                 self.indent,
                                 depth + 1,
-                                max_per_line,
+                                &AttributeLayout {
+                                    options: self.options,
+                                    base_depth: self.base_depth,
+                                    max_per_line,
+                                },
                             );
                             if !self.options.bracket_same_line {
                                 output.extend_from_slice(self.newline);

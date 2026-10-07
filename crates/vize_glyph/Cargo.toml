@@ -31,6 +31,7 @@ serde = { workspace = true }
 # Utilities
 thiserror.workspace = true
 memchr.workspace = true
+unicode-width.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true

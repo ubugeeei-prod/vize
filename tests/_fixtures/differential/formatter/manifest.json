@@ -7,7 +7,9 @@
     {
       "id": "formatter/sfc/split-v-pre-indentation",
       "state": "active",
-      "targets": ["fmt"],
+      "targets": [
+        "fmt"
+      ],
       "inputs": {
         "root": "sfc-split-v-pre-indentation",
         "files": [
@@ -20,7 +22,10 @@
         "config": []
       },
       "provenance": {
-        "issues": [6882, 6891],
+        "issues": [
+          6882,
+          6891
+        ],
         "commits": [
           {
             "sha": "b963c08c70f501fd15905f69bfdc3ded6ccbfd3a",
@@ -46,7 +51,10 @@
           "symbol": "v_pre_on_a_split_opening_tag_keeps_its_indentation",
           "line": 38,
           "executor": "rust-test",
-          "asserts": ["full-output-bytes", "idempotence"],
+          "asserts": [
+            "full-output-bytes",
+            "idempotence"
+          ],
           "limitations": [
             "Rust witness source inspected, not rerun here; actual candidate CLI capture and its Release provenance are in baselineCapture."
           ]
@@ -58,7 +66,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue-sfc", "html-template", "v-pre"]
+            "dialects": [
+              "vue-sfc",
+              "html-template",
+              "v-pre"
+            ]
           }
         ]
       },
@@ -94,13 +106,18 @@
             "candidate-cli-output-bytes",
             "3-pass-idempotence"
           ],
-          "missingFields": ["structured-FormatResult.changed; CLI raw logs retained separately"],
+          "missingFields": [
+            "structured-FormatResult.changed; CLI raw logs retained separately"
+          ],
           "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04"
         }
       },
       "comparison": {
         "contract": "formatter-byte-output-v1",
-        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
         "transportMappings": []
       },
       "scenarios": [
@@ -114,7 +131,9 @@
     {
       "id": "formatter/sfc/plain-style-nested-comments",
       "state": "active",
-      "targets": ["fmt"],
+      "targets": [
+        "fmt"
+      ],
       "inputs": {
         "root": "sfc-plain-style-nested-comments",
         "files": [
@@ -127,7 +146,10 @@
         "config": []
       },
       "provenance": {
-        "issues": [6882, 6891],
+        "issues": [
+          6882,
+          6891
+        ],
         "commits": [
           {
             "sha": "2f0217ef47c3d3c3330d7b4049e5feb2e25791b8",
@@ -154,7 +176,10 @@
           "symbol": "plain_style_preserves_nested_comments",
           "line": 4,
           "executor": "rust-test",
-          "asserts": ["full-output-bytes", "idempotence"],
+          "asserts": [
+            "full-output-bytes",
+            "idempotence"
+          ],
           "limitations": [
             "Rust witness source inspected, not rerun here; actual candidate CLI capture and its Release provenance are in baselineCapture."
           ]
@@ -166,7 +191,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue-sfc", "html-template", "css-scoped"]
+            "dialects": [
+              "vue-sfc",
+              "html-template",
+              "css-scoped"
+            ]
           }
         ]
       },
@@ -202,13 +231,18 @@
             "candidate-cli-output-bytes",
             "3-pass-idempotence"
           ],
-          "missingFields": ["structured-FormatResult.changed; CLI raw logs retained separately"],
+          "missingFields": [
+            "structured-FormatResult.changed; CLI raw logs retained separately"
+          ],
           "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04"
         }
       },
       "comparison": {
         "contract": "formatter-byte-output-v1",
-        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
         "transportMappings": []
       },
       "scenarios": [
@@ -222,7 +256,9 @@
     {
       "id": "formatter/sfc/vue2-filter-chain-crlf",
       "state": "active",
-      "targets": ["fmt"],
+      "targets": [
+        "fmt"
+      ],
       "inputs": {
         "root": "sfc-vue2-filter-chain-crlf",
         "files": [
@@ -243,7 +279,11 @@
         ]
       },
       "provenance": {
-        "issues": [6845, 6882, 7697],
+        "issues": [
+          6845,
+          6882,
+          7697
+        ],
         "commits": [
           {
             "sha": "07ac185bac5ce8b6a99191be10c24a1dac854a78",
@@ -268,7 +308,11 @@
           "path": "crates/vize_glyph/tests/vue2_filters.rs",
           "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point",
           "executor": "rust-test",
-          "asserts": ["full-output-bytes", "idempotence", "FormatResult.changed"],
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "FormatResult.changed"
+          ],
           "limitations": [
             "Public API byte oracle executed with an independently compiled Glyph rlib; actual source-built CLI execution and transport remain pending Actions."
           ]
@@ -280,7 +324,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue2-sfc", "html-template"],
+            "dialects": [
+              "vue2-sfc",
+              "html-template"
+            ],
             "selector": "vize.config.json:vue.version"
           }
         ]
@@ -325,7 +372,10 @@
       },
       "comparison": {
         "contract": "formatter-byte-output-v1",
-        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
         "transportMappings": []
       },
       "scenarios": [
@@ -339,7 +389,9 @@
     {
       "id": "formatter/sfc/vue2-7-filter-chain",
       "state": "active",
-      "targets": ["fmt"],
+      "targets": [
+        "fmt"
+      ],
       "inputs": {
         "root": "sfc-vue2-7-filter-chain",
         "files": [
@@ -360,7 +412,10 @@
         ]
       },
       "provenance": {
-        "issues": [6845, 6882],
+        "issues": [
+          6845,
+          6882
+        ],
         "commits": [
           {
             "sha": "07ac185bac5ce8b6a99191be10c24a1dac854a78",
@@ -385,7 +440,11 @@
           "path": "crates/vize_glyph/tests/vue2_filters.rs",
           "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point",
           "executor": "rust-test",
-          "asserts": ["full-output-bytes", "idempotence", "FormatResult.changed"],
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "FormatResult.changed"
+          ],
           "limitations": [
             "Public API byte oracle executed with an independently compiled Glyph rlib; actual source-built CLI execution and transport remain pending Actions."
           ]
@@ -397,7 +456,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue2.7-sfc", "html-template"],
+            "dialects": [
+              "vue2.7-sfc",
+              "html-template"
+            ],
             "selector": "vize.config.json:vue.version"
           }
         ]
@@ -442,7 +504,10 @@
       },
       "comparison": {
         "contract": "formatter-byte-output-v1",
-        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
         "transportMappings": []
       },
       "scenarios": [
@@ -456,7 +521,9 @@
     {
       "id": "formatter/sfc/vue3-bitwise-or",
       "state": "active",
-      "targets": ["fmt"],
+      "targets": [
+        "fmt"
+      ],
       "inputs": {
         "root": "sfc-vue3-bitwise-or",
         "files": [
@@ -477,7 +544,10 @@
         ]
       },
       "provenance": {
-        "issues": [6845, 6882],
+        "issues": [
+          6845,
+          6882
+        ],
         "commits": [
           {
             "sha": "07ac185bac5ce8b6a99191be10c24a1dac854a78",
@@ -502,7 +572,11 @@
           "path": "crates/vize_glyph/tests/vue2_filters.rs",
           "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point",
           "executor": "rust-test",
-          "asserts": ["full-output-bytes", "idempotence", "FormatResult.changed"],
+          "asserts": [
+            "full-output-bytes",
+            "idempotence",
+            "FormatResult.changed"
+          ],
           "limitations": [
             "Public API byte oracle executed with an independently compiled Glyph rlib; actual source-built CLI execution and transport remain pending Actions."
           ]
@@ -514,7 +588,10 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
             "selector": "vize.config.json:vue.version"
           }
         ]
@@ -559,7 +636,10 @@
       },
       "comparison": {
         "contract": "formatter-byte-output-v1",
-        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
         "transportMappings": []
       },
       "scenarios": [
@@ -1508,7 +1588,9 @@
     {
       "id": "formatter/sfc/leading-line-comment-directive",
       "state": "active",
-      "targets": ["fmt"],
+      "targets": [
+        "fmt"
+      ],
       "inputs": {
         "root": "sfc-leading-line-comment-directive",
         "files": [
@@ -1523,12 +1605,18 @@
         "config": []
       },
       "provenance": {
-        "issues": [7924, 6694, 3346],
+        "issues": [
+          7924,
+          6694,
+          3346
+        ],
         "commits": [
           {
             "sha": "627898616bb35517cc19b6531beba5ffaae8caf0",
             "role": "pre-fix-base",
-            "paths": ["crates/vize_glyph/src/template/directives.rs"]
+            "paths": [
+              "crates/vize_glyph/src/template/directives.rs"
+            ]
           }
         ],
         "sources": [
@@ -1566,7 +1654,9 @@
             "check-exit-and-streams",
             "no-config"
           ],
-          "limitations": ["Current source-built CLI process execution remains required on Actions."]
+          "limitations": [
+            "Current source-built CLI process execution remains required on Actions."
+          ]
         }
       ],
       "dialectCoverage": {
@@ -1575,7 +1665,11 @@
         "evidence": [
           {
             "kind": "source-inspection",
-            "dialects": ["vue3-sfc", "html-template", "leading-line-comment-directives"],
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "leading-line-comment-directives"
+            ],
             "selector": "default Vue version with --no-config"
           }
         ]
@@ -1620,7 +1714,10 @@
       },
       "comparison": {
         "contract": "formatter-byte-output-v1",
-        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
         "transportMappings": []
       },
       "scenarios": [
@@ -1912,10 +2009,158 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/directive-prefix-print-width",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-directive-prefix-print-width",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "851c54f3ec30d67d54dc5b6369b06303f3222583da08d873c1144cf3a1a8cb52",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [
+          7876
+        ],
+        "commits": [
+          {
+            "sha": "eed471b4424b922b878bc35cac765dc7274e5736",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs",
+              "crates/vize_glyph/src/template/attributes.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 7876,
+            "path": "tests/_fixtures/differential/formatter-regressions/directive-print-width-7876/comment-5987414404.md",
+            "symbol": "complete-deep-prebroken-report"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/template_attribute_print_width.rs",
+          "symbol": "original_and_boundary_outputs_are_complete_three_pass_fixed_points",
+          "executor": "rust-test",
+          "asserts": [
+            "whole-original-input",
+            "full-output-bytes",
+            "3-pass-idempotence",
+            "FormatResult.changed"
+          ],
+          "limitations": [
+            "Exact-source Actions required; this prefix-only fix leaves internal expression and inline-child layout unresolved."
+          ]
+        },
+        {
+          "path": "crates/vize/tests/fmt_template_attribute_print_width_cli.rs",
+          "symbol": "configured_check_write_and_second_check_match_complete_reference_bytes",
+          "executor": "rust-test",
+          "asserts": [
+            "whole-original-input",
+            "full-output-bytes",
+            "check-exit",
+            "write",
+            "second-check",
+            "source-unchanged-by-check"
+          ],
+          "limitations": [
+            "Configured source-built CLI must execute on Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "directive-attribute-prefix-layout"
+            ],
+            "selector": "default Vue version with --no-config"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with unchanged defaults and three complete output passes; App.vue is the exact full deep prebroken report.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-directive-prefix-print-width/reference.expected.txt",
+              "sha256": "851c54f3ec30d67d54dc5b6369b06303f3222583da08d873c1144cf3a1a8cb52",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 7876,
+                "path": "tests/_fixtures/differential/formatter-regressions/directive-print-width-7876/comment-5987414404.md",
+                "symbol": "complete-deep-prebroken-report",
+                "assertion": "Keep complete reporter-authored own-line quotes; internal expression reflow remains unresolved."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "issue-7876-authored-prefix-only-reference; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {
-    "argv": ["fmt", "--no-config", "--write", "App.vue"],
+    "argv": [
+      "fmt",
+      "--no-config",
+      "--write",
+      "App.vue"
+    ],
     "passes": 3
   },
   "configurationReference": {

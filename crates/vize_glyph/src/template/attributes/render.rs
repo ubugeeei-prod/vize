@@ -4,6 +4,14 @@ use super::{ParsedAttribute, rendered_attribute_is_multiline};
 use crate::template::literal_lines::LiteralLineState;
 use vize_l0::String;
 
+mod value_layout;
+
+pub(crate) struct AttributeLayout<'a> {
+    pub(crate) options: &'a crate::options::FormatOptions,
+    pub(crate) base_depth: usize,
+    pub(crate) max_per_line: usize,
+}
+
 pub(crate) fn write_rendered_attributes(
     output: &mut Vec<u8>,
     attrs: &[ParsedAttribute],
@@ -11,7 +19,7 @@ pub(crate) fn write_rendered_attributes(
     newline: &[u8],
     indent: &[u8],
     depth: usize,
-    max_per_line: usize,
+    layout: &AttributeLayout<'_>,
 ) {
     debug_assert_eq!(attrs.len(), rendered.len());
     let mut line_count = 0;
@@ -23,15 +31,20 @@ pub(crate) fn write_rendered_attributes(
         } else {
             output.push(b' ');
         }
-        write_rendered_attribute(
-            output,
-            rendered,
-            newline,
-            indent,
-            depth,
-            attr.indent_multiline_value,
+        let wrapped = value_layout::write_overflowing_value(
+            output, attr, rendered, newline, indent, depth, layout,
         );
-        if attr_is_multiline || line_count + 1 >= max_per_line {
+        if !wrapped {
+            write_rendered_attribute(
+                output,
+                rendered,
+                newline,
+                indent,
+                depth,
+                attr.indent_multiline_value,
+            );
+        }
+        if wrapped || attr_is_multiline || line_count + 1 >= layout.max_per_line {
             line_count = 0;
         } else {
             line_count += 1;
