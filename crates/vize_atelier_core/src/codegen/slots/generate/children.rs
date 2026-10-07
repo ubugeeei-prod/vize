@@ -1,78 +1,98 @@
 //! Slot child and expression spelling.
 
-use crate::{ExpressionNode, RuntimeHelper, TemplateChildNode};
 use super::super::super::context::CodegenContext;
 use super::super::super::node::generate_node;
 use super::slot_params::strip_ctx_prefix_for_slot_params;
+use crate::{ExpressionNode, RuntimeHelper, TemplateChildNode};
 
-/// Generate children for a slot
-pub(super) fn generate_slot_children(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
-    // Check if all children are text/interpolation - if so, concatenate into single _createTextVNode
-    let all_text_or_interp = children.iter().all(|child| {
-        matches!(
-            child,
-            TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-        )
-    });
+/// Generate adjacent text runs without crossing a slot or node boundary.
+pub(in crate::codegen::slots) fn generate_slot_children(
+    ctx: &mut CodegenContext,
+    children: &[TemplateChildNode<'_>],
+) {
+    generate_slot_children_where(ctx, children, |_| true);
+}
 
-    if all_text_or_interp && !children.is_empty() {
+pub(in crate::codegen::slots) fn generate_slot_children_where(
+    ctx: &mut CodegenContext,
+    children: &[TemplateChildNode<'_>],
+    selected: impl Fn(&TemplateChildNode<'_>) -> bool,
+) {
+    let mut index = 0;
+    let mut first = true;
+    while let Some(child) = children.get(index) {
+        if !selected(child) {
+            index += 1;
+            continue;
+        }
+        if !first {
+            ctx.push(",");
+        }
+        first = false;
         ctx.newline();
-        ctx.use_helper(RuntimeHelper::CreateText);
-        ctx.push(ctx.helper(RuntimeHelper::CreateText));
-        ctx.push("(");
-
-        let has_interpolation = children
-            .iter()
-            .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
-
-        for (i, child) in children.iter().enumerate() {
-            if i > 0 {
-                ctx.push(" + ");
+        if is_text(child) {
+            let start = index;
+            index += 1;
+            while children
+                .get(index)
+                .is_some_and(|child| selected(child) && is_text(child))
+            {
+                index += 1;
             }
-            match child {
-                TemplateChildNode::Text(text) => {
-                    ctx.push("\"");
-                    ctx.push_text(text);
-                    ctx.push("\"");
-                }
-                TemplateChildNode::Interpolation(interp) => {
-                    // Vue 1.x raw-HTML `{{{ … }}}` renders unescaped.
-                    #[cfg(feature = "legacy")]
-                    let raw = interp.raw;
-                    #[cfg(not(feature = "legacy"))]
-                    let raw = false;
-                    if raw {
-                        generate_slot_expression(ctx, &interp.content);
-                    } else {
-                        ctx.use_helper(RuntimeHelper::ToDisplayString);
-                        ctx.push(ctx.helper(RuntimeHelper::ToDisplayString));
-                        ctx.push("(");
-                        generate_slot_expression(ctx, &interp.content);
-                        ctx.push(")");
-                    }
-                }
-                _ => {}
-            }
-        }
-
-        if has_interpolation {
-            ctx.push(", 1 /* TEXT */)");
+            generate_slot_text_run(ctx, children.get(start..index).unwrap_or_default());
         } else {
-            ctx.push(")");
-        }
-    } else {
-        for (i, child) in children.iter().enumerate() {
-            if i > 0 {
-                ctx.push(",");
-            }
-            ctx.newline();
             generate_slot_child_node(ctx, child);
+            index += 1;
         }
     }
 }
 
+fn is_text(child: &TemplateChildNode<'_>) -> bool {
+    matches!(
+        child,
+        TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
+    )
+}
+
+fn generate_slot_text_run(ctx: &mut CodegenContext, children: &[TemplateChildNode<'_>]) {
+    ctx.use_helper(RuntimeHelper::CreateText);
+    ctx.push(ctx.helper(RuntimeHelper::CreateText));
+    ctx.push("(");
+    let mut dynamic = false;
+    for (index, child) in children.iter().enumerate() {
+        if index > 0 {
+            ctx.push(" + ");
+        }
+        match child {
+            TemplateChildNode::Text(text) => {
+                ctx.push("\"");
+                ctx.push_text(text);
+                ctx.push("\"");
+            }
+            TemplateChildNode::Interpolation(interp) => {
+                dynamic = true;
+                #[cfg(feature = "legacy")]
+                let raw = interp.raw;
+                #[cfg(not(feature = "legacy"))]
+                let raw = false;
+                if raw {
+                    generate_slot_expression(ctx, &interp.content);
+                } else {
+                    ctx.use_helper(RuntimeHelper::ToDisplayString);
+                    ctx.push(ctx.helper(RuntimeHelper::ToDisplayString));
+                    ctx.push("(");
+                    generate_slot_expression(ctx, &interp.content);
+                    ctx.push(")");
+                }
+            }
+            _ => {}
+        }
+    }
+    ctx.push(if dynamic { ", 1 /* TEXT */)" } else { ")" });
+}
+
 /// Generate a single child node for slot content
-pub(super) fn generate_slot_child_node(ctx: &mut CodegenContext, child: &TemplateChildNode<'_>) {
+fn generate_slot_child_node(ctx: &mut CodegenContext, child: &TemplateChildNode<'_>) {
     match child {
         TemplateChildNode::Text(text) => {
             ctx.use_helper(RuntimeHelper::CreateText);

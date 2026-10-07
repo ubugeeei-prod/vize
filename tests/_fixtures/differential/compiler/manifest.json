@@ -42,6 +42,12 @@
       "sha256": "a4ed88464c4ae0f35879cbc34dc08a5da85ca1f625c523a10ded80fac61bc3cb",
       "adapter": "compiler-cli-whole-sfc-runtime-v1",
       "workflow": ".github/workflows/pre-textarea-first-newline.yml"
+    },
+    {
+      "path": "component-slot-text-7970.manifest.json",
+      "sha256": "7cf80e0ff6cd3e63ae9a84fec2c83e71c5d982061d632556459456718481b377",
+      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
     }
   ]
 }

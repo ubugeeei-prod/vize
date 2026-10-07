@@ -8,7 +8,7 @@ use super::super::context::CodegenContext;
 mod children;
 mod slot_params;
 
-pub(super) use children::{generate_slot_child_node, generate_slot_children};
+pub(super) use children::{generate_slot_children, generate_slot_children_where};
 
 use super::super::expression::generate_expression;
 use super::super::helpers::{escape_js_string, is_valid_js_identifier};
@@ -220,13 +220,9 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.push(ctx.helper(RuntimeHelper::WithCtx));
             ctx.push("(() => [");
             ctx.indent();
-            for (i, child) in default_children.iter().enumerate() {
-                if i > 0 {
-                    ctx.push(",");
-                }
-                ctx.newline();
-                generate_slot_child_node(ctx, child);
-            }
+            generate_slot_children_where(ctx, &el.children, |child| {
+                super::detect::child_is_implicit_default(child, has_slot_template)
+            });
             ctx.deindent();
             ctx.newline();
             ctx.push("])");
@@ -254,4 +250,3 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     ctx.newline();
     ctx.push("}");
 }
-
