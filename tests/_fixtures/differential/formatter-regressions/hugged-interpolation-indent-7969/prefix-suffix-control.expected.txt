@@ -1,0 +1,5 @@
+<template>
+  <div>
+    <span>prefix{{ label }}suffix</span>
+  </div>
+</template>

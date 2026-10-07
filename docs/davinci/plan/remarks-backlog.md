@@ -9,20 +9,20 @@
 > [remarks-format.md](./remarks-format.md)), ranked by corpus hits: the
 > optimization backlog the P3-13 remarks mine for continuous task C-13.
 
-Corpus: 451 files, 1039 remarks (159 applied, 880 missed), 24 missed reasons.
+Corpus: 496 files, 1085 remarks (198 applied, 887 missed), 24 missed reasons.
 
 1. `s2.hoist-static static-subtree` `blocker="child" op="ui.interpolation"` - 186 hits in 82 files; first at `tests/_fixtures/_projects/class-component/src/App.vue` @354:376
-2. `s2.hoist-static static-props` `blocker="binding" op="ui.on"` - 154 hits in 60 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
-3. `s2.hoist-static static-props` `blocker="binding" op="ui.bind" rule="non-constant"` - 100 hits in 58 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue` @179:208
-4. `s2.hoist-static static-subtree` `blocker="binding" op="ui.on"` - 91 hits in 32 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
-5. `s2.hoist-static static-subtree` `blocker="binding" op="ui.bind" rule="non-constant"` - 44 hits in 25 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue` @179:208
+2. `s2.hoist-static static-props` `blocker="binding" op="ui.on"` - 155 hits in 61 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
+3. `s2.hoist-static static-props` `blocker="binding" op="ui.bind" rule="non-constant"` - 101 hits in 59 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue` @179:208
+4. `s2.hoist-static static-subtree` `blocker="binding" op="ui.on"` - 92 hits in 33 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
+5. `s2.hoist-static static-subtree` `blocker="binding" op="ui.bind" rule="non-constant"` - 45 hits in 26 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineModelType.vue` @179:208
 6. `s2.hoist-static static-props` `blocker="binding" op="ui.model"` - 41 hits in 16 files; first at `tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue` @3622:3772
 7. `s2.hoist-static static-props` `blocker="binding" op="ui.slot-content"` - 41 hits in 26 files; first at `tests/_fixtures/_projects/ecosystem-products/src/UiLibraries.vue` @3108:3144
 8. `s2.hoist-static static-subtree` `blocker="binding" op="ui.slot-content"` - 32 hits in 20 files; first at `tests/_fixtures/_projects/ecosystem-products/src/UiLibraries.vue` @3108:3144
 9. `s2.hoist-static static-props` `blocker="binding" op="vue.directive"` - 30 hits in 13 files; first at `tests/_fixtures/_projects/generic-build/src/DirectiveBuiltins.vue` @393:534
 10. `s2.hoist-static static-subtree` `blocker="child" op="ui.element"` - 28 hits in 18 files; first at `tests/_fixtures/_projects/class-component/src/App.vue` @343:422
-11. `s2.hoist-static static-subtree` `blocker="binding" op="vue.directive"` - 23 hits in 10 files; first at `tests/_fixtures/_projects/generic-build/src/DirectiveBuiltins.vue` @393:534
-12. `s2.hoist-static static-subtree` `blocker="child" op="ui.component"` - 23 hits in 17 files; first at `tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue` @4057:4291
+11. `s2.hoist-static static-subtree` `blocker="child" op="ui.component"` - 26 hits in 20 files; first at `tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue` @4057:4291
+12. `s2.hoist-static static-subtree` `blocker="binding" op="vue.directive"` - 23 hits in 10 files; first at `tests/_fixtures/_projects/generic-build/src/DirectiveBuiltins.vue` @393:534
 13. `s2.hoist-static static-props` `blocker="ref-attribute"` - 17 hits in 12 files; first at `tests/_fixtures/_projects/generic-build/src/BindingPatchFlags.vue` @660:1412
 14. `s2.hoist-static static-subtree` `blocker="child" op="ui.for"` - 11 hits in 8 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefinePropsGeneric.vue` @190:268
 15. `s2.hoist-static static-props` `blocker="binding" op="ui.bind" rule="reserved-key"` - 10 hits in 9 files; first at `tests/_fixtures/_projects/generic-build/src/NormalScriptBindings.vue` @370:556

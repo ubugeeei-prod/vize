@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { loadCases, wholeJson } from "./boolean-attribute-fix-reference.mjs";
+import { fixedSource, loadCases, wholeJson } from "./boolean-attribute-fix-reference.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -22,7 +22,8 @@ await test("7905 preserves whole originals and independent complete edit control
   );
   assert.notEqual(original.fixed, requested, "the other three issue requests remain pending");
   assert.equal(wholeJson(original, false, true)[0].messages.length, 4);
-  assert.equal(wholeJson(original, true, true)[0].messages.length, 3);
+  assert.equal(wholeJson(original, true, true)[0].messages.length, 2);
+  assert.equal(fixedSource(original, true), original.fixed.replace("v-slot:header", "#header"));
   const entries = [...new Set(cases.map((entry) => entry.entry))].sort((left, right) =>
     left < right ? -1 : left > right ? 1 : 0,
   );

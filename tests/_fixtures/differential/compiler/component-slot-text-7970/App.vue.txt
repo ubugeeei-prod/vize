@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import MyTitle from "./MyTitle.vue";
+
+const name = "world";
+const title = "Spring course";
+</script>
+
+<template>
+  <MyTitle>Hello {{ name }}!</MyTitle>
+  <MyTitle>
+    <span class="icon"></span>
+    {{ title }}
+  </MyTitle>
+</template>

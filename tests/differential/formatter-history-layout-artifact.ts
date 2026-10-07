@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { preservedHuggedInterpolationSnapshot } from "./formatter-hugged-interpolation-reference.ts";
 import { sha256 } from "./manifest.mjs";
 
 // #7704 changes production entry/indent logic. Frozen capture receipts bind
@@ -23,6 +24,8 @@ export function resolvePreservedLayoutSource(
   root: string,
   artifact: { path: string; sha256: string },
 ) {
+  const snapshot = preservedHuggedInterpolationSnapshot(root, artifact);
+  if (snapshot) return snapshot;
   const owner = OWNERS[artifact.path];
   if (!owner || artifact.sha256 !== owner.originalSha) return null;
   const current = fs.readFileSync(path.join(root, artifact.path));
