@@ -88,3 +88,8 @@ all stored historical 1.98 fixtures and metadata stay unchanged. Original plus
 new transport controls pass locally, without runtime acceptance credit. Fresh
 whole-source, all four workers, original 104 ceilings, native, n8n and protected
 corpus gates remain mandatory before actual delivery.
+
+Before publication, also incorporate signed actual main
+`c544ca63ffb2dd14fe58b796ccea79b1d518a156`. Its incoming changes deliver
+documentation navigation; preserve all of them and every incoming canonical
+clause. The reviewed observer compiler correction remains unchanged.
