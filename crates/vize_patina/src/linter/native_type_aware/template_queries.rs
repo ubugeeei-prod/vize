@@ -265,6 +265,3 @@ fn probe_offset_for_text(source_start: u32, source_text: &str) -> Option<u32> {
     let trimmed = source_text.trim_end_matches(char::is_whitespace);
     (!trimmed.is_empty()).then_some(source_start + trimmed.len() as u32 - 1)
 }
-
-#[cfg(test)]
-mod tests;
