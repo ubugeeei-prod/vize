@@ -22,9 +22,10 @@ use vize_patina::html_content_model::{
 };
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
 
+use super::super::routes::config::{CrossFileRuleSettings, configure};
 use super::absent_props::absent_falsy_props;
 
-pub(super) const RULE: &str = "html/cross-component-nesting";
+pub(in crate::commands::lint) const RULE: &str = "html/cross-component-nesting";
 
 /// One composed template: its skeleton, where the template content starts
 /// in the SFC, and the guard identifiers an unpassed prop proves falsy.
@@ -68,6 +69,7 @@ pub(super) fn apply<S: AsRef<str>>(
     file_indexes: &FxHashMap<FileId, usize>,
     results: &mut [LintResult],
     help_level: HelpLevel,
+    settings: Option<&CrossFileRuleSettings<'_>>,
 ) {
     let templates: Vec<Option<Template>> = files
         .iter()
@@ -129,6 +131,7 @@ pub(super) fn apply<S: AsRef<str>>(
             continue;
         };
         if let Some(diagnostic) = describe(files, &templates, &finding, template, usage, help_level)
+            && let Some(diagnostic) = configure(settings, &files[index].0, RULE, diagnostic)
         {
             result.diagnostics.push(diagnostic);
         }

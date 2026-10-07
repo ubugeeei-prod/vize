@@ -4,6 +4,10 @@ mod absent_props;
 mod component;
 mod fallthrough;
 mod sfc;
+
+use super::routes::config::{CrossFileRuleSettings, RuleSetting, setting};
+pub(super) use component::RULE as CROSS_COMPONENT_RULE;
+pub(super) use fallthrough::RULE as FALLTHROUGH_RULE;
 mod uses_attrs;
 
 use sfc::{CrossFileSourceOffsets, analyze_sfc_for_cross_file};
@@ -29,6 +33,7 @@ pub(super) fn apply_sfc_cross_file_lint(
     help_level: HelpLevel,
     include_tree: bool,
     include_complexity: bool,
+    settings: &CrossFileRuleSettings<'_>,
 ) -> Option<String> {
     let targets: Vec<_> = results
         .iter()
@@ -48,6 +53,7 @@ pub(super) fn apply_sfc_cross_file_lint(
         help_level,
         include_tree,
         include_complexity,
+        Some(settings),
     );
     let report = combine_cross_file_report(
         output.provide_inject_tree.as_deref(),
@@ -69,7 +75,7 @@ pub(super) fn build_cross_file_lint_output<S: AsRef<str>>(
     help_level: HelpLevel,
     include_tree: bool,
 ) -> CrossFileLintOutput {
-    build_cross_file_lint_output_with_report(files, help_level, include_tree, false)
+    build_cross_file_lint_output_with_report(files, help_level, include_tree, false, None)
 }
 
 pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
@@ -77,6 +83,7 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
     help_level: HelpLevel,
     include_tree: bool,
     include_complexity: bool,
+    settings: Option<&CrossFileRuleSettings<'_>>,
 ) -> CrossFileLintOutput {
     let root = std::env::current_dir().unwrap_or_default();
     let mut analyzer = CrossFileAnalyzer::with_project_root(patina_cross_file_options(), root);
@@ -122,16 +129,43 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
             .get(&diagnostic.primary_file)
             .copied()
             .unwrap_or_default();
-        let (Some((_, source)), Some(result)) = (files.get(index), results.get_mut(index)) else {
+        let (Some((path, source)), Some(result)) = (files.get(index), results.get_mut(index))
+        else {
             continue;
         };
         let source_len = source.as_ref().len();
+        let rule = diagnostic
+            .code()
+            .strip_prefix("vize:")
+            .unwrap_or(diagnostic.code());
+        let configured;
+        let diagnostic = match setting(settings, path, rule) {
+            RuleSetting::Off => continue,
+            RuleSetting::Default => diagnostic,
+            RuleSetting::Severity(severity) => {
+                configured = CrossFileDiagnostic {
+                    severity: match severity {
+                        vize_patina::Severity::Error => DiagnosticSeverity::Error,
+                        vize_patina::Severity::Warning => DiagnosticSeverity::Warning,
+                    },
+                    ..diagnostic.clone()
+                };
+                &configured
+            }
+        };
         result.diagnostics.push(cross_file_diagnostic_to_lint(
             diagnostic, offsets, source_len, help_level,
         ));
     }
 
-    component::apply(files, &analyzer, &file_indexes, &mut results, help_level);
+    component::apply(
+        files,
+        &analyzer,
+        &file_indexes,
+        &mut results,
+        help_level,
+        settings,
+    );
     fallthrough::apply(
         files,
         &analyzer,
@@ -139,7 +173,7 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
         &file_indexes,
         &source_offsets,
         &mut results,
-        help_level,
+        (help_level, settings),
     );
 
     for result in &mut results {
