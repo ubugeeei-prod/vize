@@ -20,7 +20,7 @@ Upstream fixture-generator build dependencies are omitted because the upstream
 fixture tree is not imported; Vize's public API/CLI and differential suites
 exercise the fork.
 
-The only formatter behavior change backports official OXC commit
+The formatter behavior change backports official OXC commit
 `7f350d166ff5b3d460c27c2eac7dd28123e7ba8c`:
 https://github.com/oxc-project/oxc/commit/7f350d166ff5b3d460c27c2eac7dd28123e7ba8c
 
@@ -30,3 +30,9 @@ operand omits its duplicate parentheses and duplicate indent group. Vize
 [#7929](https://github.com/ubugeeei-prod/vize/issues/7929) retains both complete
 original conditions, LF/CRLF variants, whole outputs and three public passes.
 There is no output-text correction or additional parse stage.
+
+The local adaptation retains an independent group around the flattened operand
+body, so a required nested logical group does not inherit a trailing comment's
+forced line break. The public control retains its independently authored whole
+output, also confirmed with Prettier 3.9.6; inline operand comments and long
+chains still break where required.

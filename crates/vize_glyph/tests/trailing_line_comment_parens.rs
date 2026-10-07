@@ -66,6 +66,7 @@ fn comment_tokens_precedence_and_required_inner_groups_remain_owned() {
         "const ok = !(/* leading */ left && right);\n",
         "const ok = !(left && right /* trailing */);\n",
         "const ok = !(\n  (left || right) && other\n  // trailing\n);\n",
+        "const ok = !(\n  left && // before right\n  right // trailing\n);\n",
         "const ok = !(\n  left === \"// literal )\"\n  // trailing\n);\n",
         "const ok = !(\n  left === /[()]/\n  // trailing\n);\n",
         "const ok = !(left && right);\n",
@@ -74,4 +75,10 @@ fn comment_tokens_precedence_and_required_inner_groups_remain_owned() {
     ] {
         assert_script_fixed_point(source, source, &FormatOptions::default());
     }
+    let long_chain = "const ok = !(\n  (firstOperandWithALongName || secondOperandWithALongName) &&\n  finalOperandWithALongName // trailing\n);\n";
+    let options = FormatOptions {
+        print_width: 80,
+        ..FormatOptions::default()
+    };
+    assert_script_fixed_point(long_chain, long_chain, &options);
 }

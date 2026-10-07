@@ -43,3 +43,12 @@ The next source Check (37645589975, `d0d67f08`) passed strict compilation
 but its enrollment guard treated the new vendor as first-party. Extend only
 the existing exact parser exclusion to the exact formatter path; all 39
 first-party members remain enrolled and `PENDING` stays empty.
+
+The `ead56771` PR Check (37646533326, worker 112883018216) passed both
+original-input public laws and the complete CLI law but rejected the added
+nested logical control's layout. Prettier 3.9.6 independently confirms the
+unchanged whole expected output. Retain a group around the flattened operand
+body, without a second indent or parentheses pair, to isolate it from the
+outer comment's forced break. All original fixtures and expectations remain
+unchanged; add inner-line-comment and long-chain controls, and require fresh
+source/protected Actions.
