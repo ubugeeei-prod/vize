@@ -18,8 +18,8 @@ pub(crate) fn component_attribute_position(
     }
     let result = &document.virtual_result;
     Some(
-        copied_position(&ctx.content, result, ctx.offset)
-            .or_else(|| prop_key::source_position(&ctx.content, result, ctx.offset)),
+        prop_key::source_position(&ctx.content, result, ctx.offset)
+            .or_else(|| copied_position(&ctx.content, result, ctx.offset)),
     )
 }
 

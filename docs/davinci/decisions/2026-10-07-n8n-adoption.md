@@ -191,6 +191,13 @@ All twenty-four core key packets use the existing Rust-shard artifact. No
 additional stage or target is added. Fresh exact-source Check/native/custody,
 mounted runtime, all four regressions, whole corpus and protected delivery
 remain mandatory; the earlier narrow passes do not transfer to the successor.
+The corrective source genuinely merges signed main
+`8c7727613de6213e0a52cde96eeb295d01c9bef5`, retaining incoming product,
+fixture and oracle bytes. Only the canonical decision paragraph conflicts;
+its full incoming clauses and the complete n8n suffix remain within the
+existing 350 lines. The composed compiler keeps main's slot-child emission
+and the reviewed named-slot-only loop guard. This source union receives no
+historical runtime, corpus, queue or release credit.
 
 The independent reference is n8n's locked Vue/compiler-sfc 3.5.26 browser
 bundle, authenticated by SHA256. All ten complete originals retain parse,

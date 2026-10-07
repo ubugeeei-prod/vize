@@ -7,7 +7,7 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use tower_lsp::lsp_types::{
-    DocumentChangeOperation, DocumentChanges, OneOf, TextEdit, Url, WorkspaceEdit,
+    DocumentChangeOperation, DocumentChanges, Location, OneOf, TextEdit, Url, WorkspaceEdit,
 };
 use vize_l0::{FxHashMap, String, cstr};
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
@@ -53,7 +53,7 @@ pub(super) fn rewrite(
     document: &CanonicalVirtualDocument,
     edit: &mut WorkspaceEdit,
     new_name: &str,
-    property_rename: bool,
+    property_arguments: &[Location],
 ) -> bool {
     // Only edits already selected by the native symbol queries participate.
     // A parsed directive supplies its complete geometry and implicit value;
@@ -107,7 +107,12 @@ pub(super) fn rewrite(
             valid = false;
             return;
         };
-        let replacement = if property_rename {
+        let argument_range =
+            super::super::event_rename::offset_range(source, entry.argument.clone());
+        let property_argument = property_arguments
+            .iter()
+            .any(|argument| argument.uri == *uri && argument.range == argument_range);
+        let replacement = if property_argument {
             let relative = entry.argument.start - entry.directive.start
                 ..entry.argument.end - entry.directive.start;
             let mut directive = original.to_owned();

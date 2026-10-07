@@ -1,0 +1,66 @@
+[
+  {
+    "name": "reported-element",
+    "template": "<div>\n  <span class=\"icon\"></span>\n  {{ title }}\n</div>"
+  },
+  {
+    "name": "reported-component",
+    "template": "<MyTitle>\n  <span class=\"icon\"></span>\n  {{ title }}\n</MyTitle>"
+  },
+  {
+    "name": "reported-text-only",
+    "template": "<MyTitle>Hello {{ name }}!</MyTitle>"
+  },
+  {
+    "name": "multiple-interpolations",
+    "template": "<MyTitle>{{ name }} + {{ title }}!</MyTitle>"
+  },
+  {
+    "name": "element-separator",
+    "template": "<MyTitle>A {{ name }}<i></i>B {{ title }}!</MyTitle>"
+  },
+  {
+    "name": "preserved-comment",
+    "template": "<MyTitle>A {{ name }}<!-- note -->B {{ title }}!</MyTitle>"
+  },
+  {
+    "name": "dropped-static-comment",
+    "template": "<MyTitle>A<!-- note -->B {{ name }}!</MyTitle>"
+  },
+  {
+    "name": "explicit-default-mixed",
+    "template": "<MyTitle><template #default><i></i>Hello {{ name }}!</template></MyTitle>"
+  },
+  {
+    "name": "named-mixed",
+    "template": "<MyTitle><template #header><i></i>Hello {{ name }}!</template>A {{ title }}!</MyTitle>"
+  },
+  {
+    "name": "named-template-boundary",
+    "template": "<MyTitle>A {{ name }}<template #header>Header</template>B {{ title }}!</MyTitle>"
+  },
+  {
+    "name": "conditional-named",
+    "template": "<MyTitle>A {{ name }}!<template #header v-if=\"show\">Header</template>B {{ title }}!</MyTitle>"
+  },
+  {
+    "name": "component-scoped",
+    "template": "<MyTitle v-slot=\"{ label }\"><i></i>Hello {{ label }}!</MyTitle>"
+  },
+  {
+    "name": "explicit-scoped",
+    "template": "<MyTitle><template #default=\"{ label }\"><i></i>Hello {{ label }}!</template></MyTitle>"
+  },
+  {
+    "name": "unicode-text",
+    "template": "<MyTitle>😀 &amp; {{ name }}「終」</MyTitle>"
+  },
+  {
+    "name": "static-only",
+    "template": "<MyTitle>unchanged static</MyTitle>"
+  },
+  {
+    "name": "empty-component",
+    "template": "<MyTitle></MyTitle>"
+  }
+]

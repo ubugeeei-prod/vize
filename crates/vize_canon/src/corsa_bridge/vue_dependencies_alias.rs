@@ -14,7 +14,7 @@
 
 use std::path::{Component, Path};
 
-use oxc_span::SourceType;
+use vize_carton::String;
 
 use super::vue_dependencies::{ImportQueue, queue_script_dependency, queue_vue_dependency};
 use super::vue_document::CorsaVueVirtualDocumentOptions;
@@ -30,8 +30,7 @@ pub(super) fn queue_alias_imports(
     rewriter: &ImportRewriter,
     context: &AliasContext,
     dir: &Path,
-    code: &str,
-    source_type: SourceType,
+    specifiers: &[String],
 ) {
     if context.aliases.is_empty() && context.package_routes.is_empty() {
         return;
@@ -39,11 +38,11 @@ pub(super) fn queue_alias_imports(
     // The context already holds only aliases and workspace-package routes that
     // can reach first-party source. Published package imports never enter this
     // filesystem probing path (#3898).
-    for specifier in rewriter.collect_all_specifiers(code, source_type) {
+    for specifier in specifiers {
         if specifier.starts_with("./") || specifier.starts_with("../") {
             continue; // the relative walk owns these
         }
-        if context.package_route(&specifier, dir).is_some() {
+        if context.package_route(specifier, dir).is_some() {
             // Canon has already materialized the complete package route and
             // every overlay-backed dependency into the importer-scoped
             // mirror. Opening the authored TS barrel and Vue source again at
@@ -52,11 +51,11 @@ pub(super) fn queue_alias_imports(
             // Bare/private spelling must stay on the one native mirror graph.
             continue;
         }
-        let Some(path) = context.resolve_first_party_source(&specifier, dir) else {
+        let Some(path) = context.resolve_first_party_source(specifier, dir) else {
             continue;
         };
         let key = std::fs::canonicalize(&path).unwrap_or_else(|_| path.clone());
-        if context.package_route(&specifier, dir).is_none() && inside_node_modules(&key) {
+        if context.package_route(specifier, dir).is_none() && inside_node_modules(&key) {
             continue;
         }
         if key.extension().is_some_and(|extension| extension == "vue") {

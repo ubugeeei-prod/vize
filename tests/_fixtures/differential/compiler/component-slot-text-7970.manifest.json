@@ -1,0 +1,76 @@
+{
+  "schema": "vize.differential.runtime-pack",
+  "version": 1,
+  "product": "compiler",
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/7970",
+  "cases": [
+    {
+      "id": "compiler/component-slot-text-7970",
+      "inputs": {
+        "root": "component-slot-text-7970",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "fc748984ac422fabd5c65ad6a3a4deed92c5da2f9a3c1e465a10e26ff78eb378"
+          },
+          {
+            "path": "MyTitle.vue.txt",
+            "sha256": "2855037a95c62ae4c643527521dc30fa14fa317a86d88438c7e4c76a664a6b2d"
+          },
+          {
+            "path": "cases.json",
+            "sha256": "fd40d48711ca4ba4b98dba4b308a0397fdcd38f4611ccd661014b75f1030d145"
+          },
+          {
+            "path": "cmp.mjs.txt",
+            "sha256": "55c039dc7216bc0884f4244bbf0a0625bae04ef2420c0afec36617605ce35c73"
+          },
+          {
+            "path": "observe.mjs.txt",
+            "sha256": "da7bf19d7890d188203f39b91991661d72e6b40e311f64f42a9a2dce51f64b0e"
+          },
+          {
+            "path": "original-issue.md",
+            "sha256": "f6ce10e6e45a7b2a0a83dc761657c5b6ef145c978c5702674704473b65f35432"
+          },
+          {
+            "path": "reported-dom.txt",
+            "sha256": "669c0818a4b8a23b0dd811262d2e18fd3f27314404fa473e2e815f21e94794fa"
+          },
+          {
+            "path": "runtime.expected.json",
+            "sha256": "00db92563bdc542b8a0fa0efc93b9c7a361d6feb81de556e6ad52d20cd7289cb"
+          },
+          {
+            "path": "raw-cases.json",
+            "sha256": "db88ebc9449147dadb63702441bb272bb8757863a7b148882edd9120a80c4844"
+          }
+        ]
+      },
+      "custody": {
+        "path": "component-slot-text-7970/custody.json",
+        "sha256": "32c640093dcaa6d0cb0d02fed57d74e3e4e1bd343cf295c150a00aae6f862f43"
+      },
+      "reference": {
+        "path": "component-slot-text-7970/runtime.expected.json",
+        "sha256": "00db92563bdc542b8a0fa0efc93b9c7a361d6feb81de556e6ad52d20cd7289cb",
+        "source": "whole reported DOM plus independently authored update values; stock Vue runtime comparison is mandatory"
+      },
+      "runtime": {
+        "rustTarget": "crates/vize_atelier_sfc/tests/component_slot_text.rs",
+        "helper": "tests/tooling/support/component-slot-text-7970.mjs",
+        "templateCells": 64,
+        "originalSfcCells": 4,
+        "updatesPerTemplate": 2,
+        "lockedVue": "3.5.35",
+        "nativeHandled": 0,
+        "legacyRawCompatibility": {
+          "rustTarget": "crates/vize_atelier_core/tests/davinci_l2_transform_vue2.rs",
+          "helper": "tests/tooling/support/slot-text-raw-7970.mjs",
+          "cells": 5,
+          "qualification": "existing legacy feature target; actual Vue3 runtime observes retained Vue1 source coercion, not Vue1 runtime equivalence"
+        }
+      }
+    }
+  ]
+}
