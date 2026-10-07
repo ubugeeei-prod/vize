@@ -91,7 +91,7 @@ const select = (
   current = context,
 ) => selectCanonicalWorkers(current, currentRun, currentJobs, currentArtifacts);
 
-test("complete latest canonical workers retain official upload identity and carried-execution custody", () => {
+await test("complete latest canonical workers retain official upload identity and carried-execution custody", () => {
   const selected = select();
   assert.deepEqual(
     selected.workers.map((worker) => worker.observer),
@@ -145,7 +145,7 @@ test("complete latest canonical workers retain official upload identity and carr
   assert.throws(() => select(prJobs, artifacts, prRun, prContext));
 });
 
-test("an older green observer cannot hide a latest failure, skip, cancellation or incomplete command", () => {
+await test("an older green observer cannot hide a latest failure, skip, cancellation or incomplete command", () => {
   for (const conclusion of ["failure", "skipped", "cancelled", "", null]) {
     const latest = { ...structuredClone(jobs[0]), id: 20, run_attempt: 2, conclusion };
     assert.throws(() =>
@@ -189,7 +189,7 @@ test("an older green observer cannot hide a latest failure, skip, cancellation o
   }
 });
 
-test("foreign, expired, duplicate and non-upload-bound artifacts fail closed", () => {
+await test("foreign, expired, duplicate and non-upload-bound artifacts fail closed", () => {
   for (const mutation of [
     (value) => value.pop(),
     (value) => value.push(structuredClone(value[0])),
@@ -231,7 +231,7 @@ test("foreign, expired, duplicate and non-upload-bound artifacts fail closed", (
   requireCanonicalObservers({ "canonical-observers": { result: "success" } });
 });
 
-test("finalization rejects replaced full bytes, fixture identity and incomplete observer directories", () => {
+await test("finalization rejects replaced full bytes, fixture identity and incomplete observer directories", () => {
   const root = mkdtempSync(join(tmpdir(), "canonical-artifacts-"));
   const selected = select();
   const { gitlinks, files, proof } = canonicalWorkerInventory();

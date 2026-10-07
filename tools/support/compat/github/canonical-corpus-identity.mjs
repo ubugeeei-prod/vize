@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
+import {
+  lstatSync,
+  readFileSync,
+  readdirSync,
+  readlinkSync,
+  realpathSync,
+  statSync,
+} from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import {
   corpusRoot,
@@ -197,6 +204,39 @@ export function validateFiles(files, committedFiles) {
   return sha256(JSON.stringify(files));
 }
 
+export function assertFixtureCheckout(cwd) {
+  execFileSync("git", ["diff", "--cached", "--quiet", "HEAD", "--"], { cwd });
+  const changed = git(cwd, "diff", "--name-only", "-z", "--").split("\0").filter(Boolean);
+  if (!changed.length) return;
+  const indexed = new Map(
+    git(cwd, "ls-files", "--stage", "-z")
+      .split("\0")
+      .filter(Boolean)
+      .map((row) => {
+        const match = /^(100644|100755|120000) ([0-9a-f]{40}) 0\t(.+)$/.exec(row);
+        return match ? [match[3], { mode: match[1], blob: match[2] }] : [row, null];
+      }),
+  );
+  for (const path of changed) {
+    const expected = indexed.get(path);
+    assert(expected, `Foreign fixture worktree path: ${path}`);
+    const physical = join(cwd, path);
+    const stat = lstatSync(physical);
+    const mode = stat.isSymbolicLink()
+      ? "120000"
+      : stat.isFile()
+        ? stat.mode & 0o111
+          ? "100755"
+          : "100644"
+        : null;
+    assert.equal(mode, expected.mode, `Fixture mode drift: ${path}`);
+    const bytes = stat.isSymbolicLink()
+      ? readlinkSync(physical, { encoding: "buffer" })
+      : readFileSync(physical);
+    assert.equal(gitObjectId("blob", bytes), expected.blob, `Fixture raw bytes drift: ${path}`);
+  }
+}
+
 export function captureCorpus(cwd, env = process.env) {
   const plan = corpusPlan(cwd, env);
   for (const row of plan.gitlinks) {
@@ -205,7 +245,7 @@ export function captureCorpus(cwd, env = process.env) {
       row.sha,
       `Canonical submodule drift: ${row.path}`,
     );
-    execFileSync("git", ["diff", "--quiet", "HEAD", "--"], { cwd: join(cwd, row.path) });
+    assertFixtureCheckout(join(cwd, row.path));
   }
   const files = collectFiles(resolve(cwd, corpusRoot));
   const committed = createCommittedInventory(cwd, plan.gitlinks);

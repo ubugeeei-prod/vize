@@ -22,16 +22,22 @@ import {
   verifyCommittedInventory,
 } from "../../tools/support/compat/github/canonical-corpus-inventory.mjs";
 
-const git = (cwd, ...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+const git = (cwd, ...args) =>
+  execFileSync("git", args, {
+    cwd,
+    encoding: "utf8",
+    env: { ...process.env, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1" },
+  }).trim();
 const initialize = (cwd) => {
   mkdirSync(cwd, { recursive: true });
   git(cwd, "init", "--quiet", "--object-format=sha1");
   git(cwd, "config", "user.name", "Fixture addition control");
   git(cwd, "config", "user.email", "fixture@example.invalid");
 };
+const author = ["-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid"];
 const commit = (cwd) => {
   git(cwd, "add", ".");
-  git(cwd, "commit", "--quiet", "-m", "fixture");
+  git(cwd, ...author, "commit", "--quiet", "-m", "fixture");
 };
 const write = (root, path, bytes) => {
   mkdirSync(dirname(join(root, path)), { recursive: true });
@@ -44,7 +50,6 @@ const baseline = {
   "_git-worktrees/Excluded.vue": "<template>local checkout</template>\n",
   "README.txt": "All selected Vue fixtures are valid; no old invalid skips exist.\n",
 };
-
 function fixture(files = baseline, symlinks = {}) {
   const temporary = realpathSync(mkdtempSync(join(tmpdir(), "canonical-addition-")));
   const root = join(temporary, "root");
@@ -88,7 +93,7 @@ function fixture(files = baseline, symlinks = {}) {
   };
 }
 
-test("committed additions to a pinned fixture and a new gitlink require the complete new corpus", () => {
+await test("committed additions to a pinned fixture and a new gitlink require the complete new corpus", () => {
   const f = fixture();
   try {
     const before = f.valid();
@@ -111,7 +116,7 @@ test("committed additions to a pinned fixture and a new gitlink require the comp
   }
 });
 
-test("omitting a valid Vue file is refused without depending on old invalid fixture skips", () => {
+await test("omitting a valid Vue file is refused without depending on old invalid fixture skips", () => {
   const f = fixture();
   try {
     const expected = f.valid().files;
@@ -126,7 +131,7 @@ test("omitting a valid Vue file is refused without depending on old invalid fixt
   }
 });
 
-test("same-count replacements, untracked additions and modified authored bytes cannot pass", () => {
+await test("same-count replacements, untracked additions and modified authored bytes cannot pass", () => {
   for (const mutation of ["replacement", "untracked", "modified"]) {
     const f = fixture();
     try {
@@ -148,7 +153,7 @@ test("same-count replacements, untracked additions and modified authored bytes c
   }
 });
 
-test("committed tree proofs reject wrong owners, omitted graphs and authenticated-object forgeries", () => {
+await test("committed tree proofs reject wrong owners, omitted graphs and authenticated-object forgeries", () => {
   const f = fixture(baseline, { "Alias.vue": "Original.vue" });
   try {
     const { proof } = f.valid();
@@ -206,7 +211,7 @@ test("committed tree proofs reject wrong owners, omitted graphs and authenticate
   }
 });
 
-test("committed file and directory symlinks observe dereferenced regular blobs at every walked path", () => {
+await test("committed file and directory symlinks observe dereferenced regular blobs at every walked path", () => {
   const f = fixture(
     {
       "source.txt": "<template>file symlink target</template>\r\n",
@@ -264,7 +269,7 @@ test("committed file and directory symlinks observe dereferenced regular blobs a
   }
 });
 
-test("original dependency-directory exclusions apply before resolving their unselected symlink targets", () => {
+await test("original dependency-directory exclusions apply before resolving their unselected symlink targets", () => {
   const f = fixture(
     { "Original.vue": "<template>selected authored fixture</template>\n" },
     { node_modules: "$TEMP/excluded-directory", "_git-worktrees": "$TEMP/excluded-directory" },
@@ -290,7 +295,7 @@ test("original dependency-directory exclusions apply before resolving their unse
   }
 });
 
-test("cross-fixture symlinks dereference only targets owned by another complete pinned Git tree", () => {
+await test("cross-fixture symlinks dereference only targets owned by another complete pinned Git tree", () => {
   const f = fixture(
     { "Original.vue": "<template>first pinned owner</template>\n" },
     { "Borrowed.vue": "../second-fixture/New.vue", "borrowed-directory": "../second-fixture" },
@@ -318,7 +323,7 @@ test("cross-fixture symlinks dereference only targets owned by another complete 
   }
 });
 
-test("cyclic and foreign committed symlinks cannot manufacture a pinned corpus", () => {
+await test("cyclic and foreign committed symlinks cannot manufacture a pinned corpus", () => {
   for (const [name, target] of [
     ["cycle", "."],
     ["FileCycle.vue", "FileCycle.vue"],

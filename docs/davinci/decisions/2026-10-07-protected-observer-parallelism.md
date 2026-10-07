@@ -153,3 +153,26 @@ staged and unstaged drift refuse even with unchanged fixture bytes and HEAD.
 Historical protected Check took 20m26s; this proposal has no Actions runtime
 measurement yet. Fresh exact-head source, full protected execution and actual
 merge proof remain required; root owns queue admission.
+
+## First source Actions and bounded repairs
+
+Check 37644321941 at c0ee refused all three canonical workers before their
+observer commands: the forced upstream checkout preserved authored CRLF JSON
+blobs, but upstream text attributes made Git's filtered diff report changes.
+Keep pinned HEAD and clean-index refusal. For Git-reported worktree changes,
+compare the original raw blob and executable/symlink mode directly with the clean
+HEAD index, without text filters. The independent complete Vue path/blob manifest
+still refuses omissions, replacements, untracked additions and normalized bytes.
+A real temporary repository proves the original attribute mismatch and refuses
+staged, unstaged, missing, executable-mode and symlink changes.
+
+Tooling also refused a cloned temporary fixture commit without an author;
+configure only those test invocations and run them without global Git identity.
+Await every original Node test registration to satisfy the existing type-aware
+Promise rule. Zizmor refused the rotating synthetic stable action commit in the
+new sibling. Pin both producer and sibling to official master ancestor d103106;
+its execution steps are byte-identical to 6bed076, differing only in the unused
+stable default. Every invocation retains explicit Rust 1.98.0 and all features.
+The failed run's strict finalizer remained red. No corpus success, queue delivery,
+throughput or full-feature sibling execution is credited to that source head;
+fresh complete source and genuine protected qualification are still required.

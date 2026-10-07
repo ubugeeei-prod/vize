@@ -22,14 +22,29 @@ const original = execFileSync("git", ["ls-tree", "-rz", "HEAD", "--", "tests/_fi
   encoding: "utf8",
 });
 
-test("tracked parent drift refuses unchanged HEAD while restored source and committed growth pass", () => {
+await test("tracked parent drift refuses unchanged HEAD while restored source and committed growth pass", () => {
   const temporary = mkdtempSync(join(tmpdir(), "canonical-parent-source-"));
   const root = join(temporary, "root");
   const fixture = join(temporary, "fixture");
-  const run = (cwd, ...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  const run = (cwd, ...args) =>
+    execFileSync("git", args, {
+      cwd,
+      encoding: "utf8",
+      env: { ...process.env, GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1" },
+    }).trim();
   const commit = (cwd) => {
     run(cwd, "add", ".");
-    run(cwd, "commit", "--quiet", "-m", "authored source control");
+    run(
+      cwd,
+      "-c",
+      "user.name=Source custody control",
+      "-c",
+      "user.email=fixture@example.invalid",
+      "commit",
+      "--quiet",
+      "-m",
+      "authored source control",
+    );
   };
   try {
     for (const cwd of [root, fixture]) {
@@ -107,7 +122,7 @@ test("tracked parent drift refuses unchanged HEAD while restored source and comm
   }
 });
 
-test("fixture object cache is committed-gitlink keyed and read-only for PR/queue sources", () => {
+await test("fixture object cache is committed-gitlink keyed and read-only for PR/queue sources", () => {
   const temporary = mkdtempSync(join(tmpdir(), "canonical-plan-"));
   const sha = git("rev-parse", "HEAD");
   const env = {
@@ -180,7 +195,7 @@ test("fixture object cache is committed-gitlink keyed and read-only for PR/queue
   }
 });
 
-test("committed fixture parsing refuses duplicate, conflict and foreign gitlinks", () => {
+await test("committed fixture parsing refuses duplicate, conflict and foreign gitlinks", () => {
   assert.equal(
     parseGitlinks(original)
       .map(({ path, sha }) => `160000 commit ${sha}\t${path}\0`)
@@ -196,7 +211,7 @@ test("committed fixture parsing refuses duplicate, conflict and foreign gitlinks
     assert.throws(() => parseGitlinks(value));
 });
 
-test("whole Vue bytes are observed and the original corpus exclusions remain", () => {
+await test("whole Vue bytes are observed and the original corpus exclusions remain", () => {
   const root = mkdtempSync(join(tmpdir(), "canonical-files-"));
   try {
     for (const name of ["nested", "node_modules", "_git-worktrees"]) mkdirSync(join(root, name));
@@ -227,7 +242,7 @@ test("whole Vue bytes are observed and the original corpus exclusions remain", (
   }
 });
 
-test("full file manifests refuse shrinkage, duplication, byte digest and path drift", () => {
+await test("full file manifests refuse shrinkage, duplication, byte digest and path drift", () => {
   const files = Array.from({ length: historicalFiles }, (_, index) => [
     `project-${index}/Original.vue`,
     "a".repeat(64),
@@ -287,7 +302,7 @@ test("full file manifests refuse shrinkage, duplication, byte digest and path dr
     assert.throws(() => sameCorpus(identity, { ...identity, [key]: "foreign" }));
 });
 
-test("historical raw observers are parser controls and all full counters remain required", () => {
+await test("historical raw observers are parser controls and all full counters remain required", () => {
   const root = "tests/tooling/fixtures/canonical-observer-logs";
   const capture = JSON.parse(readFileSync(join(root, "capture.json"), "utf8"));
   assert.equal(

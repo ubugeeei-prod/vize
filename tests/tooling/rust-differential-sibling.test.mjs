@@ -24,7 +24,7 @@ const job = differential.jobs.differential;
 const recipePath = ".github/actions/test-rust-workspace-differential";
 const recipe = workflow(`${recipePath}/action.yml`);
 
-test("full Rust differential checks and shards independently require the same completed producer", () => {
+await test("full Rust differential checks and shards independently require the same completed producer", () => {
   const sibling = rust.jobs["merge-rust-differential"];
   assert.equal(sibling.needs, "merge-rust-source");
   assert.equal(sibling.if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
@@ -173,7 +173,7 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
   };
 }
 
-test("the differential sibling refuses foreign or corrupt archives before running any feature gate", async () => {
+await test("the differential sibling refuses foreign or corrupt archives before running any feature gate", async () => {
   for (const mutation of ["sha", "tree", "workspaceRoot", "archiveSha256", "bytes", "runtime"]) {
     const f = await fixture();
     try {
@@ -193,7 +193,7 @@ test("the differential sibling refuses foreign or corrupt archives before runnin
   }
 });
 
-test("the restored sibling executes the original feature recipe and propagates every failure", async () => {
+await test("the restored sibling executes the original feature recipe and propagates every failure", async () => {
   for (const failure of [
     "no-such-command",
     "source_folding::tests::",

@@ -1,11 +1,20 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import {
   artifactRoot,
+  assertFixtureCheckout,
   sha256,
 } from "../../tools/support/compat/github/canonical-corpus-identity.mjs";
 import {
@@ -33,7 +42,7 @@ const selected = (cwd, gitlinks) => {
   );
 };
 
-test("a same-HEAD incomplete fixture is forced back to the complete authored checkout", () => {
+await test("a same-HEAD incomplete fixture is forced back to the complete authored checkout", () => {
   const temporary = mkdtempSync(join(tmpdir(), "canonical-recheckout-"));
   const source = join(temporary, "source");
   const root = join(temporary, "root");
@@ -79,7 +88,7 @@ test("a same-HEAD incomplete fixture is forced back to the complete authored che
   }
 });
 
-test("forced checkout failures retain raw diagnostics and never become successful corpus evidence", () => {
+await test("forced checkout failures retain raw diagnostics and never become successful corpus evidence", () => {
   const root = mkdtempSync(join(tmpdir(), "canonical-hydration-refusal-"));
   const gitlinks = [{ path: "tests/_fixtures/_git/original", sha: "a".repeat(40) }];
   const plan = {
@@ -108,6 +117,49 @@ test("forced checkout failures retain raw diagnostics and never become successfu
       () => recoverFixtureCheckout(root, plan, () => assert.fail("No checkout allowed")),
       /selection differs/,
     );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+await test("fixture CRLF filter warnings require exact raw blobs, modes and a clean index", () => {
+  const root = mkdtempSync(join(tmpdir(), "canonical-fixture-raw-bytes-"));
+  try {
+    initialize(root);
+    git(root, "config", "core.filemode", "true");
+    const path = join(root, "authored.json");
+    const original = '{"authored":"CRLF fixture"}\r\n';
+    writeFileSync(join(root, ".gitattributes"), "*.json -text\n");
+    writeFileSync(path, original);
+    writeFileSync(join(root, "Original.vue"), "<template>original</template>\n");
+    commit(root);
+    writeFileSync(join(root, ".gitattributes"), "*.json text eol=lf\n");
+    git(root, "add", ".gitattributes");
+    git(root, "commit", "--quiet", "-m", "authored upstream attributes");
+    git(root, "checkout", "--force", "HEAD");
+    assert.equal(readFileSync(path, "utf8"), original);
+    assert.equal(git(root, "diff", "--name-only", "--"), "authored.json");
+    assertFixtureCheckout(root);
+    writeFileSync(path, '{"changed":"unstaged"}\r\n');
+    assert.throws(() => assertFixtureCheckout(root), /raw bytes drift/);
+    git(root, "add", "authored.json");
+    assert.throws(
+      () => assertFixtureCheckout(root),
+      (error) => error.status === 1,
+    );
+    git(root, "restore", "--staged", "authored.json");
+    writeFileSync(path, original);
+    assertFixtureCheckout(root);
+    chmodSync(path, 0o755);
+    assert.throws(() => assertFixtureCheckout(root), /mode drift/);
+    chmodSync(path, 0o644);
+    rmSync(path);
+    assert.throws(() => assertFixtureCheckout(root), /ENOENT/);
+    symlinkSync("Original.vue", path);
+    assert.throws(() => assertFixtureCheckout(root), /mode drift/);
+    rmSync(path);
+    writeFileSync(path, original);
+    assertFixtureCheckout(root);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
