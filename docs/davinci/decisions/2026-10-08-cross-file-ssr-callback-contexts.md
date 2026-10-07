@@ -79,5 +79,9 @@ locally. Narrow strict Clippy, source formatting, the consumer inventory,
 350-line limits, authored-corpus custody and independent source review pass.
 These local results do not qualify a hosted CLI binary or a future merge group. Full CLI/Doctor runtime, exact-head Actions,
 all unchanged protected suites and 104 instruction budgets remain required.
+The first hosted source run rejected the separately generated Croquis consumer
+ledger: the new public boundary test adds one real Croquis type-consumer site.
+Regenerate its whole owned shard with the existing generator; preserve all
+other nineteen ledger files, every corpus byte and all gate assertions.
 No performance improvement is claimed from local results. Actual queue merge,
 signed main, release and public distribution remain root-owned acceptance.
