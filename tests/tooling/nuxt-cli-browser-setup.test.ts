@@ -67,16 +67,20 @@ if (JSON.stringify(process.argv.slice(2)) !== JSON.stringify(["build", "--profil
 const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "inherit" });
 fs.writeFileSync(dir + "/child-pid", String(child.pid));
 let stopping = false;
+let exitStatus = 143;
+child.once("close", () => { record("child-closed"); record("cli-done"); process.exit(exitStatus); });
 const stop = (status) => {
   if (stopping) return;
   stopping = true;
-  child.once("close", () => { record("child-closed"); record("cli-done"); process.exit(status); });
+  exitStatus = status;
   child.kill("SIGTERM");
 };
 process.on("SIGTERM", () => stop(143));
 record("cli-start");
 fs.writeFileSync(dir + "/ready", "ready\n");
-fs.createReadStream(dir + "/gate").once("data", () => stop(Number(process.env.CLI_STATUS)));
+fs.createReadStream(dir + "/gate").once("data", () => {
+  if (process.env.CANCEL !== "1") stop(Number(process.env.CLI_STATUS));
+});
 `,
     );
     shim(
@@ -109,6 +113,8 @@ if (JSON.stringify(args) === JSON.stringify(["exec", "playwright", "install-deps
   fs.writeFileSync(archive + "/package.deb", "verified package archive\n");
   record("download-done");
   if (process.env.CANCEL === "1") {
+    // Close the FIFO open/read before testing SIGTERM. Keep the CLI alive for the signal.
+    fs.writeFileSync(dir + "/gate", "cancel-wait\n");
     process.kill(Number(fs.readFileSync(dir + "/parent-pid", "utf8")), "SIGTERM");
     process.exit(0);
   }
