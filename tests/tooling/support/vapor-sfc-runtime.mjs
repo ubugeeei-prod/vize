@@ -88,6 +88,14 @@ app.config.errorHandler = (error) => diagnostics.push(String(error));
 const host = window.document.createElement("div");
 window.document.body.append(host);
 const snapshots = [];
+let instance;
+const exposedValues = () =>
+  Object.fromEntries(
+    (input.exposedReads ?? []).map((name) => {
+      assert.equal(typeof instance[name], "function", `missing exposed reader: ${name}`);
+      return [name, instance[name]()];
+    }),
+  );
 const snapshot = () => {
   assert.deepEqual(diagnostics, [], "mounted SFC diagnostics");
   for (const selector of input.scopedSelectors ?? []) {
@@ -100,10 +108,11 @@ const snapshot = () => {
     tree: observeChildren(host),
     namespaces: [...host.querySelectorAll("*")].map((element) => element.namespaceURI),
     events: [...events],
+    ...(input.exposedReads ? { exposed: exposedValues() } : {}),
   });
 };
 try {
-  app.mount(host);
+  instance = app.mount(host);
   await vue.nextTick();
   snapshot();
   for (const step of input.steps ?? []) {
@@ -112,7 +121,11 @@ try {
       assert.ok(node, `missing identity target: ${selector}`);
       return [selector, node];
     });
-    if (step.patch) Object.assign(state, step.patch);
+    if (step.call) {
+      assert.deepEqual(Object.keys(step), ["call"], "unexpected exposed call fields");
+      assert.equal(typeof instance[step.call], "function", "missing exposed method");
+      instance[step.call]();
+    } else if (step.patch) Object.assign(state, step.patch);
     else {
       const selector = step.click ?? step.selector;
       const target = host.querySelector(selector);
@@ -144,7 +157,12 @@ try {
     assert.deepEqual(events, settledEvents, "unmounted component still emitted events");
     assert.equal(JSON.stringify(state), settledState, "unmounted component still updated state");
   }
-  snapshots.push({ tree: [], namespaces: [], events: [...events] });
+  snapshots.push({
+    tree: [],
+    namespaces: [],
+    events: [...events],
+    ...(input.exposedReads ? { exposed: exposedValues() } : {}),
+  });
   process.stdout.write(JSON.stringify(snapshots));
 } finally {
   if (host.childNodes.length) app.unmount();

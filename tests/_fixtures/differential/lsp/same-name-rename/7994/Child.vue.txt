@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const { label } = defineProps<{ label: string }>();
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>

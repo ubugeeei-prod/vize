@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const freshName = 2
+</script>
+
+<template>
+  <span>{{ freshName }}</span>
+</template>

@@ -109,6 +109,10 @@ mod tests {
             "src/composables/useAdminNav.ts",
             "src/views/HomeView.vue",
             "src/views/UserPost.vue",
+            // Authored actual app installation binds the original navigation
+            // carriers; every old route fact, finding and byte span stays exact.
+            "src/App.vue",
+            "src/main.ts",
         ];
         let mut results: Vec<_> = files
             .iter()
@@ -180,6 +184,18 @@ mod tests {
             .iter()
             .map(|(_, _, _, result)| (result.error_count, result.warning_count))
             .collect();
-        assert_eq!(counts, [(0, 0), (0, 0), (3, 1), (1, 0), (0, 0), (0, 1)]);
+        assert_eq!(
+            counts,
+            [
+                (0, 0),
+                (0, 0),
+                (3, 1),
+                (1, 0),
+                (0, 0),
+                (0, 1),
+                (0, 0),
+                (0, 0)
+            ]
+        );
     }
 }

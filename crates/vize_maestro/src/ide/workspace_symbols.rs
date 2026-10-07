@@ -8,6 +8,9 @@
 
 #[cfg(feature = "native")]
 mod disk;
+mod rank;
+#[cfg(feature = "native")]
+mod script;
 #[cfg(test)]
 mod tests;
 
@@ -35,31 +38,24 @@ impl WorkspaceSymbolsService {
         #[cfg(feature = "native")]
         disk::collect(state, &query_lower, &mut symbols);
 
-        // Sort by relevance (exact match first, then prefix match, then contains)
-        symbols.sort_by(|a, b| {
-            let a_name = a.name.to_lowercase();
-            let b_name = b.name.to_lowercase();
+        rank::sort(symbols, &query_lower)
+    }
 
-            let a_exact = a_name == query_lower;
-            let b_exact = b_name == query_lower;
-
-            if a_exact != b_exact {
-                return b_exact.cmp(&a_exact);
+    #[cfg(feature = "native")]
+    pub(crate) fn search_sources(
+        sources: &[(Url, std::string::String)],
+        query: &str,
+    ) -> Vec<SymbolInformation> {
+        let query = query.to_lowercase();
+        let mut symbols = Vec::new();
+        for (uri, source) in sources {
+            if uri.path().ends_with(".vue") {
+                Self::collect_symbols_from_document(uri, source, &query, &mut symbols);
+            } else {
+                script::collect(uri, source, &query, &mut symbols);
             }
-
-            let a_prefix = a_name.starts_with(&query_lower);
-            let b_prefix = b_name.starts_with(&query_lower);
-
-            if a_prefix != b_prefix {
-                return b_prefix.cmp(&a_prefix);
-            }
-
-            a_name.cmp(&b_name)
-        });
-
-        symbols.truncate(100);
-
-        symbols
+        }
+        rank::sort(symbols, &query)
     }
 
     /// Collect symbols from a single document.
