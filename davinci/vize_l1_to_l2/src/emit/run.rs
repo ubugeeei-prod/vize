@@ -5,7 +5,7 @@
 //! and the type declarations; nothing here is new behaviour.
 
 use alloc::vec::Vec as StdVec;
-use vize_l0::diag::Severity;
+use vize_l0::diag::{Severity, Stage};
 use vize_l2::op::Namespace;
 
 use crate::lower::Lowered;
@@ -64,11 +64,13 @@ pub(super) fn emit_dom_observed<'f>(
             UnsupportedReason::TypeScriptLaneUnavailable,
         ));
     }
-    if lowered
-        .diagnostics
-        .iter()
-        .any(|diagnostic| diagnostic.severity() == Severity::Error)
-    {
+    if lowered.diagnostics.iter().any(|diagnostic| {
+        diagnostic.severity() == Severity::Error
+            && !(options.prefix_identifiers
+                && diagnostic.stage == Stage::Semantic
+                && diagnostic.message.as_str() == crate::lower::SAME_KEY_MESSAGE
+                && diagnostic.exemption() == Some(&crate::exemptions::LOWERING))
+    }) {
         return Err(EmitError::Diagnostics);
     }
     // `static_cache = inline || !hoists.is_empty()`, with `hoists` empty

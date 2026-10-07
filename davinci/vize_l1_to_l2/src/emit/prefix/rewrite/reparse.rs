@@ -29,11 +29,13 @@ pub(super) fn rewrite_reparsed(
         collector.visit_expression(&expr);
         let used_unref = collector.used_unref;
         let used_is_ref = collector.used_is_ref;
+        let has_identifier_references = collector.has_identifier_references;
         let code = splice_insertions(content, collector.rewrites, collector.suffix_rewrites, 1);
         return RewriteResult {
             code,
             used_unref,
             used_is_ref,
+            has_identifier_references,
             parse_error: false,
         };
     }
@@ -45,11 +47,13 @@ pub(super) fn rewrite_reparsed(
         collector.visit_program(&parsed.program);
         let used_unref = collector.used_unref;
         let used_is_ref = collector.used_is_ref;
+        let has_identifier_references = collector.has_identifier_references;
         let code = splice_insertions(content, collector.rewrites, collector.suffix_rewrites, 0);
         return RewriteResult {
             code,
             used_unref,
             used_is_ref,
+            has_identifier_references,
             parse_error: false,
         };
     }
@@ -60,6 +64,7 @@ pub(super) fn rewrite_reparsed(
                 code: String::from(content),
                 used_unref: false,
                 used_is_ref: false,
+                has_identifier_references: false,
                 parse_error: false,
             };
         }
@@ -92,6 +97,7 @@ pub(super) fn rewrite_reparsed(
             code,
             used_unref: needs_unref,
             used_is_ref: false,
+            has_identifier_references: true,
             parse_error: false,
         };
     }
@@ -102,6 +108,7 @@ pub(super) fn rewrite_reparsed(
         code: js_content,
         used_unref: false,
         used_is_ref: false,
+        has_identifier_references: true,
         parse_error: !ts_accepts,
     }
 }

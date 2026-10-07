@@ -13,8 +13,10 @@ use crate::emit::vfor;
 use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 pub(super) fn emit_if_entry(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>) -> Result<(), EmitError> {
-    let _id = cx.walk.mint();
+    let id = cx.walk.mint();
+    let mut keys = crate::emit::vif::keys::SlotKeys::new(cx, id, if_op);
     for (i, branch) in if_op.branches.iter().enumerate() {
+        keys.observe(cx, id, i, branch)?;
         if i > 0 {
             cx.buf.newline();
             cx.buf.push(": ");

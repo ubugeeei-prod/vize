@@ -9,9 +9,8 @@ use super::EmitCx;
 use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
-use super::js::escape_js_string;
 use super::prefix::Site;
-use crate::lower::{BranchKeyKind, IfFacts};
+pub(super) mod keys;
 
 pub(super) fn emit_if(
     cx: &mut EmitCx<'_>,
@@ -34,6 +33,7 @@ fn emit_chain(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Resu
     cx.buf.use_open_block();
     cx.buf.use_create_comment();
     let facts = id.and_then(|id| cx.facts.if_facts.get(id));
+    let mut keys = keys::BranchKeys::default();
     for (i, branch) in if_op.branches.iter().enumerate() {
         let allocated = next_if_key(cx);
         if let Some(condition) = &branch.condition {
@@ -57,7 +57,7 @@ fn emit_chain(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Resu
             cx.buf.newline();
             cx.buf.push(": ");
         }
-        let key = branch_key_js(cx, facts, i, allocated)?;
+        let key = keys.emit(cx, facts, i, branch, allocated)?;
         let saved = cx.if_branch_key;
         cx.if_branch_key = 0;
         let from_template = id
@@ -240,34 +240,6 @@ fn authored_condition_quote_padding<'a>(
     (leading.bytes().all(|byte| byte.is_ascii_whitespace())
         && trailing.bytes().all(|byte| byte.is_ascii_whitespace()))
     .then_some((leading, trailing))
-}
-
-fn branch_key_js(
-    cx: &EmitCx<'_>,
-    facts: Option<&IfFacts>,
-    index: usize,
-    allocated: u32,
-) -> Result<String, EmitError> {
-    match facts
-        .and_then(|facts| facts.branches.get(index))
-        .and_then(|key| key.as_ref())
-        .map(|key| &key.kind)
-    {
-        None | Some(BranchKeyKind::Static(None)) => Ok(allocated.to_compact_string()),
-        Some(BranchKeyKind::Static(Some(value))) => {
-            let mut out = String::from("\"");
-            out.push_str(escape_js_string(value.as_str()).as_str());
-            out.push('"');
-            Ok(out)
-        }
-        Some(BranchKeyKind::Dynamic { source, .. }) if source.is_empty() => {
-            Ok(allocated.to_compact_string())
-        }
-        Some(BranchKeyKind::Dynamic { source, .. }) if cx.prefixing() => {
-            cx.prefixed_text(source.as_str(), Site::Expression)
-        }
-        Some(BranchKeyKind::Dynamic { source, .. }) => Ok(source.clone()),
-    }
 }
 
 fn emit_branch(cx: &mut EmitCx<'_>, branch: &IfBranch<'_>, key: &str) -> Result<(), EmitError> {

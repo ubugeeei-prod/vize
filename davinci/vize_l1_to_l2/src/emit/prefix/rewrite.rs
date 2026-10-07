@@ -38,6 +38,7 @@ pub(super) struct RewriteResult {
     /// it after every used helper.
     pub(super) used_unref: bool,
     pub(super) used_is_ref: bool,
+    pub(super) has_identifier_references: bool,
     /// The shipped lane reports `X_INVALID_EXPRESSION` here; the emit
     /// refuses instead (the diagnostic is not recoverable, so the corpus
     /// lane never compares such a template).
@@ -84,6 +85,7 @@ pub(super) fn rewrite_expression(
             code: String::from(content),
             used_unref: false,
             used_is_ref: false,
+            has_identifier_references: false,
             parse_error: !overflows,
         };
     }
@@ -101,6 +103,7 @@ pub(super) fn rewrite_expression(
             code: js_content,
             used_unref: false,
             used_is_ref: false,
+            has_identifier_references: false,
             parse_error: !accepted,
         };
     }
@@ -124,6 +127,7 @@ fn project_aliases(result: RewriteResult, scope: &PrefixScope<'_>) -> RewriteRes
         ),
         used_unref: result.used_unref,
         used_is_ref: result.used_is_ref,
+        has_identifier_references: result.has_identifier_references,
         parse_error: false,
     }
 }
@@ -137,11 +141,13 @@ fn rewrite_retained(
     collector.visit_expression(retained.ast);
     let used_unref = collector.used_unref;
     let used_is_ref = collector.used_is_ref;
+    let has_identifier_references = collector.has_identifier_references;
     let code = splice_insertions(content, collector.rewrites, collector.suffix_rewrites, 0);
     RewriteResult {
         code,
         used_unref,
         used_is_ref,
+        has_identifier_references,
         parse_error: false,
     }
 }
