@@ -52,12 +52,15 @@ fn compile(source: &str, vapor: bool) -> String {
     result.code.to_string()
 }
 
-fn trace(app: &str, child: &str, vapor: bool, context: Value, steps: Value) -> Value {
-    let code = compile(app, vapor);
-    let input = json!({ "backend": if vapor { "vapor" } else { "vdom" },
-        "code": code, "child": compile(child, vapor), "context": context, "steps": steps });
-    let runner = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/tooling/support/vapor-sfc-runtime.mjs");
+fn trace(app: &str, child: &str, official: bool, context: Value, steps: Value) -> Value {
+    let code = compile(app, true);
+    let input = json!({ "backend": "vapor", "appSource": app, "childSource": child,
+        "code": code, "child": compile(child, true), "context": context, "steps": steps });
+    let runner = Path::new(env!("CARGO_MANIFEST_DIR")).join(if official {
+        "../../tests/tooling/support/vapor-slot-defaults-7886.mjs"
+    } else {
+        "../../tests/tooling/support/vapor-sfc-runtime.mjs"
+    });
     let mut child = Command::new("node")
         .arg(runner)
         .stdin(Stdio::piped())
@@ -96,7 +99,7 @@ fn observations(trace: &Value) -> Value {
 #[test]
 fn complete_reported_vapor_sfcs_render_the_missing_slot_default() {
     let expected: Value = serde_json::from_str(EXPECTED).expect("authored expected result");
-    let current = trace(APP, CHILD, true, json!({}), json!([]));
+    let current = trace(APP, CHILD, false, json!({}), json!([]));
     assert_eq!(observations(&current), expected["original"]);
 }
 
@@ -114,18 +117,16 @@ fn slot_defaults_are_lazy_reactive_and_keep_nullish_value_semantics() {
             row["context"].clone(),
             row["steps"].clone(),
         );
-        let oracle = trace(
-            app,
-            child,
-            false,
-            row["context"].clone(),
-            row["steps"].clone(),
-        );
         assert_eq!(
-            current, oracle,
+            current["current"], current["oracle"],
             "{}: complete DOM, namespace, events and unmount",
             row["name"]
         );
-        assert_eq!(observations(&current), row["expected"], "{}", row["name"]);
+        assert_eq!(
+            observations(&current["current"]),
+            row["expected"],
+            "{}",
+            row["name"]
+        );
     }
 }

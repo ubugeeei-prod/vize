@@ -32,6 +32,14 @@
     {
       "path": "runtime.expected.json",
       "sha256": "dfcbf90f62cb4e32f7ae32bd8a15e362ab42496a7ead074b4d1c68a4c446707b"
+    },
+    {
+      "path": "vize-vdom-source-64349976.failure.txt",
+      "sha256": "ea875703071eab450f8fdff4f3da6979fd2581e0e9e6750be57d2b0cda97d231"
+    },
+    {
+      "path": "vize-vdom-source-64349976.failure.raw.txt",
+      "sha256": "5e22dd0450f8e8b12dad94501708254077882a79f17134964e9884741febbbcb"
     }
   ]
 }

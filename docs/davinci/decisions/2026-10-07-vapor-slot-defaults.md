@@ -18,7 +18,7 @@ no extra pipeline stage, level serialization or budget change is introduced.
 The [reported Vue 3.6.0-rc.10 generator](https://github.com/vuejs/core/blob/v3.6.0-rc.10/packages/compiler-vapor/src/generators/for.ts)
 uses the same lazy helper. Ordinary Actions run the original complete Vapor SFCs
 and seven authored controls under the locked Vue 3.6.0-rc.9 runtime. The controls
-compare complete VDOM/Vapor observations, namespaces, fallback side effects,
+compare complete official VDOM/Vapor observations, namespaces, fallback side effects,
 reactive updates, diagnostics and unmount. Missing/undefined values use defaults;
 null, empty strings, false and zero retain their supplied values. Named aliases,
 comments, quoted keys, nested object/array paths and nested-parent defaults are
@@ -30,3 +30,15 @@ the compiler history gate remain unfinished. Source Actions, unchanged protected
 instruction ceilings/full suites, actual merge and released installed verification
 are pending. The release owner must verify the original two-SFC example after
 publication. No n8n upstream state is changed.
+
+Initial source `64349976189ab9fb073aadbe242f03c6b6907c41` genuinely executes the
+original full Vapor example successfully in [Rust worker 3](https://github.com/ubugeeei-prod/vize/actions/runs/37589761191/job/112690171449).
+Worker 1 fails the control oracle: Vize VDOM resolves script-setup default
+initializers through `_ctx.record`/`_ctx.state`, while the returned setup object
+is hidden from that public proxy. Preserve the complete raw failure/module in
+`vize-vdom-source-64349976.failure.raw.txt` and the readable companion. TODO: repair the separate VDOM default
+initializer binding ownership; this PR does not claim that behavior repaired.
+Use the locked official Vue compiler for the control oracle while retaining
+every original source, control, expected phase and diagnostics assertion.
+The successor requires its own complete Actions; predecessor green lanes
+and the single original-case pass grant no successor acceptance.

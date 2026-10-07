@@ -53,7 +53,7 @@
     },
     {
       "path": "vapor-slot-defaults-7886.manifest.json",
-      "sha256": "1efcd3d64b582febc3e1364d1463b29076b9173cda4b00d27d1d7896abce7434",
+      "sha256": "107cd02c9840a72f4be4f35f6f5fc0221fd2f551c7c3e3ec4d3d25f8d5e37684",
       "adapter": "compiler-rust-whole-source-runtime-v1",
       "workflow": ".github/workflows/check.yml"
     }
