@@ -149,19 +149,22 @@ test("pug corpus baseline: every hydrated project's pug SFCs match the pinned pu
 });
 
 test("the real-project matrix runs the pug corpus compile oracle on the hydrated corpus", () => {
-  // The Rust lane over the hydrated corpus shares the SSR corpus step, before
-  // the finalize step dehydrates it, and fails the job on any divergence.
-  const steps = readCanonicalCorpusWorkflow().jobs?.["davinci-dom-corpus"]?.steps ?? [];
+  // The complete Pug lane shares the independent SSR worker. The finalizer
+  // waits for every worker and fails on missing, skipped or divergent evidence.
+  const workflow = readCanonicalCorpusWorkflow();
+  const steps = workflow.jobs?.["canonical-observers"]?.steps ?? [];
   const lane = findStep(steps, "Run L4 SSR and pug L1 differential corpora");
   assert.equal(lane["continue-on-error"], undefined);
   const corpus = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test";
   assert.equal(
     lane.run,
-    `${corpus} -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture && ` +
-      `${corpus} -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture`,
+    "set -o pipefail\n(" +
+      `${corpus} -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture && ` +
+      `${corpus} -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture) 2>&1 | tee real-project-davinci-dom-corpus/ssr-pug.log\n`,
   );
   assert.ok(
-    steps.indexOf(lane) < steps.indexOf(findStep(steps, "Finalize L2 DOM corpus evidence")),
-    "the pug corpus oracle must run before the corpus is dehydrated",
+    steps.indexOf(lane) < steps.indexOf(findStep(steps, "Record required observer evidence")),
+    "the full pug corpus oracle must run before its evidence is recorded",
   );
+  assert.equal(workflow.jobs?.["davinci-dom-corpus"]?.needs, "canonical-observers");
 });

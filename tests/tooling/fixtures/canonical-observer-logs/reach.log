@@ -1,0 +1,128 @@
+2026-10-07T11:19:50.7211877Z ##[group]Run VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture
+2026-10-07T11:19:50.7212465Z [36;1mVIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture[0m
+2026-10-07T11:19:50.7233765Z shell: /usr/bin/bash -e {0}
+2026-10-07T11:19:50.7233918Z env:
+2026-10-07T11:19:50.7234046Z   CARGO_TERM_COLOR: always
+2026-10-07T11:19:50.7234193Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-07T11:19:50.7234349Z   VIZE_DAVINCI_DOM_CORPUS_MODE: enforce
+2026-10-07T11:19:50.7234513Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 244
+2026-10-07T11:19:50.7234685Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 353
+2026-10-07T11:19:50.7234841Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-07T11:19:50.7234993Z   CARGO_HOME: /home/runner/.cargo
+2026-10-07T11:19:50.7235164Z   CARGO_INCREMENTAL: 0
+2026-10-07T11:19:50.7235286Z ##[endgroup]
+2026-10-07T11:19:50.8675870Z [1m[92m   Compiling[0m syn v1.0.109
+2026-10-07T11:19:50.8698906Z [1m[92m   Compiling[0m indexmap v2.14.0
+2026-10-07T11:19:50.8702400Z [1m[92m   Compiling[0m rand_core v0.6.4
+2026-10-07T11:19:50.8707224Z [1m[92m   Compiling[0m ahash v0.7.8
+2026-10-07T11:19:50.8710968Z [1m[92m   Compiling[0m phf_shared v0.11.3
+2026-10-07T11:19:50.8740407Z [1m[92m   Compiling[0m getrandom v0.2.17
+2026-10-07T11:19:50.8742065Z [1m[92m   Compiling[0m rkyv v0.7.46
+2026-10-07T11:19:50.8744805Z [1m[92m   Compiling[0m outref v0.1.0
+2026-10-07T11:19:50.8746286Z [1m[92m   Compiling[0m ahash v0.8.12
+2026-10-07T11:19:50.8811653Z [1m[92m   Compiling[0m seahash v4.1.0
+2026-10-07T11:19:50.8816614Z [1m[92m   Compiling[0m matches v0.1.10
+2026-10-07T11:19:50.8865700Z [1m[92m   Compiling[0m rmp v0.8.15
+2026-10-07T11:19:50.8867050Z [1m[92m   Compiling[0m cssparser v0.37.0
+2026-10-07T11:19:50.8910396Z [1m[92m   Compiling[0m convert_case v0.6.0
+2026-10-07T11:19:50.8910808Z [1m[92m   Compiling[0m log v0.4.29
+2026-10-07T11:19:50.8916216Z [1m[92m   Compiling[0m precomputed-hash v0.1.1
+2026-10-07T11:19:50.8941781Z [1m[92m   Compiling[0m vlq v0.5.1
+2026-10-07T11:19:50.8992410Z [1m[92m   Compiling[0m dashmap v5.5.3
+2026-10-07T11:19:50.8995984Z [1m[92m   Compiling[0m simd-abstraction v0.7.1
+2026-10-07T11:19:50.9007968Z [1m[92m   Compiling[0m data-url v0.1.1
+2026-10-07T11:19:50.9011160Z [1m[92m   Compiling[0m serde-content v0.1.2
+2026-10-07T11:19:50.9069885Z [1m[92m   Compiling[0m serde_bytes v0.11.19
+2026-10-07T11:19:50.9070459Z [1m[92m   Compiling[0m itertools v0.10.5
+2026-10-07T11:19:50.9070776Z [1m[92m   Compiling[0m lazy_static v1.5.0
+2026-10-07T11:19:50.9142989Z [1m[92m   Compiling[0m data-encoding v2.10.0
+2026-10-07T11:19:50.9189168Z [1m[92m   Compiling[0m const-str v1.1.0
+2026-10-07T11:19:50.9189981Z [1m[92m   Compiling[0m pathdiff v0.2.3
+2026-10-07T11:19:50.9197475Z [1m[92m   Compiling[0m pklrust-derive v0.9.0
+2026-10-07T11:19:50.9197909Z [1m[92m   Compiling[0m byteorder v1.5.0
+2026-10-07T11:19:50.9544665Z [1m[92m   Compiling[0m rand v0.8.6
+2026-10-07T11:19:50.9591147Z [1m[92m   Compiling[0m phf v0.11.3
+2026-10-07T11:19:51.0237277Z [1m[92m   Compiling[0m base64-simd v0.7.0
+2026-10-07T11:19:51.0925070Z [1m[92m   Compiling[0m rmpv v1.3.1
+2026-10-07T11:19:51.0925413Z [1m[92m   Compiling[0m rmp-serde v1.3.1
+2026-10-07T11:19:51.0989733Z [1m[92m   Compiling[0m hashbrown v0.12.3
+2026-10-07T11:19:51.2200909Z [1m[92m   Compiling[0m phf_generator v0.11.3
+2026-10-07T11:19:51.2644899Z [1m[92m   Compiling[0m phf_codegen v0.11.3
+2026-10-07T11:19:51.2892334Z [1m[92m   Compiling[0m vize_l1 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l1)
+2026-10-07T11:19:51.2892949Z [1m[92m   Compiling[0m cssparser-color v0.5.0
+2026-10-07T11:19:51.3085059Z [1m[92m   Compiling[0m parcel_selectors v0.28.3
+2026-10-07T11:19:51.3302876Z [1m[92m   Compiling[0m oxc_transformer v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+2026-10-07T11:19:51.3303613Z [1m[92m   Compiling[0m toml_edit v0.25.11+spec-1.1.0
+2026-10-07T11:19:51.4257793Z [1m[92m   Compiling[0m pklrust v0.9.0
+2026-10-07T11:19:51.7976546Z [1m[92m   Compiling[0m insta v1.48.0
+2026-10-07T11:19:52.3543205Z [1m[92m   Compiling[0m vize_l2 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l2)
+2026-10-07T11:19:52.3543854Z [1m[92m   Compiling[0m vize_armature v0.435.0 (/home/runner/_work/vize/vize/crates/vize_armature)
+2026-10-07T11:19:52.5752660Z [1m[92m   Compiling[0m ptr_meta_derive v0.1.4
+2026-10-07T11:19:52.5753139Z [1m[92m   Compiling[0m rkyv_derive v0.7.46
+2026-10-07T11:19:52.5753497Z [1m[92m   Compiling[0m static-self-derive v0.1.1
+2026-10-07T11:19:52.5754462Z [1m[92m   Compiling[0m lightningcss-derive v1.0.0-alpha.43
+2026-10-07T11:19:52.6746650Z [1m[92m   Compiling[0m ptr_meta v0.1.4
+2026-10-07T11:19:52.7546404Z [1m[92m   Compiling[0m static-self v0.1.2
+2026-10-07T11:19:53.6663691Z [1m[92m   Compiling[0m vize_l3 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l3)
+2026-10-07T11:19:53.8932471Z [1m[92m   Compiling[0m parcel_sourcemap v2.1.1
+2026-10-07T11:19:54.0739476Z [1m[92m   Compiling[0m lightningcss v1.0.0-alpha.72
+2026-10-07T11:19:54.4199487Z [1m[92m   Compiling[0m vize_croquis v0.435.0 (/home/runner/_work/vize/vize/crates/vize_croquis)
+2026-10-07T11:19:54.4200006Z [1m[92m   Compiling[0m vize_l1_to_l2 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l1_to_l2)
+2026-10-07T11:19:54.4200399Z [1m[92m   Compiling[0m vize_l2_to_l3 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l2_to_l3)
+2026-10-07T11:19:56.5222184Z [1m[92m   Compiling[0m vize_l4 v0.435.0 (/home/runner/_work/vize/vize/davinci/vize_l4)
+2026-10-07T11:19:57.3095679Z [1m[92m   Compiling[0m vize_atelier_core v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_core)
+2026-10-07T11:19:58.5023947Z [1m[92m   Compiling[0m vize_atelier_ssr v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_ssr)
+2026-10-07T11:19:58.5024395Z [1m[92m   Compiling[0m vize_atelier_vapor v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_vapor)
+2026-10-07T11:19:58.5024762Z [1m[92m   Compiling[0m vize_atelier_dom v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_dom)
+2026-10-07T11:20:06.2333800Z [1m[92m   Compiling[0m vize_atelier_sfc v0.435.0 (/home/runner/_work/vize/vize/crates/vize_atelier_sfc)
+2026-10-07T11:20:12.8669654Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 22.12s
+2026-10-07T11:20:12.8829419Z [1m[92m     Running[0m tests/davinci_production_reach.rs (target/debug/deps/davinci_production_reach-9efba9903499608a)
+2026-10-07T11:20:12.8855169Z 
+2026-10-07T11:20:12.8855927Z running 17 tests
+2026-10-07T11:20:12.8862514Z test davinci_production_reach::diff::tests::selected_errors_require_matching_locations ... ok
+2026-10-07T11:20:12.8862875Z test davinci_production_reach::diff::tests::selected_errors_require_matching_legacy_errors ... ok
+2026-10-07T11:20:12.8863222Z test davinci_production_reach::selection_tests::missing_dom_selection_still_fails_for_dom_and_unproven_vapor_routes ... ok
+2026-10-07T11:20:12.8864600Z test duplicate_static_attribute_is_rejected_before_production_dom_selection ... ok
+2026-10-07T11:20:12.8898338Z test component_loop_prop_before_spread_keeps_legacy_layout ... ok
+2026-10-07T11:20:12.8925298Z test conditional_v_for_branch_does_not_hoist_item_props ... ok
+2026-10-07T11:20:12.9087804Z test davinci_production_reach::inline_parity_regressions::inline_scope_and_helper_order_match_shipped_compiler ... ok
+2026-10-07T11:20:12.9102286Z test davinci_production_reach::selection_tests::script_sfc_template_error_is_not_an_unrecorded_dom_selection ... ok
+2026-10-07T11:20:12.9113190Z test encoded_conditional_operators_match_legacy_in_both_dom_shapes ... ok
+2026-10-07T11:20:12.9145232Z test davinci_production_reach::selection_tests::source_vapor_route_requires_a_real_vapor_selection ... ok
+2026-10-07T11:20:12.9169963Z test nested_interactive_recoveries_keep_production_dom_parity ... ok
+2026-10-07T11:20:12.9197266Z test malformed_slot_params_keep_production_diagnostics ... ok
+2026-10-07T11:20:12.9229948Z test maybe_ref_event_handler_matches_legacy_module ... ok
+2026-10-07T11:20:15.2358531Z davinci production reach: scope=committed files=496 unreadable=0 parse_errors=0 without_template=90
+2026-10-07T11:20:15.2359135Z davinci production reach: shape=dom_inline stage="L2" templates=405 accepted=400 permille=987 ready=0 legacy={"emit_refused": 3, "parse_error": 2} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={"V_MATCH_SYNTAX": 1} compared=400 divergences=0
+2026-10-07T11:20:15.2359823Z davinci native-only acceptance: scope=committed product=compiler target=dom_inline planned=496 native_only=0 legacy_backed=406 unverified=90 permille=0 contribution=sfc_parse:legacy:legacy
+2026-10-07T11:20:15.2360466Z davinci production reach: shape=dom_module stage="L2" templates=405 accepted=400 permille=987 ready=0 legacy={"emit_refused": 3, "parse_error": 2} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={"V_MATCH_SYNTAX": 1} compared=400 divergences=0
+2026-10-07T11:20:15.2361157Z davinci native-only acceptance: scope=committed product=compiler target=dom_module planned=496 native_only=0 legacy_backed=406 unverified=90 permille=0 contribution=sfc_parse:legacy:legacy
+2026-10-07T11:20:15.2361810Z davinci production reach: shape=ssr stage="L4 plan" templates=403 accepted=403 permille=1000 ready=0 legacy={} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={"TEMPLATE_ERROR": 2, "V_MATCH_SYNTAX": 1} compared=0 divergences=0
+2026-10-07T11:20:15.2362406Z davinci native-only acceptance: scope=committed product=compiler target=ssr planned=496 native_only=0 legacy_backed=406 unverified=90 permille=0 contribution=sfc_parse:legacy:legacy
+2026-10-07T11:20:15.2363170Z davinci production reach: shape=vapor stage="native L3" templates=405 accepted=259 permille=639 ready=0 legacy={"binding": 6, "component": 25, "control_flow": 7, "element": 5, "expression_or_encoding": 67, "operation": 12, "structure": 2, "surface_semantics": 20} rejected=0 routed_vapor=0 unrecorded=2 sfc_errors={"V_MATCH_SYNTAX": 1} compared=0 divergences=0
+2026-10-07T11:20:15.2363933Z davinci native-only acceptance: scope=committed product=compiler target=vapor planned=496 native_only=0 legacy_backed=406 unverified=90 permille=0 contribution=sfc_parse:legacy:legacy
+2026-10-07T11:20:15.2364346Z [reach].dom_inline: accepted 400 > accepted_min 347; raise the floor (ratchet)
+2026-10-07T11:20:15.2364595Z [reach].dom_module: accepted 400 > accepted_min 347; raise the floor (ratchet)
+2026-10-07T11:20:15.2364829Z [reach].ssr: accepted 403 > accepted_min 349; raise the floor (ratchet)
+2026-10-07T11:20:15.2365056Z [reach].vapor: accepted 259 > accepted_min 203; raise the floor (ratchet)
+2026-10-07T11:20:16.1125653Z davinci-differential corpus scope: root=/home/runner/_work/vize/vize/tests/davinci_test_support/../../tests/_fixtures/_git scope=canonical closure_evidence=true submodules=147
+2026-10-07T11:21:12.8861820Z test production_compiles_report_and_hold_their_davinci_reach has been running for over 60 seconds
+2026-10-07T11:21:12.8862328Z test scoped_component_props_do_not_trigger_static_child_cache has been running for over 60 seconds
+2026-10-07T11:21:12.8862660Z test scoped_handler_shadowing_setup_const_keeps_legacy_patch_flags has been running for over 60 seconds
+2026-10-07T11:21:12.8862977Z test tree_construction_parse_errors_keep_production_dom_parity has been running for over 60 seconds
+2026-10-07T11:29:45.1298117Z davinci production reach: scope=canonical files=42998 unreadable=0 parse_errors=0 without_template=373
+2026-10-07T11:29:45.1298772Z davinci production reach: shape=dom_inline stage="L2" templates=42624 accepted=36440 permille=854 ready=0 legacy={"emit_refused": 6076, "parse_error": 13} rejected=0 routed_vapor=95 unrecorded=0 sfc_errors={"TEMPLATE_ERROR": 1} compared=36440 divergences=0
+2026-10-07T11:29:45.1299447Z davinci native-only acceptance: scope=canonical product=compiler target=dom_inline planned=42998 native_only=0 legacy_backed=42625 unverified=373 permille=0 contribution=sfc_parse:legacy:legacy
+2026-10-07T11:29:45.1300075Z davinci production reach: shape=dom_module stage="L2" templates=42624 accepted=36441 permille=854 ready=0 legacy={"emit_refused": 6075, "parse_error": 13} rejected=0 routed_vapor=95 unrecorded=0 sfc_errors={"TEMPLATE_ERROR": 1} compared=36441 divergences=0
+2026-10-07T11:29:45.1300698Z davinci native-only acceptance: scope=canonical product=compiler target=dom_module planned=42998 native_only=0 legacy_backed=42625 unverified=373 permille=0 contribution=sfc_parse:legacy:legacy
+2026-10-07T11:29:45.1301458Z davinci production reach: shape=ssr stage="L4 plan" templates=42611 accepted=42558 permille=998 ready=0 legacy={"expression_or_encoding": 3, "operation": 38, "surface_semantics": 12} rejected=0 routed_vapor=0 unrecorded=0 sfc_errors={"TEMPLATE_ERROR": 14} compared=0 divergences=0
+2026-10-07T11:29:45.1302112Z davinci native-only acceptance: scope=canonical product=compiler target=ssr planned=42998 native_only=0 legacy_backed=42625 unverified=373 permille=0 contribution=sfc_parse:legacy:legacy
+2026-10-07T11:29:45.1302855Z davinci production reach: shape=vapor stage="native L3" templates=42625 accepted=19219 permille=450 ready=0 legacy={"binding": 1617, "component": 4796, "control_flow": 2932, "element": 1493, "expression_or_encoding": 4743, "operation": 708, "structure": 11, "surface_semantics": 7093} rejected=0 routed_vapor=0 unrecorded=13 sfc_errors={} compared=0 divergences=0
+2026-10-07T11:29:45.1303648Z davinci native-only acceptance: scope=canonical product=compiler target=vapor planned=42998 native_only=0 legacy_backed=42625 unverified=373 permille=0 contribution=sfc_parse:legacy:legacy
+2026-10-07T11:29:45.1332854Z test production_compiles_report_and_hold_their_davinci_reach ... ok
+2026-10-07T11:29:45.1366636Z test scoped_handler_shadowing_setup_const_keeps_legacy_patch_flags ... ok
+2026-10-07T11:29:45.1376021Z test scoped_component_props_do_not_trigger_static_child_cache ... ok
+2026-10-07T11:29:45.1408766Z test tree_construction_parse_errors_keep_production_dom_parity ... ok
+2026-10-07T11:29:45.1408903Z 
+2026-10-07T11:29:45.1409570Z test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 572.26s
+2026-10-07T11:29:45.1409776Z 
