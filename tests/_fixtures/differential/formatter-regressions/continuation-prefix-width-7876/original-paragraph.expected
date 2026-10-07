@@ -1,0 +1,7 @@
+<template>
+  <p>
+    Total {{ settingsPanelState.pagination.pages.length }} items<template
+      v-if="settingsPanelState.selectedPageIndex.value > 0"
+    > (page {{ settingsPanelState.selectedPageIndex.value }})</template>
+  </p>
+</template>

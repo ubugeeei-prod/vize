@@ -131,9 +131,72 @@ jobs:
         working-directory: tools/support/compat/nuxt/fixtures/nuxt3-module-build
         run: npm ci --no-audit --no-fund
       - uses: ./.github/actions/setup-ubuntu-archive
-      - name: Install Chromium
-        working-directory: tests
-        run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
+      - name: Download Chromium dependencies while building the current CLI
+        run: |
+          archive_dir=
+          cache_config=
+          download_config=
+          cli_pid=
+          cleanup() {
+            status=$?
+            trap - EXIT INT TERM
+            if [[ -n "$cli_pid" ]]; then
+              kill -TERM -- "-$cli_pid" 2>/dev/null || :
+              wait "$cli_pid" 2>/dev/null || :
+            fi
+            for owned_config in "$download_config" "$cache_config"; do
+              if [[ -n "$owned_config" ]] && ! sudo rm -f -- "$owned_config"; then
+                status=1
+              fi
+            done
+            if [[ -n "$archive_dir" ]] && ! sudo rm -rf -- "$archive_dir"; then
+              status=1
+            fi
+            exit "$status"
+          }
+          trap cleanup EXIT
+          trap 'exit 130' INT
+          trap 'exit 143' TERM
+
+          archive_dir=$(sudo mktemp -d /var/cache/apt/vize-nuxt-archives-XXXXXX)
+          sudo chmod 0755 "$archive_dir"
+          cache_config=$(sudo mktemp /etc/apt/apt.conf.d/99-vize-nuxt-archives-XXXXXX)
+          download_config=$(sudo mktemp /etc/apt/apt.conf.d/98-vize-nuxt-download-only-XXXXXX)
+          sudo tee "$cache_config" >/dev/null <<APT
+          Dir::Cache::archives "$archive_dir";
+          APT::Update::Post-Invoke { "echo 'Nuxt3 archive inventory after package-index update'; find '$archive_dir' -maxdepth 1 -type f -name '*.deb' -print0 | sort -z | xargs -0 -r sha256sum"; };
+          APT
+          sudo tee "$download_config" >/dev/null <<'APT'
+          APT::Get::Download-Only "true";
+          APT
+
+          setsid --wait cargo build --profile ci -p vize &
+          cli_pid=$!
+          download_status=0
+          if (cd tests && vize-ci-apt-retry vp exec playwright install-deps chromium); then
+            :
+          else
+            download_status=$?
+          fi
+          cli_status=0
+          if wait "$cli_pid"; then
+            :
+          else
+            cli_status=$?
+          fi
+          cli_pid=
+          sudo rm -- "$download_config"
+          download_config=
+          printf 'Nuxt3 setup statuses: download=%s CLI=%s\n' "$download_status" "$cli_status"
+          if (( download_status != 0 )); then
+            exit "$download_status"
+          fi
+          if (( cli_status != 0 )); then
+            exit "$cli_status"
+          fi
+          echo 'Nuxt3 archive inventory before the original Chromium installation'
+          sudo find "$archive_dir" -maxdepth 1 -type f -name '*.deb' -print0 | sort -z | xargs -0 -r sha256sum
+          (cd tests && vize-ci-apt-retry vp exec playwright install --with-deps chromium)
       - name: Verify candidate build and SSR routes
         run: vp env exec node tools/support/compat/nuxt/nuxt3-module-build.mjs "$RUNNER_TEMP/nuxt3-module-proof"
       - name: Install the unchanged pinned Nuxt 4 dependency cohort
@@ -150,10 +213,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Verify original relative glob keys and outside-root Vite and Nuxt runtime
         run: vp env exec node tools/support/compat/nuxt/relative-glob-build.mjs "$RUNNER_TEMP/vite-relative-glob-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
-      - name: Build the current CLI for the JavaScript workspace consumers
-        run: |
-          cargo build --profile ci -p vize
-          vp env exec node tests/differential/build-receipt.mjs
+      - name: Capture the current CLI for the JavaScript workspace consumers
+        run: vp env exec node tests/differential/build-receipt.mjs
       - name: Verify real JavaScript Nuxt and Vite workspace products
         run: vp env exec node tools/support/compat/nuxt/javascript-workspace-build.mjs "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Upload Nuxt 3 build and SSR evidence

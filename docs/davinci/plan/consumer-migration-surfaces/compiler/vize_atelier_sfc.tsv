@@ -407,7 +407,8 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/style/where_selector.rs	2	c
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/template_tests.rs	190	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/types.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/types.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/css_scope.rs	2	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/css_scope.rs	1	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/css_scope/attribute.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/css_scope/legacy_deep.rs	1	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/css_scope/slotted.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/vite_plugin/css.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1

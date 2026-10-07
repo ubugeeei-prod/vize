@@ -153,8 +153,14 @@ impl<'a> TemplateFormatter<'a> {
                     output.push(b'<');
                     output.extend_from_slice(tag_name.as_bytes());
 
-                    let closing_bracket_on_own_line =
-                        self.write_opening_attributes(&mut output, &tag_name, &sorted_attrs, depth);
+                    let closing_bracket_on_own_line = self.write_opening_attributes_with_prefix(
+                        &mut output,
+                        &tag_name,
+                        &sorted_attrs,
+                        depth,
+                        join.is_continuation() && !joiner.locks_current_line(),
+                        if is_self_closing { 3 } else { 1 },
+                    );
 
                     // Compute once per opening tag; consumed in the two
                     // void-element branches below.
