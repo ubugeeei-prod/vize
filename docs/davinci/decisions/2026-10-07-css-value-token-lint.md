@@ -141,3 +141,19 @@ protected100+4 instruction ceilings, full suites and both signed actual
 merges. No individual-layer auto-merge or native/history/performance credit
 is granted. #7989 stays open until combined actual acceptance; installed
 distribution and publication remain separate root-owned follow-through.
+
+The existing CSS PR now follows actual script #8135 delivery. Its isolated
+worktree retains the original published 6c source; the old private worktree
+remains untouched. Genuine signed main b3 is incorporated first, followed by
+actual signed b1b9895e, which includes the delivered lexical/live-ref Stack.
+There are no CSS production conflicts. The four inherited script carrier
+conflicts resolve to the entire already-reviewed combined-clean 6c blobs:
+all41 inputs and other38 whole results stay exact, only the original three
+CSS false-positive vectors become clean, and the full plain report remains
+authored. All17 CSS API/18 CLI and genuine positive ranges are unchanged.
+The official whole-source inventory is regenerated; the 350-line record
+preserves every incoming clause and the complete original CSS decision.
+Fresh source/native Actions and unchanged protected104/full-suite delivery
+remain required for this successor. Historical runtime is not transferred.
+The [paired replay](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6034179024)
+retains the earlier failures and qualifies only the current source when run.
