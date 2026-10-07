@@ -86,3 +86,17 @@ asserts 11 continuation and one rule-layout refinement and a separate strict
 historical mismatch on every affected pass. SHA256 is test-only; production
 dependencies and formatter work do not change. Hosted Rust qualification is
 required on the updated source; earlier tooling success is not transferred.
+
+## Actual-main Stack source preparation
+
+The existing #8178 source is genuinely replayed onto signed actual main
+`8c7727613de6213e0a52cde96eeb295d01c9bef5`. Preserve complete CSS implementation,
+corpus, reference-authority and original source-law bytes alongside incoming
+hugged interpolation source and controls. Keep all 27 API cases, three public
+passes per case and 22 complete CLI plans; earlier source greens grant no
+acceptance to this successor. The full Stack retains 54 API/27 CLI cases,
+original300 historical cases and strict separate historical/current comparisons.
+Fresh exact-head Actions, required native/protected full observer/API/CLI,
+unchanged budgets, actual Stack delivery and supported installed release proof
+remain pending. The common canonical union records this preparation separately
+from projected documentation and historical runtime evidence.
