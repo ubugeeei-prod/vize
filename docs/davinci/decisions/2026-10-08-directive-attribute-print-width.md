@@ -73,3 +73,7 @@ controls reject changed owners, envelopes, old/new rows, counts, byte suffixes
 and escaping symlinks. Original audit metadata, all source/API manifest pins,
 old captures and all 104 ceilings stay unchanged. Preserve the raw failed
 Actions receipt and require fresh successor qualification.
+
+The `ebcac2` JS check rejected two tooling line wraps. Apply the cached pinned
+formatter to only those lines; product behavior, reference bytes and every
+authority hash remain unchanged. Fresh successor Actions remain required.

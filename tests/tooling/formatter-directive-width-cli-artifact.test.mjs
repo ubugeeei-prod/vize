@@ -47,7 +47,9 @@ void test("one closed current CLI extension preserves every original manifest by
   ]) {
     const copy = JSON.parse(current.toString());
     mutate(copy);
-    assert.throws(() => preservedDirectiveWidthCliManifest(root, pin, Buffer.from(JSON.stringify(copy))));
+    assert.throws(() =>
+      preservedDirectiveWidthCliManifest(root, pin, Buffer.from(JSON.stringify(copy))),
+    );
   }
   assert.throws(() =>
     preservedDirectiveWidthCliManifest(root, pin, Buffer.concat([current, Buffer.from("\n")])),

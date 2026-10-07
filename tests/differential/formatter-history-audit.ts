@@ -145,7 +145,8 @@ export function validateFormatterHistoryAudit(audit: any, repoRoot: string) {
   const cliPin = audit.cliManifestPin;
   assert.equal(cliPin.path, "tests/_fixtures/differential/formatter/manifest.json");
   const currentCli = fs.readFileSync(path.join(repoRoot, cliPin.path));
-  const originalCli = preservedDirectiveWidthCliManifest(repoRoot, cliPin, currentCli) ?? currentCli;
+  const originalCli =
+    preservedDirectiveWidthCliManifest(repoRoot, cliPin, currentCli) ?? currentCli;
   assert.equal(sha256(originalCli), cliPin.sha256);
   const cliCases = new Set(
     JSON.parse(originalCli.toString()).cases.map((fixture: any) => fixture.id),
