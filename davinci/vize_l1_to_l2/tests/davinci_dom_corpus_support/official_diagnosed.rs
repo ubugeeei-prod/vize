@@ -2,6 +2,13 @@
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
+pub(super) fn sha256(bytes: &[u8]) -> String {
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
 const MODES: [&str; 8] = [
     "template-function-no-prefix-map-false",
     "template-module-prefix-map-false",
@@ -93,7 +100,7 @@ pub(super) fn authenticate(
     }
     for (path, hash) in files {
         let bytes = std::fs::read(root.join(path)).map_err(|e| e.to_string())?;
-        if hash != &json!(format!("{:x}", Sha256::digest(bytes))) {
+        if hash != &json!(sha256(&bytes)) {
             return Err(format!("complete official oracle changed: {path}"));
         }
     }

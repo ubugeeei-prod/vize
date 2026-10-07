@@ -94,6 +94,10 @@ name = "davinci_dom_corpus_bindings"
 required-features = ["legacy-differential"]
 
 [[test]]
+name = "davinci_dom_n8n_diagnosed"
+required-features = ["legacy-differential"]
+
+[[test]]
 name = "davinci_remarks_corpus"
 required-features = ["legacy-differential"]
 

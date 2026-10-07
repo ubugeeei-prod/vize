@@ -1,6 +1,5 @@
 //! Complete output and ordered diagnostic parity for one authenticated original.
 use serde_json::{Value, json};
-use sha2::{Digest, Sha256};
 #[path = "official_diagnosed.rs"]
 mod official;
 use vize_atelier_core::CompilerError;
@@ -54,7 +53,7 @@ fn compare_authenticated(
     }
     let provenance: Value = serde_json::from_str(PROVENANCE).map_err(|e| e.to_string())?;
     let official: Value = serde_json::from_str(OFFICIAL).map_err(|e| e.to_string())?;
-    let sha = format!("{:x}", Sha256::digest(ORIGINAL.as_bytes()));
+    let sha = official::sha256(ORIGINAL.as_bytes());
     if provenance["sha256"] != sha || official["record"]["sha256"] != sha {
         return Err("original compiler oracle hash mismatch".into());
     }
