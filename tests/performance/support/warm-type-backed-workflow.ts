@@ -74,6 +74,23 @@ if (process.argv[2] === "prepare") {
     .split("\n")
     .filter(Boolean);
   const allowed = new Set([
+    // Explicit global-component configuration retains the full original provider gate.
+    "crates/vize/src/commands/lint/entry_rules.rs",
+    "crates/vize/tests/lint_global_components_cli.rs",
+    "crates/vize_maestro/src/ide/diagnostics/configured_global_components_tests.rs",
+    "crates/vize_maestro/src/ide/diagnostics/linter_options.rs",
+    "crates/vize_patina/src/linter/restricted_rules.rs",
+    "crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs",
+    "crates/vize_patina/tests/fixtures/global-component-registration/Card.art.vue",
+    "crates/vize_patina/tests/fixtures/global-component-registration/vize.config.json",
+    "crates/vize_patina/tests/global_component_registration.rs",
+    "davinci/vize_l0/src/config/model/linter_rule_options.rs",
+    "davinci/vize_l0/src/config/model/linter_rule_options/component_registration.rs",
+    "npm/cli/pkl/LinterConfig.pkl",
+    "npm/cli/pkl/jsonschema/LintRuleOptionsSchemaDefinitions.pkl",
+    "npm/cli/pkl/vize.pkl",
+    "npm/cli/schemas/vize.config.schema.json",
+    "npm/cli/src/types/generated.ts",
     "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/readiness.rs",
     "crates/vize_canon/src/corsa_bridge.rs",
     "crates/vize_canon/src/corsa_bridge/preparation_trace.rs",

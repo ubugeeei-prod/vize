@@ -20,3 +20,10 @@ spellings and a missing-component positive. Tests cover the public lint API,
 CLI configuration, editor configuration and strict layered options. Art editor
 lint delivery itself is tracked in #7945. This legacy regression adds no
 Davinci native acceptance credit.
+
+The original paired 400-provider workflow explicitly qualifies this slice's
+exact config, lint constructor, registration-rule, generated artifact and
+test paths. Every original input/source custody check, all 79 response answers,
+534 acknowledgements and notification controls remain required. The added
+source paths permit the existing full comparison to execute; no broader path
+wildcards, narrowed assertions or performance credit are introduced.
