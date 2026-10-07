@@ -53,3 +53,14 @@ the original reported App/Child, all independently authored expected phases and
 every production blob remain unchanged. The final parent-default control and
 whole successor still require actual execution. This correction does not relax
 the official comparator or any assertion.
+
+Source `903f341a992eff755db3b664cc5578c4eff3d5ce` actually passes the full
+original in [worker 3](https://github.com/ubugeeei-prod/vize/actions/runs/37593078566/job/112702208693)
+and all seven official/independent controls in [worker 1](https://github.com/ubugeeei-prod/vize/actions/runs/37593078566/job/112702208819).
+All four Rust workers, their source report, compilation and Clippy pass.
+The whole run still awaited canonical corpus and retained the old-base audit
+failure. Refresh onto actual verified main `b27868776bbb872aba68873c29970f5c4ed77a2b`,
+including the shared audit merge `706a5b7886c363f6c67a03964ac55f26c5a2a341` and
+UI countdown test repair, preserving all production, original corpus, controls,
+oracles and assertion bytes. The refreshed SHA requires its own complete source
+Actions; these predecessor passes grant no merge, release or installed credit.
