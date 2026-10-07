@@ -43,3 +43,31 @@ transition/shadow list detection when color protection makes the parsed property
 an unparsed var-token list. Only outer parsed comma tokens opt into the equality
 guard; nested function/variable arguments retain their ownership. This strengthens
 the original whole-output corpus to 27 API/22 CLI cases before hosted qualification.
+
+## Hosted continuation/reference repair
+
+Initial hosted source `8091637475` compiled the existing source-built CLI and
+exposed intentional output overlap with #7915 continuation references and the
+#7926 declaration-comma control. Keep every original issue/input/expected/carrier/
+manifest/stock byte frozen. An explicit authority pins 12 complete current
+references: 11 of 12 continuation cases and one of 17 rule-layout cases.
+Each row binds the exact original corpus, input, historical output, options and
+complete CLI plan, plus independently authored current output/hash. Only two
+previously unchanged controls need new complete initial check/write streams.
+Whole diagnostics, DOM/SSR, CSSOM/computed declarations, complete process bytes,
+three writes/fixed points, check-no-write and denominator gates remain strict.
+Reports preserve both comparisons and count current qualification separately;
+historical mismatch never becomes an original match. Five complete current
+outputs equal the separate pre-existing stock Prettier records. Pure authority/
+input/options/history/CLI forgery controls execute locally; hosted current
+runtime qualification remains required. Authority SHA256:
+`8e53853840d474c0d9cd6a29eaa0ab061a8e3e46df7f1c45fd82d705e0a6220c`.
+
+The new value state helper and parsed custom-brace refusal law move to a private
+`style/values.rs` in a separate refactor commit with identical behavior. The
+existing alignment/lexer file remains below the unchanged 350-line ceiling;
+canonical decisions retain 350 lines. The complete current style owner hash
+advances only for its private module declaration, while every original law body
+and captured asset remains fixed. The generated owned census is regenerated.
+Independent source review found no blocking producer/authority issue before
+this hosted reference repair; fresh exact-head Actions is still required.
