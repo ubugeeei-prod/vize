@@ -29,3 +29,8 @@ this static reported slice. Their unsupported admission routes remain explicit.
 Source Actions, merge queue instruction ceilings, actual merge and installed
 release verification remain pending. No historical green or fixture authoring
 is treated as a successful runtime execution.
+
+Initial source `3192942496` Check `37589873592` rejected identical forced-attribute
+and SVG class/style Clippy branches before Rust execution. The correction joins
+the conditions with the same single `setAttr` body; fixtures and runtime
+expectations stay unchanged. Shared security advisories remain a separate gate.

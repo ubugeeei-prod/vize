@@ -60,9 +60,8 @@ pub(crate) fn set_prop_call(
         line
     };
 
-    let (helper, line) = if forced_attr.is_some() {
-        ("setAttr", call("_setAttr", Some(&named), ""))
-    } else if (*key == "class" || *key == "style") && is_svg {
+    let (helper, line) = if forced_attr.is_some() || (*key == "class" || *key == "style") && is_svg
+    {
         ("setAttr", call("_setAttr", Some(&named), ""))
     } else if *key == "class" {
         ("setClass", call("_setClass", None, ""))
