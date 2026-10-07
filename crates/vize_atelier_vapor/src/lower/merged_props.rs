@@ -17,23 +17,35 @@ pub(super) fn uses_computed_props(el: &ElementNode<'_>) -> bool {
         return false;
     }
     let mut computed = false;
+    let mut object = false;
+    let mut forced = false;
     for prop in &el.props {
         if let PropNode::Directive(dir) = prop
             && dir.name == "bind"
         {
-            if !dir.modifiers.is_empty() || !matches!(dir.exp, Some(ExpressionNode::Simple(_))) {
+            if !matches!(dir.exp, Some(ExpressionNode::Simple(_)))
+                || dir
+                    .modifiers
+                    .iter()
+                    .any(|modifier| !matches!(modifier.content, "attr" | "prop"))
+            {
                 return false;
             }
             match &dir.arg {
                 Some(ExpressionNode::Simple(key)) => {
+                    if !key.is_static && !dir.modifiers.is_empty() {
+                        return false;
+                    }
                     computed |= !key.is_static;
+                    forced |= !dir.modifiers.is_empty();
                 }
-                None => {}
+                None if dir.modifiers.is_empty() => object = true,
+                None => return false,
                 _ => return false,
             }
         }
     }
-    computed
+    computed || object && forced
 }
 
 pub(super) fn transform<'a>(
@@ -84,10 +96,28 @@ pub(super) fn transform<'a>(
                 if key.is_static && matches!(key.content, "key" | "ref" | "ref_for" | "ref_key") {
                     continue;
                 }
-                (
-                    SimpleExpressionNode::from_node(key),
-                    SimpleExpressionNode::from_node(value),
-                )
+                let mut key = SimpleExpressionNode::from_node(key);
+                let prefix = if dir
+                    .modifiers
+                    .iter()
+                    .any(|modifier| modifier.content == "prop")
+                {
+                    Some('.')
+                } else if dir
+                    .modifiers
+                    .iter()
+                    .any(|modifier| modifier.content == "attr")
+                {
+                    Some('^')
+                } else {
+                    None
+                };
+                if let Some(prefix) = prefix {
+                    key.content = ctx
+                        .allocator
+                        .alloc_str(&vize_carton::cstr!("{prefix}{}", key.content));
+                }
+                (key, SimpleExpressionNode::from_node(value))
             }
             _ => continue,
         };
@@ -112,4 +142,35 @@ pub(super) fn transform<'a>(
         block,
         OperationNode::SetMergedProps(SetMergedPropsIRNode { element, sources }),
     );
+}
+
+/// Keep forced attribute names in the runtime's existing `^key` vocabulary.
+/// `.prop` wins if both force modifiers are authored, as in Vue's transform.
+pub(super) fn static_key<'a>(
+    ctx: &mut TransformContext<'a>,
+    dir: &DirectiveNode<'a>,
+    name: &'a str,
+) -> &'a str {
+    let name = if dir
+        .modifiers
+        .iter()
+        .any(|modifier| modifier.content == "camel")
+    {
+        ctx.interner.intern(&vize_carton::camelize(name))
+    } else {
+        name
+    };
+    if dir
+        .modifiers
+        .iter()
+        .any(|modifier| modifier.content == "attr")
+        && !dir
+            .modifiers
+            .iter()
+            .any(|modifier| modifier.content == "prop")
+    {
+        ctx.interner.intern(&vize_carton::cstr!("^{name}"))
+    } else {
+        name
+    }
 }

@@ -79,12 +79,7 @@ pub(crate) fn transform_directive<'a>(
                         return;
                     }
 
-                    let key_content = if has_camel {
-                        ctx.interner.intern(&camelize(key_exp.content))
-                    } else {
-                        key_exp.content
-                    };
-
+                    let key_content = super::merged_props::static_key(ctx, dir, key_exp.content);
                     let key_node = SimpleExpressionNode::new(
                         key_content,
                         key_exp.is_static,
@@ -377,23 +372,6 @@ fn clone_expression<'a>(
             ExpressionNode::Simple(Box::new_in(cloned, &ctx.allocator))
         }
     })
-}
-
-/// Camelize a hyphenated string (e.g. "view-box" -> "viewBox")
-fn camelize(s: &str) -> vize_carton::String {
-    let mut result = vize_carton::String::default();
-    let mut capitalize_next = false;
-    for c in s.chars() {
-        if c == '-' {
-            capitalize_next = true;
-        } else if capitalize_next {
-            result.push(c.to_ascii_uppercase());
-            capitalize_next = false;
-        } else {
-            result.push(c);
-        }
-    }
-    result
 }
 
 /// Keep the static class or style before its dynamic binding.
