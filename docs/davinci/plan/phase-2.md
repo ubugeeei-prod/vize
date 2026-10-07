@@ -88,7 +88,7 @@ counts or fixture availability changes.
   [evidence index](./phase-2-records.md#current-completion-evidence-2026-09-12);
   review-only evidence is labeled there rather than presented as executable.
   P2-11 keeps the hydrated full-corpus differential contract pinned as
-  144 DOM-output comparisons. P2-16 keeps the JSX L2-vs-Relief differential
+  145 DOM-output comparisons. P2-16 keeps the JSX L2-vs-Relief differential
   lane in the required check job; its retirement is re-dated at P2-20.
   P2-12b keeps the DOM build-path traversal target as an ordinary Rust
   integration gate over the ladder. P2-20 records the exit verdict and the
