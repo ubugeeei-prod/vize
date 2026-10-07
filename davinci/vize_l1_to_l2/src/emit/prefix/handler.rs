@@ -55,6 +55,7 @@ pub(super) fn process_inline_handler(
                 code,
                 used_unref: false,
                 used_is_ref: false,
+                has_identifier_references: true,
                 parse_error: false,
             };
         }
@@ -80,6 +81,7 @@ pub(super) fn process_inline_handler(
         // rewritten *body* needed is still the transform's registration.
         used_unref: rewritten.used_unref,
         used_is_ref: rewritten.used_is_ref,
+        has_identifier_references: rewritten.has_identifier_references,
         parse_error: rewritten.parse_error,
     }
 }
@@ -102,6 +104,7 @@ fn process(
         },
         used_unref: false,
         used_is_ref: false,
+        has_identifier_references: false,
         parse_error: false,
     }
 }

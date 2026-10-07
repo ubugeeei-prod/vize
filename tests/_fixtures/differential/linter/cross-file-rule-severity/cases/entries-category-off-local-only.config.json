@@ -1,0 +1,24 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/vue-router-unknown-route": "error"
+    }
+  },
+  "entries": [
+    {
+      "files": [
+        "src/matching/Second.vue"
+      ],
+      "linter": {
+        "categories": {
+          "suspicious": "off"
+        },
+        "rules": {
+          "cross-file": "warn",
+          "ecosystem/vue-router-unknown-route": "error"
+        }
+      }
+    }
+  ]
+}

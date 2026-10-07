@@ -1,0 +1,7 @@
+<script setup vapor>
+const vLocalMark = (el) => { el.dataset.local = "yes"; };
+</script>
+
+<template>
+  <div v-local-mark v-global-mark>mixed</div>
+</template>

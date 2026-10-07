@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const title = "x";
+</script>
+
+<template>
+  <div v-bind:title="title" />
+</template>

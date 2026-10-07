@@ -1,3 +1,4 @@
+tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # Keep GitHub language statistics focused on authored source code.
 *.snap linguist-generated=true
 **/__snapshots__/** linguist-generated=true
@@ -72,5 +73,14 @@ tests/_fixtures/differential/formatter-regressions/css-continuation-indent-7915/
 # Preserve complete original and dirty component-completion source bytes.
 tests/_fixtures/differential/lsp/component-global-attributes-8015/*.vue.txt -text whitespace=cr-at-eol
 
+# Generic component hover preserves the complete reporter issue and source bytes.
+tests/_fixtures/differential/lsp/generic-prop-hover-8015/** -text whitespace=cr-at-eol
+
 # Public #7969 whole LF/CRLF formatter carriers stay byte exact.
 tests/_fixtures/differential/formatter-regressions/hugged-interpolation-indent-7969/*.txt -text whitespace=cr-at-eol
+
+# Original #8015 SFC and Issue inputs retain authored checkout bytes.
+tests/_fixtures/differential/lsp/template-expression-globals-8015/** -text whitespace=cr-at-eol
+
+# Contextual data/ARIA controls preserve complete source and expected payload bytes.
+tests/_fixtures/differential/lsp/data-aria-attributes-8015/** -text whitespace=cr-at-eol

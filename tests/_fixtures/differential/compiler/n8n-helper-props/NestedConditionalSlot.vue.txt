@@ -1,0 +1,8 @@
+<template>
+  <InputLabel>
+    <div class="input-wrapper">
+      <slot v-if="$slots.default" />
+      <Input v-else :model-value="value" />
+    </div>
+  </InputLabel>
+</template>

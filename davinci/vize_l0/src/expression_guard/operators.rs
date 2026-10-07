@@ -18,7 +18,7 @@ pub(super) fn has_excessive_prefix_operator_run(content: &str) -> bool {
 
     while let Some(&byte) = bytes.get(i) {
         match byte {
-            b' ' | b'\t' | b'\r' | b'\n' => {
+            b' ' | b'\t' | b'\r' | b'\n' | 0x0b | 0x0c => {
                 i += 1;
             }
             b'"' | b'\'' => {

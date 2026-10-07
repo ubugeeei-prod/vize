@@ -35,6 +35,9 @@ pub(super) struct IdentifierCollector<'s, 'a> {
     /// Set when a binding was read through `_unref(…)`.
     pub(super) used_unref: bool,
     pub(super) used_is_ref: bool,
+    /// Vue key shape retains all expression identifiers, including local
+    /// bindings and member names; static object property keys are excluded.
+    pub(super) has_identifier_references: bool,
     offset: usize,
     local_scopes: StdVec<StdVec<String>>,
     pub(super) rewrites: StdVec<(usize, String)>,
@@ -51,6 +54,7 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
             wrapped: true,
             used_unref: false,
             used_is_ref: false,
+            has_identifier_references: false,
             offset: 0,
             local_scopes: alloc::vec![StdVec::new()],
             rewrites: StdVec::new(),
@@ -119,7 +123,12 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
 }
 
 impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
+    fn visit_binding_identifier(&mut self, _ident: &oxc_ast_types::BindingIdentifier<'_>) {
+        self.has_identifier_references = true;
+    }
+
     fn visit_identifier_reference(&mut self, ident: &oxc_ast_types::IdentifierReference<'_>) {
+        self.has_identifier_references = true;
         let name = ident.name.as_str();
         if self.is_local(name) || is_generated_filter_helper(name) {
             return;
@@ -166,9 +175,11 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
                 self.visit_expression(&computed.expression);
             }
             oxc_ast_types::MemberExpression::StaticMemberExpression(static_expr) => {
+                self.has_identifier_references = true;
                 self.visit_expression(&static_expr.object);
             }
             oxc_ast_types::MemberExpression::PrivateFieldExpression(private) => {
+                self.has_identifier_references = true;
                 self.visit_expression(&private.object);
             }
         }
@@ -241,6 +252,7 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
         if prop.shorthand
             && let oxc_ast_types::PropertyKey::StaticIdentifier(ident) = &prop.key
         {
+            self.has_identifier_references = true;
             let name = ident.name.as_str();
             // Destructured `v-for` / slot aliases live in `slot_params`, not
             // the transform-scope string. Expanding them and then stripping

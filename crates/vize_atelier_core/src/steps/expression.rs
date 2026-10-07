@@ -18,7 +18,10 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::{Allocator, Box, String, cstr};
 
-use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
+use crate::{
+    CompoundExpressionChild, CompoundExpressionNode, ConstantType, ExpressionNode,
+    SimpleExpressionNode, lane::TransformContext,
+};
 
 pub use inline_handler::process_inline_handler;
 pub use nesting::{
@@ -126,6 +129,22 @@ pub fn process_expression<'a>(
     exp: &ExpressionNode<'a>,
     as_params: bool,
 ) -> ExpressionNode<'a> {
+    process_expression_shape(ctx, exp, as_params, false)
+}
+
+pub(crate) fn process_branch_key<'a>(
+    ctx: &mut TransformContext<'a>,
+    exp: &ExpressionNode<'a>,
+) -> ExpressionNode<'a> {
+    process_expression_shape(ctx, exp, false, true)
+}
+
+fn process_expression_shape<'a>(
+    ctx: &mut TransformContext<'a>,
+    exp: &ExpressionNode<'a>,
+    as_params: bool,
+    branch_key: bool,
+) -> ExpressionNode<'a> {
     let allocator = ctx.allocator;
 
     // `mut` is only consumed by the legacy filter rewrite below; without the
@@ -174,6 +193,7 @@ pub fn process_expression<'a>(
     }
 
     // Strip TypeScript if needed, then optionally prefix identifiers
+    let mut compound_key = false;
     let processed = if ctx.options.prefix_identifiers {
         // rewrite_expression handles both TS stripping and prefixing; the
         // retained AST rides along when it still describes these bytes (P1-7).
@@ -191,6 +211,7 @@ pub fn process_expression<'a>(
         if let Some(detail) = &result.parse_error {
             rewrite::report_invalid_expression(ctx, detail, &normalized.loc);
         }
+        compound_key = branch_key && !is_simple_identifier(content) && result.has_identifiers;
         result.code
     } else if ctx.options.is_ts {
         // Only strip TypeScript, no prefixing
@@ -199,7 +220,7 @@ pub fn process_expression<'a>(
         String::new(content)
     };
 
-    ExpressionNode::Simple(Box::new_in(
+    let simple = Box::new_in(
         SimpleExpressionNode {
             content: allocator.alloc_str(&processed),
             is_static: false,
@@ -212,7 +233,16 @@ pub fn process_expression<'a>(
             is_ref_transformed: true,
         },
         &allocator,
-    ))
+    );
+    if compound_key {
+        let mut compound = CompoundExpressionNode::new(allocator, normalized.loc.clone());
+        compound
+            .children
+            .push(CompoundExpressionChild::Simple(simple));
+        ExpressionNode::Compound(Box::new_in(compound, &allocator))
+    } else {
+        ExpressionNode::Simple(simple)
+    }
 }
 
 /// Clone an expression node.

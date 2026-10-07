@@ -2463,32 +2463,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "oxc_formatter"
-version = "0.60.0"
-source = "git+https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1fa9f0412d06ec6908b58cd395b826cf7f"
-dependencies = [
- "cow-utils",
- "fast-glob",
- "itoa",
- "markdown",
- "natord",
- "nodejs-built-in-modules",
- "oxc_allocator",
- "oxc_ast",
- "oxc_diagnostics",
- "oxc_formatter_core",
- "oxc_jsdoc",
- "oxc_parser",
- "oxc_span",
- "oxc_str",
- "oxc_syntax",
- "phf 0.14.0",
- "rustc-hash",
- "smallvec",
- "unicode-width",
-]
-
-[[package]]
 name = "oxc_formatter_core"
 version = "0.60.0"
 source = "git+https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1fa9f0412d06ec6908b58cd395b826cf7f"
@@ -2498,7 +2472,6 @@ dependencies = [
  "oxc_data_structures",
  "oxc_span",
  "rustc-hash",
- "serde_json",
  "unicode-width",
 ]
 
@@ -2520,13 +2493,6 @@ dependencies = [
  "oxc_ast",
  "oxc_span",
  "rustc-hash",
-]
-
-[[package]]
-name = "oxc_parser"
-version = "0.142.0"
-dependencies = [
- "vize_oxc_parser",
 ]
 
 [[package]]
@@ -4700,7 +4666,6 @@ dependencies = [
  "memchr",
  "oxc_allocator",
  "oxc_ast",
- "oxc_formatter",
  "oxc_formatter_core",
  "oxc_span",
  "serde",
@@ -4710,6 +4675,7 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_l0",
  "vize_l1",
+ "vize_oxc_formatter",
  "vize_oxc_parser",
 ]
 
@@ -4809,6 +4775,7 @@ dependencies = [
  "oxc_span",
  "oxc_syntax",
  "oxc_transformer",
+ "serde_json",
  "sha2 0.11.0",
  "smallvec",
  "toml",
@@ -4953,6 +4920,32 @@ dependencies = [
  "vize_croquis",
  "vize_l0",
  "vize_l1",
+]
+
+[[package]]
+name = "vize_oxc_formatter"
+version = "0.435.0"
+dependencies = [
+ "cow-utils",
+ "fast-glob",
+ "itoa",
+ "markdown",
+ "natord",
+ "nodejs-built-in-modules",
+ "oxc_allocator",
+ "oxc_ast",
+ "oxc_diagnostics",
+ "oxc_formatter_core",
+ "oxc_jsdoc",
+ "oxc_semantic",
+ "oxc_span",
+ "oxc_str",
+ "oxc_syntax",
+ "phf 0.14.0",
+ "rustc-hash",
+ "smallvec",
+ "unicode-width",
+ "vize_oxc_parser",
 ]
 
 [[package]]
@@ -5787,3 +5780,7 @@ name = "zmij"
 version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b8848ee67ecc8aedbaf3e4122217aff892639231befc6a1b58d29fff4c2cabaa"
+
+[[patch.unused]]
+name = "oxc_parser"
+version = "0.142.0"

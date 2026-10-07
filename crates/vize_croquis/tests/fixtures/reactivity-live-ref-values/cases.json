@@ -1,0 +1,77 @@
+[
+  {
+    "id": "reporter-autogrow",
+    "source": "import {nextTick,ref,useTemplateRef,watch} from 'vue'; const props=defineProps<{text:string}>(); const areaRef=ref<HTMLTextAreaElement|null>(null); const list=useTemplateRef<HTMLUListElement>('list'); watch(()=>props.text,async()=>{ await nextTick(); const el=areaRef.value; if(el){el.style.height='auto';el.style.height=`${el.scrollHeight}px`;} const ul=list.value;if(ul)ul.scrollTop=0; });",
+    "mutations": []
+  },
+  {
+    "id": "deep-and-shallow",
+    "source": "import {ref,shallowRef} from 'vue'; const state=ref({count:0}); const shallow=shallowRef({count:0}); function bump(){const s=state.value;s.count=1;const t=shallow.value;t.count=1;}",
+    "mutations": ["t.count"]
+  },
+  {
+    "id": "deep-array-method",
+    "source": "import {ref} from 'vue'; const state=ref(['a']); function mutate(){ const tags=state.value;tags.push('b');tags.splice(0,1);}",
+    "mutations": []
+  },
+  {
+    "id": "shallow-array-method",
+    "source": "import {shallowRef} from 'vue'; const state=shallowRef(['a']); function mutate(){ const tags=state.value;tags.push('b');}",
+    "mutations": ["tags"]
+  },
+  {
+    "id": "deep-nested-object",
+    "source": "import {ref} from 'vue';const state=ref({nested:{count:0}});function bump(){const nested=state.value.nested;nested.count++;}",
+    "mutations": []
+  },
+  {
+    "id": "direct-markraw",
+    "source": "import {ref,markRaw} from 'vue';const state=ref(markRaw({count:0}));function bump(){const s=state.value;s.count++;}",
+    "mutations": ["s.count"]
+  },
+  {
+    "id": "named-markraw",
+    "source": "import {ref,markRaw} from 'vue';const raw=markRaw({count:0});const state=ref(raw);function bump(){const s=state.value;s.count++;}",
+    "mutations": ["s.count"]
+  },
+  {
+    "id": "aliased-vue-apis",
+    "source": "import {ref as useRef,useTemplateRef as templateNode} from 'vue';const state=useRef({count:0});const node=templateNode('node');function bump(){const s=state.value;s.count++;const el=node.value;el.scrollTop=0;}",
+    "mutations": []
+  },
+  {
+    "id": "primitive-extraction",
+    "source": "import {ref} from 'vue';const state=ref(0);function bump(){let value=state.value;value++;}",
+    "mutations": ["value"]
+  },
+  {
+    "id": "primitive-member-extraction",
+    "source": "import {ref} from 'vue';const state=ref({count:0});function bump(){let value=state.value.count;value++;}",
+    "mutations": ["value"]
+  },
+  {
+    "id": "outer-deep-inner-shallow",
+    "source": "import {ref,shallowRef} from 'vue';const state=ref({count:0});function inner(){const state=shallowRef({count:0});const snap=state.value;snap.count++;}function outer(){const snap=state.value;snap.count++;}",
+    "mutations": ["snap.count"]
+  },
+  {
+    "id": "outer-shallow-inner-deep",
+    "source": "import {ref,shallowRef} from 'vue';const state=shallowRef({count:0});function inner(){const state=ref({count:0});const snap=state.value;snap.count++;}function outer(){const snap=state.value;snap.count++;}",
+    "mutations": ["snap.count"]
+  },
+  {
+    "id": "captured-deep-alias-shadowed-source",
+    "source": "import {ref} from 'vue';const state=ref({count:0});const shared=state.value;function inner(state){shared.count++;const copy=shared;copy.count++;}",
+    "mutations": []
+  },
+  {
+    "id": "raw-binding-shadow-restore",
+    "source": "import {ref,markRaw} from 'vue';const raw=markRaw({count:0});const state=ref(raw);function inner(){const raw={count:0};const state=ref(raw);const snap=state.value;snap.count++;}function outer(){const snap=state.value;snap.count++;}",
+    "mutations": ["snap.count"]
+  },
+  {
+    "id": "captured-shallow-alias-shadowed-source",
+    "source": "import {ref,shallowRef} from 'vue';const state=shallowRef({count:0});const shared=state.value;function inner(){const state=ref({count:0});shared.count++;const copy=shared;copy.count++;}",
+    "mutations": ["shared.count", "copy.count"]
+  }
+]

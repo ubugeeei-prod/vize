@@ -1,0 +1,5 @@
+<script setup>const message = "hello";</script>
+<template><p>{{ message }}</p></template>
+<style>
+p { color: red !important; }
+</style>

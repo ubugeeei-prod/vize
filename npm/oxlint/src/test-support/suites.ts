@@ -12,6 +12,8 @@ await Promise.all([
   import("../original-locations.test.ts"),
   import("../cli/oxlint.test.ts"),
   import("../cli/scoped-config.test.ts"),
+  import("../cli/scoped-discovery.test.ts"),
+  import("../discovered-transport.test.ts"),
   import("../cli/scoped-options.test.ts"),
   import("../scoped-transport.test.ts"),
   import("../sfc-blocks.test.ts"),

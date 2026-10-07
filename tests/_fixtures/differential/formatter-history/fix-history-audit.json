@@ -24,7 +24,7 @@
     {"path":"tests/_fixtures/differential/formatter-history/capture-final-manifest.json","sha256":"4ae987c9fdb16b3c976dcc8fff2777e7446a4ea1f1f24acac939384e045cbeb2","cases":4,"execution":"historically executed; fresh Actions pending"},
     {"path":"tests/_fixtures/differential/formatter-history/vue-version-manifest.json","sha256":"e18b9c2595b7a5dbbe655930d83692e2ecdb04e1a60e0e7a2ec490577e0c88fc","cases":14,"execution":"Actions pending"}
   ],
-  "cliManifestPin": {"path":"tests/_fixtures/differential/formatter/manifest.json","sha256":"40acde7c1eba953724a1a05b60f4744948bb5f48687ed43272981e30bf5c65a4","cases":13,"execution":"Existing CLI corpus; exact-head Actions pending; separate from the 300 API plans and five new check verdict plans"},
+  "cliManifestPin": {"path":"tests/_fixtures/differential/formatter/manifest.json","sha256":"cb09a449c5b3503418e839f38b1d338dcf5b6c0f9fd6b7f8f154fbfbdcb86da6","cases":15,"execution":"Existing CLI corpus; exact-head Actions pending; separate from the 300 API plans and five new check verdict plans"},
   "evidence": {
     "archive": {"preservedRevision":"331f64feb9c6b9c0058789fcdedc94daec474e8c","preservedRef":"provenance/formatter-history-full-evidence-20261001","externalPath":"/private/tmp/vize-formatter-full-evidence-archive-20261001/committed-history-before-dedup.tar","sha256":"4f4716f8439bc7d23f21796dab02887c88f31eafad51a322d68c03c051910aa7","claim":"Exact full pre-dedup committed history, including schema-1 audit and raw capture records. Frozen external replay reports/binary are separately retained."},
     "captures": [
