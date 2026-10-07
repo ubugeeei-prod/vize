@@ -111,11 +111,11 @@ fn invalid_props_modes_fail_closed_before_linting_the_original_inputs() {
     for (options, expected) in [
         (
             serde_json::json!({ "destructure": "sometimes" }),
-            "unknown variant `sometimes`, expected one of `only-when-assigned`, `always`, `never`",
+            "unknown variant `sometimes`, expected one of `only-when-assigned`, `always`, `never` at line 6 column 34",
         ),
         (
             serde_json::json!({ "other": true }),
-            "unknown field `other`, expected `destructure`",
+            "unknown field `other`, expected `destructure` at line 6 column 15",
         ),
     ] {
         let root = tempfile::tempdir().unwrap();
@@ -136,12 +136,27 @@ fn invalid_props_modes_fail_closed_before_linting_the_original_inputs() {
             .unwrap();
         }
         for _ in 0..2 {
-            let output = invoke(root.path(), "json", &inputs);
+            let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+                .current_dir(root.path())
+                .args([
+                    "lint",
+                    "--config",
+                    "vize.config.json",
+                    "-f",
+                    "json",
+                    "--help-level",
+                    "short",
+                ])
+                .args(&inputs)
+                .output()
+                .unwrap();
             assert_eq!(output.status.code(), Some(2));
             assert!(output.stdout.is_empty());
             let stderr = String::from_utf8(output.stderr).unwrap();
-            assert!(stderr.starts_with("\u{1b}[31mError:\u{1b}[0m failed to parse "));
-            assert!(stderr.contains(expected), "{stderr}");
+            assert_eq!(
+                stderr,
+                format!("\u{1b}[31mError:\u{1b}[0m failed to parse vize.config.json: {expected}\n")
+            );
             preserve_inputs(root.path(), &inputs, &config);
         }
     }
