@@ -10,8 +10,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | product                        | kind  | module              | files | sites |
 | ------------------------------ | ----- | ------------------- | ----: | ----: |
-| `Analyzer`                     | type  | `analyzer`          |    46 |   170 |
-| `AnalyzerOptions`              | type  | `analyzer`          |    46 |   166 |
+| `Analyzer`                     | type  | `analyzer`          |    46 |   171 |
+| `AnalyzerOptions`              | type  | `analyzer`          |    46 |   167 |
 | `ComponentUsage`               | type  | `croquis::template` |    22 |    48 |
 | `Croquis`                      | type  | `croquis`           |    92 |   219 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
@@ -19,7 +19,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `MacroTracker`                 | type  | `macros`            |     1 |     1 |
 | `NonScriptSetupScopeData`      | type  | `scope`             |     1 |     3 |
 | `OptionGroup`                  | type  | `croquis`           |     2 |     7 |
-| `PassedProp`                   | type  | `croquis::template` |    10 |    24 |
+| `PassedProp`                   | type  | `croquis::template` |    11 |    25 |
 | `Scope`                        | type  | `scope`             |    14 |    25 |
 | `ScopeChain`                   | type  | `scope`             |     2 |     7 |
 | `ScopeData`                    | type  | `scope`             |    19 |    35 |

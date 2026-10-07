@@ -20,7 +20,8 @@ pub(crate) fn collect_model_modifier_bindings(
     enabled: bool,
 ) -> ModelModifierBindings {
     let mut bindings = ModelModifierBindings::default();
-    if let Some(root) = root.filter(|_| enabled) {
+    // A cheap authored-source guard keeps ordinary templates off this AST walk.
+    if let Some(root) = root.filter(|root| enabled && root.source.contains("v-model")) {
         collect_children(&root.children, &mut bindings);
     }
     bindings

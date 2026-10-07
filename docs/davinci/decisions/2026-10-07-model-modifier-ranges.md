@@ -11,7 +11,7 @@ also asserted that incorrect position.
 ## Decision
 
 Collect the authored modifier AST spans once with the existing per-file Canon
-check tables, skipping the AST walk for files with no modifier props. Keep these private to emission rather than adding a field to
+check tables, skipping the AST walk for templates whose source contains no `v-model`. Keep these private to emission rather than adding a field to
 Croquis's public `PassedProp` struct. Both the individual prop assertion and the
 generic whole-props literal map each generated key to its own modifier token.
 String contents and quoted keys retain separate sub-spans for editor requests
@@ -51,3 +51,18 @@ The same run's production npm audit separately rejected the newly published
 `@modelcontextprotocol/sdk` advisory `GHSA-6qxp-vccf-f47h` (requires 1.31.0);
 that shared dependency repair is owned by the root delivery lane. Retain both
 failed logs and require fresh exact-head source/security proof.
+
+Successor tooling rejected stale Canon consumer inventories and the direct
+`Croquis.component_usages` access used solely to skip collection. Use a cheap
+`v-model` presence guard on the existing template source instead, retaining
+every demand-census gate and adding no Croquis consumer. Regenerate only the
+Canon consumption and typechecker migration shards for the new private
+collector/test imports. All production typechecking and regression assertions
+remain unchanged; fresh source/security Actions are still required.
+
+Ordinary PR Rust shards explicitly disable native typechecker execution. Run
+the modifier CLI corpus in the existing native-phase PR step with
+`VIZE_TEST_REQUIRE_TSGO=1` and an unset disable flag; its exact diagnostic and
+edit/repair assertions must actually execute before acceptance. Extend the
+workflow paths to cover standalone CLI/corpus changes. Generator byte-range
+assertions remain in the ordinary Rust shards.
