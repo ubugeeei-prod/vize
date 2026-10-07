@@ -17,9 +17,8 @@
       };
     in
     {
-      # Every module that needs a package set needs the same overlaid one, and
-      # every module that needs a compiler needs the same pinned toolchain.
-      # Both are resolved once here and handed out as module arguments.
+      # Modules share one overlaid package set. Package builds retain the MSRV;
+      # development follows the exact checked-in contributor toolchain.
       _module.args = {
         inherit pkgs;
         # Pinned here rather than read from `rust-toolchain.toml`: the flake
@@ -33,6 +32,7 @@
           ];
           targets = [ "wasm32-unknown-unknown" ];
         };
+        rustDevToolchain = pkgs.rust-bin.fromRustupToolchainFile ../../rust-toolchain.toml;
       };
     };
 }
