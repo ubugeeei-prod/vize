@@ -19,3 +19,17 @@ trailing-block ordering. Existing full compiler/runtime fixtures, benchmark
 inputs, stage boundaries, instruction ceilings and allocation budgets remain
 unchanged. Fresh hosted source, instruction and allocation results are pending;
 any observed allocation reduction may only ratchet its budget down.
+
+Fresh source `3c8ab916e4c7db4e32085f6d8e9f2b7327fcd4a5`, Rust shard
+`112925841148`, exposed a premise error in the new helper test: bare `<template>`
+parses as `Element`, not transparent `Template` (`parser/element/classify.rs`).
+The failed original input returns `[true, false]` under both the unchanged
+9515 forward planner and the optimized reverse planner. Preserve all five
+original strings and transparent expected vectors. First authenticate their
+raw parsed-AST vectors against the verbatim 9515 planner; then explicitly build
+transparent helper-boundary IR and compare the complete original vectors under
+both planners. This creates no valid-source or runtime credit for the synthetic
+transparent IR, and changes no production code, corpus, input or ceiling.
+The fresh instruction workflow `37659292846` succeeded, while full source
+qualification remains red until this test and the separately owned hotspot
+producer-context test pass on a new head.
