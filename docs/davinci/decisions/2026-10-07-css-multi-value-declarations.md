@@ -71,3 +71,18 @@ advances only for its private module declaration, while every original law body
 and captured asset remains fixed. The generated owned census is regenerated.
 Independent source review found no blocking producer/authority issue before
 this hosted reference repair; fresh exact-head Actions is still required.
+
+## Rust controls use the same current authority
+
+Exact-head Actions `e47ff92607` passed all four tooling shards, including the
+12 complete continuation and 17 rule-layout observer/CLI/CSSOM plans. Rust
+shards retained their older direct expected comparisons and failed on exactly
+the same intentional layouts. Route those two Rust integration controls through
+the existing reviewed 12-row authority; retain every original input/output and
+all three actual public SFC passes. The Rust adapter hashes the entire authority
+and complete original corpus (including every CLI stream), exact input, original
+expected bytes and current output, and binds original configured options. It
+asserts 11 continuation and one rule-layout refinement and a separate strict
+historical mismatch on every affected pass. SHA256 is test-only; production
+dependencies and formatter work do not change. Hosted Rust qualification is
+required on the updated source; earlier tooling success is not transferred.
