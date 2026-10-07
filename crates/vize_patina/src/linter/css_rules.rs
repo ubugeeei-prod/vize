@@ -12,9 +12,9 @@
 
 use super::{LintResult, Linter};
 use crate::rules::css::{
-    CssLinter, CssRule, NoDisplayNone, NoHardcodedValues, NoIdSelectors, NoImportant,
-    NoUtilityClasses, NoVBindPerformance, PreferLogicalProperties, PreferNestedSelectors,
-    PreferSlotted, RequireFontDisplay,
+    CssLinter, CssRule, NoDisplayNone, NoDisplayNoneForTemplate, NoHardcodedValues, NoIdSelectors,
+    NoImportant, NoUtilityClasses, NoVBindPerformance, PreferLogicalProperties,
+    PreferNestedSelectors, PreferSlotted, RequireFontDisplay,
 };
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::profile;
@@ -135,6 +135,7 @@ pub(crate) fn append_builtin_css_diagnostics(
     linter: &Linter,
     descriptor: &SfcDescriptor<'_>,
     result: &mut LintResult,
+    template_root: Option<&vize_relief::RootNode<'_>>,
 ) {
     if descriptor.styles.is_empty() {
         return;
@@ -148,6 +149,17 @@ pub(crate) fn append_builtin_css_diagnostics(
             && linter.is_rule_enabled(rule_name)
             && let Some(rule) = css_rule_for_name(rule_name)
         {
+            let rule = if *rule_name == RULE_NO_DISPLAY_NONE
+                && descriptor
+                    .styles
+                    .iter()
+                    .any(|style| style.content.contains(":global("))
+                && let Some(root) = template_root
+            {
+                Box::new(NoDisplayNoneForTemplate::new(root)) as Box<dyn CssRule>
+            } else {
+                rule
+            };
             css_linter.add_rule(rule);
         }
     }

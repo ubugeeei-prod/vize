@@ -39,6 +39,7 @@ mod prefer_nested_selectors;
 mod prefer_slotted;
 mod require_font_display;
 mod strip_comments;
+mod template_targets;
 mod value_tokens;
 
 pub use strip_comments::strip_vize_comments;
@@ -53,6 +54,7 @@ use vize_l0::String;
 use vize_l0::ToCompactString;
 
 pub use no_display_none::NoDisplayNone;
+pub(crate) use no_display_none::NoDisplayNoneForTemplate;
 pub use no_hardcoded_values::NoHardcodedValues;
 pub use no_id_selectors::NoIdSelectors;
 pub use no_important::NoImportant;
