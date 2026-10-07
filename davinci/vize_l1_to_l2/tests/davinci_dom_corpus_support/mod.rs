@@ -11,6 +11,7 @@
 mod allowlist;
 mod output;
 use output::{first_diff, mismatch_window};
+mod diagnosed;
 mod sfc_inputs;
 
 use std::{collections::BTreeMap, fs};
@@ -49,6 +50,7 @@ pub struct Report {
     pub parsed: u64,
     pub templates: u64,
     pub compared: u64,
+    pub diagnosed_compared: u64,
     pub old_error_skips: u64,
     pub s2_refusal_count: u64,
     pub divergence_count: u64,
@@ -172,6 +174,26 @@ pub fn compare_sfc_template_lane(name: &str, source: &str, report: &mut Report, 
         .filter(|error| !error.is_recoverable())
         .collect();
     if !blocking_errors.is_empty() {
+        if matches!(lane, Lane::Default)
+            && let Some(result) = diagnosed::compare(
+                source,
+                &template.content,
+                &errors,
+                &format!("{}\n{}", old.preamble, old.code),
+            )
+        {
+            match result {
+                Ok(()) => {
+                    report.compared += 1;
+                    report.diagnosed_compared += 1;
+                }
+                Err(error) => {
+                    report.divergence_count += 1;
+                    report.divergences.push(format!("{name}: {error}"));
+                }
+            }
+            return;
+        }
         report.old_error_skips += 1;
         for error in &blocking_errors {
             *report

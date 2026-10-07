@@ -139,12 +139,13 @@ fn dom_emit_agrees_on_sfc_templates_body() {
 
     let corpus = compare_sweep(&sweep);
     eprintln!(
-        "davinci DOM corpus sweep: files={} unreadable={} parsed={} templates={} compared={} patch_fact_entries={} old_error_skips={} s2_refusals={} divergences={}",
+        "davinci DOM corpus sweep: files={} unreadable={} parsed={} templates={} compared={} diagnosed_compared={} patch_fact_entries={} old_error_skips={} s2_refusals={} divergences={}",
         corpus.files,
         corpus.unreadable_count,
         corpus.parsed,
         corpus.templates,
         corpus.compared,
+        corpus.diagnosed_compared,
         corpus.patch_fact_entries,
         corpus.old_error_skips,
         corpus.s2_refusal_count,
