@@ -176,8 +176,14 @@ fn filename_recursion_marks_self_and_keeps_authored_component_names() {
             "{:?}",
             result.error_messages
         );
-        let expected = vize_carton::cstr!("_resolveComponent(\"{tag}\", true)");
-        assert!(result.code.contains(expected.as_str()), "{}", result.code);
+        let ident = tag.replace('-', "_");
+        assert_eq!(
+            component_resolution_lines(&result.code),
+            vec![
+                vize_carton::cstr!("const _component_{ident} = _resolveComponent(\"{tag}\", true)")
+                    .as_str()
+            ]
+        );
     }
     let mut bindings = FxHashMap::default();
     bindings.insert("TreeNode".into(), BindingType::SetupConst);
@@ -197,14 +203,10 @@ fn filename_recursion_marks_self_and_keeps_authored_component_names() {
             ..Default::default()
         },
     );
-    assert!(
-        result
-            .code
-            .contains("const _component_TreeNode = _ctx.TreeNode"),
-        "{}",
-        result.code
+    assert_eq!(
+        component_resolution_lines(&result.code),
+        vec!["const _component_TreeNode = _ctx.TreeNode"]
     );
-    assert!(!result.code.contains("_resolveComponent(\"TreeNode\""));
 }
 
 #[test]
@@ -229,19 +231,17 @@ fn setup_directives_resolve_locally_and_registry_directives_stay_global() {
         "{:?}",
         result.error_messages
     );
-    assert!(
-        result
-            .code
-            .contains("const _directive_local_mark = _ctx.vLocalMark"),
-        "{}",
-        result.code
+    let declarations = result
+        .code
+        .lines()
+        .map(str::trim)
+        .filter(|line| line.starts_with("const _directive_"))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        declarations,
+        vec![
+            "const _directive_global_mark = _resolveDirective(\"global-mark\")",
+            "const _directive_local_mark = _ctx.vLocalMark",
+        ]
     );
-    assert!(
-        result
-            .code
-            .contains("const _directive_global_mark = _resolveDirective(\"global-mark\")"),
-        "{}",
-        result.code
-    );
-    assert!(!result.code.contains("_resolveDirective(\"local-mark\")"));
 }
