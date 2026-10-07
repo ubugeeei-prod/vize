@@ -5,6 +5,8 @@
 )]
 
 mod davinci_dom_corpus_support;
+#[path = "davinci_dom_n8n_default_loops/empty_props.rs"]
+mod empty_props;
 use davinci_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
 
 const ORIGINAL: &str = include_str!(
