@@ -1,9 +1,11 @@
 pub(crate) mod defaults;
 mod emits;
 mod expose;
+mod slots;
 mod tracker;
 
 pub use expose::{ExposeBinding, ExposeDefinition};
+pub use slots::SlotsDefinition;
 
 use vize_carton::{CompactString, FxHashMap};
 pub const DEFINE_PROPS: &str = "defineProps";
@@ -311,15 +313,6 @@ pub struct TopLevelAwait {
     pub start: u32,
     pub end: u32,
     pub expression: CompactString,
-}
-
-/// Slots definition from defineSlots
-#[derive(Debug, Clone)]
-pub struct SlotsDefinition {
-    /// Slot name
-    pub name: CompactString,
-    /// Slot props type (if known)
-    pub props_type: Option<CompactString>,
 }
 
 /// Musea art metadata from defineArt(component, options).
