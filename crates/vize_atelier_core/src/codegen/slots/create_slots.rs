@@ -38,7 +38,7 @@ pub(super) fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'
                 ctx.newline();
                 generate_conditional_slot(ctx, if_node);
             }
-            TemplateChildNode::For(for_node) => {
+            TemplateChildNode::For(for_node) if child_is_slot_template(child) => {
                 // v-for on slot template: generate looped slot entries
                 if !first {
                     ctx.push(",");
