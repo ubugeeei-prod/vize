@@ -42,3 +42,14 @@ Use the locked official Vue compiler for the control oracle while retaining
 every original source, control, expected phase and diagnostics assertion.
 The successor requires its own complete Actions; predecessor green lanes
 and the single original-case pass grant no successor acceptance.
+
+Source `0910fca0881094e7eb99cf97b5b98ef83a34d97d` passes the original again
+and the first five official whole-trace controls. [Worker 1](https://github.com/ubugeeei-prod/vize/actions/runs/37591339702/job/112696103427)
+fails only the sixth control’s literal expected vector after current/official
+traces agree: static `:data-label` is correctly camelized to `dataLabel` by both
+compilers, but the authored pattern requested `'data-label'`. Preserve the complete
+prior controls and raw failure. Change only that pattern key to `'dataLabel'`;
+the original reported App/Child, all independently authored expected phases and
+every production blob remain unchanged. The final parent-default control and
+whole successor still require actual execution. This correction does not relax
+the official comparator or any assertion.

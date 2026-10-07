@@ -19,7 +19,7 @@
           },
           {
             "path": "controls.json",
-            "sha256": "e072a3975b45986e16a2fb3172785b44b155577dcb38bfd25ddd267b7e064cae"
+            "sha256": "b278840d9b5ed9c23c47385bed6ada3438e794dd3fb9c4af7beb1a748b948ac8"
           },
           {
             "path": "original-issue.md",
@@ -50,8 +50,16 @@
             "sha256": "5e22dd0450f8e8b12dad94501708254077882a79f17134964e9884741febbbcb"
           },
           {
+            "path": "controls-source-0910fca.original.json",
+            "sha256": "e072a3975b45986e16a2fb3172785b44b155577dcb38bfd25ddd267b7e064cae"
+          },
+          {
+            "path": "quoted-key-source-0910fca.failure.raw.txt",
+            "sha256": "3aa7494d2c6f43c59e76df173300f5039986531180078e18498b0dcef2d2c1a1"
+          },
+          {
             "path": "custody.json",
-            "sha256": "933b25751acfb81401aff7dcf23c432f1be8cc31b78504329c324c5a9336fc96"
+            "sha256": "6c7139b259472c6b89ba0747acdb0132c27b39ba3489b7a9fe9e3badf48fcc37"
           }
         ]
       },

@@ -646,7 +646,7 @@
   },
   {
     "name": "quoted-key",
-    "app": "<script setup>import Child from \"./Child.vue\"; import { state, record } from \"./fixture\";</script>\n<template><Child v-slot=\"{ 'dataLabel': local = (record('default'), state.fallback), count }\">{{ local }}:{{ count }}</Child></template>\n",
+    "app": "<script setup>import Child from \"./Child.vue\"; import { state, record } from \"./fixture\";</script>\n<template><Child v-slot=\"{ 'data-label': local = (record('default'), state.fallback), count }\">{{ local }}:{{ count }}</Child></template>\n",
     "child": "<script setup>import { state } from \"./fixture\";</script>\n<template><slot :label=\"state.ready ? state.slotLabel : undefined\" :nested=\"{ label: state.ready ? state.slotLabel : undefined }\" :items=\"[state.ready ? state.slotLabel : undefined]\" :data-label=\"state.ready ? state.slotLabel : undefined\" :count=\"state.count\" /></template>\n",
     "context": {
       "count": 1,
