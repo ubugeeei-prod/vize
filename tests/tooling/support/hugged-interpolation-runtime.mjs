@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { compileFunction } from "node:vm";
 import { Window } from "happy-dom";
 
 const window = new Window();
@@ -19,7 +20,7 @@ function load(code, name) {
     )
     .replace(`export function ${name}`, `function ${name}`);
   assert.doesNotMatch(body, /\b(?:import|export)\b/);
-  return new Function("Vue", "Server", `${body}\nreturn ${name};`)(vue, server);
+  return compileFunction(`${body}\nreturn ${name};`, ["Vue", "Server"])(vue, server);
 }
 
 // Consume the two exact complete compiler modules; no code-normalized comparison.

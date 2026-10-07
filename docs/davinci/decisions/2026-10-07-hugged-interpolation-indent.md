@@ -101,3 +101,12 @@ changes and every reviewed production/corpus/observer blob. The b537
 independent source-only review does not replace fresh composed-source
 65CLI/39API/52compiler/16paired runtime and protected acceptance.
 Ready publication retains auto-merge absent until exact-source gates pass.
+
+Exact-head Check 37494720141 passes its source Rust, canonical corpus, JS
+package and tooling jobs, including the complete runtime observations, but
+fails check-js on the runtime helper's Function constructor. Replace only
+that compilation call with Node's compileFunction, matching the existing
+runtime observers. Preserve the complete module body, explicit Vue/Server
+bindings, returned render function and every assertion. Fresh exact-head
+Actions must qualify both lint and the original runtime controls before queue
+admission; no product output or expected reference changes in this repair.
