@@ -30,6 +30,21 @@ resolves `LiteralConst` through its existing scope resolver after lexical loop
 and slot bindings, preserving those shadowing rules. The regression parses the
 whole emitted module and compares the complete component-proxy member-read
 vector with an empty vector; this replaces fragment checks without an allowlist.
+
+A scope review found that literal metadata is broader than actual SFC hoisting:
+template literals, negative literals and multiple-declarator consts can stay
+inside setup. The Vapor generation-only metadata normalizes those names to
+setup constants using the retained program. Its declaration predicate is shared
+with the existing hoister. Public metadata stays unchanged, and enums and
+eligible module constants remain lexical. Complete-module controls require the
+unhoisted literals and plain Options API setup locals to remain proxy reads.
+
+Hosted run `37591703876` proved the original enum matrix and lint controls, and
+reported exactly four snapshot changes: hoisted `message`, `title` and `visible`
+now read directly. Complete decoded Rspack bundles differ only at those reads;
+reactive `count`, CSS, HMR and component resolution stay the same. The narrow
+snapshot updates retain that observed behavior; the scope guards require fresh
+exact-head Actions before admission.
 The existing conversion call owns enum enrichment so the oversized entry file
 does not grow. Regenerated source inventories retain the actual added uses.
 

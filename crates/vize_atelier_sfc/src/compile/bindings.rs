@@ -3,6 +3,9 @@
 //! Handles converting between Croquis and legacy binding formats,
 //! and registering bindings from normal `<script>` blocks.
 
+mod vapor;
+pub(super) use vapor::for_vapor;
+
 use oxc_ast::ast::{
     BindingPattern, Declaration, Expression, ImportDeclarationSpecifier, Program, Statement,
     VariableDeclaration, VariableDeclarationKind,

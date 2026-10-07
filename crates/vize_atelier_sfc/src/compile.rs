@@ -577,7 +577,7 @@ fn compile_sfc_inner(
                         inline: false,
                         component_name: Some(&component_name),
                         experimental_self_component: experimental_options.self_component,
-                        bindings: Some(&script_bindings),
+                        bindings: Some(&bindings::for_vapor(&script_bindings, &setup_program)),
                         croquis: None,
                     },
                     template_syntax,
