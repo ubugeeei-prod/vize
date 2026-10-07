@@ -93,3 +93,13 @@ calls and two skips at 1,057/87 in the shared constant used by both ordinary and
 legacy-differential lanes. Compared templates remain 869 and trace lines remain
 6,316; every comparison, original fixture and whole slot oracle stays unchanged.
 This observed census repair requires fresh exact-head Actions before acceptance.
+
+Corrected source `43ca01f9` passes all four Rust shards and the exact battery
+census, all tooling/JS/playground/Nuxt3/4 checks in Check 37592915351. Hosted tooling
+retains source-built receipts for 120 actual slot CLI calls and the existing 88
+Boolean calls with whole JSON/stderr/file/idempotence contracts. After actual SDK
+repair #8148 merges as `706a5b78` and webcam timing repair #8139 as `b2786877`,
+replay the existing slot PR on that actual main. All rule, original corpus,
+29-vector/seven-option/unsafe/LSP and CLI120/Boolean88 source/oracle bytes stay
+identical. Preserve the complete incoming 350-line decision record and require
+fresh security/full/protected checks, actual merge and installed replay.
