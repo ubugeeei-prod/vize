@@ -111,7 +111,13 @@ export function verifyInputs(fixtureRoot, manifest) {
   return { fixtureRevision: manifest.revision, originals, licenses };
 }
 
-export function validateCapture(root, fixtureRoot, manifest) {
+export function validateCapture(root, fixtureRoot, manifest, languageRecipes) {
+  assert.deepEqual(
+    languageRecipes.map((item) => item.path),
+    manifest.cases.map((item) => item.path),
+    "every template language recipe must derive from the independent original parse",
+  );
+  const languages = new Map(languageRecipes.map((item) => [item.path, item.isTs]));
   const observations = [];
   for (const item of manifest.cases) {
     const filename = `${path.basename(item.path)}.json`;
@@ -134,6 +140,7 @@ export function validateCapture(root, fixtureRoot, manifest) {
     );
     for (const row of packet.rows) {
       if (row.kind === "template") {
+        assert.equal(row.isTs, languages.get(item.path), `authored TS recipe: ${item.path}`);
         assert.equal(typeof row.legacy.assembled, "string");
         assert.ok(Array.isArray(row.legacy.errors));
         assert.ok(typeof row.native.assembled === "string" || row.native.assembled === null);
@@ -272,15 +279,32 @@ export function validateCurrentParity(root, manifest, diagnosticContract) {
   return comparisons;
 }
 
-export function sourceReceipt(root, output, targetRoot, inputs) {
+export function sourceReceipt(root, output, targetRoot, inputs, invocation) {
   const binary = path.join(targetRoot, "ci/examples/n8n_compiler_custody");
+  const sourceRoot = fs.realpathSync(root);
+  const manifestPath = path.join(sourceRoot, "Cargo.toml");
+  assert.equal(invocation.command, "cargo");
+  assert.equal(fs.realpathSync(invocation.cwd), sourceRoot);
+  assert.equal(invocation.args[invocation.args.indexOf("--manifest-path") + 1], manifestPath);
   run("git", ["diff", "HEAD", "--exit-code"], root);
   return {
     schema: "vize.n8n.compiler-source",
     version: 1,
     sourceRevision: run("git", ["rev-parse", "HEAD"], root),
     sourceTree: run("git", ["rev-parse", "HEAD^{tree}"], root),
-    recipe: ["cargo", ...recipe, "--", "<same read-only fixture>", "<phase output>"],
+    recipe: [
+      "cargo",
+      ...recipe,
+      "--manifest-path",
+      "<authenticated source manifest>",
+      "--",
+      "<same read-only fixture>",
+      "<phase output>",
+    ],
+    invocation,
+    sourceRoot,
+    manifestPath,
+    manifestSha256: sha256(read(root, "Cargo.toml")),
     officialRecipe: [
       process.execPath,
       official,

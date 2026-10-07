@@ -134,6 +134,7 @@ export async function validateOfficial(root, fixture, manifest) {
   assert.equal(summary.records.length, 10);
   const files = [];
   const qualifications = [];
+  const languageRecipes = [];
   function packet(directory, name) {
     const relative = `${directory}/${name}.json`;
     const bytes = read(root, relative);
@@ -175,6 +176,7 @@ export async function validateOfficial(root, fixture, manifest) {
     assert.equal(template, descriptor.template.content);
     const id = `data-v-${item.sha256.slice(0, 8)}`;
     const isTS = ["ts", "tsx"].includes(descriptor.scriptSetup?.lang ?? descriptor.script?.lang);
+    languageRecipes.push({ path: item.path, isTs: isTS });
     const extension = isTS ? "ts" : "js";
     const observedNames = [];
     function templatePacket(sourceMap, mode, bindings) {
@@ -333,6 +335,7 @@ export async function validateOfficial(root, fixture, manifest) {
     captureSha256: sha256(rawSummary),
     files,
     qualifications,
+    languageRecipes,
     rawMapDiagnosticAnomaly:
       "InstanceAi map=true shared error locations retain official lines 710/1246/1246; authored source locations remain 710/719/719.",
   };

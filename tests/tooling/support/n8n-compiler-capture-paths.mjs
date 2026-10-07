@@ -1,5 +1,5 @@
 export const productSource = "72aac62d7c2932c71075d579c76459b270d909da";
-export const example = "crates/vize_atelier_sfc/examples/n8n_compiler_custody.rs";
+export const example = "crates/vize_atelier_sfc/examples/n8n_compiler_custody/main.rs";
 export const exampleSupport = "crates/vize_atelier_sfc/examples/n8n_compiler_custody/native.rs";
 export const cases = "tests/_fixtures/differential/compiler/n8n-adoption/cases.json";
 export const official = "tools/support/compat/n8n-official-compiler-custody.mjs";

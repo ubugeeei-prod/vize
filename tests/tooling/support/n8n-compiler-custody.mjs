@@ -46,19 +46,38 @@ assert.ok(!output.startsWith(`${fixture}${path.sep}`) && output !== fixture);
 fs.mkdirSync(output, { recursive: true });
 const write = (name, value) =>
   fs.writeFileSync(path.join(output, name), `${JSON.stringify(value, null, 2)}\n`);
-const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-n8n-before-"));
+const temporary = fs.mkdtempSync(
+  path.join(process.env.RUNNER_TEMP ?? os.tmpdir(), "vize-n8n-custody-"),
+);
 const before = path.join(temporary, "source");
-const target = path.resolve(process.env.CARGO_TARGET_DIR ?? path.join(root, "target"));
+const targetRoot = path.join(temporary, "cargo-targets");
 const manifest = JSON.parse(read(root, cases));
 let inputs;
 let added = false;
 
 async function capture(state, source) {
+  source = fs.realpathSync(source);
   const destination = path.join(output, state);
+  const revision = run("git", ["rev-parse", "HEAD"], source);
+  assert.match(revision, /^[a-f0-9]{40}$/u);
+  // Cargo's shared workspace fingerprints can reuse the other source's executable.
+  const target = path.join(targetRoot, "n8n-custody-build", state, revision);
+  const invocation = {
+    command: "cargo",
+    args: [
+      ...recipe,
+      "--manifest-path",
+      path.join(source, "Cargo.toml"),
+      "--",
+      fixture,
+      path.join(destination, "vize"),
+    ],
+    cwd: source,
+  };
   fs.mkdirSync(destination, { recursive: true });
   const log = fs.openSync(path.join(destination, "source-capture.log"), "w");
   try {
-    run("cargo", [...recipe, "--", fixture, path.join(destination, "vize")], source, {
+    run(invocation.command, invocation.args, invocation.cwd, {
       env: { ...process.env, CARGO_TARGET_DIR: target },
       stdio: ["ignore", log, log],
     });
@@ -73,15 +92,24 @@ async function capture(state, source) {
   } finally {
     fs.closeSync(log);
   }
-  const receipt = sourceReceipt(source, state, target, inputs);
-  const packets = validateCapture(path.join(destination, "vize"), fixture, manifest);
-  const authoredPackets = validateAuthoredCapture(path.join(destination, "vize"));
-  validateDiagnosticContract(path.join(destination, "vize"), source);
+  const receipt = sourceReceipt(source, state, target, inputs, invocation);
+  fs.writeFileSync(
+    path.join(destination, "source-authentication.json"),
+    `${JSON.stringify(receipt, null, 2)}\n`,
+  );
   const officialCapture = await validateOfficial(
     path.join(destination, "official"),
     fixture,
     manifest,
   );
+  const packets = validateCapture(
+    path.join(destination, "vize"),
+    fixture,
+    manifest,
+    officialCapture.languageRecipes,
+  );
+  const authoredPackets = validateAuthoredCapture(path.join(destination, "vize"));
+  validateDiagnosticContract(path.join(destination, "vize"), source);
   const result = {
     ...receipt,
     packets,
@@ -117,6 +145,11 @@ try {
   assert.deepEqual(baselineReceipt.drivers, currentReceipt.drivers);
   assert.deepEqual(baselineReceipt.recipe, currentReceipt.recipe);
   assert.deepEqual(baselineReceipt.officialRecipe, currentReceipt.officialRecipe);
+  assert.notEqual(
+    baselineReceipt.environment.CARGO_TARGET_DIR,
+    currentReceipt.environment.CARGO_TARGET_DIR,
+    "before and current source require separate revision-bound Cargo targets",
+  );
   assert.equal(
     baselineReceipt.diagnosticContractSha256,
     currentReceipt.diagnosticContractSha256,

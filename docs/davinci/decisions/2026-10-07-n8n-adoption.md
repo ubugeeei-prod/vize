@@ -73,8 +73,8 @@ protected squash merges need not retain it; baseline-to-repair-anchor ancestry
 must pass. Complete raw packets are saved before parity/runtime assertions, so
 a failed gate retains its evidence and receives no completion credit.
 The immutable capture-only commit is
-`67e7d0f1392d8bdd08156ac4de900cf2065c98fd`; the reviewed descending repair
-anchor is `23cb9d52f752634c2c3c1d066ad2759bd01d1d0d`. Preserve their real
+`f5699c195e627ad26aa1c8efd4a59266120cd9b9`; the reviewed descending repair
+anchor is `5eacecad19972f8522c9320de2ec0bd3c294d0d2`. Preserve their real
 commit chain when integrating the existing PR. The ordinary default-mode
 baseline has two complete legacy errors with missing locations; retain those
 `null` locations as failed historical evidence. Its two native diagnostics
@@ -98,6 +98,40 @@ runtime harness. All thirty-four capture-only paths, thirty-three identical
 driver files, original inputs and protected ceilings remain unchanged in scope.
 Fresh source compilation, before/after capture and behavior qualification are
 required; the failed run provides no behavior or completion credit.
+
+[The next failed custody run](https://github.com/ubugeeei-prod/vize/actions/runs/37608888161)
+retains complete packets in artifact `11477270053`. Its before phase genuinely
+compiled `67e7d0f1392d8bdd08156ac4de900cf2065c98fd`, but the after command
+reused the same executable from a shared Cargo target directory without
+recompiling. Both binary hashes are
+`8688996e9a9dab6de04f18ac16467b560878cb16f3b0509818a6ee1ecf37c1b0`;
+the alleged current native packets retain old behavior and receive no current
+source credit. The unchanged complete diagnostic comparator rejected them.
+Each phase now uses its own source-revision-bound Cargo target in a unique
+runner temporary directory, outside the uploaded packet root. The same locked
+recipe explicitly binds the source manifest and working directory; each receipt
+retains those exact arguments, source/tree, manifest/lock/toolchain and actual
+producer binary hashes. Compiler cache reuse does not share target fingerprints.
+
+The new capture-only successor moves the unchanged example into its ordinary
+module directory and derives TypeScript mode from both original script blocks.
+Both legacy/native template modes record that flag; the judge checks it against
+the independently parsed pinned stock descriptor, rejecting missing or false
+plain-JS flags. Historical plain-JS packets remain raw evidence. All thirty-four
+capture paths and thirty-three identical drivers remain explicit. The diagnosed
+corpus target declares its existing differential feature and runs explicitly in
+the same job. Ordinary module layout, byte-wise digest formatting, an equivalent
+exemption predicate and the [reviewed storage inventory](./2026-10-07-n8n-native-key-storage.md)
+preserve all input bytes, diagnostic metadata, assertions and instruction caps.
+
+The actual historical default-slot runtime failed before rendering default
+content: stock `createSlots` received an undefined descriptor, yielding five
+cumulative `TypeError` notifications and empty trees across the render/update
+phases. Preserve that complete failure vector, its source/module/packet hashes
+and the separately executed baseline-native trace. The unchanged current and
+stock six-phase golden still requires complete trees, keyed identity, one
+iterator call per render, updates, toggles, empty diagnostics and unmount cleanup.
+The before failure earns no successful runtime or performance credit.
 
 The independent reference is n8n's locked Vue/compiler-sfc 3.5.26 browser
 bundle, authenticated by SHA256. All ten complete originals retain parse,

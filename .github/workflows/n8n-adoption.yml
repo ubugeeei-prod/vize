@@ -59,8 +59,8 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     env:
-      VIZE_N8N_CAPTURE_BASELINE: 67e7d0f1392d8bdd08156ac4de900cf2065c98fd
-      VIZE_N8N_REPAIR_ANCHOR: 23cb9d52f752634c2c3c1d066ad2759bd01d1d0d
+      VIZE_N8N_CAPTURE_BASELINE: f5699c195e627ad26aa1c8efd4a59266120cd9b9
+      VIZE_N8N_REPAIR_ANCHOR: 5eacecad19972f8522c9320de2ec0bd3c294d0d2
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -99,6 +99,8 @@ jobs:
             "$RUNNER_TEMP/n8n-official-compiler.mjs"
       - name: Verify source SFC default-slot runtime and iterator laws
         run: cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test n8n_default_slot_loops -- --nocapture
+      - name: Verify complete diagnosed compiler corpus and changed-source refusal
+        run: cargo test --locked --profile ci -p vize_l1_to_l2 --features legacy-differential --test davinci_dom_n8n_diagnosed -- --nocapture
       - name: Upload complete source, official modules, maps and diagnostic vectors
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
