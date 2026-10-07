@@ -37,6 +37,9 @@ resolve its actual child, and keep its query offset for either import delimiter.
 The normal path without Vue imports avoids dependency projection and translation
 allocations. Fresh Actions must prove the original corpus and exact unsafe controls
 after this repair; the failing historical run grants no completion credit.
+The current-main refresh retains the original source and fixture bytes and every
+incoming canonical clause within 350 lines. Successor full/required-Corsa Actions
+must pass before draft readiness; protected delivery remains a separate gate.
 
 Retain the complete original #7895/#7902 reproductions and both follow-up reports
 in the linter corpus. Runtime controls require exact warning ranges for unsafe
