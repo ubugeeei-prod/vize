@@ -12,6 +12,8 @@ RouterLink / NuxtLink に to を指定します。
 適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
+SFC の単一ルートにあるリンクは、親から属性を継承できるため対象外になる場合があります。この例は明示的な遷移先が必要な内部のリンクです。
+
 ## 設定（Vite+）
 
 ```ts
@@ -37,7 +39,7 @@ vp run lint
 
 ```vue
 <template>
-  <RouterLink>Settings</RouterLink>
+<nav><RouterLink>Settings</RouterLink></nav>
 </template>
 ```
 
@@ -45,7 +47,7 @@ vp run lint
 
 ```vue
 <template>
-  <RouterLink :to="{ name: 'settings' }">Settings</RouterLink>
+<nav><RouterLink to="/settings">Settings</RouterLink></nav>
 </template>
 ```
 

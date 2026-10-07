@@ -37,24 +37,15 @@ vp run lint
 
 ```vue
 <template>
-  <table border="1">
-    <tr>
-      <td>Total</td>
-    </tr>
-  </table>
+<p align="center">Notice</p>
 </template>
 ```
 
 ## 良い
 
 ```vue
-<template>
-  <table class="summary">
-    <tr>
-      <td>Total</td>
-    </tr>
-  </table>
-</template>
+<template><p class="notice">Notice</p></template>
+<style scoped>.notice { text-align: center; }</style>
 ```
 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。

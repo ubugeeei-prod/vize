@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
+import { crossMetadata } from "../../docs/scripts/rules/project-metadata.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
 const read = (path) => readFileSync(resolve(root, path), "utf8");
@@ -25,13 +26,16 @@ function implementations(directory = "crates/vize_patina/src/rules") {
   return found;
 }
 
-test("the generated bilingual reference covers every implemented rule with real example context", () => {
-  const names = [...implementations()].sort();
+await test("the generated bilingual reference covers every implemented rule with real example context", () => {
+  const names = [...implementations()].sort((a, b) => a.localeCompare(b));
   assert.equal(names.length, 251);
   for (const locale of ["", "ja/"]) {
     const index = read(`docs/content/${locale}rules/all.md`);
     const links = [...index.matchAll(/^\| \[`([^`]+)`\]\(\.\/reference\/([^)]*)\)/gm)];
-    assert.deepEqual(links.map((match) => match[1]).sort(), names);
+    assert.deepEqual(
+      links.map((match) => match[1]).sort((a, b) => a.localeCompare(b)),
+      names,
+    );
     for (const [, name, file] of links) {
       const page = read(`docs/content/${locale}rules/reference/${file}`);
       assert.ok(page.includes(`# \`${name}\``), name);
@@ -49,7 +53,7 @@ test("the generated bilingual reference covers every implemented rule with real 
   }
 });
 
-test("generation is deterministic without a previously built native binary", () => {
+await test("generation is deterministic without a previously built native binary", () => {
   const result = spawnSync(
     process.execPath,
     ["docs/scripts/generate-patina-rules-page.mjs", "--check"],
@@ -58,12 +62,17 @@ test("generation is deterministic without a previously built native binary", () 
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
-test("migration retains all mapped, divergent and unsupported ESLint identities", () => {
+await test("migration retains all mapped, divergent and unsupported ESLint identities", () => {
   const inventory = JSON.parse(read("tests/_fixtures/patina-eslint-vue-rule-map.json"));
   for (const locale of ["", "ja/"]) {
     const page = read(`docs/content/${locale}rules/migration.md`);
-    const rows = [...page.matchAll(/^\| `([^`]+)` \|/gm)].map((match) => match[1]).sort();
-    assert.deepEqual(rows, Object.keys(inventory.entries).sort());
+    const rows = [...page.matchAll(/^\| `([^`]+)` \|/gm)]
+      .map((match) => match[1])
+      .sort((a, b) => a.localeCompare(b));
+    assert.deepEqual(
+      rows,
+      Object.keys(inventory.entries).sort((a, b) => a.localeCompare(b)),
+    );
     assert.match(page, /252/);
     assert.match(page, /123/);
     assert.match(page, /127/);
@@ -76,3 +85,32 @@ test("migration retains all mapped, divergent and unsupported ESLint identities"
 function codeBlocks(page) {
   return [...page.matchAll(/```\w+\n[\s\S]*?\n```/g)].map((match) => match[0]);
 }
+
+await test("project references retain every code and distinguish actual CLI producers", () => {
+  const codes = crossMetadata(root);
+  assert.equal(codes.length, 60);
+  for (const [status, count] of [
+    ["cli", 20],
+    ["library", 15],
+    ["contract", 25],
+  ])
+    assert.equal(codes.filter((code) => code.status === status).length, count);
+  for (const locale of ["", "ja/"]) {
+    const index = read(`docs/content/${locale}rules/cross-file.md`);
+    const rows = [...index.matchAll(/^\| \[`([^`]+)`\]\(\.\/project\/([^)]*)\)/gm)];
+    assert.equal(rows.length, 66);
+    for (const [_, id, path] of rows) {
+      const page = read(`docs/content/${locale}rules/project/${path}`);
+      assert.ok(page.includes(`# \`${id}\``), id);
+      for (const label of locale
+        ? ["既定の重大度:", "適用範囲:", "オプション:", "## 悪い", "## 良い"]
+        : ["Default severity:", "Applies to:", "Options:", "## Bad", "## Good"])
+        assert.ok(page.includes(label), `${id}: ${label}`);
+      assert.deepEqual(
+        codeBlocks(page),
+        codeBlocks(read(`docs/content/rules/project/${path}`)),
+        id,
+      );
+    }
+  }
+});

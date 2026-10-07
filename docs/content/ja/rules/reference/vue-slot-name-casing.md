@@ -36,19 +36,17 @@ vp run lint
 ## 悪い
 
 ```vue
-<MyComponent>
-<template #mySlot>...</template>
-<template #my_slot>...</template>
-</MyComponent>
+<template>
+<MyCard><template #mySlot>Content</template></MyCard>
+</template>
 ```
 
 ## 良い
 
 ```vue
-<MyComponent>
-<template #my-slot>...</template>
-<template #default>...</template>
-</MyComponent>
+<template>
+<MyCard><template #my-slot>Content</template></MyCard>
+</template>
 ```
 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。

@@ -12,6 +12,8 @@ title: "vue/no-template-shadow"
 適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
+現在の検査は入れ子になった v-for の変数を比較します。script 内の名前と同じという理由だけで単独の v-for を検出するものではありません。
+
 ## 設定（Vite+）
 
 ```ts
@@ -36,24 +38,16 @@ vp run lint
 ## 悪い
 
 ```vue
-<script setup lang="ts">
-const item = ref("selected");
-</script>
-
 <template>
-  <p v-for="item in items" :key="item.id">{{ item.name }}</p>
+<div v-for="item in items" :key="item.id"><span v-for="item in item.children" :key="item.id">{{ item.name }}</span></div>
 </template>
 ```
 
 ## 良い
 
 ```vue
-<script setup lang="ts">
-const selectedItem = ref("selected");
-</script>
-
 <template>
-  <p v-for="item in items" :key="item.id">{{ item.name }}</p>
+<div v-for="item in items" :key="item.id"><span v-for="child in item.children" :key="child.id">{{ child.name }}</span></div>
 </template>
 ```
 

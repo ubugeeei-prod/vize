@@ -37,7 +37,7 @@ vp run lint
 
 ```vue
 <template>
-<template v-if="ready" class="notice"><p>Ready</p></template>
+<section><template v-if="ready" class="notice"><p>Ready</p></template></section>
 </template>
 ```
 
@@ -45,7 +45,7 @@ vp run lint
 
 ```vue
 <template>
-<template v-if="ready"><p class="notice">Ready</p></template>
+<section><template v-if="ready"><p class="notice">Ready</p></template></section>
 </template>
 ```
 

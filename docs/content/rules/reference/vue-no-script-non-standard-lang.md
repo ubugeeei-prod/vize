@@ -8,11 +8,15 @@ Discourage non-standard script lang values
 
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
-Automatic fix: None; review the suggested change  
+Automatic fix: Not implemented for SFC lint  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
-## Configuration (Vite+)
+Current support: `no-sfc-finding`
+
+This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.
+
+## Configured ID (currently no SFC finding)
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -37,16 +41,18 @@ vp run lint
 
 ```vue
 <script lang="coffee">
-# CoffeeScript
+count = 0
 </script>
+<template><p>Notice</p></template>
 ```
 
 ## Good
 
 ```vue
-<script setup lang="ts">
-const label = "Save";
+<script lang="ts">
+const count = 0;
 </script>
+<template><p>Notice</p></template>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.

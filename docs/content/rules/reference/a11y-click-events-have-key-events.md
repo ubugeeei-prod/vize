@@ -12,6 +12,8 @@ Automatic fix: None; review the suggested change
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
+Checks non-interactive elements without an interactive role. Native buttons and elements with an interactive ARIA role are outside this rule's finding.
+
 ## Configuration (Vite+)
 
 ```ts
@@ -37,7 +39,7 @@ vp run lint
 
 ```vue
 <template>
-  <div role="button" @click="save">Save</div>
+<div @click="activate">Activate</div>
 </template>
 ```
 
@@ -45,7 +47,7 @@ vp run lint
 
 ```vue
 <template>
-  <button type="button" @click="save">Save</button>
+<button @click="activate">Activate</button>
 </template>
 ```
 

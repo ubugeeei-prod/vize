@@ -36,19 +36,17 @@ vp run lint
 ## Bad
 
 ```vue
-<MyComponent>
-<template #mySlot>...</template>
-<template #my_slot>...</template>
-</MyComponent>
+<template>
+<MyCard><template #mySlot>Content</template></MyCard>
+</template>
 ```
 
 ## Good
 
 ```vue
-<MyComponent>
-<template #my-slot>...</template>
-<template #default>...</template>
-</MyComponent>
+<template>
+<MyCard><template #my-slot>Content</template></MyCard>
+</template>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.

@@ -4,7 +4,7 @@ title: All lint rules
 
 # All lint rules
 
-All 251 implemented rules. Follow a rule name for its purpose, scope, configuration, and Bad/Good examples.
+All 251 source catalog entries, including explicitly marked support gaps. Follow a rule name for its purpose, scope, configuration, and Bad/Good examples.
 
 With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `lint.vize.rules`, and run `vp run lint` for Vize and Oxlint diagnostics.
 

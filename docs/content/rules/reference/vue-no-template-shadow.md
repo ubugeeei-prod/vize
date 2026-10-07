@@ -12,6 +12,8 @@ Automatic fix: None; review the suggested change
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
+The current check compares nested v-for bindings. It does not report a single v-for binding merely because it shares a script binding's name.
+
 ## Configuration (Vite+)
 
 ```ts
@@ -36,24 +38,16 @@ vp run lint
 ## Bad
 
 ```vue
-<script setup lang="ts">
-const item = ref("selected");
-</script>
-
 <template>
-  <p v-for="item in items" :key="item.id">{{ item.name }}</p>
+<div v-for="item in items" :key="item.id"><span v-for="item in item.children" :key="item.id">{{ item.name }}</span></div>
 </template>
 ```
 
 ## Good
 
 ```vue
-<script setup lang="ts">
-const selectedItem = ref("selected");
-</script>
-
 <template>
-  <p v-for="item in items" :key="item.id">{{ item.name }}</p>
+<div v-for="item in items" :key="item.id"><span v-for="child in item.children" :key="child.id">{{ child.name }}</span></div>
 </template>
 ```
 

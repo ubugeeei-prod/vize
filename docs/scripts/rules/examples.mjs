@@ -1,30 +1,12 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { manualExamples } from "./manual.mjs";
 import { overrides } from "./overrides.mjs";
 
 export function ruleExamples(root, rule) {
   const override = overrides[rule.name];
   if (override) return override;
-  for (const entry of readdirSync(resolve(root, "docs/content/rules"))) {
-    if (!entry.endsWith(".md") || entry.startsWith("options") || entry === "all.md") continue;
-    const text = readFileSync(resolve(root, "docs/content/rules", entry), "utf8");
-    const heading = `## \`${rule.name}\``;
-    const at = text.indexOf(heading);
-    if (at < 0) continue;
-    const end = text.indexOf("\n## ", at + heading.length);
-    const section = text.slice(at, end < 0 ? undefined : end);
-    const badAt = section.indexOf("Bad");
-    const goodAt = section.indexOf("Good");
-    if (badAt < 0 || goodAt < 0) continue;
-    const bad = firstCode(section.slice(badAt, goodAt));
-    const good = firstCode(section.slice(goodAt));
-    if (bad && good)
-      return {
-        bad: normalize(bad, rule),
-        good: normalize(good, rule),
-        evidence: `docs/content/rules/${entry}`,
-      };
-  }
+  if (manualExamples[rule.name]) return manualExamples[rule.name];
   const source = readFileSync(resolve(root, rule.implementationPath), "utf8");
   const docs = source
     .split("\n")

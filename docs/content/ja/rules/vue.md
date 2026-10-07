@@ -2,489 +2,119 @@
 title: Vue ルール
 ---
 
-<!-- Generated translation; source: rules/vue.md -->
-
 # Vue ルール
 
-Vue ルールは、Patina の単一ファイル ルールです。 SFC テンプレートの構造、ディレクティブの構文、
-コードがランタイムに到達する前に、コンポーネントの名前付け、および Vue 固有の正確さの危険が発生します。
-
-## `vue/require-v-for-key`
-
-すべての `v-for` ノードに安定したキーが必要です。
-
-デフォルトの重大度: `error`
-プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <li v-for="item in items">{{ item.name }}</li>
-</template>
-```
-
-良い：
-
-```vue
-<template>
-  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
-</template>
-```
-
-## `vue/no-use-v-if-with-v-for`
-
-`v-if` と `v-for` を同時に持つノードをレポートします。計算された値をフィルタリングすると、
-リストのアイデンティティが安定し、テンプレートの分析が容易になります。
-
-デフォルトの重大度: `warning`
-プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <li v-for="item in items" v-if="item.visible" :key="item.id">
-    {{ item.name }}
-  </li>
-</template>
-```
-
-良い：
-
-```vue
-<script setup lang="ts">
-const visibleItems = computed(() => items.filter((item) => item.visible));
-</script>
-
-<template>
-  <li v-for="item in visibleItems" :key="item.id">
-    {{ item.name }}
-  </li>
-</template>
-```
-
-## `vue/no-mutating-props`
-
-レポートは props に書き込みます。所有コンポーネントは、イベントまたはモデルを通じて値を更新する必要があります。
-バインディング。
-
-デフォルトの重大度: `error`
-プリセット: `happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ count: number }>();
-
-props.count++;
-</script>
-```
-
-良い：
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ count: number }>();
-const emit = defineEmits<{ "update:count": [value: number] }>();
-
-function increment() {
-  emit("update:count", props.count + 1);
-}
-</script>
-```
-
-## `vue/no-v-html`
-
-生の HTML をレンダリングし、ユーザー制御のコンテンツを XSS シンクに変換できるため、`v-html` をレポートします。
-
-デフォルトの重大度: `warning`
-プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <article v-html="content" />
-</template>
-```
-
-良い：
-
-```vue
-<template>
-  <article>{{ content }}</article>
-</template>
-```
-
-## `vue/no-child-content`
-
-`v-html` または `v-text` も使用する要素の子コンテンツをレポートします。 Vue は次の子を置き換えます。
-そのため、作成されたコンテンツは誤解を招く可能性があります。
-
-デフォルトの重大度: `error`
-プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <p v-text="message">Fallback text</p>
-</template>
-```
-
-良い：
-
-```vue
-<template>
-  <p v-text="message" />
-</template>
-```
-
-## `vue/no-duplicate-attributes`
-
-同じ要素の重複した属性を報告します。
-
-デフォルトの重大度: `error`
-プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <button class="primary" class="large">Save</button>
-</template>
-```
-
-良い：
-
-```vue
-<template>
-  <button class="primary large">Save</button>
-</template>
-```
-
-## `vue/no-dupe-v-else-if`
-
-`v-if` / `v-else-if` チェーン内の繰り返し条件をレポートします。
-
-デフォルトの重大度: `error`
-プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <p v-if="status === 'ready'">Ready</p>
-  <p v-else-if="status === 'ready'">Still ready</p>
-</template>
-```
-
-良い：
-
-```vue
-<template>
-  <p v-if="status === 'ready'">Ready</p>
-  <p v-else-if="status === 'loading'">Loading</p>
-</template>
-```
-
-## `vue/no-template-shadow`
-
-外部スコープの変数をシャドウするテンプレート変数をレポートします。これにより偶発的な事故が防止されます
-読者が期待するものとは異なる値への参照。
-
-デフォルトの重大度: `warning`
-プリセット: `nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<script setup lang="ts">
-const item = ref("selected");
-</script>
-
-<template>
-  <p v-for="item in items" :key="item.id">{{ item.name }}</p>
-</template>
-```
-
-良い：
-
-```vue
-<script setup lang="ts">
-const selectedItem = ref("selected");
-</script>
-
-<template>
-  <p v-for="item in items" :key="item.id">{{ item.name }}</p>
-</template>
-```
-
-## `vue/no-unsafe-url`
-
-次のような安全でないスキームに解決される可能性がある URL バインディングと静的 URL 属性をレポートします。
-`javascript:`、`vbscript:`、または実行可能な `data:` ペイロード。
-
-デフォルトの重大度: `warning`
-プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <iframe src="javascript:alert(1)"></iframe>
-  <object data="data:text/html,<script>alert(1)</script>"></object>
-  <img srcset="/safe.png 1x, javascript:alert(1) 2x" />
-  <a :href="nextUrl">Continue</a>
-</template>
-```
-
-良い：
-
-```vue
-<script setup lang="ts">
-const rawNextUrl = ref("/next");
-const nextUrl = computed(() => {
-  return rawNextUrl.value.startsWith("/") ? rawNextUrl.value : "/";
-});
-</script>
-
-<template>
-  <iframe src="/embedded/report" title="Report"></iframe>
-  <img srcset="/avatar.png 1x, /avatar@2x.png 2x" />
-  <a :href="nextUrl">Continue</a>
-</template>
-```
-
-## `vue/no-unused-components`
-
-テンプレートには決して表示されない、ローカルに登録されたコンポーネントをレポートします。
-
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<script setup lang="ts">
-import UserAvatar from "./UserAvatar.vue";
-</script>
-
-<template>
-  <p>{{ user.name }}</p>
-</template>
-```
-
-良い：
-
-```vue
-<script setup lang="ts">
-import UserAvatar from "./UserAvatar.vue";
-</script>
-
-<template>
-  <UserAvatar :user="user" />
-</template>
-```
-
-## `vue/no-unused-properties`
-
-コンポーネントによって使用されていない、`defineProps` を通じて宣言された props を報告します。
-
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<script setup lang="ts">
-defineProps<{ title: string; description: string }>();
-</script>
-
-<template>
-  <h1>{{ title }}</h1>
-</template>
-```
-
-良い：
-
-```vue
-<script setup lang="ts">
-defineProps<{ title: string; description: string }>();
-</script>
-
-<template>
-  <h1>{{ title }}</h1>
-  <p>{{ description }}</p>
-</template>
-```
-
-## `vue/require-component-is`
-
-`is` バインディングなしで `<component>` をレポートします。
-
-デフォルトの重大度: `error`
-プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <component />
-</template>
-```
-
-良い：
-
-```vue
-<template>
-  <component :is="currentComponent" />
-</template>
-```
-
-## `vue/use-unique-element-ids`
-
-コンポーネントの再利用と SSR にとって `useId()` がより安全な場所の静的リテラル ID をレポートします。
-
-デフォルトの重大度: `warning`
-プリセット: `nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <label for="email">Email</label>
-  <input id="email" />
-</template>
-```
-
-良い：
-
-```vue
-<script setup lang="ts">
-const emailId = useId();
-</script>
-
-<template>
-  <label :for="emailId">Email</label>
-  <input :id="emailId" />
-</template>
-```
-
-## 構文とスタイルの規則
-
-これらのルールには長い例は必要ありませんが、依然として第一級のルールとして動作し、
-名前で設定されます。
-
-`vue/attribute-hyphenation` は、カスタム コンポーネントに属性命名スタイルを適用します。デフォルト:
-`warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
-
-`vue/attribute-order` は、安定した属性順序を強制します。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
-
-`vue/component-definition-name-casing` は、PascalCase コンポーネント定義名を強制します。デフォルト:
-`warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
-
-`vue/component-name-in-template-casing` は、テンプレート内のコンポーネント名の大文字と小文字を強制します。デフォルト:
-`warning`。プリセット: `nuxt`、`opinionated`。
-
-`vue/html-quotes` は、HTML 属性の引用スタイルを強制します。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
-
-`vue/html-self-closing` は自動終了スタイルを強制します。デフォルト: `warning`。プリセット: `nuxt`、
-`opinionated`。`linter.ruleOptions["vue/html-self-closing"]` で `html.void`、`html.normal`、
-`html.component`、`svg`、`math` を設定できます。各値は `"always"`、`"never"`、`"any"` です。
-Vize のデフォルトは void HTML、コンポーネント、SVG、MathML が `"always"`、通常 HTML が `"any"` です。
-
-`vue/multi-word-component-names` では、コンポーネント名に複数の単語が含まれる必要があります。デフォルト:
-`error`。プリセット: `essential`、`nuxt`、`opinionated`。
-
-`vue/mustache-interpolation-spacing` は、口ひげ補間内のスペースを強制します。デフォルト:
-`warning`。プリセット: `happy-path`、`nuxt`、`opinionated`。
-
-`vue/no-boolean-attr-value` は、ブール型 HTML 属性の明示的な値を許可しません。デフォルト:
-`warning`。プリセット: `nuxt`、`opinionated`。
-
-`vue/no-inline-style` は、インライン `style` 属性を推奨しません。デフォルト: `warning`。プリセット: `nuxt`、
-`opinionated`。
-
-`vue/no-lone-template` は、不要な `<template>` ラッパーを禁止します。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
-
-`vue/no-multi-spaces` では、テンプレート内でスペースを繰り返すことは許可されません。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
-
-`vue/no-non-component-keep-alive-child` は、`<KeepAlive>` 直下のプレーン要素ラッパーを報告します。
-Vue がキャッシュできるのはコンポーネント VNode だけだからです。デフォルト: `warning`。プリセット: なし
-（オプトイン）。`v-show` だけのラッパーは無視します。
-
-`vue/no-preprocessor-lang` は、SFC ブロック内の CSS プリプロセッサ言語を抑制します。デフォルト: `warning`。
-プリセット: `nuxt`、`opinionated`。
-
-`vue/no-reserved-component-names` では、予約された HTML 名または Vue 名をコンポーネント名として使用できません。デフォルト:
-`error`。プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`。
-
-`vue/no-script-non-standard-lang` は、非標準のスクリプト言語を抑制します。デフォルト: `warning`。
-プリセット: `nuxt`、`opinionated`。
-
-`vue/no-src-attribute` は、SFC ブロックの外部 `src` 属性を抑制します。デフォルト: `warning`。
-プリセット: `nuxt`、`opinionated`。
-
-`vue/no-template-key` は、`<template>` での `key` を禁止します。デフォルト: `error`。プリセット: `essential`、
-`happy-path`、`nuxt`、`opinionated`。
-
-`vue/no-template-lang` は、`<template>` での `lang` を阻止します。デフォルト: `warning`。プリセット: `nuxt`、
-`opinionated`。
-
-`vue/no-textarea-mustache` は、`<textarea>` 内での口ひげ補間を禁止します。デフォルト: `error`。
-プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`。
-
-`vue/no-unused-vars` は、`v-for` および `v-slot` によって導入された未使用の変数をレポートします。デフォルト:
-`warning`。プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`。
-
-`vue/no-useless-template-attributes` は、Vue が無視する `<template>` の属性を禁止します。デフォルト:
-`error`。プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`。
-
-`vue/no-v-text-v-html-on-component` は、コンポーネント要素で `v-text` または `v-html` を禁止します。デフォルト:
-`error`。プリセット: `essential`、`happy-path`、`nuxt`、`opinionated`。
-
-`vue/permitted-contents` は、Vue テンプレート内で HTML コンテンツ モデル ルールを適用します。デフォルト: `error`。
-プリセット: `happy-path`、`nuxt`、`opinionated`。
-
-`vue/prefer-props-shorthand` は、小道具の省略構文を推奨します。デフォルト: `warning`。プリセット:
-`nuxt`、`opinionated`。
-
-`vue/prop-name-casing` は、`defineProps` で宣言された prop 名のケーシング（既定は `camelCase`）を強制
-します。テンプレート側は `vue/attribute-hyphenation` が担当します。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
-
-`vue/require-component-registration` では、明示的なコンポーネントのインポートまたは登録が必要です。デフォルト:
-`warning`。プリセット: `opinionated`。
-
-`vue/require-scoped-style` には、SFC スタイル ブロックで `scoped` が必要です。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
-
-`vue/scoped-event-names` では、`form:submit` などのスコープ付きイベント名を推奨します。デフォルト: `warning`。
-プリセット: `nuxt`、`opinionated`。
-
-`vue/sfc-element-order` は、トップレベルの SFC ブロックの順序を強制します。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
-
-`vue/single-style-block` では、スタイルを 1 つのブロックにまとめることをお勧めします。デフォルト: `warning`。プリセット:
-`happy-path`、`nuxt`、`opinionated`。
-
-修飾子ベースのハンドラーが共存する場合、`vue/use-v-on-exact` は `.exact` を強制します。デフォルト: `warning`。
-プリセット: `essential`、`nuxt`、`opinionated`。
-
-`vue/v-bind-style`、`vue/v-on-style`、および `vue/v-slot-style` は、ディレクティブのスタイル設定を強制します。
-デフォルト: `warning`。プリセット: `nuxt` および/または `happy-path`、および `opinionated`。
-
-`vue/valid-attribute-name`、`vue/valid-v-bind`、`vue/valid-v-else`、`vue/valid-v-for`、
-`vue/valid-v-if`、`vue/valid-v-memo`、`vue/valid-v-model`、`vue/valid-v-on`、`vue/valid-v-show`、
-および `vue/valid-v-slot` は、無効な Vue ディレクティブ構文を報告します。デフォルト: `error`。プリセット:
-`essential`、`happy-path`、`nuxt`、`opinionated`。
-
-`vue/warn-custom-block` および `vue/warn-custom-directive` は、カスタム Vue 拡張ポイントについて警告します。
-ホストのサポートまたは登録が必要です。デフォルト: `warning`。プリセット: `nuxt`、`opinionated`。
+ルール名から、目的・重大度・適用範囲・設定・悪い例・良い例を確認できます。個別ページが現在の対応範囲を示す参照先です。
+
+Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。
+
+| Rule | 目的 |
+| --- | --- |
+| [`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 画像に代替テキストの alt 属性を指定します。 |
+| [`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | コンポーネントの prop 属性名を設定した形式に揃えます。 |
+| [`vue/attribute-order`](./reference/vue-attribute-order.md) | テンプレートの属性を一定の順に並べます。 |
+| [`vue/component-definition-name-casing`](./reference/vue-component-definition-name-casing.md) | コンポーネント定義名を PascalCase または kebab-case に揃えます。 |
+| [`vue/component-name-in-template-casing`](./reference/vue-component-name-in-template-casing.md) | テンプレート内のコンポーネント名を指定した形式に揃えます。 |
+| [`vue/html-button-has-type`](./reference/vue-html-button-has-type.md) | button に有効な type を明示します。 |
+| [`vue/html-quotes`](./reference/vue-html-quotes.md) | HTML 属性値の引用符を揃えます。 |
+| [`vue/html-self-closing`](./reference/vue-html-self-closing.md) | 要素の種類ごとに自己終了タグの形式を揃えます。 |
+| [`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | コンポーネント自身のテンプレートの複雑度を制限します。 |
+| [`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | コンポーネント名を複数の単語で構成します。 |
+| [`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | mustache 内の空白を揃えます。 |
+| [`vue/no-array-index-key`](./reference/vue-no-array-index-key.md) | v-for の配列インデックスをそのまま key に使う箇所を検出します。 |
+| [`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | 国際化すべきテンプレートの直接指定テキストを検出します。 |
+| [`vue/no-boolean-attr-value`](./reference/vue-no-boolean-attr-value.md) | HTML の boolean 属性に不要な値を指定した箇所を検出します。 |
+| [`vue/no-child-content`](./reference/vue-no-child-content.md) | v-html / v-text と子コンテンツを同時に指定する箇所を検出します。 |
+| [`vue/no-deprecated-filter`](./reference/vue-no-deprecated-filter.md) | Vue 2 の pipe による filter 構文を検出します。 |
+| [`vue/no-deprecated-functional-template`](./reference/vue-no-deprecated-functional-template.md) | SFC の template で削除済みの functional 属性を検出します。 |
+| [`vue/no-deprecated-html-element-is`](./reference/vue-no-deprecated-html-element-is.md) | 通常の HTML 要素で旧形式の is を使う箇所を検出します。 |
+| [`vue/no-deprecated-inline-template`](./reference/vue-no-deprecated-inline-template.md) | 削除済みの inline-template 属性を検出します。 |
+| [`vue/no-deprecated-router-link-tag-prop`](./reference/vue-no-deprecated-router-link-tag-prop.md) | router-link の削除済み tag prop を検出します。 |
+| [`vue/no-deprecated-scope-attribute`](./reference/vue-no-deprecated-scope-attribute.md) | template の削除済み scope 属性を検出します。 |
+| [`vue/no-deprecated-slot-attribute`](./reference/vue-no-deprecated-slot-attribute.md) | 削除済みの slot 属性を検出します。 |
+| [`vue/no-deprecated-slot-scope-attribute`](./reference/vue-no-deprecated-slot-scope-attribute.md) | 削除済みの slot-scope 属性を検出します。 |
+| [`vue/no-deprecated-v-bind-sync`](./reference/vue-no-deprecated-v-bind-sync.md) | 削除済みの v-bind の .sync modifier を検出します。 |
+| [`vue/no-deprecated-v-on-native-modifier`](./reference/vue-no-deprecated-v-on-native-modifier.md) | 削除済みの v-on の .native modifier を検出します。 |
+| [`vue/no-deprecated-v-on-number-modifiers`](./reference/vue-no-deprecated-v-on-number-modifiers.md) | v-on の削除済み数値 keyCode modifier を検出します。 |
+| [`vue/no-dupe-v-else-if`](./reference/vue-no-dupe-v-else-if.md) | v-if / v-else-if の条件重複を検出します。 |
+| [`vue/no-duplicate-attributes`](./reference/vue-no-duplicate-attributes.md) | 同じ要素の属性重複を検出します。 |
+| [`vue/no-empty-component-block`](./reference/vue-no-empty-component-block.md) | 空の SFC ブロックを検出します。 |
+| [`vue/no-inline-style`](./reference/vue-no-inline-style.md) | インラインの style 属性を検出します。 |
+| [`vue/no-invalid-html-attribute`](./reference/vue-no-invalid-html-attribute.md) | 静的 HTML 属性の無効な値を検出します。現在は rel が対象です。 |
+| [`vue/no-lone-template`](./reference/vue-no-lone-template.md) | 不要な template 要素を検出します。 |
+| [`vue/no-multi-spaces`](./reference/vue-no-multi-spaces.md) | 連続する不要な空白を検出します。 |
+| [`vue/no-multiple-objects-in-class`](./reference/vue-no-multiple-objects-in-class.md) | :class 配列内の複数のオブジェクト指定をまとめます。 |
+| [`vue/no-multiple-template-root`](./reference/vue-no-multiple-template-root.md) | 単一ルートを要求するテンプレートで複数ルートを検出します。 |
+| [`vue/no-mutating-props`](./reference/vue-no-mutating-props.md) | 親から受け取った prop を子コンポーネントで変更する箇所を検出します。 |
+| [`vue/no-negated-v-if-condition`](./reference/vue-no-negated-v-if-condition.md) | v-else がある条件分岐の否定条件を反転して読みやすくします。 |
+| [`vue/no-non-component-keep-alive-child`](./reference/vue-no-non-component-keep-alive-child.md) | KeepAlive の直下に通常の HTML 要素を置く箇所を検出します。 |
+| [`vue/no-preprocessor-lang`](./reference/vue-no-preprocessor-lang.md) | CSS preprocessor より標準の CSS を使う方針を適用します。 |
+| [`vue/no-reserved-component-names`](./reference/vue-no-reserved-component-names.md) | 予約済みのコンポーネント名を検出します。 |
+| [`vue/no-root-v-if`](./reference/vue-no-root-v-if.md) | テンプレートの単一ルートに v-if を指定する箇所を検出します。 |
+| [`vue/no-script-non-standard-lang`](./reference/vue-no-script-non-standard-lang.md) | script の非標準 lang 指定を検出します。 |
+| [`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | SFC ブロックの外部 src 指定を検出します。 |
+| [`vue/no-static-inline-styles`](./reference/vue-no-static-inline-styles.md) | 静的なインライン style 属性を検出します。 |
+| [`vue/no-template-key`](./reference/vue-no-template-key.md) | v-for 用ではない template の key 指定を検出します。 |
+| [`vue/no-template-lang`](./reference/vue-no-template-lang.md) | template の lang 指定を検出します。 |
+| [`vue/no-template-shadow`](./reference/vue-no-template-shadow.md) | テンプレート変数が外側の名前を隠す箇所を検出します。 |
+| [`vue/no-template-target-blank`](./reference/vue-no-template-target-blank.md) | target=_blank の外部リンクに適切な rel を指定します。 |
+| [`vue/no-textarea-mustache`](./reference/vue-no-textarea-mustache.md) | textarea 内の mustache を検出し、v-model の使用を勧めます。 |
+| [`vue/no-undefined-refs`](./reference/vue-no-undefined-refs.md) | テンプレート内の未定義変数参照を検出します。 |
+| [`vue/no-unsafe-url`](./reference/vue-no-unsafe-url.md) | 危険なスキームになり得る URL 属性やバインディングを検出します。 |
+| [`vue/no-unsandboxed-iframe`](./reference/vue-no-unsandboxed-iframe.md) | iframe に sandbox 属性を指定します。 |
+| [`vue/no-unused-components`](./reference/vue-no-unused-components.md) | 登録しているのにテンプレートで使わないコンポーネントを検出します。 |
+| [`vue/no-unused-properties`](./reference/vue-no-unused-properties.md) | defineProps に宣言しているのに使わない prop を検出します。 |
+| [`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | テンプレートに宣言しているのに参照しない ref を検出します。 |
+| [`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | script setup に宣言しているのに読み取らない変数を検出します。 |
+| [`vue/no-unused-vars`](./reference/vue-no-unused-vars.md) | v-for / v-slot に宣言しているのに使わない変数を検出します。 |
+| [`vue/no-use-v-else-with-v-for`](./reference/vue-no-use-v-else-with-v-for.md) | 同じ要素での v-else / v-else-if と v-for の併用を検出します。 |
+| [`vue/no-use-v-if-with-v-for`](./reference/vue-no-use-v-if-with-v-for.md) | 同じ要素での v-if と v-for の併用を検出します。 |
+| [`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | 文字列リテラルだけの不要な mustache を検出します。 |
+| [`vue/no-useless-template-attributes`](./reference/vue-no-useless-template-attributes.md) | template 要素の効果がない属性を検出します。 |
+| [`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | 文字列リテラルだけの不要な v-bind を検出します。 |
+| [`vue/no-v-for-template-key-on-child`](./reference/vue-no-v-for-template-key-on-child.md) | template v-for の key を子ではなく template に指定します。 |
+| [`vue/no-v-html`](./reference/vue-no-v-html.md) | 未処理の HTML を表示する v-html の XSS リスクを検出します。 |
+| [`vue/no-v-text`](./reference/vue-no-v-text.md) | v-text の代わりに mustache を使う方針を適用します。 |
+| [`vue/no-v-text-v-html-on-component`](./reference/vue-no-v-text-v-html-on-component.md) | コンポーネントでの v-text / v-html を検出します。 |
+| [`vue/permitted-contents`](./reference/vue-permitted-contents.md) | HTML の要素ごとのコンテンツモデルを検査します。 |
+| [`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Vue 3.4 の同名 prop バインディングの省略形を使います。 |
+| [`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | true を指定するバインディングを boolean 属性の省略形にします。 |
+| [`vue/prop-name-casing`](./reference/vue-prop-name-casing.md) | 宣言する prop 名の形式を揃えます。 |
+| [`vue/require-component-is`](./reference/vue-require-component-is.md) | 動的 component 要素に :is を指定します。 |
+| [`vue/require-component-registration`](./reference/vue-require-component-registration.md) | 使用するコンポーネントを import または登録します。 |
+| [`vue/require-scoped-style`](./reference/vue-require-scoped-style.md) | style に scoped を指定する方針を適用します。 |
+| [`vue/require-toggle-inside-transition`](./reference/vue-require-toggle-inside-transition.md) | transition の子要素に表示を切り替える条件を指定します。 |
+| [`vue/require-v-for-key`](./reference/vue-require-v-for-key.md) | v-for に安定した :key を指定します。 |
+| [`vue/scoped-event-names`](./reference/vue-scoped-event-names.md) | イベント名を context:event の形式に揃えます。 |
+| [`vue/sfc-element-order`](./reference/vue-sfc-element-order.md) | SFC のトップレベルブロックを設定した順に並べます。 |
+| [`vue/single-style-block`](./reference/vue-single-style-block.md) | SFC の style を一つのブロックにまとめます。 |
+| [`vue/slot-name-casing`](./reference/vue-slot-name-casing.md) | 名前付き slot を kebab-case に揃えます。 |
+| [`vue/this-in-template`](./reference/vue-this-in-template.md) | テンプレートで不要な this. 参照を検出します。 |
+| [`vue/use-unique-element-ids`](./reference/vue-use-unique-element-ids.md) | 静的 ID の代わりに useId() で再利用可能な ID を生成します。 |
+| [`vue/use-v-on-exact`](./reference/vue-use-v-on-exact.md) | modifier 付きのイベント操作と競合する handler に .exact を指定します。 |
+| [`vue/v-bind-style`](./reference/vue-v-bind-style.md) | v-bind の表記形式を揃えます。 |
+| [`vue/v-on-event-hyphenation`](./reference/vue-v-on-event-hyphenation.md) | コンポーネントのカスタムイベント名を設定した形式に揃えます。 |
+| [`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | イベント handler の参照・関数形式を揃えます。 |
+| [`vue/v-on-style`](./reference/vue-v-on-style.md) | v-on の表記形式を揃えます。 |
+| [`vue/v-slot-style`](./reference/vue-v-slot-style.md) | v-slot の表記形式を揃えます。 |
+| [`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | 有効な属性名を指定します。 |
+| [`vue/valid-template-root`](./reference/vue-valid-template-root.md) | Vue 3 の fragment に対応する有効なテンプレートルートを検査します。 |
+| [`vue/valid-v-bind`](./reference/vue-valid-v-bind.md) | v-bind の引数・値・modifier を検査します。 |
+| [`vue/valid-v-cloak`](./reference/vue-valid-v-cloak.md) | v-cloak の引数・値・modifier を検査します。 |
+| [`vue/valid-v-else`](./reference/vue-valid-v-else.md) | v-else の位置・引数・値を検査します。 |
+| [`vue/valid-v-for`](./reference/vue-valid-v-for.md) | v-for の式と変数宣言を検査します。 |
+| [`vue/valid-v-html`](./reference/vue-valid-v-html.md) | v-html の値・引数・modifier を検査します。 |
+| [`vue/valid-v-if`](./reference/vue-valid-v-if.md) | v-if に有効な条件式を指定します。 |
+| [`vue/valid-v-memo`](./reference/vue-valid-v-memo.md) | v-memo の値を配列の式にします。 |
+| [`vue/valid-v-model`](./reference/vue-valid-v-model.md) | v-model の値・引数・modifier を検査します。 |
+| [`vue/valid-v-on`](./reference/vue-valid-v-on.md) | v-on のイベント名・式・modifier を検査します。 |
+| [`vue/valid-v-once`](./reference/vue-valid-v-once.md) | v-once の引数・値・modifier を検査します。 |
+| [`vue/valid-v-show`](./reference/vue-valid-v-show.md) | v-show に有効な条件式を指定します。 |
+| [`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | v-slot の適用先・宣言・modifier を検査します。 |
+| [`vue/valid-v-text`](./reference/vue-valid-v-text.md) | v-text の値・引数・modifier を検査します。 |
+| [`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | SFC のカスタムブロックを検出します。 |
+| [`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 登録が必要なカスタムディレクティブを検出します。 |
+
+[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md)
+
+子への属性の継承は [vue/cross-file-attrs-fallthrough](./project/vue-cross-file-attrs-fallthrough.md) の対象です。

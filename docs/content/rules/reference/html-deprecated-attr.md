@@ -37,24 +37,15 @@ vp run lint
 
 ```vue
 <template>
-  <table border="1">
-    <tr>
-      <td>Total</td>
-    </tr>
-  </table>
+<p align="center">Notice</p>
 </template>
 ```
 
 ## Good
 
 ```vue
-<template>
-  <table class="summary">
-    <tr>
-      <td>Total</td>
-    </tr>
-  </table>
-</template>
+<template><p class="notice">Notice</p></template>
+<style scoped>.notice { text-align: center; }</style>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.

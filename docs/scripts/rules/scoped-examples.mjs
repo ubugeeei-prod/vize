@@ -105,10 +105,10 @@ export const scopedOverrides = {
   ),
   "musea/prefer-design-tokens": pair(
     vue(
-      '<art title="Button" component="Button">\n<variant name="Primary"><Button /></variant>\n</art>\n<style scoped>.button { color: #3b82f6; }</style>',
+      '<art title="Button" component="Button">\n<variant name="Primary"><Button /></variant>\n</art>\n<style scoped>\n.button {\n  color: #3b82f6;\n}\n</style>',
     ),
     vue(
-      '<art title="Button" component="Button">\n<variant name="Primary"><Button /></variant>\n</art>\n<style scoped>.button { color: var(--color-primary); }</style>',
+      '<art title="Button" component="Button">\n<variant name="Primary"><Button /></variant>\n</art>\n<style scoped>\n.button {\n  color: var(--color-primary);\n}\n</style>',
     ),
     "crates/vize_patina/src/linter/musea_config.rs",
     {

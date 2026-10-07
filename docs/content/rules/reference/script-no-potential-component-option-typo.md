@@ -37,7 +37,7 @@ vp run lint
 
 ```vue
 <script lang="ts">
-export default { methdos: { save() {} } };
+export default { method: { save() {} } };
 </script>
 ```
 

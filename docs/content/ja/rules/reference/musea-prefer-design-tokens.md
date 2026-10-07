@@ -54,7 +54,11 @@ vp run lint
 <art title="Button" component="Button">
 <variant name="Primary"><Button /></variant>
 </art>
-<style scoped>.button { color: #3b82f6; }</style>
+<style scoped>
+.button {
+  color: #3b82f6;
+}
+</style>
 ```
 
 ## 良い
@@ -65,7 +69,11 @@ vp run lint
 <art title="Button" component="Button">
 <variant name="Primary"><Button /></variant>
 </art>
-<style scoped>.button { color: var(--color-primary); }</style>
+<style scoped>
+.button {
+  color: var(--color-primary);
+}
+</style>
 ```
 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。

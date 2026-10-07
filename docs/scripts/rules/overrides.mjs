@@ -1,3 +1,4 @@
+import { runtimeOverrides } from "./runtime-overrides.mjs";
 import { verifiedOverrides } from "./verified-examples.mjs";
 import { scopedOverrides } from "./scoped-examples.mjs";
 
@@ -87,7 +88,7 @@ export const overrides = {
     "crates/vize_patina/src/rules/script/no_page_meta_runtime_values/tests.rs",
   ),
   "script/no-potential-component-option-typo": pair(
-    script("export default { methdos: { save() {} } };", false),
+    script("export default { method: { save() {} } };", false),
     script("export default { methods: { save() {} } };", false),
     "crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs",
   ),
@@ -149,4 +150,5 @@ export const overrides = {
     ),
     "crates/vize_patina/src/rules/facts/unused_setup_bindings.rs",
   ),
+  ...runtimeOverrides,
 };

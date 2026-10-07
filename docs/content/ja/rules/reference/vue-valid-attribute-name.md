@@ -12,6 +12,10 @@ title: "vue/valid-attribute-name"
 適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
+悪い例での診断: `parser/template`
+
+不正な属性名は、この防御的なルールに届く前に parser/template で検出されます。悪い例で確認するのは parser/template の検出で、vue/valid-attribute-name が別に出るとは限りません。
+
 ## 設定（Vite+）
 
 ```ts
@@ -37,7 +41,7 @@ vp run lint
 
 ```vue
 <template>
-  <div my"attr="value"></div>
+<div my"attr="value"></div>
 </template>
 ```
 
@@ -45,8 +49,7 @@ vp run lint
 
 ```vue
 <template>
-  <div my-attr="value"></div>
-  <div data-value="value"></div>
+<div my-attr="value"></div>
 </template>
 ```
 

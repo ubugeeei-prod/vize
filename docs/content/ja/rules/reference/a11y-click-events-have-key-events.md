@@ -12,6 +12,8 @@ title: "a11y/click-events-have-key-events"
 適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
+対話的な役割を持たない通常要素が対象です。button や対話的な ARIA role を持つ要素はこの検出の対象外です。
+
 ## 設定（Vite+）
 
 ```ts
@@ -37,7 +39,7 @@ vp run lint
 
 ```vue
 <template>
-  <div role="button" @click="save">Save</div>
+<div @click="activate">Activate</div>
 </template>
 ```
 
@@ -45,7 +47,7 @@ vp run lint
 
 ```vue
 <template>
-  <button type="button" @click="save">Save</button>
+<button @click="activate">Activate</button>
 </template>
 ```
 

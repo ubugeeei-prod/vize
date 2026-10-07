@@ -12,6 +12,8 @@ Automatic fix: None; review the suggested change
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
+A single SFC root link may inherit its target from parent attributes. This example uses a nested link, whose target must be explicit.
+
 ## Configuration (Vite+)
 
 ```ts
@@ -37,7 +39,7 @@ vp run lint
 
 ```vue
 <template>
-  <RouterLink>Settings</RouterLink>
+<nav><RouterLink>Settings</RouterLink></nav>
 </template>
 ```
 
@@ -45,7 +47,7 @@ vp run lint
 
 ```vue
 <template>
-  <RouterLink :to="{ name: 'settings' }">Settings</RouterLink>
+<nav><RouterLink to="/settings">Settings</RouterLink></nav>
 </template>
 ```
 

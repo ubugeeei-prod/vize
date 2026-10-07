@@ -8,11 +8,15 @@ Suggest adding vapor attribute to script setup
 
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
+Automatic fix: Not implemented for SFC lint  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
-## Configuration (Vite+)
+Current support: `no-sfc-finding`
+
+This rule is a placeholder with an empty callback. Adding vapor selects Vapor compilation; the current linter does not report this catalog ID for its absence.
+
+## Configured ID (currently no SFC finding)
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -36,17 +40,19 @@ vp run lint
 ## Bad
 
 ```vue
-<script setup lang="ts">
-const count = ref(0);
+<script setup>
+const count = 0;
 </script>
+<template><p>{{ count }}</p></template>
 ```
 
 ## Good
 
 ```vue
-<script setup lang="ts" vapor>
-const count = ref(0);
+<script setup vapor>
+const count = 0;
 </script>
+<template><p>{{ count }}</p></template>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.

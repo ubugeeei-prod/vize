@@ -12,6 +12,10 @@ Automatic fix: None; review the suggested change
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
+Bad diagnostic: `parser/template`
+
+Malformed attribute spelling is diagnosed by parser/template before this defensive rule sees an attribute. Bad therefore reports parser/template; it does not promise a separate vue/valid-attribute-name finding.
+
 ## Configuration (Vite+)
 
 ```ts
@@ -37,7 +41,7 @@ vp run lint
 
 ```vue
 <template>
-  <div my"attr="value"></div>
+<div my"attr="value"></div>
 </template>
 ```
 
@@ -45,8 +49,7 @@ vp run lint
 
 ```vue
 <template>
-  <div my-attr="value"></div>
-  <div data-value="value"></div>
+<div my-attr="value"></div>
 </template>
 ```
 

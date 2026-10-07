@@ -54,7 +54,11 @@ vp run lint
 <art title="Button" component="Button">
 <variant name="Primary"><Button /></variant>
 </art>
-<style scoped>.button { color: #3b82f6; }</style>
+<style scoped>
+.button {
+  color: #3b82f6;
+}
+</style>
 ```
 
 ## Good
@@ -65,7 +69,11 @@ vp run lint
 <art title="Button" component="Button">
 <variant name="Primary"><Button /></variant>
 </art>
-<style scoped>.button { color: var(--color-primary); }</style>
+<style scoped>
+.button {
+  color: var(--color-primary);
+}
+</style>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.

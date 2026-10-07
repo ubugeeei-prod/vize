@@ -37,9 +37,7 @@ vp run lint
 
 ```vue
 <style scoped>
-.content h2 {
-  margin-block: 0;
-}
+slot { color: red; }
 </style>
 ```
 
@@ -47,9 +45,7 @@ vp run lint
 
 ```vue
 <style scoped>
-::v-slotted(h2) {
-  margin-block: 0;
-}
+:slotted(.label) { color: red; }
 </style>
 ```
 

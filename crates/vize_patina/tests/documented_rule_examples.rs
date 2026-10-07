@@ -31,6 +31,8 @@ fn verify_examples(type_aware: bool) {
     paths.sort();
     assert_eq!(paths.len(), 251, "all current rule implementations");
     let mut checked = 0;
+    let mut unavailable = 0;
+    let mut parser_owned = 0;
     let mut failures = Vec::new();
     for path in paths {
         let page = std::fs::read_to_string(&path).expect("reference page");
@@ -42,6 +44,26 @@ fn verify_examples(type_aware: bool) {
             continue;
         }
         checked += 1;
+        let no_finding = page.contains("Current support: `no-sfc-finding`");
+        assert_eq!(
+            no_finding,
+            [
+                "vapor/require-vapor-attribute",
+                "vue/no-template-lang",
+                "vue/no-preprocessor-lang",
+                "vue/no-script-non-standard-lang"
+            ]
+            .contains(&rule),
+            "only the audited unsupported SFC boundaries"
+        );
+        unavailable += usize::from(no_finding);
+        let parser_diagnostic = page.contains("Bad diagnostic: `parser/template`");
+        assert_eq!(
+            parser_diagnostic,
+            rule == "vue/valid-attribute-name",
+            "parser-owned invalid attribute spelling"
+        );
+        parser_owned += usize::from(parser_diagnostic);
         let config = configuration(&page);
         let linter = configure(rule, &config);
         for (heading, should_report) in [("## Bad", true), ("## Good", false)] {
@@ -53,12 +75,18 @@ fn verify_examples(type_aware: bool) {
             } else {
                 linter.lint_sfc(&source, &filename)
             };
+            let expected_id = if should_report && parser_diagnostic {
+                "parser/template"
+            } else {
+                rule
+            };
             let reports = result
                 .diagnostics
                 .iter()
-                .filter(|d| d.rule_name == rule)
+                .filter(|d| d.rule_name == expected_id)
                 .count();
-            if !should_report
+            let should_report = should_report && !no_finding;
+            if heading == "## Good"
                 && result
                     .diagnostics
                     .iter()
@@ -75,6 +103,11 @@ fn verify_examples(type_aware: bool) {
         }
     }
     assert_eq!(checked, if type_aware { 6 } else { 245 });
+    assert_eq!(unavailable, if type_aware { 0 } else { 4 });
+    assert_eq!(parser_owned, if type_aware { 0 } else { 1 });
+    eprintln!(
+        "documentation corpus: catalog={checked} non_emitted={unavailable} parser_owned={parser_owned} type_aware={type_aware}"
+    );
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
@@ -92,7 +125,7 @@ fn configuration(page: &str) -> Value {
 
 fn configure(rule: &str, config: &Value) -> Linter {
     let mut linter = Linter::with_preset(LintPreset::Incremental)
-        .with_enabled_rules(Some(vec![rule.into()]))
+        .with_additional_rules(vec![rule.into()])
         .with_type_aware_lint(config["typeAware"].as_bool().unwrap_or(false));
     let options = &config["ruleOptions"][rule];
     if let Some(members) = options["members"].as_array() {

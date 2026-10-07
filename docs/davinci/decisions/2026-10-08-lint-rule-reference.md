@@ -2,16 +2,24 @@
 
 Issue: [#6101](https://github.com/ubugeeei-prod/vize/issues/6101).
 
-The rule reference covers every current Patina implementation with an individual English and
+The rule reference covers every current Patina source catalog entry with an individual English and
 Japanese page. Each page includes purpose, severity, presets, applicable source, options, and Bad
 and Good examples. The searchable index uses short metadata rows and links instead of code cells.
 Vite+ integration via `@vizejs/vite-plugin/vite-plus` and `vp run lint` comes first; standalone
 configuration remains a compatibility path.
 
+Category pages are compact indexes of the individual references, so outdated duplicate examples
+do not contradict qualified cases. Previously authored category examples are retained as small
+generator input modules; source-comment examples still read their implementations directly.
+
 Examples keep the original source context: imports, SFC blocks, filename-sensitive checks,
 petite-vue HTML detection, type-aware prerequisites, and configured restrictions/design tokens.
-The public linter executes each published pair in Rust tests. Good must avoid the specific finding
-and parser diagnostics; unrelated rules can still report. Six type-aware pairs require the actual
+The public linter executes each published pair in Rust tests using the CLI configuration path
+(with_additional_rules), preserving opt-in registration. Good must avoid the specific finding
+and parser diagnostics; unrelated rules can still report. Four SFC catalog entries are explicitly
+marked as non-emitted (the empty Vapor attribute callback and three unsupported header checks),
+and their tests assert that current boundary. Invalid attribute spelling documents the actual
+parser/template diagnostic before the defensive rule, rather than claiming a second finding. Six type-aware pairs require the actual
 Corsa Actions runtime. Generating and checking the reference requires source files, not a stale
 local native binary. Generated EN/JA code blocks are identical.
 

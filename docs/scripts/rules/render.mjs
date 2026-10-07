@@ -1,5 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { generateCategoryPages } from "./category-render.mjs";
+import { generateProjectPages } from "./project-render.mjs";
 import { ruleExamples } from "./examples.mjs";
 import { migrationPage } from "./migration.mjs";
 import { purposeJa } from "./purpose-ja.mjs";
@@ -28,6 +30,8 @@ export function generateRulePages({
   categoryLabels,
 }) {
   const checking = process.argv.includes("--check");
+  generateProjectPages(workspaceRoot, checking);
+  generateCategoryPages(workspaceRoot, rules, checking);
   for (const locale of ["", "ja/"]) {
     const directory = resolve(workspaceRoot, `docs/content/${locale}rules`);
     if (!checking) mkdirSync(resolve(directory, "reference"), { recursive: true });
@@ -45,8 +49,8 @@ export function generateRulePages({
       `# ${ja ? "全 lint ルール" : "All lint rules"}`,
       "",
       ja
-        ? `実装されている ${rules.length} ルールの一覧です。ルール名から、目的・適用範囲・設定・悪い例・良い例を確認できます。`
-        : `All ${rules.length} implemented rules. Follow a rule name for its purpose, scope, configuration, and Bad/Good examples.`,
+        ? `現在のソース カタログにある ${rules.length} 項目の一覧です。未対応の範囲は個別ページに明記しています。ルール名から、目的・適用範囲・設定・悪い例・良い例を確認できます。`
+        : `All ${rules.length} source catalog entries, including explicitly marked support gaps. Follow a rule name for its purpose, scope, configuration, and Bad/Good examples.`,
       "",
       ja
         ? "Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lint.vize.rules` に指定します。`vp run lint` で Vize と Oxlint の lint を実行します。"
@@ -127,11 +131,15 @@ function detail(rule, example, ja) {
     "",
     `${label("Default severity", "既定の重大度")}: \`${rule.defaultSeverity}\`  `,
     `${label("Presets", "プリセット")}: ${presets(rule.presets)}  `,
-    `${label("Automatic fix", "自動修正")}: ${rule.fixable ? label("Available for supported findings", "対応する検出で利用可能") : label("None; review the suggested change", "なし。修正内容を確認してください")}  `,
+    `${label("Automatic fix", "自動修正")}: ${example.availability ? label("Not implemented for SFC lint", "SFC lint では未対応") : rule.fixable ? label("Available for supported findings", "対応する検出で利用可能") : label("None; review the suggested change", "なし。修正内容を確認してください")}  `,
     `${label("Applies to", "適用範囲")}: ${scope}  `,
     `${label("Options", "オプション")}: ${options}`,
     "",
   ];
+  if (example.availability)
+    lines.push(`${label("Current support", "現在の対応")}: \`${example.availability}\``, "");
+  if (example.badDiagnostic)
+    lines.push(`${label("Bad diagnostic", "悪い例での診断")}: \`${example.badDiagnostic}\``, "");
   const note = ja ? example.noteJa : example.note;
   if (note) lines.push(note, "");
   if (config.typeAware)
@@ -143,7 +151,7 @@ function detail(rule, example, ja) {
       "",
     );
   lines.push(
-    `## ${label("Configuration (Vite+)", "設定（Vite+）")}`,
+    `## ${example.availability ? label("Configured ID (currently no SFC finding)", "設定できる ID（現在の SFC 検出なし）") : label("Configuration (Vite+)", "設定（Vite+）")}`,
     "",
     "```ts",
     'import { defineConfig } from "@vizejs/vite-plugin/vite-plus";',

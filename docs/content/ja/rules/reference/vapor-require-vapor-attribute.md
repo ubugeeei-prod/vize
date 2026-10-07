@@ -8,11 +8,15 @@ Vapor 向けの script setup に vapor 属性を付ける方針を適用しま�
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
+自動修正: SFC lint では未対応  
 適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-## 設定（Vite+）
+現在の対応: `no-sfc-finding`
+
+このルールは callback が空の placeholder です。vapor 属性は Vapor でのコンパイルを選択するものですが、現在の linter は属性がないことをこの ID では検出しません。
+
+## 設定できる ID（現在の SFC 検出なし）
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -36,17 +40,19 @@ vp run lint
 ## 悪い
 
 ```vue
-<script setup lang="ts">
-const count = ref(0);
+<script setup>
+const count = 0;
 </script>
+<template><p>{{ count }}</p></template>
 ```
 
 ## 良い
 
 ```vue
-<script setup lang="ts" vapor>
-const count = ref(0);
+<script setup vapor>
+const count = 0;
 </script>
+<template><p>{{ count }}</p></template>
 ```
 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。

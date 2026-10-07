@@ -37,25 +37,16 @@ vp run lint
 
 ```vue
 <script lang="ts">
-// In Options API style
-export default {
-setup(props, { attrs }) {
-console.log(attrs.class)
-}
-}
-
-// Accessing $attrs in template
-<div :class="$attrs.class"></div>
+export default { setup(_props, { attrs }) { console.log(attrs.class); } };
 </script>
 ```
 
 ## Good
 
 ```vue
-<script setup lang="ts">
-// Using useAttrs()
-const attrs = useAttrs()
-console.log(attrs.class)
+<script lang="ts">
+import { useAttrs } from "vue";
+export default { setup() { const attrs = useAttrs(); console.log(attrs.class); } };
 </script>
 ```
 

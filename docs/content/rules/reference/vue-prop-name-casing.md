@@ -12,6 +12,8 @@ Automatic fix: None; review the suggested change
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
+Checks declared prop names, not the casing of attributes passed to a child.
+
 ## Configuration (Vite+)
 
 ```ts
@@ -37,16 +39,18 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
-defineProps({ "my-prop": String });
+defineProps<{ user_name: string }>();
 </script>
+<template><p>{{ user_name }}</p></template>
 ```
 
 ## Good
 
 ```vue
 <script setup lang="ts">
-defineProps({ myProp: String });
+defineProps<{ userName: string }>();
 </script>
+<template><p>{{ userName }}</p></template>
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.

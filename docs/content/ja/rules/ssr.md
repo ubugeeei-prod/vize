@@ -1,71 +1,16 @@
 ---
-title: SSRルール
+title: SSR ルール
 ---
-
-<!-- Generated translation; source: rules/ssr.md -->
 
 # SSR ルール
 
-これらのルールは、サーバーのレンダリングやハイドレーションを中断する可能性のあるコードとテンプレートのパターンをカバーします。彼らは
-障害モードはサーバー/クライアントであるため、HTML および Vapor ルールとは別に文書化されます。
-境界線。
+ルール名から、目的・重大度・適用範囲・設定・悪い例・良い例を確認できます。個別ページが現在の対応範囲を示す参照先です。
 
-## `ssr/no-browser-globals-in-ssr`
+Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。
 
-SSR 中に実行できるコード内のブラウザー専用グローバルをレポートします。
+| Rule | 目的 |
+| --- | --- |
+| [`ssr/no-browser-globals-in-ssr`](./reference/ssr-no-browser-globals-in-ssr.md) | SSR で実行されるコードのブラウザー専用グローバル参照を検出します。 |
+| [`ssr/no-hydration-mismatch`](./reference/ssr-no-hydration-mismatch.md) | サーバーとクライアントで一致しないテンプレート値を検出します。 |
 
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<script setup lang="ts">
-const width = window.innerWidth;
-</script>
-```
-
-良い：
-
-```vue
-<script setup lang="ts">
-const width = ref(0);
-
-onMounted(() => {
-  width.value = window.innerWidth;
-});
-</script>
-```
-
-`typeof window === "undefined"` などのガード チェックは、直接 `typeof` であるため許可されます。
-識別子形式はサーバーレンダリング中は安全です。文字列、コメント、正規表現リテラルも同様です。
-`window` や `document` のような名前が含まれている場合は無視されます。次のようなメンバーにアクセスする
-`typeof window.innerWidth` はブラウザー グローバルを評価するため、引き続きレポートします。
-
-## `ssr/no-hydration-mismatch`
-
-サーバーレンダーとクライアント間で異なる可能性がある非決定的なテンプレート値をレポートします。
-水分補給。
-
-デフォルトの重大度: `warning`
-プリセット: `happy-path`、`nuxt`、`opinionated`
-
-悪い：
-
-```vue
-<template>
-  <p>{{ Math.random() }}</p>
-</template>
-```
-
-良い：
-
-```vue
-<script setup lang="ts">
-const seed = useState("seed", () => "stable");
-</script>
-
-<template>
-  <p>{{ seed }}</p>
-</template>
-```
+[全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md)

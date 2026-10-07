@@ -8,11 +8,15 @@ Discourage lang attribute on template block
 
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
-Automatic fix: Available for supported findings  
+Automatic fix: Not implemented for SFC lint  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
 
-## Configuration (Vite+)
+Current support: `no-sfc-finding`
+
+This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.
+
+## Configured ID (currently no SFC finding)
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -37,8 +41,7 @@ vp run lint
 
 ```vue
 <template lang="pug">
-div.container
-  h1 Hello
+p Notice
 </template>
 ```
 
@@ -46,9 +49,7 @@ div.container
 
 ```vue
 <template>
-  <div class="container">
-    <h1>Hello</h1>
-  </div>
+<p>Notice</p>
 </template>
 ```
 

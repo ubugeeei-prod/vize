@@ -12,6 +12,8 @@ title: "vue/prop-name-casing"
 適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
+宣言した props の名前を検査します。子に渡す属性名の表記を検査するルールではありません。
+
 ## 設定（Vite+）
 
 ```ts
@@ -37,16 +39,18 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
-defineProps({ "my-prop": String });
+defineProps<{ user_name: string }>();
 </script>
+<template><p>{{ user_name }}</p></template>
 ```
 
 ## 良い
 
 ```vue
 <script setup lang="ts">
-defineProps({ myProp: String });
+defineProps<{ userName: string }>();
 </script>
+<template><p>{{ userName }}</p></template>
 ```
 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。

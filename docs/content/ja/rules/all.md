@@ -4,7 +4,7 @@ title: 全 lint ルール
 
 # 全 lint ルール
 
-実装されている 251 ルールの一覧です。ルール名から、目的・適用範囲・設定・悪い例・良い例を確認できます。
+現在のソース カタログにある 251 項目の一覧です。未対応の範囲は個別ページに明記しています。ルール名から、目的・適用範囲・設定・悪い例・良い例を確認できます。
 
 Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lint.vize.rules` に指定します。`vp run lint` で Vize と Oxlint の lint を実行します。
 

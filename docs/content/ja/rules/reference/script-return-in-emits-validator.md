@@ -37,15 +37,7 @@ vp run lint
 
 ```vue
 <script lang="ts">
-export default {
-emits: {
-submit(payload) {
-if (!payload.email) {
-// missing return
-}
-}
-}
-}
+export default { emits: { submit(payload: unknown) { console.log(payload); } } };
 </script>
 ```
 
@@ -53,13 +45,7 @@ if (!payload.email) {
 
 ```vue
 <script lang="ts">
-export default {
-emits: {
-submit(payload) {
-return !!payload.email
-}
-}
-}
+export default { emits: { submit(payload: unknown) { return payload != null; } } };
 </script>
 ```
 
