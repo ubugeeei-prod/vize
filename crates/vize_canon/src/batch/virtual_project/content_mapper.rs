@@ -38,6 +38,8 @@ use super::diagnostics::invalid_sfc_fallback_virtual_ts;
 use super::javascript_sfc::prepare_script_blocks;
 use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
 
+#[path = "content_mapper_masked_spans.rs"]
+mod masked_spans;
 #[path = "content_mapper_span_features.rs"]
 mod span_features;
 #[path = "content_mapper_span_normalize.rs"]
@@ -238,7 +240,7 @@ fn protocol_spans(
     generated: &str,
     mappings: &[VizeMapping],
 ) -> Vec<ContentMapperSpan> {
-    let candidates = mappings
+    let mut candidates = mappings
         .iter()
         .filter_map(|mapping| {
             if mapping.sub_spans.is_empty() {
@@ -268,6 +270,7 @@ fn protocol_spans(
         .flatten()
         .collect::<Vec<_>>();
 
+    masked_spans::expand(&mut candidates, source, generated);
     let mut accepted = span_normalize::normalize(candidates);
     accepted.sort_by_key(|candidate| candidate.generated.start);
     accepted
