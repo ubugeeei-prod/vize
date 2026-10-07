@@ -1,0 +1,20 @@
+[
+  {
+    "file": "src/App.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/Child.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/main.ts",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  }
+]

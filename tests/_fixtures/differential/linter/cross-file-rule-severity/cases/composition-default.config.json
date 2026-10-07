@@ -1,0 +1,5 @@
+{
+  "linter": {
+    "preset": "incremental"
+  }
+}

@@ -190,14 +190,47 @@ Settings are passed through `settings.vize`:
 
 - `locale` controls the diagnostic language.
 - `preset` accepts `"general-recommended"`/`"happy-path"`, `"essential"`, `"ecosystem"`, `"incremental"`, `"opinionated"`, `"nuxt"`, or `"all"`.
-- `preset` defaults to `"general-recommended"`.
+- Without a runtime `preset`, the bridge runs explicitly configured rules as `"incremental"`.
+  This also applies when Oxlint does not propagate settings through `extends`.
+  The configuration helpers still default to the `"general-recommended"` bundle.
 - `incremental` runs only the rules you explicitly configure.
+- `rules` accepts rule names (with or without the `vize/` prefix) or an Oxlint rule map.
+  A map with `vize/` keys selects only those entries; a native map supports
+  `vue/`, `script/`, `css/`, `style/`, `type/`, `nuxt/`, and `ecosystem/` names.
+  It batches matching rules into one native lint call per file. Oxlint's top-level `rules`
+  still controls which diagnostics are reported and their severity.
 - `all` is accepted as a settings alias for `incremental`; use `configs.all` or
   `createVizeLintConfig({ preset: "all" })` when you also want every rule emitted.
 - `helpLevel` accepts `"full"`, `"short"`, or `"none"`.
 - `typeAware: true` enables Corsa-backed `vize/type/*` rules during shared Patina passes.
 - `corsaPath` selects the Corsa or `tsgo` executable for type-aware linting.
 - `showHelp` and `settings.patina` are still accepted for backward compatibility.
+
+For an explicit subset, share the rule map with the native batch so rule options are preserved:
+
+```ts
+const vueRules = {
+  "vize/vue/require-v-for-key": "error",
+  "vize/vue/no-v-html": "warn",
+  "vize/vue/attribute-hyphenation": ["error", "always"],
+};
+
+export default {
+  plugins: ["vue"],
+  jsPlugins: ["oxlint-plugin-vize"],
+  settings: {
+    vize: { preset: "incremental", helpLevel: "none", rules: vueRules },
+  },
+  rules: vueRules,
+};
+```
+
+`createVizeLintConfig` and `defineVizeLintConfig` generate this selection automatically from
+the final Vize rule map, including rule options and disabled entries. A manual name list
+batches rules using their default options; a configured rule with different options runs
+separately. File overrides that add rules or change options also run separately, so a shared
+batch cannot hide their diagnostics. Overrides that only disable rules or change severity
+continue to use Oxlint's reporting policy.
 
 ## Current Limitations
 
