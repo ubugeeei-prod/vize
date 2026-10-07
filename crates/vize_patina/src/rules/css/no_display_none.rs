@@ -9,6 +9,8 @@
 //! Note: This is a suggestion, not an error. There are valid cases
 //! for `display: none` (e.g., print styles, initial hidden state).
 
+mod template_targets;
+
 use lightningcss::declaration::DeclarationBlock;
 use lightningcss::properties::Property;
 use lightningcss::properties::display::{Display, DisplayKeyword};
@@ -19,8 +21,8 @@ use lightningcss::stylesheet::StyleSheet;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::declaration_positions::DeclarationPositions;
-use super::template_targets::TemplateTargets;
 use super::{CssLintResult, CssRule, CssRuleMeta};
+use template_targets::TemplateTargets;
 
 static META: CssRuleMeta = CssRuleMeta {
     name: "css/no-display-none",

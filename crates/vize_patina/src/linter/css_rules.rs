@@ -11,10 +11,11 @@
 //! when the active preset or the host configuration enables them by name.
 
 use super::{LintResult, Linter};
+use crate::rules::css::no_display_none::NoDisplayNoneForTemplate;
 use crate::rules::css::{
-    CssLinter, CssRule, NoDisplayNone, NoDisplayNoneForTemplate, NoHardcodedValues, NoIdSelectors,
-    NoImportant, NoUtilityClasses, NoVBindPerformance, PreferLogicalProperties,
-    PreferNestedSelectors, PreferSlotted, RequireFontDisplay,
+    CssLinter, CssRule, NoDisplayNone, NoHardcodedValues, NoIdSelectors, NoImportant,
+    NoUtilityClasses, NoVBindPerformance, PreferLogicalProperties, PreferNestedSelectors,
+    PreferSlotted, RequireFontDisplay,
 };
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::profile;
