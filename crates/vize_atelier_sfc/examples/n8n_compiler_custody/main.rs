@@ -163,7 +163,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         serde_json::to_vec_pretty(&json!({
             "path": "tests/_fixtures/differential/compiler/n8n-default-slot-loop/template.vue.txt",
             "originalSource": source,
-            "rows": [{"kind": "template", "prefixIdentifiers": false, "isTs": false,
+            "rows": [{"kind": "template", "prefixIdentifiers": false,
                 "legacy": {"preamble": legacy.preamble, "code": legacy.code,
                     "assembled": format!("{}\n{}", legacy.preamble, legacy.code),
                     "errors": errors.iter().map(|e| json!({"code": format!("{:?}", e.code),
