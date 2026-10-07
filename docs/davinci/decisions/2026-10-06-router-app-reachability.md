@@ -143,3 +143,17 @@ unchanged from signed-c804. Exact-head/no-entry containment leaves this PR
 Draft/offqueue while the existing security owner handles real remediation.
 No waiver, retry or passing execution transfers to this private correction;
 fresh same-PR source and protected delivery must qualify its actual composition.
+
+The security repair actually merged as signed ef848 on 2026-10-06 at
+16:16:25 UTC. All seven existing authored commits genuinely replay onto that
+actual main with original source/oracle bodies and complete author/date/message/
+reporter records preserved. No unmerged queue parent is incorporated. The
+previous 7f6 full Check remains failed on its authentic audit/fan-in; its twenty
+whole CLI cases, 16,511 passing Rust cases and separate native remarks results
+remain historical. The reviewed persistent capture isolation is included.
+Every incoming canonical byte is preserved by removing only this fix's complete
+clause, and all 350 physical lines remain. This incorporation is paired in
+[the issue](https://github.com/ubugeeei-prod/vize/issues/7932#issuecomment-6033173933).
+Fresh exact source Actions and protected execution must qualify the composed
+route fix and dependency repair; no old execution or installed-public credit
+transfers to this successor.
