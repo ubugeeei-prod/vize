@@ -106,7 +106,7 @@ pub fn create_on_name(event: &str) -> String {
             && let Some((next_index, next)) =
                 chars.next_if(|(_, next)| next.is_ascii_alphanumeric() || *next == '_')
         {
-            result.push_str(&event[start..index]);
+            result.push_str(event.split_at(index).0.split_at(start).1);
             result.push(next.to_ascii_uppercase());
             start = next_index + next.len_utf8();
             first = false;
@@ -116,7 +116,7 @@ pub fn create_on_name(event: &str) -> String {
             first = false;
         }
     }
-    result.push_str(&event[start..]);
+    result.push_str(event.split_at(start).1);
     result
 }
 

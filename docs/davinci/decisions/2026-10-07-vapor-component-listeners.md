@@ -232,3 +232,11 @@ byte-exact. Only the shared name construction and ordinary unit controls change
 product behavior internally. TODO: run fresh original compilation/runtime and
 all 104 instruction gates on the successor before root protected admission.
 No local Rust execution or performance improvement is claimed from source review.
+
+Fresh `f7035b7d` Check 37669507112 build job 112957464039 failed before
+Rust test execution: `clippy::string_slice` rejects the two explicit string
+slices in bulk-copy construction. Both ranges already come from `char_indices`
+and consumed scalar widths. Use standard borrowed `split_at` prefixes/suffixes
+with exactly the same boundaries; no lint allowance, fallback, extra scan,
+parser or change to any full expected name is introduced. Current execution
+and instruction acceptance remain pending the corrected source.
