@@ -38,3 +38,8 @@ The initial source Check (37644756787, `6c0f3f3c`) exposed two retained
 upstream `match_same_arms` expectations without their enabling lint. Restore
 that exact lint in the vendored policy; preserve all implementation bodies
 and fixtures, and require fresh successor Actions.
+
+The next source Check (37645589975, `d0d67f08`) passed strict compilation
+but its enrollment guard treated the new vendor as first-party. Extend only
+the existing exact parser exclusion to the exact formatter path; all 39
+first-party members remain enrolled and `PENDING` stays empty.
