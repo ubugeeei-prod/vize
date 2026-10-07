@@ -50,6 +50,15 @@ source geometry, all mapping/refusal guards and final coherent-edit checks.
 No new native query or source-spelling selection is introduced. Fresh source
 Actions and protected performance gates must qualify the correction.
 
+Correction source `41baced1a5a95cacb3956bc674aab28054e243c2` passed all
+six recursive wrappers (40 complete stdio sessions), the three new geometry
+and metadata laws, and unchanged original alias, same-name, mixed-role and
+event controls in four actual Rust workers. Its tooling gate rejected seven
+missing consumer-inventory rows. The unchanged inventory generator supplies
+those genuine imports; the gate and selected inventory remain intact. This
+Rust success belongs to `41b` only. The metadata successor requires fresh
+complete source and protected qualification.
+
 TODO: qualify the unchanged whole 40-session contract and original controls
 on the correction's fresh exact source; attend protected execution, signed
 actual merge and the next release. Historical binaries and predecessor green
