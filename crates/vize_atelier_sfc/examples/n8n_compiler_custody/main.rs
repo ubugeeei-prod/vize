@@ -17,7 +17,6 @@ use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
     StyleCompileOptions, TemplateCompileOptions, compile_sfc_for_adapter, parse_sfc,
 };
-#[path = "n8n_compiler_custody/native.rs"]
 mod native;
 
 use vize_l0::Allocator;
@@ -29,7 +28,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         return Err("usage: n8n_compiler_custody <n8n-root> <output-root>".into());
     };
     let cases: Value = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/differential/compiler/n8n-adoption/cases.json"
+        "../../../../tests/_fixtures/differential/compiler/n8n-adoption/cases.json"
     ))?;
     let paths = cases["cases"].as_array().ok_or("missing cases")?;
     fs::create_dir_all(output_root)?;
@@ -48,6 +47,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             .template
             .as_ref()
             .ok_or("missing original template")?;
+        let is_ts = descriptor
+            .script
+            .iter()
+            .chain(descriptor.script_setup.iter())
+            .any(|block| matches!(block.lang.as_deref(), Some("ts" | "tsx")));
         let mut rows = Vec::new();
         for prefixed in [false, true] {
             let allocator = Allocator::new();
@@ -55,6 +59,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 &allocator,
                 &template.content,
                 DomCompilerOptions {
+                    is_ts,
                     prefix_identifiers: prefixed,
                     mode: if prefixed {
                         CodegenMode::Module
@@ -67,6 +72,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let native = native::capture(
                 &template.content,
                 &DomEmitOptions {
+                    is_ts,
                     prefix_identifiers: prefixed,
                     mode: if prefixed {
                         DomEmitMode::Module
@@ -77,7 +83,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 },
             );
             rows.push(json!({
-                "kind": "template", "prefixIdentifiers": prefixed,
+                "kind": "template", "prefixIdentifiers": prefixed, "isTs": is_ts,
                 "legacy": {"preamble": legacy.preamble, "code": legacy.code, "assembled": format!("{}\n{}", legacy.preamble, legacy.code),
                     "errors": errors.iter().map(|e| json!({"code": format!("{:?}", e.code), "message": e.message, "location": e.loc})).collect::<Vec<_>>()},
                 "native": native
@@ -146,7 +152,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         )?;
     }
     let source = include_str!(
-        "../../../tests/_fixtures/differential/compiler/n8n-default-slot-loop/template.vue.txt"
+        "../../../../tests/_fixtures/differential/compiler/n8n-default-slot-loop/template.vue.txt"
     );
     let allocator = Allocator::new();
     let (_, errors, legacy) =
@@ -166,7 +172,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         }))?,
     )?;
     let diagnostic_contract: Value = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/differential/compiler/n8n-if-key-regression/diagnostics.json"
+        "../../../../tests/_fixtures/differential/compiler/n8n-if-key-regression/diagnostics.json"
     ))?;
     fs::write(
         Path::new(output_root).join("diagnostic-contract.json"),
