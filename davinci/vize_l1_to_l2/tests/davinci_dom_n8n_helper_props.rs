@@ -6,6 +6,7 @@
 )]
 
 mod davinci_dom_corpus_support;
+mod n8n_slot_registration;
 
 use davinci_dom_corpus_support::{Lane, Report, compare_sfc_template_lane};
 
