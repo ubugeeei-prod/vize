@@ -56,3 +56,9 @@ API plans still load through their existing immutable source/receipt validators.
 Those inspections grant no source-built API or CLI execution credit. Fresh
 exact-head Actions, protected qualification and actual merge remain required;
 root owns the queue and release.
+
+Shared registration increases the finite manifest assertion from thirteen to
+fourteen and admits only the new named pending authored reference beside the
+existing named pending reference. Captured baselines keep their original
+captured state; there is no broad pending-state exception. Pure validator
+tests run locally; source-built shared CLI execution stays on Actions.
