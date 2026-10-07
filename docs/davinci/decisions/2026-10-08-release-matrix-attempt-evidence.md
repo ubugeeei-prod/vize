@@ -51,3 +51,11 @@ also require the selected complete archive and reject a missing surface
 verdict while never reading the historical partial archive. The existing
 preflight and archive controls remain intact. Fresh source Actions and actual
 protected delivery remain required before this change is complete.
+
+Initial source `eb815bba` passed the new Node laws and retained production Rust
+test runner, but its tooling inventory still expected 29 release files and 26
+audited contracts. Register the new complete-import contract alongside all 26
+original contracts, making 30 files and 27 audited contracts with the same three
+unresolved broad cases. Explicit input-selection controls cover both selector
+implementations and their authored fixture. This inventory correction changes
+no archive, policy or budget requirement; fresh corrected-head gates are required.

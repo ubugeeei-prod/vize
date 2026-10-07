@@ -15,8 +15,8 @@ const selected = (path) =>
   planToolingTests([path]).tests.filter((file) => file.startsWith("tests/tooling/release/"));
 
 void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
-  assert.equal(releaseFiles.length, 29);
-  assert.equal(scoped.length, 26);
+  assert.equal(releaseFiles.length, 30);
+  assert.equal(scoped.length, 27);
   assert.deepEqual(unscoped, [
     "tests/tooling/release/release-guest-locks.test.ts",
     "tests/tooling/release/release-smoke-init-fresh.test.ts",
@@ -27,6 +27,18 @@ void test("audited release contracts have complete imports and leave unresolved 
     assert.equal(localImportInputs(file).complete, true, `${file} import closure`);
   }
   assert.deepEqual(selected("davinci/vize_l1/src/parser.rs"), unscoped);
+});
+
+void test("Matrix attempt selectors select the new audited evidence contract", () => {
+  const contract = "tests/tooling/release/release-preflight-matrix-selection.test.ts";
+  assert.ok(scoped.includes(contract));
+  for (const input of [
+    "tools/support/release/preflight_matrix_selection.rs",
+    "tools/support/compat/github/release-preflight-matrix-selection.mjs",
+    "tests/tooling/support/release-matrix-attempt-fixture.ts",
+  ]) {
+    assert.ok(selected(input).includes(contract), input);
+  }
 });
 
 void test("release scripts, manifests, workflow, docs and copied fixture restore every contract", () => {
