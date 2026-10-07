@@ -55,3 +55,10 @@ response assertion remains exact; native tags, declared/native events, edits,
 mirror observations, hover, and unsaved declaration controls retain their
 original expectations. Require fresh successor Actions for both repaired
 expressions and all four Rust shards.
+
+Source run `37592198349` then compiled the actual structural `--lib` test
+configuration and exposed the import's missing test arm. The legacy helper
+caller is guarded by `any(test, feature = "native")`; match that exact gate on
+the import. This keeps structural production builds warning-free and retains
+existing structural unit tests. The initial native-only gate was incomplete;
+require both actual structural tests and production checks on the successor.
