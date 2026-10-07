@@ -83,3 +83,12 @@ resolution body. This adds no scan or allocation. The historical counts do not
 qualify this source. Fresh Actions and protected measurements must
 establish the resulting counts before delivery; the filename and native
 custom-directive boundaries above remain unfinished.
+
+
+## Actual original source delivery
+
+PR #8183 signed-merged as `2c5817d518a1e84b90821e8053affff7c6cb7eaa` at 2026-10-07 16:29:10 UTC. Protected Check 37648958149 passed all four actual Rust workers, the required aggregate, canonical comparisons and original 104 instruction ceilings. The exact 237-byte original Tree and unchanged Imported/Mixed/Child sources qualify sixteen complete compile/map pairs and twelve mounted modules across both production and inline modes. The locked rc.9 oracle agrees on complete recursive data-mark yes / depths 0,1,2 nodes, props updates/removal/restoration, directive/import precedence, empty diagnostics and unmount. Full serialized map-on/off fields agree after removing only map; empty Child has a genuine null map, with no decoded-map accuracy claim.
+
+The complete original fenced source matches its retained issue body, manifest byte count and SHA at the actual signed merge. Combined original-source custody SHA-256 is `72b65a0913013914e274e1ce8abf5e6e980815895f0929962f872773e3d3a2c9`. The required law also passes later exact 2e96, whose own qualification remains distinct. The original source defect is [closed as completed](https://github.com/ubugeeei-prod/vize/issues/7884#issuecomment-6046653902).
+
+Earlier OPEN statements retain historical source/queue scope. Reported rc.10/Node26/installed public replay, browser/performance/release delivery and broader computed/component/filename-case/native custom-directive/SSR/hydration/native-only graduation remain unfinished; they are not new gates for the whole original source Expected contract and receive no acceptance from this closure.
