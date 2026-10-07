@@ -169,9 +169,9 @@ mod tests {
                 let project = tempfile::tempdir().unwrap();
                 let target = project.path().join("index.ts");
                 fs::write(&target, target_source).unwrap();
-                let source = format!(
+                let source: std::string::String = vize_l0::cstr!(
                     "<script setup lang=\"ts\">\nimport {local} from './index';\n</script>\n<template><{local} /></template>"
-                );
+                ).into();
                 let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
                 let state = ServerState::new();
                 state

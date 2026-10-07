@@ -291,3 +291,12 @@ identity rejects comment and nested-shadow decoys. Existing synchronous service
 controls exercise same-named and renamed imports of default functions, local
 variables, transparent TS wrappers and classes; Corsa-independent navigation
 must retain these targets. The current fresh head requires new source proof.
+
+The exact-head dedicated editor Actions pass the three synchronous Rust groups
+and complete real n8n navigation/dirty/restore oracle without skips. Broader
+source gates exposed a disallowed test string macro, generated consumer-shard
+drift and one added line in the oversized generator. The same slice uses the
+existing compact string macro, refreshes exact inventory bytes and retains the
+generator line budget. The newly hydrated full compiler corpus separately
+reveals DOM parity/old-lane diagnostic differences; source, protected Stack and
+public-package acceptance stay pending without weakening any corpus gate.
