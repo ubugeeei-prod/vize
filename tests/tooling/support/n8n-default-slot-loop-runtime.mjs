@@ -278,22 +278,26 @@ export async function capturePackets(beforeRaw, currentRaw, custody) {
 }
 
 export async function qualifyPackets(receipt) {
-  const expected = JSON.parse(await readFile(new URL("expected.json", base), "utf8"));
+  const expectedRaw = await readFile(new URL("expected.json", base), "utf8");
+  const expected = JSON.parse(expectedRaw);
   for (const compiler of ["official", "legacy", "current"])
     assert.deepEqual(receipt.traces[compiler], expected, `${compiler}: all six authored phases`);
-  assert.equal(receipt.traces.beforeLegacy.length, expected.length);
+  const failure = JSON.parse(await readFile(new URL("before-legacy-failure.json", base), "utf8"));
+  assert.equal(receipt.custody.productSource, failure.productSource);
+  assert.equal(hash(receipt.source), failure.sourceSha256);
+  assert.equal(hash(expectedRaw), failure.currentExpectedSha256);
+  assert.equal(receipt.packetHashes.before, failure.packetSha256);
+  assert.equal(receipt.moduleHashes.beforeLegacy, failure.moduleSha256);
   assert.deepEqual(
-    receipt.traces.beforeLegacy.map((phase) => phase.calls),
-    [2, 2, 2, 2, 2, 0],
-    "immutable before-source legacy evaluates twice in each mounted phase",
+    receipt.traces.beforeLegacy,
+    failure.trace,
+    "exact frozen baseline legacy failure has no mounted or identity credit",
   );
-  for (const [index, phase] of receipt.traces.beforeLegacy.entries()) {
-    assert.deepEqual(
-      { ...phase, calls: expected[index].calls },
-      expected[index],
-      `before-source legacy: exact tree, identity and teardown in phase ${index}`,
-    );
-  }
+  assert.deepEqual(
+    receipt.traces.beforeNative,
+    expected,
+    "before-source native independently mounts every successful authored phase",
+  );
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
