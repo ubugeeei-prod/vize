@@ -1,3 +1,4 @@
+tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # Keep GitHub language statistics focused on authored source code.
 *.snap linguist-generated=true
 **/__snapshots__/** linguist-generated=true

@@ -26,6 +26,8 @@ mod component_props;
 #[cfg(test)]
 mod component_props_tests;
 #[cfg(test)]
+mod configured_global_components_tests;
+#[cfg(test)]
 mod configured_lint_tests;
 #[cfg(feature = "native")]
 pub(in crate::ide) mod corsa;

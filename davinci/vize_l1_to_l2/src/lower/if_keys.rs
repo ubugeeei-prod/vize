@@ -48,8 +48,7 @@ pub enum BranchKeyKind {
 }
 
 impl BranchKey {
-    /// The text the collision check compares, kind-blind, exactly like
-    /// the legacy `extract_key_value_str` under the default dialect.
+    /// Authored collision text; attribute and binding kinds remain distinct.
     #[must_use]
     pub fn collision_text(&self) -> Option<&str> {
         match &self.kind {
@@ -129,13 +128,13 @@ pub(crate) fn attach_if_facts(
         let Some(text) = later.collision_text() else {
             continue;
         };
-        let collides = keys.iter().take(index).any(|earlier| {
-            earlier
-                .as_ref()
-                .and_then(BranchKey::collision_text)
-                .is_some_and(|existing| existing == text)
-        });
-        if collides {
+        for earlier in keys.iter().take(index).flatten() {
+            if core::mem::discriminant(&earlier.kind) != core::mem::discriminant(&later.kind)
+                || earlier.collision_text() != Some(text)
+            {
+                continue;
+            }
+            // Vue reports each earlier-equal pair, in authored branch order.
             cx.error(later.span, String::from(SAME_KEY_MESSAGE));
             cx.record(
                 "error.v-if-same-key",

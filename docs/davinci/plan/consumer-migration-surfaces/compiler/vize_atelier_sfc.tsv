@@ -453,6 +453,9 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/imported_type_cache.rs	
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/mixed_style_scope.rs	17	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/module_mode_setup_bindings.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/module_mode_setup_bindings.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/n8n_default_slot_loops.rs	19	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/n8n_default_slot_loops.rs	19	l1	L1	stage	vize_l1	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/n8n_default_slot_loops.rs	19	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	4
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502.rs	2	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/capture.rs	8	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_attribute_values_7502/capture.rs	8	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
@@ -489,10 +492,12 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/root_patterned_template
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/root_patterned_template.rs	97	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/support/fix_history_map_diagnostic_options.rs	30	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/support/fix_history_options.rs	31	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_attribute_modifiers.rs	75	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_css_vars.rs	13	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_refusals/mod.rs	87	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_refusals/mod.rs	87	l1	L1	stage	vize_l1	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_refusals/mod.rs	87	l2	L2	stage	vize_l2	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_refusals/mod.rs	87	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_setup_resolution.rs	71	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/vapor_trailing_line_comments.rs	20	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/workspace_prop_types.rs	10	l0	L0	stage	vize_l0	preferred	2

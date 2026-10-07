@@ -1,0 +1,92 @@
+{
+  "compiler": {
+    "version": "3.5.26",
+    "entrypoint": "@vue/compiler-sfc/dist/compiler-sfc.esm-browser.js",
+    "url": "https://unpkg.com/@vue/compiler-sfc@3.5.26/dist/compiler-sfc.esm-browser.js",
+    "sha256": "4bd5cbcf9bdae4e4264be4ddb14e416074ad96909c56ba9b604e93d5b76b06ec"
+  },
+  "name": "named_slot_key_only",
+  "filename": "named_slot_key_only.vue",
+  "source": "<template><Select><template v-if=\"prefix\" #prefix>header</template><template v-for=\"row in rows\"><span :key=\"row.id\">{{ row.label }}</span></template></Select></template>",
+  "sourceSha256": "288d23a9a20b555a826c8cdbacd82aa43d59884dcf0b230605d491e05e94b717",
+  "template": "<Select><template v-if=\"prefix\" #prefix>header</template><template v-for=\"row in rows\"><span :key=\"row.id\">{{ row.label }}</span></template></Select>",
+  "parseErrors": [],
+  "outputs": [
+    {
+      "options": {
+        "source": "<Select><template v-if=\"prefix\" #prefix>header</template><template v-for=\"row in rows\"><span :key=\"row.id\">{{ row.label }}</span></template></Select>",
+        "filename": "named_slot_key_only.vue",
+        "id": "named_slot_key_only",
+        "compilerOptions": {
+          "mode": "function",
+          "prefixIdentifiers": false,
+          "cacheHandlers": false,
+          "sourceMap": false
+        },
+        "sourceMap": false
+      },
+      "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { createTextVNode: _createTextVNode, renderList: _renderList, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, toDisplayString: _toDisplayString, resolveComponent: _resolveComponent, withCtx: _withCtx, createSlots: _createSlots, createBlock: _createBlock } = _Vue\n\n    const _component_Select = _resolveComponent(\"Select\")\n\n    return (_openBlock(), _createBlock(_component_Select, null, _createSlots({\n      default: _withCtx(() => [\n        (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(rows, (row) => {\n          return (_openBlock(), _createElementBlock(\"span\", { key: row.id }, _toDisplayString(row.label), 1 /* TEXT */))\n        }), 256 /* UNKEYED_FRAGMENT */))\n      ]),\n      _: 2 /* DYNAMIC */\n    }, [\n      prefix\n        ? {\n            name: \"prefix\",\n            fn: _withCtx(() => [\n              _cache[0] || (_cache[0] = _createTextVNode(\"header\", -1 /* CACHED */))\n            ]),\n            key: \"0\"\n          }\n        : undefined\n    ]), 1024 /* DYNAMIC_SLOTS */))\n  }\n}",
+      "codeSha256": "defe9ff53d66bfcb4d8bc1141de0395a5590cdd6990389244753e577e2422854",
+      "errors": [
+        {
+          "name": "SyntaxError",
+          "message": "<template v-for> key should be placed on the <template> tag.",
+          "code": 33,
+          "loc": {
+            "start": {
+              "column": 94,
+              "line": 1,
+              "offset": 93
+            },
+            "end": {
+              "column": 107,
+              "line": 1,
+              "offset": 106
+            },
+            "source": ":key=\"row.id\""
+          }
+        }
+      ],
+      "tips": [],
+      "map": null
+    },
+    {
+      "options": {
+        "source": "<Select><template v-if=\"prefix\" #prefix>header</template><template v-for=\"row in rows\"><span :key=\"row.id\">{{ row.label }}</span></template></Select>",
+        "filename": "named_slot_key_only.vue",
+        "id": "named_slot_key_only",
+        "compilerOptions": {
+          "mode": "module",
+          "prefixIdentifiers": true,
+          "cacheHandlers": false,
+          "sourceMap": false
+        },
+        "sourceMap": false
+      },
+      "code": "import { createTextVNode as _createTextVNode, renderList as _renderList, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock, toDisplayString as _toDisplayString, resolveComponent as _resolveComponent, withCtx as _withCtx, createSlots as _createSlots, createBlock as _createBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  const _component_Select = _resolveComponent(\"Select\")\n\n  return (_openBlock(), _createBlock(_component_Select, null, _createSlots({\n    default: _withCtx(() => [\n      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.rows, (row) => {\n        return (_openBlock(), _createElementBlock(\"span\", {\n          key: row.id\n        }, _toDisplayString(row.label), 1 /* TEXT */))\n      }), 256 /* UNKEYED_FRAGMENT */))\n    ]),\n    _: 2 /* DYNAMIC */\n  }, [\n    (_ctx.prefix)\n      ? {\n          name: \"prefix\",\n          fn: _withCtx(() => [\n            _cache[0] || (_cache[0] = _createTextVNode(\"header\", -1 /* CACHED */))\n          ]),\n          key: \"0\"\n        }\n      : undefined\n  ]), 1024 /* DYNAMIC_SLOTS */))\n}",
+      "codeSha256": "6cb4f08d6a3bde41a397c1560db246de8193343a0bf0d1d715ef3872c7a3b45a",
+      "errors": [
+        {
+          "name": "SyntaxError",
+          "message": "<template v-for> key should be placed on the <template> tag.",
+          "code": 33,
+          "loc": {
+            "start": {
+              "column": 94,
+              "line": 1,
+              "offset": 93
+            },
+            "end": {
+              "column": 107,
+              "line": 1,
+              "offset": 106
+            },
+            "source": ":key=\"row.id\""
+          }
+        }
+      ],
+      "tips": [],
+      "map": null
+    }
+  ]
+}
