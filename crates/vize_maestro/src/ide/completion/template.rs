@@ -23,6 +23,8 @@ mod components;
 mod css_modules;
 mod directives;
 mod event_union;
+#[cfg(test)]
+mod global_attribute_tests;
 mod native;
 #[cfg(test)]
 mod native_tests;
@@ -98,11 +100,11 @@ pub(crate) fn complete_template(ctx: &IdeContext) -> Vec<CompletionItem> {
             }
 
             let mut items_vec = contextual_directive_completions(ctx);
-            items_vec.extend(native::native_element_attribute_completions(ctx));
-            event_union::append_component_surface(
-                &mut items_vec,
-                component_meta::component_surface_completions(ctx),
-            );
+            let component = component_meta::component_surface_completions(ctx);
+            items_vec.extend(native::native_element_attribute_completions(
+                ctx, &component,
+            ));
+            event_union::append_component_surface(&mut items_vec, component);
             return prepare_open_tag_completions(ctx, &tag_ctx, items_vec);
         }
 
