@@ -1,0 +1,6 @@
+<script setup>
+import { ref, watch } from "vue";
+const target = ref(0);
+watch(source, (next) => { target.value = next * 2 });
+</script>
+<template><p v-pre @click="target = 3">{{ target = 3 }}</p></template>

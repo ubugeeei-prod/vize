@@ -55,3 +55,11 @@ record preserves the complete slice clause and incoming decisions. Previous
 source success grants no acceptance to this composition: fresh exact-head
 Actions, protected gates and actual merge remain required, with both filename
 case normalization and native custom-directive admission still unfinished.
+
+After the protected preceding cohort actually merged, the same local source
+chain incorporates signed main `3ed1cc90908c88016310b90a855500c94a156f1f`.
+That incoming main changes no owned Vapor or SFC setup source or fixture;
+the complete owned byte census remains exact. The approved common 350-line
+record preserves all prior map-failure evidence and TODO boundaries. This
+genuine main union requires fresh exact-head Actions and protected actual
+delivery; projected merge analysis supplies neither ancestry nor execution.

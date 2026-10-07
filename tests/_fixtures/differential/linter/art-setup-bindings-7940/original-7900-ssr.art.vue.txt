@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Panel from "./Panel.vue";
+
+const isOpen = ref(true);
+const close = (): void => {
+  isOpen.value = false;
+};
+</script>
+
+<art title="Panel" component="./Panel.vue">
+  <variant name="Default" default>
+    <Panel v-if="isOpen" @close="close" />
+  </variant>
+</art>
