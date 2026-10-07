@@ -115,3 +115,29 @@ These scoped observations do not accept the failed aggregate, the current
 successor, protected instruction gates or installed distribution. Current
 SDK remediation, fresh full source proof and actual Stack delivery remain
 required, with every original/control oracle and budget unchanged.
+
+The [actual SDK incorporation](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6034179024)
+genuinely replays the five authored CSS commits onto published script parent
+`cabace849f8667ddb96166b29fa83aa0b420148d`, on actual signed SDK fix
+`706a5b7886c363f6c67a03964ac55f26c5a2a341` (#8148, merged
+2026-10-07T08:21:15Z). Original authors, dates, full messages and verified
+reporter trailers are preserved. All owned noncanonical source, inputs and
+complete vectors remain byte-exact to historical3d; the entire incoming
+canonical record remains intact at350 lines. Actual security acceptance
+does not transfer execution credit to this changed child.
+
+Historical3d/Check37590396900 passed all four Rust/tooling workers and
+16,518 distinct Rust cases. Authenticated official size/digest/CRC packets
+retain all17 whole CSS API vectors,18 complete CLI invocations and the
+inherited42 API/42 CLI observations, including the entire original clean
+report and genuine CSS positives. Its canonical check passed; the SDK
+advisory and dependent aggregates still failed. Receipt SHA256
+`ee7c6d8818eeb0b28e7926db12774b56e843c8a12e3bd2ca0abf46f499dfc52a`
+binds that historical source evidence. First failure receipts stay intact.
+
+Fresh current-head Actions and all complete raw vectors remain mandatory,
+followed by native Stack8147 highest-qualified-prefix admission, unchanged
+protected100+4 instruction ceilings, full suites and both signed actual
+merges. No individual-layer auto-merge or native/history/performance credit
+is granted. #7989 stays open until combined actual acceptance; installed
+distribution and publication remain separate root-owned follow-through.
