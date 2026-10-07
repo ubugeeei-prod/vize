@@ -7,28 +7,57 @@ use crate::commands::atomic_write::atomic_write;
 use vize_l0::{String, ToCompactString, profiler::global_profiler};
 use vize_patina::{JsxLang, LintResult, Linter, TextEdit};
 
+const MAX_AUTOFIX_PASSES: usize = 10;
+
 pub(super) fn lint_source_with_optional_fix(
     linter: &Linter,
     path: &Path,
-    mut source: String,
+    source: String,
     filename: &str,
     should_fix: bool,
 ) -> std::io::Result<(String, LintResult, bool)> {
     let initial_result = lint_source(linter, path, &source, filename);
-    if should_fix
-        && let Some(fixed_source) = apply_lint_fixes(&source, &initial_result)
-        && fixed_source != source
-    {
-        atomic_write(path, fixed_source.as_bytes()).inspect_err(|error| {
-            global_profiler().record_fs_write_failure(fixed_source.len());
+    if !should_fix {
+        return Ok((source, initial_result, false));
+    }
+    let original = source.clone();
+    let (source, result) = fix_until_stable(source, initial_result, |source| {
+        lint_source(linter, path, source, filename)
+    });
+    let fixed = source != original;
+    if fixed {
+        atomic_write(path, source.as_bytes()).inspect_err(|error| {
+            global_profiler().record_fs_write_failure(source.len());
             eprintln!("Failed to write {}: {}", path.display(), error);
         })?;
-        global_profiler().record_fs_write(fixed_source.len());
-        source = fixed_source;
-        let result = lint_source(linter, path, &source, filename);
-        return Ok((source, result, true));
+        global_profiler().record_fs_write(source.len());
     }
-    Ok((source, initial_result, false))
+    Ok((source, result, fixed))
+}
+
+pub(super) fn fix_until_stable(
+    mut source: String,
+    mut result: LintResult,
+    mut lint: impl FnMut(&str) -> LintResult,
+) -> (String, LintResult) {
+    let original_result = result.clone();
+    let mut seen_sources = vec![source.clone()];
+    for _ in 0..MAX_AUTOFIX_PASSES {
+        let Some(fixed_source) = apply_lint_fixes(&source, &result) else {
+            break;
+        };
+        if fixed_source == source {
+            break;
+        }
+        if seen_sources.contains(&fixed_source) {
+            // Conflicting rules must not alternate file bytes across invocations.
+            return (seen_sources.remove(0), original_result);
+        }
+        source = fixed_source;
+        result = lint(&source);
+        seen_sources.push(source.clone());
+    }
+    (source, result)
 }
 
 fn lint_source(linter: &Linter, path: &Path, source: &str, filename: &str) -> LintResult {

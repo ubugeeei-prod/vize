@@ -1,6 +1,7 @@
 import type { Context } from "@oxlint/plugins";
 
 import type { HelpLevel, PatinaPreset, PatinaSettings } from "./model.js";
+import { parseRuleSelection } from "./rule-selection.js";
 export { isPatinaFile } from "./file-kinds.js";
 
 const HELP_LEVELS = new Set<HelpLevel>(["none", "short", "full"]);
@@ -41,6 +42,13 @@ export function parseVizeSettings(vize: unknown): PatinaSettings {
   const corsaPath = vizeRecord.corsaPath;
   const resolved: PatinaSettings = {};
 
+  if (
+    Array.isArray(vizeRecord.rules) ||
+    (typeof vizeRecord.rules === "object" && vizeRecord.rules !== null)
+  ) {
+    resolved.rules = vizeRecord.rules as NonNullable<PatinaSettings["rules"]>;
+  }
+
   if (typeof locale === "string") {
     resolved.locale = locale;
   }
@@ -73,7 +81,9 @@ export function parseVizeSettings(vize: unknown): PatinaSettings {
 }
 
 export function getActivePreset(settings: PatinaSettings): PatinaPreset {
-  return settings.preset ?? "general-recommended";
+  // Oxlint already selected these rules. Inherited configs can lose settings,
+  // so an absent preset must not silently suppress that explicit selection.
+  return settings.preset ?? "incremental";
 }
 
 export function isIncrementalPreset(settings: PatinaSettings): boolean {
@@ -81,14 +91,16 @@ export function isIncrementalPreset(settings: PatinaSettings): boolean {
 }
 
 export function getCacheKey(filename: string, settings: PatinaSettings): string {
-  return [
+  const selection = parseRuleSelection(settings.rules);
+  return JSON.stringify([
     filename,
     settings.locale ?? "",
     settings.helpLevel ?? "",
     getActivePreset(settings),
     settings.typeAware ? "type-aware" : "",
     settings.corsaPath ?? "",
-  ].join("::");
+    selection?.cacheKey,
+  ]);
 }
 
 export function isTypeAwareRuleName(ruleName: string): boolean {
