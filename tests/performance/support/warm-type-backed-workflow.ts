@@ -144,6 +144,20 @@ if (process.argv[2] === "prepare") {
     "npm/cli/pkl/vize.pkl",
     "npm/cli/schemas/vize.config.schema.json",
     "npm/cli/src/types/generated.ts",
+    "crates/vize_canon/src/corsa_server/reuse_tests.rs",
+    "crates/vize_canon/src/lsp_client/bootstrap.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/native_vue.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/original_program.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/project_configuration.rs",
+    "crates/vize_canon/src/lsp_client/lifecycle.rs",
+    "crates/vize_canon/src/lsp_client/workspace_project.rs",
+    "crates/vize_canon/tests/original_program_check.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/original_program/key_tests.rs",
+    "crates/vize_canon/src/lsp_client/editor_lsp/original_program/process_tests.rs",
+    "crates/vize_canon/tests/original_program_check/process_reuse.rs",
+    "crates/vize_canon/tests/original_program_check/process_admission.rs",
+    "crates/vize_canon/tests/support/original_diagnosing_process.rs",
   ]);
   const harnessOnly = !cut && production.length === 0;
   if (harnessOnly) {

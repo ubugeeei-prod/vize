@@ -1,0 +1,478 @@
+{
+  "providerIdentities": {
+    "compilerDom": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-dom@3.5.35/node_modules/@vue/compiler-dom/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-dom@3.5.35/node_modules/@vue/compiler-dom/index.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-dom@3.5.35/node_modules/@vue/compiler-dom/index.js",
+      "version": "3.5.35",
+      "entrySha256": "21407fc5cebe255208627dd039f2284156be88abbd9123281a79581d349b48c1"
+    },
+    "compilerSsr": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-ssr@3.5.35/node_modules/@vue/compiler-ssr/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-ssr@3.5.35/node_modules/@vue/compiler-ssr/dist/compiler-ssr.cjs.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-ssr@3.5.35/node_modules/@vue/compiler-ssr/dist/compiler-ssr.cjs.js",
+      "version": "3.5.35",
+      "entrySha256": "b43751e2c5171bdeda85fed83d4d236849dccbfe4f13de4e62adf6b895d70baa"
+    },
+    "compilerSfc": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-sfc@3.5.35/node_modules/@vue/compiler-sfc/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-sfc@3.5.35/node_modules/@vue/compiler-sfc/dist/compiler-sfc.cjs.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-sfc@3.5.35/node_modules/@vue/compiler-sfc/dist/compiler-sfc.cjs.js",
+      "version": "3.5.35",
+      "entrySha256": "ba385b877d16db089c6d16dd41a3c8026aa3e2092ae784c283567757b015fb56"
+    },
+    "renderer": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+server-renderer@3.5.35_vue@3.5.35_typescript@6.0.3_/node_modules/@vue/server-renderer/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+server-renderer@3.5.35_vue@3.5.35_typescript@6.0.3_/node_modules/@vue/server-renderer/index.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+server-renderer@3.5.35_vue@3.5.35_typescript@6.0.3_/node_modules/@vue/server-renderer/index.js",
+      "version": "3.5.35",
+      "entrySha256": "649f9ecc1d681df415cfe6e0a94bcab03c8ac7a98c2f14dee08afeeec43e1880"
+    },
+    "vue": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/index.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/index.js",
+      "version": "3.5.35",
+      "entrySha256": "a5287f6056bc5c2c569d318063ee043f55a0d323fa7262f64456d58fd574f928"
+    },
+    "happyDom": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@20.11.2/node_modules/happy-dom/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@20.11.2/node_modules/happy-dom/lib/index.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@20.11.2/node_modules/happy-dom/lib/index.js",
+      "version": "20.11.2",
+      "entrySha256": "d38c1614c3184c41b04199fe84d0e1406633414ff07f1003e675faae5628475a"
+    }
+  },
+  "observerHelperSha256": "d97ccd8cbadd21d3164325d0e23e681657260136e74626c65a097ad623a8b7d7",
+  "strictWholeDomTextSsrAndEventEqual": true,
+  "original": {
+    "id": "self-closing-input",
+    "sourceSha256": "7068234eeffca947a869fdd5cfa698762d7ea19545e2c2eecd716a0706e475d6",
+    "templateSha256": "654c97ac03e8c583240919a68f230a40315df12c109d262368ae55d4e09c0f4b",
+    "domCodeSha256": "2a56e929be7cbc06791adc48f77f1d839ca49f47a637a26350fc4a17a59f3202",
+    "ssrCodeSha256": "da6de7a2aa6958ef36bb04f93a0ffdc3778ef1a7e63fbaa21814ea1533b3f5d8",
+    "observations": [
+      {
+        "state": {
+          "id": "false-page-zero",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-one",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 1
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-two",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 2
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "false-empty-pages",
+          "pages": [],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 0 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 0 ",
+        "ssrHtml": "<p> AAAAAA 0 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-unicode-items",
+          "pages": [
+            "日本語",
+            "a&b"
+          ],
+          "page": 10
+        },
+        "domHtml": "<p> AAAAAA 2 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 2 ",
+        "ssrHtml": "<p> AAAAAA 2 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "false-negative-page",
+          "pages": [
+            9
+          ],
+          "page": -1
+        },
+        "domHtml": "<p> AAAAAA 1 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 1 ",
+        "ssrHtml": "<p> AAAAAA 1 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "back-to-zero",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      }
+    ]
+  },
+  "reference": {
+    "id": "self-closing-reference",
+    "sourceSha256": "f93651e7e3229830f79c90009707de9c0e86873d5f47f5b5cdd5918ae602b816",
+    "templateSha256": "889977cca669c6d8d99622ceb5d0afd391b2d9d2ab948658d63ca5045eff2d2c",
+    "domCodeSha256": "2a56e929be7cbc06791adc48f77f1d839ca49f47a637a26350fc4a17a59f3202",
+    "ssrCodeSha256": "da6de7a2aa6958ef36bb04f93a0ffdc3778ef1a7e63fbaa21814ea1533b3f5d8",
+    "observations": [
+      {
+        "state": {
+          "id": "false-page-zero",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-one",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 1
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-two",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 2
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "false-empty-pages",
+          "pages": [],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 0 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 0 ",
+        "ssrHtml": "<p> AAAAAA 0 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-unicode-items",
+          "pages": [
+            "日本語",
+            "a&b"
+          ],
+          "page": 10
+        },
+        "domHtml": "<p> AAAAAA 2 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 2 ",
+        "ssrHtml": "<p> AAAAAA 2 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "false-negative-page",
+          "pages": [
+            9
+          ],
+          "page": -1
+        },
+        "domHtml": "<p> AAAAAA 1 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 1 ",
+        "ssrHtml": "<p> AAAAAA 1 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "back-to-zero",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      }
+    ]
+  },
+  "defaultOxfmtProbe": {
+    "id": "self-closing-default-probe",
+    "sourceSha256": "19acb7cc65b9060aa70c76bc4e9016bef06914f86e2c84720aee5ea4c9d9c1e7",
+    "templateSha256": "8e60a861f08edb337a3a49f4166a1af30d2f649c46186dd0f0d836c3df90196f",
+    "domCodeSha256": "2a56e929be7cbc06791adc48f77f1d839ca49f47a637a26350fc4a17a59f3202",
+    "ssrCodeSha256": "da6de7a2aa6958ef36bb04f93a0ffdc3778ef1a7e63fbaa21814ea1533b3f5d8",
+    "observations": [
+      {
+        "state": {
+          "id": "false-page-zero",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-one",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 1
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-two",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 2
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "false-empty-pages",
+          "pages": [],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 0 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 0 ",
+        "ssrHtml": "<p> AAAAAA 0 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-unicode-items",
+          "pages": [
+            "日本語",
+            "a&b"
+          ],
+          "page": 10
+        },
+        "domHtml": "<p> AAAAAA 2 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 2 ",
+        "ssrHtml": "<p> AAAAAA 2 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "false-negative-page",
+          "pages": [
+            9
+          ],
+          "page": -1
+        },
+        "domHtml": "<p> AAAAAA 1 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 1 ",
+        "ssrHtml": "<p> AAAAAA 1 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "back-to-zero",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      }
+    ]
+  },
+  "defaultOxfmtProbeEqual": true,
+  "headerNormalizationOxfmtProbe": {
+    "id": "self-closing-header-probe",
+    "sourceSha256": "597f54c4e8445a2e2c80fc09344dc763b429e0a3722f3184e5c1156c19fb81c4",
+    "templateSha256": "944f85c599c7d087bf33f7cac34e148535518dcfa28e2a65605eb5d7eb7e3229",
+    "domCodeSha256": "2a56e929be7cbc06791adc48f77f1d839ca49f47a637a26350fc4a17a59f3202",
+    "ssrCodeSha256": "da6de7a2aa6958ef36bb04f93a0ffdc3778ef1a7e63fbaa21814ea1533b3f5d8",
+    "observations": [
+      {
+        "state": {
+          "id": "false-page-zero",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-one",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 1
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-two",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 2
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "false-empty-pages",
+          "pages": [],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 0 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 0 ",
+        "ssrHtml": "<p> AAAAAA 0 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "true-page-unicode-items",
+          "pages": [
+            "日本語",
+            "a&b"
+          ],
+          "page": 10
+        },
+        "domHtml": "<p> AAAAAA 2 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 2 ",
+        "ssrHtml": "<p> AAAAAA 2 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "false-negative-page",
+          "pages": [
+            9
+          ],
+          "page": -1
+        },
+        "domHtml": "<p> AAAAAA 1 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 1 ",
+        "ssrHtml": "<p> AAAAAA 1 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      },
+      {
+        "state": {
+          "id": "back-to-zero",
+          "pages": [
+            1,
+            2,
+            3
+          ],
+          "page": 0
+        },
+        "domHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "domText": " AAAAAA 3 ",
+        "ssrHtml": "<p> AAAAAA 3 <img src=\"x\" alt=\"x\"></p>",
+        "emittedClickCalls": 0
+      }
+    ]
+  },
+  "headerNormalizationOxfmtProbeEqual": true
+}

@@ -2,7 +2,10 @@
 
 use super::EditorLspSession;
 use crate::corsa_bridge::DiagnosingSnapshot;
-use corsa::{api::ApiClient, runtime::block_on};
+use corsa::{
+    api::{ApiClient, UpdateSnapshotParams},
+    runtime::block_on,
+};
 #[cfg(unix)]
 use corsa_lsp::InitializeApiSessionRequest;
 use corsa_lsp::InitializeApiSessionResult;
@@ -71,11 +74,20 @@ impl DiagnosingApi {
         config: &Path,
         admitted_options: &Value,
     ) -> Result<DiagnosingSnapshot, ConfigurationError> {
+        self.observe_with_params(uri, config, admitted_options, Default::default())
+    }
+
+    pub(super) fn observe_with_params(
+        &self,
+        uri: &str,
+        config: &Path,
+        admitted_options: &Value,
+        params: UpdateSnapshotParams,
+    ) -> Result<DiagnosingSnapshot, ConfigurationError> {
         let communication = |error| {
             ConfigurationError::Communication(cstr!("cannot observe diagnosing options: {error}"))
         };
-        let snapshot =
-            block_on(self.client.update_snapshot(Default::default())).map_err(communication)?;
+        let snapshot = block_on(self.client.update_snapshot(params)).map_err(communication)?;
         let result = (|| {
             let project =
                 block_on(snapshot.get_default_project_for_file(

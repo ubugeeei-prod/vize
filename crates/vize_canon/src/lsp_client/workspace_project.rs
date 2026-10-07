@@ -61,6 +61,8 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
+        self.retire_original_diagnosing_session()?;
+
         let config_path = config_path
             .map(Path::to_path_buf)
             .unwrap_or_else(|| workspace_config_path(&project_root));

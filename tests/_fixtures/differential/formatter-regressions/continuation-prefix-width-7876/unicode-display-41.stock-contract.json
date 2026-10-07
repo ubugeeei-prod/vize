@@ -1,0 +1,116 @@
+{
+  "schema": "vize.authored-stock-vue-whole-runtime-contract",
+  "version": 1,
+  "case": "unicode-display-41",
+  "inputSha256": "7deb886c128d2aa2c9a434a49ced089bfec55d5ac44d87207c676abfb305dddf",
+  "expectedSourceSha256": "804d0d59b3946027779fd7149ac3a701f364a81ef82cdfdd9c5b3933a15ea4c8",
+  "stockVersions": {
+    "compilerDom": "3.5.35",
+    "compilerSsr": "3.5.35",
+    "compilerSfc": "3.5.35",
+    "renderer": "3.5.35",
+    "vue": "3.5.35",
+    "happyDom": "20.11.2"
+  },
+  "scope": "Sealed stock Vue whole DOM/text/SSR observations from independent original input, before any Vize output. n is pages.length; visible is page > 0. No source-built/installed Vize credit.",
+  "observations": [
+    {
+      "state": {
+        "id": "false-page-zero",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 0
+      },
+      "domHtml": "<p> 状態 3<!--v-if--></p>",
+      "domText": " 状態 3",
+      "ssrHtml": "<p> 状態 3<!----></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "true-page-one",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 1
+      },
+      "domHtml": "<p> 状態 3 x</p>",
+      "domText": " 状態 3 x",
+      "ssrHtml": "<p> 状態 3<!--[--> x<!--]--></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "true-page-two",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 2
+      },
+      "domHtml": "<p> 状態 3 x</p>",
+      "domText": " 状態 3 x",
+      "ssrHtml": "<p> 状態 3<!--[--> x<!--]--></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "false-empty-pages",
+        "pages": [],
+        "page": 0
+      },
+      "domHtml": "<p> 状態 0<!--v-if--></p>",
+      "domText": " 状態 0",
+      "ssrHtml": "<p> 状態 0<!----></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "true-page-unicode-items",
+        "pages": [
+          "日本語",
+          "a&b"
+        ],
+        "page": 10
+      },
+      "domHtml": "<p> 状態 2 x</p>",
+      "domText": " 状態 2 x",
+      "ssrHtml": "<p> 状態 2<!--[--> x<!--]--></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "false-negative-page",
+        "pages": [
+          9
+        ],
+        "page": -1
+      },
+      "domHtml": "<p> 状態 1<!--v-if--></p>",
+      "domText": " 状態 1",
+      "ssrHtml": "<p> 状態 1<!----></p>",
+      "emittedClickCalls": 0
+    },
+    {
+      "state": {
+        "id": "back-to-zero",
+        "pages": [
+          1,
+          2,
+          3
+        ],
+        "page": 0
+      },
+      "domHtml": "<p> 状態 3<!--v-if--></p>",
+      "domText": " 状態 3",
+      "ssrHtml": "<p> 状態 3<!----></p>",
+      "emittedClickCalls": 0
+    }
+  ]
+}

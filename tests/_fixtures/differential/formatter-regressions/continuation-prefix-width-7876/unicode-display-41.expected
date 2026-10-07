@@ -1,0 +1,7 @@
+<template>
+  <p>
+    状態 {{ n }}<template
+      v-if="visible"
+    > x</template>
+  </p>
+</template>

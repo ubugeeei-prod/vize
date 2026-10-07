@@ -1,0 +1,78 @@
+{
+  "schema": "vize.sealed-continuation-runtime-contracts",
+  "version": 1,
+  "contracts": [
+    {
+      "id": "original-example",
+      "file": "original-example.stock-contract.json",
+      "sha256": "75791db150e4b3fc436a1d8469c034ff153c5cde904b4d4553e034a2edb4c792",
+      "inputSha256": "cda86e54a1e3f15b9c45652171e664c8fad2aa8e57064dfa6ee6998940e633fb",
+      "expectedSourceSha256": "e379010d0e5b534b84dad6f3d6774c599e59ed7845243799ca42ec62432190c7",
+      "states": 7
+    },
+    {
+      "id": "exact-40",
+      "file": "exact-40.stock-contract.json",
+      "sha256": "07485e554b48ac951e222681f6d3e61164c3bd598e3c251fcef9e7e8f824ca43",
+      "inputSha256": "08ca33e565c18f3e5d1352d14945f002862fc40f82a1ec8039302de1342f862f",
+      "expectedSourceSha256": "08ca33e565c18f3e5d1352d14945f002862fc40f82a1ec8039302de1342f862f",
+      "states": 7
+    },
+    {
+      "id": "over-41",
+      "file": "over-41.stock-contract.json",
+      "sha256": "e00fac02c1c17f72f6b8181fde14e85498debabd1c15d49b9bc16306a9ee8b54",
+      "inputSha256": "44ca615826379faa8bc8dcedc19c05244c1f51238e71dd9749e4772bc89b3c41",
+      "expectedSourceSha256": "9f3d00cff8ff6d35aaff14240b7ca89c72fc61a33ebdbeeec7c4e962b49f99d0",
+      "states": 7
+    },
+    {
+      "id": "unicode-display-41",
+      "file": "unicode-display-41.stock-contract.json",
+      "sha256": "e2103d989177f21c3f5262a502c5981f2637c94146f8035cad2ea15c3d636bf9",
+      "inputSha256": "7deb886c128d2aa2c9a434a49ced089bfec55d5ac44d87207c676abfb305dddf",
+      "expectedSourceSha256": "804d0d59b3946027779fd7149ac3a701f364a81ef82cdfdd9c5b3933a15ea4c8",
+      "states": 7
+    },
+    {
+      "id": "tabs-four-columns",
+      "file": "tabs-four-columns.stock-contract.json",
+      "sha256": "6f488f4905e912a8821edcab367ab712638480e2c5297f8893f21287e20fa2fe",
+      "inputSha256": "99ce326516542a25eb80881d43e3befe1f88bd8683ad006eaca1300f1b58f093",
+      "expectedSourceSha256": "01282a06c092df6af314a33721c4a1527722fb34945bcbd35a43ac585d2f4116",
+      "states": 7
+    },
+    {
+      "id": "authored-crlf-auto",
+      "file": "authored-crlf-auto.stock-contract.json",
+      "sha256": "e455e7d0aa3452e12fa626ed4e186395f2fabde4283d3136618aed2f283dd323",
+      "inputSha256": "e3a6337aa6940659bf439997882af468b73ec3758427fc2290cb04973daca29d",
+      "expectedSourceSha256": "1e3afb12dc191e2533306f380b2dfda3b8e6d946eb64fe92dd7fb9bb054ed1d0",
+      "states": 7
+    },
+    {
+      "id": "bracket-same-line",
+      "file": "bracket-same-line.stock-contract.json",
+      "sha256": "9a420abcd54d27a0c5a9df088d7e4d1adbca3a01469283c570c80f7addb60258",
+      "inputSha256": "44ca615826379faa8bc8dcedc19c05244c1f51238e71dd9749e4772bc89b3c41",
+      "expectedSourceSha256": "4dd8afce1bcbaecdae4b2b39b88dce455286cb3f8ee570719fdc45d2c869e32a",
+      "states": 7
+    },
+    {
+      "id": "suppression-lock",
+      "file": "suppression-lock.stock-contract.json",
+      "sha256": "a835247ca3832514321aa6f6587c37e8bd02ce93d3adbe7a5a9a3221dd0ed4bb",
+      "inputSha256": "5170c366f69b574d6342b6afd17845585374ac528e30fe917cc7c42b2c2952ea",
+      "expectedSourceSha256": "5170c366f69b574d6342b6afd17845585374ac528e30fe917cc7c42b2c2952ea",
+      "states": 7
+    },
+    {
+      "id": "one-line-p-no-leading-gap",
+      "file": "one-line-p-no-leading-gap.stock-contract.json",
+      "sha256": "9d8758251a2e43e2e52117d9886a1a45dfc0e9bbe2cd62f14e3e9f421f877e43",
+      "inputSha256": "ec83e4aa44a9c7bb08e82e8464092b75fa18d9d83e0b2ba72eae85cf493bc417",
+      "expectedSourceSha256": "d15ac36b6d888828524e82b7597cfa6eccaa4e36d0ddf01ccbf61feb8b7ff2ad",
+      "states": 7
+    }
+  ]
+}
