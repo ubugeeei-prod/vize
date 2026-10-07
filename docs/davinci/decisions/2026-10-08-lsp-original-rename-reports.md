@@ -39,8 +39,10 @@ Reuse the existing pinned Vue/native fixture without a skip path or extra
 native pipeline stage. All prior report files, routing/scope controls, mixed
 24, recursive 40 and reactive 32 sessions remain unchanged.
 
-This change adds no production behavior. Fresh exact-source Actions, genuine
-protected native execution with `VIZE_TEST_REQUIRE_TSGO=1` and no disable
+These original-report controls add no production behavior. The existing #8188
+[scoped declaration correction](./2026-10-08-reactive-props-rename-identity.md#composed-native-regression-and-scoped-declaration-projections)
+separately repairs the composed model/package/event regression. Fresh
+exact-source Actions, genuine protected native execution with `VIZE_TEST_REQUIRE_TSGO=1` and no disable
 override, full inherited suites and budgets, actual signed merge and installed
 release acceptance remain required. Keep both issues open until their original
 cases genuinely pass and merge; public release qualification remains separate.

@@ -183,7 +183,7 @@ async fn component_prop_references(
     // TypeScript does not follow that edge onward to the child's template
     // binding. Ask for references at the mapped declaration as well.
     let mut positions = matches.positions.clone();
-    positions.extend(matches.authored_definition_positions(ctx, document));
+    positions.extend(matches.authored_definition_positions(ctx, document, true));
     positions.sort_by(|left, right| {
         (&left.request_uri, left.line, left.character).cmp(&(
             &right.request_uri,

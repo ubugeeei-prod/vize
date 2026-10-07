@@ -69,6 +69,7 @@ impl ComponentPropNavigationMatches {
         &self,
         ctx: &crate::ide::IdeContext<'_>,
         document: &CanonicalVirtualDocument,
+        include_property_projections: bool,
     ) -> Vec<CanonicalSemanticPosition> {
         let mut positions = Vec::new();
         for definition in &self.authored_definitions {
@@ -101,7 +102,7 @@ impl ComponentPropNavigationMatches {
                 &definition.uri,
                 offset,
             ));
-            if let Some(source) = source.as_deref() {
+            if include_property_projections && let Some(source) = source.as_deref() {
                 positions.extend(definition_positions::positions(
                     document, definition, source,
                 ));
