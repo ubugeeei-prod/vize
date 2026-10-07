@@ -29,8 +29,16 @@ on:
         type: string
   pull_request:
     paths:
+      - "crates/vize_canon/src/lsp_client.rs"
       - ".github/workflows/davinci-canon-scaling.yml"
       - "crates/vize_canon/src/corsa_bridge/preparation_trace.rs"
+      - "crates/vize_canon/src/corsa_bridge/worker.rs"
+      - "crates/vize_canon/src/corsa_bridge/worker/async_reply.rs"
+      - "crates/vize_canon/src/corsa_bridge/worker/retirement.rs"
+      - "crates/vize_canon/src/corsa_bridge/worker/retirement/tests.rs"
+      - "crates/vize_canon/src/lsp_client/diagnostics_lsp/readiness_workers/retirement_tests.rs"
+      - "crates/vize_canon/src/lsp_client/editor_lsp/retry.rs"
+      - "crates/vize_canon/src/lsp_client/editor_lsp/retry/retirement_tests.rs"
       - "crates/vize_canon/src/lsp_client/editor_lsp/client.rs"
       - "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs"
       - "crates/vize_canon/src/lsp_client/diagnostics_lsp/**"

@@ -11,7 +11,13 @@ if (puppeteerExecutablePath) {
 }
 
 const themeDir = resolve(import.meta.dirname, "theme");
-const themeCss = ["style.css", "entry-layout.css", "features.css", "i18n/locale-selector.css"]
+const themeCss = [
+  "style.css",
+  "navigation.css",
+  "entry-layout.css",
+  "features.css",
+  "i18n/locale-selector.css",
+]
   .map((file) => readFileSync(resolve(themeDir, file), "utf-8"))
   .join("\n");
 const themeJs = buildDocsBackgroundScript(themeDir);
@@ -78,7 +84,7 @@ export default defineConfig({
           },
 
           fonts: {
-            sans: '"Helvetica Neue", Helvetica, Arial, system-ui, sans-serif',
+            sans: '"Helvetica Neue", Helvetica, Arial, "Noto Sans CJK JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif',
             mono: '"JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
           },
 

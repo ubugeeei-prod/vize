@@ -1,0 +1,15 @@
+{
+  "scope": "authored JSON join failure control, not a native accuracy oracle",
+  "original": {
+    "diagnostics": [
+      { "filename": "src/Original.vue", "severity": "error", "message": "original fatal", "labels": [{ "span": { "offset": 19, "length": 1, "line": 2, "column": 1 } }] },
+      { "filename": "src/Original.vue", "severity": "error", "message": "original fatal", "labels": [{ "span": { "offset": 19, "length": 1, "line": 2, "column": 1 } }] }
+    ],
+    "number_of_files": 2,
+    "number_of_rules": 51,
+    "threads_count": 1,
+    "start_time": 11,
+    "number_of_errors": 2,
+    "opaque": { "ordered": ["keep", "every", "field"] }
+  }
+}

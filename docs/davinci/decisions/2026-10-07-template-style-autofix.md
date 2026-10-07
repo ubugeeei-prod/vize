@@ -60,3 +60,11 @@ Current-head Actions must execute the whole Rust, CLI88/120, public native and
 production plugin contracts. Protected full suites and all104 instruction
 ceilings remain unchanged; actual merge and installed-public release are still
 required before delivery completion. No performance improvement is claimed.
+
+Integrate genuine signed main523d after its own source and full public producer
+qualification. Preserve all incoming script-safe/casing-options test commands,
+project-transport success guards and four complete evidence paths; append only
+the style producer command/upload and require the exact five shared steps.
+This uses actual main, with no queued Art metadata or synthetic ancestry.
+All original style producer/corpus/control bytes remain unchanged. Fresh successor
+source and protected qualification are required; previous execution does not transfer.

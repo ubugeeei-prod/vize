@@ -83,8 +83,15 @@ tests/_fixtures/differential/lsp/generic-prop-hover-8015/** -text whitespace=cr-
 # Public #7969 whole LF/CRLF formatter carriers stay byte exact.
 tests/_fixtures/differential/formatter-regressions/hugged-interpolation-indent-7969/*.txt -text whitespace=cr-at-eol
 
+# Whole #7876 directive-width inputs and references retain authored LF/CRLF.
+tests/_fixtures/differential/formatter-regressions/directive-print-width-7876/** -text whitespace=cr-at-eol
+tests/_fixtures/differential/formatter/sfc-directive-prefix-print-width/** -text whitespace=cr-at-eol
+
 # Original #8015 SFC and Issue inputs retain authored checkout bytes.
 tests/_fixtures/differential/lsp/template-expression-globals-8015/** -text whitespace=cr-at-eol
 
 # Contextual data/ARIA controls preserve complete source and expected payload bytes.
 tests/_fixtures/differential/lsp/data-aria-attributes-8015/** -text whitespace=cr-at-eol
+
+# Whole malformed and Unicode #7903 carriers retain the authored source bytes.
+tests/_fixtures/differential/lint/oxlint-script-safe-carrier-7903/** -text whitespace=cr-at-eol

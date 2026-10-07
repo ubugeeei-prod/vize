@@ -6,6 +6,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
 import { sha256 } from "../differential/manifest.mjs";
+import {
+  multiValueReference,
+  multiValueComparisons,
+} from "./support/css-multi-value-reference.mjs";
 import { diagnostics, validateDiagnostics } from "./support/css-rule-layout-semantics.mjs";
 import { test } from "node:test";
 
@@ -52,6 +56,7 @@ await test("public CSS continuation indentation is a configured-unit fixed point
     buildReceipt: receipt,
     nativeHandled: 0,
     cliQualified: 0,
+    currentReferenceQualified: 0,
     rows: [],
   };
   const persist = () => fs.writeFileSync(artifact, JSON.stringify(report, null, 2) + "\n");
@@ -64,11 +69,27 @@ await test("public CSS continuation indentation is a configured-unit fixed point
           assert.equal(carrier.toString(), fixture[key]);
           assert.equal(sha256(carrier), fixture[`${key}Sha256`]);
         }
+        const qualification = multiValueReference(
+          root,
+          "css-continuation-indent-7915",
+          fixture,
+          Buffer.from(fixture.input),
+          Buffer.from(fixture.expected),
+          raw,
+        );
         const file = path.join(temporary, fixture.filename);
         fs.writeFileSync(file, fixture.input);
         const config = Buffer.from(JSON.stringify({ formatter: fixture.options }) + "\n");
         fs.writeFileSync(path.join(temporary, "vize.config.json"), config);
-        const row = { id: fixture.id, fixture, attempts: [], diagnostics: [], qualified: false };
+        const row = {
+          id: fixture.id,
+          fixture,
+          currentReference: qualification.reference,
+          currentExpected: qualification.expected.toString(),
+          attempts: [],
+          diagnostics: [],
+          qualified: false,
+        };
         report.rows.push(row);
         const observe = (source, pass) => {
           const complete = diagnostics(source, fixture);
@@ -81,7 +102,7 @@ await test("public CSS continuation indentation is a configured-unit fixed point
           }
         };
         observe(fixture.input, 0);
-        for (const [index, oracle] of fixture.cliExpected.entries()) {
+        for (const [index, oracle] of qualification.cliExpected.entries()) {
           const args = [
             "fmt",
             oracle.mode,
@@ -128,17 +149,28 @@ await test("public CSS continuation indentation is a configured-unit fixed point
           assert.deepEqual(Buffer.from(capture.stderrBase64, "base64"), Buffer.from(oracle.stderr));
           if (oracle.mode === "--check") assert.deepEqual(after, before, "check never writes");
           else {
-            assert.equal(after.toString(), fixture.expected, `whole pass ${index}`);
+            assert.equal(
+              after.toString(),
+              qualification.expected.toString(),
+              `whole pass ${index}`,
+            );
+            capture.comparisons = multiValueComparisons(
+              qualification,
+              Buffer.from(fixture.expected),
+              after,
+            );
             observe(after.toString(), index);
           }
         }
         assert.equal(row.attempts.length, 5);
         row.qualified = true;
         report.cliQualified++;
+        if (qualification.reference) report.currentReferenceQualified++;
         persist();
       });
     }
     assert.equal(report.cliQualified, 12);
+    assert.equal(report.currentReferenceQualified, 11);
     assert.equal(
       report.rows.reduce((sum, row) => sum + row.attempts.length, 0),
       60,

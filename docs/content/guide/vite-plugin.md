@@ -12,6 +12,20 @@ title: Vite Plugin
 
 `@vizejs/vite-plugin` provides native-speed Vue SFC compilation for Vite projects. It is designed as a **drop-in replacement** for `@vitejs/plugin-vue` on Vue 3 SFCs — your existing `<script setup>` and Options API components work without modification.
 
+## Start with Vite+
+
+For combined compilation, native Vue checks, linting, and formatting, keep settings in
+`vite.config.ts` with the [Vite+ helper](./vite-plus.md):
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({});
+```
+
+[Migration](./migration.md) shows exactly which import and plugin calls to replace.
+The ordinary Vite path below replaces only the compiler.
+
 ## Drop-in Scope
 
 The drop-in claim is deliberately bounded, so it is worth stating what it does and does not cover:
@@ -80,104 +94,17 @@ For Vite Plus projects, keep the Vite Plus client type and append the plugin pac
 }
 ```
 
-For most projects, keep direct plugin options small and put stable compiler settings in
-`vize.config.ts`.
+For Vite+ projects, keep options in the integration helper's `compiler` field in
+`vite.config.ts`. For ordinary Vite, use direct `vize({ ... })` options. Shared
+standalone config is optional when CLI or LSP commands also need those settings.
 
-## Shared Config
+## Optional standalone shared config
 
-The recommended shared entry point is `vize`. A single `vize.config.*` file is read by both the npm
-package commands and `@vizejs/vite-plugin`. [Scoped compiler settings](./vite-scoped-compiler.md) apply `entries[].compiler` to matching files.
-
-```bash
-vp install -D vize
-```
-
-Supported config files:
-
-- `vize.config.pkl`
-- `vize.config.ts`
-- `vize.config.js`
-- `vize.config.mjs`
-- `vize.config.json`
-
-TypeScript config:
-
-```ts
-// vize.config.ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  compiler: {
-    sourceMap: true,
-    vapor: false,
-    customRenderer: false,
-    templateSyntax: "standard",
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
-```
-
-PKL config:
-
-```pkl
-amends "node_modules/vize/pkl/vize.pkl"
-
-compiler {
-  sourceMap = true
-}
-
-vite {
-  scanPatterns = new Listing {
-    "src/**/*.vue"
-  }
-}
-```
-
-JSON config with schema:
-
-```json
-{
-  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
-  "vite": {
-    "scanPatterns": ["src/**/*.vue"]
-  }
-}
-```
-
-Importing `defineConfig` from `@vizejs/vite-plugin` still works for backward compatibility, but `import { defineConfig } from "vize"` is the shared path going forward.
-
-See [Configuration](./configuration.md) for the full shared config shape.
-
-Vite Plus-first projects can also keep startup-only settings inline in `vite.config.ts`:
-
-```ts
-import { defineConfig } from "vite-plus";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [
-    vize({
-      config: {
-        compiler: {
-          sourceMap: true,
-          vapor: false,
-        },
-        vite: {
-          scanPatterns: ["src/**/*.vue"],
-        },
-        musea: {
-          include: ["src/**/*.art.vue"],
-        },
-      },
-    }),
-  ],
-});
-```
-
-Inline config is available to the Vite plugin and shared plugin store during Vite Plus execution.
-Use `vize.config.*` for settings that must also be read by CLI and LSP commands.
+When CLI or LSP commands need the same settings, use `defineConfig` from `vize`
+and a `vize.config.*` file. Install `vize` directly when importing that helper.
+The [standalone configuration reference](./configuration-reference.md) preserves
+file discovery, TypeScript/JSON/PKL examples, and scoped settings.
+Vite+ integration tasks use the helper in `vite.config.ts`.
 
 ## Compiler Options
 

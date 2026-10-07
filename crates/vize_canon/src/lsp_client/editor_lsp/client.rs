@@ -211,6 +211,7 @@ impl CorsaProjectClient {
         &mut self,
         mut request: impl FnMut(&mut EditorLspSession) -> Result<T, String>,
     ) -> Result<T, String> {
+        crate::corsa_bridge::native_operation::checkpoint()?;
         let first = self.editor_lsp_session().and_then(&mut request);
         retry_transient_editor_request(
             self,
@@ -225,6 +226,7 @@ impl CorsaProjectClient {
         documents: &FxHashMap<String, String>,
         mut request: impl FnMut(&mut EditorLspSession) -> Result<T, String>,
     ) -> Result<T, String> {
+        crate::corsa_bridge::native_operation::checkpoint()?;
         let first = self
             .editor_lsp_session_for_documents(documents)
             .and_then(&mut request);

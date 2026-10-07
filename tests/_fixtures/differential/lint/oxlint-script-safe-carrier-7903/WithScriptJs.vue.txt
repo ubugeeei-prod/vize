@@ -1,0 +1,7 @@
+<script>
+const html="x";
+debugger;
+</script>
+<template>
+<div v-html="html"/>
+</template>

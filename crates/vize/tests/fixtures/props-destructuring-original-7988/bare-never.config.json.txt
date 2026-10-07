@@ -1,0 +1,15 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "script/no-with-defaults": "warn",
+      "script/define-props-destructuring": "warn",
+      "script/define-props-declaration": "warn"
+    },
+    "ruleOptions": {
+      "script/define-props-destructuring": {
+        "destructure": "never"
+      }
+    }
+  }
+}

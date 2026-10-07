@@ -57,7 +57,8 @@ mod vue_document_tests;
 mod vue_document_tsx_tests;
 #[cfg(test)]
 mod vue_project_mapping_tests;
-mod worker;
+pub(crate) mod worker;
+pub(crate) use worker::retirement as native_operation;
 
 pub use batch_checker::BatchTypeChecker;
 pub use bridge::CorsaBridge;

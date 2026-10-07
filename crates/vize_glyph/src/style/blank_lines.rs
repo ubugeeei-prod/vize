@@ -27,6 +27,7 @@ pub(super) fn preserve_rule_layout(
     let mut printed = Tokens::new(&formatted);
     let mut adjustments = Vec::new();
     let mut pending = Vec::new();
+    let mut values = super::values::DeclarationValues::default();
     let mut previous_boundary = false;
     let mut previous_close = false;
     let mut previous_close_line = false;
@@ -42,6 +43,17 @@ pub(super) fn preserve_rule_layout(
         match (original.next(), printed.next()) {
             (None, None) => break,
             (Some(authored), Some(target)) if authored.text == target.text => {
+                let rule_brace = authored.text == "{"
+                    && preludes.peek().is_some_and(|prelude| {
+                        prelude.brace == brace
+                            && authored
+                                .start
+                                .checked_sub(prelude.range.len())
+                                .and_then(|start| source.get(start..authored.start))
+                                .zip(protected.get(prelude.range.clone()))
+                                .is_some_and(|(original, parsed)| original == parsed)
+                    });
+                values.observe(source, &authored, &target, rule_brace, &mut adjustments);
                 if previous_boundary
                     && authored.depth > 0
                     && authored.parens == 0
@@ -136,8 +148,10 @@ pub(super) fn preserve_rule_layout(
     let mut output = String::default();
     let mut cursor = 0;
     for adjustment in adjustments {
-        let indentation = if adjustment.selector {
-            options.indent_string().repeat(adjustment.depth)
+        let indentation = if adjustment.selector || adjustment.value {
+            options
+                .indent_string()
+                .repeat(adjustment.depth + usize::from(adjustment.value))
         } else {
             formatted
                 .get(adjustment.gap_start..adjustment.start)
@@ -171,7 +185,7 @@ pub(super) fn preserve_rule_layout(
 }
 
 #[derive(Clone)]
-struct Adjustment {
+pub(super) struct Adjustment {
     source_start: usize,
     gap_start: usize,
     start: usize,
@@ -179,10 +193,16 @@ struct Adjustment {
     newlines: usize,
     selector: bool,
     authored_rule_gap: bool,
+    pub(super) value: bool,
 }
 
 impl Adjustment {
-    fn new(source: &Token<'_>, target: &Token<'_>, newlines: usize, selector: bool) -> Self {
+    pub(super) fn new(
+        source: &Token<'_>,
+        target: &Token<'_>,
+        newlines: usize,
+        selector: bool,
+    ) -> Self {
         Self {
             source_start: source.start,
             gap_start: target.gap_start,
@@ -191,6 +211,7 @@ impl Adjustment {
             newlines,
             selector,
             authored_rule_gap: false,
+            value: false,
         }
     }
 }
