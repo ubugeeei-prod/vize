@@ -34,7 +34,8 @@ fn derived_watchers_preserve_effects_editable_copies_and_required_markers() {
             ))
             .with_locale(Locale::En)
             .with_help_level(HelpLevel::Full);
-        let result = linter.lint_sfc(&source, &case.fixture);
+        let filename = case.fixture.trim_end_matches(".txt");
+        let result = linter.lint_sfc(&source, filename);
         assert_eq!(
             result.warning_count, case.warnings,
             "{}: {result:#?}",
@@ -52,7 +53,7 @@ fn derived_watchers_preserve_effects_editable_copies_and_required_markers() {
         }
         assert_eq!(
             format!("{result:#?}"),
-            format!("{:#?}", linter.lint_sfc(&source, &case.fixture)),
+            format!("{:#?}", linter.lint_sfc(&source, filename)),
             "{} stable full result",
             case.id
         );
