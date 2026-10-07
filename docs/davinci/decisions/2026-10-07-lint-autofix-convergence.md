@@ -36,3 +36,12 @@ L0 test import by using an authored finite sequence for the synthetic bound law;
 this keeps the consumer inventory unchanged. The shared security audit also
 rejects the new GHSA-6qxp-vccf-f47h advisory and requires independent remediation.
 Fresh corrected-source Actions and protected acceptance remain required.
+
+Corrected source `fe0395a8` passes all four Rust shards, the actual complete JSON
+CLI regression, canonical DOM corpus, all tooling and source consumers in Check
+37590350374. Its only whole-Check failure is the independent npm audit and report.
+After actual SDK repair #8148 merges as `706a5b78` and webcam timing repair #8139
+as `b2786877`, replay the unchanged convergence source, original corpus and all
+authored oracles on that actual main. Retain the entire incoming 350-line record.
+Fresh source security/full Actions, protected acceptance, actual merge and the
+next finite publication still qualify delivery independently of prior receipts.
