@@ -1,0 +1,26 @@
+[
+  {
+    "path": "src/App.vue",
+    "source": "inputs/imported-key/src--App.vue.txt",
+    "bytes": 179,
+    "sha256": "996956532782257b154d55418263cd7796f4a1a061ae2514e0b5f013101f756a"
+  },
+  {
+    "path": "src/Consumer.vue",
+    "source": "inputs/imported-key/src--Consumer.vue.txt",
+    "bytes": 169,
+    "sha256": "778c593b265a8f45751d6a2c902cae9cb2f8dc9bbc1059c0dab3ebbe8493c50b"
+  },
+  {
+    "path": "src/Provider.vue",
+    "source": "inputs/imported-key/src--Provider.vue.txt",
+    "bytes": 176,
+    "sha256": "d52f307a53886fae36efd27b7c34f896f62b52137ade67f799c49f75f355980c"
+  },
+  {
+    "path": "src/keys.ts",
+    "source": "inputs/imported-key/src--keys.ts.txt",
+    "bytes": 107,
+    "sha256": "a6a8822f716f324c2fa925fa23c9479c28f429a746f68d872f3d170ebbde9e1c"
+  }
+]

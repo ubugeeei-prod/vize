@@ -40,7 +40,14 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install Chromium and its system dependencies
-        run: vize-ci-apt-retry vp exec --filter './npm/builder/vite-musea' -- playwright install --with-deps chromium
+        run: |
+          # Browser dependency resolution needs package indices, not desktop metadata.
+          sudo tee /etc/apt/apt.conf.d/81-vize-musea-package-indexes >/dev/null <<'APT'
+          Acquire::Languages "none";
+          Acquire::IndexTargets::deb::DEP-11::DefaultEnabled "false";
+          Acquire::IndexTargets::deb::CNF::DefaultEnabled "false";
+          APT
+          vize-ci-apt-retry vp exec --filter './npm/builder/vite-musea' -- playwright install --with-deps chromium
       - name: Verify real accessibility and deterministic screenshots
         working-directory: npm/builder/vite-musea
         env:

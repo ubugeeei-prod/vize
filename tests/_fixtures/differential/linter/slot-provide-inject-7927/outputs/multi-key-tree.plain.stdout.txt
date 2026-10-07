@@ -1,0 +1,204 @@
+Patina lint report: 5 warnings in 3 files
+
+src/App.vue
+  src/App.vue:3:1 warning cross-file vize:croquis/cf/non-reactive-provide: provide('owner') value is not reactive - consumers won't see updates
+    Reference: docs/content/rules/cross-file.md
+    Help:
+      WARNING vize:croquis/cf/non-reactive-provide
+      provide('owner') value is not reactive - consumers won't see updates
+      Problem: provide('owner', value) passes a plain value to consumers.
+      Why this matters:
+      - Consumers that call inject() receive a snapshot-like value.
+      - Later provider updates will not be visible unless consumers receive a ref or computed value.
+      Safer patterns:
+      
+        provide('owner', ref(value))
+        provide('owner', computed(() => value))
+      Suggestion: provide('key', ref(value)) or provide('key', computed(() => value))
+  src/App.vue:3:1 warning cross-file vize:croquis/cf/provide-without-symbol: provide('owner') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow
+    Reference: docs/content/rules/cross-file.md
+    Help:
+      WARNING vize:croquis/cf/provide-without-symbol
+      provide('owner') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow
+      Problem: provide('owner') uses a string key instead of Symbol/InjectionKey.
+      Why string keys are problematic:
+      
+        ┌─────────────────────────────────────────────────────────┐
+        │  String Keys          │  Symbol/InjectionKey           │
+        ├───────────────────────┼────────────────────────────────┤
+        │  Name collisions    │  Guaranteed uniqueness       │
+        │  No type safety     │  Full TypeScript inference   │
+        │  Refactoring breaks │  IDE rename support          │
+        │  Hard to trace      │  Go-to-definition works      │
+        └───────────────────────┴────────────────────────────────┘
+      Name collision example:
+      
+        // ComponentA.vue
+        provide('owner', myData)
+        
+        // LibraryX (unknown to you)
+        provide('owner', otherData)  // Collision!
+      Type-safe pattern with InjectionKey:
+      
+        // injection-keys.ts
+        import type { InjectionKey, Ref } from 'vue'
+        
+        export interface UserState {
+        name: string
+        id: number
+        }
+        
+        export const UserKey: InjectionKey<Ref<UserState>> = Symbol('user')
+        
+        // Provider.vue
+        import { UserKey } from './injection-keys'
+        provide(UserKey, userData)  // Type-checked
+        
+        // Consumer.vue
+        import { UserKey } from './injection-keys'
+        const user = inject(UserKey)  // Type: Ref<UserState> | undefined
+      Suggestion: Define an InjectionKey, for example const ownerKey: InjectionKey<...> = Symbol('owner'), then use it in provide() and inject()
+
+src/Consumer.vue
+  src/Consumer.vue:4:15 warning cross-file vize:croquis/cf/inject-without-symbol: inject('count') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow
+    Reference: docs/content/rules/cross-file.md
+    Help:
+      WARNING vize:croquis/cf/inject-without-symbol
+      inject('count') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow
+      Problem: inject('count') uses a string key instead of Symbol/InjectionKey.
+      Why string keys are problematic:
+      
+        ┌─────────────────────────────────────────────────────────┐
+        │  String Keys          │  Symbol/InjectionKey           │
+        ├───────────────────────┼────────────────────────────────┤
+        │  Name collisions    │  Guaranteed uniqueness       │
+        │  No type safety     │  Full TypeScript inference   │
+        │  Refactoring breaks │  IDE rename support          │
+        │  Hard to trace      │  Go-to-definition works      │
+        └───────────────────────┴────────────────────────────────┘
+      Name collision example:
+      
+        // ComponentA.vue
+        provide('count', myData)
+        
+        // LibraryX (unknown to you)
+        provide('count', otherData)  // Collision!
+      Type-safe pattern with InjectionKey:
+      
+        // injection-keys.ts
+        import type { InjectionKey, Ref } from 'vue'
+        
+        export interface UserState {
+        name: string
+        id: number
+        }
+        
+        export const UserKey: InjectionKey<Ref<UserState>> = Symbol('user')
+        
+        // Provider.vue
+        import { UserKey } from './injection-keys'
+        provide(UserKey, userData)  // Type-checked
+        
+        // Consumer.vue
+        import { UserKey } from './injection-keys'
+        const user = inject(UserKey)  // Type: Ref<UserState> | undefined
+      Suggestion: Define an InjectionKey, for example const countKey: InjectionKey<...> = Symbol('count'), then use it in provide() and inject()
+  src/Consumer.vue:5:15 warning cross-file vize:croquis/cf/inject-without-symbol: inject('owner') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow
+    Reference: docs/content/rules/cross-file.md
+    Help:
+      WARNING vize:croquis/cf/inject-without-symbol
+      inject('owner') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow
+      Problem: inject('owner') uses a string key instead of Symbol/InjectionKey.
+      Why string keys are problematic:
+      
+        ┌─────────────────────────────────────────────────────────┐
+        │  String Keys          │  Symbol/InjectionKey           │
+        ├───────────────────────┼────────────────────────────────┤
+        │  Name collisions    │  Guaranteed uniqueness       │
+        │  No type safety     │  Full TypeScript inference   │
+        │  Refactoring breaks │  IDE rename support          │
+        │  Hard to trace      │  Go-to-definition works      │
+        └───────────────────────┴────────────────────────────────┘
+      Name collision example:
+      
+        // ComponentA.vue
+        provide('owner', myData)
+        
+        // LibraryX (unknown to you)
+        provide('owner', otherData)  // Collision!
+      Type-safe pattern with InjectionKey:
+      
+        // injection-keys.ts
+        import type { InjectionKey, Ref } from 'vue'
+        
+        export interface UserState {
+        name: string
+        id: number
+        }
+        
+        export const UserKey: InjectionKey<Ref<UserState>> = Symbol('user')
+        
+        // Provider.vue
+        import { UserKey } from './injection-keys'
+        provide(UserKey, userData)  // Type-checked
+        
+        // Consumer.vue
+        import { UserKey } from './injection-keys'
+        const user = inject(UserKey)  // Type: Ref<UserState> | undefined
+      Suggestion: Define an InjectionKey, for example const ownerKey: InjectionKey<...> = Symbol('owner'), then use it in provide() and inject()
+
+src/Provider.vue
+  src/Provider.vue:5:1 warning cross-file vize:croquis/cf/provide-without-symbol: provide('count') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow
+    Reference: docs/content/rules/cross-file.md
+    Help:
+      WARNING vize:croquis/cf/provide-without-symbol
+      provide('count') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow
+      Problem: provide('count') uses a string key instead of Symbol/InjectionKey.
+      Why string keys are problematic:
+      
+        ┌─────────────────────────────────────────────────────────┐
+        │  String Keys          │  Symbol/InjectionKey           │
+        ├───────────────────────┼────────────────────────────────┤
+        │  Name collisions    │  Guaranteed uniqueness       │
+        │  No type safety     │  Full TypeScript inference   │
+        │  Refactoring breaks │  IDE rename support          │
+        │  Hard to trace      │  Go-to-definition works      │
+        └───────────────────────┴────────────────────────────────┘
+      Name collision example:
+      
+        // ComponentA.vue
+        provide('count', myData)
+        
+        // LibraryX (unknown to you)
+        provide('count', otherData)  // Collision!
+      Type-safe pattern with InjectionKey:
+      
+        // injection-keys.ts
+        import type { InjectionKey, Ref } from 'vue'
+        
+        export interface UserState {
+        name: string
+        id: number
+        }
+        
+        export const UserKey: InjectionKey<Ref<UserState>> = Symbol('user')
+        
+        // Provider.vue
+        import { UserKey } from './injection-keys'
+        provide(UserKey, userData)  // Type-checked
+        
+        // Consumer.vue
+        import { UserKey } from './injection-keys'
+        const user = inject(UserKey)  // Type: Ref<UserState> | undefined
+      Suggestion: Define an InjectionKey, for example const countKey: InjectionKey<...> = Symbol('count'), then use it in provide() and inject()
+
+## Provide/Inject Tree
+
+**App**
+  provide(`"owner"`) → 1 consumer(s)
+  **Provider**
+    provide(`"count"`) → 1 consumer(s)
+    **Consumer**
+      inject(`"count"`) (provided)
+      inject(`"owner"`) (provided)
+

@@ -44,3 +44,13 @@ pub struct ForIRNode<'a> {
     /// rendered per list item, so it introduces no list fragment.
     pub match_scope: bool,
 }
+
+/// An authored reactive key owns a fresh block scope for each key value.
+#[derive(Debug)]
+pub struct KeyIRNode<'a> {
+    pub id: usize,
+    pub value: Box<'a, SimpleExpressionNode<'a>>,
+    pub render: BlockIRNode<'a>,
+    pub parent: Option<usize>,
+    pub anchor: Option<InsertionAnchor>,
+}

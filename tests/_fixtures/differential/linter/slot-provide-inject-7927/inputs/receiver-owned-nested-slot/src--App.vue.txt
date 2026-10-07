@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { provide } from 'vue'
+provide('owner', 'outer')
+import Consumer from './Consumer.vue'
+import Provider from './Provider.vue'
+</script>
+
+<template>
+  <Provider>
+    <Consumer />
+  </Provider>
+</template>

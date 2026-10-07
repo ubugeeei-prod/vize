@@ -226,15 +226,14 @@ pub fn run(mut args: LintArgs) {
     };
 
     let elapsed = start.elapsed();
-    if format == OutputFormat::Text {
-        stdout::write_text_summary(
-            total_errors,
-            total_warnings,
-            files.len(),
-            elapsed,
-            cross_file_report.as_deref(),
-        );
-    }
+    stdout::write_summary(
+        format,
+        total_errors,
+        total_warnings,
+        files.len(),
+        elapsed,
+        cross_file_report.as_deref(),
+    );
 
     if args.profile {
         let mut file_rows = profile_rows

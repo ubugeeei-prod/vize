@@ -1,7 +1,7 @@
 //! Transform context for tracking state during AST-to-IR transformation.
 
 use crate::ir::{BlockIRNode, IREffect, OperationNode};
-use vize_atelier_core::{ElementNode, TextNode, codegen::document::EmitDocument};
+use vize_atelier_core::{TextNode, codegen::document::EmitDocument};
 use vize_carton::{Allocator, FxHashMap, FxHashSet, String, Vec, interner::Interner};
 
 /// Template anchors, collected only for map-requesting compiles (P3-9).
@@ -24,6 +24,8 @@ pub(crate) struct TransformContext<'a> {
     non_reactive_scopes: usize,
     /// Lexical loop bodies, including descendants of transparent templates.
     pub(crate) for_depth: usize,
+    /// Inline native/template descendants retain key-only once ownership.
+    pub(crate) non_reactive_keys: bool,
     /// Preserve authored text anchors in structural slot bodies.
     pub(crate) structural_slot_spans: bool,
     pub(crate) diagnostics: std::vec::Vec<String>,
@@ -44,6 +46,7 @@ impl<'a> TransformContext<'a> {
             standalone_text_elements: FxHashSet::default(),
             non_reactive_scopes: 0,
             for_depth: 0,
+            non_reactive_keys: false,
             structural_slot_spans: false,
             diagnostics: std::vec::Vec::new(),
             template_spans: None,
@@ -78,12 +81,15 @@ impl<'a> TransformContext<'a> {
 
     /// An element's template string, anchored when a map is requested.
     #[inline(always)]
-    pub(crate) fn element_template(&self, el: &ElementNode<'_>) -> EmitDocument {
+    pub(in crate::lower) fn element_template(
+        &self,
+        root: super::element::template::RootAttributes<'_, '_>,
+    ) -> EmitDocument {
         let scope_id = self.scope_id.as_deref();
         if self.template_spans.is_some() {
-            super::element::template::generate_element_template_spanned(el, scope_id, self.source)
+            super::element::template::generate_element_template_spanned(root, scope_id, self.source)
         } else {
-            super::element::template::generate_element_template(el, scope_id, self.source).into()
+            super::element::template::generate_element_template(root, scope_id, self.source).into()
         }
     }
 
@@ -105,6 +111,10 @@ impl<'a> TransformContext<'a> {
 
     pub(crate) fn is_non_reactive(&self) -> bool {
         self.non_reactive_scopes > 0
+    }
+
+    pub(crate) fn is_key_non_reactive(&self) -> bool {
+        self.is_non_reactive() || self.non_reactive_keys
     }
 
     pub(crate) fn push_dynamic_operation(

@@ -13,6 +13,7 @@ mod events;
 mod for_loop;
 mod if_block;
 mod insertion;
+mod key;
 mod match_scope;
 mod merged_props;
 mod refs;
@@ -68,6 +69,7 @@ pub(crate) fn generate_operation(
         OperationNode::For(for_node) => {
             for_loop::generate_for(ctx, for_node, element_template_map);
         }
+        OperationNode::Key(node) => key::generate_key(ctx, node, element_template_map),
         OperationNode::CreateComponent(component) => {
             component::generate_create_component(ctx, component, element_template_map);
         }

@@ -9,7 +9,7 @@
 > [remarks-format.md](./remarks-format.md)), ranked by corpus hits: the
 > optimization backlog the P3-13 remarks mine for continuous task C-13.
 
-Corpus: 497 files, 1085 remarks (198 applied, 887 missed), 24 missed reasons.
+Corpus: 498 files, 1087 remarks (199 applied, 888 missed), 24 missed reasons.
 
 1. `s2.hoist-static static-subtree` `blocker="child" op="ui.interpolation"` - 186 hits in 82 files; first at `tests/_fixtures/_projects/class-component/src/App.vue` @354:376
 2. `s2.hoist-static static-props` `blocker="binding" op="ui.on"` - 155 hits in 61 files; first at `tests/_fixtures/_projects/class-component/src/HelloDecorator.vue` @544:608
@@ -28,7 +28,7 @@ Corpus: 497 files, 1085 remarks (198 applied, 887 missed), 24 missed reasons.
 15. `s2.hoist-static static-props` `blocker="binding" op="ui.bind" rule="reserved-key"` - 10 hits in 9 files; first at `tests/_fixtures/_projects/generic-build/src/NormalScriptBindings.vue` @370:556
 16. `s2.hoist-static static-subtree` `blocker="binding" op="ui.bind" rule="reserved-key"` - 10 hits in 9 files; first at `tests/_fixtures/_projects/generic-build/src/NormalScriptBindings.vue` @370:556
 17. `s2.hoist-static static-subtree` `blocker="ref-attribute"` - 10 hits in 7 files; first at `tests/_fixtures/_projects/generic-build/src/BindingPatchFlags.vue` @660:1412
-18. `s2.hoist-static static-subtree` `blocker="child" op="ui.slot"` - 8 hits in 8 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineSlotsType.vue` @188:272
+18. `s2.hoist-static static-subtree` `blocker="child" op="ui.slot"` - 9 hits in 9 files; first at `tests/_fixtures/_projects/compiler-macros/src/DefineSlotsType.vue` @188:272
 19. `s2.hoist-static static-subtree` `blocker="binding" op="ui.model"` - 7 hits in 4 files; first at `tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue` @3622:3772
 20. `s2.hoist-static static-props` `blocker="binding" op="ui.bind" rule="dynamic-name"` - 6 hits in 6 files; first at `tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2166/main.vue` @13:60
 21. `s2.hoist-static static-subtree` `blocker="binding" op="ui.bind" rule="dynamic-name"` - 5 hits in 5 files; first at `tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#2166/main.vue` @13:60

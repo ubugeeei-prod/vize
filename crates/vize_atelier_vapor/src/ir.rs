@@ -5,7 +5,7 @@ mod events;
 mod props;
 mod slots;
 
-pub use control_flow::{ForIRNode, IfIRNode, NegativeBranch};
+pub use control_flow::{ForIRNode, IfIRNode, KeyIRNode, NegativeBranch};
 pub use props::{IRProp, PropValueKind};
 pub use slots::{IRSlot, IRSlotControl, IRSlotLoop};
 
@@ -35,6 +35,7 @@ pub enum IRNodeType {
     If = 15,
     For = 16,
     GetTextChild = 17,
+    Key = 18,
 }
 
 /// Dynamic flags for IR nodes
@@ -122,6 +123,7 @@ pub enum OperationNode<'a> {
     Directive(DirectiveIRNode<'a>),
     If(Box<'a, IfIRNode<'a>>),
     For(Box<'a, ForIRNode<'a>>),
+    Key(Box<'a, KeyIRNode<'a>>),
     CreateComponent(CreateComponentIRNode<'a>),
     SlotOutlet(SlotOutletIRNode<'a>),
     GetTextChild(GetTextChildIRNode),

@@ -21,11 +21,12 @@ pub(super) fn generate_slot_fn(
     );
     let nonstable = keep_alive
         || transition
-            && slot
-                .block
-                .operation
-                .iter()
-                .any(|op| matches!(op, OperationNode::If(_) | OperationNode::For(_)));
+            && slot.block.operation.iter().any(|op| {
+                matches!(
+                    op,
+                    OperationNode::If(_) | OperationNode::For(_) | OperationNode::Key(_)
+                )
+            });
     if nonstable {
         ctx.use_helper("extend");
         let param = slot_props_var

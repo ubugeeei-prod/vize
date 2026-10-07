@@ -1,0 +1,10 @@
+<script setup vapor>
+import { ref } from "vue";
+import Counter from "./Counter.vue";
+const k = ref(1);
+</script>
+
+<template>
+  <button @click="k = 1">same</button>
+  <Counter :key="k" />
+</template>
