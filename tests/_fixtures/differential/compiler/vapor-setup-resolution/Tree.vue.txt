@@ -1,0 +1,8 @@
+<script setup vapor>
+const { depth = 0 } = defineProps({ depth: Number });
+const vMark = (el) => { el.dataset.mark = "yes"; };
+</script>
+
+<template>
+  <div v-mark>{{ depth }}<Tree v-if="depth < 2" :depth="depth + 1" /></div>
+</template>

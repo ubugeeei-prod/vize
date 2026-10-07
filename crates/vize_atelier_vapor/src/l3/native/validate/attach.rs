@@ -234,7 +234,7 @@ fn prop<'a>(
     component: bool,
 ) -> Result<()> {
     let handler = match binding.kind {
-        BindingKind::Prop => false,
+        BindingKind::Prop if binding.modifiers.is_empty() => false,
         BindingKind::Event if component && binding.modifiers.is_empty() => true,
         _ => return Err(LegacyReason::Component.into()),
     };

@@ -1,0 +1,9 @@
+<template>
+  <div>
+    <span>{{
+        first
+      }}{{
+        second
+      }}</span>
+  </div>
+</template>

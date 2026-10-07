@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { useToast } from "./useToast";
+import Banner from "./Banner.vue";
+
+const { show } = useToast();
+</script>
+
+<template>
+  <Banner />
+  <button @click="show('app')">App</button>
+</template>

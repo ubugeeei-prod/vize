@@ -112,13 +112,20 @@ impl<'a> Emitter<'a, '_> {
                 if let Some((merge, true)) = binding.merge {
                     values.push(self.expression(Expr::plain(merge), true));
                 }
-                let key = self.spanned(Expr::plain(binding.name), true, name_span);
+                let prop_modifier = binding.modifiers.contains(&"prop");
+                let name = if !prop_modifier && binding.modifiers.contains(&"attr") {
+                    self.allocator
+                        .alloc_str(&vize_carton::cstr!("^{}", binding.name))
+                } else {
+                    binding.name
+                };
+                let key = self.spanned(Expr::plain(name), true, name_span);
                 self.effect(
                     OperationNode::SetProp(SetPropIRNode {
                         element,
                         tag,
                         camel: false,
-                        prop_modifier: false,
+                        prop_modifier,
                         prop: IRProp::new(key, values, false),
                     }),
                     block,

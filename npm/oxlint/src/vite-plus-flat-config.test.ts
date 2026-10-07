@@ -111,4 +111,28 @@ void test("defineVizeLintConfig merges Flat Config fragments into Vite+'s object
   assert.equal(config.rules["vize/script/no-options-api"], undefined);
   assert.equal(config.rules["no-console"], "warn");
   assert.equal(config.rules["typescript/consistent-type-imports"], "error");
+  assert.deepEqual(
+    config.settings.vize.rules,
+    Object.fromEntries(Object.entries(config.rules).filter(([id]) => id.startsWith("vize/"))),
+  );
+});
+
+void test("flat composition updates the batch selection after final rule overrides", () => {
+  const config = defineVizeLintConfig(
+    createVizeLintFlatConfig({
+      preset: "incremental",
+      rules: {
+        "vize/vue/attribute-hyphenation": ["error", "always"],
+        "vize/vue/no-v-html": "error",
+      },
+    }),
+    {
+      rules: {
+        "vize/vue/attribute-hyphenation": ["warn", "never"],
+        "vize/vue/no-v-html": "off",
+        "vize/vue/require-v-for-key": "error",
+      },
+    },
+  );
+  assert.deepEqual(config.settings.vize.rules, config.rules);
 });

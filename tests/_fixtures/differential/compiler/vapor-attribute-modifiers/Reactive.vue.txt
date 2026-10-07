@@ -1,0 +1,14 @@
+<script setup vapor>
+import { ref, reactive } from "vue";
+const v = ref("x");
+const attrs = reactive({ id: "from-object" });
+</script>
+
+<template>
+  <main>
+    <button @click="v = 'y'; attrs.id = 'next-object'">update</button>
+    <input :value.attr="v" />
+    <div data-role="after" :title.attr="v" v-bind="attrs" id="static"></div>
+    <div data-role="before" id="before" :title.prop="v" v-bind="attrs"></div>
+  </main>
+</template>

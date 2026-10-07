@@ -1,102 +1,25 @@
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{
-    CallExpression, ExportAllDeclaration, ExportNamedDeclaration, Expression, ImportDeclaration,
-    ImportExpression, StringLiteral, TSExternalModuleReference, TSImportType,
-    TSModuleDeclarationName,
-};
-use oxc_ast_visit::{Visit, walk};
-use oxc_parser::Parser;
-use oxc_span::SourceType;
-use vize_carton::{String, ToCompactString};
+//! Relative script classification over the dependency walk's one parsed list.
 
-pub(super) fn collect_relative_ts_specifiers(code: &str, source_type: SourceType) -> Vec<String> {
-    let allocator = Allocator::default();
-    let result = Parser::new(&allocator, code, source_type).parse();
-    let mut collector = RelativeTsSpecifierCollector::default();
-    collector.visit_program(&result.program);
-    collector.specifiers
-}
+use vize_carton::String;
 
-#[derive(Default)]
-struct RelativeTsSpecifierCollector {
-    specifiers: Vec<String>,
-}
-
-impl RelativeTsSpecifierCollector {
-    fn push(&mut self, specifier: &str) {
-        if (specifier.starts_with("./") || specifier.starts_with("../"))
+pub(super) fn relative_ts_specifiers(specifiers: &[String]) -> impl Iterator<Item = &String> {
+    specifiers.iter().filter(|specifier| {
+        (specifier.starts_with("./") || specifier.starts_with("../"))
             && !specifier.ends_with(".vue")
             && !specifier.ends_with(".vue.ts")
             && !specifier.ends_with(".vue.tsx")
-            && !self
-                .specifiers
-                .iter()
-                .any(|known| known.as_str() == specifier)
-        {
-            self.specifiers.push(specifier.to_compact_string());
-        }
-    }
-
-    fn push_literal(&mut self, lit: &StringLiteral<'_>) {
-        self.push(lit.value.as_str());
-    }
+    })
 }
 
-impl<'a> Visit<'a> for RelativeTsSpecifierCollector {
-    fn visit_import_declaration(&mut self, decl: &ImportDeclaration<'a>) {
-        self.push_literal(&decl.source);
-        walk::walk_import_declaration(self, decl);
-    }
-
-    fn visit_export_named_declaration(&mut self, decl: &ExportNamedDeclaration<'a>) {
-        if let Some(source) = &decl.source {
-            self.push_literal(source);
-        }
-        walk::walk_export_named_declaration(self, decl);
-    }
-
-    fn visit_export_all_declaration(&mut self, decl: &ExportAllDeclaration<'a>) {
-        self.push_literal(&decl.source);
-        walk::walk_export_all_declaration(self, decl);
-    }
-
-    fn visit_import_expression(&mut self, expr: &ImportExpression<'a>) {
-        if let Expression::StringLiteral(lit) = &expr.source {
-            self.push_literal(lit);
-        }
-        walk::walk_import_expression(self, expr);
-    }
-
-    fn visit_call_expression(&mut self, expr: &CallExpression<'a>) {
-        if let Some(lit) = expr.common_js_require() {
-            self.push(lit.value.as_str());
-        }
-        walk::walk_call_expression(self, expr);
-    }
-
-    fn visit_ts_import_type(&mut self, import_type: &TSImportType<'a>) {
-        self.push_literal(&import_type.source);
-        walk::walk_ts_import_type(self, import_type);
-    }
-
-    fn visit_ts_external_module_reference(&mut self, reference: &TSExternalModuleReference<'a>) {
-        self.push_literal(&reference.expression);
-        walk::walk_ts_external_module_reference(self, reference);
-    }
-
-    fn visit_ts_module_declaration_name(&mut self, name: &TSModuleDeclarationName<'a>) {
-        if let TSModuleDeclarationName::StringLiteral(lit) = name {
-            self.push_literal(lit);
-        }
-        walk::walk_ts_module_declaration_name(self, name);
-    }
-}
+// Preserve the byte-exact original collector as a differential test oracle.
+#[cfg(test)]
+mod original;
 
 #[cfg(test)]
 mod tests {
     use oxc_span::SourceType;
 
-    use super::collect_relative_ts_specifiers;
+    use super::{original::collect_relative_ts_specifiers, relative_ts_specifiers};
 
     #[test]
     fn collects_type_only_and_require_dependency_specifiers() {
@@ -122,5 +45,62 @@ type App = typeof import("./App.vue");
                 "./augment"
             ]
         );
+        let collected =
+            crate::batch::ImportRewriter::new().collect_all_specifiers(source, SourceType::ts());
+        assert_eq!(
+            relative_ts_specifiers(&collected)
+                .cloned()
+                .collect::<Vec<_>>(),
+            collect_relative_ts_specifiers(source, SourceType::ts())
+        );
+    }
+
+    #[test]
+    fn one_module_list_preserves_script_specifiers_for_js_ts_and_jsx() {
+        let sources = [
+            (
+                SourceType::ts(),
+                r#"import Default from './same';
+export { Default } from './same';
+export * from '../export-all';
+const lazy = import('./dynamic');
+const common = require('./common');
+type Typed = import('./typed', { with: { 'resolution-mode': 'require' } }).Typed;
+import External = require('./external');
+declare module './augment' {}
+import './App.vue'; import './App.vue.ts'; import './App.vue.tsx';
+import '#alias'; import 'package'; import '/absolute';
+// import './comment';
+const text = "import './string'";
+const computed = import('./computed' + suffix);
+"#,
+            ),
+            (
+                SourceType::mjs(),
+                r#"import './first'; export * from './second';
+const lazy = import('./third'); const common = require('./fourth');
+"#,
+            ),
+            (
+                SourceType::tsx(),
+                r#"import './first';
+const element = <div title="require('./text')">{import('./second')}</div>;
+"#,
+            ),
+            (
+                SourceType::jsx(),
+                r#"import './first';
+const element = <div>{require('./second')}</div>;
+"#,
+            ),
+        ];
+        for (source_type, source) in sources {
+            let modules =
+                crate::batch::ImportRewriter::new().collect_all_specifiers(source, source_type);
+            let scripts = relative_ts_specifiers(&modules)
+                .cloned()
+                .collect::<Vec<_>>();
+            assert_eq!(scripts, collect_relative_ts_specifiers(source, source_type));
+        }
     }
 }

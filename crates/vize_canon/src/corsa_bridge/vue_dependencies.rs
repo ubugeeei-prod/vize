@@ -8,7 +8,7 @@ use vize_carton::{FxHashMap, FxHashSet, String, cstr};
 
 use super::bridge::normalize_document_uri;
 use super::vue_dependency_paths::{normalize_path, resolve_relative_script_import};
-use super::vue_dependency_specifiers::collect_relative_ts_specifiers;
+use super::vue_dependency_specifiers::relative_ts_specifiers;
 use super::vue_document::{
     CorsaVueVirtualDependency, CorsaVueVirtualDocumentOptions, GeneratedVueDocument,
 };
@@ -138,31 +138,23 @@ fn queue_imports(
     code: &str,
     source_type: SourceType,
 ) {
+    let specifiers = rewriter.collect_all_specifiers(code, source_type);
     queue_vue_imports(
         &mut imports,
         options,
         rewriter,
         alias_context,
         dir,
-        code,
-        source_type,
+        &specifiers,
     );
-    queue_ts_imports(
-        &mut imports,
-        rewriter,
-        alias_context,
-        dir,
-        code,
-        source_type,
-    );
+    queue_ts_imports(&mut imports, rewriter, alias_context, dir, &specifiers);
     super::vue_dependencies_alias::queue_alias_imports(
         &mut imports,
         options,
         rewriter,
         alias_context,
         dir,
-        code,
-        source_type,
+        &specifiers,
     );
 }
 
@@ -172,10 +164,9 @@ fn queue_vue_imports(
     rewriter: &ImportRewriter,
     alias_context: &super::vue_dependencies_alias::AliasContext,
     dir: &Path,
-    code: &str,
-    source_type: SourceType,
+    specifiers: &[String],
 ) {
-    for specifier in rewriter.collect_relative_vue_specifiers(code, source_type, Some(dir)) {
+    for specifier in rewriter.relative_vue_specifiers(specifiers, Some(dir)) {
         let path = normalize_path(&dir.join(specifier.as_str()));
         queue_vue_dependency(imports, options, rewriter, alias_context, &path);
     }
@@ -280,10 +271,9 @@ fn queue_ts_imports(
     rewriter: &ImportRewriter,
     alias_context: &super::vue_dependencies_alias::AliasContext,
     dir: &Path,
-    code: &str,
-    source_type: SourceType,
+    specifiers: &[String],
 ) {
-    for specifier in collect_relative_ts_specifiers(code, source_type) {
+    for specifier in relative_ts_specifiers(specifiers) {
         let Some(path) = resolve_relative_script_import(dir, specifier.as_str()) else {
             continue;
         };

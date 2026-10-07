@@ -89,9 +89,20 @@ fn editor_preserves_whole_script_projection_maps_and_template_diagnostics() {
             let mapper =
                 crate::batch::generate_vue_content_mapper_transform(Path::new("App.vue"), &source)
                     .unwrap();
-            assert_eq!(mapper.text, invalid_sfc_fallback_virtual_ts());
-            assert!(mapper.mappings.is_empty());
-            assert!(mapper.semantic_links.is_empty());
+            let mapper_script =
+                crate::batch::generate_vue_content_mapper_transform(Path::new("App.vue"), script)
+                    .unwrap();
+            assert_eq!(mapper.text, mapper_script.text);
+            assert_eq!(mapper.mappings, mapper_script.mappings);
+            assert_eq!(mapper.semantic_links, mapper_script.semantic_links);
+            assert!(!mapper.mappings.is_empty());
+            assert!(!mapper.diagnostics.is_empty());
+            assert!(
+                mapper
+                    .mappings
+                    .iter()
+                    .all(|mapping| { mapping.0[2] + mapping.0[3] <= template })
+            );
         }
     }
 }

@@ -13,8 +13,10 @@ use crate::emit::vfor;
 use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 pub(super) fn emit_if_entry(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>) -> Result<(), EmitError> {
-    let _id = cx.walk.mint();
+    let id = cx.walk.mint();
+    let mut keys = crate::emit::vif::keys::SlotKeys::new(cx, id, if_op);
     for (i, branch) in if_op.branches.iter().enumerate() {
+        keys.observe(cx, id, i, branch)?;
         if i > 0 {
             cx.buf.newline();
             cx.buf.push(": ");
@@ -155,50 +157,6 @@ pub(super) fn emit_for_entry(
     skip_ops(cx, site.after);
     cx.leave_scope(prefix_mark);
     body?;
-    cx.buf.deindent();
-    cx.buf.newline();
-    cx.buf.push("})");
-    Ok(())
-}
-
-pub(super) fn emit_empty_for_slot_outlet_entry(
-    cx: &mut EmitCx<'_>,
-    for_op: &ForOp<'_>,
-) -> Result<(), EmitError> {
-    let source_raw = vfor::js_source(&for_op.binding.source)?;
-    let source_prefixed;
-    let source = if cx.prefixing() {
-        source_prefixed = cx.prefixed_expr(&for_op.binding.source, Site::Expression)?;
-        source_prefixed.as_str()
-    } else {
-        source_raw.as_str()
-    };
-    let value = vfor::value_alias(&for_op.binding.value)?;
-    let key = vfor::optional_ident(&for_op.binding.key)?;
-    let index = vfor::optional_ident(&for_op.binding.index)?;
-    let _id = cx.walk.mint();
-    cx.buf.use_render_list();
-    cx.buf.push(Buf::render_list_alias());
-    cx.buf.push("(");
-    cx.buf.push(source);
-    cx.buf.push(", (");
-    cx.buf.push(value);
-    if let Some(alias) = key {
-        cx.buf.push(", ");
-        cx.buf.push(alias);
-    }
-    if let Some(alias) = index {
-        cx.buf.push(", ");
-        cx.buf.push(alias);
-    }
-    cx.buf.push(") => {");
-    cx.buf.indent();
-    cx.buf.newline();
-    cx.buf.push("return ");
-    let prev = cx.in_v_for;
-    cx.in_v_for = true;
-    skip_ops(cx, &for_op.region.ops);
-    cx.in_v_for = prev;
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("})");

@@ -2,12 +2,13 @@
 
 use std::path::PathBuf;
 
+use super::super::routes::config::{CrossFileRuleSettings, configure};
 use super::sfc::{CrossFileSourceOffsets, FallthroughRoot};
 use vize_croquis_cf::{CrossFileAnalyzer, CrossFileResult, FileId};
 use vize_l0::{FxHashMap, cstr};
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
 
-pub(super) const RULE: &str = "vue/cross-file-attrs-fallthrough";
+pub(in crate::commands::lint) const RULE: &str = "vue/cross-file-attrs-fallthrough";
 
 pub(super) fn apply<S: AsRef<str>>(
     files: &[(PathBuf, S)],
@@ -16,7 +17,7 @@ pub(super) fn apply<S: AsRef<str>>(
     indexes: &FxHashMap<FileId, usize>,
     offsets: &FxHashMap<FileId, CrossFileSourceOffsets>,
     results: &mut [LintResult],
-    help_level: HelpLevel,
+    (help_level, settings): (HelpLevel, Option<&CrossFileRuleSettings<'_>>),
 ) {
     for usage in &analysis.fallthrough_usage_facts {
         let Some(&parent_index) = indexes.get(&usage.parent_file_id) else {
@@ -57,7 +58,7 @@ pub(super) fn apply<S: AsRef<str>>(
         let Some(parent_offsets) = offsets.get(&usage.parent_file_id) else {
             continue;
         };
-        let Some((_, source)) = files.get(parent_index) else {
+        let Some((path, source)) = files.get(parent_index) else {
             continue;
         };
         let source_len = source.as_ref().len() as u32;
@@ -92,7 +93,9 @@ pub(super) fn apply<S: AsRef<str>>(
             ) {
                 diagnostic = diagnostic.with_help(help);
             }
-            result.diagnostics.push(diagnostic);
+            if let Some(diagnostic) = configure(settings, path, RULE, diagnostic) {
+                result.diagnostics.push(diagnostic);
+            }
         }
     }
 }

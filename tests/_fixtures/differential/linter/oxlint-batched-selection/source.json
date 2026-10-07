@@ -1,0 +1,6 @@
+{
+  "source": "https://github.com/n8n-io/n8n/pull/40393",
+  "commit": "aa173be0c65c0646a7fcec32d2c18e1eaacbc8ff",
+  "rules": "packages/@n8n/oxlint-config/src/configs/vue.ts",
+  "notes": "51 Vize rules and options retained from the read-only upstream spike; App.vue is an authored output-parity witness."
+}

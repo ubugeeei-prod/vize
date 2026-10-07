@@ -1,0 +1,8 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "croquis/cf/inject-without-symbol": "warn"
+    }
+  }
+}

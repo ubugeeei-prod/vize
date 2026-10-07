@@ -1,0 +1,8 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "vue/cross-file-attrs-fallthrough": "error"
+    }
+  }
+}

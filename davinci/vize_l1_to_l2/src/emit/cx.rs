@@ -95,7 +95,7 @@ impl EmitCx<'_> {
     /// / `is_ts` is on, and every emit site that consults this mirrors it.
     /// Fold a prefixed result's `_unref` use into the emit and hand back
     /// its text.
-    fn record_unref(&self, prefixed: prefix::Prefixed) -> String {
+    pub(super) fn record_unref(&self, prefixed: prefix::Prefixed) -> String {
         if prefixed.used_unref && self.used_unref.get() == u32::MAX {
             self.used_unref.set(self.walk.visits());
         }

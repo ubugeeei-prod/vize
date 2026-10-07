@@ -79,7 +79,7 @@ impl CorsaBridge {
             },
         )?;
         self.open_canon_project_documents(
-            &project.documents,
+            project.documents,
             project.session_project_root.clone(),
             project.session_config_path,
             project.materialized_changes,

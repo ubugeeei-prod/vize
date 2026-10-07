@@ -1,0 +1,70 @@
+{
+  "static": [
+    {
+      "label": "data-role",
+      "kind": 10,
+      "detail": "prop: number (optional)",
+      "labelDetails": {
+        "detail": ": number",
+        "description": "optional"
+      },
+      "insertText": "data-role=\"$1\"",
+      "insertTextFormat": 2,
+      "documentation": {
+        "kind": "markdown",
+        "value": "**Prop `dataRole`**\n\n_Optional component prop_\n\n```typescript\ninterface Props {\n  dataRole: number\n}\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<Component data-role=\"...\" />\n<Component :dataRole=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+      },
+      "sortText": "00-prop-data-role"
+    },
+    {
+      "label": "aria-hidden",
+      "kind": 10,
+      "detail": "prop: boolean (optional)",
+      "labelDetails": {
+        "detail": ": boolean",
+        "description": "optional"
+      },
+      "insertText": "aria-hidden",
+      "insertTextFormat": 2,
+      "documentation": {
+        "kind": "markdown",
+        "value": "**Prop `ariaHidden`**\n\n_Optional component prop_\n\n```typescript\ninterface Props {\n  ariaHidden: boolean\n}\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<Component aria-hidden />\n<Component :ariaHidden=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+      },
+      "sortText": "00-prop-aria-hidden"
+    }
+  ],
+  "dynamic": [
+    {
+      "label": "dataRole",
+      "kind": 10,
+      "detail": "prop: number (optional)",
+      "labelDetails": {
+        "detail": ": number",
+        "description": "optional"
+      },
+      "insertText": "dataRole=\"$1\"",
+      "insertTextFormat": 2,
+      "documentation": {
+        "kind": "markdown",
+        "value": "**Prop `dataRole`**\n\n_Optional component prop_\n\n```typescript\ninterface Props {\n  dataRole: number\n}\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<Component :dataRole=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+      },
+      "sortText": "00-prop-data-role"
+    },
+    {
+      "label": "ariaHidden",
+      "kind": 10,
+      "detail": "prop: boolean (optional)",
+      "labelDetails": {
+        "detail": ": boolean",
+        "description": "optional"
+      },
+      "insertText": "ariaHidden=\"$1\"",
+      "insertTextFormat": 2,
+      "documentation": {
+        "kind": "markdown",
+        "value": "**Prop `ariaHidden`**\n\n_Optional component prop_\n\n```typescript\ninterface Props {\n  ariaHidden: boolean\n}\n```\n\n**Requirement**\n\nOptional\n\n**Example**\n\n```vue\n<Component :ariaHidden=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+      },
+      "sortText": "00-prop-aria-hidden"
+    }
+  ]
+}
