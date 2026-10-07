@@ -2,7 +2,8 @@
 
 use super::blank_lines::Tokens;
 use lightningcss::declaration::DeclarationBlock;
-use lightningcss::properties::Property;
+use lightningcss::properties::custom::{Token, TokenOrValue};
+use lightningcss::properties::{Property, PropertyId};
 use lightningcss::rules::{CssRule, CssRuleList, Location};
 use std::ops::Range;
 
@@ -188,6 +189,21 @@ fn has_multi_values(declarations: &DeclarationBlock<'_>) -> bool {
         .any(|property| match property {
             Property::Transition(values, _) => values.len() > 1,
             Property::BoxShadow(values, _) => values.len() > 1,
+            // Color preservation inserts var() markers, so the same parsed
+            // property may carry an unparsed token list. Nested function/var
+            // arguments remain owned by their nested TokenOrValue nodes.
+            Property::Unparsed(property)
+                if matches!(
+                    property.property_id,
+                    PropertyId::Transition(_) | PropertyId::BoxShadow(_)
+                ) =>
+            {
+                property
+                    .value
+                    .0
+                    .iter()
+                    .any(|token| matches!(token, TokenOrValue::Token(Token::Comma)))
+            }
             _ => false,
         })
 }

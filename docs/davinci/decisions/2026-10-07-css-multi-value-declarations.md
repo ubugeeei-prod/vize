@@ -21,13 +21,13 @@ uses configured tabs/width/EOL. No CSS parse, pipeline stage or serialization is
 added. Parsed transition/shadow list lengths prevent the equal-layout fast path
 from skipping those lists, while unrelated equal CSS retains that fast path.
 
-The additive, independently authored corpus contains 26 full SFC references:
+The additive, independently authored corpus contains 27 full SFC references:
 original Tip/Card, compact and already-printed lists, hybrid shadow indentation,
 three values/important, vendor prefixes, nested authored shorthands, selector
 lists, scoped/module, comments, function/quoted/custom commas, ordinary authored background lists, tabs, width and CRLF/Auto. Rust
 checks original/reference CSS parse/print semantics and three complete actual
 public-API passes. The existing source observer reuses its build and records raw
-options/API observations plus 21 default CLI check/dry/write/recheck controls.
+options/API observations plus 22 default CLI check/dry/write/recheck controls.
 No historical input/output/capture asset is changed.
 
 Validation and delivery are pending: exact-head Actions, actual protected
@@ -37,3 +37,9 @@ formatter migration or fix-history completion is claimed. Root owns queue
 admission and release so independent slices can progress during hosted checks.
 The reporter's verified public credit is
 `Co-authored-by: ubugeeei <71201308+ubugeeei@users.noreply.github.com>`.
+
+Source review adds an already-printed inline Card control and preserves parse-owned
+transition/shadow list detection when color protection makes the parsed property
+an unparsed var-token list. Only outer parsed comma tokens opt into the equality
+guard; nested function/variable arguments retain their ownership. This strengthens
+the original whole-output corpus to 27 API/22 CLI cases before hosted qualification.

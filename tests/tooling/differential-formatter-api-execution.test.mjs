@@ -164,7 +164,7 @@ void test("shared formatter API history observes complete source-built output an
       schema: "vize.formatter-css-multi-value-regressions",
       executionSchema: "vize.formatter-css-multi-value-execution",
       issue: 7968,
-      count: 26,
+      count: 27,
       report: "css-multi-value-declarations-7968-report.json",
     },
   );

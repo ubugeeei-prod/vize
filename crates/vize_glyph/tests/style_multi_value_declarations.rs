@@ -50,7 +50,7 @@ fn multi_value_declarations_keep_semantics_and_complete_stable_layout() {
     assert_eq!(corpus.schema, "vize.formatter-css-multi-value-regressions");
     assert_eq!(
         (corpus.version, corpus.issue, corpus.cases.len()),
-        (1, 7968, 26)
+        (1, 7968, 27)
     );
     for case in corpus.cases {
         assert_eq!(
