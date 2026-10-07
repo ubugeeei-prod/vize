@@ -50,3 +50,34 @@ does not grow. Regenerated source inventories retain the actual added uses.
 
 Exact-head Rust and tooling validation runs in Actions before merge admission.
 This change does not establish Davinci compiler or linter migration closure.
+
+## Genuine current-main refresh
+
+The existing PR's actual `a851939c52c6f50eb9b6419bc3bf917b49959c48`
+head is refreshed by merging genuine signed main
+`8c7727613de6213e0a52cde96eeb295d01c9bef5`. All nineteen original
+non-document paths remain byte-identical, including every compiler/parser/lint
+law, snapshot, the 269-byte original reporter fixture (SHA256
+`02a9907355de1b26720b9a7cd847f81c42626a3600b2663c334fa64fb89db113`)
+and the 693-byte authored six-form fixture (SHA256
+`5fb181261ebe4896b50495ee3f8f12c5d96ea0ef595a23a8523f3b5acdac916c`).
+The merged actual-source generator resolves the Croquis consumption conflict:
+`BindingMetadata` has thirteen files/thirty-four sites and `BindingType` has
+nineteen files/142 sites. Consumer inventory checks and locked, offline Cargo
+metadata pass; all four affected manifests and their dependency/layout surface
+match actual main. The common 350-line decision record is coordinated separately.
+
+The prior `a851` source/native/fact successes remain historical. The refreshed
+head needs fresh exact-head Actions, protected qualification and actual merge;
+the refresh itself grants no execution, runtime, publication or issue-closure
+credit. The six declaration forms from #7893's reported matrix are covered,
+while direct execution of the reported three CLI build modes and a separate
+Vue runtime replay of the original component have not been established by the
+compiler module-inspection tests. Those are explicit validation boundaries for
+the root's closure decision, not additional claimed compiler functionality.
+
+The const-enum half of #7896 requires this enum source to actually deliver.
+Its plugin-global half separately requires actual delivery of #8146; that PR
+is still open at `b39adcc2a082b83206e0cfe60b91dda66bf87043` at this review.
+Neither one alone closes #7896. Broader binding/type-resolution and native
+compiler/linter migration remain outside this reported enum slice.

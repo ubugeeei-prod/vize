@@ -29,7 +29,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | ----------------------------------------- | ----: | ----: |
 | `BindingIdentity`                         |     1 |     1 |
 | `BindingOccurrences`                      |     6 |     7 |
-| `BindingType`                             |    18 |   135 |
+| `BindingType`                             |    19 |   142 |
 | `BlockLocation`                           |     5 |     7 |
 | `DEFINE_EMITS`                            |     1 |     2 |
 | `DEFINE_EXPOSE`                           |     1 |     1 |

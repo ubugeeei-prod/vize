@@ -75,6 +75,9 @@ pub struct ScriptParseResult {
     /// fields of a locally declared type through an OXC-backed AST walk
     /// rather than a raw-text scan.
     pub types: TypeResolver,
+    /// Exact local type-member ranges retained by the existing AST walk.
+    pub(crate) type_property_declarations:
+        FxHashMap<CompactString, FxHashMap<CompactString, Option<(u32, u32)>>>,
     pub type_exports: Vec<TypeExport>,
     pub invalid_exports: Vec<InvalidExport>,
     /// Scope chain for tracking nested JavaScript scopes

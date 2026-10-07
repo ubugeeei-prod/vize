@@ -16,8 +16,11 @@ pub(in crate::ide::completion) async fn complete_with_corsa(
         || crate::ide::is_in_vue_template_expression(&ctx.content, ctx.offset)
         || !is_component_tag(&tag.tag_name)
         || !tag_context::is_prop_completion_prefix(&tag.current_token)
-        || component_meta::component_surface_completions(ctx).is_empty()
     {
+        return None;
+    }
+    let component = component_meta::component_surface_completions(ctx);
+    if component.is_empty() {
         return None;
     }
     let mut items = super::complete_template(ctx);
@@ -28,7 +31,11 @@ pub(in crate::ide::completion) async fn complete_with_corsa(
         CompletionService::request_resolvable(ctx, bridge, &document.request_uri, line, character)
             .await;
     for item in &mut items {
-        if item.kind != Some(CompletionItemKind::PROPERTY) {
+        if item.kind != Some(CompletionItemKind::PROPERTY)
+            || !component.iter().any(|declared| {
+                declared.kind == Some(CompletionItemKind::PROPERTY) && declared.label == item.label
+            })
+        {
             continue;
         }
         if let Some(candidate) = native.iter().find(|candidate| {

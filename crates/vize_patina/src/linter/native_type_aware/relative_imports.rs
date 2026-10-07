@@ -10,6 +10,7 @@ use std::path::Path;
 use vize_l0::String as VizeString;
 
 use super::document::TypeAwareDocument;
+use crate::linter::corsa_session::escape_specifier;
 
 pub(super) fn absolutize_relative_imports(document: &mut TypeAwareDocument, filename: &str) {
     let Some(parent) = source_directory(filename) else {
@@ -25,7 +26,8 @@ pub(super) fn absolutize_relative_imports(document: &mut TypeAwareDocument, file
             .canonicalize()
             .map(|path| display_path(&path))
             .unwrap_or_else(|_| display_path(&normalize_path(&resolved)));
-        edits.push((start, end, absolute));
+        let quote = text.as_bytes().get(start - 1).copied().unwrap_or(b'\'');
+        edits.push((start, end, escape_specifier(&absolute, quote)));
         from = end;
     }
     for (start, end, absolute) in edits.into_iter().rev() {

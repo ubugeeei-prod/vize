@@ -7,12 +7,22 @@ use vize_l0::{String as VizeString, cstr};
 
 use super::document::TypeAwareDocument;
 
+mod mapped;
+
 const VOID_OPEN: &str = "void (";
 const HANDLER_MARK: &str = "__vize_cb)((";
 
 pub(super) fn binding_offset(generated: &str, expression_offset: u32) -> Option<u32> {
     let offset = usize::min(expression_offset as usize, generated.len());
     binding_on_line(generated, offset).or_else(|| {
+        let line_end = generated
+            .get(offset..)?
+            .find('\n')
+            .map_or(generated.len(), |at| offset + at);
+        let line_start = generated.get(..offset)?.rfind('\n').map_or(0, |at| at + 1);
+        if !generated.get(line_start..line_end)?.contains(HANDLER_MARK) {
+            return None;
+        }
         let before = generated.get(..offset)?;
         let previous_end = before.rfind('\n')?;
         let previous_start = before
@@ -35,6 +45,10 @@ fn binding_on_line(generated: &str, offset: usize) -> Option<u32> {
     let const_start = line.find("const __expr_")?;
     let name_start = const_start + "const ".len();
     let name_end = line.get(name_start..)?.find(" = ")? + name_start;
+    let name_end = line
+        .get(name_start..name_end)?
+        .find(':')
+        .map_or(name_end, |at| name_start + at);
     (name_end > name_start).then_some((line_start + name_end - 1) as u32)
 }
 
@@ -117,6 +131,7 @@ pub(super) fn bind_template_expressions(document: &mut TypeAwareDocument) {
         text.replace_range(start..end, &new_stmt);
     }
     document.content = text;
+    mapped::bind_checked_expressions(document, &mut index);
 }
 
 fn collect_void_wrappers(
