@@ -156,3 +156,92 @@ fn test_for_alias_shadows_props_binding() {
     assert_eq!(result.error_messages.len(), 0);
     insta::assert_snapshot!(result.code.as_str());
 }
+
+#[test]
+fn filename_recursion_marks_self_and_keeps_authored_component_names() {
+    let allocator = Allocator::new();
+    for tag in ["TreeNode", "tree-node"] {
+        let source = vize_carton::cstr!("<{tag} />");
+        let result = compile_vapor_with_experimental_options(
+            &allocator,
+            &source,
+            VaporCompilerOptions::default(),
+            VaporCompilerExperimentalOptions {
+                component_name: Some("TreeNode".into()),
+                ..Default::default()
+            },
+        );
+        assert!(
+            result.error_messages.is_empty(),
+            "{:?}",
+            result.error_messages
+        );
+        let expected = vize_carton::cstr!("_resolveComponent(\"{tag}\", true)");
+        assert!(result.code.contains(expected.as_str()), "{}", result.code);
+    }
+    let mut bindings = FxHashMap::default();
+    bindings.insert("TreeNode".into(), BindingType::SetupConst);
+    let result = compile_vapor_with_experimental_options(
+        &allocator,
+        "<TreeNode />",
+        VaporCompilerOptions {
+            binding_metadata: Some(BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }),
+            ..Default::default()
+        },
+        VaporCompilerExperimentalOptions {
+            component_name: Some("TreeNode".into()),
+            ..Default::default()
+        },
+    );
+    assert!(
+        result
+            .code
+            .contains("const _component_TreeNode = _ctx.TreeNode"),
+        "{}",
+        result.code
+    );
+    assert!(!result.code.contains("_resolveComponent(\"TreeNode\""));
+}
+
+#[test]
+fn setup_directives_resolve_locally_and_registry_directives_stay_global() {
+    let allocator = Allocator::new();
+    let mut bindings = FxHashMap::default();
+    bindings.insert("vLocalMark".into(), BindingType::SetupConst);
+    let result = compile_vapor(
+        &allocator,
+        "<div v-local-mark v-global-mark></div>",
+        VaporCompilerOptions {
+            binding_metadata: Some(BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }),
+            ..Default::default()
+        },
+    );
+    assert!(
+        result.error_messages.is_empty(),
+        "{:?}",
+        result.error_messages
+    );
+    assert!(
+        result
+            .code
+            .contains("const _directive_local_mark = _ctx.vLocalMark"),
+        "{}",
+        result.code
+    );
+    assert!(
+        result
+            .code
+            .contains("const _directive_global_mark = _resolveDirective(\"global-mark\")"),
+        "{}",
+        result.code
+    );
+    assert!(!result.code.contains("_resolveDirective(\"local-mark\")"));
+}

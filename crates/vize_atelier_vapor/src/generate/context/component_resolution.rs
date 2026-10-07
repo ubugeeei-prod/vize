@@ -31,14 +31,30 @@ impl<'a> GenerateContext<'a> {
         resolve_base(component).map(|binding| cstr!("_ctx.{}", binding))
     }
 
+    pub(crate) fn resolve_directive_binding_expr(&self, directive: &str) -> Option<String> {
+        let bindings = self.binding_metadata?;
+        if !bindings.is_script_setup {
+            return None;
+        }
+        let name = cstr!("v{}", capitalize(&camelize(directive)));
+        bindings
+            .bindings
+            .contains_key(name.as_str())
+            .then(|| cstr!("_ctx.{name}"))
+    }
+
     pub(crate) fn is_self_component_reference(&self, component: &str) -> bool {
-        self.experimental_self_component
-            && component == "Self"
-            && self.component_name.is_some_and(|name| !name.is_empty())
+        self.component_name.is_some_and(|name| {
+            !name.is_empty()
+                && (self.experimental_self_component && component == "Self"
+                    || component == name
+                    || capitalize(&camelize(component)) == name)
+        })
     }
 
     pub(crate) fn component_resolution_name(&self, component: &str) -> String {
-        if self.is_self_component_reference(component)
+        if self.experimental_self_component
+            && component == "Self"
             && let Some(component_name) = self.component_name
         {
             component_name.to_compact_string()

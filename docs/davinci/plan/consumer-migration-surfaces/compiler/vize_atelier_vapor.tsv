@@ -26,7 +26,7 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/context/scopes.r
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/destructure.rs	2	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/destructure.rs	2	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/generate/destructure.rs	255	carton	Carton host/compatibility	old	vize_carton	legacy	1
-compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/entry.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	2
+compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/entry.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	3
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression_retained.rs	17	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression_retained.rs	17	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/generate/expression_retained.rs	17	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
@@ -203,7 +203,7 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_implicit_default_sl
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_implicit_default_slot.rs	13	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_implicit_default_slot.rs	13	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_insertion_state.rs	14	carton	Carton host/compatibility	old	vize_carton	legacy	1
-compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_setup_components.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_setup_components.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	3
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_sibling_navigation.rs	12	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_slot_outlets.rs	14	carton	Carton host/compatibility	old	vize_carton	legacy	4
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_slot_outlets.rs	14	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
