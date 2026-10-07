@@ -142,21 +142,23 @@ fn check_element<'a>(
         }
     }
 
-    let (valid, message, help) = match casing {
-        ComponentCasing::PascalCase => (
-            is_pascal_case(tag),
-            ctx.t("vue/component-name-in-template-casing.pascal"),
-            ctx.t("vue/component-name-in-template-casing.help_pascal"),
-        ),
-        ComponentCasing::KebabCase => (
-            is_kebab_case_loose(tag),
-            ctx.t("vue/component-name-in-template-casing.kebab"),
-            ctx.t("vue/component-name-in-template-casing.help_kebab"),
-        ),
+    let valid = match casing {
+        ComponentCasing::PascalCase => is_pascal_case(tag),
+        ComponentCasing::KebabCase => is_kebab_case_loose(tag),
     };
     if valid {
         return;
     }
+    let (message, help) = match casing {
+        ComponentCasing::PascalCase => (
+            ctx.t("vue/component-name-in-template-casing.pascal"),
+            ctx.t("vue/component-name-in-template-casing.help_pascal"),
+        ),
+        ComponentCasing::KebabCase => (
+            ctx.t("vue/component-name-in-template-casing.kebab"),
+            ctx.t("vue/component-name-in-template-casing.help_kebab"),
+        ),
+    };
     let span = element.loc.span;
     let mut diagnostic = LintDiagnostic::warn(ctx.current_rule, message, span.start, span.end);
     if let Some(processed) = ctx.help_level().process(&help) {
