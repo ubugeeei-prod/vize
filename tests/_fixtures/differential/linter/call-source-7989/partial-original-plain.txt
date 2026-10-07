@@ -1,15 +1,1 @@
-Patina lint report: 3 warnings in 1 file
-
-MyNotes.vue
-  MyNotes.vue:13:22 warning css/no-v-bind-performance v-bind() installs runtime CSS variable updates
-    Reference: docs/content/rules/musea-and-css.md
-    Help:
-      Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.
-  MyNotes.vue:15:13 warning css/no-v-bind-performance v-bind() installs runtime CSS variable updates
-    Reference: docs/content/rules/musea-and-css.md
-    Help:
-      Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.
-  MyNotes.vue:15:26 warning css/no-important Avoid using !important as it makes styles harder to override
-    Reference: docs/content/rules/musea-and-css.md
-    Help:
-      Use more specific selectors or reorganize CSS specificity instead
+Patina lint report: No problems found in 1 file(s)

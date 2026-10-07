@@ -65,7 +65,7 @@ fn original_and_controls_keep_complete_configured_service_results() {
         assert_eq!(actual, case["service"], "{}", case["id"]);
     }
     // The entire original remains intact. Its script slice is clean; the
-    // four-rule vector above retains all three unresolved CSS findings.
+    // combined four-rule vector above requires the complete original clean.
     let original = &cases[0];
     let actual = configured(&script_rules).lint_sfc(
         original["source"].as_str().unwrap(),
