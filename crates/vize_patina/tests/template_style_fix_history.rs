@@ -99,10 +99,30 @@ fn whole_authored_style_cases_preserve_diagnostics_edits_and_final_bytes() {
     for case in cases {
         let linter = linter(&case.rule, &case.policy);
         let result = lint(&linter, &case.source, &case.entry);
+        assert_eq!(
+            result.filename.as_str(),
+            if case.entry == "jsx" {
+                "Card.jsx"
+            } else {
+                "Card.vue"
+            },
+            "{}",
+            case.id
+        );
         assert_eq!(result.error_count, 0, "{}", case.id);
         assert_eq!(result.warning_count, 1, "{}", case.id);
         assert_eq!(result.diagnostics.len(), 1, "{}", case.id);
         let d = &result.diagnostics[0];
+        assert_eq!(
+            d.rule_name,
+            if case.rule == "html" {
+                "vue/html-self-closing"
+            } else {
+                "vue/component-name-in-template-casing"
+            },
+            "{}",
+            case.id
+        );
         assert_eq!(d.severity, Severity::Warning, "{}", case.id);
         assert_eq!(d.message, case.message, "{}", case.id);
         assert_eq!(d.start, case.start, "{}", case.id);

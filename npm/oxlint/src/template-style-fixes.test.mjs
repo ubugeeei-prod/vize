@@ -220,6 +220,18 @@ try {
     native.getPatinaRules().find((rule) => rule.name === "vapor/require-vapor-attribute").fixable,
     false,
   );
+  const vapor = native.lintPatinaSfc(original.source, {
+    filename: "CardList.vue",
+    preset: "incremental",
+    enabledRules: ["vapor/require-vapor-attribute"],
+  });
+  save({ producer: "unfinished Vapor placeholder", source: original.source, actual: vapor });
+  assert.deepEqual(vapor, {
+    filename: "CardList.vue",
+    errorCount: 0,
+    warningCount: 0,
+    diagnostics: [],
+  });
   capture.complete = true;
   save({ terminal: "whole original/public native/plugin/fixed-byte/idempotence controls passed" });
 } finally {
