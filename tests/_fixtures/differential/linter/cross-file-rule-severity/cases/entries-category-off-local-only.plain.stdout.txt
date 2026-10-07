@@ -1,0 +1,13 @@
+Patina lint report: 3 errors in 8 files
+
+src/Other.vue
+  src/Other.vue:4:21 error ecosystem/vue-router-unknown-route unknown route name `absent`
+    Reference: docs/content/rules/ecosystem.md
+
+src/matching/First.vue
+  src/matching/First.vue:4:21 error ecosystem/vue-router-unknown-route unknown route name `absent`
+    Reference: docs/content/rules/ecosystem.md
+
+src/matching/Ignored.vue
+  src/matching/Ignored.vue:4:21 error ecosystem/vue-router-unknown-route unknown route name `absent`
+    Reference: docs/content/rules/ecosystem.md

@@ -1,0 +1,8 @@
+import vueConfig from "./vue-layer.mts";
+
+export default {
+  extends: [vueConfig],
+  settings: { vize: { preset: "incremental", helpLevel: "none" } },
+  ignorePatterns: ["vendor/**", "node_modules/**"],
+  overrides: [{ files: ["src/pages/generated/**/*.vue"], rules: { "vize/vue/no-v-html": "warn" } }],
+};

@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Card from './Card.vue';
+const items = [1, 2];
+const html = '<strong>value</strong>';
+</script>
+<template>
+  <Card fooBar="test" />
+  <li v-for="item in items">{{ item }}</li>
+  <div v-html="html" />
+</template>

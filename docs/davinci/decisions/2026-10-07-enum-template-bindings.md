@@ -131,3 +131,21 @@ An independent replay of both captured complete modules under the pinned
 3.6.0-rc.9 browser runtime matched all three exact Vapor observations, empty
 diagnostics and clean unmounts. This supports the authored oracle correction;
 the hosted bundler-runtime control still requires its own fresh execution.
+
+## Genuine main refresh after the native contract update
+
+Exact `5c389c772b2300c0340022617d1038ba7be0474f` failed native qualification
+before Rust compilation: the freshly updated main workflow required the
+delivered `lsp_generic_prop_hover_cli` target absent from the older genuine
+3ed source. The isolated refresh merges actual signed main
+`486c390d81643c16b865754239a987cfe4c9861e`; no target is copied or skipped.
+Every one of its 506 changed paths is retained byte-exact, all nineteen original
+enum product/test/fixture paths remain identical to `a851`, and both current
+CLI/runtime test files remain identical to `5c`. Cargo metadata discovers the
+real delivered LSP target within the unchanged forty-member workspace.
+The incoming 350-line canonical decision record preserves all previously
+approved clauses and adds the delivered cross-file configuration decision
+on line 208. Its SHA256 is
+`b4a3815c6c7af7ac1bb420dec0bf3732b0cd7aef0c1623df45004df0d2346fd1`.
+Fresh source/native/runtime qualification remains required after publication;
+previous successes and the independent browser replay do not qualify this union.
