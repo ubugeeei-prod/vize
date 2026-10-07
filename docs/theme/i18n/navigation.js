@@ -46,11 +46,12 @@ const vizeDocsI18nNavigation = (() => {
     return path;
   }
 
-  function createSection(title, items) {
-    const section = document.createElement("div");
+  function createSection(title, items, open = false) {
+    const section = document.createElement("details");
     section.className = "nav-section";
+    if (open) section.setAttribute("open", "");
 
-    const heading = document.createElement("div");
+    const heading = document.createElement("summary");
     heading.className = "nav-title";
     heading.textContent = title;
     section.append(heading);
@@ -112,7 +113,11 @@ const vizeDocsI18nNavigation = (() => {
         .filter(Boolean);
 
       if (items.length > 0) {
-        nextNav.append(createSection(ui.groups[group.key], items));
+        const current = canonicalPath(window.location.pathname);
+        const active = group.paths.some((path) =>
+          path === "/" ? current === "/" : current === path || current.startsWith(`${path}/`),
+        );
+        nextNav.append(createSection(ui.groups[group.key], items, group.key === "start" || active));
       }
     }
 
@@ -121,7 +126,17 @@ const vizeDocsI18nNavigation = (() => {
       .map(([, item]) => item)
       .concat(unusedItems);
     if (remainingItems.length > 0) {
-      nextNav.append(createSection(ui.more, remainingItems));
+      nextNav.append(
+        createSection(
+          ui.more,
+          remainingItems,
+          remainingItems.some(
+            (item) =>
+              canonicalPath(item.querySelector(".nav-link[href]")?.getAttribute("href") ?? "/") ===
+              canonicalPath(window.location.pathname),
+          ),
+        ),
+      );
     }
 
     nav.replaceChildren(nextNav);

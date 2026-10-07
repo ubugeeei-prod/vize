@@ -14,6 +14,30 @@ title: Viteプラグイン
 
 `@vizejs/vite-plugin` は、Vite プロジェクトにネイティブ速度の Vue SFC コンパイルを提供します。これは、`@vitejs/plugin-vue` の**ドロップイン置換**として設計されており、既存の Vue コンポーネントは変更することなく動作します。
 
+## Vite+ から始める
+
+コンパイル、Vue 型チェック、lint、フォーマットをまとめる場合は、
+[Vite+ helper](./vite-plus.md)を使って `vite.config.ts` に設定します。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({});
+```
+
+[移行ガイド](./migration.md)に import と plugin の具体的な差分を示しています。
+通常の Vite の導入経路は、コンパイラだけを置き換えます。
+
+<span id="drop-in-scope"></span>
+
+## 置き換えの対応範囲
+
+Vue 3 SFC の `<script setup>`・Options API、scoped style、CSS Modules、SSR、HMR が対象です。
+Vue 2・2.7 の互換モードは別の導入経路です。webpack・rollup・esbuild・Rspack の統合は実験段階です。
+`@vitejs/plugin-vue` の全オプションとの互換性は完成していません。
+移行するオプションは[コンパイラ設定](#compiler-options)と
+[#3227](https://github.com/ubugeeei-prod/vize/issues/3227)を確認してください。
+
 ## インストール
 
 [Vite+ インストール ガイド](https://viteplus.dev/guide/install) から `vp` を一度インストールし、パッケージを追加します。
@@ -64,104 +88,17 @@ Vite Plus プロジェクトの場合は、Vite Plus クライアント タイ�
 }
 ```
 
-ほとんどのプロジェクトでは、直接のプラグイン オプションを小さくし、安定したコンパイラ設定を配置します。
-`vize.config.ts`。
+Vite+ では helper の `compiler`、通常の Vite では `vize({ ... })` にコンパイラ設定を置きます。
+[設定ガイド](./configuration.md)に、統合ごとの設定場所をまとめています。
 
-## 共有構成
+## 単独 CLI/LSP と共有する設定（任意）
 
-推奨される共有エントリ ポイントは `vize` です。単一の `vize.config.*` ファイルが両方の npm によって読み取られます。
-パッケージコマンドと`@vizejs/vite-plugin`。
+CLI/LSP と同じ設定を読み込む場合は、`vize` の `defineConfig` と `vize.config.*` を使います。
+その helper を import する場合は、`vize` を直接の依存関係に追加してください。
+[単独設定リファレンス](./configuration-reference.md)に、ファイル検索、TypeScript/JSON/PKL の
+例とスコープ別設定を残しています。Vite+ の統合タスクは `vite.config.ts` の helper を使います。
 
-```bash
-vp install -D vize
-```
-
-サポートされている構成ファイル:
-
-- `vize.config.pkl`
-- `vize.config.ts`
-- `vize.config.js`
-- `vize.config.mjs`
-- `vize.config.json`
-
-TypeScript 構成:
-
-```ts
-// vize.config.ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  compiler: {
-    sourceMap: true,
-    vapor: false,
-    customRenderer: false,
-    templateSyntax: "standard",
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
-```
-
-PKL 構成:
-
-```pkl
-amends "node_modules/vize/pkl/vize.pkl"
-
-compiler {
-  sourceMap = true
-}
-
-vite {
-  scanPatterns = new Listing {
-    "src/**/*.vue"
-  }
-}
-```
-
-スキーマを含む JSON 構成:
-
-```json
-{
-  "$schema": "./node_modules/vize/schemas/vize.config.schema.json",
-  "vite": {
-    "scanPatterns": ["src/**/*.vue"]
-  }
-}
-```
-
-`defineConfig` から `@vizejs/vite-plugin` へのインポートは下位互換性のために引き続き機能しますが、今後は `import { defineConfig } from "vize"` が共有パスになります。
-
-完全な共有構成の形状については、[構成](./configuration.md) を参照してください。
-
-Vite Plus ファースト プロジェクトでは、`vite.config.ts` でスタートアップのみの設定をインラインに保持することもできます。
-
-```ts
-import { defineConfig } from "vite-plus";
-import vize from "@vizejs/vite-plugin";
-
-export default defineConfig({
-  plugins: [
-    vize({
-      config: {
-        compiler: {
-          sourceMap: true,
-          vapor: false,
-        },
-        vite: {
-          scanPatterns: ["src/**/*.vue"],
-        },
-        musea: {
-          include: ["src/**/*.art.vue"],
-        },
-      },
-    }),
-  ],
-});
-```
-
-インライン設定は、Vite Plus の実行中に Vite プラグインおよび共有プラグイン ストアで利用できます。
-CLI および LSP コマンドでも読み取る必要がある設定には、`vize.config.*` を使用します。
+<span id="compiler-options"></span>
 
 ## コンパイラ オプション
 

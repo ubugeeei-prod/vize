@@ -20,79 +20,40 @@ hero:
       text: 遊び場
       link: https://vizejs.dev/play
 features:
-  - title: Viteプラグイン
-    details: Vue アプリケーションに推奨される統合から始めます。共有 Vize 構成を使用した Vite 内のネイティブ SFC コンパイルです。
-    link: ja/guide/vite-plugin.md
-  - title: 静的解析パイプライン
-    details: パーサー、セマンティック分析、lint ルール、仮想 TypeScript、クロスファイル チェック、およびエディター診断は、同じ Rust ネイティブ分析レイヤーを共有します。
-    link: ja/guide/static-analysis.md
-  - title: ルールのドキュメント
-    details: 具体的な Vue、HTML、SSR、Vapor、Musea、タイプ認識、ファイル間診断を悪い例と良い例とともに参照します。
-    link: ja/rules/index.md
-  - title: 共有構成
-    details: コンパイラ オプション、Vite スキャン、lint プリセット、型チェック、フォーマット、LSP 機能、および Musea を `vize.config.*` から構成します。
+  - title: Vite+ から始める
+    details: 既存アプリに Vue コンパイラとネイティブ検査タスクを追加します。設定は vite.config.ts にまとめます。
+    link: ja/getting-started.md
+  - title: 既存ツールから移行する
+    details: 変更点と対応オプションを確認し、具体的な差分をコピーして移行します。
+    link: ja/guide/migration.md
+  - title: 検査を設定する
+    details: コンパイラ、lint、フォーマット、型チェックの設定場所を確認します。
     link: ja/guide/configuration.md
-  - title: ネイティブ型チェック
-    details: "`vize:check` パッケージ スクリプトは、`vize_canon` および `corsa-bind` によってサポートされる Corsa プロジェクト セッションを通じて実行され、Vue 対応の診断をネイティブ パスに維持します。"
-    link: ja/guide/static-analysis.md
-  - title: パッケージスクリプトとCLIリファレンス
-    details: LSP、プロファイリング、バイナリの直接使用について文書化された Rust CLI とともに、アプリのワークフローのプロジェクト スクリプトから npm パッケージを使用します。
-    link: ja/guide/cli.md
-  - title: コンパイラインスペクタ
-    details: Vue 出力、Vize 出力、仮想 TS、VIR、ファイル間グラフを検査し、パーマリンクされた再現またはエージェント レポートを共有します。
-    link: ja/guide/compiler-inspector.md
-  - title: Oxlint プラグイン
-    details: Oxlint 内で Vize の Vue 診断を実行し、それらを 1 つのパスで OXC の JS および TS ルールと結合します。
-    link: ja/guide/oxlint.md
-  - title: 実験的なバンドラー統合
-    details: rollup、webpack、esbuild、および専用の Rspack パスが存在しますが、依然として Vite が推奨され、最も安定した統合です。
-    link: ja/guide/unplugin.md
-  - title: 8.3倍高速
-    details: 15,000 個の SFC ファイル (36.9 MB) を 500 ミリ秒以内にマルチスレッドでコンパイルします。アリーナ割り当て、レーヨン並列処理、ゼロ GC。
-    link: ja/architecture/performance.md
-  - title: コンポーネントギャラリー
-    details: Musea — @vizejs/vite-plugin-musea によって提供されるギャラリー ワークフローを使用したアート ファイル、ドキュメント、パレット生成、a11y、および VRT ツール。
+  - title: lint ルールを調べる
+    details: 診断を探し、Vue の悪い例と良い例を比較します。
+    link: ja/rules/all.md
+  - title: コンポーネントを探す
+    details: UI の使用例と import を確認し、実際の動作を試します。
+    link: ja/guide/ui/index.md
+  - title: 自分のコンポーネントをプレビューする
+    details: Musea の art ファイルを作り、アプリと一緒にギャラリーを開きます。
     link: ja/guide/musea.md
-  - title: WASM バインディング
-    details: WebAssembly を使用してブラウザで Vue コンパイラを直接実行します。遊び場、ドキュメント、教育ツールを強化します。
-    link: ja/guide/wasm.md
-  - title: AIの統合
-    details: AI アシスタントが Musea を通じて Vue コンポーネントを理解し、操作できるようにする MCP サーバー。
-    link: ja/integrations/mcp.md
-  - title: ベーパーモード
-    details: Vue 3.6 Vapor モードのファーストクラスのサポート — 仮想 DOM を使用しないきめ細かいリアクティブ コンパイル。
-    link: ja/architecture/overview.md
-  - title: 哲学
-    details: アートからインスピレーションを得たアーキテクチャ、酸化エコシステム (OXC、oxlint、corsa-bind)、および統一されたツールチェーン ビジョン。
-    link: ja/philosophy.md
-  - title: ブログ
-    details: 出荷された変更に関するリリース ノートに加え、設計の更新、開発ブログ、プロジェクトの考え方に関する不定期のノート。
-    link: ja/blog/index.md
 ---
 
-<!-- Generated translation; source: index.md -->
+## アプリに Vize を追加する
 
-## 現在の方向
+[Getting Started](./getting-started.md) で導入し、[移行ガイド](./guide/migration.md)で
+Vue コンパイラを置き換えます。検査結果を比較してから CI を変更してください。
+Vite+ の統合設定は `vite.config.ts`、単独 CLI や LSP の設定は `vize.config.ts` に置きます。
 
-Vize における最近の最大の変化の 1 つは、ネイティブ型チェックです。によって使用される `vize check` コマンド
-npm パッケージ スクリプトとエディター向けの型チェック パイプラインは `vize_canon` プラスに移行します
-[`corsa-bind`](https://github.com/ubugeeei/corsa-bind)、Vize が Vue 仮想ファイルを保持できるようにします。
-TypeScript プロジェクトの診断をネイティブ パスで行う時間が長くなります。
-
-それは素の速度以上に重要です。これにより、Vize はテンプレート分析、診断、ナビゲーション、将来のエディター機能の間で緊密なループを実現すると同時に、JavaScript がホストするコンパイラー プロセスを通じて跳ね返される必要がある作業量を削減します。忠実度の話はまだ追いついていませんが、これがツールチェーンが明らかに向かっている方向です。
-
-同じ方向がリンティングと Musea にも当てはまります。静的解析はパーサーとクロッキーから始まります
-セマンティック モデル、Patina lint ルール、Canon 仮想 TypeScript、コンパイラー決定、エディターをフィードします。
-診断、およびコンポーネント ギャラリーのメタデータ。実際のワークフローは以下に文書化されています。
-[静的分析](./guide/static-analysis.md)、構成の詳細は次のとおりです。
-[構成](./guide/configuration.md)。具体的なルールと診断カタログは次のとおりです。
-[ルール](./rules/index.md)。
+Vize は開発中です。[対応状況](./stability.md)で制限を確認し、導入前に自分のプロジェクトで
+診断とビルド出力を比較してください。
 
 ## 著者
 
 ![ウブゲエイ](https://github.com/ubugeeei.png)
 
-- \*[ubugeeei](https://github.com/ubugeeei)\*\*は東京を拠点とするソフトウェア エンジニアで、Vue、Rust、デザイン、言語ツールを担当しています。
+**[ubugeeei](https://github.com/ubugeeei)** は東京を拠点とするソフトウェア エンジニアで、Vue、Rust、デザイン、言語ツールを担当しています。
 
 彼は [Vue.js コア チーム](https://vuejs.org/about/team.html)、[Vue.js 日本ユーザー グループ](https://github.com/vuejs-jp) コア スタッフ、[Vite+](https://github.com/voidzero-dev/vite-plus) コア コントリビューター、[mates-dev](https://github.com/mates-dev) のチーフ エンジニアの一員です。
 

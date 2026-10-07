@@ -26,13 +26,23 @@
   sitemap.hiddenPathPatterns = [
     /^\/blog\/notes\/\d{4}-\d{2}-\d{2}-/,
     /^\/blog\/releases\/\d{4}-\d{2}-\d{2}-/,
+    /^\/reference\/(?:ui|composables)(?:\/|$)/,
+    /^\/guide\/(?:ui|composables)\/.+/,
+    /^\/guide\/(?:compiler-)?configuration-reference$/,
+    /^\/rules\/(?:reference|project)\//,
   ];
 
   // `key` selects the section heading from a locale's `ui.groups`.
   sitemap.navGroups = [
     {
       key: "start",
-      paths: ["/", "/getting-started", "/stability", "/credits"],
+      paths: [
+        "/",
+        "/getting-started",
+        "/guide/vite-plus",
+        "/guide/migration",
+        "/guide/configuration",
+      ],
     },
     {
       key: "projectSetup",
@@ -40,10 +50,8 @@
         "/guide/vite-plugin",
         "/integrations/nuxt",
         "/guide/workflows",
-        "/guide/configuration",
         "/guide/jsx",
         "/guide/jsx-babel-compat",
-        "/guide/troubleshooting",
         "/guide/unplugin",
       ],
     },
@@ -51,10 +59,11 @@
       key: "staticAnalysis",
       paths: [
         "/guide/static-analysis",
-        "/guide/cross-file-complexity",
         "/guide/analysis-diagnostics",
         "/guide/oxlint",
         "/guide/comment-annotations",
+        "/integrations/vscode",
+        "/guide/vite-plus-editor",
       ],
     },
     {
@@ -62,6 +71,7 @@
       paths: [
         "/rules",
         "/rules/all",
+        "/rules/migration",
         "/rules/vue",
         "/rules/type-and-script",
         "/rules/html",
@@ -77,12 +87,7 @@
       paths: [
         "/guide/musea",
         "/guide/ui-styles",
-        "/integrations/vscode",
-        "/integrations/mcp",
-        "/guide/wasm",
-        "/guide/cli",
-        "/guide/lib-pull",
-        "/guide/auto-imports",
+
         "/guide/ui",
         "/guide/composables",
         "/guide/content-mapper",
@@ -91,6 +96,16 @@
     {
       key: "architecture",
       paths: [
+        "/guide/cli",
+        "/guide/init",
+        "/guide/troubleshooting",
+        "/guide/lib-pull",
+        "/guide/auto-imports",
+        "/guide/cross-file-complexity",
+        "/integrations/mcp",
+        "/guide/wasm",
+        "/stability",
+        "/credits",
         "/architecture/overview",
         "/architecture/crates",
         "/architecture/source-guide",
