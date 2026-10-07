@@ -51,6 +51,20 @@ not establish custom plugin parity or a speed improvement. n8n dependency
 installation, vue-tsc parity and authored LSP oracles remain follow-up work;
 no typechecker performance baseline is claimed by this registration.
 
+The dependent authored-editor slice copies three complete, pinned master source
+files (NullEmptyCellRenderer, BlockUi and its actual TypeScript barrel) into a
+disposable project. It prepares exact template definition/reference packets,
+component navigation through the barrel, an unsaved missing-property diagnostic
+and a clean diagnostic/navigation restore. A dedicated Actions job requires the
+current-source build receipt and real typechecker; missing dependencies fail
+closed. These assertions first passed at source head `445b896bc2` in
+[run 37593020201](https://github.com/ubugeeei-prod/vize/actions/runs/37593020201),
+including the current-source receipt, real typechecker and zero skipped tests.
+The SDK-main refresh must pass again at its own exact head.
+The generic n8n matrix row still has no full authored LSP lifecycle oracle or
+whole-monorepo vue-tsc baseline; this small test grants no broader coverage or
+speed credit.
+
 The source tooling dependency unblock is [#8148](https://github.com/ubugeeei-prod/vize/pull/8148).
 It changes the SDK cohort independently; its success does not qualify the
 fixture, bridge, protected merge or installed-package acceptance by itself.
@@ -232,3 +246,68 @@ The reviewed corrective anchor is `311e3c8a0e1a42d91381ba3769ef9fcfc6c1f826`, ge
 The bounded correction preserves merge-props selection when an authored child key was suppressed, trims only horizontal padding owned by terminal line comments while retaining newline layout, and moves the unchanged empty-props test into ordinary module discovery. Only the two named TypeScript originals opt into their actual SFC-language prefix recipe. All seventeen helper controls and the original one-input comparison counts remain strict; generic prefix JavaScript and all other recipes remain unchanged. Complete wrong-language refusal packets and independently pinned stock records are retained before assertions, separately from admitted typed modules. Source-derived current wrong-JS contracts remain unqualified until fresh hosted execution; old reused baseline packets grant no current-source credit.
 
 Metadata-only pinning changes no producer, immutable capture driver, original file, oracle, runtime golden, skip allowance or ceiling. Fresh source Check/native/custody/runtime/all-four and complete canonical production gates must qualify this corrected source. No adoption or original P0 criterion is closed; protected merge and public release remain required.
+
+The first authored source run built the current CLI but failed the exact props
+reference packet: `includeDeclaration: true` omitted the real `defineProps`
+variable declaration. The correction adds missing declarations only when
+Canonical references agree with an exact OXC lexical occurrence in the same
+script-setup local symbol group; unrelated names and cross-file scope are not
+joined. The unchanged full n8n inputs now also check the false toggle. Both
+toggles, subsequent navigation, dirty diagnostics and repair require a fresh
+source run; the failed run grants no completed runtime credit.
+
+The first lexical supplement did not repair the source packet. Inspection of
+the complete virtual TypeScript confirmed separate original and synthetic
+`props` symbols. The final correction records their existing setup/template
+shadow edge at emission, from the existing pre-template anchor to the generated
+props declaration. It adds no parse, pipeline stage, code bytes or enum kind;
+the ineffective supplement is removed. The exact oracle queries both original
+script and template positions under both reference toggles. Fresh source
+execution remains required.
+
+The corrected shadow edge passes all four exact reference packets in source
+Actions. The next original oracle exposed a second defect: component-tag
+definition stopped at the import in n8n's real `import …; export default …`
+barrel. The existing bounded import walker now keeps the `default` export
+identity and authenticates imported default-export aliases from a valid OXC
+module AST; comments, strings, type imports and unknown identifiers cannot
+create edges. The original Vue file-origin expected packet remains unchanged.
+Fresh source execution must still finish barrel navigation and dirty/restore
+diagnostics; these partial reference passes grant no whole-oracle credit.
+
+Both branches are refreshed onto actual SDK merge
+`706a5b7886c363f6c67a03964ac55f26c5a2a341`: fixture parent
+`72aac62d7c2932c71075d579c76459b270d909da`, then its authored-editor child.
+All incoming canonical decision clauses are retained at 350 lines. A source
+diff confirms the previously passing authored production/test/fixture/workflow
+bytes are unchanged by the rebase. Fresh exact-head source Actions, protected
+Stack merge and public-package evidence remain required. No new PR was opened.
+
+Independent review identified a possible local-default regression after default
+imports began using their real export identity. The same authenticated helper
+now returns exact original declaration spans for exported local identifiers,
+named functions and classes, in addition to imported barrel hops. OXC lexical
+identity rejects comment and nested-shadow decoys. Existing synchronous service
+controls exercise same-named and renamed imports of default functions, local
+variables, transparent TS wrappers and classes; Corsa-independent navigation
+must retain these targets. The current fresh head requires new source proof.
+
+The exact-head dedicated editor Actions pass the three synchronous Rust groups
+and complete real n8n navigation/dirty/restore oracle without skips. Broader
+source gates exposed a disallowed test string macro, generated consumer-shard
+drift and one added line in the oversized generator. The same slice uses the
+existing compact string macro, refreshes exact inventory bytes and retains the
+generator line budget. The newly hydrated full compiler corpus separately
+reveals DOM parity/old-lane diagnostic differences; source, protected Stack and
+public-package acceptance stay pending without weakening any corpus gate.
+
+The fixture parent actually merged as signed `8616cd4b7ef8a22a3bea16b39dff9ae66e5cf3f4`
+on 2026-10-07. The existing authored-editor child is rebased onto actual signed
+main `8f01ff9c320f4b474b410efe7d66baed462df7aa`, preserving complete original
+fixtures, licenses, provenance and all 33 immutable compiler capture drivers.
+The final child has no canonical/structural references delta against its original
+base; fresh main's cross-file reference boundaries therefore remain complete.
+Only generator-authored setup/template semantic edges and value/default-export
+navigation corrections remain. Earlier compiler failures and old editor proof
+remain historical; current source Actions, native Stack delivery and released
+editor behavior require fresh qualification. Issue #8142 remains open.

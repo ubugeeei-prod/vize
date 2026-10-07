@@ -105,7 +105,7 @@ from projected documentation and historical runtime evidence.
 
 Refresh the existing Stack from frozen source `227912e35dc1d49e5a9c8bc71054d20a6b0298c8`
 by a genuine merge of signed actual main
-`7b2209e0743bf93fd1ba3a3103971bcb84cdea8d`. Preserve the complete CSS
+`a0f50992e2eb457933b81b951d462090e0af4811`. Preserve the complete CSS
 implementation, original width and layout controls, authored punctuation, all
 twelve current reference entries (eleven continuation and one rule-layout),
 and complete historical/current output and CLI streams. Retain incoming pinned
