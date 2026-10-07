@@ -79,3 +79,14 @@ remain control observations, not Vize qualification. Keep the child unpublished
 until this actual parent head qualifies, then publish a native Stack child
 without waiting for the parent's actual merge. Current paired Vize mounts/maps,
 fresh source Actions and protected original instruction gates remain pending.
+
+The publication decision now permits this prepared child to open as a draft
+from parent `20311a9` while its single native artifact-service recovery runs.
+The parent's fresh source, whole key runtime, canonical corpus and original
+104 performance controls have passed. Its first native body passed, but the
+required artifact upload failed and grants no terminal qualification. The draft
+starts its own Actions in parallel and retains **UNEXECUTED** status for the
+24 paired mounts and 72 frames until hosted execution. Register the actual
+parent and child in one native Stack; intake and merge remain root-owned, after
+the ready prefix's mandatory exact-head gates pass. This supersedes the earlier
+publication hold without changing source, fixtures, expected vectors or gates.
