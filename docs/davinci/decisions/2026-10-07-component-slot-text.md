@@ -63,3 +63,16 @@ The ordinary 64-cell authored child now invokes both default and header outlets,
 so named-slot and conditional updates are actually observable; all original SFCs,
 sixteen original controls and authored references remain unchanged. These new
 source/runtime qualifications are pending fresh Actions.
+
+Actual `a8e55cac` Check 37590048820 passes the test build and the first whole
+32-module law. Its remaining failures are retained: the module-layout gate
+rejects a redundant path attribute, and one original complete-module pin encodes
+the reported two-vnode bug. Ordinary same-name module discovery and the exact
+one-vnode pin preserve every input and surrounding byte without relaxing gates.
+The new DOM observer qualifies zero cells because it validates the core map
+against assembled imports plus render code. The existing producer serializes
+`ctx.out` only, then returns imports separately; the observer must carry both
+original fields, assert exact module reassembly and validate the unchanged map
+against its actual render owner. Full input frames are retained before validation
+so early failure preserves all generated modules/maps/SFC results. No source-map
+production change, segment removal or partial DOM acceptance follows.

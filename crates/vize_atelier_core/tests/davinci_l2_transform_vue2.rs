@@ -22,7 +22,6 @@
 )]
 mod l2_support;
 
-#[path = "slot_text_raw_compat.rs"]
 mod slot_text_raw_compat;
 
 use l2_support::{

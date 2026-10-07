@@ -176,7 +176,8 @@ fn original_sfc_and_all_slot_controls_keep_whole_dom_through_updates() {
                         "whitespace": whitespace, "comments": comments,
                         "current": { "code": current_code,
                             "errors": [], "map": current.map },
-                        "retained": { "code": retained_code, "map": old.map } }));
+                        "retained": { "code": retained_code, "render": old.code,
+                            "preamble": old.preamble, "map": old.map } }));
                 }
                 sfcs.push(json!({ "whitespace": whitespace, "comments": comments,
                     "appSource": APP, "childSource": CHILD,

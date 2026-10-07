@@ -29,6 +29,7 @@ if (process.env.GITHUB_SHA) assert.equal(evidence.sourceRevision, process.env.GI
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
 const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+evidence.input = input;
 assert.equal(input.cases.length, 64);
 assert.equal(input.sfcs.length, 4);
 const window = new Window();
@@ -238,7 +239,8 @@ try {
     assert.deepEqual(row.current.errors, []);
     assert.equal(row.current.map, null);
     assert.equal(row.current.code, row.retained.code);
-    const graph = mapGraph(row.retained.code, row.retained.map, row.source);
+    assert.equal(row.retained.code, row.retained.preamble + "\n" + row.retained.render);
+    const graph = mapGraph(row.retained.render, row.retained.map, row.source);
     const official = stockTemplate(row.source, row);
     const childSource =
       '<template><h2 class="my-title"><slot :label="\'owned\'"></slot><slot name="header" :label="\'owned\'"></slot></h2></template>';
