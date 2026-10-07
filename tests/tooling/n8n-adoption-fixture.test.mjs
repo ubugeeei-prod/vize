@@ -12,7 +12,7 @@ const registry = readJson("tests/_fixtures/vue-ecosystem-fixtures.json");
 const project = registry.projects.find(({ id }) => id === "n8n");
 const fixture = join(root, project.fixturePath);
 
-test("n8n fixture pins licensed master separately from adoption requirements", () => {
+void test("n8n fixture pins licensed master separately from adoption requirements", () => {
   assert.equal(project.revision, "e882e8a483f433facb47bab9b407d0ec00a81172");
   assert.equal(manifest.fixtureRevision, project.revision);
   assert.equal(manifest.adoption.revision, "aa173be0c65c0646a7fcec32d2c18e1eaacbc8ff");
@@ -33,7 +33,7 @@ test("n8n fixture pins licensed master separately from adoption requirements", (
   assert.equal(shallow, "true\n");
 });
 
-test("n8n acceptance retains its complete custom rules and scoped overrides", () => {
+void test("n8n acceptance retains its complete custom rules and scoped overrides", () => {
   const { rules, packageOverrides, settings } = manifest.adoption;
   assert.equal(Object.keys(rules).length, 51);
   assert.deepEqual(settings, { vize: { preset: "incremental", helpLevel: "none" } });
@@ -53,7 +53,7 @@ test("n8n acceptance retains its complete custom rules and scoped overrides", ()
   assert.ok(manifest.adoption.retiredRules.includes("no-deprecated-filter"));
 });
 
-test("hydrated n8n corpus includes every Vue package and scriptless SFC", (t) => {
+void test("hydrated n8n corpus includes every Vue package and scriptless SFC", (t) => {
   if (!existsSync(join(fixture, "package.json"))) {
     assert.notEqual(process.env.VIZE_N8N_FIXTURE_REQUIRED, "1", "n8n fixture must be hydrated");
     t.skip("n8n fixture is not hydrated outside its Actions lane");
