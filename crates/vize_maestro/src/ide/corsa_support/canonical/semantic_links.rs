@@ -156,6 +156,7 @@ fn linked_offset(
         if !matches!(
             link.kind,
             VizeSemanticLinkKind::VueSetupTemplateRefUnwrap
+                | VizeSemanticLinkKind::VueTemplatePropBinding
                 | VizeSemanticLinkKind::VuePlainScriptExport
                 | VizeSemanticLinkKind::VueOptionsApiBinding
                 | VizeSemanticLinkKind::VueSetupImportSpecialization
