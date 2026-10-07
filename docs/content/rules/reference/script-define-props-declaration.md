@@ -37,14 +37,8 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
-// Runtime / object form
-const props = defineProps({
-kind: { type: String },
-count: { type: Number, default: 0 },
-})
-
-// Runtime / array form
-const props = defineProps(['kind', 'count'])
+const props = defineProps({ title: String });
+console.log(props.title);
 </script>
 ```
 
@@ -52,11 +46,8 @@ const props = defineProps(['kind', 'count'])
 
 ```vue
 <script setup lang="ts">
-// Type-based form
-const props = defineProps<{ kind: string; count?: number }>()
-
-// Type-based with a referenced interface
-const props = defineProps<Props>()
+const props = defineProps<{ title: string }>();
+console.log(props.title);
 </script>
 ```
 

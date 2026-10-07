@@ -46,6 +46,12 @@ remains implementation follow-up work. No production behavior or allowlists chan
 the newly shipped component-registration globals are retained in both option references, generated
 rule configuration, and the public runtime test. All 14 typed rule-option entries are documented.
 
+An independent module-grammar audit caught six inherited source-comment examples with duplicate
+bindings, template markup inside a script, or a return outside a function. The declaration,
+async-computed, reactive-destructuring, useId, and useSlots references now show one complete
+alternative per SFC. The existing Babel TypeScript parser checks every Good script in tooling;
+the public-linter Bad/Good assertions remain strict and still require actual rule findings.
+
 Validation pending: exact-head Actions must execute the example pairs and build the rendered
 English/Japanese reference before queue admission. The navigation companion owns the site-wide
 menu and Vite+ onboarding; this change owns rule generation, content, and rule-specific coverage.

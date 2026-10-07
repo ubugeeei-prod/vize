@@ -37,24 +37,19 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
-// Manual ID generation (not SSR-safe)
-const id = `input-${Math.random()}`
-const id = `field-${Date.now()}`
-let counter = 0; const id = `el-${counter++}`
+const id = `input-${Math.random()}`;
 </script>
+<template><label :for="id">Name</label><input :id="id" /></template>
 ```
 
 ## 良い
 
 ```vue
 <script setup lang="ts">
-// Using useId() (Vue 3.5+)
-const id = useId()
-
-// In template
-<label :for="id">Name</label>
-<input :id="id" />
+import { useId } from "vue";
+const id = useId();
 </script>
+<template><label :for="id">Name</label><input :id="id" /></template>
 ```
 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。

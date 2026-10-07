@@ -37,13 +37,8 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
-// Runtime array form
-const emit = defineEmits(['change', 'update'])
-
-// Runtime object form
-const emit = defineEmits({
-change: (id: number) => true,
-})
+const emit = defineEmits(["change"]);
+emit("change", 1);
 </script>
 ```
 
@@ -51,11 +46,8 @@ change: (id: number) => true,
 
 ```vue
 <script setup lang="ts">
-// Type-based form (preferred)
-const emit = defineEmits<{ change: [id: number] }>()
-
-// Named type alias
-const emit = defineEmits<Emits>()
+const emit = defineEmits<{ change: [id: number] }>();
+emit("change", 1);
 </script>
 ```
 

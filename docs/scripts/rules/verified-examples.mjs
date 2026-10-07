@@ -4,6 +4,52 @@ const script = (source) => vue(`<script setup lang="ts">\n${source}\n</script>`)
 const pair = (bad, good, name) => ({ bad, good, evidence: `crates/vize_patina/src/rules/${name}` });
 
 export const verifiedOverrides = {
+  "script/define-emits-declaration": pair(
+    script('const emit = defineEmits(["change"]);\nemit("change", 1);'),
+    script('const emit = defineEmits<{ change: [id: number] }>();\nemit("change", 1);'),
+    "script/define_emits_declaration.rs",
+  ),
+  "script/define-props-declaration": pair(
+    script("const props = defineProps({ title: String });\nconsole.log(props.title);"),
+    script("const props = defineProps<{ title: string }>();\nconsole.log(props.title);"),
+    "script/define_props_declaration.rs",
+  ),
+  "script/no-async-in-computed": pair(
+    script(
+      'import { computed } from "vue";\nconst data = computed(async () => {\n  const response = await fetch("/api/data");\n  return response.json();\n});',
+    ),
+    script(
+      'import { ref, watch } from "vue";\nconst query = ref("");\nconst data = ref<unknown>(null);\nwatch(query, async (value, _oldValue, onCleanup) => {\n  const controller = new AbortController();\n  let active = true;\n  onCleanup(() => { active = false; controller.abort(); });\n  const response = await fetch(`/api/data?q=${encodeURIComponent(value)}`, { signal: controller.signal });\n  const next: unknown = await response.json();\n  if (active) data.value = next;\n});',
+    ),
+    "script/no_async_in_computed.rs",
+  ),
+  "script/no-reactive-destructure": pair(
+    script(
+      'import { reactive } from "vue";\nconst state = reactive({ count: 0, name: "Ada" });\nconst { count, name } = state;',
+    ),
+    script(
+      'import { reactive, toRefs } from "vue";\nconst state = reactive({ count: 0, name: "Ada" });\nconst { count, name } = toRefs(state);',
+    ),
+    "script/no_reactive_destructure.rs",
+  ),
+  "script/prefer-use-id": pair(
+    vue(
+      '<script setup lang="ts">\nconst id = `input-${Math.random()}`;\n</script>\n<template><label :for="id">Name</label><input :id="id" /></template>',
+    ),
+    vue(
+      '<script setup lang="ts">\nimport { useId } from "vue";\nconst id = useId();\n</script>\n<template><label :for="id">Name</label><input :id="id" /></template>',
+    ),
+    "script/prefer_use_id.rs",
+  ),
+  "script/prefer-use-slots": pair(
+    vue(
+      '<script lang="ts">\nimport { defineComponent, h } from "vue";\nexport default defineComponent({\n  setup(_props, { slots }) { return () => h("div", slots.default?.()); },\n});\n</script>',
+    ),
+    vue(
+      '<script lang="ts">\nimport { defineComponent, h, useSlots } from "vue";\nexport default defineComponent({\n  setup() {\n    const slots = useSlots();\n    return () => h("div", slots.default?.());\n  },\n});\n</script>',
+    ),
+    "script/prefer_use_slots.rs",
+  ),
   "script/no-get-current-instance": {
     bad: vue(
       '<script setup lang="ts" vapor>\nimport { getCurrentInstance } from "vue";\nconst instance = getCurrentInstance();\n</script>',

@@ -3,6 +3,8 @@ import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
+import { parseSync } from "@babel/core";
+import tsSyntax from "@babel/plugin-syntax-typescript";
 import { crossMetadata } from "../../docs/scripts/rules/project-metadata.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
@@ -60,6 +62,33 @@ await test("generation is deterministic without a previously built native binary
     { cwd: root, encoding: "utf8" },
   );
   assert.equal(result.status, 0, result.stderr || result.stdout);
+});
+
+await test("every Good script has valid module grammar and unique bindings", () => {
+  let scripts = 0;
+  for (const file of readdirSync(resolve(root, "docs/content/rules/reference"))) {
+    const page = read(`docs/content/rules/reference/${file}`);
+    const good = page.split("## Good\n")[1].match(/```(\w+)\n([\s\S]*?)\n```/);
+    const sources =
+      good[1] === "ts"
+        ? [good[2]]
+        : [...good[2].matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
+    for (const source of sources) {
+      scripts += 1;
+      assert.doesNotThrow(
+        () =>
+          parseSync(source, {
+            filename: file.replace(/\.md$/, ".ts"),
+            sourceType: "module",
+            configFile: false,
+            babelrc: false,
+            plugins: [tsSyntax],
+          }),
+        file,
+      );
+    }
+  }
+  assert.ok(scripts > 100, "all authored script examples are parsed");
 });
 
 await test("migration retains all mapped, divergent and unsupported ESLint identities", () => {

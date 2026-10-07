@@ -37,10 +37,11 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
+import { computed } from "vue";
 const data = computed(async () => {
-const response = await fetch('/api/data')
-return response.json()
-})
+  const response = await fetch("/api/data");
+  return response.json();
+});
 </script>
 ```
 
@@ -48,22 +49,17 @@ return response.json()
 
 ```vue
 <script setup lang="ts">
-// Use ref + watch with cleanup for async operations
-const data = ref(null)
+import { ref, watch } from "vue";
+const query = ref("");
+const data = ref<unknown>(null);
 watch(query, async (value, _oldValue, onCleanup) => {
-const controller = new AbortController()
-let active = true
-onCleanup(() => {
-active = false
-controller.abort()
-})
-const response = await fetch(`/api/data?q=${value}`, { signal: controller.signal })
-const next = await response.json()
-if (active) data.value = next
-})
-
-// Or use a dedicated async state library
-const { data } = useAsyncData(() => fetch('/api/data'))
+  const controller = new AbortController();
+  let active = true;
+  onCleanup(() => { active = false; controller.abort(); });
+  const response = await fetch(`/api/data?q=${encodeURIComponent(value)}`, { signal: controller.signal });
+  const next: unknown = await response.json();
+  if (active) data.value = next;
+});
 </script>
 ```
 

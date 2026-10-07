@@ -37,25 +37,24 @@ vp run lint
 
 ```vue
 <script lang="ts">
-// In Options API style
-export default {
-setup(props, { slots }) {
-return () => h('div', slots.default?.())
-}
-}
-
-// Using context.slots
-const vnode = context.slots.default?.()
+import { defineComponent, h } from "vue";
+export default defineComponent({
+  setup(_props, { slots }) { return () => h("div", slots.default?.()); },
+});
 </script>
 ```
 
 ## Good
 
 ```vue
-<script setup lang="ts">
-// Using useSlots()
-const slots = useSlots()
-return () => h('div', slots.default?.())
+<script lang="ts">
+import { defineComponent, h, useSlots } from "vue";
+export default defineComponent({
+  setup() {
+    const slots = useSlots();
+    return () => h("div", slots.default?.());
+  },
+});
 </script>
 ```
 

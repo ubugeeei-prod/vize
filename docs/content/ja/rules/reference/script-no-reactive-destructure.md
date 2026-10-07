@@ -37,11 +37,9 @@ vp run lint
 
 ```vue
 <script setup lang="ts">
-const state = reactive({ count: 0, name: 'foo' })
-const { count, name } = state  // loses reactivity!
-
-// Also passing reactive directly to functions that expect refs
-someFunction(state.count)  // loses reactivity
+import { reactive } from "vue";
+const state = reactive({ count: 0, name: "Ada" });
+const { count, name } = state;
 </script>
 ```
 
@@ -49,17 +47,9 @@ someFunction(state.count)  // loses reactivity
 
 ```vue
 <script setup lang="ts">
-const state = reactive({ count: 0, name: 'foo' })
-
-// Use toRef or toRefs to maintain reactivity
-const count = toRef(state, 'count')
-const { count, name } = toRefs(state)
-
-// Or use computed for derived values
-const doubleCount = computed(() => state.count * 2)
-
-// Pass refs or computed to functions
-someFunction(toRef(state, 'count'))
+import { reactive, toRefs } from "vue";
+const state = reactive({ count: 0, name: "Ada" });
+const { count, name } = toRefs(state);
 </script>
 ```
 
