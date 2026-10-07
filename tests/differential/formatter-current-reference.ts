@@ -7,6 +7,7 @@ import { compareBytes } from "./compare.mjs";
 import { sha256 } from "./manifest.mjs";
 import { huggedInterpolationCurrentReference } from "./formatter-hugged-interpolation-reference.ts";
 import { rootCommentCurrentReference } from "./formatter-root-comment-reference.ts";
+import { jsonLayoutCurrentReference } from "./formatter-json-layout-reference.ts";
 
 const ID = "capture/style-block-keeps-box-values-and-implicit-nested-selectors/sfc/0";
 const AUTHORITY = "tests/_fixtures/differential/formatter-history/current-references-7826.json";
@@ -18,6 +19,8 @@ export function currentFormatterReference(
   input: Buffer,
   historical: Buffer,
 ) {
+  const json = jsonLayoutCurrentReference(root, fixture, input, historical);
+  if (Object.hasOwn(json, "currentReference")) return json;
   if (fixture.id !== ID) {
     const hugged = huggedInterpolationCurrentReference(root, fixture, input, historical);
     return Object.hasOwn(hugged, "currentReference")

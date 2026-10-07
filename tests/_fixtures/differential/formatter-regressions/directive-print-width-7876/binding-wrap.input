@@ -1,0 +1,3 @@
+<template>
+  <Widget :long-property-name="state.currentValue" other="x" />
+</template>

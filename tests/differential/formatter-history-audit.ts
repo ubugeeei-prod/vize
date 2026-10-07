@@ -4,6 +4,7 @@ import path from "node:path";
 import { loadFormatterApiManifest } from "./formatter-api.mjs";
 import { sha256 } from "./manifest.mjs";
 import { validateCurrentFormatterWitness } from "./formatter-history-current-witness.ts";
+import { preservedDirectiveWidthCliManifest } from "./formatter-directive-width-cli-artifact.ts";
 
 export const FORMATTER_HISTORY_AUDIT =
   "tests/_fixtures/differential/formatter-history/fix-history-audit.json";
@@ -142,14 +143,13 @@ export function validateFormatterHistoryAudit(audit: any, repoRoot: string) {
   }
   const fixes = new Set<string>();
   const cliPin = audit.cliManifestPin;
-  assert.equal(sha256(fs.readFileSync(path.join(repoRoot, cliPin.path))), cliPin.sha256);
+  assert.equal(cliPin.path, "tests/_fixtures/differential/formatter/manifest.json");
+  const currentCli = fs.readFileSync(path.join(repoRoot, cliPin.path));
+  const originalCli =
+    preservedDirectiveWidthCliManifest(repoRoot, cliPin, currentCli) ?? currentCli;
+  assert.equal(sha256(originalCli), cliPin.sha256);
   const cliCases = new Set(
-    JSON.parse(
-      fs.readFileSync(
-        path.join(repoRoot, "tests/_fixtures/differential/formatter/manifest.json"),
-        "utf8",
-      ),
-    ).cases.map((fixture: any) => fixture.id),
+    JSON.parse(originalCli.toString()).cases.map((fixture: any) => fixture.id),
   );
   assert.equal(cliCases.size, cliPin.cases);
   // Later correctness regressions extend the corpus without retiring any of

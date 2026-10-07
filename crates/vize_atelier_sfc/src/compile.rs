@@ -426,7 +426,7 @@ fn compile_sfc_inner(
             None => crate::script::analyze_script_setup_to_summary(&script_setup_content),
         }
     );
-    let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings);
+    let mut script_bindings = croquis_to_legacy_bindings(&croquis.bindings, setup_program.as_ref());
 
     // 2. ScriptCompileContext: needed for macro span info and TypeScript type resolution
     //    (Croquis doesn't resolve type references like `defineProps<Props>()`)
@@ -577,7 +577,7 @@ fn compile_sfc_inner(
                         inline: false,
                         component_name: Some(&component_name),
                         experimental_self_component: experimental_options.self_component,
-                        bindings: Some(&script_bindings),
+                        bindings: Some(&bindings::for_vapor(&script_bindings, &setup_program)),
                         croquis: None,
                     },
                     template_syntax,

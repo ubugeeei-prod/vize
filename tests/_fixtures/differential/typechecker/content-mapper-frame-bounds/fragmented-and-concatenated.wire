@@ -1,0 +1,6 @@
+Content-Length: 87
+
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"positionEncodings":["utf-8"]}}cOnTeNt-LeNgTh: 87
+Content-Type: application/json
+
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"positionEncodings":["utf-8"]}}
