@@ -1,8 +1,12 @@
 //! Local type declaration metadata collected directly from OXC nodes.
 
 use super::ScriptParseResult;
-use oxc_ast::ast::{Declaration, TSInterfaceDeclaration, TSTypeAliasDeclaration};
+use oxc_ast::ast::{
+    Declaration, PropertyKey, TSInterfaceDeclaration, TSSignature, TSType, TSTypeAliasDeclaration,
+    TSTypeName,
+};
 use oxc_span::GetSpan;
+use vize_carton::{CompactString, FxHashMap};
 
 impl ScriptParseResult {
     /// Register a top-level `interface Name { ... }` or `type Name = ...`
@@ -29,6 +33,10 @@ impl ScriptParseResult {
         interface: &TSInterfaceDeclaration<'_>,
         source: &str,
     ) {
+        self.type_property_declarations.insert(
+            CompactString::new(interface.id.name.as_str()),
+            member_declarations(&interface.body.body),
+        );
         let extends = interface
             .extends
             .iter()
@@ -53,6 +61,10 @@ impl ScriptParseResult {
         alias: &TSTypeAliasDeclaration<'_>,
         source: &str,
     ) {
+        self.type_property_declarations.insert(
+            CompactString::new(alias.id.name.as_str()),
+            literal_declarations(&alias.type_annotation),
+        );
         self.types.definitions_mut().set_type_parameters(
             alias.id.name.as_str(),
             alias
@@ -65,6 +77,72 @@ impl ScriptParseResult {
             alias.type_annotation.span().source_text(source).trim(),
         );
     }
+
+    pub(crate) fn local_type_property_declaration(
+        &self,
+        ty: &TSType<'_>,
+        property: &str,
+    ) -> Option<(u32, u32)> {
+        let TSType::TSTypeReference(reference) = ty else {
+            return None;
+        };
+        let TSTypeName::IdentifierReference(name) = &reference.type_name else {
+            return None;
+        };
+        self.type_property_declarations
+            .get(name.name.as_str())?
+            .get(property)
+            .copied()
+            .flatten()
+    }
+}
+
+type PropertyDeclarations = FxHashMap<CompactString, Option<(u32, u32)>>;
+
+fn literal_declarations(ty: &TSType<'_>) -> PropertyDeclarations {
+    match ty {
+        TSType::TSTypeLiteral(literal) => member_declarations(&literal.members),
+        TSType::TSParenthesizedType(parenthesized) => {
+            literal_declarations(&parenthesized.type_annotation)
+        }
+        TSType::TSIntersectionType(intersection) => {
+            let mut declarations = PropertyDeclarations::default();
+            for ty in &intersection.types {
+                for (name, declaration) in literal_declarations(ty) {
+                    declarations
+                        .entry(name)
+                        .and_modify(|previous| {
+                            if *previous != declaration {
+                                *previous = None;
+                            }
+                        })
+                        .or_insert(declaration);
+                }
+            }
+            declarations
+        }
+        _ => PropertyDeclarations::default(),
+    }
+}
+
+fn member_declarations(members: &[TSSignature<'_>]) -> PropertyDeclarations {
+    let mut declarations = PropertyDeclarations::default();
+    for member in members {
+        if let TSSignature::TSPropertySignature(property) = member
+            && let Some(name) = match &property.key {
+                PropertyKey::StaticIdentifier(identifier) => Some(identifier.name.as_str()),
+                PropertyKey::StringLiteral(literal) => Some(literal.value.as_str()),
+                _ => None,
+            }
+        {
+            let range = (property.key.span().start, property.span.end);
+            declarations
+                .entry(CompactString::new(name))
+                .and_modify(|previous| *previous = None)
+                .or_insert(Some(range));
+        }
+    }
+    declarations
 }
 
 fn normalize_interface_heritage(raw: &str) -> Option<vize_carton::CompactString> {

@@ -160,6 +160,7 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) summary: &'a Croquis,
     pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) template_source: Option<&'a str>,
+    pub(super) model_modifiers: &'a crate::virtual_ts::expressions::ModelModifierBindings,
     pub(super) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(super) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
     pub(super) template_binding_access: &'a TemplateBindingAccess,
@@ -191,5 +192,6 @@ impl<'a> ComponentPropsContext<'a, '_> {
             self.template_offset,
             &self.summary.scopes,
         )
+        .with_model_modifiers(self.model_modifiers)
     }
 }

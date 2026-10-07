@@ -86,6 +86,7 @@ impl<'a> TemplateFormatter<'a> {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 let expr =
                     std::str::from_utf8(sub_slice(source, expr_start..expr_end)).unwrap_or("");
+                let depth = joiner.interpolation_depth(pos, end_pos, depth);
                 self.open_chunk(&mut output, depth, joiner.open(pos));
                 self.write_multiline_interpolation(&mut output, expr, depth);
                 joiner.finish(end_pos);
@@ -235,6 +236,7 @@ impl<'a> TemplateFormatter<'a> {
                         output.push(b'>');
                         if !is_void {
                             depth += 1;
+                            joiner.opened_element(pos, end_pos);
                         }
                     }
                     output.extend_from_slice(self.newline);
@@ -298,12 +300,9 @@ impl<'a> TemplateFormatter<'a> {
             output.pop();
         }
 
-        // SAFETY: `output` contains only copied ranges from the UTF-8 template
-        // source, formatter-produced `&str` fragments, and ASCII indentation or
-        // line breaks. The cursor moves across UTF-8 using the parser's byte
-        // ranges and ASCII delimiter checks, so the buffer cannot contain an
-        // invalid byte sequence. Skipping validation preserves formatter
-        // throughput for large templates.
+        // SAFETY: copied UTF-8 template ranges, formatter `&str` fragments and ASCII layout
+        // keep valid bytes. Parser ranges and ASCII delimiter checks maintain UTF-8 boundaries.
+        // Skipping validation preserves formatter throughput for large templates.
         Ok(unsafe { String::from_utf8_unchecked(output) })
     }
 

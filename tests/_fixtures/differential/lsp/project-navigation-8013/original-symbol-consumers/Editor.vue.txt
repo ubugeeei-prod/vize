@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const myCounter = ref(0)
+function handleSubmit() {}
+</script>
+
+<template>
+  <button @click="handleSubmit">{{ myCounter }}</button>
+</template>

@@ -10,4 +10,5 @@ assets_exit=$?
   bash .github/actions/check-computed-inlay/run.sh && \
   bash .github/actions/check-editor-jsconfig/run.sh && \
   bash .github/actions/check-package-private-imports/run.sh && \
-  bash .github/actions/check-component-tag-types/run.sh
+  bash .github/actions/check-component-tag-types/run.sh && \
+  bash .github/actions/check-project-navigation/run.sh

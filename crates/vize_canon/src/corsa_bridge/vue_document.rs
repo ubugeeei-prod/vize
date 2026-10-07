@@ -152,7 +152,7 @@ impl CorsaBridge {
             materialized_changes,
         } = project;
         self.open_canon_project_documents(
-            &documents,
+            documents,
             session_project_root,
             session_config_path,
             materialized_changes,
@@ -163,7 +163,7 @@ impl CorsaBridge {
 
     pub(super) async fn open_canon_project_documents(
         &self,
-        documents: &[(String, String)],
+        documents: Vec<(String, String)>,
         session_project_root: Option<PathBuf>,
         session_config_path: Option<PathBuf>,
         materialized_changes: crate::batch::virtual_project::MaterializedFileDelta,
@@ -182,7 +182,7 @@ impl CorsaBridge {
             })
             .await?;
         }
-        self.open_virtual_documents_batch(documents).await?;
+        self.open_owned_virtual_documents_batch(documents).await?;
         phase.finish();
         if let Some(timer) = timer {
             timer.record(self.profiler());

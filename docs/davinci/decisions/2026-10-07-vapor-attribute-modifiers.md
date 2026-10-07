@@ -38,3 +38,13 @@ Initial source `3192942496` Check `37589873592` rejected identical forced-attrib
 and SVG class/style Clippy branches before Rust execution. The correction joins
 the conditions with the same single `setAttr` body; fixtures and runtime
 expectations stay unchanged. Shared security advisories remain a separate gate.
+
+The existing PR now composes actual signed main
+`8c7727613de6213e0a52cde96eeb295d01c9bef5` from its real
+`22bdf5f276f9e28afeb18f189a7db473cde7d042` source head. Every owned product,
+test, original fixture and runtime observer byte remains unchanged; the shared
+SFC consumption inventory retains both sides' entries. The coordinated decision
+record preserves the full slice clause alongside all incoming decisions. Earlier
+source success does not qualify this composition: fresh exact-head Actions,
+protected gates and actual merge remain required, with the rc.10 runtime and
+computed/component boundaries above still unfinished.

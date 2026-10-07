@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+const label = "Name";
+const id = "field";
+</script>
+
+<template>
+  <Child :label />
+  <input :id />
+</template>
