@@ -85,6 +85,19 @@ the Parent local value independent and do not establish that recursive case;
 its full native key/value vectors and post-edit diagnostics remain TODO under
 #7994/#7996. No universal shorthand-role or measured speed claim follows.
 
+The corrective `78907bd9` source Check `37606440888` exposed one remaining
+Parent-argument failure: the complete public rename response also edited the
+independent Parent `const id`. Child-public and Parent-local directions each
+passed all eight variants, but the early Parent panic left its other seven
+variants unqualified. Broad native phases `37606440151` passed separately.
+The public service still supplemented the canonical property transaction with
+structural local-value edits. Component attribute queries now return their
+already scope-checked canonical answer directly, retaining the final authored
+scope guard; ordinary expression, event, model and DOM supplementation keeps its
+existing policy. No edit is removed by spelling, and all 24 original complete
+reference/edit/source/post-diagnostic assertions remain mandatory on the new
+source. Neither those partial passes nor the broad native run qualify delivery.
+
 ## Actual Stack delivery
 
 GitHub native Stack #8184 contains #8166 at position 1 and #8181 at position 2.

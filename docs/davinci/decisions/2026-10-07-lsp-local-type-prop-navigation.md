@@ -58,3 +58,16 @@ left #8181 open. Its refreshed `dff7005` source is based on actual main and stil
 occupies native Stack position 2. Submission of the Stack prefix did not prove
 atomic completion. Verify the child's fresh exact-head gates, native membership,
 protected candidate and actual merge receipt before claiming delivery.
+
+The corrective `78907bd9` source Check `37606440888` exposed one remaining
+Parent-argument failure: the complete public rename response also edited the
+independent Parent `const id`. Child-public and Parent-local directions each
+passed all eight variants, but the early Parent panic left its other seven
+variants unqualified. Broad native phases `37606440151` passed separately.
+The public service still supplemented the canonical property transaction with
+structural local-value edits. Component attribute queries now return their
+already scope-checked canonical answer directly, retaining the final authored
+scope guard; ordinary expression, event, model and DOM supplementation keeps its
+existing policy. No edit is removed by spelling, and all 24 original complete
+reference/edit/source/post-diagnostic assertions remain mandatory on the new
+source. Neither those partial passes nor the broad native run qualify delivery.
