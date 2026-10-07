@@ -156,3 +156,112 @@ fn test_for_alias_shadows_props_binding() {
     assert_eq!(result.error_messages.len(), 0);
     insta::assert_snapshot!(result.code.as_str());
 }
+
+#[test]
+fn filename_recursion_marks_self_and_keeps_authored_component_names() {
+    let allocator = Allocator::new();
+    for tag in ["TreeNode", "tree-node"] {
+        let source = vize_carton::cstr!("<{tag} />");
+        let result = compile_vapor_with_experimental_options(
+            &allocator,
+            &source,
+            VaporCompilerOptions::default(),
+            VaporCompilerExperimentalOptions {
+                component_name: Some("TreeNode".into()),
+                ..Default::default()
+            },
+        );
+        assert!(
+            result.error_messages.is_empty(),
+            "{:?}",
+            result.error_messages
+        );
+        let ident = tag.replace('-', "_");
+        assert_eq!(
+            component_resolution_lines(&result.code),
+            vec![
+                vize_carton::cstr!("const _component_{ident} = _resolveComponent(\"{tag}\", true)")
+                    .as_str()
+            ]
+        );
+    }
+    let mut bindings = FxHashMap::default();
+    bindings.insert("TreeNode".into(), BindingType::SetupConst);
+    let result = compile_vapor_with_experimental_options(
+        &allocator,
+        "<TreeNode />",
+        VaporCompilerOptions {
+            binding_metadata: Some(BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }),
+            ..Default::default()
+        },
+        VaporCompilerExperimentalOptions {
+            component_name: Some("TreeNode".into()),
+            ..Default::default()
+        },
+    );
+    assert_eq!(
+        component_resolution_lines(&result.code),
+        vec!["const _component_TreeNode = _ctx.TreeNode"]
+    );
+}
+
+#[test]
+fn setup_directives_resolve_locally_and_registry_directives_stay_global() {
+    let allocator = Allocator::new();
+    let mut bindings = FxHashMap::default();
+    bindings.insert("vLocalMark".into(), BindingType::SetupConst);
+    let result = compile_vapor(
+        &allocator,
+        "<div v-local-mark v-global-mark></div>",
+        VaporCompilerOptions {
+            binding_metadata: Some(BindingMetadata {
+                bindings,
+                props_aliases: FxHashMap::default(),
+                is_script_setup: true,
+            }),
+            ..Default::default()
+        },
+    );
+    assert!(
+        result.error_messages.is_empty(),
+        "{:?}",
+        result.error_messages
+    );
+    let declarations = result
+        .code
+        .lines()
+        .map(str::trim)
+        .filter(|line| line.starts_with("const _directive_"))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        declarations,
+        vec![
+            "const _directive_global_mark = _resolveDirective(\"global-mark\")",
+            "const _directive_local_mark = _ctx.vLocalMark",
+        ]
+    );
+}
+
+#[test]
+fn empty_component_name_keeps_experimental_self_registry_resolution() {
+    let allocator = Allocator::new();
+    let result = compile_vapor_with_experimental_options(
+        &allocator,
+        "<Self />",
+        VaporCompilerOptions::default(),
+        VaporCompilerExperimentalOptions {
+            component_name: Some("".into()),
+            self_component: true,
+            ..Default::default()
+        },
+    );
+    assert_eq!(result.error_messages.len(), 0);
+    assert_eq!(
+        component_resolution_lines(&result.code),
+        vec!["const _component_Self = _resolveComponent(\"Self\")"]
+    );
+}

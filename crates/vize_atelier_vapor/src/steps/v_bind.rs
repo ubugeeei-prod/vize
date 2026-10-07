@@ -71,6 +71,12 @@ fn extract_prop_key<'a>(
                 exp.content
             };
 
+            let content =
+                if exp.is_static && has_modifier(dir, "attr") && !has_modifier(dir, "prop") {
+                    allocator.alloc_str(&vize_carton::cstr!("^{content}"))
+                } else {
+                    content
+                };
             let node = SimpleExpressionNode::new(content, exp.is_static, exp.loc.clone());
             Box::new_in(node, &allocator)
         }

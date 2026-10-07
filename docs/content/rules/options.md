@@ -30,9 +30,7 @@ should behave unless noted below.
         "math": "always"
       },
       "musea/prefer-design-tokens": {
-        "tokens": [
-          { "path": "color.primary", "value": "#3b82f6", "tier": "semantic" }
-        ]
+        "tokens": [{ "path": "color.primary", "value": "#3b82f6", "tier": "semantic" }]
       }
     }
   }
@@ -47,6 +45,7 @@ should behave unless noted below.
 | `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case" }` | Defaults to `PascalCase`. |
 | `script/custom-event-name-casing` | `{ casing?: "camelCase" \| "kebab-case" }` | Defaults to `camelCase`. |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |
+| `vue/require-component-registration` | `{ globals?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. Options do not enable the rule. |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank. |
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"` | Defaults are `html.void: "always"`, `html.normal: "any"`, `html.component: "always"`, `svg: "always"`, and `math: "always"`. |
 | `vue/v-on-event-hyphenation` | `"always" \| "never"` | Configures whether event listener names should be hyphenated. |
@@ -63,7 +62,6 @@ should behave unless noted below.
   self-closing tags, event names, and attribute casing.
 - [Musea Rule Options](./options-musea.md): design-token inventory configuration.
 
-
 ## `html/no-empty-palpable-content`
 
 Custom directives may focus, style, or fill an element. List only the directives your project
@@ -73,7 +71,12 @@ list restores the default behavior, and a matching scoped entry replaces the ent
 This setting does not validate sanitization or enable the rule.
 
 ```json
-{"linter":{"rules":{"html/no-empty-palpable-content":"error"},"ruleOptions":{"html/no-empty-palpable-content":{"contentDirectives":["safe-html"]}}}}
+{
+  "linter": {
+    "rules": { "html/no-empty-palpable-content": "error" },
+    "ruleOptions": { "html/no-empty-palpable-content": { "contentDirectives": ["safe-html"] } }
+  }
+}
 ```
 
 Bad (unlisted content source):
@@ -93,3 +96,37 @@ Good (configured provider):
 When `entries` match a file, their `linter.ruleOptions` overlay the root options for that file.
 Each configured rule option object replaces the same root object; arrays such as `globals`,
 `members`, `order`, and `tokens` are not concatenated across entries.
+
+## `vue/require-component-registration`
+
+For components supplied by application plugins or Musea `previewSetup`, configure
+`vue/require-component-registration` with explicit global names:
+
+```json
+{
+  "linter": {
+    "rules": { "vue/require-component-registration": "warn" },
+    "ruleOptions": {
+      "vue/require-component-registration": { "globals": ["MyButton", "MyIcon"] }
+    }
+  }
+}
+```
+
+A name permits its PascalCase and kebab-case template spellings. The list uses
+component names; regular expressions are not interpreted. The same options apply
+to regular SFCs and Musea Art variants. Options alone do not enable the rule, and
+unknown components continue to be reported. A later config layer replaces the
+list; an empty list clears an inherited list.
+
+Bad (unlisted component):
+
+```vue
+<MissingWidget />
+```
+
+Good (a configured global):
+
+```vue
+<MyButton />
+```

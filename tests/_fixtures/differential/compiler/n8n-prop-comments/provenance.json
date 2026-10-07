@@ -1,0 +1,14 @@
+{
+  "sourceRepository": "https://github.com/n8n-io/n8n",
+  "sourceRevision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+  "sourcePath": "packages/frontend/editor-ui/src/features/ndv/runData/components/RunDataJsonActions.vue",
+  "sourceCopy": "RunDataJsonActions.vue.txt",
+  "sourceBytes": 6900,
+  "sourceSha256": "168e35ff13edb4dbce5d0a9e2ee12a5ff55baf830c00ffa7c270c8a1601c9b9b",
+  "licenseSourcePath": "LICENSE.md",
+  "licenseCopy": "LICENSE.md",
+  "licenseSha256": "d2f621f59aa4c10eab79b6333e59d9d3d5b53307dcfd16dbd75e40e679e84965",
+  "containsEnterpriseEeSource": false,
+  "originalFixtureHead": "72aac62d7c2932c71075d579c76459b270d909da",
+  "hostedBeforeAfterModuleProof": "pending central immutable baseline/current capture"
+}

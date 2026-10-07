@@ -48,14 +48,25 @@ impl<'a> Emitter<'a, '_> {
         for binding in &node.bindings {
             let entry = match binding.kind {
                 BindingKind::Spread => Entry::Object(binding.value),
-                BindingKind::Prop => Entry::Prop(
-                    binding
-                        .dynamic_name
-                        .unwrap_or_else(|| Expr::plain(binding.name)),
-                    binding.dynamic_name.is_none(),
-                    binding.value,
-                    false,
-                ),
+                BindingKind::Prop => {
+                    let prefix = if binding.modifiers.contains(&"prop") {
+                        Some('.')
+                    } else if binding.modifiers.contains(&"attr") {
+                        Some('^')
+                    } else {
+                        None
+                    };
+                    let name = match prefix {
+                        Some(prefix) => Expr::plain(
+                            self.allocator
+                                .alloc_str(&vize_carton::cstr!("{prefix}{}", binding.name)),
+                        ),
+                        None => binding
+                            .dynamic_name
+                            .unwrap_or_else(|| Expr::plain(binding.name)),
+                    };
+                    Entry::Prop(name, binding.dynamic_name.is_none(), binding.value, false)
+                }
                 // Admission lets a spread element bind only props.
                 _ => {
                     self.invariant_broken();

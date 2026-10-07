@@ -17,23 +17,37 @@ pub(super) fn uses_computed_props(el: &ElementNode<'_>) -> bool {
         return false;
     }
     let mut computed = false;
+    let mut object = false;
+    let mut forced = false;
     for prop in &el.props {
         if let PropNode::Directive(dir) = prop
             && dir.name == "bind"
         {
-            if !dir.modifiers.is_empty() || !matches!(dir.exp, Some(ExpressionNode::Simple(_))) {
+            if !matches!(dir.exp, Some(ExpressionNode::Simple(_))) {
                 return false;
             }
             match &dir.arg {
                 Some(ExpressionNode::Simple(key)) => {
+                    if !dir.modifiers.is_empty() {
+                        if !key.is_static
+                            || dir
+                                .modifiers
+                                .iter()
+                                .any(|modifier| !matches!(modifier.content, "attr" | "prop"))
+                        {
+                            return false;
+                        }
+                        forced = true;
+                    }
                     computed |= !key.is_static;
                 }
-                None => {}
+                None if dir.modifiers.is_empty() => object = true,
+                None => return false,
                 _ => return false,
             }
         }
     }
-    computed
+    computed || object && forced
 }
 
 pub(super) fn transform<'a>(
@@ -84,10 +98,28 @@ pub(super) fn transform<'a>(
                 if key.is_static && matches!(key.content, "key" | "ref" | "ref_for" | "ref_key") {
                     continue;
                 }
-                (
-                    SimpleExpressionNode::from_node(key),
-                    SimpleExpressionNode::from_node(value),
-                )
+                let mut key = SimpleExpressionNode::from_node(key);
+                let prefix = if dir
+                    .modifiers
+                    .iter()
+                    .any(|modifier| modifier.content == "prop")
+                {
+                    Some('.')
+                } else if dir
+                    .modifiers
+                    .iter()
+                    .any(|modifier| modifier.content == "attr")
+                {
+                    Some('^')
+                } else {
+                    None
+                };
+                if let Some(prefix) = prefix {
+                    key.content = ctx
+                        .allocator
+                        .alloc_str(&vize_carton::cstr!("{prefix}{}", key.content));
+                }
+                (key, SimpleExpressionNode::from_node(value))
             }
             _ => continue,
         };
@@ -112,4 +144,78 @@ pub(super) fn transform<'a>(
         block,
         OperationNode::SetMergedProps(SetMergedPropsIRNode { element, sources }),
     );
+}
+
+#[inline]
+pub(super) fn static_binding_key<'a>(
+    ctx: &mut TransformContext<'a>,
+    dir: &DirectiveNode<'a>,
+    name: &'a str,
+) -> (&'a str, bool, bool) {
+    if dir.modifiers.is_empty() {
+        return (name, false, false);
+    }
+    let camel = dir
+        .modifiers
+        .iter()
+        .any(|modifier| modifier.content == "camel");
+    let prop = dir
+        .modifiers
+        .iter()
+        .any(|modifier| modifier.content == "prop");
+    (static_key(ctx, dir, name, camel, prop), camel, prop)
+}
+
+/// Preserve retained camel keys and use the runtime's existing `^key` vocabulary.
+/// `.prop` wins if both force modifiers are authored, as in Vue's transform.
+pub(super) fn static_key<'a>(
+    ctx: &mut TransformContext<'a>,
+    dir: &DirectiveNode<'a>,
+    name: &'a str,
+    camel: bool,
+    prop: bool,
+) -> &'a str {
+    let name = if camel {
+        ctx.interner.intern(&camelize(name))
+    } else {
+        name
+    };
+    if !prop
+        && dir
+            .modifiers
+            .iter()
+            .any(|modifier| modifier.content == "attr")
+    {
+        ctx.interner.intern(&vize_carton::cstr!("^{name}"))
+    } else {
+        name
+    }
+}
+
+/// Retain the existing static camel spelling, including punctuation and tails.
+fn camelize(s: &str) -> vize_carton::String {
+    let mut result = vize_carton::String::default();
+    let mut capitalize_next = false;
+    for c in s.chars() {
+        if c == '-' {
+            capitalize_next = true;
+        } else if capitalize_next {
+            result.push(c.to_ascii_uppercase());
+            capitalize_next = false;
+        } else {
+            result.push(c);
+        }
+    }
+    result
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn retained_static_camel_key_spelling() {
+        assert_eq!(
+            ["view-box", "foo-", "a--b", "foo-.bar"].map(super::camelize),
+            ["viewBox", "foo", "aB", "foo.bar"].map(vize_carton::String::from)
+        );
+    }
 }

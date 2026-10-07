@@ -112,6 +112,12 @@ lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_link
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/binding_roles.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/binding_roles.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/binding_roles.rs	5	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/component_arguments_tests.rs	5	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/component_arguments.rs	5	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/component_arguments.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/component_arguments.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/component_arguments.rs	5	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/component_arguments.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/component_props.rs	5	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/external_mirror.rs	4	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/external_mirror.rs	102	l0	L0	stage	vize_l0	preferred	1
@@ -293,6 +299,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute/same_name_bi
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute/same_name_bindings.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute/same_name_bindings.rs	5	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute/same_name_bindings.rs	5	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute/shorthand_roles.rs	6	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/failure.rs	2	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_event_variants_tests.rs	218	carton	Carton host/compatibility	old	vize_carton	legacy	2
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_model_tests.rs	291	carton	Carton host/compatibility	old	vize_carton	legacy	2

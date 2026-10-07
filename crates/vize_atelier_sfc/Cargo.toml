@@ -126,5 +126,9 @@ required-features = ["davinci-production-bench"]
 name = "sfc_fix_history_observer"
 required-features = ["native"]
 
+[[example]]
+name = "n8n_compiler_custody"
+required-features = ["legacy-dom-differential"]
+
 [lints]
 workspace = true

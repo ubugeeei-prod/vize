@@ -1,0 +1,93 @@
+{
+  "schema": "vize.n8n.default-slot-loop-baseline-failure",
+  "version": 1,
+  "productSource": "72aac62d7c2932c71075d579c76459b270d909da",
+  "baselineSource": "67e7d0f1392d8bdd08156ac4de900cf2065c98fd",
+  "sourceSha256": "1aa581ed0ab7f543b36085d9102ebb7769c69427061193c89eddb1ffc1084963",
+  "packetSha256": "9df1e2f75f0037ca57741bf6e095a81ef0396df61dfa9c160523fad7536a4fbb",
+  "moduleSha256": "4c0173fafed101b5f0e8ad17dfc2bb79766e25f147280f99e047222a36e1ccb0",
+  "currentExpectedSha256": "06d07d48d28838ea457f786355a329e9de438dfab8e07f1fdbfdb7466e05ab86",
+  "runtime": {
+    "version": "3.5.26",
+    "url": "https://unpkg.com/vue@3.5.26/dist/vue.global.prod.js",
+    "sha256": "b408034d07f7c8a91f117f9ea6272355ae45f55cbda1a4ad0704ad8d70398095",
+    "nodeVersion": "v26.9.0"
+  },
+  "captureRun": "https://github.com/ubugeeei-prod/vize/actions/runs/37608888161/job/112751028337",
+  "classification": "Actual baseline legacy eagerly evaluates the empty descriptor once, then fails before mounting the default slot.",
+  "credits": {
+    "mounted": false,
+    "identity": false,
+    "success": false
+  },
+  "trace": [
+    {
+      "tree": [],
+      "calls": 1,
+      "identityPreserved": true,
+      "removedAbsent": true,
+      "diagnostics": [
+        "TypeError: Cannot read properties of undefined (reading 'name')"
+      ]
+    },
+    {
+      "tree": [],
+      "calls": 1,
+      "identityPreserved": true,
+      "removedAbsent": true,
+      "diagnostics": [
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')"
+      ]
+    },
+    {
+      "tree": [],
+      "calls": 1,
+      "identityPreserved": true,
+      "removedAbsent": true,
+      "diagnostics": [
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')"
+      ]
+    },
+    {
+      "tree": [],
+      "calls": 1,
+      "identityPreserved": true,
+      "removedAbsent": true,
+      "diagnostics": [
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')"
+      ]
+    },
+    {
+      "tree": [],
+      "calls": 1,
+      "identityPreserved": true,
+      "removedAbsent": true,
+      "diagnostics": [
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')"
+      ]
+    },
+    {
+      "tree": [],
+      "calls": 0,
+      "identityPreserved": true,
+      "removedAbsent": true,
+      "diagnostics": [
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')",
+        "TypeError: Cannot read properties of undefined (reading 'name')"
+      ]
+    }
+  ]
+}
