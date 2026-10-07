@@ -1,0 +1,1 @@
+{ "linter": { "rules": { "script/no-export-in-script-setup": "warn", "script/require-typed-ref": "warn" } } }

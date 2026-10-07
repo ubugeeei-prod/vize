@@ -39,3 +39,13 @@ whole-output contracts. This record is source preparation, not runtime proof;
 #7698 remains open for unfinished performance work.
 
 Paired issue decision: [comment 6019045579](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6019045579).
+
+## Historical qualification and actual security incorporation
+
+Immutable `718aaa16ec541d2a9644f420b9ba64c01a653553` passed configured formatting/Clippy and all 16,505 source Rust records. Native run `37485363974` preserved six whole corpus/mode output rows, 18 shard memberships and existing freshness controls. Original400 run `37485363954` preserved all 79 complete query vectors and 18 authored envelopes against signed `8fab`. Its ordinary run `37485365115` failed at the inherited new shell-quote advisory and dependent report; retain that failure.
+
+The single same-worker shipping pair demonstrates no hover speed benefit: first hover 2438.65→2476.40ms and warm median 27.57→29.30ms are worse; background median 85.46→78.71ms is better. It does not establish the copy's timing contribution, a general speed gain, old diagnostic-silence cause or installed-public acceptance.
+
+After #8137 actually signed-merged, incorporate genuine main `ef84821d30fa0d8538b2472fef34418e75380523` once. Preserve all three transfer production blobs and incoming readiness, security, workflows and decisions. Every `718` result above remains historical for the composed successor; fresh exact-head source/native/original400 Actions and protected signed delivery are required. Issue #7698 remains open.
+
+Paired incorporation decision: [comment 6033188073](https://github.com/ubugeeei-prod/vize/issues/7698#issuecomment-6033188073).

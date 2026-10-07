@@ -13,6 +13,8 @@ use serde_json::Value;
 use std::{path::Path, str::FromStr};
 use vize_l0::{String, cstr};
 
+mod readiness_workers;
+
 pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> Result<(), String> {
     struct InitializeRequest;
 
@@ -165,18 +167,9 @@ pub(super) fn request_lsp_document_readiness_acks(
     client: &LspClient,
     uris: &[Uri],
 ) -> Result<(), String> {
-    use futures::{StreamExt, TryStreamExt};
-    // Bound in-flight requests below the transport queue capacity. Every
-    // changed document still needs an acknowledgement before native queries.
-    block_on(
-        futures::stream::iter(
-            uris.iter()
-                .map(|uri| request_lsp_document_readiness_ack_async(client, uri)),
-        )
-        .buffer_unordered(16)
-        .try_collect::<Vec<_>>(),
-    )
-    .map(|_| ())
+    // Corsa's request future blocks while awaiting its response. Scoped workers
+    // overlap those waits while retaining every per-document acknowledgement.
+    readiness_workers::run(uris, |uri| request_lsp_document_readiness_ack(client, uri))
 }
 
 async fn request_lsp_document_readiness_ack_async(

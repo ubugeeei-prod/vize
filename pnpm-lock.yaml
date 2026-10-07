@@ -391,7 +391,7 @@ overrides:
   nuxt: 4.5.1
   qs: 6.16.0
   readdir-glob>minimatch: 10.2.5
-  shell-quote: 1.9.0
+  shell-quote: 1.11.0
   simple-git: 4.0.1
   simple-git>@simple-git/argv-parser: 2.0.1
   seroval@<=1.6.2: 1.6.3
@@ -11597,8 +11597,8 @@ packages:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
 
-  shell-quote@1.9.0:
-    resolution: {integrity: sha512-Iov+JwFv/2HcTpcwNMKd8+IWNb8tboQJNQTkAY/LLVK7gGH9jy+LGkVqPxfekHl+yMmiqXszdGWXgkfml7hjqA==}
+  shell-quote@1.11.0:
+    resolution: {integrity: sha512-JdxDPD0DBTyu08pq0kPC0xSNet/qsU07qT6IsX1AS8oO2ICNRY4ldNa8OAI6PuwAH8tG3lxEhbqmyp4Dw4036g==}
     engines: {node: '>= 0.4'}
 
   shiki@4.0.2:
@@ -21736,7 +21736,7 @@ snapshots:
   launch-editor@2.14.1:
     dependencies:
       picocolors: 1.1.1
-      shell-quote: 1.9.0
+      shell-quote: 1.11.0
 
   layout-base@1.0.2: {}
 
@@ -24082,7 +24082,7 @@ snapshots:
 
   shebang-regex@3.0.0: {}
 
-  shell-quote@1.9.0: {}
+  shell-quote@1.11.0: {}
 
   shiki@4.0.2:
     dependencies:
