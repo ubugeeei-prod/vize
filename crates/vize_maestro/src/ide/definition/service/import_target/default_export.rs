@@ -1,40 +1,66 @@
-//! Authenticate `import Component …; export default Component` barrel edges.
+//! Authenticate default-export declarations and imported component barrel edges.
 
 use std::path::Path;
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{ExportDefaultDeclarationKind, ImportDeclarationSpecifier, Statement};
+use oxc_ast::ast::{
+    ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier, Statement,
+};
 use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_semantic::SemanticBuilder;
+use oxc_span::{SourceType, Span};
 use vize_l0::String;
 
-pub(super) fn import_target(content: &str, path: &Path) -> Option<(String, String)> {
+pub(super) enum Target {
+    Import { specifier: String, exported: String },
+    Declaration(Span),
+}
+
+pub(super) fn target(content: &str, path: &Path) -> Option<Target> {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, content, SourceType::from_path(path).ok()?).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
     }
-    let local = parsed.program.body.iter().find_map(|statement| {
+    let export = parsed.program.body.iter().find_map(|statement| {
         let Statement::ExportDefaultDeclaration(export) = statement else {
             return None;
         };
-        let ExportDefaultDeclarationKind::Identifier(identifier) = &export.declaration else {
-            return None;
-        };
-        Some(identifier.name.as_str())
+        Some(export)
     })?;
-    parsed.program.body.iter().find_map(|statement| {
+    match &export.declaration {
+        ExportDefaultDeclarationKind::FunctionDeclaration(function) => {
+            return Some(Target::Declaration(
+                function.id.as_ref().map_or(function.span, |id| id.span),
+            ));
+        }
+        ExportDefaultDeclarationKind::ClassDeclaration(class) => {
+            return Some(Target::Declaration(
+                class.id.as_ref().map_or(class.span, |id| id.span),
+            ));
+        }
+        _ => {}
+    }
+    let Expression::Identifier(identifier) =
+        export.declaration.as_expression()?.get_inner_expression()
+    else {
+        return None;
+    };
+    let local = identifier.name.as_str();
+    for statement in &parsed.program.body {
         let Statement::ImportDeclaration(import) = statement else {
-            return None;
+            continue;
+        };
+        let Some(specifier) = import.specifiers.as_ref().and_then(|specifiers| {
+            specifiers
+                .iter()
+                .find(|specifier| specifier.local().name == local)
+        }) else {
+            continue;
         };
         if import.import_kind.is_type() {
             return None;
         }
-        let specifier = import
-            .specifiers
-            .as_ref()?
-            .iter()
-            .find(|specifier| specifier.local().name == local)?;
         let exported = match specifier {
             ImportDeclarationSpecifier::ImportDefaultSpecifier(_) => "default",
             ImportDeclarationSpecifier::ImportSpecifier(named) if !named.import_kind.is_type() => {
@@ -42,14 +68,46 @@ pub(super) fn import_target(content: &str, path: &Path) -> Option<(String, Strin
             }
             _ => return None,
         };
-        Some((import.source.value.as_str().into(), exported.into()))
-    })
+        return Some(Target::Import {
+            specifier: import.source.value.as_str().into(),
+            exported: exported.into(),
+        });
+    }
+    // Resolve an exported identifier to its lexical declaration, never to the
+    // first same-spelling token (which may be a comment or a nested shadow).
+    let semantic = SemanticBuilder::new().build(&parsed.program);
+    if !semantic.diagnostics.is_empty() {
+        return None;
+    }
+    let symbol = semantic
+        .semantic
+        .scoping()
+        .get_reference(identifier.reference_id.get()?)
+        .symbol_id()?;
+    Some(Target::Declaration(
+        semantic.semantic.scoping().symbol_span(symbol),
+    ))
+}
+
+#[cfg(test)]
+fn import_target(content: &str, path: &Path) -> Option<(String, String)> {
+    match target(content, path)? {
+        Target::Import {
+            specifier,
+            exported,
+        } => Some((specifier, exported)),
+        Target::Declaration(_) => None,
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::import_target;
+    use crate::ide::{IdeContext, definition::DefinitionService};
+    use crate::server::ServerState;
+    use std::fs;
     use std::path::Path;
+    use tower_lsp::lsp_types::{GotoDefinitionResponse, Url};
 
     #[test]
     fn original_n8n_barrel_follows_the_default_component_identity() {
@@ -87,6 +145,61 @@ mod tests {
                 expected.map(|(path, export)| (path.into(), export.into())),
                 "{source}"
             );
+        }
+    }
+    #[test]
+    fn default_imports_preserve_local_function_variable_and_class_definitions() {
+        for (target_source, anchor) in [
+            ("export default function Widget() {}", "function Widget"),
+            (
+                "const Widget = () => null; export default Widget;",
+                "const Widget",
+            ),
+            (
+                "const Widget = () => null; export default (Widget as unknown);",
+                "const Widget",
+            ),
+            ("export default class Widget {}", "class Widget"),
+            (
+                "// const Widget = decoy;\nfunction inner() { const Widget = 0; }\nconst Widget = () => null; export default Widget;",
+                "const Widget = ()",
+            ),
+        ] {
+            for local in ["Widget", "Renamed"] {
+                let project = tempfile::tempdir().unwrap();
+                let target = project.path().join("index.ts");
+                fs::write(&target, target_source).unwrap();
+                let source = format!(
+                    "<script setup lang=\"ts\">\nimport {local} from './index';\n</script>\n<template><{local} /></template>"
+                );
+                let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
+                let state = ServerState::new();
+                state
+                    .documents
+                    .open(uri.clone(), source.clone(), 1, "vue".into());
+                state.update_virtual_docs(&uri, &source);
+                let ctx = IdeContext::new(&state, &uri, source.rfind(local).unwrap()).unwrap();
+                let GotoDefinitionResponse::Scalar(location) =
+                    DefinitionService::definition(&ctx).expect("default definition")
+                else {
+                    panic!("default definition must be scalar");
+                };
+                let expected = target_source.find(anchor).unwrap() + anchor.find("Widget").unwrap();
+                let (line, character) = crate::ide::offset_to_position(target_source, expected);
+                assert_eq!(
+                    location.uri,
+                    Url::from_file_path(&target).unwrap(),
+                    "{target_source}"
+                );
+                assert_eq!(
+                    location.range,
+                    tower_lsp::lsp_types::Range::new(
+                        tower_lsp::lsp_types::Position::new(line, character),
+                        tower_lsp::lsp_types::Position::new(line, character + 6)
+                    ),
+                    "{target_source}"
+                );
+            }
         }
     }
 }

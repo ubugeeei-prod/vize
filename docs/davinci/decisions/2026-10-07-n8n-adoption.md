@@ -282,3 +282,12 @@ All incoming canonical decision clauses are retained at 350 lines. A source
 diff confirms the previously passing authored production/test/fixture/workflow
 bytes are unchanged by the rebase. Fresh exact-head source Actions, protected
 Stack merge and public-package evidence remain required. No new PR was opened.
+
+Independent review identified a possible local-default regression after default
+imports began using their real export identity. The same authenticated helper
+now returns exact original declaration spans for exported local identifiers,
+named functions and classes, in addition to imported barrel hops. OXC lexical
+identity rejects comment and nested-shadow decoys. Existing synchronous service
+controls exercise same-named and renamed imports of default functions, local
+variables, transparent TS wrappers and classes; Corsa-independent navigation
+must retain these targets. The current fresh head requires new source proof.

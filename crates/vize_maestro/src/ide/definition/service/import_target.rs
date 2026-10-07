@@ -229,12 +229,29 @@ fn locate_export(ctx: &IdeContext<'_>, target: &Path, word: &str, hops: usize) -
         .text(&uri)
         .or_else(|| fs::read_to_string(target).ok())?;
 
-    if word == "default"
-        && hops > 0
-        && let Some((specifier, exported)) = default_export::import_target(&content, target)
-        && let Some(next) = resolve_import_specifier(&uri, &specifier)
-    {
-        return locate_export(ctx, &next, &exported, hops - 1);
+    if word == "default" {
+        match default_export::target(&content, target)? {
+            default_export::Target::Import {
+                specifier,
+                exported,
+            } if hops > 0 => {
+                let next = resolve_import_specifier(&uri, &specifier)?;
+                return locate_export(ctx, &next, &exported, hops - 1);
+            }
+            default_export::Target::Declaration(span) => {
+                let (line, character) = helpers::offset_to_position(&content, span.start as usize);
+                let (end_line, end_character) =
+                    helpers::offset_to_position(&content, span.end as usize);
+                return Some(Location {
+                    uri,
+                    range: Range::new(
+                        Position::new(line, character),
+                        Position::new(end_line, end_character),
+                    ),
+                });
+            }
+            _ => return None,
+        }
     }
 
     // A barrel both names the word and points elsewhere; the re-export hop
