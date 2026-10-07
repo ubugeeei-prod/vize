@@ -127,9 +127,9 @@ impl CanonicalVirtualDocument {
             }) {
                 return;
             }
-            let ranges = cache.entry(request_uri.clone()).or_insert_with(|| {
-                value_expression_ranges(&result.code, request_uri.ends_with(".tsx"))
-            });
+            let ranges = cache
+                .entry(request_uri.clone())
+                .or_insert_with(|| value_expression_ranges(&result.code));
             let Some(ranges) = ranges else {
                 valid = false;
                 return;
@@ -177,14 +177,14 @@ impl CanonicalVirtualDocument {
     }
 }
 
-fn value_expression_ranges(source: &str, tsx: bool) -> Option<Vec<OffsetRange<usize>>> {
+fn value_expression_ranges(source: &str) -> Option<Vec<OffsetRange<usize>>> {
     let allocator = oxc_allocator::Allocator::default();
-    let source_type = if tsx {
-        SourceType::tsx()
-    } else {
-        SourceType::ts()
-    };
-    let parsed = Parser::new(&allocator, source, source_type).parse();
+    let mut parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
+    // Canon's native URI is `.ts` even when authored setup contains JSX.
+    // Syntax, rather than that URI suffix, must determine the parser mode.
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
+        parsed = Parser::new(&allocator, source, SourceType::tsx()).parse();
+    }
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
     }

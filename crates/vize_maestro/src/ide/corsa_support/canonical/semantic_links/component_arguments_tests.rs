@@ -12,7 +12,7 @@ use crate::server::ServerState;
 fn native_expression_geometry_excludes_contextual_and_type_keys() {
     let source =
         "type Props = { id: string }; const id = 1; const o = { id: id }; o.id; o['id']; ({ id });";
-    let ranges = value_expression_ranges(source, false).expect("valid TypeScript");
+    let ranges = value_expression_ranges(source).expect("valid TypeScript");
     for (needle, expected) in [
         ("id: string", false),
         ("id = 1", false),
@@ -29,13 +29,21 @@ fn native_expression_geometry_excludes_contextual_and_type_keys() {
             "{needle}"
         );
     }
-    assert!(value_expression_ranges("type Props = {", false).is_none());
-    assert!(value_expression_ranges("const view = <div>{value}</div>;", true).is_some());
+    assert!(value_expression_ranges("type Props = {").is_none());
+    assert!(value_expression_ranges("const view = <div>{value}</div>;").is_some());
 }
 
 #[test]
 fn only_selected_native_value_geometry_adds_the_second_authored_role() {
-    let source = "<script setup lang=\"ts\">defineProps<{ id: string }>();</script>\n<template><Recursive :id /></template>";
+    for source in [
+        "<script setup lang=\"ts\">defineProps<{ id: string }>();</script>\n<template><Recursive :id /></template>",
+        "<script setup lang=\"tsx\">const view = <div />; defineProps<{ id: string }>();</script>\n<template><Recursive :id /></template>",
+    ] {
+        assert_selected_generated_roles(source);
+    }
+}
+
+fn assert_selected_generated_roles(source: &str) {
     let state = ServerState::new();
     let uri = Url::parse("file:///workspace/Recursive.vue").expect("URI");
     let ctx = IdeContext::testing(&state, &uri, 0, source.into());
@@ -52,7 +60,7 @@ fn only_selected_native_value_geometry_adds_the_second_authored_role() {
     let start = source.find(":id").expect("shorthand") + 1;
     let (line, character) = crate::ide::offset_to_position(source, start);
     let argument = Location {
-        uri,
+        uri: uri.clone(),
         range: tower_lsp::lsp_types::Range::new(
             tower_lsp::lsp_types::Position::new(line, character),
             tower_lsp::lsp_types::Position::new(line, character + 2),
@@ -61,7 +69,7 @@ fn only_selected_native_value_geometry_adds_the_second_authored_role() {
     let generated = &document.virtual_result.code;
     let mut keys = Vec::new();
     let mut values = Vec::new();
-    let positive = value_expression_ranges(generated, false).expect("generated syntax");
+    let positive = value_expression_ranges(generated).expect("generated syntax");
     for (start, _) in generated.match_indices("id") {
         let (line, character) = crate::ide::offset_to_position(generated, start);
         let (end_line, end_character) = crate::ide::offset_to_position(generated, start + 2);
