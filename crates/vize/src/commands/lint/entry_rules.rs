@@ -97,6 +97,9 @@ impl ResolvedLinterRuleGroups {
                 if let Some(options) = rule_options.strict_boolean_expressions() {
                     linter = linter.with_strict_boolean_expressions_options(options);
                 }
+                if let Some(mode) = rule_options.define_props_destructuring() {
+                    linter = linter.with_define_props_destructuring(mode);
+                }
                 if let Some(casing) = rule_options.component_name_in_template_casing() {
                     linter =
                         linter.with_component_name_in_template_casing(component_casing(casing));

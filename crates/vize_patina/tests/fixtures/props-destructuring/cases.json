@@ -1,0 +1,170 @@
+[
+  {
+    "id": "default-identifier",
+    "mode": "default",
+    "source": "<script setup lang=\"ts\">\nconst props = defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "default-defaults",
+    "mode": "default",
+    "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ size?: string }>(), { size: \"md\" });\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "default-destructure",
+    "mode": "default",
+    "source": "<script setup lang=\"ts\">\nconst { size = \"md\" } = defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "default-destructure-with-defaults",
+    "mode": "default",
+    "source": "<script setup lang=\"ts\">\nconst { size } = withDefaults(defineProps<{ size?: string }>(), { size: \"md\" });\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "default-bare",
+    "mode": "default",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "default-unrelated",
+    "mode": "default",
+    "source": "<script setup lang=\"ts\">\nconst { size } = model.defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "default-empty",
+    "mode": "default",
+    "source": "<script setup lang=\"ts\">\ndefineProps();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "only-when-assigned-identifier",
+    "mode": "only-when-assigned",
+    "source": "<script setup lang=\"ts\">\nconst props = defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "only-when-assigned-defaults",
+    "mode": "only-when-assigned",
+    "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ size?: string }>(), { size: \"md\" });\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "only-when-assigned-destructure",
+    "mode": "only-when-assigned",
+    "source": "<script setup lang=\"ts\">\nconst { size = \"md\" } = defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "only-when-assigned-destructure-with-defaults",
+    "mode": "only-when-assigned",
+    "source": "<script setup lang=\"ts\">\nconst { size } = withDefaults(defineProps<{ size?: string }>(), { size: \"md\" });\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "only-when-assigned-bare",
+    "mode": "only-when-assigned",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "only-when-assigned-unrelated",
+    "mode": "only-when-assigned",
+    "source": "<script setup lang=\"ts\">\nconst { size } = model.defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "only-when-assigned-empty",
+    "mode": "only-when-assigned",
+    "source": "<script setup lang=\"ts\">\ndefineProps();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "always-identifier",
+    "mode": "always",
+    "source": "<script setup lang=\"ts\">\nconst props = defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "always-defaults",
+    "mode": "always",
+    "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ size?: string }>(), { size: \"md\" });\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "always-destructure",
+    "mode": "always",
+    "source": "<script setup lang=\"ts\">\nconst { size = \"md\" } = defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "always-destructure-with-defaults",
+    "mode": "always",
+    "source": "<script setup lang=\"ts\">\nconst { size } = withDefaults(defineProps<{ size?: string }>(), { size: \"md\" });\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "always-bare",
+    "mode": "always",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "always-unrelated",
+    "mode": "always",
+    "source": "<script setup lang=\"ts\">\nconst { size } = model.defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "always-empty",
+    "mode": "always",
+    "source": "<script setup lang=\"ts\">\ndefineProps();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "never-identifier",
+    "mode": "never",
+    "source": "<script setup lang=\"ts\">\nconst props = defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "never-defaults",
+    "mode": "never",
+    "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ size?: string }>(), { size: \"md\" });\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "never-destructure",
+    "mode": "never",
+    "source": "<script setup lang=\"ts\">\nconst { size = \"md\" } = defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "never-destructure-with-defaults",
+    "mode": "never",
+    "source": "<script setup lang=\"ts\">\nconst { size } = withDefaults(defineProps<{ size?: string }>(), { size: \"md\" });\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 1
+  },
+  {
+    "id": "never-bare",
+    "mode": "never",
+    "source": "<script setup lang=\"ts\">\ndefineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "never-unrelated",
+    "mode": "never",
+    "source": "<script setup lang=\"ts\">\nconst { size } = model.defineProps<{ size?: string }>();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  },
+  {
+    "id": "never-empty",
+    "mode": "never",
+    "source": "<script setup lang=\"ts\">\ndefineProps();\n</script>\n<template><span>badge</span></template>\n",
+    "diagnostics": 0
+  }
+]

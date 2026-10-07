@@ -1914,7 +1914,7 @@ valid:
   const props = defineProps<Props>()
 === script/define-props-destructuring
 script/define-props-destructuring · lint rule
-Disallow destructuring the return value of defineProps in <script setup>
+Enforce consistent style for defineProps destructuring in <script setup>
 
 tier: exact
 domain: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)

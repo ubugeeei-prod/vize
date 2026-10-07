@@ -451,6 +451,17 @@
     "LintRuleOptions": {
       "type": "object",
       "properties": {
+        "script/define-props-destructuring": {
+          "type": "object",
+          "properties": {
+            "destructure": {
+              "type": "string",
+              "enum": ["only-when-assigned", "always", "never"],
+              "default": "only-when-assigned"
+            }
+          },
+          "additionalProperties": false
+        },
         "html/no-empty-palpable-content": {
           "type": "object",
           "properties": {
