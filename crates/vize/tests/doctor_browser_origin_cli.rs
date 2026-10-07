@@ -11,7 +11,7 @@ fn browser_diagnostics_use_authored_script_and_template_bytes() {
         serde_json::from_slice(&fs::read(corpus.join("source.json")).unwrap()).unwrap();
     let workspace = tempfile::tempdir().unwrap();
     let cases = source["cases"].as_array().unwrap();
-    let current = current_reference::validate(&corpus, &source);
+    let current = current_reference::validate(&corpus, &source).unwrap();
     assert_eq!(cases.len(), 11);
     for case in cases {
         let filename = case["path"].as_str().unwrap();

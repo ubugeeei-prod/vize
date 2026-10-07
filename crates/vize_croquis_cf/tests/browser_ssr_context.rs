@@ -6,7 +6,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
 use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnosticKind, CrossFileOptions, DiagnosticSource,
 };
-use vize_l0::Allocator;
+use vize_l0::{Allocator, String, cstr};
 
 struct Script<'a> {
     content: &'a str,
@@ -14,18 +14,29 @@ struct Script<'a> {
     setup: bool,
 }
 
-fn scripts(source: &str) -> Vec<Script<'_>> {
+fn scripts(source: &str) -> Result<Vec<Script<'_>>, &'static str> {
     source
         .match_indices("<script")
         .map(|(at, _)| {
-            let tail = &source[at..];
-            let content_at = at + tail.find('>').unwrap() + 1;
-            let end = content_at + source[content_at..].find("</script>").unwrap();
-            Script {
-                content: &source[content_at..end],
+            let tail = source.get(at..).ok_or("invalid script opening offset")?;
+            let content_at = at + tail.find('>').ok_or("missing script opening delimiter")? + 1;
+            let content_tail = source
+                .get(content_at..)
+                .ok_or("invalid script content offset")?;
+            let end = content_at
+                + content_tail
+                    .find("</script>")
+                    .ok_or("missing script closing tag")?;
+            Ok(Script {
+                content: source
+                    .get(content_at..end)
+                    .ok_or("invalid script content range")?,
                 start: content_at as u32,
-                setup: source[at..content_at].contains("setup"),
-            }
+                setup: source
+                    .get(at..content_at)
+                    .ok_or("invalid script opening range")?
+                    .contains("setup"),
+            })
         })
         .collect()
 }
@@ -40,8 +51,8 @@ fn draw(script: &Script<'_>) -> Croquis {
     analyzer.finish()
 }
 
-fn analyze(source: &str, filename: &str) -> Vec<Value> {
-    let blocks = scripts(source);
+fn analyze(source: &str, filename: &str) -> Result<Vec<Value>, String> {
+    let blocks = scripts(source)?;
     let setup = blocks.iter().find(|block| block.setup);
     let plain = blocks.iter().find(|block| !block.setup);
     let analysis = match (plain, setup) {
@@ -53,14 +64,27 @@ fn analyze(source: &str, filename: &str) -> Vec<Value> {
         }
         (_, Some(setup)) => draw(setup),
         (Some(plain), None) => draw(plain),
-        _ => panic!("whole fixture requires a script"),
+        _ => return Err("whole fixture requires a script".into()),
     };
-    let start = source.find("<template>").unwrap() + "<template>".len();
-    let end = start + source[start..].find("</template>").unwrap();
-    let template = &source[start..end];
+    let start = source
+        .find("<template>")
+        .ok_or("missing template opening tag")?
+        + "<template>".len();
+    let tail = source
+        .get(start..)
+        .ok_or("invalid template content offset")?;
+    let end = start
+        + tail
+            .find("</template>")
+            .ok_or("missing template closing tag")?;
+    let template = source
+        .get(start..end)
+        .ok_or("invalid template content range")?;
     let allocator = Allocator::default();
     let (root, errors) = Parser::new(&allocator, template).parse();
-    assert!(errors.is_empty(), "{filename}: {errors:?}");
+    if !errors.is_empty() {
+        return Err(cstr!("{filename}: {errors:?}"));
+    }
     let mut drawer = Analyzer::with_summary(AnalyzerOptions::full(), analysis, true);
     drawer.analyze_template(&root);
     let mut analyzer =
@@ -68,9 +92,9 @@ fn analyze(source: &str, filename: &str) -> Vec<Value> {
     analyzer.add_file_with_analysis(Path::new(filename), source, drawer.finish());
     analyzer.analyze().diagnostics.into_iter().map(|diagnostic| {
         let CrossFileDiagnosticKind::BrowserApiInSsr { api, context } = diagnostic.kind else {
-            panic!("unexpected full diagnostic: {diagnostic:?}");
+            return Err(cstr!("unexpected full diagnostic: {diagnostic:?}"));
         };
-        json!({
+        Ok(json!({
             "kind": "BrowserApiInSsr", "api": api.as_str(), "context": context.as_str(),
             "severity": diagnostic.severity.display_name(), "file": diagnostic.primary_file.as_u32(),
             "source": match diagnostic.primary_source {
@@ -84,7 +108,7 @@ fn analyze(source: &str, filename: &str) -> Vec<Value> {
             }).collect::<Vec<_>>(),
             "message": diagnostic.message.as_str(),
             "suggestion": diagnostic.suggestion.as_ref().map(|text| text.as_str()),
-        })
+        }))
     }).collect()
 }
 
@@ -101,7 +125,7 @@ fn complete_originals_and_guarded_handler_watch_controls_preserve_all_producer_f
         let bytes = fs::read(directory.join(case["file"].as_str().unwrap())).unwrap();
         assert_eq!(bytes.len() as u64, case["bytes"].as_u64().unwrap());
         let input = std::str::from_utf8(&bytes).unwrap();
-        let blocks = scripts(input);
+        let blocks = scripts(input).unwrap();
         let plain = blocks.iter().find(|block| !block.setup);
         let setup = blocks.iter().find(|block| block.setup);
         let expected: Vec<_> = case["doctorLocations"].as_array().unwrap().iter().map(|location| {
@@ -111,8 +135,9 @@ fn complete_originals_and_guarded_handler_watch_controls_preserve_all_producer_f
                 (setup, plain.map_or(0, |plain| plain.content.len() as u32 + 1))
             } else { (plain.unwrap(), 0) };
             let relative = prefix + authored - block.start;
-            let api = if input[authored as usize..].starts_with("window") { "window" } else {
-                assert!(input[authored as usize..].starts_with("document")); "document"
+            let tail = input.get(authored as usize..).unwrap();
+            let api = if tail.starts_with("window") { "window" } else {
+                assert!(tail.starts_with("document")); "document"
             };
             json!({
                 "kind":"BrowserApiInSsr", "api":api, "context":if api == "document" { "DOM API" } else { "Browser global" },
@@ -121,7 +146,7 @@ fn complete_originals_and_guarded_handler_watch_controls_preserve_all_producer_f
                 "suggestion":source["defaultHelp"]["suggestion"],
             })
         }).collect();
-        let actual = analyze(input, filename);
+        let actual = analyze(input, filename).unwrap();
         observations.push(json!({"input":case, "expected":expected, "actual":actual}));
         assert_eq!(actual, expected, "{filename}");
     }

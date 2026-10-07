@@ -31,6 +31,11 @@ server branch can prove the following statements in that same body. Do not
 extend that proof across a nested function or into a separate finally block.
 Missing or refused script ownership packets prohibit callback and function
 exemptions; an import-only or invalid sibling block cannot silently disappear.
+Complete packet capture is demanded only by full analysis that collects template
+expressions, or by an existing explicit packet caller. Preserve the original
+ordinary lint empty-capture law and compiler no-capture path unchanged.
+Skip the new reachability query when the unchanged raw producer has no script
+browser use; template events keep their separate source-kind check.
 These facts are private and do not change Croquis debug snapshots or add a
 public serialized field, parse pass, compiler stage or level serialization.
 
@@ -83,5 +88,11 @@ The first hosted source run rejected the separately generated Croquis consumer
 ledger: the new public boundary test adds one real Croquis type-consumer site.
 Regenerate its whole owned shard with the existing generator; preserve all
 other nineteen ledger files, every corpus byte and all gate assertions.
+The next hosted run exposed the ordinary lint empty-capture law and strict
+test-target lint errors. Narrow full-analysis demand rather than altering that
+old law; make new test helpers use checked ranges and explicit Results, retain
+every original assertion, and await all Node test registrations. All original
+462 Croquis laws, complete38 producer replay/two origin laws and strict
+test-target Clippy pass locally after these corrections.
 No performance improvement is claimed from local results. Actual queue merge,
 signed main, release and public distribution remain root-owned acceptance.

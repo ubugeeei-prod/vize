@@ -15,6 +15,11 @@ impl SetupContextTracker {
         scopes: &ScopeChain,
         template: &[TemplateExpression],
     ) -> Vec<Range> {
+        // Template event uses have their own source-kind check. Without a raw
+        // script browser use, there is no function exemption to resolve.
+        if self.browser_globals.iter().all(|(name, _)| name.is_empty()) {
+            return Vec::new();
+        }
         let Some(facts) = self.ssr.as_ref() else {
             return Vec::new();
         };

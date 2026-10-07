@@ -10,12 +10,12 @@ const directory = path.join(root, "crates/vize/tests/fixtures/issue-7907");
 const source = JSON.parse(fs.readFileSync(path.join(directory, "source.json"), "utf8"));
 const bytes = fs.readFileSync(path.join(directory, "current-reference-7908.json"));
 
-test("one exact current watch reference preserves historic coordinates and producer laws", () => {
+await test("one exact current watch reference preserves historic coordinates and producer laws", () => {
   const { row } = browserOriginCurrentReference(root, source);
   assert.deepEqual(row.historicalDoctorLocations, [{ start: 141, end: 141, line: 6, column: 35 }]);
 });
 
-test("forged current output and authority expansion fail closed", () => {
+await test("forged current output and authority expansion fail closed", () => {
   for (const mutate of [
     (data) => data.cases.push(data.cases[0]),
     (data) => {
@@ -33,7 +33,7 @@ test("forged current output and authority expansion fail closed", () => {
   }
 });
 
-test("same-name forged historical expectation cannot acquire current-reference authority", () => {
+await test("same-name forged historical expectation cannot acquire current-reference authority", () => {
   const forged = structuredClone(source);
   forged.cases.find((entry) => entry.path === "PageTitle.vue").expected[0].messages = [];
   assert.throws(() => browserOriginCurrentReference(root, forged));
