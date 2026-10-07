@@ -26,3 +26,9 @@ lexical-snapshot fixtures and fifteen live-ref fixtures remain byte-exact.
 No provenance algorithm, source input, harness, ceiling or pipeline stage is
 changed. Fresh source/native/Corsa and protected whole-output/instruction
 qualification are required; no new measured result or actual merge is claimed.
+
+The first repaired head passed the new whole-scope-graph control, but its
+strict compact-collection Clippy gate found three inherited direct string
+slices in the binding-occurrence test. Checked access retains every original
+range, input and assertion; the lint remains enforced. Its successor requires
+fresh qualification, with no result borrowed from the superseded head.
