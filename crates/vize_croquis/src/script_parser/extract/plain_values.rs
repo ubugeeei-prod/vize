@@ -151,7 +151,7 @@ pub fn check_getter_call_extraction(
         start: init.span().start,
         end: init.span().end,
     });
-    result.reactive_value_origins.insert(
+    result.record_reactive_origin(
         CompactString::new(target_name),
         ReactiveValueOrigin::GetterCall {
             context_name,
@@ -191,7 +191,7 @@ pub fn check_reactive_plain_alias_extraction(
         value.start,
         value.end,
     );
-    result.reactive_value_origins.insert(
+    result.record_reactive_origin(
         CompactString::new(target_name),
         ReactiveValueOrigin::PlainAlias {
             source_name: value.source_name,
@@ -228,7 +228,7 @@ pub fn check_reactive_plain_assignment_alias(
         value.start,
         value.end,
     );
-    result.reactive_value_origins.insert(
+    result.record_reactive_origin(
         CompactString::new(target_name),
         ReactiveValueOrigin::PlainAlias {
             source_name: value.source_name,
@@ -416,7 +416,7 @@ pub fn check_ref_value_extraction(
                     end: member.span.end,
                 });
             }
-            result.reactive_value_origins.insert(
+            result.record_reactive_origin(
                 CompactString::new(target_name),
                 ReactiveValueOrigin::RefValue {
                     source_name: ref_name,
@@ -456,7 +456,7 @@ pub fn check_reactive_property_extraction(
                 end: init.span().end,
             });
         }
-        result.reactive_value_origins.insert(
+        result.record_reactive_origin(
             CompactString::new(target_name),
             ReactiveValueOrigin::ReactiveProperty {
                 source_name,
@@ -487,7 +487,7 @@ pub fn check_reactive_property_extraction(
             init.span().end,
         );
     }
-    result.reactive_value_origins.insert(
+    result.record_reactive_origin(
         CompactString::new(target_name),
         ReactiveValueOrigin::ReactiveProperty {
             source_name,

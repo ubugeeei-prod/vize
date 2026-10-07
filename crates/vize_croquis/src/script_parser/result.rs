@@ -5,6 +5,7 @@
 //! plain-value and runtime-object tracking.
 
 mod debug;
+mod origins;
 
 use crate::croquis::{BindingMetadata, ComponentRegistration, ComponentShape, Croquis};
 use crate::croquis::{
@@ -14,7 +15,7 @@ use crate::macros::{EmitDefinition, MacroTracker, PropDefinition};
 use crate::provide::ProvideInjectTracker;
 use crate::race::RaceConditionTracker;
 use crate::reactivity::ReactivityTracker;
-use crate::scope::ScopeChain;
+use crate::scope::{ScopeChain, ScopeId};
 use crate::script_parser::typeof_refs::TypeDependencyRefs;
 use crate::setup_context::SetupContextTracker;
 use crate::types::TypeResolver;
@@ -92,6 +93,9 @@ pub struct ScriptParseResult {
     pub(crate) reactivity_aliases: FxHashMap<CompactString, CompactString>,
     /// Bindings that are known plain snapshots of reactive values.
     pub(crate) reactive_value_origins: FxHashMap<CompactString, ReactiveValueOrigin>,
+    /// Private lexical provenance; the name map above keeps the debug contract.
+    pub(crate) scoped_reactive_value_origins:
+        FxHashMap<ScopeId, FxHashMap<CompactString, ReactiveValueOrigin>>,
     /// Call results that were constructed from getter arguments.
     pub(crate) reactive_getter_contexts: FxHashMap<CompactString, ReactiveGetterContext>,
     /// Setup context violation tracking, plus script browser-global reads.

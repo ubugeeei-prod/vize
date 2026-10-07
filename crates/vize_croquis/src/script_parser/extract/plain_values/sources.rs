@@ -14,7 +14,7 @@ pub(super) fn reactive_plain_value_from_expr(
     match expr {
         Expression::Identifier(id) => {
             let binding_name = id.name.as_str();
-            let origin = result.reactive_value_origins.get(binding_name)?;
+            let origin = result.reactive_origin(binding_name)?;
             let (source_name, getter_name) = plain_origin_labels(origin, binding_name);
             Some(ReactivePlainValue {
                 source_name,
@@ -64,7 +64,7 @@ pub(super) fn reactive_plain_value_from_expr(
                 });
             }
 
-            let root_origin = result.reactive_value_origins.get(root.as_str())?;
+            let root_origin = result.reactive_origin(root.as_str())?;
             let (source_name, _) = plain_origin_labels(root_origin, root.as_str());
             Some(ReactivePlainValue {
                 source_name,
@@ -172,7 +172,7 @@ pub(super) fn reactive_member_destructure_source(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_value_origins.contains_key(root.as_str())
+                || result.reactive_origin(root.as_str().is_some())
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
@@ -184,7 +184,7 @@ pub(super) fn reactive_member_destructure_source(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_value_origins.contains_key(root.as_str())
+                || result.reactive_origin(root.as_str().is_some())
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
@@ -214,9 +214,8 @@ pub(super) fn reactive_expression_label_for_spread(
     match expr {
         Expression::Identifier(id) => {
             let name = id.name.as_str();
-            (result.reactivity.is_reactive(name)
-                || result.reactive_value_origins.contains_key(name))
-            .then(|| CompactString::new(name))
+            (result.reactivity.is_reactive(name) || result.reactive_origin(name).is_some())
+                .then(|| CompactString::new(name))
         }
         Expression::StaticMemberExpression(member) => {
             if is_ref_value_member_root(result, expr) {
@@ -227,7 +226,7 @@ pub(super) fn reactive_expression_label_for_spread(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_value_origins.contains_key(root.as_str())
+                || result.reactive_origin(root.as_str().is_some())
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
@@ -242,7 +241,7 @@ pub(super) fn reactive_expression_label_for_spread(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_value_origins.contains_key(root.as_str())
+                || result.reactive_origin(root.as_str().is_some())
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
@@ -285,7 +284,7 @@ pub(super) fn reactive_plain_identifier_value_from_expr(
     match expr {
         Expression::Identifier(id) => {
             let binding_name = id.name.as_str();
-            let origin = result.reactive_value_origins.get(binding_name)?;
+            let origin = result.reactive_origin(binding_name)?;
             let (source_name, _) = plain_origin_labels(origin, binding_name);
             Some(ReactivePlainValue {
                 source_name,
@@ -503,7 +502,7 @@ fn reactive_plain_mutation_identifier_value(
     start: u32,
     end: u32,
 ) -> Option<ReactivePlainValue> {
-    let origin = result.reactive_value_origins.get(binding_name)?;
+    let origin = result.reactive_origin(binding_name)?;
     if matches!(origin, ReactiveValueOrigin::PropsDestructure { .. }) {
         return None;
     }

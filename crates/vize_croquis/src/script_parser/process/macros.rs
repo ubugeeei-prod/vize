@@ -468,7 +468,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                         let key = key_name
                             .map(CompactString::new)
                             .unwrap_or_else(|| CompactString::new(&local_name));
-                        result.reactive_value_origins.insert(
+                        result.record_reactive_origin(
                             CompactString::new(&local_name),
                             ReactiveValueOrigin::PropsDestructure {
                                 prop_name: key.clone(),
@@ -497,7 +497,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             destructure.rest_id = Some(CompactString::new(&name));
                         }
 
-                        result.reactive_value_origins.insert(
+                        result.record_reactive_origin(
                             CompactString::new(&name),
                             ReactiveValueOrigin::PropsDestructure {
                                 prop_name: CompactString::new("(rest)"),

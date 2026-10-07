@@ -23,7 +23,7 @@ pub(super) fn record_object_pattern_property_origins(
             continue;
         };
 
-        result.reactive_value_origins.insert(
+        result.record_reactive_origin(
             CompactString::new(&local_name),
             ReactiveValueOrigin::ReactiveProperty {
                 source_name: source_name.clone(),
@@ -35,7 +35,7 @@ pub(super) fn record_object_pattern_property_origins(
     if let Some(rest) = &obj.rest
         && let Some(local_name) = get_binding_pattern_name(&rest.argument)
     {
-        result.reactive_value_origins.insert(
+        result.record_reactive_origin(
             CompactString::new(&local_name),
             ReactiveValueOrigin::ReactiveProperty {
                 source_name,
