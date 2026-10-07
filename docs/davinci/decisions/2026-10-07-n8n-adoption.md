@@ -74,7 +74,7 @@ must pass. Complete raw packets are saved before parity/runtime assertions, so
 a failed gate retains its evidence and receives no completion credit.
 The immutable capture-only commit is
 `f5699c195e627ad26aa1c8efd4a59266120cd9b9`; the reviewed descending repair
-anchor is `5eacecad19972f8522c9320de2ec0bd3c294d0d2`. Preserve their real
+anchor is `670afc49ca9627e81b28713f1242507d16614b7e`. Preserve their real
 commit chain when integrating the existing PR. The ordinary default-mode
 baseline has two complete legacy errors with missing locations; retain those
 `null` locations as failed historical evidence. Its two native diagnostics
@@ -135,7 +135,8 @@ iterator call per render, updates, toggles, empty diagnostics and unmount cleanu
 The before failure earns no successful runtime or performance credit.
 
 [The third custody run](https://github.com/ubugeeei-prod/vize/actions/runs/37612980317)
-retains complete source packets in artifact `11478485937`. Its authenticated
+retains complete source packets in artifact `11478485937`, using historical
+anchor `5eacecad19972f8522c9320de2ec0bd3c294d0d2`. Its authenticated
 `f569` before binary has SHA256
 `1c682f6a9e72af2aae35efcb57bfaaaad46832c5518995e1305bbcf9a3de6373`;
 the genuinely rebuilt `99d4839bde65afe26cc4afc89ec3f4a71a28894c` after binary

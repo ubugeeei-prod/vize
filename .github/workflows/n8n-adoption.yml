@@ -60,7 +60,7 @@ jobs:
     timeout-minutes: 30
     env:
       VIZE_N8N_CAPTURE_BASELINE: f5699c195e627ad26aa1c8efd4a59266120cd9b9
-      VIZE_N8N_REPAIR_ANCHOR: 5eacecad19972f8522c9320de2ec0bd3c294d0d2
+      VIZE_N8N_REPAIR_ANCHOR: 670afc49ca9627e81b28713f1242507d16614b7e
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
