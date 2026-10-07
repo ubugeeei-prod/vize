@@ -42,3 +42,5 @@ where their own required witnesses are absent. This bounded change does not
 close #3984 or qualify n8n JSONC/project transport. The separate original-source
 JSONC authority proposal remains read-only with its bridge owner; upstream n8n
 and TypeScript stay read-only.
+
+Initial source `b4e26ecd71c7d3202a20ed36f924364a956725f7` failed Check `37653924137` at its Rust test build, before any reader, CLI or lifecycle execution. The installed sha2 0.11 digest array does not implement LowerHex. The helper now converts each byte with `{byte:02x}` while retaining all fourteen original inputs, complete stdout/stderr/status expectations and hashes. No production reader, old protocol vector, instruction ceiling or workflow changes. Fresh successor Actions remains mandatory; historical success or skipped workers supplies no execution credit.

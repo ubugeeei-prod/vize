@@ -28,11 +28,11 @@ fn corpus() -> PathBuf {
 
 fn pinned_bytes(file: &str, expected_hash: &str) -> Vec<u8> {
     let bytes = std::fs::read(corpus().join(file)).unwrap();
-    assert_eq!(
-        cstr!("{:x}", Sha256::digest(&bytes)),
-        expected_hash,
-        "{file}"
-    );
+    let mut actual_hash = String::with_capacity(64);
+    for byte in Sha256::digest(&bytes) {
+        actual_hash.push_str(cstr!("{byte:02x}").as_str());
+    }
+    assert_eq!(actual_hash, expected_hash, "{file}");
     bytes
 }
 
