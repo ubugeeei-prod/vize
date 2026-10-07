@@ -28,6 +28,8 @@ and option names or widening the page. Closed mobile navigation is hidden.
 Entry pages hide their unused sidebar explicitly: the original offscreen sheet
 appeared in full-page mobile captures and covered the six goal cards. The browser
 gate requires those six authored cards to be visible and the entry sidebar hidden.
+Home hero logos use a root-relative asset path in both authored locales; the
+browser gate requires every same-origin image to decode, including the JA hero.
 
 ## Evidence and delivery
 

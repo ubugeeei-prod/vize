@@ -7,7 +7,7 @@ hero:
   text: High-Performance Vue.js Toolchain in Rust
   tagline: "/viːz/ — A wise tool that sees through your code. Compile, lint, format, type-check, and explore Vue components — all powered by Rust. ⚠️ Not yet production-ready."
   image:
-    src: logo.svg
+    src: /logo.svg
     alt: Vize Logo
   actions:
     - theme: brand

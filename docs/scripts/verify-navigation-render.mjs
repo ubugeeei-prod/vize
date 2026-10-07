@@ -71,6 +71,13 @@ try {
       assert.equal(response.status(), 200, route);
       await page.locator("h1").first().waitFor();
       await page.evaluate(() => document.fonts.ready);
+      await page.waitForFunction(() =>
+        [...document.images].every(
+          (image) =>
+            new URL(image.src).origin !== location.origin ||
+            (image.complete && image.naturalWidth > 0),
+        ),
+      );
       let japaneseFonts = [];
       if (route === "/ja/" || route.startsWith("/ja/")) {
         const sample = await page.evaluate(() => {
@@ -117,6 +124,9 @@ try {
         title: document.title,
         viewport: innerWidth,
         bodyWidth: document.documentElement.scrollWidth,
+        images: [...document.images]
+          .filter((image) => new URL(image.src).origin === location.origin)
+          .map((image) => ({ src: image.src, naturalWidth: image.naturalWidth })),
         goals: [...document.querySelectorAll(".feature-title")].map(
           (element) => element.textContent,
         ),

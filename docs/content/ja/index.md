@@ -7,7 +7,7 @@ hero:
   text: Rust の高性能 Vue.js ツールチェーン
   tagline: /viːz/（ヴィーズ）— コードを透視する賢明なツール。 Vue コンポーネントのコンパイル、lint、フォーマット、型チェック、探索はすべて Rust によって行われます。 ⚠️ まだ製品化の準備ができていません。
   image:
-    src: logo.svg
+    src: /logo.svg
     alt: Vize のロゴ
   actions:
     - theme: brand
