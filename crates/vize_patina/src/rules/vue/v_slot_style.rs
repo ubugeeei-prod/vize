@@ -143,11 +143,11 @@ impl Rule for VSlotStyle {
             directive.loc.span.start,
             directive.loc.span.end,
         );
-        if let Some(processed) = ctx.help_level().process(help.as_str()) {
+        if let Some(processed) = ctx.help_level().process(help.as_ref()) {
             diagnostic = diagnostic.with_help(processed);
         }
         if !ctx.is_petite_vue()
-            && let Some(fix) = fix::slot_fix(ctx.source, directive, actual, expected, help.as_str())
+            && let Some(fix) = fix::slot_fix(ctx.source, directive, actual, expected, help.as_ref())
         {
             diagnostic = diagnostic.with_fix(fix);
         }

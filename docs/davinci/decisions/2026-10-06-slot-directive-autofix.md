@@ -73,3 +73,9 @@ The verified original reporter identity is
 source commit. HTML self-closing, component casing and the reported Vapor path
 remain unfinished. #7906 has its independent CLI convergence PR; no dependency
 or acceptance is inferred from that parallel work.
+
+First exact-head Actions rejects the new helper calls before runtime: translated
+help is `Cow<str>`, and `.as_str()` dereferences to unstable `str_as_str`. Borrow
+it with `.as_ref()` at the two existing call sites. The original source ranges,
+fixes, metadata, corpus and observer references remain unchanged. Fresh native
+Actions is required; the prior compilation failure provides no runtime credit.
