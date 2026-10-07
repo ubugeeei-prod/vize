@@ -115,3 +115,19 @@ boundary. Actual enum delivery and protected qualification remain pending.
 Each mode retains its failure and the remaining modes still run; the final
 complete DOM/SSR/Vapor inventory must contain three passes. This preserves
 all available evidence without accepting a failed or unexecuted mode.
+
+Exact head `8e98628f0913a22110921a3d6bd18427b53be4bd` passed the four
+Rust workers and native checks. Its new CLI control executed DOM and SSR
+successfully with complete default/warn/info observations matching official
+Vue. Vapor failed first on the authored oracle: official 3.6.0-rc.9 emits
+`<span>info</span>` for an absent class, while DOM/SSR emit the empty class
+attribute. The full failed packet is retained; it contains no executed Vize
+Vapor observation and grants no Vapor/runtime completion credit.
+The repaired test freezes the exact mode-specific HTML and captures all three
+props for both official and Vize modules before judging either complete trace.
+Whole trace equality, diagnostics, unmount state and all three CLI lane passes
+remain mandatory. Fresh Actions still must qualify the actual Vapor result.
+An independent replay of both captured complete modules under the pinned
+3.6.0-rc.9 browser runtime matched all three exact Vapor observations, empty
+diagnostics and clean unmounts. This supports the authored oracle correction;
+the hosted bundler-runtime control still requires its own fresh execution.

@@ -119,11 +119,7 @@ async function evaluate(moduleCode) {
 
 async function observe(moduleCode, observations) {
   const component = await evaluate(moduleCode);
-  for (const [props, expected] of [
-    [{}, '<span class="">info</span>'],
-    [{ tone: "warn" }, '<span class="warn">warn</span>'],
-    [{ tone: "info" }, '<span class="">info</span>'],
-  ]) {
+  for (const props of [{}, { tone: "warn" }, { tone: "info" }]) {
     const diagnostics = [];
     const app = (
       lane === "ssr" ? vue.createSSRApp : lane === "vapor" ? vue.createVaporApp : vue.createApp
@@ -134,7 +130,6 @@ async function observe(moduleCode, observations) {
     observations.push(observation);
     if (lane === "ssr") {
       observation.html = await server.renderToString(app);
-      assert.equal(observation.html, expected);
     } else {
       const host = window.document.createElement("div");
       window.document.body.append(host);
@@ -142,23 +137,29 @@ async function observe(moduleCode, observations) {
         app.mount(host);
         await vue.nextTick();
         observation.html = host.innerHTML;
-        assert.equal(observation.html, expected);
         app.unmount();
         await vue.nextTick();
         observation.unmounted = host.innerHTML;
-        assert.equal(observation.unmounted, "");
       } finally {
         if (host.childNodes.length) app.unmount();
         host.remove();
       }
     }
-    assert.deepEqual(diagnostics, []);
   }
 }
 
 try {
   await observe(reference.code, capture.reference);
   await observe(code, capture.actual);
+  const infoHtml = lane === "vapor" ? "<span>info</span>" : '<span class="">info</span>';
+  const unmounted = lane === "ssr" ? null : "";
+  const expected = [
+    { props: {}, diagnostics: [], html: infoHtml, unmounted },
+    { props: { tone: "warn" }, diagnostics: [], html: '<span class="warn">warn</span>', unmounted },
+    { props: { tone: "info" }, diagnostics: [], html: infoHtml, unmounted },
+  ];
+  assert.deepEqual(capture.reference, expected);
+  assert.deepEqual(capture.actual, expected);
   assert.deepEqual(capture.actual, capture.reference);
 } catch (error) {
   capture.failure = { name: error.name, message: error.message, stack: error.stack };
