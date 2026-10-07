@@ -117,7 +117,7 @@ formatter	Formatter	source	crates/vize_glyph/src/script/expression_wrapper.rs	2	
 formatter	Formatter	source	crates/vize_glyph/src/script/format.rs	2	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/script/format.rs	2	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 formatter	Formatter	source	crates/vize_glyph/src/script/format.rs	2	raw_oxc	raw OXC	raw	oxc_formatter	raw	1
-formatter	Formatter	test/dev	crates/vize_glyph/src/script/format.rs	36	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
+formatter	Formatter	test/dev	crates/vize_glyph/src/script/format.rs	39	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
 formatter	Formatter	source	crates/vize_glyph/src/sort_imports.rs	3	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/sort_imports.rs	3	raw_oxc	raw OXC	raw	oxc_formatter	raw	2
 formatter	Formatter	source	crates/vize_glyph/src/style.rs	22	l0	L0	stage	vize_l0	preferred	1

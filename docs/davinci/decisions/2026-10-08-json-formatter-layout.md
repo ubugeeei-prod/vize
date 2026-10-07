@@ -38,6 +38,18 @@ or ownership drift.
 The original literal pack therefore reports seventy-eight historical byte
 matches and six current-reference matches, retaining all eighty-four cases.
 
+Protected candidate `78cda253daa3994e79c753fc0853a120d2d9e341` preserved
+the JSON outputs but exceeded the unchanged script instruction ceiling by six.
+Three identical measurements and the base Callgrind dump isolate all thirty-six
+additional instructions to an out-of-line optional import-sort destructor.
+The script whitespace guard now skips the Unicode iterator when its first ASCII
+byte above space already proves non-whitespace input. Empty inputs, all
+twenty-five Unicode whitespace characters and invalid control parser behavior
+retain the existing contract, checked by three complete public API laws copied
+from the independently reviewed guard in #8174. Only that guard and its laws
+are adopted; the original benchmark inputs, measured window and ceilings remain
+unchanged. The existing instruction recipe must qualify the successor head.
+
 Source Actions, protected merge-queue verification and actual merge remain
 required before delivery. This change fixes the existing formatter; it does
 not establish native Davinci JSON formatter support.
