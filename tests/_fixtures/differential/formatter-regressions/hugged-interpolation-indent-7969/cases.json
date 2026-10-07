@@ -1,0 +1,682 @@
+{
+  "schema": "vize.formatter-hugged-interpolation-indent",
+  "version": 1,
+  "issue": 7969,
+  "base": "8fabdbcafd3996024b2fa6dc677e1ce3bc1eb862",
+  "originalSourceSha256": "13409641359b1645281277c830a6b52936f01a1190a504100d5e64d2161b6c6f",
+  "originalConfigSha256": "fc5ed44780211928aa24d4cb5d8922cd360ad843041043626cd868262da9c92e",
+  "originalIssueSha256": "f9b6f588eb73126341bfa0380640ba928b0899e476117a24fade357cbfcf62de",
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "expectedAuthority": "Independently authored parent-anchored whole layouts before current formatter execution; original report requires unchanged original; unrelated chunk gaps and raw literal bytes retained.",
+  "cases": [
+    {
+      "id": "original",
+      "input": "<script setup lang=\"ts\">\nconst describeEverySelectedItemInTheList = (items: string[]): string =>\n  items.join(\", \");\nconst selectedItems = [\"a\", \"b\"];\n</script>\n\n<template>\n  <div>\n    <span class=\"names\">{{\n      describeEverySelectedItemInTheList(selectedItems)\n    }}</span>\n  </div>\n</template>\n",
+      "expected": "<script setup lang=\"ts\">\nconst describeEverySelectedItemInTheList = (items: string[]): string =>\n  items.join(\", \");\nconst selectedItems = [\"a\", \"b\"];\n</script>\n\n<template>\n  <div>\n    <span class=\"names\">{{\n      describeEverySelectedItemInTheList(selectedItems)\n    }}</span>\n  </div>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "filename": "Names.vue",
+      "inputFile": "original.input.txt",
+      "inputSha256": "13409641359b1645281277c830a6b52936f01a1190a504100d5e64d2161b6c6f",
+      "expectedFile": "original.expected.txt",
+      "expectedSha256": "13409641359b1645281277c830a6b52936f01a1190a504100d5e64d2161b6c6f",
+      "config": "{ \"formatter\": { \"printWidth\": 80, \"semi\": true, \"singleQuote\": false, \"trailingComma\": \"none\", \"arrowParens\": \"avoid\", \"sortAttributes\": false } }\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "original-crlf",
+      "input": "<script setup lang=\"ts\">\r\nconst describeEverySelectedItemInTheList = (items: string[]): string =>\r\n  items.join(\", \");\r\nconst selectedItems = [\"a\", \"b\"];\r\n</script>\r\n\r\n<template>\r\n  <div>\r\n    <span class=\"names\">{{\r\n      describeEverySelectedItemInTheList(selectedItems)\r\n    }}</span>\r\n  </div>\r\n</template>\r\n",
+      "expected": "<script setup lang=\"ts\">\r\nconst describeEverySelectedItemInTheList = (items: string[]): string =>\r\n  items.join(\", \");\r\nconst selectedItems = [\"a\", \"b\"];\r\n</script>\r\n\r\n<template>\r\n  <div>\r\n    <span class=\"names\">{{\r\n      describeEverySelectedItemInTheList(selectedItems)\r\n    }}</span>\r\n  </div>\r\n</template>\r\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false,
+        "endOfLine": "crlf"
+      },
+      "filename": "Names.vue",
+      "inputFile": "original-crlf.input.txt",
+      "inputSha256": "f8e21d648f3818325fbd81a38fe0bc3f0c0173976045325025df4406aebf1919",
+      "expectedFile": "original-crlf.expected.txt",
+      "expectedSha256": "f8e21d648f3818325fbd81a38fe0bc3f0c0173976045325025df4406aebf1919",
+      "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"none\",\"arrowParens\":\"avoid\",\"sortAttributes\":false,\"endOfLine\":\"crlf\"}}\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "original-four-spaces",
+      "input": "<script setup lang=\"ts\">\nconst describeEverySelectedItemInTheList = (items: string[]): string =>\n  items.join(\", \");\nconst selectedItems = [\"a\", \"b\"];\n</script>\n\n<template>\n  <div>\n    <span class=\"names\">{{\n      describeEverySelectedItemInTheList(selectedItems)\n    }}</span>\n  </div>\n</template>\n",
+      "expected": "<script setup lang=\"ts\">\nconst describeEverySelectedItemInTheList = (items: string[]): string =>\n    items.join(\", \");\nconst selectedItems = [\"a\", \"b\"];\n</script>\n\n<template>\n    <div>\n        <span class=\"names\">{{\n            describeEverySelectedItemInTheList(selectedItems)\n        }}</span>\n    </div>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false,
+        "tabWidth": 4
+      },
+      "filename": "Names.vue",
+      "inputFile": "original-four-spaces.input.txt",
+      "inputSha256": "13409641359b1645281277c830a6b52936f01a1190a504100d5e64d2161b6c6f",
+      "expectedFile": "original-four-spaces.expected.txt",
+      "expectedSha256": "7e8e9ff7905466596d045a12cb8ff9f8ba0ae239c2f5471d47630eab5455355b",
+      "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"none\",\"arrowParens\":\"avoid\",\"sortAttributes\":false,\"tabWidth\":4}}\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: Names.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: Names.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "original-tabs",
+      "input": "<script setup lang=\"ts\">\nconst describeEverySelectedItemInTheList = (items: string[]): string =>\n  items.join(\", \");\nconst selectedItems = [\"a\", \"b\"];\n</script>\n\n<template>\n  <div>\n    <span class=\"names\">{{\n      describeEverySelectedItemInTheList(selectedItems)\n    }}</span>\n  </div>\n</template>\n",
+      "expected": "<script setup lang=\"ts\">\nconst describeEverySelectedItemInTheList = (items: string[]): string =>\n\titems.join(\", \");\nconst selectedItems = [\"a\", \"b\"];\n</script>\n\n<template>\n\t<div>\n\t\t<span class=\"names\">{{\n\t\t\tdescribeEverySelectedItemInTheList(selectedItems)\n\t\t}}</span>\n\t</div>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false,
+        "useTabs": true
+      },
+      "filename": "Names.vue",
+      "inputFile": "original-tabs.input.txt",
+      "inputSha256": "13409641359b1645281277c830a6b52936f01a1190a504100d5e64d2161b6c6f",
+      "expectedFile": "original-tabs.expected.txt",
+      "expectedSha256": "9efaad0e83e9b095fc3e2a41a1027f2571a382869fce009a1cf2a77192415c6e",
+      "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"none\",\"arrowParens\":\"avoid\",\"sortAttributes\":false,\"useTabs\":true}}\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: Names.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: Names.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "root-inline",
+      "input": "<template>\n  <span>{{\n    label\n  }}</span>\n</template>\n",
+      "expected": "<template>\n  <span>{{\n    label\n  }}</span>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "filename": "root-inline.vue",
+      "inputFile": "root-inline.input.txt",
+      "inputSha256": "496be7c814202af8d6629e6397b9397c30e223be0a6ceaee505f015291a0869f",
+      "expectedFile": "root-inline.expected.txt",
+      "expectedSha256": "496be7c814202af8d6629e6397b9397c30e223be0a6ceaee505f015291a0869f",
+      "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"none\",\"arrowParens\":\"avoid\",\"sortAttributes\":false}}\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "component-close",
+      "input": "<template>\n  <Panel>{{\n    label\n  }}</Panel>\n</template>\n",
+      "expected": "<template>\n  <Panel>{{\n    label\n  }}</Panel>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "filename": "component-close.vue",
+      "inputFile": "component-close.input.txt",
+      "inputSha256": "961632cf809f20ccf85a824231bcc14efa841143e3395912f41c64847be712af",
+      "expectedFile": "component-close.expected.txt",
+      "expectedSha256": "961632cf809f20ccf85a824231bcc14efa841143e3395912f41c64847be712af",
+      "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"none\",\"arrowParens\":\"avoid\",\"sortAttributes\":false}}\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "block-mustache-control",
+      "input": "<template>\n  <div>\n    <span>\n      {{\n        label\n      }}\n    </span>\n  </div>\n</template>\n",
+      "expected": "<template>\n  <div>\n    <span>\n      {{\n        label\n      }}\n    </span>\n  </div>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "filename": "block-mustache-control.vue",
+      "inputFile": "block-mustache-control.input.txt",
+      "inputSha256": "af759ab0d46d50237e1f2b30c61d42cfed26b54a8f698942a41b0ed8e6855795",
+      "expectedFile": "block-mustache-control.expected.txt",
+      "expectedSha256": "af759ab0d46d50237e1f2b30c61d42cfed26b54a8f698942a41b0ed8e6855795",
+      "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"none\",\"arrowParens\":\"avoid\",\"sortAttributes\":false}}\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "prefix-suffix-control",
+      "input": "<template>\n  <div>\n    <span>prefix{{\n        label\n      }}suffix</span>\n  </div>\n</template>\n",
+      "expected": "<template>\n  <div>\n    <span>prefix{{ label }}suffix</span>\n  </div>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "filename": "prefix-suffix-control.vue",
+      "inputFile": "prefix-suffix-control.input.txt",
+      "inputSha256": "b0062a54fe78a6b4953c0de096771f3affbc9cc5b18704f75222384c0a6e3dee",
+      "expectedFile": "prefix-suffix-control.expected.txt",
+      "expectedSha256": "22cee8993071d2af94fb853df0d8f09643f9d3bd5da9130bdb02ab300312242a",
+      "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"none\",\"arrowParens\":\"avoid\",\"sortAttributes\":false}}\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: prefix-suffix-control.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: prefix-suffix-control.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "closing-newline-control",
+      "input": "<template>\n  <div>\n    <span>{{\n        label\n      }}\n    </span>\n  </div>\n</template>\n",
+      "expected": "<template>\n  <div>\n    <span>{{\n        label\n      }}\n    </span>\n  </div>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "filename": "closing-newline-control.vue",
+      "inputFile": "closing-newline-control.input.txt",
+      "inputSha256": "b95b690d635a7616b3cbdefe2bd6028eae9198dd97e222cab88c9a1119862cd5",
+      "expectedFile": "closing-newline-control.expected.txt",
+      "expectedSha256": "b95b690d635a7616b3cbdefe2bd6028eae9198dd97e222cab88c9a1119862cd5",
+      "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"none\",\"arrowParens\":\"avoid\",\"sortAttributes\":false}}\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "raw-template-literal",
+      "input": "<template>\n  <span>{{\n    `first\n    raw`\n  }}</span>\n</template>\n",
+      "expected": "<template>\n  <span>{{\n    `first\n    raw`\n  }}</span>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "filename": "raw-template-literal.vue",
+      "inputFile": "raw-template-literal.input.txt",
+      "inputSha256": "e05427304f064f6180e73837cc2bc9f8918c0038d173ad285bbcbdae5d1e6f6b",
+      "expectedFile": "raw-template-literal.expected.txt",
+      "expectedSha256": "e05427304f064f6180e73837cc2bc9f8918c0038d173ad285bbcbdae5d1e6f6b",
+      "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"none\",\"arrowParens\":\"avoid\",\"sortAttributes\":false}}\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "multiple-mustaches-control",
+      "input": "<template>\n  <div>\n    <span>{{\n        first\n      }}{{\n        second\n      }}</span>\n  </div>\n</template>\n",
+      "expected": "<template>\n  <div>\n    <span>{{\n        first\n      }}{{\n        second\n      }}</span>\n  </div>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "filename": "multiple-mustaches-control.vue",
+      "inputFile": "multiple-mustaches-control.input.txt",
+      "inputSha256": "0398e8b064bf00bfd4e755e5eea0f2e7fbc05063408abc0de6b0bb525f33742c",
+      "expectedFile": "multiple-mustaches-control.expected.txt",
+      "expectedSha256": "0398e8b064bf00bfd4e755e5eea0f2e7fbc05063408abc0de6b0bb525f33742c",
+      "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"none\",\"arrowParens\":\"avoid\",\"sortAttributes\":false}}\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "first-pass-wrapped",
+      "input": "<template>\n  <div>\n    <span>{{ new Date(version.date).toLocaleDateString(\"en-US\", { year: \"numeric\", month: \"short\", day: \"numeric\" }) }}</span>\n  </div>\n</template>\n",
+      "expected": "<template>\n  <div>\n    <span>{{\n      new Date(version.date).toLocaleDateString(\"en-US\", {\n        year: \"numeric\",\n        month: \"short\",\n        day: \"numeric\",\n      })\n    }}</span>\n  </div>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "all",
+        "arrowParens": "always",
+        "sortAttributes": false
+      },
+      "filename": "first-pass-wrapped.vue",
+      "inputFile": "first-pass-wrapped.input.txt",
+      "inputSha256": "27d66035af3e06ce1b626a554976df19c704be9e907a74d8fd587ae8b72801f6",
+      "expectedFile": "first-pass-wrapped.expected.txt",
+      "expectedSha256": "41e0d3e9d8c0cfeb4effdb8293bb7769d1d14647274f9c6307c864ec8fa1dc5a",
+      "config": "{\"formatter\":{\"printWidth\":80,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"all\",\"arrowParens\":\"always\",\"sortAttributes\":false}}\n",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: first-pass-wrapped.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: first-pass-wrapped.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    },
+    {
+      "id": "first-pass-width-thirty",
+      "filename": "Width.vue",
+      "input": "<template>\n  <p>{{ veryLongFunctionName(firstArgument, secondArgument) }}</p>\n</template>\n",
+      "expected": "<template>\n  <p>{{\n    veryLongFunctionName(\n      firstArgument,\n      secondArgument,\n    )\n  }}</p>\n</template>\n",
+      "options": {
+        "printWidth": 30,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "all",
+        "arrowParens": "always",
+        "sortAttributes": false
+      },
+      "config": "{\"formatter\":{\"printWidth\":30,\"semi\":true,\"singleQuote\":false,\"trailingComma\":\"all\",\"arrowParens\":\"always\",\"sortAttributes\":false}}\n",
+      "inputFile": "first-pass-width-thirty.input.txt",
+      "inputSha256": "5dc835c95955941e50843f8a9a1822ab7abfdf0ef02bc9f653f6138d3a82cbc7",
+      "expectedFile": "first-pass-width-thirty.expected.txt",
+      "expectedSha256": "2aeeeb0eedf2d835c5c91b25dcdcea4d7568ba570e120c6c5df1e2c78b319a80",
+      "cliExpected": [
+        {
+          "mode": "--check",
+          "status": 1,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nWould reformat: Width.vue\n\nChecked 1 file(s)\n  1 file(s) would be reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\nReformatted: Width.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--write",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nFormatted 1 file(s)\n  1 file(s) unchanged\n"
+        },
+        {
+          "mode": "--check",
+          "status": 0,
+          "stdout": "",
+          "stderr": "Found 1 file(s)\n\nChecked 1 file(s)\n  1 file(s) already formatted\n"
+        }
+      ]
+    }
+  ]
+}

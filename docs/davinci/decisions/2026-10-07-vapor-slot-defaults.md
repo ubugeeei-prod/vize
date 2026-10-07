@@ -64,3 +64,12 @@ including the shared audit merge `706a5b7886c363f6c67a03964ac55f26c5a2a341` and
 UI countdown test repair, preserving all production, original corpus, controls,
 oracles and assertion bytes. The refreshed SHA requires its own complete source
 Actions; these predecessor passes grant no merge, release or installed credit.
+
+Existing PR #8170 is refreshed from its actual remote head
+`c099620b79ab83b78fea4662e1d5300655753c80` by merging genuine fetched main
+`8c7727613de6213e0a52cde96eeb295d01c9bef5`. Preserve all owned generator,
+complete original source, control, reference and assertion bytes; retain both
+independent runtime packs when joining the compiler registry. The common
+decision record is coordinated across the existing PRs. Previous source-green
+results remain historical until this exact refreshed source completes Actions
+and protected validation; merge and installed-release acceptance remain pending.

@@ -1,0 +1,33 @@
+{
+  "reportedDom": [
+    [
+      "",
+      "Hello world!",
+      ""
+    ],
+    [
+      "",
+      "<span>",
+      " Spring course",
+      ""
+    ]
+  ],
+  "reportedHtml": "<h2 class=\"my-title\">Hello world!</h2><h2 class=\"my-title\"><span class=\"icon\"></span> Spring course</h2>",
+  "initial": {
+    "name": "world",
+    "title": "Spring course",
+    "show": true
+  },
+  "updates": [
+    {
+      "name": "reader",
+      "title": "Autumn course",
+      "show": false
+    },
+    {
+      "name": "世界😀",
+      "title": "Updated title",
+      "show": true
+    }
+  ]
+}

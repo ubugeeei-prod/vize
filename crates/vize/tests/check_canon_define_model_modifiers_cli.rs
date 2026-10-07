@@ -273,10 +273,59 @@ let text = " hello ";
     assert_eq!(
         diagnostics_for(&broken_parent, "src/BrokenParent.vue"),
         [
-            "error:8:29 [TS2353] Object literal may only specify known properties, and '\"nope\"' does not exist in type 'Partial<Record<\"capitalize\" | \"trim\", true>>'."
+            "error:8:18 [TS2353] Object literal may only specify known properties, and '\"nope\"' does not exist in type 'Partial<Record<\"capitalize\" | \"trim\", true>>'."
         ],
         "{broken_parent}"
     );
 
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
+fn check_unknown_model_modifiers_keep_authored_ranges_after_repair() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    const FIELD: &str =
+        include_str!("../../../tests/fixtures/typechecker/model-modifier-ranges/Field.vue.txt");
+    const NAMED: &str =
+        include_str!("../../../tests/fixtures/typechecker/model-modifier-ranges/Named.vue.txt");
+    const APP: &str =
+        include_str!("../../../tests/fixtures/typechecker/model-modifier-ranges/App.vue.txt");
+    const NAMED_APP: &str =
+        include_str!("../../../tests/fixtures/typechecker/model-modifier-ranges/NamedApp.vue.txt");
+    const GOOD: &str =
+        include_str!("../../../tests/fixtures/typechecker/model-modifier-ranges/Good.vue.txt");
+    let project_root = create_case_with_files(
+        "modifier-authored-ranges",
+        &[
+            ("src/Field.vue", FIELD),
+            ("src/Named.vue", NAMED),
+            ("src/App.vue", APP),
+            ("src/NamedApp.vue", NAMED_APP),
+            ("src/Good.vue", GOOD),
+        ],
+    );
+    for (target, location) in [
+        ("src/App.vue", "error:9:18"),
+        ("src/NamedApp.vue", "error:10:24"),
+    ] {
+        let broken = run_check_json(&project_root, &corsa_path, target).unwrap_err();
+        assert_eq!(broken["errorCount"], serde_json::json!(1), "{broken}");
+        let expected = cstr!(
+            "{location} [TS2353] Object literal may only specify known properties, and '\"bogus\"' does not exist in type 'Partial<Record<\"trim\" | \"upper\", true>>'."
+        );
+        assert_eq!(
+            diagnostics_for(&broken, target),
+            [expected.as_str()],
+            "{broken}"
+        );
+        let source = std::fs::read_to_string(project_root.join(target)).unwrap();
+        std::fs::write(project_root.join(target), source.replace(".bogus", "")).unwrap();
+        let repaired = run_check_json(&project_root, &corsa_path, target).unwrap();
+        assert_eq!(repaired["errorCount"], serde_json::json!(0), "{repaired}");
+    }
+    let good = run_check_json(&project_root, &corsa_path, "src/Good.vue").unwrap();
+    assert_eq!(good["errorCount"], serde_json::json!(0), "{good}");
     let _ = std::fs::remove_dir_all(&project_root);
 }

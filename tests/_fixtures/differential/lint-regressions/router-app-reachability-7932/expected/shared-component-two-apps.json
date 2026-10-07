@@ -1,0 +1,79 @@
+[
+  {
+    "file": "src/SharedLink.vue",
+    "messages": [
+      {
+        "ruleId": "ecosystem/vue-router-param-type",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/vue-router-param-type] param `id` of route `alpha-home` is an array, but `:id` is not repeatable",
+        "line": 6,
+        "column": 49,
+        "endLine": 6,
+        "endColumn": 51,
+        "help": "route alpha-home is /alpha/:id (src/alpha/router.ts:6:20), params: id: string | number"
+      },
+      {
+        "ruleId": "ecosystem/vue-router-extra-param",
+        "ruleDocsPath": "docs/content/rules/ecosystem.md",
+        "severity": 2,
+        "message": "[vize:ecosystem/vue-router-extra-param] route `beta-home` has no param `extra`",
+        "line": 7,
+        "column": 53,
+        "endLine": 7,
+        "endColumn": 58,
+        "help": "route beta-home is /beta/:id (src/beta/router.ts:6:20), params: id: string | number"
+      }
+    ],
+    "errorCount": 2,
+    "warningCount": 0
+  },
+  {
+    "file": "src/alpha/App.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/alpha/RouteView.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/alpha/main.ts",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/alpha/router.ts",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/beta/App.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/beta/RouteView.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/beta/main.ts",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/beta/router.ts",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  }
+]

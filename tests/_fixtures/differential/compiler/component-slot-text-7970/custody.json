@@ -1,0 +1,65 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/7970",
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "reportedVersions": {
+    "vize": "0.432.0",
+    "vue": "3.5.43",
+    "vite": "8.2.2",
+    "node": "26.8.1"
+  },
+  "inputs": [
+    {
+      "path": "App.vue.txt",
+      "sha256": "fc748984ac422fabd5c65ad6a3a4deed92c5da2f9a3c1e465a10e26ff78eb378",
+      "bytes": 261
+    },
+    {
+      "path": "MyTitle.vue.txt",
+      "sha256": "2855037a95c62ae4c643527521dc30fa14fa317a86d88438c7e4c76a664a6b2d",
+      "bytes": 65
+    },
+    {
+      "path": "cmp.mjs.txt",
+      "sha256": "55c039dc7216bc0884f4244bbf0a0625bae04ef2420c0afec36617605ce35c73",
+      "bytes": 818
+    },
+    {
+      "path": "observe.mjs.txt",
+      "sha256": "da7bf19d7890d188203f39b91991661d72e6b40e311f64f42a9a2dce51f64b0e",
+      "bytes": 144
+    },
+    {
+      "path": "original-issue.md",
+      "sha256": "f6ce10e6e45a7b2a0a83dc761657c5b6ef145c978c5702674704473b65f35432",
+      "bytes": 3709
+    },
+    {
+      "path": "reported-dom.txt",
+      "sha256": "669c0818a4b8a23b0dd811262d2e18fd3f27314404fa473e2e815f21e94794fa",
+      "bytes": 166
+    }
+  ],
+  "authoredControls": [
+    {
+      "path": "cases.json",
+      "sha256": "fd40d48711ca4ba4b98dba4b308a0397fdcd38f4611ccd661014b75f1030d145"
+    },
+    {
+      "path": "runtime.expected.json",
+      "sha256": "00db92563bdc542b8a0fa0efc93b9c7a361d6feb81de556e6ad52d20cd7289cb"
+    },
+    {
+      "path": "raw-cases.json",
+      "sha256": "db88ebc9449147dadb63702441bb272bb8757863a7b148882edd9120a80c4844"
+    }
+  ],
+  "oracle": {
+    "reported": "3.5.43",
+    "lockedRuntime": "3.5.35",
+    "source": "https://github.com/vuejs/core/blob/v3.5.43/packages/compiler-core/src/transforms/transformText.ts",
+    "scope": "Runtime comparison uses existing locked Vue 3.5.35; no installed execution of reported Vue 3.5.43 is claimed."
+  }
+}

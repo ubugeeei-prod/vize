@@ -7,9 +7,7 @@
     {
       "id": "compiler/sfc/ssr-slot-scope",
       "state": "active",
-      "targets": [
-        "ssr"
-      ],
+      "targets": ["ssr"],
       "inputs": {
         "root": "ssr-slot-scope",
         "files": [
@@ -34,13 +32,7 @@
       },
       "comparison": {
         "contract": "compiler-ssr-module-bytes-v1",
-        "requiredFacets": [
-          "code",
-          "css",
-          "errors",
-          "warnings",
-          "macro_artifacts"
-        ]
+        "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       }
     }
   ],
@@ -50,6 +42,12 @@
       "sha256": "a4ed88464c4ae0f35879cbc34dc08a5da85ca1f625c523a10ded80fac61bc3cb",
       "adapter": "compiler-cli-whole-sfc-runtime-v1",
       "workflow": ".github/workflows/pre-textarea-first-newline.yml"
+    },
+    {
+      "path": "component-slot-text-7970.manifest.json",
+      "sha256": "d5b92bea8b64f88b27aaac9f215daa439e126b4f64c2cae7fe5166e6a4768957",
+      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
     },
     {
       "path": "vapor-slot-defaults-7886.manifest.json",

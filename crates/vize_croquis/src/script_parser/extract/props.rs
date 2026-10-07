@@ -19,7 +19,8 @@ pub fn extract_props_from_type(
     for tp in type_params.iter() {
         let type_source = tp.span().source_text(source);
         for prop in result.types.extract_properties(type_source) {
-            let declaration = type_prop_declaration(tp, prop.name.as_str());
+            let declaration = type_prop_declaration(tp, prop.name.as_str())
+                .or_else(|| result.local_type_property_declaration(tp, prop.name.as_str()));
             let definition = PropDefinition {
                 name: prop.name.clone(),
                 required: !prop.optional,

@@ -12,6 +12,7 @@ import {
   formatterReferenceComparisons,
   validateFormatterReferencePass,
 } from "../differential/formatter-current-reference.ts";
+import { preservedHuggedInterpolationSnapshot } from "../differential/formatter-hugged-interpolation-reference.ts";
 import { validateRootCommentSnapshotTransition } from "../differential/formatter-root-comment-reference.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -32,9 +33,9 @@ const cases = packs.flatMap(
 );
 const qualified = cases.filter((row) => row.currentReference);
 
-void test("three reviewed current references keep all original300 source and captured outputs", () => {
+void test("five reviewed current references keep all original300 source and captured outputs", () => {
   assert.equal(cases.length, 300);
-  assert.equal(qualified.length, 3);
+  assert.equal(qualified.length, 5);
   const fixture = qualified.find((row) => row.currentReference.issue === 7826);
   assert.equal(fixture.api, "format_sfc");
   assert.equal(fixture.currentReference.issue, 7826);
@@ -252,5 +253,79 @@ void test("the two snapshot transitions retain original bytes and reject restore
   assert.equal(
     validateRootCommentSnapshotTransition(root, "foreign_owner", Buffer.from(""), ""),
     false,
+  );
+});
+
+void test("two exact hugged references retain full historical mismatches and reject foreign scope", () => {
+  const rows = qualified.filter((row) => row.currentReference.issue === 7969);
+  assert.equal(rows.length, 2);
+  for (const fixture of rows) {
+    for (const [row, input, historical] of [
+      [{ ...fixture, api: "format_style" }, fixture.input, fixture.expected],
+      [{ ...fixture, kind: "TypeScript" }, fixture.input, fixture.expected],
+      [{ ...fixture, profile: "skip_script_stabilization" }, fixture.input, fixture.expected],
+      [{ ...fixture, outcome: "error" }, fixture.input, fixture.expected],
+      [
+        { ...fixture, options: { ...fixture.options, userOverrides: { useTabs: true } } },
+        fixture.input,
+        fixture.expected,
+      ],
+      [
+        { ...fixture, witness: { ...fixture.witness, function: "foreign_owner" } },
+        fixture.input,
+        fixture.expected,
+      ],
+      [fixture, Buffer.concat([fixture.input, Buffer.from("\n")]), fixture.expected],
+      [fixture, fixture.input, fixture.currentExpected],
+    ])
+      assert.throws(() => currentFormatterReference(root, row, input, historical));
+    const row = {
+      currentReference: fixture.currentReference,
+      legacy: { state: "matched-reference" },
+    };
+    const compare = formatterReferenceComparisons(fixture, fixture.currentExpected);
+    assert.equal(compare.referenceComparison.state, "different");
+    assert.equal(compare.currentReferenceComparison.state, "equal");
+    validateFormatterReferencePass(fixture, row, compare, fixture.currentExpected);
+    for (const output of [
+      fixture.expected,
+      Buffer.concat([fixture.currentExpected, Buffer.from("\n")]),
+    ])
+      assert.throws(() =>
+        validateFormatterReferencePass(
+          fixture,
+          row,
+          formatterReferenceComparisons(fixture, output),
+          output,
+        ),
+      );
+  }
+});
+
+void test("hugged snapshot custody admits only complete corrected current files", (t) => {
+  const authorityPath =
+    "tests/_fixtures/differential/formatter-history/current-references-7969.json";
+  const raw = fs.readFileSync(path.join(root, authorityPath));
+  const authority = JSON.parse(raw);
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "hugged-snapshot-custody-"));
+  t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
+  for (const row of authority.cases) {
+    for (const relative of [authorityPath, row.currentSnapshot.path, row.historicalSnapshot.path]) {
+      const target = path.join(temporary, relative);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.copyFileSync(path.join(root, relative), target);
+    }
+    const artifact = { path: row.currentSnapshot.path, sha256: row.historicalExpectedSha256 };
+    const historical = fs.readFileSync(path.join(root, row.historicalSnapshot.path));
+    assert.deepEqual(preservedHuggedInterpolationSnapshot(temporary, artifact), historical);
+    assert.throws(() =>
+      preservedHuggedInterpolationSnapshot(temporary, { ...artifact, sha256: "0".repeat(64) }),
+    );
+    fs.writeFileSync(path.join(temporary, artifact.path), historical);
+    assert.throws(() => preservedHuggedInterpolationSnapshot(temporary, artifact));
+  }
+  assert.equal(
+    preservedHuggedInterpolationSnapshot(root, { path: "foreign.snap.txt", sha256: "" }),
+    null,
   );
 });
