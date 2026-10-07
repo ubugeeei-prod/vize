@@ -10,7 +10,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | product                     | kind  | module    | files | sites |
 | --------------------------- | ----- | --------- | ----: | ----: |
-| `BindingMetadata`           | type  | `croquis` |    12 |    31 |
+| `BindingMetadata`           | type  | `croquis` |    12 |    32 |
 | `Croquis`                   | type  | `croquis` |    12 |    35 |
 | `Drawer`                    | type  | `drawer`  |     3 |    18 |
 | `DrawerOptions`             | type  | `drawer`  |     1 |     5 |

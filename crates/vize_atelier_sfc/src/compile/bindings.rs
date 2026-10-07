@@ -14,6 +14,7 @@ use crate::types::{BindingMetadata, BindingType};
 /// Convert Croquis BindingMetadata (CompactString keys) to legacy BindingMetadata (String keys)
 pub(super) fn croquis_to_legacy_bindings(
     src: &vize_croquis::croquis::BindingMetadata,
+    program: Option<&Program<'_>>,
 ) -> BindingMetadata {
     let mut dst = BindingMetadata {
         is_script_setup: src.is_script_setup,
@@ -25,6 +26,9 @@ pub(super) fn croquis_to_legacy_bindings(
     for (local, key) in &src.props_aliases {
         dst.props_aliases
             .insert(local.to_compact_string(), key.to_compact_string());
+    }
+    if let Some(program) = program {
+        register_setup_enum_bindings(&mut dst, program);
     }
     dst
 }
@@ -151,7 +155,7 @@ pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
 /// metadata. Croquis records runtime enum names as setup constants; the SFC
 /// compiler also knows which declarations can be hoisted as literal constants.
 /// Reuse the retained program instead of parsing the script again.
-pub(super) fn register_setup_enum_bindings(bindings: &mut BindingMetadata, program: &Program<'_>) {
+fn register_setup_enum_bindings(bindings: &mut BindingMetadata, program: &Program<'_>) {
     for statement in &program.body {
         if let Statement::TSEnumDeclaration(enumeration) = statement
             && !enumeration.declare

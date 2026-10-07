@@ -16,11 +16,22 @@ script AST, without another parse or a new pipeline stage.
 
 Croquis includes const enums in its runtime name and span facts. The independent
 Bindings spec accepts the same declarations; no lint-rule exception is needed.
-The authored `tests/fixtures/sfc/enum-template-bindings/Badge.vue` corpus fixture
-covers all four plain-script forms and both setup forms. Compiler integration
+The original reporter input is retained without source changes in
+`tests/_fixtures/differential/compiler/enum-template-bindings-7893/Badge.vue.txt`.
+The separate authored `tests/fixtures/sfc/enum-template-bindings/Badge.vue`
+fixture covers all four plain-script forms and both setup forms. Compiler integration
 tests require literal binding metadata, JavaScript parseability and no enum
 proxy reads in DOM, SSR and Vapor. A runtime-dependent setup enum remains inside
 setup, and lint regressions retain unrelated undefined-reference diagnostics.
+
+Hosted source execution on `5282cb5a0e` proved DOM and SSR, then exposed Vapor's
+remaining unconditional component-proxy reads for literal bindings. Vapor now
+resolves `LiteralConst` through its existing scope resolver after lexical loop
+and slot bindings, preserving those shadowing rules. The regression parses the
+whole emitted module and compares the complete component-proxy member-read
+vector with an empty vector; this replaces fragment checks without an allowlist.
+The existing conversion call owns enum enrichment so the oversized entry file
+does not grow. Regenerated source inventories retain the actual added uses.
 
 Exact-head Rust and tooling validation runs in Actions before merge admission.
 This change does not establish Davinci compiler or linter migration closure.
