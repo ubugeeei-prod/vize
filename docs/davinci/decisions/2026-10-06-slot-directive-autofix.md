@@ -103,3 +103,12 @@ replay the existing slot PR on that actual main. All rule, original corpus,
 29-vector/seven-option/unsafe/LSP and CLI120/Boolean88 source/oracle bytes stay
 identical. Preserve the complete incoming 350-line decision record and require
 fresh security/full/protected checks, actual merge and installed replay.
+
+The next-cohort preflight on actual `c86c7a21` finds only the shared canonical
+record conflict for existing #8152. Integrate that accepted main into the owned
+branch and retain every incoming decision plus the exact original slot clauses
+in the same 350 lines. SHA-256 receipts retain the original producer, all seven
+reporter carriers, Boolean21/Slot29 vectors, seven option laws and complete
+CLI120/Boolean88/idempotence oracle bytes from qualified source `07892836`. New
+exact-head full Actions and root's later cohort/release acceptance are required.
+The private HTML/casing preparation remains paused.

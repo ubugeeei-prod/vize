@@ -5,6 +5,8 @@ use crate::script::ScriptCompileContext;
 
 use super::super::super::{TemplateParts, import_utils::extract_import_identifiers};
 
+mod template_refs;
+
 const VAPOR_RENDER_ALIAS_BASE: &str = "__vaporRender";
 const VAPOR_TEMPLATE_REF_SETTER: &str = "vaporTemplateRefSetter";
 
@@ -77,9 +79,7 @@ pub(super) fn emit_render_return(
         if is_vapor && !template.render_fn.is_empty() {
             let needs_template_ref_setter = template.render_fn.contains("_createTemplateRefSetter");
             if needs_template_ref_setter {
-                output.extend_from_slice(b"const ");
-                output.extend_from_slice(VAPOR_TEMPLATE_REF_SETTER.as_bytes());
-                output.extend_from_slice(b" = _createTemplateRefSetter()\n");
+                template_refs::emit_setter(output, &setup_bindings, ctx);
             }
             output.extend_from_slice(b"const __returned__ = { ");
             let mut binding_index = 0usize;
@@ -95,7 +95,11 @@ pub(super) fn emit_render_return(
                 output.extend_from_slice(name.as_bytes());
             }
             output.extend_from_slice(b" }\n");
-            output.extend_from_slice(b"Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+            if needs_template_ref_setter {
+                output.extend_from_slice(b";({}).constructor.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+            } else {
+                output.extend_from_slice(b"Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\n");
+            }
             output.extend_from_slice(b"const __instance = _getCurrentInstance()\n");
             output.extend_from_slice(b"const __ctx = _proxyRefs(__returned__)\n");
             output.extend_from_slice(b"if (__instance) __instance.setupState = __ctx\n");

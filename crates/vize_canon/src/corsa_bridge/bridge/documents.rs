@@ -48,7 +48,15 @@ impl CorsaBridge {
         &self,
         documents: &[(String, String)],
     ) -> Result<(), CorsaBridgeError> {
-        let owned = documents.to_vec();
+        self.open_owned_virtual_documents_batch(documents.to_vec())
+            .await
+    }
+
+    /// Transfer a prepared batch directly to the native worker.
+    pub(in crate::corsa_bridge) async fn open_owned_virtual_documents_batch(
+        &self,
+        owned: Vec<(String, String)>,
+    ) -> Result<(), CorsaBridgeError> {
         let cache_len = self
             .with_client(move |client| {
                 let documents = owned

@@ -41,7 +41,17 @@ fn original_complete_response_keeps_declared_types_and_all_other_candidates() {
             position(&app, " />"),
             json!({ "line": 11, "character": 12 })
         );
-        let original = project.original_response(parse(ORIGINAL), newline == "\n");
+        let mut expected = parse(ORIGINAL);
+        let globals = parse(include_str!(
+            "../../../tests/_fixtures/differential/lsp/component-global-attributes-8015/common.expected.json"
+        ));
+        // Preserve the complete original 29-item bank; only the nine newly
+        // offered common component attributes enter before declared props.
+        expected
+            .as_array_mut()
+            .unwrap()
+            .splice(26..26, globals.as_array().unwrap().clone());
+        let original = project.original_response(expected, newline == "\n");
         project.assert_response(
             "textDocument/completion",
             json!({ "line": 11, "character": 12 }),
