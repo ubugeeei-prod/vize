@@ -1,0 +1,824 @@
+[
+  {
+    "name": "default",
+    "app": "<script setup>import Child from \"./Child.vue\"; import { state, record } from \"./fixture\";</script>\n<template><Child v-slot=\"{ label = (record('default'), state.fallback), count }\">{{ label }}:{{ count }}</Child></template>\n",
+    "child": "<script setup>import { state } from \"./fixture\";</script>\n<template><slot :label=\"state.ready ? state.slotLabel : undefined\" :nested=\"{ label: state.ready ? state.slotLabel : undefined }\" :items=\"[state.ready ? state.slotLabel : undefined]\" :data-label=\"state.ready ? state.slotLabel : undefined\" :count=\"state.count\" /></template>\n",
+    "context": {
+      "count": 1,
+      "fallback": "fallback"
+    },
+    "steps": [
+      {
+        "patch": {
+          "slotLabel": "provided",
+          "count": 2
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": null,
+          "count": 3
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": "",
+          "count": 0
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": false,
+          "count": 4
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": 0,
+          "count": 5
+        }
+      },
+      {
+        "patch": {
+          "ready": false,
+          "count": 6
+        }
+      },
+      {
+        "patch": {
+          "fallback": "changed"
+        }
+      }
+    ],
+    "expected": [
+      {
+        "tree": [
+          "fallback:1"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "provided:2"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":3"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":0"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "false:4"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "0:5"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "fallback:6"
+        ],
+        "events": [
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "changed:6"
+        ],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "named-alias",
+    "app": "<script setup>import Child from \"./Child.vue\"; import { state, record } from \"./fixture\";</script>\n<template><Child><template #named=\"{ label: local = (record('default'), state.fallback), count = 0 }\">{{ local }}:{{ count }}</template></Child></template>\n",
+    "child": "<script setup>import { state } from \"./fixture\";</script>\n<template><slot name=\"named\" :label=\"state.ready ? state.slotLabel : undefined\" :nested=\"{ label: state.ready ? state.slotLabel : undefined }\" :items=\"[state.ready ? state.slotLabel : undefined]\" :data-label=\"state.ready ? state.slotLabel : undefined\" :count=\"state.count\" /></template>\n",
+    "context": {
+      "count": 1,
+      "fallback": "fallback"
+    },
+    "steps": [
+      {
+        "patch": {
+          "slotLabel": "provided",
+          "count": 2
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": null,
+          "count": 3
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": "",
+          "count": 0
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": false,
+          "count": 4
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": 0,
+          "count": 5
+        }
+      },
+      {
+        "patch": {
+          "ready": false,
+          "count": 6
+        }
+      },
+      {
+        "patch": {
+          "fallback": "changed"
+        }
+      }
+    ],
+    "expected": [
+      {
+        "tree": [
+          "fallback:1"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "provided:2"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":3"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":0"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "false:4"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "0:5"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "fallback:6"
+        ],
+        "events": [
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "changed:6"
+        ],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "commented-default",
+    "app": "<script setup>import Child from \"./Child.vue\"; import { state, record } from \"./fixture\";</script>\n<template><Child v-slot=\"{ label /* retained */ = (record('default'), state.fallback), count }\">{{ label }}:{{ count }}</Child></template>\n",
+    "child": "<script setup>import { state } from \"./fixture\";</script>\n<template><slot :label=\"state.ready ? state.slotLabel : undefined\" :nested=\"{ label: state.ready ? state.slotLabel : undefined }\" :items=\"[state.ready ? state.slotLabel : undefined]\" :data-label=\"state.ready ? state.slotLabel : undefined\" :count=\"state.count\" /></template>\n",
+    "context": {
+      "count": 1,
+      "fallback": "fallback"
+    },
+    "steps": [
+      {
+        "patch": {
+          "slotLabel": "provided",
+          "count": 2
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": null,
+          "count": 3
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": "",
+          "count": 0
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": false,
+          "count": 4
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": 0,
+          "count": 5
+        }
+      },
+      {
+        "patch": {
+          "ready": false,
+          "count": 6
+        }
+      },
+      {
+        "patch": {
+          "fallback": "changed"
+        }
+      }
+    ],
+    "expected": [
+      {
+        "tree": [
+          "fallback:1"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "provided:2"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":3"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":0"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "false:4"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "0:5"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "fallback:6"
+        ],
+        "events": [
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "changed:6"
+        ],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "nested",
+    "app": "<script setup>import Child from \"./Child.vue\"; import { state, record } from \"./fixture\";</script>\n<template><Child v-slot=\"{ nested: { label: local = (record('default'), state.fallback) }, count }\">{{ local }}:{{ count }}</Child></template>\n",
+    "child": "<script setup>import { state } from \"./fixture\";</script>\n<template><slot :label=\"state.ready ? state.slotLabel : undefined\" :nested=\"{ label: state.ready ? state.slotLabel : undefined }\" :items=\"[state.ready ? state.slotLabel : undefined]\" :data-label=\"state.ready ? state.slotLabel : undefined\" :count=\"state.count\" /></template>\n",
+    "context": {
+      "count": 1,
+      "fallback": "fallback"
+    },
+    "steps": [
+      {
+        "patch": {
+          "slotLabel": "provided",
+          "count": 2
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": null,
+          "count": 3
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": "",
+          "count": 0
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": false,
+          "count": 4
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": 0,
+          "count": 5
+        }
+      },
+      {
+        "patch": {
+          "ready": false,
+          "count": 6
+        }
+      },
+      {
+        "patch": {
+          "fallback": "changed"
+        }
+      }
+    ],
+    "expected": [
+      {
+        "tree": [
+          "fallback:1"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "provided:2"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":3"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":0"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "false:4"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "0:5"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "fallback:6"
+        ],
+        "events": [
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "changed:6"
+        ],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "array",
+    "app": "<script setup>import Child from \"./Child.vue\"; import { state, record } from \"./fixture\";</script>\n<template><Child v-slot=\"{ items: [local = (record('default'), state.fallback)], count }\">{{ local }}:{{ count }}</Child></template>\n",
+    "child": "<script setup>import { state } from \"./fixture\";</script>\n<template><slot :label=\"state.ready ? state.slotLabel : undefined\" :nested=\"{ label: state.ready ? state.slotLabel : undefined }\" :items=\"[state.ready ? state.slotLabel : undefined]\" :data-label=\"state.ready ? state.slotLabel : undefined\" :count=\"state.count\" /></template>\n",
+    "context": {
+      "count": 1,
+      "fallback": "fallback"
+    },
+    "steps": [
+      {
+        "patch": {
+          "slotLabel": "provided",
+          "count": 2
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": null,
+          "count": 3
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": "",
+          "count": 0
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": false,
+          "count": 4
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": 0,
+          "count": 5
+        }
+      },
+      {
+        "patch": {
+          "ready": false,
+          "count": 6
+        }
+      },
+      {
+        "patch": {
+          "fallback": "changed"
+        }
+      }
+    ],
+    "expected": [
+      {
+        "tree": [
+          "fallback:1"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "provided:2"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":3"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":0"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "false:4"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "0:5"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "fallback:6"
+        ],
+        "events": [
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "changed:6"
+        ],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "quoted-key",
+    "app": "<script setup>import Child from \"./Child.vue\"; import { state, record } from \"./fixture\";</script>\n<template><Child v-slot=\"{ 'data-label': local = (record('default'), state.fallback), count }\">{{ local }}:{{ count }}</Child></template>\n",
+    "child": "<script setup>import { state } from \"./fixture\";</script>\n<template><slot :label=\"state.ready ? state.slotLabel : undefined\" :nested=\"{ label: state.ready ? state.slotLabel : undefined }\" :items=\"[state.ready ? state.slotLabel : undefined]\" :data-label=\"state.ready ? state.slotLabel : undefined\" :count=\"state.count\" /></template>\n",
+    "context": {
+      "count": 1,
+      "fallback": "fallback"
+    },
+    "steps": [
+      {
+        "patch": {
+          "slotLabel": "provided",
+          "count": 2
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": null,
+          "count": 3
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": "",
+          "count": 0
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": false,
+          "count": 4
+        }
+      },
+      {
+        "patch": {
+          "slotLabel": 0,
+          "count": 5
+        }
+      },
+      {
+        "patch": {
+          "ready": false,
+          "count": 6
+        }
+      },
+      {
+        "patch": {
+          "fallback": "changed"
+        }
+      }
+    ],
+    "expected": [
+      {
+        "tree": [
+          "fallback:1"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "provided:2"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":3"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          ":0"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "false:4"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "0:5"
+        ],
+        "events": [
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "fallback:6"
+        ],
+        "events": [
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [
+          "changed:6"
+        ],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      },
+      {
+        "tree": [],
+        "events": [
+          "default",
+          "default",
+          "default"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "nested-parent-default",
+    "app": "<script setup>import Child from \"./Child.vue\";</script>\n<template><Child v-slot=\"{ nested: { label = 'fallback' } = {}, count }\">{{ label }}:{{ count }}</Child></template>\n",
+    "child": "<script setup>import { state } from \"./fixture\";</script>\n<template><slot :nested=\"state.nested\" :count=\"state.count\" /></template>\n",
+    "context": {
+      "count": 1
+    },
+    "steps": [
+      {
+        "patch": {
+          "nested": {
+            "label": "provided"
+          },
+          "count": 2
+        }
+      },
+      {
+        "patch": {
+          "nested": {},
+          "count": 3
+        }
+      }
+    ],
+    "expected": [
+      {
+        "tree": [
+          "fallback:1"
+        ],
+        "events": []
+      },
+      {
+        "tree": [
+          "provided:2"
+        ],
+        "events": []
+      },
+      {
+        "tree": [
+          "fallback:3"
+        ],
+        "events": []
+      },
+      {
+        "tree": [],
+        "events": []
+      }
+    ]
+  }
+]

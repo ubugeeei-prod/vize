@@ -88,6 +88,9 @@ fn format_document_content(
     let printer = Printer {
         indent: indent.as_str(),
         newline,
+        print_width: options.print_width as usize,
+        tab_width: options.tab_width as usize,
+        bracket_spacing: options.bracket_spacing,
     };
 
     let mut output = String::with_capacity(source.len() + 32);
@@ -95,7 +98,7 @@ fn format_document_content(
         printer.write_comment(&mut output, comment);
         output.push_str(newline);
     }
-    printer.write_value(&mut output, &value, 0);
+    printer.write_value(&mut output, &value, 0, 0);
     for comment in &trailing {
         output.push_str(newline);
         printer.write_comment(&mut output, comment);
