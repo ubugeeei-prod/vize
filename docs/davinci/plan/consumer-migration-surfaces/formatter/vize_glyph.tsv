@@ -119,11 +119,12 @@ formatter	Formatter	source	crates/vize_glyph/src/script/format.rs	2	raw_oxc	raw 
 formatter	Formatter	test/dev	crates/vize_glyph/src/script/format.rs	36	raw_oxc	raw OXC	raw	oxc_allocator	raw	3
 formatter	Formatter	source	crates/vize_glyph/src/sort_imports.rs	3	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/sort_imports.rs	3	raw_oxc	raw OXC	raw	oxc_formatter	raw	2
-formatter	Formatter	source	crates/vize_glyph/src/style.rs	23	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	source	crates/vize_glyph/src/style.rs	24	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/style/authored.rs	2	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/style/blank_lines.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/src/style/blank_lines.rs	332	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/style/color.rs	4	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	source	crates/vize_glyph/src/style/declaration.rs	2	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/style/number.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	source	crates/vize_glyph/src/style/stabilization.rs	9	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/src/style/stabilization.rs	240	l0	L0	stage	vize_l0	preferred	1
@@ -387,6 +388,7 @@ formatter	Formatter	test/dev	crates/vize_glyph/tests/native_vue2_text_document/r
 formatter	Formatter	test/dev	crates/vize_glyph/tests/preserve_authored_content.rs	135	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/root_comment_attachment.rs	5	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/sfc_block_attributes.rs	6	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/style_authored_declarations.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/style_multi_value_declarations.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/style_rule_blank_lines.rs	5	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/template_expression_parens.rs	3	l0	L0	stage	vize_l0	preferred	1

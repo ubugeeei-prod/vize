@@ -9,6 +9,7 @@ mod blank_lines;
 mod chunk;
 mod color;
 mod comment_scan;
+mod declaration;
 mod number;
 mod rule_layout;
 mod stabilization;

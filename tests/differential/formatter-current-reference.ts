@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { compareBytes } from "./compare.mjs";
 import { sha256 } from "./manifest.mjs";
+import { declarationCurrentReference } from "./formatter-declaration-reference.ts";
 import { huggedInterpolationCurrentReference } from "./formatter-hugged-interpolation-reference.ts";
 import { rootCommentCurrentReference } from "./formatter-root-comment-reference.ts";
 
@@ -20,8 +21,10 @@ export function currentFormatterReference(
 ) {
   if (fixture.id !== ID) {
     const hugged = huggedInterpolationCurrentReference(root, fixture, input, historical);
-    return Object.hasOwn(hugged, "currentReference")
-      ? hugged
+    if (Object.hasOwn(hugged, "currentReference")) return hugged;
+    const declaration = declarationCurrentReference(root, fixture, input, historical);
+    return Object.keys(declaration).length
+      ? declaration
       : rootCommentCurrentReference(root, fixture, input, historical);
   }
   const bytes = fs.readFileSync(path.join(root, AUTHORITY));

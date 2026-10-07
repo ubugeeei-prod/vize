@@ -18,7 +18,7 @@ const packs = [
   ["literal-extra", 34, 34, 0, 0],
   ["vue-version", 14, 14, 0, 0],
   ["capture", 51, 29, 20, 0],
-  ["capture-extra", 25, 23, 0, 1],
+  ["capture-extra", 25, 22, 0, 1],
   ["capture-final", 4, 4, 0, 0],
 ];
 
@@ -70,7 +70,7 @@ void test("shared formatter API history observes complete source-built output an
         legacyFailures: 0,
         ...(name === "prepared" ? { currentReferenceMatches: 2 } : {}),
         ...(name === "capture" ? { currentReferenceMatches: 2 } : {}),
-        ...(name === "capture-extra" ? { currentReferenceMatches: 1 } : {}),
+        ...(name === "capture-extra" ? { currentReferenceMatches: 2 } : {}),
         nativeUnsupported: count,
         nativeHandled: 0,
         nativeEquivalent: 0,
@@ -166,6 +166,17 @@ void test("shared formatter API history observes complete source-built output an
       issue: 7968,
       count: 27,
       report: "css-multi-value-declarations-7968-report.json",
+    },
+  );
+  runCssGroupingRegressions(
+    { repoRoot: root, ...built, evidenceDir },
+    {
+      path: "crates/vize_glyph/tests/fixtures/style_authored_declarations_7866.json",
+      schema: "vize.formatter-css-declaration-regressions",
+      executionSchema: "vize.formatter-css-declaration-execution",
+      issue: 7866,
+      count: 27,
+      report: "css-authored-declarations-7866-report.json",
     },
   );
 });
