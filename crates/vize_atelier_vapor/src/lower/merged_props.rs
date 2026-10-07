@@ -23,21 +23,23 @@ pub(super) fn uses_computed_props(el: &ElementNode<'_>) -> bool {
         if let PropNode::Directive(dir) = prop
             && dir.name == "bind"
         {
-            if !matches!(dir.exp, Some(ExpressionNode::Simple(_)))
-                || dir
-                    .modifiers
-                    .iter()
-                    .any(|modifier| !matches!(modifier.content, "attr" | "prop"))
-            {
+            if !matches!(dir.exp, Some(ExpressionNode::Simple(_))) {
                 return false;
             }
             match &dir.arg {
                 Some(ExpressionNode::Simple(key)) => {
-                    if !key.is_static && !dir.modifiers.is_empty() {
-                        return false;
+                    if !dir.modifiers.is_empty() {
+                        if !key.is_static
+                            || dir
+                                .modifiers
+                                .iter()
+                                .any(|modifier| !matches!(modifier.content, "attr" | "prop"))
+                        {
+                            return false;
+                        }
+                        forced = true;
                     }
                     computed |= !key.is_static;
-                    forced |= !dir.modifiers.is_empty();
                 }
                 None if dir.modifiers.is_empty() => object = true,
                 None => return false,
@@ -142,6 +144,26 @@ pub(super) fn transform<'a>(
         block,
         OperationNode::SetMergedProps(SetMergedPropsIRNode { element, sources }),
     );
+}
+
+#[inline]
+pub(super) fn static_binding_key<'a>(
+    ctx: &mut TransformContext<'a>,
+    dir: &DirectiveNode<'a>,
+    name: &'a str,
+) -> (&'a str, bool, bool) {
+    if dir.modifiers.is_empty() {
+        return (name, false, false);
+    }
+    let camel = dir
+        .modifiers
+        .iter()
+        .any(|modifier| modifier.content == "camel");
+    let prop = dir
+        .modifiers
+        .iter()
+        .any(|modifier| modifier.content == "prop");
+    (static_key(ctx, dir, name, camel, prop), camel, prop)
 }
 
 /// Preserve retained camel keys and use the runtime's existing `^key` vocabulary.

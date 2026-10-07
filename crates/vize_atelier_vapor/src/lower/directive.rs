@@ -36,9 +36,6 @@ pub(crate) fn transform_directive<'a>(
                 return;
             }
 
-            let has_camel = dir.modifiers.iter().any(|m| m.content == "camel");
-            let has_prop = dir.modifiers.iter().any(|m| m.content == "prop");
-
             if let Some(ref arg) = dir.arg {
                 if let ExpressionNode::Simple(key_exp) = arg {
                     if el.tag_type == ElementType::Element
@@ -79,13 +76,8 @@ pub(crate) fn transform_directive<'a>(
                         return;
                     }
 
-                    let key_content = super::merged_props::static_key(
-                        ctx,
-                        dir,
-                        key_exp.content,
-                        has_camel,
-                        has_prop,
-                    );
+                    let (key_content, has_camel, has_prop) =
+                        super::merged_props::static_binding_key(ctx, dir, key_exp.content);
                     let key_node = SimpleExpressionNode::new(
                         key_content,
                         key_exp.is_static,
