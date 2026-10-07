@@ -80,6 +80,8 @@ if (process.argv[2] === "prepare") {
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/prepare.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/client.rs",
     "crates/vize_canon/src/lsp_client/diagnostics_lsp.rs",
+    "crates/vize_canon/src/lsp_client/diagnostics_lsp/readiness_workers.rs",
+    "crates/vize_canon/src/lsp_client/diagnostics_lsp/readiness_workers/tests.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/readiness.rs",
     "crates/vize_canon/src/lsp_client/editor_lsp/synchronize.rs",
     "crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context.rs",

@@ -104,3 +104,26 @@ the current SFC CSS tests do; the earlier single-borrow source inference is
 withdrawn. Preserve the 240803-byte E0277 log/SHA256
 7d6352cfd40651a5ad4e5cf44074343a068b855df50a0944e54245a230dae73b.
 Every product byte, mounted vector, fixture, allocator API and budget is unchanged.
+
+Source composition now genuinely incorporates actual signed main
+ef84821d30fa0d8538b2472fef34418e75380523, including the delivered critical
+shell-quote repair (#8137). Preserve every incoming canonical line prefix and
+all incoming source/API/default/configuration changes. The corrected 524a
+producer passed Clippy and all test compilation; four Rust workers were still
+executing when this union was prepared. Their results are historical source
+evidence only, not current-union runtime/protected/merge credit. Re-run ordinary
+Actions on the genuine union without any advisory, fixture or budget waiver.
+
+Historical 524a source execution is now authenticated: affected Clippy/build
+and all four Rust shards passed; all nine named new laws passed. Four small
+JUnit/process ZIPs authenticate all 16518 executed cases and exactly 36 retained
+source/module/process packets with 114 whole phases, including every original
+backend/build-mode combination, raw numeric `3`, actual upstream `a,b` then
+`a,b,c`, removal/clear, scalar and callback/null cleanup, and authored Object.
+All ZIP digests/89 CRC members and source bytes match. This fixes the retained
+first own failures without rerecording original sources or expected vectors.
+Source receipt SHA256
+9fe67755fddfab68a7cc6e60d1b025fd5a816cc36b229524c06368916f369602
+is bound only to 524a/Check37493212500; that whole workflow still had the obsolete
+security lock failure. The genuine ef848 union must pass its own fresh Actions
+and full protected queue, signed merge and installed consumer gates.
