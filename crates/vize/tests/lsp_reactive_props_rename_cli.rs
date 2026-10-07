@@ -18,6 +18,12 @@ const CHILD: &str = include_str!(
 const PARENT: &str = include_str!(
     "../../../tests/_fixtures/differential/lsp/reactive-props-rename/7996/Parent.vue.txt"
 );
+const DEFAULT_CHILD: &str = include_str!(
+    "../../../tests/_fixtures/differential/lsp/reactive-props-rename/7996/supplemental/Default.vue.txt"
+);
+const ALIASED_CHILD: &str = include_str!(
+    "../../../tests/_fixtures/differential/lsp/reactive-props-rename/7996/supplemental/Aliased.vue.txt"
+);
 
 #[derive(Clone, Copy, Debug)]
 enum Query {
@@ -49,10 +55,13 @@ fn assert_rename(query: Query) {
             } else {
                 "label"
             };
-            let child = CHILD
-                .replace("{ label }", &format!("{{ {binding} }}"))
-                .replace("{{ label }}", &format!("{{{{ {local_name} }}}}"))
-                .replace('\n', newline);
+            let child = match binding {
+                "label" => CHILD,
+                "label = 'Name'" => DEFAULT_CHILD,
+                "label: localLabel" => ALIASED_CHILD,
+                _ => unreachable!("complete authored binding matrix"),
+            }
+            .replace('\n', newline);
             let parent = PARENT.replace('\n', newline);
             let context = format!("{binding}, {query:?}, newline={newline:?}");
             let mut fixture = Fixture::new_with_cross_file_component_project(

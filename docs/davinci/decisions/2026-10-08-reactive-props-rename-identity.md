@@ -66,3 +66,12 @@ assertion allowlist and all-target lint requirements remain unchanged. Source
 head `0e8c56e874` stopped before the 24-session workers on those source hygiene
 gates and a needless borrow in a new unit. It supplies no 24-session acceptance
 credit; the corrected head must qualify afresh.
+
+Source head `97a8c2a3ad` passed the public declaration shorthand LF and CRLF
+transactions before stopping at the default case's initial diagnostics. Its
+input constructor had also replaced the inner braces of `{{ label }}`, making
+that derived template an assignment and causing TS2588. This was a test input
+defect, not proof of a product default diagnostic. Default and alias cases now
+load complete authored supplemental files directly. The original report files
+and every complete reference/edit/applied-text/post-diagnostic oracle remain
+unchanged; the full 24-session qualification still requires the next exact head.
