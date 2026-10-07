@@ -58,3 +58,11 @@ fail-closed claim; existing canonical failure/scope guards remain necessary.
 
 Fresh exact-head source/native Actions must qualify the correction and every
 unchanged authored vector before readiness, queue admission, merge or closure.
+
+The derived LSP consumer inventory is regenerated with its unchanged generator,
+adding only the ten source-import rows introduced by these helpers. The binding
+role unit now compares the complete ordered authored range vector; the existing
+assertion allowlist and all-target lint requirements remain unchanged. Source
+head `0e8c56e874` stopped before the 24-session workers on those source hygiene
+gates and a needless borrow in a new unit. It supplies no 24-session acceptance
+credit; the corrected head must qualify afresh.

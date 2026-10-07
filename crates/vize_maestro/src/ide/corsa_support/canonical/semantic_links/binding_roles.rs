@@ -103,18 +103,8 @@ mod tests {
         let uri = Url::parse("file:///workspace/Child.vue").expect("URI");
         let ctx = IdeContext::testing(&state, &uri, 0, source.to_owned());
         let ranges = setup_binding_ranges(&ctx, &uri, source);
-        for (needle, expected) in [
-            ("label =", true),
-            ("active }", true),
-            ("checked:", false),
-            ("label: string", false),
-        ] {
-            let offset = source.find(needle).expect("role marker");
-            assert_eq!(
-                ranges.iter().any(|range| range.contains(&offset)),
-                expected,
-                "{needle}"
-            );
-        }
+        let label = source.find("label =").expect("default binding");
+        let active = source.find("active }").expect("aliased binding");
+        assert_eq!(ranges, vec![label..label + 5, active..active + 6]);
     }
 }

@@ -160,7 +160,7 @@ mod tests {
                 source_uri: uri.clone(),
                 request_uri: "file:///workspace/Child.vue.ts".into(),
                 virtual_result: DiagnosticService::generate_virtual_ts(
-                    &ctx.uri, source, false, false,
+                    ctx.uri, source, false, false,
                 )
                 .expect("virtual document"),
                 dependencies: Vec::new(),
