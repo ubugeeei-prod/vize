@@ -424,7 +424,6 @@ impl DiagnosticService {
         line_index: &LineIndex<'_>,
     ) -> Vec<Diagnostic> {
         let is_standalone_html = crate::utils::is_standalone_html_path(uri.path());
-        let is_art = uri.path().ends_with(".art.vue");
         let Some(linter) = super::patina::linter_for_uri(state, uri, ecosystem_enabled) else {
             return vec![];
         };
@@ -437,9 +436,6 @@ impl DiagnosticService {
         result
             .diagnostics
             .into_iter()
-            // The Art caller separately owns Musea metadata/style findings,
-            // including their existing source and documentation links.
-            .filter(|diagnostic| !is_art || !diagnostic.rule_name.starts_with("musea/"))
             .map(|lint_diag| {
                 // Convert byte offsets directly in the SFC. vize_patina::lint_sfc
                 // already maps template diagnostics back to source coordinates.

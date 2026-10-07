@@ -76,7 +76,7 @@ if (process.argv[2] === "prepare") {
   const allowed = new Set([
     // Art lint delivery retains the original 400-provider protocol corpus.
     "crates/vize_maestro/src/ide/diagnostics/art_lint_tests.rs",
-    "crates/vize_maestro/src/ide/diagnostics/collectors.rs",
+    "crates/vize_maestro/src/ide/diagnostics/art_lint.rs",
     "crates/vize_maestro/src/ide/diagnostics/service.rs",
     "crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/readiness.rs",
     "crates/vize_canon/src/corsa_bridge.rs",
