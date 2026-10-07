@@ -23,7 +23,7 @@ fn derived_watchers_preserve_effects_editable_copies_and_required_markers() {
     .expect("strict corpus schema");
     assert_eq!(
         cases.len(),
-        11,
+        12,
         "every original and inverse fixture remains registered"
     );
     for case in cases {

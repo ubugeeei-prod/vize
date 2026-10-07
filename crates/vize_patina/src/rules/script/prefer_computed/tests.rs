@@ -235,6 +235,7 @@ fn mutable_unknown_and_shadowed_targets_are_clean() {
         "const target = ref(0); watch(source, next => target.value = next); function edit(target) {}",
         "const target = ref(0); watch(source, next => target.value = next); (target.value as number) = 3",
         "let target = ref(0); watch(source, next => target.value = next); ({ target } = other)",
+        "const target = ref(0); watch(source, next => target.value = next, { once: true })",
         "const target = { value: 0 }; watch(source, next => target.value = next)",
         "watch(source, next => unknown.value = next)",
         "import { ref, watch } from 'other'; const target = ref(0); watch(source, next => target.value = next)",

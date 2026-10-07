@@ -7,7 +7,8 @@ watcher as computed-compatible. The replacement proof requires one synchronous,
 unconditional expression statement assigning a pure expression to a declared
 Vue `ref` or `shallowRef`. The expression must depend on the callback's first
 parameter or the watched source and must not read the target's prior value.
-Calls, async/await, conditional statements, old-value/cleanup parameters,
+Watch options (including event-retaining `once`), calls, async/await,
+conditional statements, old-value/cleanup parameters,
 side effects and other writes suppress advice.
 
 The shared script Program supplies declarations, import aliases and mutation
@@ -15,7 +16,7 @@ evidence. Top-level ref declarations are eligible; same-named bindings anywhere
 make resolution ambiguous and suppress advice. Vue imports and unbound
 auto-import names are supported; unrelated locally bound factories are excluded.
 The already shared template AST supplies `v-model`, inline assignments/updates
-and template-ref evidence. HTML comments, ordinary text, static attributes and
+and static/bound template-ref evidence. HTML comments, ordinary text, static attributes and
 `v-pre` do not manufacture writes. Ambiguous template expressions can only
 suppress advice; token over-collection never creates a finding. Components with
 a sibling script block or an unobservable template suppress advice because

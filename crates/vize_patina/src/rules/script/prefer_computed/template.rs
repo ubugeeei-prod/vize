@@ -33,7 +33,11 @@ fn collect_template_writes(
                         ExpressionNode::Simple(simple) => simple.content,
                         ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
                     };
-                    if directive.name == "model" {
+                    let is_bound_ref = directive.name == "bind"
+                        && directive.arg.as_ref().is_some_and(|argument| {
+                            matches!(argument, ExpressionNode::Simple(simple) if simple.is_static && simple.content == "ref")
+                        });
+                    if directive.name == "model" || is_bound_ref {
                         // Any identifier-shaped token can only suppress a warning;
                         // over-collecting computed indexes is deliberately safe.
                         for token in

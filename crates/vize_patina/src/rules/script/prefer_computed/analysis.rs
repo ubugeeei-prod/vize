@@ -177,6 +177,11 @@ pub(super) fn derived_assignment<'a, 'b>(
     call: &'b CallExpression<'a>,
     inventory: &Inventory,
 ) -> Option<(&'b str, oxc_span::Span)> {
+    // Watch options such as `once` retain event-driven state rather than a
+    // continuously derived value. Unknown options make the advice unsafe.
+    if call.arguments.len() != 2 {
+        return None;
+    }
     let callback = unwrap_expression(call.arguments.get(1)?.as_expression()?);
     let (params, body) = match callback {
         Expression::ArrowFunctionExpression(arrow) if !arrow.r#async => {

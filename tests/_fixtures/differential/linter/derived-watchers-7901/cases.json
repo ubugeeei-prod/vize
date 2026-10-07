@@ -88,5 +88,13 @@
       "script/prefer-computed"
     ],
     "warnings": 1
+  },
+  {
+    "id": "template-dynamic-dom-ref",
+    "fixture": "template-dynamic-dom-ref.vue.txt",
+    "rules": [
+      "script/prefer-computed"
+    ],
+    "warnings": 0
   }
 ]
