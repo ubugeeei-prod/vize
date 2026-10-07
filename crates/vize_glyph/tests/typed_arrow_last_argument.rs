@@ -27,7 +27,7 @@ fn script_fixed_point(
     options: &FormatOptions,
     extension: FileExtension,
 ) {
-    let mut current = source.to_owned();
+    let mut current = vize_l0::String::from(source);
     for _ in 0..3 {
         let allocator = Allocator::default();
         current = format_script_with_source_type(
