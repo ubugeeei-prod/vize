@@ -300,3 +300,14 @@ existing compact string macro, refreshes exact inventory bytes and retains the
 generator line budget. The newly hydrated full compiler corpus separately
 reveals DOM parity/old-lane diagnostic differences; source, protected Stack and
 public-package acceptance stay pending without weakening any corpus gate.
+
+The fixture parent actually merged as signed `8616cd4b7ef8a22a3bea16b39dff9ae66e5cf3f4`
+on 2026-10-07. The existing authored-editor child is rebased onto actual signed
+main `8f01ff9c320f4b474b410efe7d66baed462df7aa`, preserving complete original
+fixtures, licenses, provenance and all 33 immutable compiler capture drivers.
+The final child has no canonical/structural references delta against its original
+base; fresh main's cross-file reference boundaries therefore remain complete.
+Only generator-authored setup/template semantic edges and value/default-export
+navigation corrections remain. Earlier compiler failures and old editor proof
+remain historical; current source Actions, native Stack delivery and released
+editor behavior require fresh qualification. Issue #8142 remains open.
