@@ -246,7 +246,9 @@ pub(super) fn coherent(edit: &WorkspaceEdit) -> bool {
         edits.sort_by_key(|edit| (edit.range.start, edit.range.end));
         edits.iter().all(|edit| edit.range.start <= edit.range.end)
             && edits.windows(2).all(|pair| {
-                let (left, right) = (pair[0], pair[1]);
+                let [left, right] = pair else {
+                    return false;
+                };
                 if left.range == right.range {
                     left.new_text == right.new_text
                 } else {
