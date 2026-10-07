@@ -19,80 +19,15 @@
       "service": {
         "filename": "MyNotes.vue",
         "error_count": 0,
-        "warning_count": 3,
-        "diagnostics": [
-          {
-            "rule_name": "css/no-important",
-            "severity": "warning",
-            "message": "Avoid using !important as it makes styles harder to override",
-            "start": 373,
-            "end": 383,
-            "help": "Use more specific selectors or reorganize CSS specificity instead",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "css/no-v-bind-performance",
-            "severity": "warning",
-            "message": "v-bind() installs runtime CSS variable updates",
-            "start": 299,
-            "end": 312,
-            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "css/no-v-bind-performance",
-            "severity": "warning",
-            "message": "v-bind() installs runtime CSS variable updates",
-            "start": 360,
-            "end": 372,
-            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "MyNotes.vue",
-          "messages": [
-            {
-              "ruleId": "css/no-v-bind-performance",
-              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
-              "severity": 1,
-              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
-              "line": 13,
-              "column": 22,
-              "endLine": 13,
-              "endColumn": 35,
-              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
-            },
-            {
-              "ruleId": "css/no-v-bind-performance",
-              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
-              "severity": 1,
-              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
-              "line": 15,
-              "column": 13,
-              "endLine": 15,
-              "endColumn": 25,
-              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
-            },
-            {
-              "ruleId": "css/no-important",
-              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
-              "severity": 1,
-              "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
-              "line": 15,
-              "column": 26,
-              "endLine": 15,
-              "endColumn": 36,
-              "help": "Use more specific selectors or reorganize CSS specificity instead"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 3
+          "warningCount": 0
         }
       ]
     },
@@ -105,80 +40,15 @@
       "service": {
         "filename": "MyNotes.vue",
         "error_count": 0,
-        "warning_count": 3,
-        "diagnostics": [
-          {
-            "rule_name": "css/no-important",
-            "severity": "warning",
-            "message": "Avoid using !important as it makes styles harder to override",
-            "start": 387,
-            "end": 397,
-            "help": "Use more specific selectors or reorganize CSS specificity instead",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "css/no-v-bind-performance",
-            "severity": "warning",
-            "message": "v-bind() installs runtime CSS variable updates",
-            "start": 311,
-            "end": 324,
-            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "css/no-v-bind-performance",
-            "severity": "warning",
-            "message": "v-bind() installs runtime CSS variable updates",
-            "start": 374,
-            "end": 386,
-            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "MyNotes.vue",
-          "messages": [
-            {
-              "ruleId": "css/no-v-bind-performance",
-              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
-              "severity": 1,
-              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
-              "line": 13,
-              "column": 22,
-              "endLine": 13,
-              "endColumn": 35,
-              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
-            },
-            {
-              "ruleId": "css/no-v-bind-performance",
-              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
-              "severity": 1,
-              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
-              "line": 15,
-              "column": 13,
-              "endLine": 15,
-              "endColumn": 25,
-              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
-            },
-            {
-              "ruleId": "css/no-important",
-              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
-              "severity": 1,
-              "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
-              "line": 15,
-              "column": 26,
-              "endLine": 15,
-              "endColumn": 36,
-              "help": "Use more specific selectors or reorganize CSS specificity instead"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 3
+          "warningCount": 0
         }
       ]
     },
@@ -191,80 +61,15 @@
       "service": {
         "filename": "MyNotes.vue",
         "error_count": 0,
-        "warning_count": 3,
-        "diagnostics": [
-          {
-            "rule_name": "css/no-important",
-            "severity": "warning",
-            "message": "Avoid using !important as it makes styles harder to override",
-            "start": 391,
-            "end": 401,
-            "help": "Use more specific selectors or reorganize CSS specificity instead",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "css/no-v-bind-performance",
-            "severity": "warning",
-            "message": "v-bind() installs runtime CSS variable updates",
-            "start": 317,
-            "end": 330,
-            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "css/no-v-bind-performance",
-            "severity": "warning",
-            "message": "v-bind() installs runtime CSS variable updates",
-            "start": 378,
-            "end": 390,
-            "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "MyNotes.vue",
-          "messages": [
-            {
-              "ruleId": "css/no-v-bind-performance",
-              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
-              "severity": 1,
-              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
-              "line": 14,
-              "column": 22,
-              "endLine": 14,
-              "endColumn": 35,
-              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
-            },
-            {
-              "ruleId": "css/no-v-bind-performance",
-              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
-              "severity": 1,
-              "message": "[vize:css/no-v-bind-performance] v-bind() installs runtime CSS variable updates",
-              "line": 16,
-              "column": 13,
-              "endLine": 16,
-              "endColumn": 25,
-              "help": "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable."
-            },
-            {
-              "ruleId": "css/no-important",
-              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
-              "severity": 1,
-              "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
-              "line": 16,
-              "column": 26,
-              "endLine": 16,
-              "endColumn": 36,
-              "help": "Use more specific selectors or reorganize CSS specificity instead"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 3
+          "warningCount": 0
         }
       ]
     },

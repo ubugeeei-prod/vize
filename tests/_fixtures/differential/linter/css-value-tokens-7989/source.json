@@ -35,5 +35,7 @@
   "cases": 17,
   "expectedAuthority": "Independently authored from complete public original, CSS declarations and unchanged diagnostic/report contracts; not observed output or snapshot regeneration",
   "nativeHandled": 0,
-  "actualExecution": null
+  "actualExecution": null,
+  "combinedSourceParent": "a77c035c8323051b7a1a8ae945f05cd0cc336f09",
+  "combinedOriginalRemainingWarnings": 0
 }

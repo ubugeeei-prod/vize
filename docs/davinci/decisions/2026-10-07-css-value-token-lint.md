@@ -65,3 +65,31 @@ security-red source remains Draft/offqueue until actual security-fixed main
 and fresh qualification. No native/history gate is promoted by this fix.
 The entire #7989 remains open until both slices and the full original are
 actually accepted; public installed release verification belongs to root.
+
+The combined source now genuinely descends from published script parent
+`a77c035c8323051b7a1a8ae945f05cd0cc336f09`, itself on actual signed security
+merge `ef84821d30fa0d8538b2472fef34418e75380523`. The
+[paired composition](https://github.com/ubugeeei-prod/vize/issues/7989#issuecomment-6033182729)
+records the authored full original clean result under both corrections.
+Only the first three complete parent vectors change from three CSS warnings
+to zero; all other 38 parent cases, including real CSS positives, remain
+whole-object exact. The same three own vectors change from pending script
+warnings to zero, retaining all other 14 controls. Original input, config,
+command, report and issue pins remain exact. The original plain expectation
+now requires the entire unchanged clean-report boundary, without filtering.
+
+Independent source review of `83b0b65448b13d3a6c39be3f9dabbebc185ed6fb`
+clears the declaration/token authority and staged fallback. All production
+and token-law blobs retain those reviewed bytes after the genuine parent
+replay. This review supplies no compile, runtime or instruction acceptance.
+Configured rustfmt and existing 20/19 source inventory checks pass; fresh
+source Actions, all seventeen service/eighteen CLI observations, parent
+whole 41 vectors and protected unchanged 104 budgets remain required.
+
+The first actual parent Actions audit on `a77c035c` found a new high
+GHSA-6qxp-vccf-f47h in @modelcontextprotocol/sdk 1.30.0. Both layers remain
+Draft/offqueue; the security owner supplies the genuine updated main before
+fresh qualification. The earlier shell-quote fix is actual, but its green
+result does not accept this new advisory or the changed CSS source. Native
+Stack membership and protected actual delivery remain pending. #7989 stays
+open; no installed, native, history or performance completion is claimed.

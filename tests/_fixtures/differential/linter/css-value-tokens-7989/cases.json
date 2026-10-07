@@ -1,7 +1,7 @@
 {
   "schema": "vize.css-value-tokens-7989.full-corpus-v1",
   "issue": 7989,
-  "scope": "CSS-only source on actual064; full original retains three pending script diagnostics",
+  "scope": "Combined script/CSS source on genuine published8135 parent; whole original requires zero warnings",
   "cases": [
     {
       "id": "whole-original-four-rules-partial",
@@ -12,83 +12,18 @@
       "service": {
         "filename": "MyNotes.vue",
         "error_count": 0,
-        "warning_count": 3,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-ref-over-reactive",
-            "severity": "warning",
-            "message": "Consider using ref() instead of reactive() for simpler state management",
-            "start": 75,
-            "end": 83,
-            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "script/prefer-ref-over-reactive",
-            "severity": "warning",
-            "message": "Consider using ref() instead of reactive() for simpler state management",
-            "start": 152,
-            "end": 160,
-            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 102,
-            "end": 115,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "MyNotes.vue",
-          "messages": [
-            {
-              "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
-              "line": 4,
-              "column": 23,
-              "endLine": 4,
-              "endColumn": 31,
-              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
-            },
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 4,
-              "column": 50,
-              "endLine": 4,
-              "endColumn": 63,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            },
-            {
-              "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
-              "line": 5,
-              "column": 19,
-              "endLine": 5,
-              "endColumn": 27,
-              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 3
+          "warningCount": 0
         }
       ],
-      "plain": "Patina lint report: 3 warnings in 1 file\n\nMyNotes.vue\n  MyNotes.vue:4:23 warning script/prefer-ref-over-reactive Consider using ref() instead of reactive() for simpler state management\n    Reference: docs/content/rules/type-and-script.md\n    Help:\n      ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })\n  MyNotes.vue:4:50 warning script/prefer-use-id Consider using useId() for generating IDs (Vue 3.5+)\n    Reference: docs/content/rules/type-and-script.md\n    Help:\n      useId() provides SSR-safe, unique IDs: const id = useId()\n  MyNotes.vue:5:19 warning script/prefer-ref-over-reactive Consider using ref() instead of reactive() for simpler state management\n    Reference: docs/content/rules/type-and-script.md\n    Help:\n      ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })\n"
+      "plain": "Patina lint report: No problems found in 1 file(s)\n"
     },
     {
       "id": "whole-original-crlf",
@@ -99,83 +34,18 @@
       "service": {
         "filename": "MyNotes.vue",
         "error_count": 0,
-        "warning_count": 3,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-ref-over-reactive",
-            "severity": "warning",
-            "message": "Consider using ref() instead of reactive() for simpler state management",
-            "start": 78,
-            "end": 86,
-            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "script/prefer-ref-over-reactive",
-            "severity": "warning",
-            "message": "Consider using ref() instead of reactive() for simpler state management",
-            "start": 156,
-            "end": 164,
-            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 105,
-            "end": 118,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "MyNotes.vue",
-          "messages": [
-            {
-              "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
-              "line": 4,
-              "column": 23,
-              "endLine": 4,
-              "endColumn": 31,
-              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
-            },
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 4,
-              "column": 50,
-              "endLine": 4,
-              "endColumn": 63,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            },
-            {
-              "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
-              "line": 5,
-              "column": 19,
-              "endLine": 5,
-              "endColumn": 27,
-              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 3
+          "warningCount": 0
         }
       ],
-      "plain": "Patina lint report: 3 warnings in 1 file\n\nMyNotes.vue\n  MyNotes.vue:4:23 warning script/prefer-ref-over-reactive Consider using ref() instead of reactive() for simpler state management\n    Reference: docs/content/rules/type-and-script.md\n    Help:\n      ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })\n  MyNotes.vue:4:50 warning script/prefer-use-id Consider using useId() for generating IDs (Vue 3.5+)\n    Reference: docs/content/rules/type-and-script.md\n    Help:\n      useId() provides SSR-safe, unique IDs: const id = useId()\n  MyNotes.vue:5:19 warning script/prefer-ref-over-reactive Consider using ref() instead of reactive() for simpler state management\n    Reference: docs/content/rules/type-and-script.md\n    Help:\n      ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })\n"
+      "plain": "Patina lint report: No problems found in 1 file(s)\n"
     },
     {
       "id": "whole-original-unicode",
@@ -186,83 +56,18 @@
       "service": {
         "filename": "MyNotes.vue",
         "error_count": 0,
-        "warning_count": 3,
-        "diagnostics": [
-          {
-            "rule_name": "script/prefer-ref-over-reactive",
-            "severity": "warning",
-            "message": "Consider using ref() instead of reactive() for simpler state management",
-            "start": 92,
-            "end": 100,
-            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "script/prefer-ref-over-reactive",
-            "severity": "warning",
-            "message": "Consider using ref() instead of reactive() for simpler state management",
-            "start": 169,
-            "end": 177,
-            "help": "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
-            "labels": [],
-            "fix": null
-          },
-          {
-            "rule_name": "script/prefer-use-id",
-            "severity": "warning",
-            "message": "Consider using useId() for generating IDs (Vue 3.5+)",
-            "start": 119,
-            "end": 132,
-            "help": "useId() provides SSR-safe, unique IDs: `const id = useId()`",
-            "labels": [],
-            "fix": null
-          }
-        ]
+        "warning_count": 0,
+        "diagnostics": []
       },
       "cli": [
         {
           "file": "MyNotes.vue",
-          "messages": [
-            {
-              "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
-              "line": 5,
-              "column": 23,
-              "endLine": 5,
-              "endColumn": 31,
-              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
-            },
-            {
-              "ruleId": "script/prefer-use-id",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-use-id] Consider using useId() for generating IDs (Vue 3.5+)",
-              "line": 5,
-              "column": 50,
-              "endLine": 5,
-              "endColumn": 63,
-              "help": "useId() provides SSR-safe, unique IDs: const id = useId()"
-            },
-            {
-              "ruleId": "script/prefer-ref-over-reactive",
-              "ruleDocsPath": "docs/content/rules/type-and-script.md",
-              "severity": 1,
-              "message": "[vize:script/prefer-ref-over-reactive] Consider using ref() instead of reactive() for simpler state management",
-              "line": 6,
-              "column": 19,
-              "endLine": 6,
-              "endColumn": 27,
-              "help": "ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })"
-            }
-          ],
+          "messages": [],
           "errorCount": 0,
-          "warningCount": 3
+          "warningCount": 0
         }
       ],
-      "plain": "Patina lint report: 3 warnings in 1 file\n\nMyNotes.vue\n  MyNotes.vue:5:23 warning script/prefer-ref-over-reactive Consider using ref() instead of reactive() for simpler state management\n    Reference: docs/content/rules/type-and-script.md\n    Help:\n      ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })\n  MyNotes.vue:5:50 warning script/prefer-use-id Consider using useId() for generating IDs (Vue 3.5+)\n    Reference: docs/content/rules/type-and-script.md\n    Help:\n      useId() provides SSR-safe, unique IDs: const id = useId()\n  MyNotes.vue:6:19 warning script/prefer-ref-over-reactive Consider using ref() instead of reactive() for simpler state management\n    Reference: docs/content/rules/type-and-script.md\n    Help:\n      ref() is more explicit with .value access, easier to pass around, and avoids reactivity loss from destructuring. Use const count = ref(0) instead of const state = reactive({ count: 0 })\n"
+      "plain": "Patina lint report: No problems found in 1 file(s)\n"
     },
     {
       "id": "comments-strings-escaped-and-url",
