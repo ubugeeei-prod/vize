@@ -70,5 +70,5 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `parse_v_for_expression`                  |     1 |     1 |
 | `parse_v_for_scope_expression`            |     1 |     1 |
 | `reactivity_lookup`                       |     1 |     1 |
-| `to_pascal_case`                          |     3 |     4 |
+| `to_pascal_case`                          |     4 |     5 |
 | `used_component_name_list`                |     1 |     1 |

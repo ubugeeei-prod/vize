@@ -40,7 +40,12 @@ export function loadCases(root) {
 }
 
 export function fixedSource(entry, originalRules = false) {
-  return originalRules ? entry.fixed.replace('disabled="disabled"', "disabled") : entry.fixed;
+  return originalRules
+    ? entry.fixed
+        .replace('disabled="disabled"', "disabled")
+        .replace("<MyCard></MyCard>", "<MyCard />")
+        .replace("<my-card />", "<MyCard />")
+    : entry.fixed;
 }
 
 function message(source, target, rule, text, authoredStart = null) {
@@ -65,7 +70,7 @@ function message(source, target, rule, text, authoredStart = null) {
 export function wholeJson(entry, after = false, originalRules = false) {
   const source = after ? fixedSource(entry, originalRules) : entry.source;
   const messages = [];
-  if (originalRules)
+  if (originalRules && !after)
     messages.push(
       message(
         source,
