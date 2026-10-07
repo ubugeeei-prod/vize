@@ -56,6 +56,9 @@ They now use one macro context and locally defined types. The already pinned Vue
 all Good SFC script contexts; this validates authored examples and makes no claim about Vize
 compiler output or parity. No new dependencies or product behavior are introduced.
 
-Validation pending: exact-head Actions must execute the example pairs and build the rendered
-English/Japanese reference before queue admission. The navigation companion owns the site-wide
+Signed navigation merge c544ca63 is genuinely incorporated, including the compact rule menu,
+mobile visibility, decoded-image checks, and rendered-font evidence. The original d5acc90c
+example inputs and whole expected findings remain intact; fresh exact-head Actions must replay
+all pairs and the six required Corsa cases. A production Docs build must qualify eight English
+and Japanese rule routes on both desktop and mobile before queue admission. The navigation companion owns the site-wide
 menu and Vite+ onboarding; this change owns rule generation, content, and rule-specific coverage.
