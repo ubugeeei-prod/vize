@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineProps<{
+  dataRole?: number;
+  ariaHidden?: boolean;
+}>();
+</script>
+
+<template>
+  <div />
+</template>

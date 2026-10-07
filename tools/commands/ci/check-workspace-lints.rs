@@ -34,7 +34,7 @@ fn run(check: bool) -> Result<(), String> {
     // must not impose Vize's panic-free implementation contract on Oxc.
     let members: Vec<_> = workspace_members(&root)
         .into_iter()
-        .filter(|member| member != "vendor/oxc_parser")
+        .filter(|member| member != "vendor/oxc_parser" && member != "vendor/oxc_formatter")
         .collect();
     if members.is_empty() {
         return Err("no workspace members found in Cargo.toml".into());
@@ -61,7 +61,9 @@ fn run(check: bool) -> Result<(), String> {
     }
     for pending in PENDING {
         if !members.iter().any(|member| member == pending) {
-            problems.push(format!("{pending} is in PENDING but is not a workspace member"));
+            problems.push(format!(
+                "{pending} is in PENDING but is not a workspace member"
+            ));
         }
     }
 
@@ -89,7 +91,10 @@ fn workspace_members(root: &str) -> Vec<String> {
     body.split(',')
         .filter_map(|entry| {
             let entry = entry.trim();
-            entry.strip_prefix('"')?.strip_suffix('"').map(str::to_owned)
+            entry
+                .strip_prefix('"')?
+                .strip_suffix('"')
+                .map(str::to_owned)
         })
         .collect()
 }

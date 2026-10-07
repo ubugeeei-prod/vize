@@ -9,7 +9,7 @@ use corsa::utils::{
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::{String, ToCompactString, profile};
 
-mod document;
+pub(in crate::linter) mod document;
 mod driver;
 mod expression_bindings;
 mod markers;
@@ -25,6 +25,8 @@ mod strict_boolean;
 #[cfg(test)]
 mod template_component_tests;
 mod template_queries;
+#[cfg(test)]
+mod unsafe_template_tests;
 
 #[cfg(test)]
 mod plain_module_tests;

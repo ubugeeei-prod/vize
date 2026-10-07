@@ -1,0 +1,12 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "cross-file": "error",
+      "html/cross-component-nesting": "warn"
+    },
+    "categories": {
+      "suspicious": "error"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Field from "./Field.vue";
+
+const text = ref("");
+</script>
+
+<template>
+  <Field v-model.bogus="text" />
+</template>

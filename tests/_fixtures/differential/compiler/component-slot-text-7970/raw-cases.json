@@ -1,0 +1,7 @@
+[
+  { "name": "implicit-raw", "source": "<MyTitle>{{{ left }}}{{{ right }}}</MyTitle>", "before": ["1", "2"], "after": ["3", "4"] },
+  { "name": "implicit-mixed-raw", "source": "<MyTitle><i></i>{{{ left }}}{{{ right }}}</MyTitle>", "before": ["<i>", "1", "2"], "after": ["<i>", "3", "4"] },
+  { "name": "explicit-mixed-raw", "source": "<MyTitle><template #default><i></i>{{{ left }}}{{{ right }}}</template></MyTitle>", "before": ["<i>", "1", "2"], "after": ["<i>", "3", "4"] },
+  { "name": "explicit-original-sum", "source": "<MyTitle><template #default>{{{ left }}}{{{ right }}}</template></MyTitle>", "before": ["3"], "after": ["7"] },
+  { "name": "conditional-header-raw-default", "source": "<MyTitle><template #header v-if=\"show\">header</template>{{{ left }}}{{{ right }}}</MyTitle>", "before": ["1", "2"], "after": ["3", "4"] }
+]

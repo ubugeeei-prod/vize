@@ -183,3 +183,62 @@ const label = "Back";
         vec![expected]
     );
 }
+
+#[test]
+fn plugin_proxy_globals_do_not_hide_undefined_bare_identifiers() {
+    let sfc = include_str!("../../../../tests/fixtures/no-undefined-refs/plugin-globals.vue");
+    let expected = undefined_at(sfc, "missing");
+    assert_eq!(
+        findings(&lint_sfc(sfc))
+            .into_iter()
+            .map(|(rule, severity, start, end, message)| {
+                (rule, severity, start, end, message.to_string())
+            })
+            .collect::<Vec<_>>(),
+        vec![expected]
+    );
+}
+
+#[test]
+fn imported_props_shapes_are_not_assumed_to_be_closed() {
+    let sfc = include_str!("../../../../tests/fixtures/no-undefined-refs/imported-props.vue");
+    assert_eq!(findings(&lint_sfc(sfc)), none());
+    for declaration in [
+        "withDefaults(defineProps<StatusBoxProps>(), { status: 'default' });",
+        "type Props = StatusBoxProps; defineProps<Props>();",
+        "interface Props extends StatusBoxProps { label: string }; defineProps<Props>();",
+        "defineProps<Pick<StatusBoxProps, 'status'>>();",
+        "type Props = StatusBoxProps & { label: string }; defineProps<Props>();",
+    ] {
+        let source = sfc.replace("defineProps<StatusBoxProps>();", declaration);
+        assert_eq!(findings(&lint_sfc(&source)), none(), "{declaration}");
+    }
+}
+
+#[test]
+fn closed_props_shapes_keep_reporting_unknown_names() {
+    for declaration in [
+        "defineProps<{ status?: 'default' | 'error' }>();",
+        "interface Props { status?: 'default' | 'error' }; defineProps<Props>();",
+        "type Props = { status?: 'default' | 'error' }; defineProps<Props>();",
+        "defineProps({ status: String });",
+        "defineProps<{}>();",
+        "interface Props {}; defineProps<Props>();",
+        "interface Props { status?: StatusBoxProps }; defineProps<Props>();",
+    ] {
+        let source = format!(
+            "<script setup lang=\"ts\">\nimport type {{ StatusBoxProps }} from './status-box.types';\n{declaration}\n</script>\n<template>{{{{ missing }}}}</template>\n"
+        );
+        let expected = undefined_at(&source, "missing");
+        assert_eq!(
+            findings(&lint_sfc(&source))
+                .into_iter()
+                .map(|(rule, severity, start, end, message)| {
+                    (rule, severity, start, end, message.to_string())
+                })
+                .collect::<Vec<_>>(),
+            vec![expected],
+            "{declaration}"
+        );
+    }
+}

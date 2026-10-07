@@ -5,6 +5,9 @@
 //! plain-value and runtime-object tracking.
 
 mod debug;
+mod origins;
+mod ref_value_declaration;
+mod ref_values;
 
 use crate::croquis::{BindingMetadata, ComponentRegistration, ComponentShape, Croquis};
 use crate::croquis::{
@@ -14,7 +17,7 @@ use crate::macros::{EmitDefinition, MacroTracker, PropDefinition};
 use crate::provide::ProvideInjectTracker;
 use crate::race::RaceConditionTracker;
 use crate::reactivity::ReactivityTracker;
-use crate::scope::ScopeChain;
+use crate::scope::{ScopeChain, ScopeId};
 use crate::script_parser::typeof_refs::TypeDependencyRefs;
 use crate::setup_context::SetupContextTracker;
 use crate::types::TypeResolver;
@@ -41,6 +44,14 @@ pub(crate) enum ReactiveValueOrigin {
     PlainAlias {
         source_name: CompactString,
     },
+}
+
+/// Lexical identity of a ref initializer or a shadowing ordinary binding.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum RefValueSourceKind {
+    Live,
+    Raw,
+    Other,
 }
 
 /// A returned context whose methods are backed by getter arguments.
@@ -75,6 +86,9 @@ pub struct ScriptParseResult {
     /// fields of a locally declared type through an OXC-backed AST walk
     /// rather than a raw-text scan.
     pub types: TypeResolver,
+    /// Exact local type-member ranges retained by the existing AST walk.
+    pub(crate) type_property_declarations:
+        FxHashMap<CompactString, FxHashMap<CompactString, Option<(u32, u32)>>>,
     pub type_exports: Vec<TypeExport>,
     pub invalid_exports: Vec<InvalidExport>,
     /// Scope chain for tracking nested JavaScript scopes
@@ -92,6 +106,13 @@ pub struct ScriptParseResult {
     pub(crate) reactivity_aliases: FxHashMap<CompactString, CompactString>,
     /// Bindings that are known plain snapshots of reactive values.
     pub(crate) reactive_value_origins: FxHashMap<CompactString, ReactiveValueOrigin>,
+    /// Private lexical provenance; the name map above keeps the debug contract.
+    pub(crate) scoped_reactive_value_origins:
+        FxHashMap<ScopeId, FxHashMap<CompactString, ReactiveValueOrigin>>,
+    /// Ref value member writes that retain a proxy or point at a template node.
+    pub(crate) ref_value_sources: FxHashMap<ScopeId, FxHashMap<CompactString, RefValueSourceKind>>,
+    /// A snapshot keeps the identity of its source even in a shadowing closure.
+    pub(crate) live_ref_value_origins: FxHashMap<ScopeId, FxHashSet<CompactString>>,
     /// Call results that were constructed from getter arguments.
     pub(crate) reactive_getter_contexts: FxHashMap<CompactString, ReactiveGetterContext>,
     /// Setup context violation tracking, plus script browser-global reads.

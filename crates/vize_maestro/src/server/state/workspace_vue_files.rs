@@ -36,12 +36,14 @@ impl ServerState {
     /// Track newly-created on-disk Vue files without treating them as open
     /// editor documents. Folder events recursively discover nested SFCs.
     pub(crate) fn track_workspace_vue_files(&self, uri: &str) -> bool {
+        self.invalidate_workspace_project_files();
         let Ok(uri) = Url::parse(uri) else {
             return false;
         };
         let Ok(path) = uri.to_file_path() else {
             return false;
         };
+        self.observe_workspace_project_membership(&path, true);
         if vize_l0::path::is_git_metadata_path(&path) {
             return false;
         }
@@ -64,12 +66,14 @@ impl ServerState {
 
     /// Forget a deleted or renamed on-disk Vue file or directory subtree.
     pub(crate) fn forget_workspace_vue_files(&self, uri: &str) -> bool {
+        self.invalidate_workspace_project_files();
         let Ok(uri) = Url::parse(uri) else {
             return false;
         };
         let Ok(prefix) = uri.to_file_path() else {
             return false;
         };
+        self.observe_workspace_project_membership(&prefix, false);
         let before = self.workspace_vue_files.len();
         self.workspace_vue_files.retain(|candidate, _| {
             candidate

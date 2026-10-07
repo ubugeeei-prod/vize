@@ -62,8 +62,25 @@ jobs:
       - name: Build @vizejs/vite-plugin
         run: rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
 
+      - name: Install Japanese rendering fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+          fc-match --format '%{family}\n' ':lang=ja'
+
       - name: Build docs
         run: vp run --filter './docs' build
+
+      - name: Verify rendered navigation and adoption guides
+        run: vp node docs/scripts/verify-navigation-render.mjs
+
+      - name: Upload rendered docs screenshots
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: docs-render-evidence
+          path: docs-render-evidence
+          if-no-files-found: error
 
       - name: Upload docs artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -10,7 +10,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | product                     | kind  | module    | files | sites |
 | --------------------------- | ----- | --------- | ----: | ----: |
-| `BindingMetadata`           | type  | `croquis` |    12 |    31 |
+| `BindingMetadata`           | type  | `croquis` |    13 |    34 |
 | `Croquis`                   | type  | `croquis` |    12 |    35 |
 | `Drawer`                    | type  | `drawer`  |     3 |    18 |
 | `DrawerOptions`             | type  | `drawer`  |     1 |     5 |
@@ -29,7 +29,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | ----------------------------------------- | ----: | ----: |
 | `BindingIdentity`                         |     1 |     1 |
 | `BindingOccurrences`                      |     6 |     7 |
-| `BindingType`                             |    17 |   133 |
+| `BindingType`                             |    19 |   142 |
 | `BlockLocation`                           |     5 |     7 |
 | `DEFINE_EMITS`                            |     1 |     2 |
 | `DEFINE_EXPOSE`                           |     1 |     1 |

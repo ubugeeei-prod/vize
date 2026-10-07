@@ -6,7 +6,7 @@ use oxc_allocator::Allocator;
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_carton::{String, ToCompactString, cstr};
+use vize_carton::{FxHashSet, String, ToCompactString, cstr};
 
 #[path = "import_rewriter_authored_vue_ts.rs"]
 mod authored_vue_ts;
@@ -182,19 +182,23 @@ impl ImportRewriter {
             return Vec::new();
         }
 
-        let allocator = Allocator::default();
-        let parser = Parser::new(&allocator, source, source_type);
-        let result = parser.parse();
+        let specifiers = self.collect_all_specifiers(source, source_type);
+        self.relative_vue_specifiers(&specifiers, source_dir)
+    }
 
+    /// Classify an already collected module list without parsing it again.
+    pub(crate) fn relative_vue_specifiers(
+        &self,
+        module_specifiers: &[String],
+        source_dir: Option<&Path>,
+    ) -> Vec<String> {
         let mut specifiers: Vec<String> = Vec::new();
-        let mut collector = ModuleSpecifierCollector::new();
-        collector.visit_program(&result.program);
-        for (_, _, path, _) in collector.specifiers {
+        for path in module_specifiers {
             let candidate =
                 if path.ends_with(".vue") && (path.starts_with("./") || path.starts_with("../")) {
                     path.to_compact_string()
                 } else if source_dir
-                    .is_some_and(|dir| rewrite_relative_vue_specifier(&path, dir).is_some())
+                    .is_some_and(|dir| rewrite_relative_vue_specifier(path, dir).is_some())
                 {
                     cstr!("{path}.vue")
                 } else {
@@ -221,8 +225,9 @@ impl ImportRewriter {
         let mut collector = ModuleSpecifierCollector::new();
         collector.visit_program(&result.program);
         let mut specifiers: Vec<String> = Vec::new();
+        let mut seen = FxHashSet::default();
         for (_, _, path, _) in collector.specifiers {
-            if !specifiers.contains(&path) {
+            if seen.insert(path.clone()) {
                 specifiers.push(path);
             }
         }
@@ -265,3 +270,7 @@ impl Default for ImportRewriter {
         Self::new()
     }
 }
+
+#[cfg(test)]
+#[path = "import_rewriter_dependency_tests.rs"]
+mod dependency_tests;

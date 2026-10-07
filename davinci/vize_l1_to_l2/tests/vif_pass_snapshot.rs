@@ -77,7 +77,7 @@ fn the_collision_fixture_snapshots_the_post_pass_folio() {
         // The folio is clean - all three keys extracted - while the
         // duplicate-key errors ride the diagnostics channel.
         assert_dump_snapshot!(*folio);
-        assert_eq!(lowered.diagnostics.len(), 2);
+        assert_eq!(lowered.diagnostics.len(), 3);
         for diagnostic in &lowered.diagnostics {
             assert_eq!(diagnostic.message.as_str(), vif::SAME_KEY_MESSAGE);
         }

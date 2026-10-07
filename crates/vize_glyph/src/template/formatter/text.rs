@@ -5,6 +5,7 @@
 
 use super::{
     TemplateFormatter, format_interpolation_expression, format_interpolations_with_vue_version,
+    parse_interpolation_range,
     suppression::{ChunkJoin, LineJoiner, TextRun},
 };
 use vize_l0::String;
@@ -26,6 +27,14 @@ impl TemplateFormatter<'_> {
             format_interpolations_with_vue_version(text.as_str(), self.options, self.vue_version);
         let start = text.start();
         let end = text.end();
+        let depth = if formatted.contains('\n')
+            && parse_interpolation_range(text.as_str().as_bytes(), 0)
+                .is_some_and(|(_, _, end)| end == text.as_str().len())
+        {
+            joiner.interpolation_depth(start, end, depth)
+        } else {
+            depth
+        };
         text.clear();
         // If the formatted expression wraps onto multiple lines, single-line
         // `{{ expr }}` emission would leave the wrapped lines indented

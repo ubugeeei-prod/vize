@@ -2,9 +2,16 @@
 title: UI スタイル
 ---
 
-<!-- Generated translation; source: guide/ui-styles.md -->
-
 # UI スタイル
+
+[コンポーネントの使用例](./ui/index.md)で使いたいコンポーネントを選び、必要なスタイルだけを追加します。
+下のプレビューは実際の Button の使用例です。**Style** で Paper、Signal、Atelier を切り替えられます。
+
+<iframe src="/component-previews/app/index.html?family=button" title="Button スタイルの操作できるプレビュー" loading="lazy" width="100%" height="440" style="border:1px solid #8885;border-radius:8px"></iframe>
+
+[スタイルのプレビューを開く](/component-previews/app/index.html?family=button)
+
+## コンポーネントにスタイルを追加する
 
 `@vizejs/ui` のコンポーネントは、ビジュアル用のスタイルシートがなくても動作します。Vize のオプションのスタイルを使うには、ベース、パレットを 1 つ、そしてページで使うコンポーネントをインポートします。
 
@@ -21,6 +28,10 @@ import "@vizejs/ui/component-card.css";
 import "@vizejs/ui/component-badge.css";
 import "@vizejs/ui/component-alert.css";
 import "@vizejs/ui/component-tooltip.css";
+import "@vizejs/ui/component-tabs.css";
+import "@vizejs/ui/component-breadcrumb.css";
+import "@vizejs/ui/component-pagination.css";
+import "@vizejs/ui/component-stepper.css";
 // Add these only when their low-level behavior is used without the JS entry:
 // import "@vizejs/ui/component-progress-bar.css";
 // import "@vizejs/ui/component-scroll-area.css";
@@ -28,12 +39,22 @@ import "@vizejs/ui/component-tooltip.css";
 ```
 
 ```vue
+<script setup lang="ts">
+import { Button } from "@vizejs/ui/button";
+import "@vizejs/ui/base.css";
+import "@vizejs/ui/theme-preset-paper.css";
+import "@vizejs/ui/component-button.css";
+</script>
+
 <template>
   <main data-vize-theme="paper">
     <Button>Save changes</Button>
   </main>
 </template>
 ```
+
+この SFC は [Vite+ 連携 (英語)](/guide/vite-plus/)を設定したプロジェクトで使えます。
+全ページで読み込みたい CSS は、アプリケーションのエントリーにインポートしてください。
 
 `base.css` はセマンティックトークン、密度、forced-colors ポリシーを提供します。これは既存の `theme.css` エクスポートのエイリアスです。アプリケーションの要素をリセットしたり、スタイルの付いていない Vize コンポーネントを変更したりすることはありません。コンポーネントファイルは素の CSS アセットであり、JavaScript や Vue の API は変わりません。あるコンポーネントをインポートしても、他のコンポーネントのビジュアルルールが追加されることはありません。
 

@@ -451,6 +451,17 @@
     "LintRuleOptions": {
       "type": "object",
       "properties": {
+        "script/define-props-destructuring": {
+          "type": "object",
+          "properties": {
+            "destructure": {
+              "default": "only-when-assigned",
+              "type": "string",
+              "enum": ["only-when-assigned", "always", "never"]
+            }
+          },
+          "additionalProperties": false
+        },
         "html/no-empty-palpable-content": {
           "type": "object",
           "properties": {
@@ -535,6 +546,18 @@
             "shallowOnly": {
               "default": false,
               "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "vue/require-component-registration": {
+          "type": "object",
+          "properties": {
+            "globals": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           "additionalProperties": false

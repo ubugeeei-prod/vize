@@ -1,0 +1,11 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8015",
+  "originalSha256": {
+    "List.vue.txt": "a1e5f669caebdcc2747db15a810bb446c692fcbb800579a32bc369614d1b21bf",
+    "Child.vue.txt": "1707a95ea49617fc34c83b6c84dce436df5c111bbb80a35e53bbbd5a31bb359e",
+    "App.vue.txt": "b05179e7ef51972e3c30d6b634c204797244914b5d306d2cd4e3b2840a5b68f6",
+    "original-issue.md": "bf73f54e07c9a4dcf7622551b86862cb8fff4c98b704290b43c7ebc9e9eeadd0",
+    "Comp.vue.txt": "5ba1d7054f32f1cd19515de8477843d43593d3e848b67a805e33336fe411b2df"
+  },
+  "scope": "Declared type fallback for generic component prop hover. Instantiated native types remain authoritative; expression globals and attribute expansion are separate work."
+}

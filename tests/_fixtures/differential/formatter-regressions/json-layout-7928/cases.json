@@ -1,0 +1,209 @@
+{
+  "schema": "vize.formatter-regression-corpus",
+  "version": 1,
+  "issue": 7928,
+  "native": "unsupported",
+  "source": {
+    "issueUrl": "https://github.com/ubugeeei-prod/vize/issues/7928",
+    "reporter": "ubugeeei",
+    "version": "0.432.0",
+    "reference": "oxfmt 0.63.0; strict JSON and JSONC with trailingComma none"
+  },
+  "cases": [
+    {
+      "id": "reported-config",
+      "api": "json",
+      "file": "reported-config.json",
+      "source": "{\n  \"name\": \"example\",\n  \"files\": [\"dist\", \"src\"],\n  \"references\": [{ \"path\": \"./other.json\" }],\n\n  \"nested\": { \"a\": 1 }\n}\n",
+      "expected": "{\n  \"name\": \"example\",\n  \"files\": [\"dist\", \"src\"],\n  \"references\": [{ \"path\": \"./other.json\" }],\n\n  \"nested\": { \"a\": 1 }\n}\n"
+    },
+    {
+      "id": "compact-root",
+      "api": "json",
+      "file": "compact-root.json",
+      "source": "{\"files\":[\"dist\",\"src\"],\"nested\":{\"a\":1}}",
+      "expected": "{ \"files\": [\"dist\", \"src\"], \"nested\": { \"a\": 1 } }\n"
+    },
+    {
+      "id": "authored-expanded-object",
+      "api": "json",
+      "file": "authored-expanded-object.json",
+      "source": "{\"nested\":{\n\"a\":1}}",
+      "expected": "{\n  \"nested\": {\n    \"a\": 1\n  }\n}\n"
+    },
+    {
+      "id": "collapse-authored-array",
+      "api": "json",
+      "file": "collapse-authored-array.json",
+      "source": "{\n\"lib\":[\n\"ESNext\",\n\"DOM\"\n]\n}",
+      "expected": "{\n  \"lib\": [\"ESNext\", \"DOM\"]\n}\n"
+    },
+    {
+      "id": "narrow-member-prefix",
+      "api": "json",
+      "file": "narrow-member-prefix.json",
+      "source": "{\n\"lib\":[\"ESNext\",\"DOM\"],\n\"nested\":{\"a\":1,\"b\":2}\n}",
+      "options": {
+        "printWidth": 26
+      },
+      "expected": "{\n  \"lib\": [\n    \"ESNext\",\n    \"DOM\"\n  ],\n  \"nested\": {\n    \"a\": 1,\n    \"b\": 2\n  }\n}\n"
+    },
+    {
+      "id": "comma-causes-break",
+      "api": "json",
+      "file": "comma-causes-break.json",
+      "source": "{\n\"a\":[\"x\",\"y\"],\"x\":1}",
+      "options": {
+        "printWidth": 17
+      },
+      "expected": "{\n  \"a\": [\n    \"x\",\n    \"y\"\n  ],\n  \"x\": 1\n}\n"
+    },
+    {
+      "id": "comma-fits-exactly",
+      "api": "json",
+      "file": "comma-fits-exactly.json",
+      "source": "{\n\"a\":[\"x\",\"y\"],\"x\":1}",
+      "options": {
+        "printWidth": 18
+      },
+      "expected": "{\n  \"a\": [\"x\", \"y\"],\n  \"x\": 1\n}\n"
+    },
+    {
+      "id": "bracket-spacing-disabled",
+      "api": "json",
+      "file": "bracket-spacing-disabled.json",
+      "source": "{\"files\":[\"dist\"],\"nested\":{\"a\":1}}",
+      "options": {
+        "bracketSpacing": false
+      },
+      "expected": "{\"files\": [\"dist\"], \"nested\": {\"a\": 1}}\n"
+    },
+    {
+      "id": "tabs-count-as-columns",
+      "api": "json",
+      "file": "tabs-count-as-columns.json",
+      "source": "{\n\"lib\":[\"ESNext\",\"DOM\"],\n\"nested\":{\"a\":1}\n}",
+      "options": {
+        "printWidth": 26,
+        "useTabs": true,
+        "tabWidth": 4
+      },
+      "expected": "{\n\t\"lib\": [\n\t\t\"ESNext\",\n\t\t\"DOM\"\n\t],\n\t\"nested\": { \"a\": 1 }\n}\n"
+    },
+    {
+      "id": "blank-lines-normalized",
+      "api": "json",
+      "file": "blank-lines-normalized.json",
+      "source": "{\n\n \"a\":1,\n \n\n \"b\":2\n\n}",
+      "expected": "{\n  \"a\": 1,\n\n  \"b\": 2\n}\n"
+    },
+    {
+      "id": "blank-lines-crlf",
+      "api": "json",
+      "file": "blank-lines-crlf.json",
+      "source": "{\r\n \"a\":1,\r\n \r\n \"b\":[\"x\",\"y\"]\r\n}",
+      "options": {
+        "endOfLine": "crlf"
+      },
+      "expected": "{\r\n  \"a\": 1,\r\n\r\n  \"b\": [\"x\", \"y\"]\r\n}\r\n"
+    },
+    {
+      "id": "array-blank-lines",
+      "api": "json",
+      "file": "array-blank-lines.json",
+      "source": "[1,\n\n2]",
+      "expected": "[\n  1,\n\n  2\n]\n"
+    },
+    {
+      "id": "jsonc-comments-remain",
+      "api": "jsonc",
+      "file": "jsonc-comments-remain.jsonc",
+      "source": "{\n// strict configuration\n\"compilerOptions\": {\n\"strict\": true, // required\n\"lib\": [\"ESNext\", \"DOM\"]\n},\n\n// workspace packages\n\"references\": [{ \"path\": \"../shared\" }]\n}",
+      "expected": "{\n  // strict configuration\n  \"compilerOptions\": {\n    \"strict\": true, // required\n    \"lib\": [\"ESNext\", \"DOM\"]\n  },\n\n  // workspace packages\n  \"references\": [{ \"path\": \"../shared\" }]\n}\n"
+    },
+    {
+      "id": "numeric-array-fill",
+      "api": "json",
+      "file": "numeric-array-fill.json",
+      "source": "{\n\"a\":[1,2,3,4,5,6,7,8,9,10],\"x\":1}",
+      "options": {
+        "printWidth": 16
+      },
+      "expected": "{\n  \"a\": [\n    1, 2, 3, 4,\n    5, 6, 7, 8,\n    9, 10\n  ],\n  \"x\": 1\n}\n"
+    },
+    {
+      "id": "unicode-display-width",
+      "api": "json",
+      "file": "unicode.json",
+      "source": "{\n\"a\":[\"あああ\",\"いいい\"],\"x\":1}",
+      "options": {
+        "printWidth": 22
+      },
+      "expected": "{\n  \"a\": [\n    \"あああ\",\n    \"いいい\"\n  ],\n  \"x\": 1\n}\n"
+    },
+    {
+      "id": "emoji-display-width",
+      "api": "json",
+      "file": "emoji.json",
+      "source": "{\n\"a\":[\"😀😀😀\",\"😁😁😁\"],\"x\":1}",
+      "options": {
+        "printWidth": 22
+      },
+      "expected": "{\n  \"a\": [\n    \"😀😀😀\",\n    \"😁😁😁\"\n  ],\n  \"x\": 1\n}\n"
+    },
+    {
+      "id": "blank-line-after-comment",
+      "api": "jsonc",
+      "file": "after-comment.jsonc",
+      "source": "{\n\"a\":1,\n// comment\n\n\"b\":2}",
+      "expected": "{\n  \"a\": 1,\n  // comment\n\n  \"b\": 2\n}\n"
+    },
+    {
+      "id": "numeric-fill-blank-line",
+      "api": "json",
+      "file": "fill-blank.json",
+      "source": "{\n\"a\":[1,2,\n\n3,4,5,6],\"x\":1}",
+      "options": {
+        "printWidth": 16
+      },
+      "expected": "{\n  \"a\": [\n    1, 2,\n\n    3, 4, 5, 6\n  ],\n  \"x\": 1\n}\n"
+    },
+    {
+      "id": "block-comment-suffix-width",
+      "api": "jsonc",
+      "file": "suffix.jsonc",
+      "source": "{\n\"a\":[1,2,3] /*note*/\n}",
+      "options": {
+        "printWidth": 22
+      },
+      "expected": "{\n  \"a\": [\n    1, 2, 3\n  ] /*note*/\n}\n"
+    },
+    {
+      "id": "multiline-block-comment-prefix",
+      "api": "jsonc",
+      "file": "multi-comment.jsonc",
+      "source": "{\n\"a\":[1,2,3] /*note\nsecond*/\n}",
+      "options": {
+        "printWidth": 22
+      },
+      "expected": "{\n  \"a\": [\n    1, 2, 3\n  ] /*note\nsecond*/\n}\n"
+    },
+    {
+      "id": "blank-line-before-dangling-comment",
+      "api": "jsonc",
+      "file": "dangling.jsonc",
+      "source": "{\n\"a\":1,\n\n// last\n}",
+      "expected": "{\n  \"a\": 1\n\n  // last\n}\n"
+    },
+    {
+      "id": "expanded-space-indent",
+      "api": "json",
+      "file": "spaces.json",
+      "source": "{\n\"a\":1,\n\"nested\":{\"b\":2}\n}",
+      "options": {
+        "tabWidth": 4
+      },
+      "expected": "{\n    \"a\": 1,\n    \"nested\": { \"b\": 2 }\n}\n"
+    }
+  ]
+}

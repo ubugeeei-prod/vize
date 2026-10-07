@@ -32,6 +32,7 @@ pub(crate) struct ComponentPropSource<'a> {
     pub(crate) template: Option<&'a str>,
     pub(crate) offset: u32,
     pub(crate) scopes: &'a ScopeChain,
+    pub(crate) model_modifiers: Option<&'a super::model_modifiers::ModelModifierBindings>,
 }
 
 impl<'a> ComponentPropSource<'a> {
@@ -44,7 +45,16 @@ impl<'a> ComponentPropSource<'a> {
             template,
             offset,
             scopes,
+            model_modifiers: None,
         }
+    }
+
+    pub(crate) const fn with_model_modifiers(
+        mut self,
+        bindings: &'a super::model_modifiers::ModelModifierBindings,
+    ) -> Self {
+        self.model_modifiers = Some(bindings);
+        self
     }
 }
 
@@ -261,7 +271,11 @@ pub(crate) fn generate_component_prop_checks(
                     src_range,
                 });
             }
-            if let Some(src_range) = value_src_range.clone() {
+            if let Some(spans) =
+                super::model_modifiers::modifier_sub_spans(source_context, prop, value_span.clone())
+            {
+                sub_spans.extend(spans);
+            } else if let Some(src_range) = value_src_range.clone() {
                 sub_spans.push(VizeSubSpan {
                     gen_range: value_span,
                     src_range,

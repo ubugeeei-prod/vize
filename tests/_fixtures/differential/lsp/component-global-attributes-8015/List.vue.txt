@@ -1,0 +1,13 @@
+<script setup lang="ts" generic="T extends { id: number }">
+defineProps<{
+  items: T[];
+  title?: string;
+}>();
+defineEmits<{ pick: [item: T] }>();
+</script>
+
+<template>
+  <ul :title="title">
+    <li v-for="item in items" :key="item.id">{{ item.id }}</li>
+  </ul>
+</template>

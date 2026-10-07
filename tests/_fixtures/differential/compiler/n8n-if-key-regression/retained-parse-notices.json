@@ -1,0 +1,409 @@
+{
+  "schema": 1,
+  "provenance": "Exact compatibility notices for unchanged authored branch-key controls. Vue official raw modules/diagnostics remain in retained-controls.json; these notices are Vize HTML tree-construction compatibility output, not Vue semantic errors. Non-void authored <p .../> source spans were independently enumerated from original ASCII source bytes; arrays are literal complete ordered code/message/location expectations.",
+  "cases": [
+    {
+      "name": "simple-global",
+      "source": "<p v-if=\"ok\" :key=\"row\"/><p v-else-if=\"other\" :key=\"row\"/><p v-else :key=\"row\"/>",
+      "sourceSha256": "964e2c0714bf0c1615be02f2198188597cb14b2a3ff5b96dea9b67c5706441fb",
+      "parseErrors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 0,
+              "end": 25
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 25,
+              "end": 58
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 58,
+              "end": 80
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "compound-global",
+      "source": "<p v-if=\"ok\" :key=\"'row-' + row.id\"/><p v-else-if=\"other\" :key=\"'row-' + row.id\"/><p v-else :key=\"'row-' + row.id\"/>",
+      "sourceSha256": "597b38b9d5d540338cb5424d0957d2a53d3a28efe58c3a4c797b43cf6331f468",
+      "parseErrors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 0,
+              "end": 37
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 37,
+              "end": 82
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 82,
+              "end": 116
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "literal-complex",
+      "source": "<p v-if=\"ok\" :key=\"1 + 2\"/><p v-else-if=\"other\" :key=\"1 + 2\"/><p v-else :key=\"1 + 2\"/>",
+      "sourceSha256": "3ad5702e65555ef1cb988a9dcb4caaf1beb1d83b90bd1b8786960f62cbd5fd44",
+      "parseErrors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 0,
+              "end": 27
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 27,
+              "end": 62
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 62,
+              "end": 86
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "global-Math-member",
+      "source": "<p v-if=\"ok\" :key=\"Math.PI\"/><p v-else-if=\"other\" :key=\"Math.PI\"/><p v-else :key=\"Math.PI\"/>",
+      "sourceSha256": "2cfc2855a7aafd53d623b3e605d6334ed81d8aae646b230c887bd12be7e56dbf",
+      "parseErrors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 0,
+              "end": 29
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 29,
+              "end": 66
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 66,
+              "end": 92
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "loop-local-simple",
+      "source": "<template v-for=\"row in rows\"><p v-if=\"ok\" :key=\"row\"/><p v-else-if=\"other\" :key=\"row\"/><p v-else :key=\"row\"/></template>",
+      "sourceSha256": "293b9921de5b45dd2a15d3d9a6d38d84deab1dba66df3fb7e4359def28080a7f",
+      "parseErrors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 30,
+              "end": 55
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 55,
+              "end": 88
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 88,
+              "end": 110
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "loop-local-compound",
+      "source": "<template v-for=\"row in rows\"><p v-if=\"ok\" :key=\"row.id\"/><p v-else-if=\"other\" :key=\"row.id\"/><p v-else :key=\"row.id\"/></template>",
+      "sourceSha256": "1eb51f75eb98f62ec9fdecbca3d0eea3cd67631c18a7d244105b33e0baaeb001",
+      "parseErrors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 30,
+              "end": 58
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 58,
+              "end": 94
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 94,
+              "end": 119
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "quoted-literal",
+      "source": "<p v-if=\"ok\" :key=\"'x'\"/><p v-else-if=\"other\" :key=\"'x'\"/><p v-else :key=\"'x'\"/>",
+      "sourceSha256": "dbb43db215fca8829283450e73bda7ae729db3da7e025f1ad4d0be1ddcee2764",
+      "parseErrors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 0,
+              "end": 25
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 25,
+              "end": 58
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 58,
+              "end": 80
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "static-vs-binding",
+      "source": "<p v-if=\"ok\" key=\"row\"/><p v-else :key=\"row\"/>",
+      "sourceSha256": "d3420d6ce54c67197f5f72c77f1025a0af01eff4f320571509d902ff23c7ca5a",
+      "parseErrors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 0,
+              "end": 24
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 24,
+              "end": 46
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "literal-object-member",
+      "source": "<p v-if=\"ok\" :key=\"({ id: 1 }).id\"/><p v-else-if=\"other\" :key=\"({ id: 1 }).id\"/><p v-else :key=\"({ id: 1 }).id\"/>",
+      "sourceSha256": "c8788aa2f83f98ece4aeefb01ec04787c2efef0f0fd4074c35d53dff4e1af943",
+      "parseErrors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 0,
+              "end": 36
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 36,
+              "end": 80
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 80,
+              "end": 113
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "lambda-binding",
+      "source": "<p v-if=\"ok\" :key=\"x => 1\"/><p v-else-if=\"other\" :key=\"x => 1\"/><p v-else :key=\"x => 1\"/>",
+      "sourceSha256": "69451409804e197189bc4678e5b5c5a48fd7b7edd37a6c6a14a9ce688e155556",
+      "parseErrors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 0,
+              "end": 28
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 28,
+              "end": 64
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 64,
+              "end": 89
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "local-shorthand",
+      "source": "<template v-for=\"row in rows\"><p v-if=\"ok\" :key=\"({row})\"/><p v-else-if=\"other\" :key=\"({row})\"/><p v-else :key=\"({row})\"/></template>",
+      "sourceSha256": "6ac0950101500bdb0ab9b8f11984c610c2d1d4396bf26f6ec81eadb12f312890",
+      "parseErrors": [
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 30,
+              "end": 59
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 59,
+              "end": 96
+            }
+          }
+        },
+        {
+          "code": "ExtendPoint",
+          "message": "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+          "location": {
+            "span": {
+              "start": 96,
+              "end": 122
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "erased-template-wrapper",
+      "source": "<template v-if=\"ok\" :key=\"row.id\"><p>a</p></template><template v-else-if=\"other\" :key=\"row.id\"><p>b</p></template><template v-else :key=\"row.id\"><p>c</p></template>",
+      "sourceSha256": "301384e3a9990b364d85db753b53ece8fb24e8439d6110b94dc349e65059b3d6",
+      "parseErrors": []
+    }
+  ]
+}

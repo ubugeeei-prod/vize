@@ -140,8 +140,12 @@ fn duplicate_authored_keys_flag_every_later_branch_exactly() {
     let source =
         r#"<p v-if="a" key="dup">1</p><p v-else-if="b" key="dup">2</p><p v-else key="dup">3</p>"#;
     with_transformed(source, |lowered, _, _, _| {
-        assert_eq!(lowered.diagnostics.len(), 2, "branches 1 and 2 collide");
-        for (diagnostic, occurrence) in lowered.diagnostics.iter().zip([1usize, 2]) {
+        assert_eq!(
+            lowered.diagnostics.len(),
+            3,
+            "each earlier-equal key collides"
+        );
+        for (diagnostic, occurrence) in lowered.diagnostics.iter().zip([1usize, 2, 2]) {
             assert_eq!(diagnostic.severity(), Severity::Error);
             assert_eq!(diagnostic.exemption(), Some(&exemptions::LOWERING));
             assert_eq!(diagnostic.stage, Stage::Semantic);
@@ -154,7 +158,7 @@ fn duplicate_authored_keys_flag_every_later_branch_exactly() {
             .filter(|record| record.rule.as_str() == "error.v-if-same-key")
             .map(|record| record.before.as_str())
             .collect();
-        assert_eq!(errors, vec!["key=\"dup\"", "key=\"dup\""]);
+        assert_eq!(errors, vec!["key=\"dup\"", "key=\"dup\"", "key=\"dup\""]);
     });
     assert_transformed_sound(source, "collision");
 }

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import type { UiFamilyCatalogEntry } from "../../src/catalog/family-catalog-types.ts";
+import { featuredExamples, previewMarkup, publicExample } from "./examples.ts";
 import {
   componentExports,
   extractComponentApi,
@@ -121,6 +122,7 @@ export function renderUiFamilyPage(packageRoot: string, entry: UiFamilyCatalogEn
           "",
           `Or copy the source into your project with \`vize lib pull ${entry.canonicalName}\` (see [Source Distribution](../lib-pull.md)).`,
         ].join("\n");
+  const example = publicExample(packageRoot, entry);
   const api =
     components.length > 0
       ? componentSections(packageRoot, entry)
@@ -135,6 +137,19 @@ export function renderUiFamilyPage(packageRoot: string, entry: UiFamilyCatalogEn
     summary,
     facts,
     usage,
+    example == null
+      ? ""
+      : blocks(
+          "## Try it",
+          "This is the basic example maintained with the component source, using the public package imports. The preview adds the optional Paper styles.",
+          previewMarkup(
+            entry.canonicalName,
+            entry.title,
+            (featuredExamples as readonly string[]).includes(entry.canonicalName),
+          ),
+          "## Copy the example",
+          ["```vue", example.trim(), "```"].join("\n"),
+        ),
     api === "" ? "" : `## API\n\n${api}`,
     `## Behavior\n\n${behavior}`,
   );
@@ -145,12 +160,33 @@ export function uiIndexRows(
   packageRoot: string,
   entries: readonly UiFamilyCatalogEntry[],
   linkPrefix: string,
+  locale = "en",
 ): string {
+  const names: Record<string, readonly [string, string]> = {
+    actions: ["Run actions", "操作を実行する"],
+    form: ["Collect and validate input", "入力・検証"],
+    selection: ["Choose values", "値を選ぶ"],
+    navigation: ["Move through content", "コンテンツを移動する"],
+    overlays: ["Show contextual content", "補足・確認を表示する"],
+    disclosure: ["Reveal details", "詳細を開く"],
+    feedback: ["Show status and progress", "状態・進捗を伝える"],
+    layout: ["Arrange a page", "画面を組み立てる"],
+    data: ["Explore data", "データを見る"],
+    charts: ["Visualize data", "データを可視化する"],
+    "date-time": ["Pick dates and times", "日時を選ぶ"],
+    editor: ["Edit content", "コンテンツを編集する"],
+    media: ["Present media", "メディアを表示する"],
+    typography: ["Format text", "文字を整える"],
+    accessibility: ["Support accessible interactions", "操作のアクセシビリティ"],
+    interaction: ["Handle gestures and input", "ジェスチャー・操作"],
+    foundations: ["Compose the foundations", "基本の振る舞いを組み合わせる"],
+    i18n: ["Localize an interface", "インターフェースを翻訳する"],
+  };
   const groups = [...new Set(entries.map(familyGroup))].sort();
   return groups
     .map((group) =>
       blocks(
-        `## ${group}`,
+        `### ${names[group]?.[locale === "ja" ? 1 : 0] ?? group}`,
         table(
           ["Family", "Maturity", "Summary"],
           entries

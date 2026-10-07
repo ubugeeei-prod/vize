@@ -1,0 +1,18 @@
+[
+  {
+    "path": "src/App.vue",
+    "source": "inputs/application/src/App.vue.txt"
+  },
+  {
+    "path": "src/Home.vue",
+    "source": "inputs/application/src/Home.vue.txt"
+  },
+  {
+    "path": "src/main.ts",
+    "source": "inputs/application/src/main.ts.txt"
+  },
+  {
+    "path": "src/router.ts",
+    "source": "inputs/application/src/router.ts.txt"
+  }
+]

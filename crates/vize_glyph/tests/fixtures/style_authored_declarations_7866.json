@@ -1,0 +1,230 @@
+{
+  "schema": "vize.formatter-css-declaration-regressions",
+  "version": 1,
+  "issue": 7866,
+  "expectedProvenance": "independently authored complete output; actual source execution required",
+  "cases": [
+    {
+      "id": "original-plain",
+      "api": "sfc",
+      "input": "<style>\n.a { color: red }\n.b{margin:0}\n</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n}\n\n.b {\n  margin: 0;\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "original-opacity-trigger",
+      "api": "sfc",
+      "input": "<style>\n.a { color: red }\n.b{margin:0}\n.c { opacity: .5 }\n</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n}\n\n.b {\n  margin: 0;\n}\n\n.c {\n  opacity: .5;\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "opacity-value",
+      "api": "style",
+      "input": ".a{color:red}.b{opacity:.5}",
+      "expected": ".a {\n  color: red;\n}\n\n.b {\n  opacity: .5;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "animation-value",
+      "api": "sfc",
+      "input": "<style>.a{color:red}.b{animation:spin 1s linear infinite}</style>\n",
+      "expected": "<style>\n.a {\n  color: red;\n}\n\n.b {\n  animation: spin 1s linear infinite;\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "transition-shorthand",
+      "api": "style",
+      "input": ".a{color:red}.b{transition:opacity 0.2s ease}",
+      "expected": ".a {\n  color: red;\n}\n\n.b {\n  transition: opacity 0.2s ease;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "box-shorthand",
+      "api": "style",
+      "input": ".a{color:red;margin:0 0 0 0}",
+      "expected": ".a {\n  color: red;\n  margin: 0 0 0 0;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "pseudo-element",
+      "api": "style",
+      "input": ".a{color:red}.b::before{content:\"\"}",
+      "expected": ".a {\n  color: red;\n}\n\n.b::before {\n  content: \"\";\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "is-selector",
+      "api": "style",
+      "input": ".b:is(.c){margin:0;opacity:.5}",
+      "expected": ".b:is(.c) {\n  margin: 0;\n  opacity: .5;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "media-feature",
+      "api": "style",
+      "input": "@media (max-width:600px){.a{color:red;opacity:.5}}",
+      "expected": "@media (max-width:600px) {\n  .a {\n    color: red;\n    opacity: .5;\n  }\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "font-face-strings",
+      "api": "style",
+      "input": "@font-face{font-family:\"Authored: ; {}\";src:url(\"font.woff2\") format(\"woff2\")} .a{opacity:.5}",
+      "expected": "@font-face {\n  font-family: \"Authored: ; {}\";\n  src: url(\"font.woff2\") format(\"woff2\");\n}\n\n.a {\n  opacity: .5;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "scoped-implicit-nesting",
+      "api": "sfc",
+      "input": "<style scoped>.wrap{color:red;.item{margin:0;opacity:.5}}</style>\n",
+      "expected": "<style scoped>\n.wrap {\n  color: red;\n  .item {\n    margin: 0;\n    opacity: .5;\n  }\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "supports-header",
+      "api": "style",
+      "input": "@supports (display:grid){.a{color:red;opacity:.5}}",
+      "expected": "@supports (display:grid) {\n  .a {\n    color: red;\n    opacity: .5;\n  }\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "keyframes",
+      "api": "style",
+      "input": "@keyframes spin{from{opacity:.5}to{opacity:1}}",
+      "expected": "@keyframes spin {\n  from {\n    opacity: .5;\n  }\n  to {\n    opacity: 1;\n  }\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "escaped-property",
+      "api": "style",
+      "input": ".a{\\6f pacity:.5;color:red}",
+      "expected": ".a {\n  \\6f pacity: .5;\n  color: red;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "quoted-punctuation",
+      "api": "style",
+      "input": ".a{content:\"x:;}\\\\\\\"y\";opacity:.5}",
+      "expected": ".a {\n  content: \"x:;}\\\\\\\"y\";\n  opacity: .5;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "custom-value-braces",
+      "api": "style",
+      "input": ".a{--theme:{ color:red; nested:{ accent:blue } };opacity:.5}",
+      "expected": ".a {\n  --theme: { color:red; nested:{ accent:blue } };\n  opacity: .5;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "custom-value-punctuation",
+      "api": "style",
+      "input": ".a{--data:\"x:;{}\";--list:[a:b;c];opacity:.5}",
+      "expected": ".a {\n  --data: \"x:;{}\";\n  --list: [a:b;c];\n  opacity: .5;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "unicode-and-escaped-selector",
+      "api": "style",
+      "input": ".日本\\:active{color:red;opacity:.5}",
+      "expected": ".日本\\:active {\n  color: red;\n  opacity: .5;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "nested-comment-existing-policy",
+      "api": "style",
+      "input": ".a{ /* (}; */ color:red; opacity:.5 }",
+      "expected": ".a{ /* (}; */ color:red; opacity:.5 }",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "top-comment",
+      "api": "sfc",
+      "input": "<style>/* heading */\n.a{color:red;opacity:.5}</style>\n",
+      "expected": "<style>\n/* heading */\n.a {\n  color: red;\n  opacity: .5;\n}\n</style>\n",
+      "options": {},
+      "cli": true
+    },
+    {
+      "id": "four-space-layout",
+      "api": "style",
+      "input": ".a{color:red;opacity:.5}",
+      "expected": ".a {\n    color: red;\n    opacity: .5;\n}\n",
+      "options": {
+        "tabWidth": 4
+      },
+      "cli": false
+    },
+    {
+      "id": "tab-layout",
+      "api": "style",
+      "input": ".a{color:red;opacity:.5}",
+      "expected": ".a {\n\tcolor: red;\n\topacity: .5;\n}\n",
+      "options": {
+        "useTabs": true
+      },
+      "cli": false
+    },
+    {
+      "id": "crlf-layout",
+      "api": "style",
+      "input": ".a{color:red;opacity:.5}",
+      "expected": ".a {\r\n  color: red;\r\n  opacity: .5;\r\n}\r\n",
+      "options": {
+        "endOfLine": "crlf"
+      },
+      "cli": false
+    },
+    {
+      "id": "authored-color-value",
+      "api": "style",
+      "input": ".a{color:#D3D3D3;opacity:.5}",
+      "expected": ".a {\n  color: #D3D3D3;\n  opacity: .5;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "original-captured-box-values",
+      "api": "style",
+      "input": "hr{border:solid;border-width:thin 0 0 0;margin:0 0 0 0}.wrap{color:red;.item{color:blue}}",
+      "expected": "hr {\n  border: solid;\n  border-width: thin 0 0 0;\n  margin: 0 0 0 0;\n}\n\n.wrap {\n  color: red;\n  .item {\n    color: blue;\n  }\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "escaped-custom-value-braces",
+      "api": "style",
+      "input": ".a{\\2d \\-theme:{ color:red; nested:{ accent:blue } };opacity:.5}",
+      "expected": ".a {\n  \\2d \\-theme: { color:red; nested:{ accent:blue } };\n  opacity: .5;\n}\n",
+      "options": {},
+      "cli": false
+    },
+    {
+      "id": "empty-and-whitespace-custom-values",
+      "api": "style",
+      "input": ".a{--empty:;--space: ;opacity:.5}",
+      "expected": ".a {\n  --empty:;\n  --space: ;\n  opacity: .5;\n}\n",
+      "options": {},
+      "cli": false
+    }
+  ]
+}

@@ -169,6 +169,7 @@ pub(crate) fn generate_scope_closures(
     };
     let props_ctx = ComponentPropsContext {
         summary,
+        model_modifiers: checks.model_modifiers,
         template_ast: options.template_ast,
         template_source: options.template_ast.map(|root| root.source),
         children_map: &children_map,

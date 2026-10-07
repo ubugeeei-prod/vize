@@ -1,0 +1,2 @@
+/** **Authored** value. */
+export const value: string = "ready"

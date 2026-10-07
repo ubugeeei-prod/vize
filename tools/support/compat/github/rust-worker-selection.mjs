@@ -9,6 +9,25 @@ const requiredSteps = [
   "Upload Rust shard results",
 ];
 
+export class PendingRustWorkerMetadata extends Error {
+  constructor(steps, identity) {
+    super(`Completed Rust workers still have incomplete step metadata: ${steps.join(", ")}`);
+    this.identity = identity;
+  }
+}
+
+export function rustWorkerSnapshotIdentity(selection, artifacts, repositoryId) {
+  return {
+    repositoryId,
+    workers: selection.workers.map((worker) => ({
+      shard: worker.shard,
+      latestJobId: worker.latestJobId,
+      latestReportedAttempt: worker.latestReportedAttempt,
+      artifact: artifacts.find((artifact) => artifact.id === worker.artifactId),
+    })),
+  };
+}
+
 function positiveInteger(value, label) {
   assert(Number.isSafeInteger(value) && value > 0, `${label} must be a positive integer`);
 }
@@ -50,7 +69,7 @@ function execution(job) {
   );
 }
 
-function requireCompletedWorker(job) {
+function requireCompletedWorker(job, pending = null) {
   assert.equal(job.status, "completed", `Latest worker ${job.name} is incomplete`);
   assert.equal(job.conclusion, "success", `Latest worker ${job.name} did not succeed`);
   const start = timestamp(job.started_at, "Worker start");
@@ -65,9 +84,20 @@ function requireCompletedWorker(job) {
     const matches = job.steps.filter((step) => step.name === name);
     assert.equal(matches.length, 1, `Worker must execute ${name} exactly once`);
     const step = matches[0];
+    assert(step.number > previous, "Required worker steps are out of order");
+    if (pending && ["queued", "in_progress"].includes(step.status)) {
+      assert.equal(step.conclusion, null, `${name} has a terminal pending outcome`);
+      assert.equal(step.completed_at, null, `${name} has a pending completion timestamp`);
+      if (step.started_at != null) {
+        const from = timestamp(step.started_at, `${name} start`);
+        assert(from >= start && from <= end, `${name} is outside the worker execution`);
+      } else assert.equal(step.status, "queued", `${name} has no execution start`);
+      pending.set(`${job.id}:${name}`, `${job.id}:${name}`);
+      previous = step.number;
+      continue;
+    }
     assert.equal(step.status, "completed", `${name} is incomplete`);
     assert.equal(step.conclusion, "success", `${name} did not succeed`);
-    assert(step.number > previous, "Required worker steps are out of order");
     const from = timestamp(step.started_at, `${name} start`);
     const to = timestamp(step.completed_at, `${name} completion`);
     assert(from >= start && to >= from && to <= end, `${name} is outside the worker execution`);
@@ -76,7 +106,13 @@ function requireCompletedWorker(job) {
   return job.steps.find((step) => step.name === "Upload Rust shard results");
 }
 
-export function selectRustWorkers(context, run, jobs, artifacts) {
+export function selectRustWorkers(
+  context,
+  run,
+  jobs,
+  artifacts,
+  { allowPendingMetadata = false } = {},
+) {
   const { runId, attempt, sha, repository } = context;
   positiveInteger(runId, "Run ID");
   positiveInteger(attempt, "Run attempt");
@@ -112,15 +148,16 @@ export function selectRustWorkers(context, run, jobs, artifacts) {
     );
     group.push(job);
   }
+  const pending = allowPendingMetadata ? new Map() : null;
   const workers = groups.map((group, index) => {
     const shard = index + 1;
     assert(group.length > 0, `Missing Rust worker ${shard}`);
     group.sort((left, right) => right.run_attempt - left.run_attempt);
     const latest = group[0];
-    requireCompletedWorker(latest); // Never fall back behind a failed/incomplete latest outcome.
+    requireCompletedWorker(latest, pending); // Never fall back behind a failed/incomplete latest outcome.
     const signature = execution(latest);
     const original = group.filter((job) => execution(job) === signature).at(-1);
-    const upload = requireCompletedWorker(original);
+    const upload = requireCompletedWorker(original, pending);
     const name = `rust-test-shard-${shard}-${runId}-${original.run_attempt}`;
     const matches = artifacts.filter((artifact) => artifact.name === name);
     assert.equal(matches.length, 1, `Expected exactly one artifact: ${name}`);
@@ -142,9 +179,18 @@ export function selectRustWorkers(context, run, jobs, artifacts) {
       "Foreign artifact head repository",
     );
     const created = timestamp(artifact.created_at, "Artifact creation");
+    const pendingUpload = pending && ["queued", "in_progress"].includes(upload.status);
     assert(
-      created >= timestamp(upload.started_at, "Upload start") &&
-        created <= timestamp(upload.completed_at, "Upload completion"),
+      created >=
+        timestamp(
+          pendingUpload ? (upload.started_at ?? original.started_at) : upload.started_at,
+          "Upload start",
+        ) &&
+        created <=
+          timestamp(
+            pendingUpload ? original.completed_at : upload.completed_at,
+            "Upload completion",
+          ),
       "Artifact was not created during the original successful upload",
     );
     return {
@@ -167,7 +213,7 @@ export function selectRustWorkers(context, run, jobs, artifacts) {
     4,
     "Duplicate Rust artifact ID",
   );
-  return {
+  const selection = {
     schema: "vize.rust-worker-selection",
     version: 1,
     runId,
@@ -178,6 +224,13 @@ export function selectRustWorkers(context, run, jobs, artifacts) {
     workflowPath: run.path,
     workers,
   };
+  if (pending?.size) {
+    throw new PendingRustWorkerMetadata(
+      [...pending.values()],
+      rustWorkerSnapshotIdentity(selection, artifacts, run.repository.id),
+    );
+  }
+  return selection;
 }
 
 export function verifyRustWorkerDirectories(selection, entries) {

@@ -41,34 +41,39 @@ function successfulTransport(observation: ReturnType<typeof observe>) {
   assert.equal(observation.processError, null);
 }
 
-export function runCssGroupingRegressions({
-  repoRoot,
-  binaryPath,
-  receipt,
-  evidenceDir,
-}: {
-  repoRoot: string;
-  binaryPath: string;
-  receipt: unknown;
-  evidenceDir: string;
-}) {
+export function runCssGroupingRegressions(
+  {
+    repoRoot,
+    binaryPath,
+    receipt,
+    evidenceDir,
+  }: { repoRoot: string; binaryPath: string; receipt: unknown; evidenceDir: string },
+  plan = {
+    path: groupingCorpus,
+    schema: "vize.formatter-css-grouping-regressions",
+    executionSchema: "vize.formatter-css-grouping-execution",
+    issue: 7826,
+    count: 27,
+    report: "css-rule-blank-lines-7826-report.json",
+  },
+) {
   validateObserverReceipt(receipt, repoRoot, binaryPath);
-  const corpusBytes = fs.readFileSync(path.join(repoRoot, groupingCorpus));
+  const corpusBytes = fs.readFileSync(path.join(repoRoot, plan.path));
   const corpus = JSON.parse(corpusBytes.toString());
-  assert.equal(corpus.schema, "vize.formatter-css-grouping-regressions");
+  assert.equal(corpus.schema, plan.schema);
   assert.equal(corpus.version, 1);
-  assert.equal(corpus.issue, 7826);
-  assert.equal(corpus.cases.length, 27);
-  assert.equal(new Set(corpus.cases.map((row: Case) => row.id)).size, 27);
+  assert.equal(corpus.issue, plan.issue);
+  assert.equal(corpus.cases.length, plan.count);
+  assert.equal(new Set(corpus.cases.map((row: Case) => row.id)).size, plan.count);
   const cliIdentity = expectedBuildIdentity(repoRoot);
   const cli = path.join(repoRoot, cliIdentity.binaryPath);
   const cliReceipt = JSON.parse(fs.readFileSync(cli + ".differential-build.json", "utf8"));
   validateBuildReceipt(cliReceipt, cliIdentity);
   const report = {
-    schema: "vize.formatter-css-grouping-execution",
+    schema: plan.executionSchema,
     version: 1,
-    issue: 7826,
-    corpus: { path: groupingCorpus, sha256: sha256(corpusBytes) },
+    issue: plan.issue,
+    corpus: { path: plan.path, sha256: sha256(corpusBytes) },
     apiBuildReceipt: receipt,
     cliBuildReceipt: cliReceipt,
     rows: [] as unknown[],
@@ -111,7 +116,7 @@ export function runCssGroupingRegressions({
       if (!fixture.cli) continue;
       assert.equal(fixture.api, "sfc");
       assert.deepEqual(fixture.options, {});
-      const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-grouping-7826-"));
+      const cwd = fs.mkdtempSync(path.join(os.tmpdir(), `vize-css-${plan.issue}-`));
       const file = path.join(cwd, "App.vue");
       try {
         fs.writeFileSync(file, fixture.input);
@@ -152,11 +157,8 @@ export function runCssGroupingRegressions({
     report.failure = error instanceof Error ? error.message : String(error);
     throw error;
   } finally {
-    fs.writeFileSync(
-      path.join(evidenceDir, "css-rule-blank-lines-7826-report.json"),
-      JSON.stringify(report, null, 2) + "\n",
-    );
+    fs.writeFileSync(path.join(evidenceDir, plan.report), JSON.stringify(report, null, 2) + "\n");
   }
-  assert.equal(report.rows.length, 27);
+  assert.equal(report.rows.length, plan.count);
   return report;
 }

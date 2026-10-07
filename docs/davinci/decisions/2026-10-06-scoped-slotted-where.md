@@ -110,3 +110,28 @@ existing slot-blocked subtree reason's eight-to-nine hit/file counts change;
 rank, first example and all other bytes remain unchanged. The complete old
 document and 400,489-byte failure log are preserved, without compiler/update
 mode or captured-output authoring. Fresh whole gates remain mandatory.
+
+The existing #8130 source is refreshed by merging the genuine signed main
+`8d33f844fd139f451b15e66ceb7834b2544a6877` into the unchanged original
+`d9f2ffa5a1e1781e3a8032ee48b8345551089ee5` lineage. Every original product,
+test, fixture, full reference and archived decision is retained. All incoming
+main paths are retained, including the OXC vendor, current compiler changes,
+native workflow helpers and the patched shell-quote 1.11.0 lock/override.
+
+The only source-union conflict is the generated missed-remarks backlog.
+Reproduce both complete prior documents using the existing grouping/order
+rules, then derive the exact merged literal baseline: 498 files, 1,087 remarks
+(199 applied, 888 missed). All old and incoming membership, remark entries,
+explanations and their order remain intact. The added original App.vue still
+owns only its two previously reviewed remarks; no expectation or compiler
+output is re-recorded. The complete current SFC inventory is derived from its
+actual source, with all other shards preserved.
+
+The old exact-head security failure is retained: production npm audit rejected
+critical GHSA-pqg4-j6r4-53mv for shell-quote 1.9.0 in all three bounded attempts.
+Cargo audit was skipped. The current-main patched dependency is brought in
+without widening the reviewed advisory set, changing printed audit packets,
+or borrowing older security acceptance. Fresh exact-head Actions, the full
+protected compiler/native/instruction suites, actual signed merge and an
+installed public replay are still required; root remains the sole queue and
+release owner.
