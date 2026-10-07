@@ -69,3 +69,23 @@ current canonical clauses and the complete #7871 decision history within350
 lines. Root reviews the exact conflict/custody plan before branch publication
 and fresh exact-source Actions; protected/runtime/actual-merge/installed gates
 remain unqualified by the earlier source green. No historical oracle is rewritten.
+Protected candidate c23058b304c320e9d3cbb07659057712b5607ef4 measures
+`formatter_script_large` at 929050 instructions against the unchanged 929044 cap.
+The standalone public script probe does not execute preserved template formatting;
+the cause of the six-instruction increase remains unproven. Keep every original
+input, expected output, option, measurement window and instruction ceiling.
+
+For a script whose first byte is ASCII above space, that first character already
+proves that the complete script is not whitespace-only. Skip the Unicode iterator
+in that case. Empty content still produces empty output; ASCII bytes through space and
+non-ASCII starts retain the complete existing whitespace predicate. Three public API laws retain empty output for all 25 Unicode
+whitespace code points, complete three-pass outputs for ASCII/Unicode starts,
+and actual parser failures for non-whitespace controls. No extra pipeline stage
+or serialization is added.
+
+Refresh the existing change with genuine, signed actual main eed471b4424b922b878bc35cac765dc7274e5736.
+Retain all old decision bytes and whole API/CLI, stock-runtime and history controls;
+the generated inventory changes only the shifted OXC reference line. Fresh
+exact-source Actions and all four original protected formatter probes must qualify
+this successor. Measured benefit, actual merge, installed release replay and
+Issue closure remain pending.

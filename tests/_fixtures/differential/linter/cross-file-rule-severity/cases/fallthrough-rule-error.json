@@ -1,0 +1,32 @@
+[
+  {
+    "file": "src/App.vue",
+    "messages": [
+      {
+        "ruleId": "vue/cross-file-attrs-fallthrough",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/cross-file-attrs-fallthrough] class passed to <Child> cannot fall through because the component has a fragment root",
+        "line": 4,
+        "column": 18,
+        "endLine": 4,
+        "endColumn": 33,
+        "help": "Pass the value as a declared prop, or bind $attrs explicitly to the intended element in the child."
+      }
+    ],
+    "errorCount": 1,
+    "warningCount": 0
+  },
+  {
+    "file": "src/Child.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "src/main.ts",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  }
+]

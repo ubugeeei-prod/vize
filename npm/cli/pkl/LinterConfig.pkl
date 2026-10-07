@@ -110,7 +110,13 @@ class StrictBooleanExpressionsOptions {
   allowAny: Boolean = false
 }
 
+/// Style for props destructuring; matches eslint-plugin-vue's default.
+class DefinePropsDestructuringOptions {
+  destructure: "only-when-assigned"|"always"|"never" = "only-when-assigned"
+}
+
 class LintRuleOptions {
+  `script/define-props-destructuring`: DefinePropsDestructuringOptions? = null
   `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
   `script/no-restricted-globals`: NoRestrictedGlobalsOptions? = null
   `script/no-restricted-members`: NoRestrictedMembersOptions? = null

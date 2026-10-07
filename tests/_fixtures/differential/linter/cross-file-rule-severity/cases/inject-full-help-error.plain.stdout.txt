@@ -1,0 +1,9 @@
+Patina lint report: 1 error in 2 files
+
+src/Consumer.vue
+  src/Consumer.vue:3:15 error cross-file vize:croquis/cf/unmatched-inject: **Unmatched Inject**: `inject('missing')` has no matching `provide()` in any ancestor component and returns `undefined` at runtime.
+    Reference: docs/content/rules/cross-file.md
+    Help:
+      ERROR vize:croquis/cf/unmatched-inject
+      Unmatched Inject: inject('missing') has no matching provide() in any ancestor component and returns undefined at runtime.
+      Suggestion: Add provide('missing', value) on every render branch, or keep a default only if fallback is intentional

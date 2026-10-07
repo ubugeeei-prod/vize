@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /** Replay the #6832 differential feature rename without altering published edges. */
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { closeSync, mkdtempSync, openSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -86,11 +87,24 @@ export function rewrite(input: string, relative: string): string {
 }
 
 export function run(mode: "--check" | "--write", checkout = root): number {
-  const tracked = execFileSync(
-    "git",
-    ["ls-files", "-z", "--", ".github", "crates", "tests", ...extraPaths],
-    { cwd: checkout, encoding: "utf8" },
-  );
+  const inventory = mkdtempSync(path.join(tmpdir(), "vize-feature-inventory-"));
+  let tracked: string;
+  try {
+    const output = path.join(inventory, "tracked");
+    const stdout = openSync(output, "w");
+    try {
+      execFileSync("git", ["ls-files", "-z", "--", ".github", "crates", "tests", ...extraPaths], {
+        cwd: checkout,
+        encoding: "utf8",
+        stdio: ["ignore", stdout, "pipe"],
+      });
+    } finally {
+      closeSync(stdout);
+    }
+    tracked = readFileSync(output, "utf8");
+  } finally {
+    rmSync(inventory, { recursive: true, force: true });
+  }
   // Validate every protected block before --write can mutate any tracked file.
   const changes = tracked
     .split("\0")

@@ -1,0 +1,12 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "cross-file": "warn",
+      "croquis/cf/unmatched-inject": "error"
+    },
+    "categories": {
+      "suspicious": "warn"
+    }
+  }
+}

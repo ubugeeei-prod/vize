@@ -27,8 +27,11 @@ pub(super) fn format_script_content_with_sort_imports(
     source_type: SourceType,
     sort_imports: Option<&crate::ImportSortOptions>,
 ) -> Result<String, FormatError> {
-    // Fast path for empty content
-    if source.chars().all(char::is_whitespace) {
+    // An ASCII first byte above space proves the script is not whitespace-only.
+    // Other controls and Unicode still use the complete whitespace predicate.
+    if source.as_bytes().first().is_none_or(|first| {
+        (*first <= b' ' || !first.is_ascii()) && source.chars().all(char::is_whitespace)
+    }) {
         return Ok(String::default());
     }
 
