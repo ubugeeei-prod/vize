@@ -264,5 +264,13 @@ fn batch_sfc_keeps_vue_suffixed_alias_key_import_authored() {
     assert!(generated.contains("\"@/components/api/DirectiveTable.vue\""));
     assert!(!generated.contains("\"@/components/api/DirectiveTable.vue.ts\""));
 
+    project.register_reachable_dependencies().unwrap();
+    assert!(
+        project
+            .find_by_original(&case.join("src/components/api/DirectiveTable.vue"))
+            .is_some(),
+        "an App-only scan must retain the authored Vue child behind @/*.vue"
+    );
+
     let _ = fs::remove_dir_all(&case);
 }

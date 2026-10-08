@@ -105,11 +105,23 @@ impl VirtualProject {
             .filter(|(pattern, target)| {
                 alias_may_reach_first_party(pattern, target, &self.project_root)
             })
-            .map(|(pattern, _)| CompactString::from(pattern.trim_end_matches('*')))
+            .map(|(pattern, _)| {
+                CompactString::from(
+                    pattern
+                        .split_once('*')
+                        .map_or(pattern.as_str(), |(prefix, _)| prefix),
+                )
+            })
             .collect();
         let declaration_alias_prefixes = aliases
             .iter()
-            .map(|(pattern, _)| CompactString::from(pattern.trim_end_matches('*')))
+            .map(|(pattern, _)| {
+                CompactString::from(
+                    pattern
+                        .split_once('*')
+                        .map_or(pattern.as_str(), |(prefix, _)| prefix),
+                )
+            })
             .collect::<Vec<_>>();
         let mut queue: Vec<PathBuf> = match initial_sources {
             Some(paths) => paths
