@@ -29,13 +29,16 @@ test("host allocator selection checks and repeats without writing", () => {
   assert.equal(prepareAllocatorSelection(reader(current)).size, 0);
 });
 
-test("later IO/path facade keeps the exact allocator replay and rejects changed host declarations", () => {
+test("later IO/path/timing facade keeps the exact allocator replay and rejects changed host declarations", () => {
   const file = "crates/vize_carton/src/lib.rs";
   const source = current.get(file)!;
   const historical = allocatorReplayText(file, source)!;
   assert.equal(
     historical,
-    source.replace("\npub mod path;\n", "").replace("\npub mod source_io;\n", ""),
+    source
+      .replace("\npub mod timing_observer;\n", "")
+      .replace("\npub mod path;\n", "")
+      .replace("\npub mod source_io;\n", ""),
   );
   assert.notEqual(historical, source);
   assert.equal(prepareAllocatorSelection(reader(current)).size, 0);
@@ -45,6 +48,11 @@ test("later IO/path facade keeps the exact allocator replay and rejects changed 
     source.replace("pub mod source_io;", "pub mod source_io;\npub mod source_io;"),
     source.replace("pub mod path;", "pub mod unknown_path;"),
     source.replace("pub mod path;", "pub mod path;\npub mod path;"),
+    source.replace("pub mod timing_observer;", "pub mod unknown_timing_observer;"),
+    source.replace(
+      "pub mod timing_observer;",
+      "pub mod timing_observer;\npub mod timing_observer;",
+    ),
     source.replace("pub mod profile_allocator;", ""),
     source + "\n// unreviewed host facade\n",
   ]) {

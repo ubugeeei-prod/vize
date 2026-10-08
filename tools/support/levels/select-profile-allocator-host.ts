@@ -68,9 +68,13 @@ export function allocatorReplayText(file: string, text: string | undefined): str
     [
       "ca130e97a8c3e035dfb68202184392532bf119012a3fffc5d58d44caeaa02f94",
       "9c135560ad6debbba6078194084a36e6dc086bb9129c48d8d61d04ba12d14ae2",
+      "fc77ccf3dc066dedce6fb03b83b02d503fe3414328139a0ae001edb393b6f49e",
     ].includes(digest(text))
   ) {
-    const historical = text.replace("\npub mod path;\n", "").replace("\npub mod source_io;\n", "");
+    const historical = text
+      .replace("\npub mod timing_observer;\n", "")
+      .replace("\npub mod path;\n", "")
+      .replace("\npub mod source_io;\n", "");
     if (digest(historical) !== contracts.find((contract) => contract.file === file)!.next)
       throw new Error("changed, missing, colliding or partial allocator selection");
     return historical;

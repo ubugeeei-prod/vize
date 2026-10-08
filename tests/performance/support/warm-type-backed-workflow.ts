@@ -234,7 +234,9 @@ if (process.argv[2] === "prepare") {
   if (!cut) {
     for (const file of production)
       assert.ok(
-        allowed.has(file) || pathHostMove?.files.includes(file) || timingHostMove?.files.includes(file),
+        allowed.has(file) ||
+          pathHostMove?.files.includes(file) ||
+          timingHostMove?.files.includes(file),
         `unqualified production delta: ${file}`,
       );
   }

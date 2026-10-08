@@ -36,7 +36,10 @@ const expectedFiles = [
   "davinci/vize_l0/tests/remark_zero_cost.rs",
 ].toSorted();
 assert.equal(expectedFiles.length, 11);
-assert.deepEqual(manifest.files.map(([file]) => file), expectedFiles);
+assert.deepEqual(
+  manifest.files.map(([file]) => file),
+  expectedFiles,
+);
 for (const [, before, after] of manifest.files)
   for (const digest of [before, after])
     if (digest !== null) assert.match(digest, /^[a-f0-9]{64}$/u);
@@ -63,9 +66,7 @@ export function qualifyTimingHostMove(
   if (production.some((file) => !alreadyQualified.has(file) && !files.has(file))) return null;
   // Rename detection may omit the deleted law; every retained and new owner must appear.
   const footprint = production.filter((file) => files.has(file) && file !== oldLaw).toSorted();
-  if (
-    JSON.stringify(footprint) !== JSON.stringify(expectedFiles.filter((file) => file !== oldLaw))
-  )
+  if (JSON.stringify(footprint) !== JSON.stringify(expectedFiles.filter((file) => file !== oldLaw)))
     return null;
   for (const [file, before, after] of manifest.files)
     if (digest("before", file) !== before || digest("after", file) !== after) return null;

@@ -60,7 +60,11 @@ test("unknown, incomplete and duplicate timing footprints remain refused", () =>
   );
   for (const file of production)
     assert.equal(
-      qualifyTimingHostMove(production.filter((name) => name !== file), new Set(), digest),
+      qualifyTimingHostMove(
+        production.filter((name) => name !== file),
+        new Set(),
+        digest,
+      ),
       null,
       file,
     );
