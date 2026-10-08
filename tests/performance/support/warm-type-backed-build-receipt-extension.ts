@@ -1,19 +1,16 @@
 import { spawnSync } from "node:child_process";
 import { isDeepStrictEqual } from "node:util";
 import { sha256 } from "../../differential/sha256.ts";
-
 export type ReceiptExtensionSide = "before" | "after";
 export type ReceiptExtensionReader = (
   side: ReceiptExtensionSide,
   file: string,
 ) => Buffer | string | null;
-
 // Authenticated published #8310 source, rather than hashes of a future retry.
 export const receiptExtensionSources = {
   before: "b6d2e15e046f7f51e9cf0f78e19e8f726e99a086",
   reviewed: "78940693d715f3b2961a02e373f13dcefa06d38c",
 } as const;
-
 export const receiptCallerPaths = [
   ".github/actions/check-computed-inlay/run.sh",
   ".github/actions/check-vue-parity/action.yml",
@@ -89,7 +86,6 @@ export const receiptCallerPaths = [
   "tools/benchmarks/scripts/vue-benchmarks-current-lint.mjs",
   "tools/support/compat/nuxt/javascript-workspace-cli.mjs",
 ] as const;
-
 const oldProvider = "tests/differential/build-receipt.mjs";
 const provider = "tests/differential/build-receipt.ts";
 const primitive = "tests/differential/sha256.ts";
@@ -111,14 +107,12 @@ export const receiptQualificationPaths = [
   "tests/performance/support/warm-type-backed-build-receipt-extension.ts",
   "tests/tooling/source-build-receipt-extension.test.ts",
 ] as const;
-
 export const receiptWitnessDigests = {
   "tests/_fixtures/tooling/source-build-receipt-extension/published-bodies.json.gz":
     "62ed8f4c8e0ebcbe0149f641bc1b836837c91b80953c3b774a6833e18605c7a9",
   "tests/_fixtures/tooling/source-build-receipt-extension/provenance.json":
     "e30d48c74b5146bc308765d37f12a4365dfbdcbf0a19c93afaec96dac3cdde41",
 } as const;
-
 export const receiptCompanionAppendix = `
 The commit above records the original authoring boundary; genuine replays retain
 that separate move-only boundary before typing.
@@ -134,7 +128,6 @@ its inputs, recipes, oracles and budgets remain unchanged. Failed run
 37764288919/job113267998705 remains retained; no performance credit or retry
 waiver follows from this source-extension admission.
 `;
-
 const sourceHashes = {
   originalProvider: "61267d16a5add01aa7dc18f534bc7f0eae346bd7cfab6719f0db065b96b69e91",
   currentProvider: "06043b859abd70e09923055f89fd6d0d6c7edd8edcc18a828f896f7faab055dd",
@@ -143,25 +136,19 @@ const sourceHashes = {
   originalCheckTask: "a70d603acbbb7bdb9983116a58fec9ba9a41100dafba19f8cf045857af0b99df",
   companion: "bff995cbc34e4e8909c6f6230b41a4dd314175f79b0f3177afddba77364dd15b",
 } as const;
-
 const scopedProject = {
   extends: "./tsconfig.node.json",
   compilerOptions: { composite: false, incremental: false },
   include: [],
   files: [provider, primitive, ...receiptQualificationPaths],
 };
-
 function text(value: Buffer | string | null): string | null {
   if (value === null) return null;
   if (typeof value === "string") return value;
   const decoded = value.toString("utf8");
   return Buffer.from(decoded).equals(value) ? decoded : null;
 }
-
-function digest(value: string | null): string | null {
-  return value === null ? null : sha256(value);
-}
-
+const digest = (value: string | null): string | null => (value === null ? null : sha256(value));
 export interface QualifiedReceiptExtension {
   authority: "complete-reviewed-source-build-receipt-extension";
   originalSource: string;
@@ -169,7 +156,6 @@ export interface QualifiedReceiptExtension {
   completeCallers: number;
   qualifiedFinitePaths: string[];
 }
-
 /** Preserve the old classifier; qualify this complete extension or nothing. */
 export function qualifyBuildReceiptExtension(
   changed: readonly string[],
@@ -267,7 +253,67 @@ export function qualifyBuildReceiptExtension(
     qualifiedFinitePaths: [...required, oldProvider],
   };
 }
-
+export const receiptCurrentCallerDigests = {
+  "tests/tooling/formatter-sole-child-width-semantics.test.mjs":
+    "32aaa581e306cb6f8530688427dffff6078eea90928529d68b9f07482b16305d",
+  "tests/tooling/formatter-sole-child-vue-history.test.mjs":
+    "193af25057cd9cd0c7bf732457c7fc19c9efdd3666ad338bc62234a2f6dd6491",
+} as const;
+export const receiptCurrentWitness = {
+  file: "tests/_fixtures/tooling/source-build-receipt-extension/current-caller-bodies-40a.json",
+  sha256: "191b05ac37ec009381b59bbb4e8529a8c67169bb15688a6b039ee34a74e7e0ed",
+} as const;
+export const receiptCurrentCallerAppendix = `
+The exact8e0 ordinary tooling shard passed all nine finite source-extension
+laws, then rejected a newly delivered formatter caller importing the retired
+provider. Retain run 37771617248/job113292482030 and its complete raw failure.
+Two current main callers, width semantics and Vue history, are authenticated
+against complete Git bodies at 40a23f0e7911f37345cd3394de10b7074c2cec17.
+Their fixed source witness retains mode, Git blob identity, full bytes and SHA256;
+only the literal build-receipt.mjs to build-receipt.ts token may change.
+Both callers and that exact witness are required by the finite extension.
+The original 73 caller and 83-body published snapshot remains byte-exact, and all
+original 400 inputs, recipes, whole oracles and caps remain unchanged.
+Fresh successor source checks and protected delivery remain required; no older
+source success or failed tooling execution qualifies the successor.
+`;
+export function qualifyCurrentBuildReceiptExtension(
+  changed: readonly string[],
+  alreadyQualified: ReadonlySet<string>,
+  readBody: ReceiptExtensionReader,
+): (QualifiedReceiptExtension & { additionalCurrentCallers: number }) | null {
+  const paths = [...Object.keys(receiptCurrentCallerDigests), receiptCurrentWitness.file];
+  if (paths.some((file) => !changed.includes(file))) return null;
+  const witness = readBody("after", receiptCurrentWitness.file);
+  if (readBody("before", receiptCurrentWitness.file) !== null) return null;
+  if (witness === null || sha256(witness) !== receiptCurrentWitness.sha256) return null;
+  for (const [file, expected] of Object.entries(receiptCurrentCallerDigests)) {
+    const before = text(readBody("before", file));
+    if (
+      before === null ||
+      digest(before) !== expected ||
+      before.replaceAll("build-receipt.mjs", "build-receipt.ts") !== text(readBody("after", file))
+    )
+      return null;
+  }
+  const currentCompanion = text(readBody("after", companion));
+  if (!currentCompanion?.endsWith(receiptCompanionAppendix + receiptCurrentCallerAppendix))
+    return null;
+  const qualified = qualifyBuildReceiptExtension(
+    changed,
+    new Set([...alreadyQualified, ...paths]),
+    (side, file) =>
+      side === "after" && file === companion
+        ? currentCompanion.slice(0, -receiptCurrentCallerAppendix.length)
+        : readBody(side, file),
+  );
+  if (!qualified) return null;
+  return {
+    ...qualified,
+    additionalCurrentCallers: 2,
+    qualifiedFinitePaths: [...qualified.qualifiedFinitePaths, ...paths],
+  };
+}
 /** Read actual immutable Git bytes; leave the old classifier every other path. */
 export function unqualifiedReceiptPaths(
   changed: readonly string[],
@@ -282,7 +328,7 @@ export function unqualifiedReceiptPaths(
       /^tests\/performance\/support\/warm-type-backed-[a-z-]+\.ts$/u.test(file),
     ),
   ]);
-  const qualified = qualifyBuildReceiptExtension(changed, oldQualified, (side, file) => {
+  const qualified = qualifyCurrentBuildReceiptExtension(changed, oldQualified, (side, file) => {
     const revision = side === "before" ? before : after;
     const result = spawnSync("git", ["show", `${revision}:${file}`], { cwd: driverRoot });
     if (!result.error && result.signal === null && result.status === 0) return result.stdout;

@@ -8,6 +8,10 @@ import { gunzipSync } from "node:zlib";
 import { sha256 } from "../differential/sha256.ts";
 import {
   qualifyBuildReceiptExtension,
+  qualifyCurrentBuildReceiptExtension,
+  receiptCurrentCallerDigests,
+  receiptCurrentCallerAppendix,
+  receiptCurrentWitness,
   receiptAssertionDigests,
   receiptCallerPaths,
   receiptCompanionAppendix,
@@ -16,7 +20,6 @@ import {
   type ReceiptExtensionReader,
   type ReceiptExtensionSide,
 } from "../performance/support/warm-type-backed-build-receipt-extension.ts";
-
 interface PublishedBody {
   mode: string;
   gitBlobSha1: string;
@@ -45,7 +48,6 @@ interface Provenance {
     uncompressedSha256: string;
   };
 }
-
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const witnessRoot = "tests/_fixtures/tooling/source-build-receipt-extension";
 for (const [file, expected] of Object.entries(receiptWitnessDigests))
@@ -122,6 +124,8 @@ const changed = [
 ];
 const read: ReceiptExtensionReader = (side, file) => {
   if (side === "after") {
+    if (file === companion)
+      return published.get(companion)!.after!.toString("utf8") + receiptCompanionAppendix;
     if (file === project || file === companion || receiptQualificationPaths.some((p) => p === file))
       return fs.readFileSync(path.join(root, file));
     if (Object.hasOwn(receiptWitnessDigests, file)) return fs.readFileSync(path.join(root, file));
@@ -145,7 +149,6 @@ function altered(
 }
 const append = (value: Buffer | string | null) =>
   Buffer.from(String(value) + "\n// foreign bytes\n");
-
 test("complete actual published source envelopes qualify only the finite reviewed closure", () => {
   const result = qualify();
   assert.ok(result);
@@ -164,7 +167,6 @@ test("complete actual published source envelopes qualify only the finite reviewe
     }),
   );
 });
-
 test("omitted, extra and duplicate callers never receive partial qualification", () => {
   for (const file of receiptCallerPaths)
     assert.equal(
@@ -183,7 +185,6 @@ test("omitted, extra and duplicate callers never receive partial qualification",
   assert.equal(qualify(read, [...changed, changed[0]]), null);
   assert.equal(qualify(read, [canonical]), null);
 });
-
 test("the existing workflow path needs its original classifier qualification", () => {
   const workflow = "tests/performance/support/warm-type-backed-workflow.ts";
   assert.equal(qualify(read, [...changed, workflow]), null);
@@ -194,7 +195,6 @@ test("the existing workflow path needs its original classifier qualification", (
     null,
   );
 });
-
 test("every caller keeps all non-token bytes on both sides", () => {
   for (const file of receiptCallerPaths)
     for (const side of ["before", "after"] as const) {
@@ -203,7 +203,6 @@ test("every caller keeps all non-token bytes on both sides", () => {
     }
   assert.equal(qualify(altered("after", receiptCallerPaths[0], () => Buffer.from([0xff]))), null);
 });
-
 test("provider, primitive and true move absence must match whole authenticated source", () => {
   for (const [side, file] of [
     ["before", "tests/differential/build-receipt.mjs"],
@@ -224,7 +223,6 @@ test("provider, primitive and true move absence must match whole authenticated s
     null,
   );
 });
-
 test("harness extraction and every original check command remain whole", () => {
   for (const file of ["tests/differential/harness.mjs", "tools/config/vite-plus/tasks/check.ts"])
     for (const side of ["before", "after"] as const)
@@ -238,7 +236,6 @@ test("harness extraction and every original check command remain whole", () => {
     null,
   );
 });
-
 test("three command assertions permit only their literal escaped token correction", () => {
   for (const file of Object.keys(receiptAssertionDigests)) {
     assert.ok(published.get(file)!.before!.equals(published.get(file)!.after!));
@@ -254,7 +251,6 @@ test("three command assertions permit only their literal escaped token correctio
     assert.equal(qualify(altered("after", file, () => published.get(file)!.after)), null, file);
   }
 });
-
 test("strict four-root project rejects recipe, foundation and scope drift", () => {
   for (const [from, to] of [
     ['"composite": false', '"composite": true'],
@@ -268,7 +264,6 @@ test("strict four-root project rejects recipe, foundation and scope drift", () =
     );
   assert.equal(qualify(altered("after", project, () => "{")), null);
 });
-
 test("new scope and whole historical witnesses are finite and complete", () => {
   for (const file of [...receiptQualificationPaths, ...Object.keys(receiptWitnessDigests)]) {
     assert.equal(
@@ -295,4 +290,54 @@ test("new scope and whole historical witnesses are finite and complete", () => {
       ),
     ),
   );
+});
+test("both current formatter callers compose only with the whole historical closure", () => {
+  const raw = fs.readFileSync(path.join(root, receiptCurrentWitness.file));
+  assert.equal(sha256(raw), receiptCurrentWitness.sha256);
+  const current: { sourceRevision: string; files: { file: string; before: PublishedBody }[] } =
+    JSON.parse(raw.toString("utf8"));
+  assert.equal(current.sourceRevision, "40a23f0e7911f37345cd3394de10b7074c2cec17");
+  const bodies = new Map(
+    current.files.map(({ file, before }) => {
+      const bytes = Buffer.from(before.base64, "base64");
+      assert.equal(bytes.length, before.bytes);
+      assert.equal(bytes.toString("base64"), before.base64);
+      assert.equal(sha256(bytes), before.sha256);
+      assert.equal(before.mode, "100644");
+      const blob = createHash("sha1").update(Buffer.from(`blob ${bytes.length}\0`));
+      assert.equal(blob.update(bytes).digest("hex"), before.gitBlobSha1);
+      return [file, bytes] as const;
+    }),
+  );
+  assert.deepEqual([...bodies.keys()], Object.keys(receiptCurrentCallerDigests));
+  const paths = [...bodies.keys(), receiptCurrentWitness.file];
+  const files = [...changed, ...paths];
+  const currentRead: ReceiptExtensionReader = (side, file) => {
+    if (file === receiptCurrentWitness.file) return side === "before" ? null : raw;
+    if (side === "after" && file === companion) return fs.readFileSync(path.join(root, companion));
+    const bytes = bodies.get(file);
+    if (!bytes) return read(side, file);
+    return side === "before" ? bytes : fs.readFileSync(path.join(root, file));
+  };
+  const prior = String(read("after", companion));
+  assert.equal(String(currentRead("after", companion)), prior + receiptCurrentCallerAppendix);
+  const qualifyCurrent = (reader = currentRead, names: readonly string[] = files) =>
+    qualifyCurrentBuildReceiptExtension(names, alreadyQualified, reader);
+  const result = qualifyCurrent();
+  assert.ok(result);
+  assert.equal(result.completeCallers, 73);
+  assert.equal(result.additionalCurrentCallers, 2);
+  assert.equal(result.qualifiedFinitePaths.length, 87 + 3);
+  for (const file of paths) {
+    const omitted = files.filter((name) => name !== file);
+    assert.equal(qualifyCurrent(currentRead, omitted), null, file);
+    for (const side of ["before", "after"] as const) {
+      const amended: ReceiptExtensionReader = (s, f) =>
+        s === side && f === file ? append(currentRead(s, f)) : currentRead(s, f);
+      assert.equal(qualifyCurrent(amended), null, `${side}:${file}`);
+    }
+  }
+  assert.equal(qualifyCurrent(currentRead, paths), null);
+  const unreviewed = "tests/tooling/formatter-unreviewed.test.mjs";
+  assert.equal(qualifyCurrent(currentRead, [...files, unreviewed]), null);
 });

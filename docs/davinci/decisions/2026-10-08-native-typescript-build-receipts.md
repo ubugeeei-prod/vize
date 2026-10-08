@@ -51,3 +51,16 @@ Only the complete reviewed closure may enter the existing original 400 campaign;
 its inputs, recipes, oracles and budgets remain unchanged. Failed run
 37764288919/job113267998705 remains retained; no performance credit or retry
 waiver follows from this source-extension admission.
+
+The exact8e0 ordinary tooling shard passed all nine finite source-extension
+laws, then rejected a newly delivered formatter caller importing the retired
+provider. Retain run 37771617248/job113292482030 and its complete raw failure.
+Two current main callers, width semantics and Vue history, are authenticated
+against complete Git bodies at 40a23f0e7911f37345cd3394de10b7074c2cec17.
+Their fixed source witness retains mode, Git blob identity, full bytes and SHA256;
+only the literal build-receipt.mjs to build-receipt.ts token may change.
+Both callers and that exact witness are required by the finite extension.
+The original 73 caller and 83-body published snapshot remains byte-exact, and all
+original 400 inputs, recipes, whole oracles and caps remain unchanged.
+Fresh successor source checks and protected delivery remain required; no older
+source success or failed tooling execution qualifies the successor.
