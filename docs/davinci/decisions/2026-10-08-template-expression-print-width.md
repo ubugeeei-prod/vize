@@ -52,3 +52,18 @@ all unchanged instruction ceilings, root-owned protected queue and actual merge,
 then supported installed release verification. Inline-child/closing-tag width,
 other expression shapes, native formatter admission and the full #7876 scope
 remain open. Preserve every original fixture and failed observation.
+
+Source head `4fa2eb7c14fdffd7af1ebf9df18c62f71ca76fcb` actually passes all
+80 CLI processes and 160 stock runtime observations in
+[job 113123610247](https://github.com/ubugeeei-prod/vize/actions/runs/37719454793/job/113123610247),
+including both original Edit cases and all comment controls; all four affected
+Rust workers pass. Its tooling failures identify source-witness custody after
+the extraction and the required attribute field. Retain the complete original
+2281-byte attribute test owner under its original SHA, verify all five complete
+law bodies while allowing exactly one new false field in each of the two
+struct literals, and retain the ten unchanged script law hashes under the
+exact extracted owner. All historical references and audit pins remain exact.
+The canonical SSR sweep has zero differences but its observer rejects 44366
+files against the required 44367; keep that requirement and investigate the
+missing witness. These partial source results grant no whole-head, protected
+or installed acceptance; the corrected successor requires fresh Actions.
