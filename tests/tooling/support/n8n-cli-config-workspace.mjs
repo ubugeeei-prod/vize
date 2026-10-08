@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { root, projection, scopedConfig } from "./n8n-cli-config-inputs.mjs";
+import { errorPacket } from "./n8n-cli-config-oracle.mjs";
 
 export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 export function writeJson(destination, value) {
@@ -41,13 +42,15 @@ export function installConfigPackages(workspace) {
     path.join(settings, "index.js"),
     "export const settings = " + JSON.stringify({ linter: projection.linter }, null, 2) + ";\n",
   );
-  return fs
-    .globSync("**/*", { cwd: destination })
-    .filter((file) => fs.statSync(path.join(destination, file)).isFile())
-    .map((file) => ({
-      file: "node_modules/vize/" + file,
-      sha256: sha256(fs.readFileSync(path.join(destination, file))),
-    }));
+  return [destination, settings].flatMap((packageRoot) =>
+    fs
+      .globSync("**/*", { cwd: packageRoot })
+      .filter((file) => fs.statSync(path.join(packageRoot, file)).isFile())
+      .map((file) => ({
+        file: path.relative(workspace, path.join(packageRoot, file)).replaceAll("\\", "/"),
+        sha256: sha256(fs.readFileSync(path.join(packageRoot, file))),
+      })),
+  );
 }
 
 export function writeConfig(workspace, packageRoot, mode, ruleOptions) {
@@ -142,12 +145,7 @@ export function runCli({
     signal: result.signal,
     ...(result.error
       ? {
-          error: {
-            name: result.error.name,
-            message: result.error.message,
-            code: result.error.code,
-            stack: result.error.stack,
-          },
+          error: errorPacket(result.error),
         }
       : {}),
     stdout: result.stdout,

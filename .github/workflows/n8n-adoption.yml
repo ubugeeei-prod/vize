@@ -11,6 +11,7 @@ on:
       - tests/_fixtures/vue-ecosystem-fixtures.json
       - tests/tooling/n8n-adoption-fixture.test.mjs
       - tests/tooling/n8n-cli-config-contract.test.mjs
+      - tests/tooling/n8n-cli-config-failure-custody.test.mjs
       - tests/tooling/support/n8n-cli-config-*.mjs
       - tests/_fixtures/differential/lint/n8n-cli-config/**
       - tests/tooling/support/n8n-compiler-*.mjs
@@ -182,9 +183,11 @@ jobs:
         run: git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n
       - name: Verify current-source CLI configuration, entries and independent witnesses
         run: |
-          vp node --test tests/tooling/n8n-cli-config-contract.test.mjs
+          vp node --test tests/tooling/n8n-cli-config-contract.test.mjs tests/tooling/n8n-cli-config-failure-custody.test.mjs
           vp node tests/tooling/support/n8n-cli-config-acceptance.mjs \
             "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}"
+          vp node tests/tooling/support/n8n-cli-config-semantic-acceptance.mjs \
+            "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/semantic-routing"
       - name: Upload whole CLI and independent oracle packets
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

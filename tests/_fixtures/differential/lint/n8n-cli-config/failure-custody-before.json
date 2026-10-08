@@ -1,0 +1,63 @@
+{
+  "schema": "vize.cli.failure-custody.before",
+  "source": "5e1dceb1b117687bb6084d7a76d6fec4ab1e645a",
+  "sourceFile": "tests/tooling/support/n8n-cli-config-workspace.mjs",
+  "sourceSha256": "f543837d9f10cb037c8e686fc8202b94d1a15aa5443c752e40df0e60397fe6bb",
+  "node": "v24.14.0",
+  "completeError": {
+    "name": "Error",
+    "stack": "Error: spawnSync /tmp/vize-n8n-cli-20261008/failure-custody-before-5e/missing-vize-cli ENOENT\n    at Object.spawnSync (node:internal/child_process:1119:20)\n    at spawnSync (node:child_process:911:24)\n    at runCli (file:///Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-cli-scoped-acceptance-8142-20261008/tests/tooling/support/n8n-cli-config-workspace.mjs:128:18)\n    at file:///Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-cli-semantic-cohort-8142-20261008/[eval1]:11:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:268:26)\n    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:265:20)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)",
+    "message": "spawnSync /tmp/vize-n8n-cli-20261008/failure-custody-before-5e/missing-vize-cli ENOENT",
+    "errno": -2,
+    "code": "ENOENT",
+    "syscall": "spawnSync /tmp/vize-n8n-cli-20261008/failure-custody-before-5e/missing-vize-cli",
+    "path": "/tmp/vize-n8n-cli-20261008/failure-custody-before-5e/missing-vize-cli",
+    "spawnargs": [
+      "lint",
+      "--config",
+      "/tmp/vize-n8n-cli-20261008/failure-custody-before-5e/owned/vize.config.ts",
+      "--format",
+      "json",
+      "--locale",
+      "en",
+      "--help-level",
+      "none",
+      "Input.vue"
+    ]
+  },
+  "recorded": {
+    "binary": "/tmp/vize-n8n-cli-20261008/failure-custody-before-5e/missing-vize-cli",
+    "args": [
+      "lint",
+      "--config",
+      "/tmp/vize-n8n-cli-20261008/failure-custody-before-5e/owned/vize.config.ts",
+      "--format",
+      "json",
+      "--locale",
+      "en",
+      "--help-level",
+      "none",
+      "Input.vue"
+    ],
+    "cwd": "/tmp/vize-n8n-cli-20261008/failure-custody-before-5e/owned",
+    "config": {
+      "path": "/tmp/vize-n8n-cli-20261008/failure-custody-before-5e/owned/vize.config.ts"
+    },
+    "elapsedMs": 1.1338749999999997,
+    "status": null,
+    "signal": null,
+    "error": {
+      "name": "Error",
+      "message": "spawnSync /tmp/vize-n8n-cli-20261008/failure-custody-before-5e/missing-vize-cli ENOENT",
+      "code": "ENOENT",
+      "stack": "Error: spawnSync /tmp/vize-n8n-cli-20261008/failure-custody-before-5e/missing-vize-cli ENOENT\n    at Object.spawnSync (node:internal/child_process:1119:20)\n    at spawnSync (node:child_process:911:24)\n    at runCli (file:///Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-cli-scoped-acceptance-8142-20261008/tests/tooling/support/n8n-cli-config-workspace.mjs:128:18)\n    at file:///Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-cli-semantic-cohort-8142-20261008/[eval1]:11:7\n    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:268:26)\n    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:265:20)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)"
+    }
+  },
+  "missingFields": [
+    "errno",
+    "syscall",
+    "path",
+    "spawnargs"
+  ],
+  "qualification": "real missing-executable process observer only; no native/CLI acceptance"
+}

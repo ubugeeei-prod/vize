@@ -25,19 +25,31 @@ export function loadAuthoredCases() {
   return JSON.parse(fs.readFileSync(authoredCasesPath, "utf8"));
 }
 
-function errorPacket(error) {
-  if (!(error instanceof Error)) return { thrown: error };
+export function errorPacket(error) {
+  if (!(error instanceof Error)) return { thrown: errorValue(error) };
   // Error names, stacks, codes, causes and additional provider-owned fields all
   // remain in the receipt. No assertion can discard a provider failure.
   return {
     name: error.name,
     ...Object.fromEntries(
-      Object.getOwnPropertyNames(error).map((name) => [
-        name,
-        error[name] instanceof Error ? errorPacket(error[name]) : error[name],
-      ]),
+      Object.getOwnPropertyNames(error).map((name) => [name, errorValue(error[name])]),
     ),
   };
+}
+
+function errorValue(value) {
+  if (value instanceof Error) return errorPacket(value);
+  if (Array.isArray(value)) return value.map(errorValue);
+  if (
+    value !== null &&
+    typeof value === "object" &&
+    Object.getPrototypeOf(value) === Object.prototype
+  ) {
+    return Object.fromEntries(
+      Object.getOwnPropertyNames(value).map((name) => [name, errorValue(value[name])]),
+    );
+  }
+  return value;
 }
 
 /** Named recording step: serialize the whole provider packet; change filePath only. */
@@ -63,7 +75,8 @@ function oracleRules(ruleOptions) {
     const oracleRule = projection.oracleRules[rule];
     const option = ruleOptions[rule];
     if (rule === "vue/component-name-in-template-casing") {
-      rules[oracleRule] = [severity, option.casing];
+      const { casing, ...scope } = option;
+      rules[oracleRule] = [severity, casing, ...(Object.keys(scope).length ? [scope] : [])];
     } else {
       rules[oracleRule] = option === undefined ? severity : [severity, option];
     }
@@ -74,8 +87,11 @@ function oracleRules(ruleOptions) {
 export async function captureAuthoredOracle({
   benchmarkManifest = path.join(root, "tools/benchmarks/scripts/package.json"),
   onRecorded = async () => {},
+  fixture = loadAuthoredCases(),
+  baseRuleOptions = projection.linter.ruleOptions,
+  filePrefix = "tests/_fixtures/differential/lint/n8n-cli-config",
+  officialVueBase = false,
 } = {}) {
-  const fixture = loadAuthoredCases();
   const requireProvider = createRequire(benchmarkManifest);
   const captures = [];
   const providers = {};
@@ -101,12 +117,27 @@ export async function captureAuthoredOracle({
   }
 
   const configurations = [
-    { id: "latest-cli", ruleOptions: structuredClone(projection.linter.ruleOptions) },
+    { id: "latest-cli", ruleOptions: structuredClone(baseRuleOptions) },
     ...fixture.optionControls.map(({ id, ruleOptions }) => ({
       id,
-      ruleOptions: { ...structuredClone(projection.linter.ruleOptions), ...ruleOptions },
+      ruleOptions: { ...structuredClone(baseRuleOptions), ...ruleOptions },
     })),
   ].map(({ id, ruleOptions }) => ({ id, ruleOptions, rules: oracleRules(ruleOptions) }));
+  const officialBase =
+    officialVueBase && !loadError ? loaded["eslint-plugin-vue"].configs["flat/base"] : [];
+  const baseReceipt = officialVueBase
+    ? {
+        officialVueBase: {
+          export: "flat/base",
+          rules: Object.fromEntries(
+            officialBase.flatMap(({ rules = {} }) => Object.entries(rules)),
+          ),
+          processors: officialBase.flatMap(({ processor }) =>
+            processor === undefined ? [] : [processor],
+          ),
+        },
+      }
+    : {};
 
   if (!loadError) {
     for (const configuration of configurations) {
@@ -116,7 +147,7 @@ export async function captureAuthoredOracle({
           : fixture.optionControls.find(({ id }) => id === configuration.id).caseIds;
       for (const caseId of selectedCases) {
         const sourceCase = fixture.cases.find(({ id }) => id === caseId);
-        const recordedFilePath = `tests/_fixtures/differential/lint/n8n-cli-config/${caseId}.vue`;
+        const recordedFilePath = `${filePrefix}/${caseId}.vue`;
         const capture = {
           configuration: configuration.id,
           caseId,
@@ -127,6 +158,7 @@ export async function captureAuthoredOracle({
             cwd: root,
             overrideConfigFile: true,
             overrideConfig: [
+              ...officialBase,
               {
                 files: ["**/*.vue"],
                 languageOptions: {
@@ -158,9 +190,10 @@ export async function captureAuthoredOracle({
   }
 
   return {
-    raw: { providers, configurations, loadError, captures },
+    raw: { providers, configurations, loadError, captures, ...baseReceipt },
     recorded: {
       providers,
+      ...baseReceipt,
       projectionSha256: sha256(
         fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json")),
       ),
@@ -178,7 +211,11 @@ export async function captureAuthoredOracle({
   };
 }
 
-export function assertAuthoredOracle(capture, expected = loadAuthoredCases().oracleCapture) {
+export function assertAuthoredOracle(
+  capture,
+  expected = loadAuthoredCases().oracleCapture,
+  fixture = loadAuthoredCases(),
+) {
   assert.equal(capture.raw.loadError, undefined, "real oracle provider loading");
   for (const [name, version] of Object.entries(pinnedProviders)) {
     assert.equal(capture.recorded.providers[name]?.version, version, name);
@@ -186,7 +223,6 @@ export function assertAuthoredOracle(capture, expected = loadAuthoredCases().ora
   for (const configuration of capture.recorded.configurations) {
     assert.equal(Object.keys(configuration.rules).length, 51, configuration.id);
   }
-  const fixture = loadAuthoredCases();
   for (const packet of capture.recorded.captures) {
     assert.equal(
       packet.error,
