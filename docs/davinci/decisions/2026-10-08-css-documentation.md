@@ -133,6 +133,17 @@ signature is `v-bind()`. Assert that complete signature rather than changing
 the preserved Vue Markdown. Retain all four fallback items, exact resolve
 packet preservation, useful reference documentation and null malformed hover.
 Fresh qualification remains required after this observer-only correction.
+A subsequent source review found that the new CSS completion fast path
+preceded the existing JSX opt-in guard. The resident SFC parser can classify
+a literal React `<style>` element as a style block. Restore the unchanged
+`.jsx`/`.tsx` guard before CSS routing, matching hover precedence, and assert
+real completion/hover remain absent with JSX typechecking disabled even when
+the resident context is a style block. Ordinary Vue CSS still bypasses Corsa.
+The actual native Maestro regression exits 101 before the precedence move
+and passes afterward. The unchanged missing-Corsa CSS handler control and
+completion snapshot/every-cursor law also pass on the corrected real crate.
+These local regression observations do not replace fresh hosted source and
+performance qualification.
 Root owns native Stack registration and
 protected admission. After a parent prefix actually merges, rebase and retarget
 any remaining child onto fresh main, then rerun its source Actions. Earlier

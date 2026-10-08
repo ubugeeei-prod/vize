@@ -193,3 +193,57 @@ fn css_language_server_handlers_complete_hover_and_resolve_without_starting_miss
         }
     });
 }
+
+#[test]
+fn jsx_style_elements_keep_completion_and_hover_opt_in_precedence() {
+    crate::runtime::block_on(async {
+        let source = r#"export default () => <style>{".a { color: red }"}</style>;"#;
+        let offset = source.find("color").unwrap() + 3;
+        let (line, character) = crate::ide::offset_to_position(source, offset);
+        for extension in ["jsx", "tsx"] {
+            let uri = Url::parse(&["file:///Styled.", extension].concat()).unwrap();
+            let (service, _socket) = LspService::new(MaestroServer::new);
+            let server = service.inner();
+            server
+                .state
+                .apply_lsp_initialization_options(Some(&serde_json::json!({
+                    "completion": true, "hover": true, "typecheck": true, "lint": false
+                })));
+            assert!(server.state.lsp_features().completion);
+            assert!(server.state.lsp_features().hover);
+            assert!(server.state.is_lsp_typecheck_enabled());
+            assert!(!server.state.jsx_typecheck_enabled());
+            server
+                .state
+                .documents
+                .open(uri.clone(), source.into(), 1, "typescriptreact".into());
+            // The existing resident SFC parser recognizes the literal style
+            // element. File-kind opt-in routing must still take precedence.
+            let ctx = crate::ide::IdeContext::new(&server.state, &uri, offset).unwrap();
+            assert!(ctx.is_in_style());
+            let position = TextDocumentPositionParams {
+                text_document: TextDocumentIdentifier { uri },
+                position: Position::new(line, character),
+            };
+            let completion = server
+                .completion(CompletionParams {
+                    text_document_position: position.clone(),
+                    work_done_progress_params: Default::default(),
+                    partial_result_params: Default::default(),
+                    context: None,
+                })
+                .await
+                .unwrap();
+            assert!(completion.is_none());
+            let hover = server
+                .hover(HoverParams {
+                    text_document_position_params: position,
+                    work_done_progress_params: Default::default(),
+                })
+                .await
+                .unwrap();
+            assert!(hover.is_none());
+            unstarted(server);
+        }
+    });
+}

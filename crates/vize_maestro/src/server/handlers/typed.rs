@@ -73,10 +73,6 @@ impl MaestroServer {
             return Ok(None);
         };
         let ctx = IdeContext::completion_with_content(&self.state, uri, offset, content);
-        // CSS uses only resident block context and static metadata, never Corsa.
-        if ctx.is_in_style() {
-            return Ok(CompletionService::complete(&ctx));
-        }
         // JSX completion is opt-in so React remains untouched.
         #[cfg(feature = "native")]
         if crate::utils::is_jsx_path(uri.path()) {
@@ -88,6 +84,11 @@ impl MaestroServer {
                 }
             }
             return Ok(None);
+        }
+
+        // CSS uses only resident block context and static metadata, never Corsa.
+        if ctx.is_in_style() {
+            return Ok(CompletionService::complete(&ctx));
         }
 
         #[cfg(feature = "native")]
