@@ -30,6 +30,8 @@ source-owned text/comment adjacency and
 raw/suppression policies. Cache the pure whitespace-significance predicate
 once per non-self-closing tag, preserving zero self-closing calls and all
 existing branch decisions; no timing or headroom result is inferred.
+Compare the effective prefix directly with `printWidth`, without adding one
+to its limit: `u32::MAX` must not overflow a32-bit `usize` for tabbed lines.
 
 Required: genuine red-before/green-after whole source observations, complete
 13-case39 API and65 CLI calls/stock packets, all original18/300/current

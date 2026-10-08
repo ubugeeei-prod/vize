@@ -21,6 +21,6 @@ impl TemplateFormatter<'_> {
         // Moving only `>` cannot repair an already-unbreakable wide prefix.
         // Preserve its historical layout; break only a genuine final-column
         // overflow, when this grammar boundary makes the whole line fit.
-        width + suffix == self.options.print_width as usize + 1
+        width + (suffix - 1) == self.options.print_width as usize
     }
 }
