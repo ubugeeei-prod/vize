@@ -20,7 +20,7 @@ jobs:
         if: ${{ steps.candidate.outputs.integration != '' }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 0 }
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
         if: ${{ steps.candidate.outputs.integration != '' }}
       - uses: ./.github/actions/setup-rust-script
         if: ${{ steps.candidate.outputs.integration != '' }}
