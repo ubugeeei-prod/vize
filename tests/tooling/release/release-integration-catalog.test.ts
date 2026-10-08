@@ -87,7 +87,15 @@ test("integration planning rejects missing, foreign and ambiguous event identiti
 
 test("required Check report consumes the always-running catalog gate without allowing skips", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "check.yml"));
-  const gate = workflow.jobs["release-integration-catalog"];
+  const wrapper = workflow.jobs["release-integration-catalog"];
+  const catalogWorkflow = parse(
+    readRepoFile(".github", "workflows", "release-integration-catalog.yml"),
+  );
+  const gate = catalogWorkflow.jobs["release-integration-catalog"];
+  assert.equal(wrapper.uses, "./.github/workflows/release-integration-catalog.yml");
+  assert.equal(wrapper.if, gate.if);
+  assert.deepEqual(wrapper.permissions, gate.permissions);
+  assert.deepEqual(catalogWorkflow.on, { workflow_call: null });
   assert.equal(
     gate.if,
     "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
