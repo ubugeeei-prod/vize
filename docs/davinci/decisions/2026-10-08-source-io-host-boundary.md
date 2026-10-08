@@ -45,6 +45,13 @@ Keep a function-scoped expectation for the unchanged owned buffer and have
 the integration script reproduce it. Neither function body, input nor
 benchmark ceiling changes. Fresh complete checks remain pending.
 
+The same first head also failed the historical allocator replay's complete
+Carton module digest after adding `pub mod source_io`. Authenticate the whole
+new module file, remove only that declaration in the replay view, and verify
+the original allocator digest again. Current module bytes stay intact;
+duplicate or foreign declarations and changed allocator selection still fail
+before writes. All other frozen allocator contracts remain unchanged.
+
 Whole #6834 remains open. This slice does not establish a `no_std` build or
 complete platform isolation: timing, profile stacks, allocator/pool globals,
 path/config and other host dependencies retain their own remaining work.

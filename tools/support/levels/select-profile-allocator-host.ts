@@ -58,10 +58,20 @@ const removedSystem =
 const digest = (text: string) => createHash("sha256").update(text).digest("hex");
 type Reader = (file: string) => string | undefined;
 
-/** Retain the original allocator replay through two exact later exporter states.
+/** Retain original replay through exact later exporter and source IO host states.
  * Current continuations are checks only; replay never overwrites those sources.
  */
 export function allocatorReplayText(file: string, text: string | undefined): string | undefined {
+  if (
+    file === "crates/vize_carton/src/lib.rs" &&
+    text !== undefined &&
+    digest(text) === "ca130e97a8c3e035dfb68202184392532bf119012a3fffc5d58d44caeaa02f94"
+  ) {
+    const historical = text.replace("\npub mod source_io;\n", "");
+    if (digest(historical) !== contracts.find((contract) => contract.file === file)!.next)
+      throw new Error("changed, missing, colliding or partial allocator selection");
+    return historical;
+  }
   if (
     file !== profileExportContract ||
     text === undefined ||
