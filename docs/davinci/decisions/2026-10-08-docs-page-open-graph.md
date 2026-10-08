@@ -74,7 +74,9 @@ Vue/Vite/Playwright types and DOM libraries, alongside the existing Check gate.
 Unit controls cover locale/route identity, authored/content descriptions,
 escaping, metadata replacement and PNG validation. Hosted Docs acceptance must
 validate actual generated metadata and decode every image, comparing the complete
-route inventory against source Markdown. Retain English, Japanese, long-rule and
+route inventory against source Markdown. Bind every social/image title to the
+unchanged native HTML document title, and bind URLs and image props to their route
+and compiled-template identity. Retain English, Japanese, long-rule and
 homepage examples for visual review; their PNG bytes must differ. Authored CLI
 and Chinese homepage titles are checked independently where visible headings
 differ. Bypass task-result caching for this source-SHA-bearing build. Publication is

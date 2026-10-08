@@ -157,9 +157,35 @@ try {
         );
         const size = { width: bitmap.width, height: bitmap.height };
         bitmap.close();
-        return { language: document.documentElement.lang, tags, size };
+        return {
+          title: document.title.replace(/\s+/gu, " ").trim(),
+          language: document.documentElement.lang,
+          tags,
+          size,
+        };
       },
       { html, image: png.toString("base64") },
+    );
+    assert.equal(
+      actual.title,
+      entry.title,
+      `${entry.route}: social title must retain the rendered page title`,
+    );
+    assert.equal(
+      actual.title.replace(/ - Vize$/u, ""),
+      entry.props.title,
+      `${entry.route}: image must retain the rendered page title`,
+    );
+    assert.equal(
+      entry.url,
+      new URL(entry.route, docsSiteUrl).href,
+      `${entry.route}: canonical page URL`,
+    );
+    assert.equal(entry.props.route, entry.route, `${entry.route}: image route identity`);
+    assert.equal(
+      entry.props.assetFingerprint,
+      manifest.assetFingerprint,
+      `${entry.route}: actual template identity`,
     );
     assert.equal(actual.language, entry.props.locale, entry.route);
     assert.deepEqual(actual.size, { width: ogWidth, height: ogHeight }, entry.route);
