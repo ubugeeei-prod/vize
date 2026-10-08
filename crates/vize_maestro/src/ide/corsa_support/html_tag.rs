@@ -8,6 +8,7 @@ pub(crate) struct NativeDomTagInfo {
 }
 
 pub(crate) struct HtmlTagVirtualDocument {
+    pub(crate) category: &'static str,
     pub(crate) content: String,
     pub(crate) hover_offset: usize,
     pub(crate) definition_offset: usize,
@@ -34,6 +35,7 @@ pub(crate) fn html_tag_virtual_document(tag_name: &str) -> Option<HtmlTagVirtual
     let hover_offset = content.rfind("__vizeDomElement")?;
 
     Some(HtmlTagVirtualDocument {
+        category: info.category,
         content,
         hover_offset,
         definition_offset,

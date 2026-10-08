@@ -11,6 +11,9 @@ use vize_canon::{CorsaBridge, LspHover};
 use super::{HoverBuilder, HoverService};
 use crate::ide::IdeContext;
 
+mod documentation;
+mod elements;
+
 impl HoverService {
     pub(super) fn hover_native_dom_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
         let (attr_name, tag_name) =
@@ -59,15 +62,20 @@ impl HoverService {
 
         let info = crate::ide::corsa_support::native_dom_tag_info(&tag_name)?;
         let signature = format!("const element: {}", info.type_expression);
+        let docs = if info.category == "HTML element" {
+            elements::lookup(&tag_name)
+        } else {
+            None
+        };
 
-        Some(
-            HoverBuilder::new()
+        let builder = HoverBuilder::new()
                 .title(&format!("<{tag_name}>"))
                 .meta(info.category)
                 .code("typescript", &signature)
-                .description(
+                .description(docs.map_or(
                     "Native DOM element recognized by the Vue template compiler. It is emitted as an element node, not resolved as a component.",
-                )
+                    |docs| docs.description,
+                ))
                 .bullets(
                     "Editor behavior",
                     &[
@@ -75,10 +83,17 @@ impl HoverService {
                         "Component resolution is skipped for this tag because it is part of the platform DOM surface.",
                     ],
                 )
-                .example("vue", &native_tag_example(&tag_name))
+                .example("vue", &native_tag_example(&tag_name));
+        let hover = if let Some(docs) = docs {
+            let mut hover = builder.build();
+            documentation::append(&mut hover, docs, false);
+            hover
+        } else {
+            builder
                 .docs("MDN reference", &info.documentation_url)
-                .build(),
-        )
+                .build()
+        };
+        Some(hover)
     }
 
     pub(super) async fn hover_html_attribute_with_corsa(
@@ -154,7 +169,11 @@ impl HoverService {
         let (line, character) = crate::ide::offset_to_position(&doc.content, doc.hover_offset);
         let hover = bridge.hover(&request_uri, line, character).await.ok()??;
 
-        Some(Self::convert_lsp_hover(hover))
+        Some(documentation::enrich_native_html(
+            Self::convert_lsp_hover(hover),
+            &tag_name,
+            doc.category,
+        ))
     }
 }
 
@@ -175,3 +194,6 @@ mod tests;
 
 #[cfg(test)]
 mod attribute_range_tests;
+
+#[cfg(test)]
+mod documentation_tests;

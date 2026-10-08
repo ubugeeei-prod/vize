@@ -1,0 +1,32 @@
+{
+  "issue": 3957,
+  "sourceRevision": "8816b0d594ce9a5322ab33f60be5ccb6839fa774",
+  "inputOrigin": "maintainer-request-derived authored native tags, Unicode/CRLF and unchanged routing controls frozen before product execution",
+  "contractOrigin": "independently authored complete Markdown and physical UTF-16 ranges, never recorded from Vize output",
+  "descriptionAuthorship": "original Vize prose; authoritative reference links independently verified read-only",
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "29b4ddec58cf798ca0494f3a564ad16967b99de65e3f035c7844725e6df4a15b"
+    }
+  ],
+  "references": [
+    {
+      "source": "App.crlf.vue.txt",
+      "sha256": "6f762d14dad40ae6a157fc59c4790ea18abd9b1ac222127b33dc0b34c528a449"
+    },
+    {
+      "source": "controls.expected.json",
+      "sha256": "aebe3553fe71dc2c98c6c492b6863c7ac88dd210069e7d5ad0e93b9e585506dd"
+    },
+    {
+      "source": "responses.expected.json",
+      "sha256": "6deae84ca412dc5765afbbe6026e2c105ec453e5c04d3d7995bbd436c7e2207e"
+    },
+    {
+      "source": "references.expected.json",
+      "sha256": "736d499e339b6bedc2791fa69092dab6bb813a3a88599c4597eb22bf9de880fd"
+    }
+  ]
+}

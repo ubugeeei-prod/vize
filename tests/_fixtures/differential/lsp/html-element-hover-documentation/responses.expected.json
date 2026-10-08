@@ -1,0 +1,46 @@
+[
+  {
+    "position": {
+      "line": 1,
+      "character": 4
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**<button>**\n\n_HTML element_\n\n```typescript\nconst element: HTMLElementTagNameMap[\"button\"]\n```\n\nProvides an interactive button that can trigger an action or submit a form.\n\n**Editor behavior**\n- Go-to-definition uses TypeScript DOM lib data when the type service is available.\n- Component resolution is skipped for this tag because it is part of the platform DOM surface.\n\n**Example**\n\n```vue\n<template>\n  <button>...</button>\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button)\n\n[HTML Living Standard](https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element)"
+      },
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 3
+        },
+        "end": {
+          "line": 1,
+          "character": 9
+        }
+      }
+    }
+  },
+  {
+    "position": {
+      "line": 2,
+      "character": 4
+    },
+    "result": {
+      "contents": {
+        "kind": "markdown",
+        "value": "**<h2>**\n\n_HTML element_\n\n```typescript\nconst element: HTMLElementTagNameMap[\"h2\"]\n```\n\nProvides a level-2 section heading; h1 is the highest heading level and h6 the lowest.\n\n**Editor behavior**\n- Go-to-definition uses TypeScript DOM lib data when the type service is available.\n- Component resolution is skipped for this tag because it is part of the platform DOM surface.\n\n**Example**\n\n```vue\n<template>\n  <h2>...</h2>\n</template>\n```\n\n**Docs**\n\n[MDN reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/Heading_Elements)\n\n[HTML Living Standard](https://html.spec.whatwg.org/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements)"
+      },
+      "range": {
+        "start": {
+          "line": 2,
+          "character": 3
+        },
+        "end": {
+          "line": 2,
+          "character": 5
+        }
+      }
+    }
+  }
+]

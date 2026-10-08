@@ -480,6 +480,32 @@
         "lint": false,
         "typecheck": false
       }
+    },
+    {
+      "id": "lsp/regression/html-element-hover-documentation",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "html-element-hover-documentation",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "29b4ddec58cf798ca0494f3a564ad16967b99de65e3f035c7844725e6df4a15b"
+          }
+        ]
+      },
+      "case": {
+        "path": "html-element-hover-documentation/case.json",
+        "sha256": "42520b7b34815bfa08a52535548b27a8195dd006598fd376719041e339c33776"
+      },
+      "requestCount": 2,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      }
     }
   ]
 }
