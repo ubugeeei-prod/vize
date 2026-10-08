@@ -221,11 +221,14 @@ mod process_tests {
         let mut documents = FxHashMap::default();
         documents.insert(uri.clone(), source.into());
         let mut editor_owner = None;
+        let mut diagnostic_reports = Vec::new();
         for _ in 0..3 {
             let report = client
                 .diagnostics_via_editor_lsp(uri.as_str(), &documents)
                 .unwrap();
-            assert_eq!(serde_json::to_value(report).unwrap(), fixture["expected"]);
+            let report = serde_json::to_value(report).unwrap();
+            assert_eq!(report, fixture["expected"]);
+            diagnostic_reports.push(report);
             let observed = control::native_lsp(root.path(), &native);
             if let Some(previous) = &editor_owner {
                 assert_eq!(
@@ -247,10 +250,9 @@ mod process_tests {
         let final_report = client
             .diagnostics_via_editor_lsp(uri.as_str(), &documents)
             .unwrap();
-        assert_eq!(
-            serde_json::to_value(final_report).unwrap(),
-            fixture["expected"]
-        );
+        let final_report = serde_json::to_value(final_report).unwrap();
+        assert_eq!(final_report, fixture["expected"]);
+        diagnostic_reports.push(final_report);
         assert_eq!(
             control::native_lsp(root.path(), &native),
             *editor_owner.as_ref().unwrap(),
@@ -285,6 +287,7 @@ mod process_tests {
             })).collect::<Vec<_>>(),
             "launches": launches,
             "expectedDiagnosticReport": fixture["expected"],
+            "diagnosticReports": diagnostic_reports,
         });
         std::io::stdout()
             .write_all(cstr!("NATIVE_PROJECT_RETIREMENT_3952 {}\n", receipt).as_bytes())

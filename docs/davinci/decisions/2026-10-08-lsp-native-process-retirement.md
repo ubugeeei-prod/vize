@@ -44,7 +44,9 @@ reloads and exercises a materialized-mode transition with a live editor owner.
 A zombie receives no retirement credit. The existing native-backend Actions lane runs this one producer law with its
 already-installed pinned native runtime and source recipe. The raw log must
 show the exact named test and `running 1 test`; its source-bound receipt matches
-all five launch PID/birth tuples to observed live native API executables. This
+all five launch PID/birth tuples to observed live native API executables. It
+also archives all four actual complete diagnostic reports and checks each
+against the original fixture. This
 adds no second runtime installation to the PR Rust builder. Full workspace
 merge tests also retain the law. Historical immutable-source recipe mode skips
 this new observer and records `not-qualified`; it does not demand a test from

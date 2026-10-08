@@ -224,6 +224,10 @@ jobs:
             assert.equal(processReceipt.schema, 'vize.native-project-retirement-3952');
             assert.equal(realpathSync(processReceipt.native), receipts[0].nativeBinary);
             assert.equal(processReceipt.physicalApiOwners.length, 5);
+            const processFixture = JSON.parse(readFileSync('tests/_fixtures/differential/lsp/native-project-retirement-3952/input.json', 'utf8'));
+            assert.deepEqual(processReceipt.expectedDiagnosticReport, processFixture.expected);
+            assert.equal(processReceipt.diagnosticReports.length, 4);
+            processReceipt.diagnosticReports.forEach(report => assert.deepEqual(report, processFixture.expected));
             const apiLaunches = processReceipt.launches.filter(launch => launch.role === '--api');
             assert.equal(apiLaunches.length, 5);
             apiLaunches.forEach((launch, index) => {
