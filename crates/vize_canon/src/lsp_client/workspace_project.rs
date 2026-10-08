@@ -2,7 +2,6 @@
 
 use std::path::Path;
 
-use corsa::runtime::block_on;
 use vize_l0::String;
 
 use super::{
@@ -66,6 +65,9 @@ impl CorsaProjectClient {
         let config_path = config_path
             .map(Path::to_path_buf)
             .unwrap_or_else(|| workspace_config_path(&project_root));
+        // The editor owner may still be live. Reap the previous API process
+        // before the replacement can exist, including its initialization IPC.
+        self.retire_project_session()?;
         let (session, capabilities) =
             match spawn_project_session(self.executable.as_str(), &project_root, &config_path) {
                 Ok((session, capabilities)) => (Some(session), capabilities),
@@ -78,10 +80,7 @@ impl CorsaProjectClient {
                 }
                 Err(ProjectSessionSpawnError::Failed(error)) => return Err(error),
             };
-        let previous = std::mem::replace(&mut self.session, session);
-        if let Some(previous) = previous {
-            let _ = block_on(previous.close());
-        }
+        self.session = session;
         self.capabilities = capabilities;
         self.cwd = project_root.clone();
         self.project_root = project_root;
@@ -157,3 +156,6 @@ mod tests {
         assert!(client.editor_lsp_documents_dirty);
     }
 }
+
+#[cfg(all(test, target_os = "linux"))]
+mod process_tests;

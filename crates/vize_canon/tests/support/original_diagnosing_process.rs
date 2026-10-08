@@ -64,6 +64,10 @@ pub fn runtime() -> PathBuf {
 }
 
 pub fn native_lsp(root: &Path, executable: &Path) -> ProcessLife {
+    native_process(root, executable, b"--lsp")
+}
+
+pub fn native_process(root: &Path, executable: &Path, role: &[u8]) -> ProcessLife {
     let root = root.canonicalize().unwrap();
     let deadline = Instant::now() + Duration::from_secs(5);
     loop {
@@ -87,7 +91,7 @@ pub fn native_lsp(root: &Path, executable: &Path) -> ProcessLife {
                 let command = std::fs::read(base.join("cmdline")).ok()?;
                 if physical != executable
                     || cwd != root
-                    || !command.split(|byte| *byte == 0).any(|arg| arg == b"--lsp")
+                    || !command.split(|byte| *byte == 0).any(|arg| arg == role)
                 {
                     return None;
                 }
@@ -103,7 +107,7 @@ pub fn native_lsp(root: &Path, executable: &Path) -> ProcessLife {
         }
         assert!(
             Instant::now() < deadline,
-            "exactly one owned native LSP required: {lives:?}"
+            "exactly one owned physical native process required: {lives:?}"
         );
         thread::sleep(Duration::from_millis(10));
     }

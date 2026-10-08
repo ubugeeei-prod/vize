@@ -5,7 +5,6 @@ use super::{
     session_paths::build_materialized_session_document_uri,
 };
 use crate::file_uri::file_uri_to_path;
-use corsa::runtime::block_on;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -122,16 +121,14 @@ impl CorsaProjectClient {
             mappings.push((uri.clone(), document_uri));
         }
         if self.has_project_session() {
+            self.retire_project_session()?;
             let (session, capabilities) =
                 match spawn_project_session(self.executable.as_str(), &self.cwd, &config_path) {
                     Ok(result) => result,
                     Err(ProjectSessionSpawnError::Unavailable(error))
                     | Err(ProjectSessionSpawnError::Failed(error)) => return Err(error),
                 };
-            let previous = self.session.replace(session);
-            if let Some(previous) = previous {
-                let _ = block_on(previous.close());
-            }
+            self.session = Some(session);
             self.capabilities = capabilities;
         }
         self.session_document_uris.clear();

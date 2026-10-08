@@ -174,6 +174,16 @@ jobs:
           export CORSA_PATH="$VIZE_TEST_TSGO_PATH"
           cargo test --locked --profile ci-opt -p vize_canon --test original_program_check process_reuse:: --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture || exit $?; cargo test --locked --profile ci-opt -p vize_canon --lib lsp_client::editor_lsp::original_program::process_tests:: --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture || exit $?; cargo test --locked --profile ci-opt -p vize_canon original_outside_import_preserves_types_in_native_editor --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
           cargo test --locked --profile ci-opt -p vize_canon native_editor_resolves_package_alias_from_monorepo_root --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+          process_recipe_mode="$(node -p 'JSON.parse(require("node:fs").readFileSync(process.env.RUNNER_TEMP+"/native-source-recipe.json")).mode')"
+          case "$process_recipe_mode" in
+            current-inline)
+              cargo test --locked --profile ci-opt -p vize_canon --lib lsp_client::workspace_project::process_tests::native_project_replacement_reaps_previous_api_before_launch_and_keeps_whole_answer --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --exact --nocapture | tee "$VIZE_TYPECHECK_REGRESSION_CAPTURE/native-project-retirement-3952.log"
+              ;;
+            immutable-source-step)
+              echo 'Historical immutable source: native project retirement is not qualified by this observer.'
+              ;;
+            *) echo 'Unknown native source recipe mode' >&2; exit 1 ;;
+          esac
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import { createHash } from 'node:crypto';
@@ -202,12 +212,37 @@ jobs:
             assert.equal(version.stderr, '');
             return { name, sourceSha: process.env.SOURCE_SHA, cliBinary: realpathSync(cli.cliBinary), cliSha256: sha256(cli.cliBinary), nativeBinary, nativeSha256: sha256(nativeBinary), nativePackageSha256: sha256(packagePath), nativePackage: { name: nativePackage.name, version: nativePackage.version }, nativeVersion: version.stdout.trim(), completeOutputsAndInputs: files(dir).map(path => ({ path: path.slice(root.length + 1), sha256: sha256(path) })) };
           });
+          const processRecipeMode = JSON.parse(readFileSync(join(process.env.RUNNER_TEMP, 'native-source-recipe.json'), 'utf8')).mode;
+          let processReceipt;
+          if (processRecipeMode === 'current-inline') {
+            const processLog = readFileSync(join(root, 'native-project-retirement-3952.log'), 'utf8');
+            assert(processLog.includes('running 1 test'));
+            assert(processLog.includes('test lsp_client::workspace_project::process_tests::native_project_replacement_reaps_previous_api_before_launch_and_keeps_whole_answer ... ok'));
+            const processFrame = processLog.split('\n').find(line => line.startsWith('NATIVE_PROJECT_RETIREMENT_3952 '));
+            assert(processFrame, 'a complete physical native process receipt is required');
+            processReceipt = JSON.parse(processFrame.slice('NATIVE_PROJECT_RETIREMENT_3952 '.length));
+            assert.equal(processReceipt.schema, 'vize.native-project-retirement-3952');
+            assert.equal(realpathSync(processReceipt.native), receipts[0].nativeBinary);
+            assert.equal(processReceipt.physicalApiOwners.length, 5);
+            const apiLaunches = processReceipt.launches.filter(launch => launch.role === '--api');
+            assert.equal(apiLaunches.length, 5);
+            apiLaunches.forEach((launch, index) => {
+              assert.equal(launch.pid, processReceipt.physicalApiOwners[index].pid);
+              assert.equal(launch.birth, String(processReceipt.physicalApiOwners[index].birth));
+              assert.equal(realpathSync(processReceipt.physicalApiOwners[index].executable), receipts[0].nativeBinary);
+              assert(launch.previousNativeOwners.every(owner => owner.role !== '--api'));
+            });
+          } else {
+            assert.equal(processRecipeMode, 'immutable-source-step');
+            assert(!existsSync(join(root, 'native-project-retirement-3952.log')));
+            processReceipt = { status: 'not-qualified', reason: 'historical-immutable-source', sourceSha: process.env.SOURCE_SHA };
+          }
           const editor = JSON.parse(readFileSync(join(root, 'editor-original-script/runtime.json'), 'utf8'));
           assert.equal(realpathSync(editor.nativeBinary), receipts[0].nativeBinary);
           const aliasRuntime = JSON.parse(readFileSync(join(root, 'editor-monorepo-alias/runtime.json'), 'utf8'));
           assert.equal(realpathSync(aliasRuntime.nativeBinary), receipts[0].nativeBinary);
           const editorFiles = ['editor-original-script', 'editor-monorepo-alias'].flatMap(name => files(join(root, name))).map(path => ({ path: path.slice(root.length + 1), sha256: sha256(path) }));
-          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, fixtureSha256: sha256('tests/_fixtures/differential/typechecker/outside-import-types/input.json'), matchedCompleteExpectations: true, cases: receipts, editor: { nativeBinary: realpathSync(editor.nativeBinary), nativeSha256: sha256(editor.nativeBinary), completeOutputsAndInputs: editorFiles } }, null, 2) + '\n');
+          writeFileSync(join(root, 'receipts.json'), JSON.stringify({ sourceSha: process.env.SOURCE_SHA, fixtureSha256: sha256('tests/_fixtures/differential/typechecker/outside-import-types/input.json'), matchedCompleteExpectations: true, nativeProjectRetirement: processReceipt, cases: receipts, editor: { nativeBinary: realpathSync(editor.nativeBinary), nativeSha256: sha256(editor.nativeBinary), completeOutputsAndInputs: editorFiles } }, null, 2) + '\n');
           JS
       - name: Verify the original L1 corpus and referenced JavaScript contracts
         if: github.event_name == 'pull_request' && github.event.pull_request.number == 8020

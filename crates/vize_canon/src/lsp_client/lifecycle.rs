@@ -69,16 +69,24 @@ impl CorsaProjectClient {
         }
 
         let authored_result = self.retire_original_diagnosing_session();
-        let project_result = self.session.take().map_or(Ok(()), |session| {
-            corsa::runtime::block_on(session.close())
-                .map_err(|error| cstr!("Failed to close Corsa project session: {error}"))
-        });
+        let project_result = self.retire_project_session();
         let editor_result = self.retire_editor_lsp();
         self.document_texts.clear();
         self.diagnostics.clear();
         self.overlay_versions.clear();
         self.closed = true;
         authored_result.and(project_result).and(editor_result)
+    }
+
+    /// Reap the API owner before another project transport can be spawned.
+    /// The editor transport is independent and may remain alive during a
+    /// topology reload; retaining both old and new API owners would add a
+    /// third native child to the running LSP server (#3952).
+    pub(super) fn retire_project_session(&mut self) -> Result<(), String> {
+        self.session.take().map_or(Ok(()), |session| {
+            block_on(session.close())
+                .map_err(|error| cstr!("Failed to close Corsa project session: {error}"))
+        })
     }
 
     /// Open a virtual document.
