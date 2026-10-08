@@ -109,3 +109,13 @@ falsification suite. Its success is helper validation. Actual installed32,
 actual #8262 inclusion in C/H and complete source/protected execution remain
 mandatory for #8011 closure. This finite alias replay grants no imported/complex
 alias or stock ContentMapper parity credit.
+
+The first ecfe hosted `check-js` rejected snapshot spread and default object
+stringification of a nested error cause. Preserve its complete authenticated
+job log and receipt in `supplemental/historical-ecfe-helper-lint`. Retain the
+necessary publication wait snapshot with `.slice()` while removing matching
+waits, and record nested/circular causes with unbounded Node inspection. The
+zero-warning gate, whole packets, sources/goldens and terminal custody are
+unchanged. All 31 falsification laws and strict TypeScript checking pass after
+the bounded correction; fresh hosted lint is mandatory. Paired decision:
+[#8011 comment](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6055019121).

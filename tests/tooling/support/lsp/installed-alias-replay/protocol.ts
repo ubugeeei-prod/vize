@@ -207,7 +207,8 @@ export class InstalledAliasSession {
       this.notifications.push(packet);
       if (packet.method !== "textDocument/publishDiagnostics") return;
       const params = packet.params as Packet | undefined;
-      for (const wait of [...this.publications]) {
+      // Matching waits are removed below, so retain the complete original snapshot.
+      for (const wait of this.publications.slice()) {
         if (
           this.notifications.length <= wait.after ||
           params?.uri !== wait.uri ||
