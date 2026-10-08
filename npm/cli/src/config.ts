@@ -3,7 +3,6 @@ import * as path from "node:path";
 import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import * as oxcTransform from "oxc-transform";
 import type {
   ResolvedVizeConfig,
   LoadConfigOptions,
@@ -19,7 +18,6 @@ type NativeConfigHelpers = {
 };
 
 const require = createRequire(import.meta.url);
-const native = require("@vizejs/native") as NativeConfigHelpers;
 
 export const CONFIG_FILE_NAMES = [
   "vize.config.pkl",
@@ -164,6 +162,7 @@ async function loadTypeScriptConfig(
   env?: ConfigEnv,
 ): Promise<ResolvedVizeConfig> {
   const source = fs.readFileSync(filePath, "utf-8");
+  const oxcTransform = await import("oxc-transform");
   const result = await oxcTransform.transform(filePath, source, {
     typescript: {
       onlyRemoveTypeImports: true,
@@ -229,6 +228,7 @@ function parseJsonConfig(content: string, filePath: string): ResolvedVizeConfig 
 }
 
 function normalizeLoadedConfig(config: unknown): ResolvedVizeConfig {
+  const native = require("@vizejs/native") as NativeConfigHelpers;
   return native.normalizeVizeConfig(config ?? null) as ResolvedVizeConfig;
 }
 
