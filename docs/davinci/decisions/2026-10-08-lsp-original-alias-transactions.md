@@ -252,3 +252,17 @@ Actions; predecessor success grants no new-head, protected or public-release
 acceptance. No queue admission or individual auto-merge occurs in the refresh.
 
 Paired decision: [#8011 comment](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6054824428).
+
+Before queue admission, genuine current main advanced to `8e18cfb61e74b00d117f3d1e876f9ad25227654a`
+and source9fe became conflicting. Read-only merge-tree isolated the shared
+original400 allowance. Rebase on that actual main and compose only the closed
+LSP36 import/spread before the complete delivered RSS7 literal block. All prior
+owned non-doc bytes remain exact except that two-owner workflow composition;
+original400 inputs, provider/build recipes, budgets and oracles are unchanged.
+Preserve all incoming 350 canonical rows and the whole owned diagnostic clause,
+with every other incoming row exact. Restore a transient unowned clause revived
+by rebase to the actual-main row. Unchanged source inventory and generated
+ledger checks pass. Archive9fe, refresh the dependent helper Stack and require
+fresh source/native/n8n/original400 execution; 9fe's completed success grants no
+new-head, protected or public credit. Paired decision:
+[#8011 comment](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6055720128).
