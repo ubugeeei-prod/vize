@@ -77,6 +77,34 @@ fn projection(source: &Source, candidate: &str, base: &str, root: &Path) -> Resu
     Ok(())
 }
 
+fn current_pr_snapshot(
+    candidate: &str,
+    current: &str,
+    base: &str,
+    head: &str,
+    pr_event: bool,
+    root: &Path,
+) -> Result<(), String> {
+    pr_contract::sha(current)?;
+    if current == candidate {
+        return Ok(());
+    }
+    if !pr_event {
+        return Err("The local receipt is not the current GitHub synthetic merge SHA.".into());
+    }
+    // GitHub can regenerate a PR merge commit after reopening without changing
+    // either parent or any checked-out byte. The event SHA remains the tested
+    // candidate; accept the refresh only after authenticating both complete
+    // parent vectors and trees. Merge-group identity never uses this path.
+    github::git(&["fetch", "--no-tags", "origin", current], root)?;
+    candidate_parents(current, base, head, false, root)?;
+    let tree = |sha: &str| github::git(&["rev-parse", &format!("{sha}^{{tree}}")], root);
+    if tree(candidate)? != tree(current)? {
+        return Err("The current synthetic PR merge changed its complete tree.".into());
+    }
+    Ok(())
+}
+
 fn event_fields(
     event: Option<(&str, &Value)>,
     pr: &Value,
@@ -162,9 +190,6 @@ fn verify(
         root,
     )?)?;
     let queue = event_fields(event, &pr, &repository, number, candidate, base, head)?;
-    if !queue && pr_contract::field(&pr, "/merge_commit_sha")? != candidate {
-        return Err("The PR candidate is not its current GitHub synthetic merge SHA.".into());
-    }
     github::git(
         &[
             "fetch",
@@ -178,6 +203,16 @@ fn verify(
         root,
     )?;
     candidate_parents(candidate, base, head, queue, root)?;
+    if !queue {
+        current_pr_snapshot(
+            candidate,
+            pr_contract::field(&pr, "/merge_commit_sha")?,
+            base,
+            head,
+            matches!(event, Some(("pull_request", _))),
+            root,
+        )?;
+    }
     let source = source(&repository, source_number, &source_head, &tag, false, root)?;
     if source.integration != number || source.cut != cut {
         return Err("Source and integration bodies do not bind the same immutable cut.".into());

@@ -13,6 +13,55 @@ fn bump(repo: &Repo, parent: &str) -> String {
 }
 
 #[test]
+fn reopened_pr_merge_refresh_requires_identical_complete_parents_and_tree() {
+    // Actual #8315 reopened event ad317400 and REST/ref eb8d2897 had distinct
+    // commit identities but exactly the same two parents and complete tree.
+    let repo = Repo::new();
+    let base = repo.commit(&[("Cargo.toml", "original\n")]);
+    let head = repo.commit(&[("Cargo.toml", "generated metadata\n")]);
+    let tree = github::git(&["rev-parse", &format!("{head}^{{tree}}")], &repo.work).unwrap();
+    let merge = |tree: &str, parents: &[&str], message: &str| {
+        let mut args = vec!["commit-tree", tree];
+        for parent in parents {
+            args.extend(["-p", parent]);
+        }
+        args.extend(["-m", message]);
+        let commit = github::git(&args, &repo.work).unwrap();
+        github::git(
+            &[
+                "push",
+                "origin",
+                &format!("{commit}:refs/heads/law-{commit}"),
+            ],
+            &repo.work,
+        )
+        .unwrap();
+        commit
+    };
+    let event = merge(&tree, &[&base, &head], "reopened event");
+    let refreshed = merge(&tree, &[&base, &head], "provider regenerated commit");
+    assert_ne!(event, refreshed);
+    candidate_parents(&event, &base, &head, false, &repo.work).unwrap();
+    current_pr_snapshot(&event, &refreshed, &base, &head, true, &repo.work).unwrap();
+    assert!(current_pr_snapshot(&event, &refreshed, &base, &head, false, &repo.work).is_err());
+    for parents in [
+        vec![head.as_str(), base.as_str()],
+        vec![base.as_str()],
+        vec![base.as_str(), head.as_str(), event.as_str()],
+    ] {
+        let changed = merge(&tree, &parents, "different parent vector");
+        assert!(current_pr_snapshot(&event, &changed, &base, &head, true, &repo.work).is_err());
+    }
+    let old_tree = github::git(&["rev-parse", &format!("{base}^{{tree}}")], &repo.work).unwrap();
+    let changed = merge(&old_tree, &[&base, &head], "changed complete tree");
+    assert!(current_pr_snapshot(&event, &changed, &base, &head, true, &repo.work).is_err());
+    // The protected queue still requires its exact event candidate and sole
+    // first parent; neither PR synthetic merge can stand in for that receipt.
+    assert!(candidate_parents(&event, &base, &head, true, &repo.work).is_err());
+    assert!(candidate_parents(&refreshed, &base, &head, true, &repo.work).is_err());
+}
+
+#[test]
 fn original_v0436_script_drift_is_rejected_before_metadata_delivery() {
     let packet: Value = serde_json::from_str(include_str!(
         "../../../tests/_fixtures/release/pinned-catalog-script-drift.json"
