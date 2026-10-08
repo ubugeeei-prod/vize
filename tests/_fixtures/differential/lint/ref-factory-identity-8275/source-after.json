@@ -1,0 +1,1301 @@
+{
+  "cases": [
+    {
+      "filename": "Audit.vue",
+      "id": "ref-import-direct",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 91,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 91,
+                  "message": "ref used directly as an operand",
+                  "start": 86
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 86
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 91,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 91,
+                  "message": "ref used directly as an operand",
+                  "start": 86
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 86
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; const value = ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-import-alias",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 106,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 106,
+                  "message": "ref used directly as an operand",
+                  "start": 101
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 101
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 106,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 106,
+                  "message": "ref used directly as an operand",
+                  "start": 101
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 101
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref as makeRef } from \"vue\"; const value = makeRef(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-namespace",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 96,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 96,
+                  "message": "ref used directly as an operand",
+                  "start": 91
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 91
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 96,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 96,
+                  "message": "ref used directly as an operand",
+                  "start": 91
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 91
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from \"vue\"; const value = Vue.ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-local-factory",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nfunction ref(value: number) { return value; } const value = ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-other-package",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"other\"; const value = ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-value-control",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; const value = ref(0); console.log(value.value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-import-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; function calc(ref: (v:number)=>number) { const value = ref(0); return value + 1; }\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-unbound",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nconst value = ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-default-import",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport Vue from \"vue\"; const value = Vue.ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-computed-member",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 99,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 99,
+                  "message": "ref used directly as an operand",
+                  "start": 94
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 94
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 99,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 99,
+                  "message": "ref used directly as an operand",
+                  "start": 94
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 94
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from \"vue\"; const value = Vue[\"ref\"](0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-composition-api",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 108,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 108,
+                  "message": "ref used directly as an operand",
+                  "start": 103
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 103
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 108,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 108,
+                  "message": "ref used directly as an operand",
+                  "start": 103
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 103
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"@vue/composition-api\"; const value = ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-unimport",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 96,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 96,
+                  "message": "ref used directly as an operand",
+                  "start": 91
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 91
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 96,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 96,
+                  "message": "ref used directly as an operand",
+                  "start": 91
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 91
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"#imports\"; const value = ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-reactivity",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"@vue/reactivity\"; const value = ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-type-only",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 96,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 96,
+                  "message": "ref used directly as an operand",
+                  "start": 91
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 91
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 96,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 96,
+                  "message": "ref used directly as an operand",
+                  "start": 91
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 91
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport type { ref } from \"vue\"; const value = ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-inline-type",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 96,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 96,
+                  "message": "ref used directly as an operand",
+                  "start": 91
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 91
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 96,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 96,
+                  "message": "ref used directly as an operand",
+                  "start": 91
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 91
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { type ref } from \"vue\"; const value = ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-namespace-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from \"vue\"; function calc(Vue: {ref:(v:number)=>number}) { const value = Vue.ref(0); return value + 1; }\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-block-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; { const ref = (value:number) => value; const value = ref(0); console.log(value + 1); }\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-function-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; function calc() { function ref(value:number) { return value; } const value = ref(0); return value + 1; }\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-alias-copy",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 116,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 116,
+                  "message": "ref used directly as an operand",
+                  "start": 111
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 111
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 116,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 116,
+                  "message": "ref used directly as an operand",
+                  "start": 111
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 111
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; const makeRef = ref; const value = makeRef(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-destructure-namespace",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 124,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 124,
+                  "message": "ref used directly as an operand",
+                  "start": 119
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 119
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 124,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 124,
+                  "message": "ref used directly as an operand",
+                  "start": 119
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 119
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from \"vue\"; const {ref: makeRef} = Vue; const value = makeRef(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-result-copy",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 118,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 118,
+                  "message": "ref used directly as an operand",
+                  "start": 113
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 113
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 118,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 118,
+                  "message": "ref used directly as an operand",
+                  "start": 113
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 113
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; const original = ref(0); const value = original; console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-hoisted-block-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; function calc() { if (true) { var ref = (v:number) => v; } const value = ref(0); return value + 1; }\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-hoisted-loop-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; function calc() { for (var ref = (v:number) => v; false;) {} const value = ref(0); return value + 1; }\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-class-namespace-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from \"vue\"; const C = class Vue { static ref(value:number) { return value; } calc() { const value = Vue.ref(0); return value + 1; } };\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-named-function-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; const calc = function ref() { const value = ref(0); return value + 1; };\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-loop-later-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; for (let value = ref(0), ref = (v:number) => v; value;) {}\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-loop-self-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; for (let ref = ref(0); ref;) {}\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-namespace-copy",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 125,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 125,
+                  "message": "ref used directly as an operand",
+                  "start": 120
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 120
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 125,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 125,
+                  "message": "ref used directly as an operand",
+                  "start": 120
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 120
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from \"vue\"; const Namespace = Vue; const value = Namespace.ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-namespace-other-package",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from \"other\"; const value = Vue.ref(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-destructuring-string",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 128,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 128,
+                  "message": "ref used directly as an operand",
+                  "start": 123
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 123
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 128,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 128,
+                  "message": "ref used directly as an operand",
+                  "start": 123
+                }
+              ],
+              "message": "'value' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 123
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from \"vue\"; const { \"ref\": makeRef } = Vue; const value = makeRef(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-destructuring-dynamic-clean",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from \"vue\"; const ref = \"unref\"; const { [ref]: makeRef } = Vue; const value = makeRef(0); console.log(value + 1);\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-static-block-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from \"vue\"; const value = Vue.ref(0); class C { static { const value = 0; console.log(value + 1); } }\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-switch-shadow",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport * as Vue from \"vue\"; const value = Vue.ref(0); switch (0) { case 0: const value = 0; console.log(value + 1); break; }\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-parameter-body-shadow",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 117,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 117,
+                  "message": "ref used directly as an operand",
+                  "start": 112
+                }
+              ],
+              "message": "'inner' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 112
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 117,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 117,
+                  "message": "ref used directly as an operand",
+                  "start": 112
+                }
+              ],
+              "message": "'inner' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 112
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; function calc(value = (() => { const inner = ref(0); return inner + 1; })()) { const ref = (value:number) => value; return value; }\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-arrow-parameter-body-shadow",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 117,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 117,
+                  "message": "ref used directly as an operand",
+                  "start": 112
+                }
+              ],
+              "message": "'inner' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 112
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 117,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 117,
+                  "message": "ref used directly as an operand",
+                  "start": 112
+                }
+              ],
+              "message": "'inner' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 112
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; const calc = (value = (() => { const inner = ref(0); return inner + 1; })()) => { const ref = (value:number) => value; return value; };\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-parameter-body-var-shadow",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 117,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 117,
+                  "message": "ref used directly as an operand",
+                  "start": 112
+                }
+              ],
+              "message": "'inner' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 112
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 117,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 117,
+                  "message": "ref used directly as an operand",
+                  "start": 112
+                }
+              ],
+              "message": "'inner' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 112
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref } from \"vue\"; function calc(value = (() => { const inner = ref(0); return inner + 1; })()) { var ref = (value:number) => value; return value; }\n</script>\n<template><div /></template>\n"
+    },
+    {
+      "filename": "Audit.vue",
+      "id": "ref-utf8-alias",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 113,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 113,
+                  "message": "ref used directly as an operand",
+                  "start": 110
+                }
+              ],
+              "message": "'値' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 110
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 113,
+              "fix": null,
+              "help": "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+              "labels": [
+                {
+                  "end": 113,
+                  "message": "ref used directly as an operand",
+                  "start": 110
+                }
+              ],
+              "message": "'値' is a ref and must be unwrapped with `.value` here.",
+              "rule_name": "script/no-ref-as-operand",
+              "severity": "error",
+              "start": 110
+            }
+          ],
+          "error_count": 1,
+          "filename": "Audit.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { ref as 作成 } from \"vue\"; const 値 = 作成(0); // 日本語\nconsole.log(値 + 1);\n</script>\n<template><div /></template>\n"
+    }
+  ],
+  "schema": "vize.n8n.next-semantic-gap.actual-source",
+  "sourceRevision": "db6f2c09fe0b11f6660c8cda40a642ce5ba9e875-dirty-import-identity",
+  "producer": {
+    "baseRevision": "db6f2c09fe0b11f6660c8cda40a642ce5ba9e875",
+    "productionFiles": {
+      "crates/vize_patina/src/rules/script/no_ref_as_operand.rs": "a9d8a84a59acba14e2c8578f70d6c3941f4c9cb046e20825c518e111ac5aca69",
+      "crates/vize_patina/src/rules/script/no_ref_as_operand/scope.rs": "53aac4f704425cf8518c3913a7b3af8f85a31ccc92955e809664946f5e184218",
+      "crates/vize_patina/src/rules/script/no_ref_as_operand/scope/hoisted.rs": "c254ff8384c9f47de653fd770c37bfab0a4aeab62da890a7fc71ddc9f72c59b5",
+      "crates/vize_patina/src/rules/script/no_ref_as_operand/visitor.rs": "9efa79bbf0944ee5d47a70ce023ec0a0d3492380a1816e9ebb597ea60980dff8"
+    },
+    "binaryPath": "target/ref-identity-source/ci/deps/ref_factory_identity-50a9329879af26fd",
+    "binarySha256": "ff57588be739b8e9f5d82933d1bf8b255d0a24f305a62fdeccb955035db1edfd",
+    "freshTarget": "target/ref-identity-source",
+    "qualification": "Current isolated-source integration replay: two tests passed; all37 complete native packets repeated and checked against full independent corpus. Exact-head hosted/protected and public delivery remain mandatory.",
+    "testLogSha256": "de0387dd860a2673f772fe4093f9f6b43eeff6d32a705437302a589fdfe1cf78"
+  }
+}

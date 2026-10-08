@@ -1,10 +1,12 @@
 use super::NoRefAsOperand;
 use crate::rules::script::{ScriptLintResult, ScriptLinter};
 
+const IMPORTS: &str = "import { ref, computed, shallowRef, toRef, customRef } from \"vue\";\n";
+
 fn lint(source: &str) -> ScriptLintResult {
     let mut linter = ScriptLinter::new();
     linter.add_rule(Box::new(NoRefAsOperand));
-    linter.lint(source, 0)
+    linter.lint(&format!("{IMPORTS}{source}"), 0)
 }
 
 // --- Valid: proper `.value` access, or passing the ref itself ---
@@ -264,7 +266,7 @@ fn real_app_loop_shadow_does_not_hide_a_true_ref_operand() {
     let source = "const options = ref([]);\nfor (let i = 10; i < 36; i++) { const value = i.toString(36) + i; options.value.push({ label: `Long Label: ${value}`, value }); }\nconst value = ref(['a']);\nconst broken = `value: ${value}`;";
     let result = lint(source);
     assert_eq!(result.error_count, 1);
-    let start = source.rfind("value}").unwrap() as u32;
+    let start = (IMPORTS.len() + source.rfind("value}").unwrap()) as u32;
     assert_eq!(
         (result.diagnostics[0].start, result.diagnostics[0].end),
         (start, start + 5)
