@@ -45,6 +45,20 @@ Actions, protected queue qualification, actual merge and installed release
 replay. Historical source greens grant no current delivery or publication credit.
 No upstream comment or change is part of this work.
 
+The consumer migration inventory is regenerated from the current owning source.
+Only the Patina shard changes: the three existing driver import rows move from
+line 22 to line 23, one production Relief-root row records `driver/css.rs`, and
+one L0 test/dev row records `css_type_aware_ownership.rs`. The full generator
+check passes; no unrelated producer or consumer row is changed.
+
+Severity review confirms CSS is overridden once by its existing append helper,
+which recounts the whole result. The outer native severity pass selects only
+`type/*` diagnostics, so it does not reapply CSS overrides. A changed type
+severity triggers another whole-result recount; an already matching severity
+does nothing. The existing complete-result checks pin both CSS warning/error
+counts and the ordered script/type/CSS packets from independently authored
+constructor inputs, without captured product snapshots.
+
 ## Canonical clause for root integration
 
 [#7976 native type-aware CSS ownership](./2026-10-08-css-type-aware-global-ownership.md)
