@@ -30,19 +30,34 @@ assert.equal(
   hash(currentOriginalRun),
   "397a7119bdeab7cecdb7e1f7c5ed62b8df1232005fcd3d538ac6f20bf761fb13",
 );
-export const currentRequiredRun = readFileSync(
+export const bomRequiredRun = readFileSync(
   new URL("../../../tests/_fixtures/tooling/native-current-recipe-8253.sh", import.meta.url),
   "utf8",
 );
 assert.equal(
-  hash(currentRequiredRun),
+  hash(bomRequiredRun),
   "b2bd7c08e90ca1625044d09cbe221c22f8a8344be8c4347854acb73a66dfc05f",
 );
 assert.equal(
-  currentRequiredRun,
+  bomRequiredRun,
   currentOriginalRun.replace(
     " --test lsp_bare_script_symbols_cli --config",
     " --test lsp_bare_script_symbols_cli --test check_tsconfig_bom_cli --config",
+  ),
+);
+export const currentRequiredRun = readFileSync(
+  new URL("../../../tests/_fixtures/tooling/native-current-recipe-ignore-3984.sh", import.meta.url),
+  "utf8",
+);
+assert.equal(
+  hash(currentRequiredRun),
+  "8a2b3e2ffc52c4a80a3c02ae15cede5d8c15fd3415a2368aa1974135703e9c56",
+);
+assert.equal(
+  currentRequiredRun,
+  bomRequiredRun.replace(
+    " --test check_tsconfig_bom_cli --config",
+    " --test check_tsconfig_bom_cli --test check_tsconfig_ignore_cli --config",
   ),
 );
 

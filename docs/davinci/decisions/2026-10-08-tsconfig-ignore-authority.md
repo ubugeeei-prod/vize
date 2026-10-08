@@ -69,3 +69,15 @@ Complete project/build/watch semantics, declaration/map and packed-consumer
 qualification, LSP/editor parity, installed replay and matched performance
 targets remain unfinished under #3984 and #3957. This slice does not close those
 issues or replace a legacy provider. Upstream projects remain read-only.
+
+Preserve owned commit `cb8a896a8c6156f3e58a3452010cd5eb1577956c` and replay its
+reviewed source onto genuine finalized BOM parent
+`1218ca7b4191c8f656164d4a01544e70d9055b82`. This dependent native Stack adds
+only the eleventh configured-ignore target to the complete parent recipe.
+The original nine- and ten-target full scripts and digests remain unchanged;
+a separate independently authored eleven-target successor proves the exact
+additive relation, complete current/future recipes and rejection of either new
+target's deletion. No original input, failed packet, generated control or runtime
+assertion changes during this composition. Fresh source/native/protected
+qualification remains pending; the parent may enter the queue independently
+of this child's readiness.

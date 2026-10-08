@@ -21,6 +21,7 @@ import {
   currentBytes,
   currentOriginalRun,
   currentRequiredRun,
+  bomRequiredRun,
   git,
   put,
   commit,
@@ -66,7 +67,7 @@ await test("complete authenticated actual C6d/H339 metadata selects all original
   });
 });
 
-await test("ordinary source retains the complete authored ten-target successor and original downstream flags", () => {
+await test("ordinary source retains the complete authored eleven-target successor and original downstream flags", () => {
   fixture((f) => {
     f.event.pull_request.head.ref = "fix/current-native";
     f.event.pull_request.body = "";
@@ -77,7 +78,8 @@ await test("ordinary source retains the complete authored ten-target successor a
     const run = parse(currentBytes).jobs["native-phases"].steps.find((s) => s.name === STEP).run;
     const inline = declaredSourceRecipe(run).recipe.replace(/^  /gmu, "");
     assert.equal(inline, currentRequiredRun);
-    assert.equal([...inline.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 10);
+    assert.equal([...inline.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 11);
+    assert.equal([...bomRequiredRun.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 10);
     assert.equal(
       [...currentOriginalRun.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length,
       9,
@@ -331,6 +333,7 @@ await test("future version-only sources execute their complete inline commands o
         (bytes) => bytes.replace("--locked", "--offline"),
         (bytes) => bytes.replace(" --test lsp_bare_script_symbols_cli", ""),
         (bytes) => bytes.replace(" --test check_tsconfig_bom_cli", ""),
+        (bytes) => bytes.replace(" --test check_tsconfig_ignore_cli", ""),
       ]) {
         git(f.root, "checkout", "--detach", f.source);
         put(f.root, WORKFLOW, change(currentBytes));

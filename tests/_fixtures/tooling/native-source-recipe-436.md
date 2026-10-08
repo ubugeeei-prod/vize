@@ -22,6 +22,13 @@ successor by adding only `--test check_tsconfig_bom_cli` after the last existing
 target. All original nine targets and downstream bytes remain unchanged; the
 fixture law verifies this complete additive relation. Its SHA256 is
 `b2bd7c08e90ca1625044d09cbe221c22f8a8344be8c4347854acb73a66dfc05f`.
-The current wrapper must execute the complete successor once, and a version-only
+At the BOM layer the wrapper executes that complete successor once; a version-only
 source that deletes its new target is rejected. Neither fixture is derived from
 an executing producer's response or grants hosted native acceptance.
+
+`native-current-recipe-ignore-3984.sh` adds only
+`--test check_tsconfig_ignore_cli` to the complete ten-target successor. Its SHA256
+is `8a2b3e2ffc52c4a80a3c02ae15cede5d8c15fd3415a2368aa1974135703e9c56`.
+The nine- and ten-target files, digests and complete additive laws remain fixed.
+The configured-ignore layer must execute the whole eleven-target recipe once;
+version-only sources that remove either new target are rejected.
