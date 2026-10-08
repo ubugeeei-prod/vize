@@ -7,6 +7,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { beginN8nReplay, replayN8nHost, finishN8nReplay } from "./n8n-replay-qualification.mjs";
+import { stageProjectNative } from "./project-native-staging.ts";
 import {
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
@@ -25,13 +26,15 @@ const nativeDir = path.join(root, "npm/native");
 const receipt = JSON.parse(fs.readFileSync(nativeHistoryReceipt(nativeDir), "utf8"));
 validateNativeHistoryBuild(nativeDir, receipt);
 assert.equal(receipt.source.head, process.env.GITHUB_SHA);
-const artifacts = path.join(root, "target/oxlint-original-project-transport");
-fs.mkdirSync(artifacts, { recursive: true });
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const binary = path.join(artifacts, "source-native.node");
-fs.copyFileSync(receipt.frozen.path, binary, fs.constants.COPYFILE_EXCL);
-assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
-fs.copyFileSync(nativeHistoryReceipt(nativeDir), path.join(artifacts, "build-receipt.json"));
+const { artifacts, binary } = stageProjectNative(
+  path.join(root, "target/oxlint-original-project-transport"),
+  receipt.frozen.path,
+  nativeHistoryReceipt(nativeDir),
+  receipt.frozen.sha256,
+);
+if (process.env.GITHUB_OUTPUT)
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, `staging-directory=${artifacts}\n`);
 const preload = fileURLToPath(new URL("./project-native-custody.cjs", import.meta.url));
 const qualifications = [];
 const n8nReplay = beginN8nReplay({ root, packageDir, artifacts, receipt, binary });
