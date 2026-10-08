@@ -4,7 +4,7 @@ title: "musea/valid-variant"
 
 # `musea/valid-variant`
 
-Require name attribute in <variant> blocks
+Require name attribute in &lt;variant&gt; blocks
 
 [Bad](#bad) · [Good](#good)
 

@@ -4,7 +4,7 @@ title: "a11y/no-i-for-icon"
 
 # `a11y/no-i-for-icon`
 
-Disallow using <i> element for icons
+Disallow using &lt;i&gt; element for icons
 
 [Bad](#bad) · [Good](#good)
 

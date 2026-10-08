@@ -4,7 +4,7 @@ title: "vue/no-lone-template"
 
 # `vue/no-lone-template`
 
-Disallow unnecessary `<template>` elements
+Disallow unnecessary `&lt;template&gt;` elements
 
 [Bad](#bad) · [Good](#good)
 

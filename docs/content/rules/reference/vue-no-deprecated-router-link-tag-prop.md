@@ -4,7 +4,7 @@ title: "vue/no-deprecated-router-link-tag-prop"
 
 # `vue/no-deprecated-router-link-tag-prop`
 
-Disallow the `tag` prop on <router-link>
+Disallow the `tag` prop on &lt;router-link&gt;
 
 [Bad](#bad) · [Good](#good)
 

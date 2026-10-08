@@ -4,7 +4,7 @@ title: "html/no-duplicate-dt"
 
 # `html/no-duplicate-dt`
 
-Disallow duplicate <dt> names in <dl>
+Disallow duplicate &lt;dt&gt; names in &lt;dl&gt;
 
 [Bad](#bad) · [Good](#good)
 

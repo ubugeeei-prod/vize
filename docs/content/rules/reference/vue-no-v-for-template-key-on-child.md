@@ -4,7 +4,7 @@ title: "vue/no-v-for-template-key-on-child"
 
 # `vue/no-v-for-template-key-on-child`
 
-Disallow `key` on the child of a `<template v-for>`
+Disallow `key` on the child of a `&lt;template v-for&gt;`
 
 [Bad](#bad) · [Good](#good)
 

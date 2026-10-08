@@ -4,7 +4,7 @@ title: "musea/no-empty-variant"
 
 # `musea/no-empty-variant`
 
-Disallow empty <variant> blocks
+Disallow empty &lt;variant&gt; blocks
 
 [Bad](#bad) · [Good](#good)
 

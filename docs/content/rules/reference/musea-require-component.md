@@ -4,7 +4,7 @@ title: "musea/require-component"
 
 # `musea/require-component`
 
-Require component attribute in <art> block
+Require component attribute in &lt;art&gt; block
 
 [Bad](#bad) · [Good](#good)
 

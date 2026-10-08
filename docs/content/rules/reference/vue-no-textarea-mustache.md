@@ -4,7 +4,7 @@ title: "vue/no-textarea-mustache"
 
 # `vue/no-textarea-mustache`
 
-Disallow mustache interpolation in `<textarea>`
+Disallow mustache interpolation in `&lt;textarea&gt;`
 
 [Bad](#bad) · [Good](#good)
 

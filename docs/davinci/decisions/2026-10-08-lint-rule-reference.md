@@ -102,3 +102,9 @@ destructuring, accessibility, a reserved contract, and the identity graph. Fresh
 the original 245 ordinary pairs, six required-Corsa pairs, and 25 complete CLI project cases;
 earlier qualification is historical evidence, not credit for this change. No production linter,
 highlight styles, complexity algorithm, dependencies, or diagnostic oracle changes are involved.
+
+The first exact-head Docs render exposed raw `<script setup>` metadata prose consuming the
+following example sections as HTML script content. Generated leaf purposes now escape angle
+brackets, as the summary tables already did. All 317 whole-code and real-anchor checks remain
+strict; authored Bad/Good source packets are unchanged. The failed run is retained as evidence,
+and fresh Actions and Docs must qualify the corrected head before queue admission.

@@ -4,7 +4,7 @@ title: "script/no-export-in-script-setup"
 
 # `script/no-export-in-script-setup`
 
-Disallow export statements inside <script setup>
+Disallow export statements inside &lt;script setup&gt;
 
 [Bad](#bad) · [Good](#good)
 

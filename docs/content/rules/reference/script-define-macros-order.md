@@ -4,7 +4,7 @@ title: "script/define-macros-order"
 
 # `script/define-macros-order`
 
-Enforce a consistent order of the Vue compiler macros in <script setup>
+Enforce a consistent order of the Vue compiler macros in &lt;script setup&gt;
 
 [Bad](#bad) · [Good](#good)
 

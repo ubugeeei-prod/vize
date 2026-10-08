@@ -4,7 +4,7 @@ title: "script/define-props-destructuring"
 
 # `script/define-props-destructuring`
 
-Enforce consistent style for defineProps destructuring in <script setup>
+Enforce consistent style for defineProps destructuring in &lt;script setup&gt;
 
 [Bad](#bad) · [Good](#good)
 

@@ -4,7 +4,7 @@ title: "vue/no-unused-refs"
 
 # `vue/no-unused-refs`
 
-Report template refs (ref="x") never referenced in <script>
+Report template refs (ref="x") never referenced in &lt;script&gt;
 
 [Bad](#bad) · [Good](#good)
 

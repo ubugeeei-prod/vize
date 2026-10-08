@@ -4,7 +4,7 @@ title: "vue/no-useless-template-attributes"
 
 # `vue/no-useless-template-attributes`
 
-Disallow useless attributes on `<template>` elements
+Disallow useless attributes on `&lt;template&gt;` elements
 
 [Bad](#bad) · [Good](#good)
 

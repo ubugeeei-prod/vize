@@ -4,7 +4,7 @@ title: "html/no-consecutive-br"
 
 # `html/no-consecutive-br`
 
-Disallow consecutive <br> elements
+Disallow consecutive &lt;br&gt; elements
 
 [Bad](#bad) · [Good](#good)
 

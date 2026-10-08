@@ -4,7 +4,7 @@ title: "vue/require-component-is"
 
 # `vue/require-component-is`
 
-Require `v-bind:is` on `<component>` elements
+Require `v-bind:is` on `&lt;component&gt;` elements
 
 [Bad](#bad) · [Good](#good)
 

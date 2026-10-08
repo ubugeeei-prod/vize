@@ -4,7 +4,7 @@ title: "vue/require-toggle-inside-transition"
 
 # `vue/require-toggle-inside-transition`
 
-Require a toggle on the element wrapped by `<transition>`
+Require a toggle on the element wrapped by `&lt;transition&gt;`
 
 [Bad](#bad) · [Good](#good)
 

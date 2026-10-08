@@ -4,7 +4,7 @@ title: "script/prefer-define-options"
 
 # `script/prefer-define-options`
 
-Prefer defineOptions() over a plain <script> that only sets name/inheritAttrs
+Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs
 
 [Bad](#bad) · [Good](#good)
 

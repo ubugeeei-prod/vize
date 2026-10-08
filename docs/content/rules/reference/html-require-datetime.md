@@ -4,7 +4,7 @@ title: "html/require-datetime"
 
 # `html/require-datetime`
 
-Require datetime attribute on <time> element
+Require datetime attribute on &lt;time&gt; element
 
 [Bad](#bad) · [Good](#good)
 

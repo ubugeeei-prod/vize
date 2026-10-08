@@ -4,7 +4,7 @@ title: "script/define-emits-declaration"
 
 # `script/define-emits-declaration`
 
-Enforce the type-based defineEmits<{}>() form over the runtime/array form
+Enforce the type-based defineEmits&lt;{}&gt;() form over the runtime/array form
 
 [Bad](#bad) · [Good](#good)
 

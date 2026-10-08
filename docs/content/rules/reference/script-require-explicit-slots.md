@@ -4,7 +4,7 @@ title: "script/require-explicit-slots"
 
 # `script/require-explicit-slots`
 
-Require slots consumed via useSlots() to be explicitly typed with defineSlots<...>()
+Require slots consumed via useSlots() to be explicitly typed with defineSlots&lt;...&gt;()
 
 [Bad](#bad) · [Good](#good)
 

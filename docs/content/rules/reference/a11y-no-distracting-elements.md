@@ -4,7 +4,7 @@ title: "a11y/no-distracting-elements"
 
 # `a11y/no-distracting-elements`
 
-Disallow distracting elements like <marquee> and <blink>
+Disallow distracting elements like &lt;marquee&gt; and &lt;blink&gt;
 
 [Bad](#bad) · [Good](#good)
 

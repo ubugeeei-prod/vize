@@ -4,7 +4,7 @@ title: "musea/require-title"
 
 # `musea/require-title`
 
-Require title attribute in <art> block
+Require title attribute in &lt;art&gt; block
 
 [Bad](#bad) · [Good](#good)
 

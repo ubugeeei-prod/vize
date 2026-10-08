@@ -135,7 +135,7 @@ function detail(rule, example, ja) {
     "",
     `# \`${rule.name}\``,
     "",
-    ja ? purposeJa[rule.name] : rule.description,
+    prose(ja ? purposeJa[rule.name] : rule.description),
     "",
     exampleLinks("", ja),
     "",
@@ -268,12 +268,10 @@ function slug(value) {
     .replace(/^-|-$/g, "");
 }
 function cell(value) {
-  return String(value)
-    .replaceAll("|", "\\|")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replace(/\s+/g, " ")
-    .trim();
+  return prose(value).replaceAll("|", "\\|").replace(/\s+/g, " ").trim();
+}
+function prose(value) {
+  return String(value).replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 function output(path, content, checking) {
   if (checking) {

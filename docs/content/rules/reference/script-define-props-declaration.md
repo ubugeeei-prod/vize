@@ -4,7 +4,7 @@ title: "script/define-props-declaration"
 
 # `script/define-props-declaration`
 
-Enforce type-based defineProps<{ ... }>() over the runtime/object form
+Enforce type-based defineProps&lt;{ ... }&gt;() over the runtime/object form
 
 [Bad](#bad) · [Good](#good)
 

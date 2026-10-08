@@ -4,7 +4,7 @@ title: "vue/no-deprecated-scope-attribute"
 
 # `vue/no-deprecated-scope-attribute`
 
-Disallow the deprecated `scope` attribute on <template>
+Disallow the deprecated `scope` attribute on &lt;template&gt;
 
 [Bad](#bad) · [Good](#good)
 
