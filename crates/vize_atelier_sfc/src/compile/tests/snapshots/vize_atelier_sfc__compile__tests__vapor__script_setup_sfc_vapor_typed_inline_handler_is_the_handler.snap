@@ -1,0 +1,39 @@
+---
+source: crates/vize_atelier_sfc/src/compile/tests/vapor.rs
+expression: result.code.as_str()
+---
+import { defineVaporComponent as _defineVaporComponent, getCurrentInstance as _getCurrentInstance, proxyRefs as _proxyRefs } from 'vue'
+import { createComponentWithFallback as _createComponentWithFallback, createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+
+const t0 = _template("<button>Go</button>")
+_delegateEvents("click")
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const _component_Child = _ctx.Child
+  const n0 = _createComponentWithFallback(_component_Child, { onKeydown: () => ((event: _ctx.KeyboardEvent) => _ctx.emit('key', event.key)) }, null, true)
+  const n1 = t0()
+  n1.$evtclick = _createInvoker((event: _ctx.MouseEvent) => _ctx.emit('key', event.type))
+  return [n0, n1]
+}
+const __vaporRender = render
+
+import Child from './Child.vue'
+
+
+export default /*@__PURE__*/_defineVaporComponent({
+  __name: 'anonymous',
+  emits: ["key"],
+  render: __vaporRender,
+  setup(__props, { emit: __emit, attrs: __attrs, slots: __slots }) {
+
+const emit = __emit
+
+const __returned__ = { Child, emit }
+Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+const __instance = _getCurrentInstance()
+const __ctx = _proxyRefs(__returned__)
+if (__instance) __instance.setupState = __ctx
+return __vaporRender(__ctx, __props, __emit, __attrs, __slots)
+}
+
+})

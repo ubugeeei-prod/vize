@@ -150,3 +150,42 @@ const msg = ref("hi")
         "component must hydrate first: {app_code}"
     );
 }
+
+// An inline handler whose parameter carries a TypeScript annotation is still a
+// function: the parse that decides it must accept TypeScript, or the handler is
+// wrapped as a statement, `($event) => ((event) => ...)`, and never called.
+#[test]
+fn test_script_setup_sfc_vapor_typed_inline_handler_is_the_handler() {
+    let source = r#"<script setup lang="ts">
+import Child from './Child.vue'
+
+const emit = defineEmits<{ key: [key: string] }>()
+</script>
+
+<template>
+  <Child @keydown="(event: KeyboardEvent) => emit('key', event.key)" />
+  <button @click="(event: MouseEvent) => emit('key', event.type)">Go</button>
+</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let opts = SfcCompileOptions {
+        vapor: true,
+        script: ScriptCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        template: TemplateCompileOptions {
+            is_ts: true,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let result = compile_sfc(&descriptor, opts).expect("Failed to compile SFC");
+
+    assert!(
+        !result.code.contains("$event"),
+        "a typed inline handler was wrapped as a statement:\n{}",
+        result.code
+    );
+    insta::assert_snapshot!(result.code.as_str());
+}
