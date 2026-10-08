@@ -165,3 +165,26 @@ and the incoming 12 slot sessions byte-for-byte. The combined generator remains
 The fresh complete original-report capture universe is 82 contexts (16 original,
 48 named-type, six event and 12 slot), alongside the separate 22 library-authority
 contexts. Historical event or slot success grants no current-source credit.
+
+Exact source `55f9f4aab8` in [Check37710087437](https://github.com/ubugeeei-prod/vize/actions/runs/37710087437)
+authenticates all 82 original-report packets and 18 complete safe/refusal/collision
+packets. The first MissingCall observation still returns empty editor diagnostics
+instead of its full TS2345; three later negative sessions remain unexecuted.
+The source aggregate is red. The separate public batch witness returns TS2345 for
+the identical partial Toggle, but its generation options differ from the editor's
+event-navigation projection, so no unique synchronization cause is established.
+
+Add a separate mandatory in-process witness through the existing test-only
+assembly custody hook, with direct native discovery, actual frozen Vue
+declarations and the exact original full config and initialization flags. Preserve
+the native guard's invalid disk and repaired overlay, original sequential opens,
+rename-first canonical materialization, actual returned partial edits, both disk
+writes before version-2 changes and independent literal version-3 repairs. Retain
+every prepared source/options/revision, opened URI/mirror, generated TypeScript
+and mappings, complete native diagnostic answer and final assembled arrays.
+Require the entire native stage vector for every pass. Keep the external negative
+law, all original/golden bytes and complete TS2345 expectation unchanged. This
+adds no production logging, query stage or diagnostic correction; authentic fresh
+hosted execution must establish the failing stage before a source repair.
+
+Paired editor-assembly witness decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6050218891) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6050219165).
