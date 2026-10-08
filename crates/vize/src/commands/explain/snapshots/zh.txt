@@ -3711,8 +3711,8 @@ vue/component-name-in-template-casing · lint 规则
 文档: docs/content/rules/vue.md
 
 错误示例:
-  <my-component />
-  <myComponent />
+  <script setup>import MyComponent from "./MyComponent.vue";</script>
+  <template><my-component /><myComponent /></template>
 
 正确示例:
   <MyComponent />

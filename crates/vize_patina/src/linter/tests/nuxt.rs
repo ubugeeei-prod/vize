@@ -285,8 +285,13 @@ fn nuxt_preset_allows_vuetify_kebab_components() {
 }
 
 #[test]
-fn opinionated_preset_still_flags_vuetify_kebab_components() {
-    let linter = Linter::with_preset(LintPreset::Opinionated);
+fn opinionated_all_tags_policy_still_flags_vuetify_kebab_components() {
+    let linter = Linter::with_preset(LintPreset::Opinionated)
+        .with_component_name_in_template_casing_policy(
+            crate::rules::opinionated::vue::ComponentCasing::PascalCase,
+            false,
+            Vec::new(),
+        );
     let sfc = r#"<template>
   <v-btn />
 </template>

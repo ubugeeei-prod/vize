@@ -45,7 +45,12 @@ Expose `registeredComponentsOnly` (default `true`) and literal `globals` (defaul
 empty) in typed CLI/LSP configuration. Existing casing-only SDK options inherit
 the corrected default. Preserve the older standalone-template edit corpus by
 explicitly opting into `registeredComponentsOnly: false`; its diagnostics and
-fix bytes remain unchanged. HTML/SVG/MathML and `slot`/dynamic `component` syntax
+fix bytes remain unchanged. The older scriptless Opinionated/Vuetify test also
+declares that same all-tag policy; it retains its original source and finding.
+Generated rule examples and explain pages now supply the authored setup import.
+The public-fact census resolves the actual linter's typed inventory access;
+regenerate and byte-check both consumption and migration shards without exemptions.
+HTML/SVG/MathML and `slot`/dynamic `component` syntax
 are not component casing targets. Nuxt framework exemptions remain intentional.
 
 The new public `Croquis.template_component_registrations` field and removal of

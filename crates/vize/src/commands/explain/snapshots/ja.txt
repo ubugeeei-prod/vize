@@ -3551,8 +3551,8 @@ vue/component-name-in-template-casing · lint ルール
 ドキュメント: docs/content/rules/vue.md
 
 不正な例:
-  <my-component />
-  <myComponent />
+  <script setup>import MyComponent from "./MyComponent.vue";</script>
+  <template><my-component /><myComponent /></template>
 
 正しい例:
   <MyComponent />

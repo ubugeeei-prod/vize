@@ -20,6 +20,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_croquis::Croquis;
+use vize_croquis::croquis::TemplateComponentRegistrations;
 use vize_croquis::naming::{is_kebab_case_loose, is_pascal_case, to_pascal_case};
 use vize_l0::{is_html_tag, is_math_ml_tag, is_svg_tag};
 use vize_relief::ElementNode;
@@ -183,10 +185,10 @@ fn check_element<'a>(
             .globals
             .iter()
             .any(|global| global.as_str() == name.as_str())
-            && !ctx.analysis().is_some_and(|analysis| {
-                analysis
-                    .template_component_registrations
-                    .contains(&name, analysis.bindings.is_script_setup)
+            && !ctx.analysis().is_some_and(|analysis: &Croquis| {
+                let registrations: &TemplateComponentRegistrations =
+                    &analysis.template_component_registrations;
+                registrations.contains(&name, analysis.bindings.is_script_setup)
             })
         {
             return;

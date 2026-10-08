@@ -3600,8 +3600,8 @@ autofix: yes
 docs: docs/content/rules/vue.md
 
 invalid:
-  <my-component />
-  <myComponent />
+  <script setup>import MyComponent from "./MyComponent.vue";</script>
+  <template><my-component /><myComponent /></template>
 
 valid:
   <MyComponent />

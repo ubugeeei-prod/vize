@@ -1283,6 +1283,15 @@ Croquis {
     },
     used_components: {},
     component_registrations: [],
+    template_component_registrations: TemplateComponentRegistrations {
+        module_names: {
+            "count",
+            "flag",
+            "name",
+            "handleClick",
+        },
+        option_names: {},
+    },
     component_usages: [],
     used_directives: {},
     undefined_refs: [],
