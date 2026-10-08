@@ -10,7 +10,7 @@ import {
   LEGACY_BUILD_RECIPE,
   SHIPPING_BUILD_RECIPE,
   writeBuildReceipt,
-} from "../differential/build-receipt.mjs";
+} from "../differential/build-receipt.ts";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 
 function fixture() {

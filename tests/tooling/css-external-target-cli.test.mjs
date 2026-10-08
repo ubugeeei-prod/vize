@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
+import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { fixture, frozenCorpus, root, sha256 } from "./css-external-target-reference.mjs";
 
 await test("source CLI preserves both CSS originals and complete subject-owned reports", () => {

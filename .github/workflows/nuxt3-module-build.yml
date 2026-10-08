@@ -214,7 +214,7 @@ jobs:
       - name: Verify original relative glob keys and outside-root Vite and Nuxt runtime
         run: vp env exec node tools/support/compat/nuxt/relative-glob-build.mjs "$RUNNER_TEMP/vite-relative-glob-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Capture the current CLI for the JavaScript workspace consumers
-        run: vp env exec node tests/differential/build-receipt.mjs
+        run: vp env exec node tests/differential/build-receipt.ts
       - name: Verify real JavaScript Nuxt and Vite workspace products
         run: vp env exec node tools/support/compat/nuxt/javascript-workspace-build.mjs "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Upload Nuxt 3 build and SSR evidence

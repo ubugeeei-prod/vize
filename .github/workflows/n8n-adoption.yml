@@ -171,7 +171,7 @@ jobs:
       - name: Install pinned source and typechecker dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Build and authenticate the current-source LSP
-        run: cargo build --profile ci -p vize && vp node tests/differential/build-receipt.mjs
+        run: cargo build --profile ci -p vize && vp node tests/differential/build-receipt.ts
       - name: Preserve ordinary default-export navigation
         run: cargo test --profile ci -p vize_maestro --lib ide::definition::service::import_target::default_export::tests -- --nocapture
       - name: Check original n8n navigation and unsaved diagnostic repair

@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
+import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { compoundCorpus, root, sha256 } from "./css-global-compound-reference.mjs";
 import { fixture as universalFixture, universalCorpus } from "./css-global-universal-reference.mjs";
 

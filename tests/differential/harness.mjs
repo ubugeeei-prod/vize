@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
+import { sha256 } from "./sha256.ts";
 import fs from "node:fs";
 import path from "node:path";
 
-export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+export { sha256 } from "./sha256.ts";
 
 export function readPinnedArtifact(root, file) {
   assert.equal(typeof file.path, "string", "artifact path is required");

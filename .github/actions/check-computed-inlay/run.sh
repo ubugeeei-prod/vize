@@ -10,7 +10,7 @@ cargo test --locked --profile ci-opt -p vize_croquis --lib builtin_types:: -- --
 cargo test --locked --profile ci-opt -p vize_croquis --lib builtin_types_default_analysis_keeps_whole_output_without_fact_storage -- --nocapture
 cargo test --locked --profile ci-opt -p vize_croquis --lib fused_resolution_ -- --nocapture
 cargo build --profile ci -p vize
-vp node tests/differential/build-receipt.mjs
+vp node tests/differential/build-receipt.ts
 scorecard_status=0
 VIZE_LSP_BIN="$NATIVE_PHASE_SOURCE_ROOT/target/ci/vize" VIZE_LSP_REQUIRE_SOURCE_BUILD=1 \
   vp node --test --test-concurrency=1 tests/tooling/lsp-vue-language-tools-oracles.test.ts || scorecard_status=$?

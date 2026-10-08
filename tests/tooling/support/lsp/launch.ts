@@ -6,7 +6,7 @@ import {
   BUILD_RECIPE,
   expectedBuildIdentity,
   validateBuildReceipt,
-} from "../../../differential/build-receipt.mjs";
+} from "../../../differential/build-receipt.ts";
 import { root } from "./paths.ts";
 
 export type VerifiedLspLaunch = {

@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import {
   expectedBuildIdentity,
   validateBuildReceipt,
-} from "../../../tests/differential/build-receipt.mjs";
+} from "../../../tests/differential/build-receipt.ts";
 import {
   CONFIG_NAMES,
   PROFILES,

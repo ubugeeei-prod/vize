@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { test } from "node:test";
 import { root } from "./support/lsp/paths.ts";
-import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
+import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { workspace } from "./support/upstream/vue-language-tools.ts";
 
 const require = createRequire(import.meta.url);

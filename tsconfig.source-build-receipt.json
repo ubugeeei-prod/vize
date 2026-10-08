@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false
+  },
+  "include": [],
+  "files": ["tests/differential/build-receipt.ts", "tests/differential/sha256.ts"]
+}

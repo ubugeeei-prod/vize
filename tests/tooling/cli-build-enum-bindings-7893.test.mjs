@@ -10,7 +10,7 @@ import {
   binaryRelativePath,
   expectedBuildIdentity,
   validateBuildReceipt,
-} from "../differential/build-receipt.mjs";
+} from "../differential/build-receipt.ts";
 
 const repository = fileURLToPath(new URL("../../", import.meta.url));
 const originalPath = new URL(

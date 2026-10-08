@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { expectedBuildIdentity, validateBuildReceipt } from "../../differential/build-receipt.mjs";
+import { expectedBuildIdentity, validateBuildReceipt } from "../../differential/build-receipt.ts";
 import { root, projection, validateProjection } from "./n8n-cli-config-inputs.mjs";
 import { errorPacket } from "./n8n-cli-config-oracle.mjs";
 import {

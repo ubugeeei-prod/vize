@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { isDeepStrictEqual } from "node:util";
-import { validateBuildReceipt } from "./build-receipt.mjs";
+import { validateBuildReceipt } from "./build-receipt.ts";
 import { sha256, validateResultEnvelope } from "./harness.mjs";
 import { initializeCapabilities, materializeWorkspace, NATIVE_REASON } from "./lsp-manifest.ts";
 import { decodeFrames } from "./lsp-wire.ts";

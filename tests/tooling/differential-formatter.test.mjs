@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { BUILD_RECIPE, validateBuildReceipt } from "../differential/build-receipt.mjs";
+import { BUILD_RECIPE, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { compareBytes } from "../differential/compare.mjs";
 import { FORMATTER_ARGV, loadFormatterManifest, sha256 } from "../differential/manifest.mjs";
 import {

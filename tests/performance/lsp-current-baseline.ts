@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { repoRoot } from "../_helpers/realworld-patch.ts";
 import { resolveTsgoBinary } from "../_helpers/realworld-typecheck.ts";
-import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
+import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { auditSession, readJson } from "./support/current-baseline/audit.ts";
 import { assessCampaign, type SessionAssessment } from "./support/current-baseline/assessment.ts";
 import {

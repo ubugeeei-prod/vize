@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
-import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
+import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
 import { root } from "./support/lsp/paths.ts";
 import type { LspDiagnostic, LspRange, PublishDiagnosticsParams } from "./support/lsp/protocol.ts";

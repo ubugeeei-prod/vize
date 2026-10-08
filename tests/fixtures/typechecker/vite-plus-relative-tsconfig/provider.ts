@@ -6,7 +6,7 @@ import path from "node:path";
 import {
   expectedBuildIdentity,
   validateBuildReceipt,
-} from "../../../differential/build-receipt.mjs";
+} from "../../../differential/build-receipt.ts";
 import { repoRoot, sha256 } from "./fixture.ts";
 
 let prepared: ReturnType<typeof captureProvider> | undefined;

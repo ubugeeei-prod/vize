@@ -4,7 +4,7 @@ import {
   binaryRelativePath,
   expectedBuildIdentity,
   validateBuildReceipt,
-} from "../differential/build-receipt.mjs";
+} from "../differential/build-receipt.ts";
 import { repoRoot } from "../_helpers/realworld-patch.ts";
 
 // Run the complete original pinned-project laws against this job's fresh CLI.
