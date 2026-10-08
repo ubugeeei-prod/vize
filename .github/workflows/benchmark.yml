@@ -229,6 +229,15 @@ jobs:
             --out "$GITHUB_WORKSPACE/benchmark-summary.md" \
             --json "$GITHUB_WORKSPACE/benchmark-results.json"
 
+      - name: Observe CSS completion and hover on existing base and head CLIs
+        if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
+        run: >-
+          node head/tools/benchmarks/scripts/css-documentation.ts
+          "$GITHUB_WORKSPACE/base/target/ci-opt/vize"
+          "$GITHUB_WORKSPACE/head/target/ci-opt/vize"
+          "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA"
+          "$GITHUB_WORKSPACE/css-documentation-observations.json"
+
       - name: Record benchmark build provenance
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         run: |
@@ -249,6 +258,7 @@ jobs:
             benchmark-summary.md
             benchmark-results.json
             benchmark-provenance.txt
+            css-documentation-observations.json
           if-no-files-found: warn
           retention-days: 14
 

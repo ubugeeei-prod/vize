@@ -6,6 +6,7 @@
 )]
 
 mod art_template_context;
+mod client_capabilities;
 mod config;
 mod default;
 mod features;
@@ -133,6 +134,8 @@ pub struct ServerState {
     lsp_features: RwLock<LspFeatureConfig>,
     /// Fast path for checking whether type-aware features are enabled.
     lsp_typecheck_enabled: AtomicBool,
+    /// Client can request documentation through the native completion resolver.
+    completion_documentation_resolve: AtomicBool,
     /// Type checker options shared by LSP diagnostics.
     /// Corsa options and timeout belong to the same config snapshot.
     type_checker_config: RwLock<(TypeCheckerConfig, u64)>,

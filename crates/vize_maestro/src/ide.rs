@@ -44,6 +44,7 @@ mod script_symbols;
 pub mod selection_range;
 pub mod semantic_tokens;
 pub(crate) mod sfc_region;
+pub(crate) mod style;
 pub mod signature_help;
 pub(crate) mod tag_pair;
 pub(crate) mod template_excerpt;

@@ -86,6 +86,9 @@ impl CompletionService {
     /// Resolve only documentation and detail. Insertion fields remain exactly
     /// as returned by completion until authored edit mapping supports them.
     pub(crate) async fn resolve(state: &ServerState, mut item: CompletionItem) -> CompletionItem {
+        if crate::ide::style::resolve(&mut item) {
+            return item;
+        }
         let Some(data) = item.data.as_ref().and_then(|data| data.get(RESOLVE_DATA)) else {
             return item;
         };

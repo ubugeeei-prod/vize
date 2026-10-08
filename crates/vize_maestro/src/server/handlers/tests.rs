@@ -4,6 +4,8 @@ use tower_lsp::{
     lsp_types::{FormattingOptions, TextDocumentIdentifier, Url, WorkDoneProgressParams},
 };
 
+#[cfg(feature = "native")]
+mod css;
 mod formatting;
 #[cfg(feature = "native")]
 mod initial_diagnostics;

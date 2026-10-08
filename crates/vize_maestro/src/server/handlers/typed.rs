@@ -37,7 +37,9 @@ impl MaestroServer {
         }
 
         #[cfg(feature = "native")]
-        let mut hover_result: Option<Hover> = {
+        let mut hover_result: Option<Hover> = if ctx.is_in_style() {
+            HoverService::hover(&ctx)
+        } else {
             let corsa_bridge = self.state.get_corsa_bridge().await;
             HoverService::hover_with_corsa(&ctx, corsa_bridge).await
         };
@@ -72,6 +74,10 @@ impl MaestroServer {
         else {
             return Ok(None);
         };
+        // CSS uses only resident block context and static metadata, never Corsa.
+        if ctx.is_in_style() {
+            return Ok(CompletionService::complete(&ctx));
+        }
         // JSX completion is opt-in so React remains untouched.
         #[cfg(feature = "native")]
         if crate::utils::is_jsx_path(uri.path()) {

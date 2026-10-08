@@ -54,7 +54,7 @@ use signature_help::{SigHelp, SigHelpParams};
 #[tower_lsp::async_trait]
 impl LanguageServer for MaestroServer {
     async fn initialize(&self, params: InitializeParams) -> Result<InitializeResult> {
-        super::workspace_files::record_watcher_support(&self.state, &params.capabilities);
+        self.state.record_client_capabilities(&params.capabilities);
         // Resolve workspace root
         let workspace_path = self.state.primary_workspace_path(&params);
 

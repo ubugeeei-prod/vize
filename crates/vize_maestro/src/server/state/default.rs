@@ -41,6 +41,7 @@ impl ServerState {
             workspace_project_files: workspace_project_files::Inventory::default(),
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
+            completion_documentation_resolve: AtomicBool::new(false),
             type_checker_config: RwLock::new((TypeCheckerConfig::default(), 60_000)),
             #[cfg(feature = "experimental-source-navigation")]
             module_links: RwLock::new(module_links::Session::default()),

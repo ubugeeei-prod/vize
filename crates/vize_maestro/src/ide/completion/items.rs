@@ -280,35 +280,6 @@ pub(crate) fn attr_item(label: &str, description: &str, snippet: &str) -> Comple
     }
 }
 
-/// Create a CSS completion item.
-pub(crate) fn css_item(
-    label: &str,
-    signature: &str,
-    description: &str,
-    snippet: &str,
-) -> CompletionItem {
-    CompletionItem {
-        label: label.to_string(),
-        kind: Some(CompletionItemKind::FUNCTION),
-        detail: Some(format!("Vue CSS: {}", signature)),
-        insert_text: Some(snippet.to_string()),
-        insert_text_format: Some(InsertTextFormat::SNIPPET),
-        documentation: Some(
-            Markdown::new()
-                .title(signature)
-                .meta("Vue SFC CSS feature")
-                .code("css", snippet)
-                .paragraph(description)
-                .docs(
-                    "Vue SFC CSS features",
-                    "https://vuejs.org/api/sfc-css-features.html",
-                )
-                .into_documentation(),
-        ),
-        ..Default::default()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::{attr_item, directive_item};

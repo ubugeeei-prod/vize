@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true
+  },
+  "include": [],
+  "files": [
+    "tools/commands/fixtures/generate-css-catalog.ts",
+    "tests/tooling/lsp-css-catalog.test.ts"
+  ]
+}
