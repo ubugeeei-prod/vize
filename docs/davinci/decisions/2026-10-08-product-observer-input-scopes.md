@@ -186,3 +186,19 @@ No upstream write, version promotion, gate or budget change is made. The
 whole-expansion proof above remains historical for the prior pin; the final
 source differs only by this explicit reachable-pin correction and still
 requires fresh exact-head Actions.
+
+Fresh `b63908e5e57351c54d053bb625f1a71381e413dd` passes its actual security
+check and executes all 18 Rust refusal cases, but authentically fails the
+release input-scope catalogue's old physical-file count. The exact callback
+move adds one release test: 32 physical files, the original 27 audited scoped
+files, and five conservative unscoped files. Update only that exact count and
+literal unscoped filename witness. Retain all four older unscoped entries,
+complete import assertions, source-input selection and full merge selection.
+No selector implementation or required scope is changed; the new callback
+stays broad. The raw first failure remains evidence, and fresh corrected-head
+Actions are still required.
+The unchanged four release-scope controls now pass on Node 22.18.0 and
+24.14.0, including full release and merge selection. The live provider is
+still `23dc3c032a5a1629ac3efd0c034aff9300f3228e`; the observed source checkout
+merged with the planner's fresh main comparison cut, which grants no reason
+to rebase onto a computed merge commit or transfer source success.
