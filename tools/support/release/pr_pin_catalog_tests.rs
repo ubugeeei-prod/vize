@@ -34,6 +34,39 @@ fn complete_shipment_catalog_rejects_exports_bins_and_feature_changes() {
     let original = metadata::catalog(&head, "1.2.3", &repo.work).unwrap();
     assert!(original["npm"]["vize-law"].is_object());
     assert!(original["editors"]["maintainer.vize-law"].is_object());
+    let development = repo.commit(&[
+        ("pkg/tests/observer.rs", "#[test] fn observer() {}\n"),
+        ("pkg/benches/observer.rs", "fn main() {}\n"),
+        ("pkg/examples/observer.rs", "fn main() {}\n"),
+    ]);
+    assert_eq!(
+        original,
+        metadata::catalog(&development, "1.2.3", &repo.work).unwrap()
+    );
+    for path in ["pkg/src/bin/shipping.rs", "pkg/build.rs"] {
+        github::git(&["reset", "--hard", &head], &repo.work).unwrap();
+        let shipping = repo.commit(&[(path, "fn main() {}\n")]);
+        assert_ne!(
+            original,
+            metadata::catalog(&shipping, "1.2.3", &repo.work).unwrap(),
+            "{path}"
+        );
+    }
+    github::git(&["reset", "--hard", &head], &repo.work).unwrap();
+    let manifest = repo.commit(&[(
+        "pkg/Cargo.toml",
+        &format!("{package}\n# Exact manifest authority\n"),
+    )]);
+    let observed = metadata::catalog(&manifest, "1.2.3", &repo.work).unwrap();
+    assert_eq!(
+        original["crates"]["vize_law"]["publication"],
+        observed["crates"]["vize_law"]["publication"]
+    );
+    assert_ne!(
+        original, observed,
+        "complete manifest bytes remain authoritative"
+    );
+    github::git(&["reset", "--hard", &head], &repo.work).unwrap();
     let duplicate = repo.commit(&[("npm/duplicate/package.json", npm)]);
     assert!(metadata::catalog(&duplicate, "1.2.3", &repo.work).is_err());
     github::git(&["reset", "--hard", &head], &repo.work).unwrap();
@@ -64,6 +97,26 @@ fn complete_shipment_catalog_rejects_exports_bins_and_feature_changes() {
     assert_ne!(
         original,
         metadata::catalog(&feature, "1.2.3", &repo.work).unwrap()
+    );
+    github::git(&["reset", "--hard", &head], &repo.work).unwrap();
+    repo.commit(&[
+        ("pkg/Cargo.toml", &format!("{package}\n[dependencies]\nvize_law_dep = {{ path = \"../dep\" }}\n")),
+        ("dep/Cargo.toml", "[package]\nname = \"vize_law_dep\"\nversion = \"0.1.0\"\nedition = \"2024\"\npublish = false\n"),
+        ("dep/src/lib.rs", "pub fn dependency() {}\n"),
+    ]);
+    github::output("cargo", &["generate-lockfile", "--offline"], &repo.work).unwrap();
+    let dependency = repo.commit(&[]);
+    let observed = metadata::catalog(&dependency, "1.2.3", &repo.work).unwrap();
+    assert_eq!(
+        observed["crates"]["vize_law"]["publication"]["dependencies"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    assert_ne!(
+        original, observed,
+        "non-development dependencies remain authoritative"
     );
 }
 
