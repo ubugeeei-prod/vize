@@ -29,6 +29,26 @@ test("host allocator selection checks and repeats without writing", () => {
   assert.equal(prepareAllocatorSelection(reader(current)).size, 0);
 });
 
+test("later source IO facade keeps the exact allocator replay and rejects changed host declarations", () => {
+  const file = "crates/vize_carton/src/lib.rs";
+  const source = current.get(file)!;
+  const historical = allocatorReplayText(file, source)!;
+  assert.equal(historical, source.replace("\npub mod source_io;\n", ""));
+  assert.notEqual(historical, source);
+  assert.equal(prepareAllocatorSelection(reader(current)).size, 0);
+  assert.equal(current.get(file), source);
+  for (const changed of [
+    source.replace("pub mod source_io;", "pub mod unknown_source_io;"),
+    source.replace("pub mod source_io;", "pub mod source_io;\npub mod source_io;"),
+    source.replace("pub mod profile_allocator;", ""),
+    source + "\n// unreviewed host facade\n",
+  ]) {
+    const altered = new Map(current);
+    altered.set(file, changed);
+    rejectsBeforeWrites(altered);
+  }
+});
+
 test("original allocator selection replays to exact historical allocator bytes", () => {
   const planned = prepareAllocatorSelection(reader(original));
   assert.equal(planned.size, 7);

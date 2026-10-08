@@ -1,0 +1,12 @@
+{
+  "id": "event-distinct-modifiers",
+  "source": "<div @keydown.left=\"a\" @keydown.right=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "event-distinct-modifiers.vue",
+    "errorCount": 0,
+    "warningCount": 0,
+    "diagnostics": []
+  }
+}

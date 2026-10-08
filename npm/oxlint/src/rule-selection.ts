@@ -53,19 +53,25 @@ export function parseRuleSelection(rules: PatinaSettings["rules"]): RuleSelectio
     return undefined;
   }
 
+  const selection = createRuleSelection(optionsByRule);
+  selectionCache.set(rules, { revision, selection });
+  return selection;
+}
+
+export function createRuleSelection(
+  optionsByRule: Map<string, PatinaRuleOptions | undefined>,
+): RuleSelection {
   const names = [...optionsByRule.keys()].sort();
   const options: PatinaRuleOptions = {};
   for (const name of names) {
     Object.assign(options, optionsByRule.get(name));
   }
-  const selection = {
+  return {
     names,
     options,
     optionsByRule,
     cacheKey: JSON.stringify([names, ruleOptionsKey(options)]),
   };
-  selectionCache.set(rules, { revision, selection });
-  return selection;
 }
 
 function normalizeRuleName(name: string): string {

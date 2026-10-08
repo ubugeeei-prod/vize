@@ -7,8 +7,9 @@ use std::{
 
 use serde_json::Value;
 use vize_canon::batch::{TsconfigOwnershipCache, TsconfigSourceKind};
-use vize_l0::{FxHashMap, FxHashSet, profile, profiler::global_profiler};
+use vize_l0::{FxHashMap, profile, profiler::global_profiler};
 
+use super::chain::ConfigChain;
 use super::glob::{compiler_option_dir_exclude, normalize_input_path};
 use super::jsonc::parse_jsonc_value;
 use super::spec::{GlobSpec, RelativePathSpec, TsconfigDeclarationOptions, TsconfigInputSpec};
@@ -62,131 +63,127 @@ impl TsconfigInputCache {
 }
 
 fn load_tsconfig_inputs(tsconfig_path: &Path) -> Option<TsconfigInputSpec> {
-    let mut seen = FxHashSet::default();
-    load_tsconfig_inputs_inner(tsconfig_path, &mut seen).ok()
+    let mut chain = ConfigChain::default();
+    load_tsconfig_inputs_inner(tsconfig_path, &mut chain).ok()
 }
 
 fn load_tsconfig_inputs_inner(
     tsconfig_path: &Path,
-    seen: &mut FxHashSet<PathBuf>,
+    chain: &mut ConfigChain<TsconfigInputSpec>,
 ) -> Result<TsconfigInputSpec, std::io::Error> {
     let resolved = normalize_input_path(tsconfig_path);
-    if !seen.insert(resolved.clone()) {
-        return Ok(TsconfigInputSpec::default());
-    }
+    chain.load(&resolved, |chain| {
+        let content = tracked_read_to_string(&resolved)?;
+        let value = parse_jsonc_value(&content).unwrap_or(Value::Null);
+        let dir = resolved.parent().unwrap_or(Path::new("."));
 
-    let content = tracked_read_to_string(&resolved)?;
-    let value = parse_jsonc_value(&content).unwrap_or(Value::Null);
-    let dir = resolved.parent().unwrap_or(Path::new("."));
+        let mut merged = TsconfigInputSpec::default();
+        for extends in read_extends_entries(&value) {
+            let Some(extends_path) = resolve_extended_tsconfig(&resolved, &extends) else {
+                continue;
+            };
+            let extended = load_tsconfig_inputs_inner(&extends_path, chain)?;
+            merged.apply_extended(extended);
+        }
 
-    let mut merged = TsconfigInputSpec::default();
-    for extends in read_extends_entries(&value) {
-        let Some(extends_path) = resolve_extended_tsconfig(&resolved, &extends) else {
-            continue;
-        };
-        let extended = load_tsconfig_inputs_inner(&extends_path, seen)?;
-        merged.apply_extended(extended);
-    }
+        if let Some(files) = read_string_array(&value, "files") {
+            merged.has_files = true;
+            merged.files = files
+                .into_iter()
+                .map(|value| RelativePathSpec::new(dir, &value))
+                .collect();
+        }
 
-    if let Some(files) = read_string_array(&value, "files") {
-        merged.has_files = true;
-        merged.files = files
-            .into_iter()
-            .map(|value| RelativePathSpec::new(dir, &value))
-            .collect();
-    }
+        if let Some(includes) = read_string_array(&value, "include") {
+            merged.has_includes = true;
+            merged.includes = includes
+                .into_iter()
+                .filter_map(|value| GlobSpec::new(dir, &value))
+                .collect();
+        }
 
-    if let Some(includes) = read_string_array(&value, "include") {
-        merged.has_includes = true;
-        merged.includes = includes
-            .into_iter()
-            .filter_map(|value| GlobSpec::new(dir, &value))
-            .collect();
-    }
+        if let Some(excludes) = read_string_array(&value, "exclude") {
+            merged.has_excludes = true;
+            merged.excludes = excludes
+                .into_iter()
+                .filter_map(|value| GlobSpec::new(dir, &value))
+                .collect();
+        }
 
-    if let Some(excludes) = read_string_array(&value, "exclude") {
-        merged.has_excludes = true;
-        merged.excludes = excludes
-            .into_iter()
-            .filter_map(|value| GlobSpec::new(dir, &value))
-            .collect();
-    }
+        let own_allow_js = value
+            .get("compilerOptions")
+            .and_then(Value::as_object)
+            .and_then(|options| options.get("allowJs"));
+        if resolved
+            .file_name()
+            .is_some_and(|name| name == "jsconfig.json")
+        {
+            merged.allow_js = match own_allow_js {
+                None => Some(true),
+                Some(value) => value.as_bool(),
+            };
+        } else if let Some(allow_js) = own_allow_js.and_then(Value::as_bool) {
+            merged.allow_js = Some(allow_js);
+        }
 
-    let own_allow_js = value
-        .get("compilerOptions")
-        .and_then(Value::as_object)
-        .and_then(|options| options.get("allowJs"));
-    if resolved
-        .file_name()
-        .is_some_and(|name| name == "jsconfig.json")
-    {
-        merged.allow_js = match own_allow_js {
-            None => Some(true),
-            Some(value) => value.as_bool(),
-        };
-    } else if let Some(allow_js) = own_allow_js.and_then(Value::as_bool) {
-        merged.allow_js = Some(allow_js);
-    }
-
-    if let Some(out_dir) = compiler_option_dir_exclude(&value, dir, "outDir") {
-        merged.out_dir_exclude = Some(out_dir);
-    }
-    if let Some(declaration_dir) = compiler_option_dir_exclude(&value, dir, "declarationDir") {
-        merged.declaration_dir_exclude = Some(declaration_dir);
-    }
-    Ok(merged)
+        if let Some(out_dir) = compiler_option_dir_exclude(&value, dir, "outDir") {
+            merged.out_dir_exclude = Some(out_dir);
+        }
+        if let Some(declaration_dir) = compiler_option_dir_exclude(&value, dir, "declarationDir") {
+            merged.declaration_dir_exclude = Some(declaration_dir);
+        }
+        Ok(merged)
+    })
 }
 
 pub(crate) fn load_tsconfig_declaration_options(
     tsconfig_path: &Path,
 ) -> TsconfigDeclarationOptions {
-    let mut seen = FxHashSet::default();
-    load_tsconfig_declaration_options_inner(tsconfig_path, &mut seen).unwrap_or_default()
+    let mut chain = ConfigChain::default();
+    load_tsconfig_declaration_options_inner(tsconfig_path, &mut chain).unwrap_or_default()
 }
 
 fn load_tsconfig_declaration_options_inner(
     tsconfig_path: &Path,
-    seen: &mut FxHashSet<PathBuf>,
+    chain: &mut ConfigChain<TsconfigDeclarationOptions>,
 ) -> Result<TsconfigDeclarationOptions, std::io::Error> {
     let resolved = normalize_input_path(tsconfig_path);
-    if !seen.insert(resolved.clone()) {
-        return Ok(TsconfigDeclarationOptions::default());
-    }
+    chain.load(&resolved, |chain| {
+        let content = tracked_read_to_string(&resolved)?;
+        let value = parse_jsonc_value(&content).unwrap_or(Value::Null);
+        let dir = resolved.parent().unwrap_or(Path::new("."));
 
-    let content = tracked_read_to_string(&resolved)?;
-    let value = parse_jsonc_value(&content).unwrap_or(Value::Null);
-    let dir = resolved.parent().unwrap_or(Path::new("."));
+        let mut merged = TsconfigDeclarationOptions::default();
+        for extends in read_extends_entries(&value) {
+            let Some(extends_path) = resolve_extended_tsconfig(&resolved, &extends) else {
+                continue;
+            };
+            let extended = load_tsconfig_declaration_options_inner(&extends_path, chain)?;
+            merged.apply_extended(extended);
+        }
 
-    let mut merged = TsconfigDeclarationOptions::default();
-    for extends in read_extends_entries(&value) {
-        let Some(extends_path) = resolve_extended_tsconfig(&resolved, &extends) else {
-            continue;
+        let Some(compiler_options) = value.get("compilerOptions").and_then(Value::as_object) else {
+            return Ok(merged);
         };
-        let extended = load_tsconfig_declaration_options_inner(&extends_path, seen)?;
-        merged.apply_extended(extended);
-    }
 
-    let Some(compiler_options) = value.get("compilerOptions").and_then(Value::as_object) else {
-        return Ok(merged);
-    };
+        if let Some(declaration_dir) = compiler_options
+            .get("declarationDir")
+            .and_then(Value::as_str)
+        {
+            merged.declaration_dir = Some(resolve_tsconfig_path_option(dir, declaration_dir));
+        }
+        if let Some(out_dir) = compiler_options.get("outDir").and_then(Value::as_str) {
+            merged.out_dir = Some(resolve_tsconfig_path_option(dir, out_dir));
+        }
+        if let Some(declaration_map) = compiler_options
+            .get("declarationMap")
+            .and_then(Value::as_bool)
+        {
+            merged.declaration_map = Some(declaration_map);
+        }
 
-    if let Some(declaration_dir) = compiler_options
-        .get("declarationDir")
-        .and_then(Value::as_str)
-    {
-        merged.declaration_dir = Some(resolve_tsconfig_path_option(dir, declaration_dir));
-    }
-    if let Some(out_dir) = compiler_options.get("outDir").and_then(Value::as_str) {
-        merged.out_dir = Some(resolve_tsconfig_path_option(dir, out_dir));
-    }
-    if let Some(declaration_map) = compiler_options
-        .get("declarationMap")
-        .and_then(Value::as_bool)
-    {
-        merged.declaration_map = Some(declaration_map);
-    }
-
-    Ok(merged)
+        Ok(merged)
+    })
 }
 
 pub(crate) fn resolve_extended_tsconfig(tsconfig_path: &Path, extends: &str) -> Option<PathBuf> {

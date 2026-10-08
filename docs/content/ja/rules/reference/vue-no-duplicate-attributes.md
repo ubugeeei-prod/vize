@@ -51,4 +51,4 @@ vp run lint
 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs#L28) · [全ルール](../all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs#L31) · [全ルール](../all.md)

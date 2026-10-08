@@ -1,0 +1,23 @@
+{
+  "id": "style-option-false",
+  "source": "<div style=\"a\" :style=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": false,
+  "expected": {
+    "filename": "style-option-false.vue",
+    "errorCount": 1,
+    "warningCount": 0,
+    "diagnostics": [
+      {
+        "rule": "vue/no-duplicate-attributes",
+        "severity": "Error",
+        "message": "Duplicate attribute 'v-bind:style'",
+        "start": 15,
+        "end": 25,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  }
+}

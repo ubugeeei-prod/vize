@@ -6,6 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { beginN8nReplay, replayN8nHost, finishN8nReplay } from "./n8n-replay-qualification.mjs";
 import {
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
@@ -33,6 +34,7 @@ assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
 fs.copyFileSync(nativeHistoryReceipt(nativeDir), path.join(artifacts, "build-receipt.json"));
 const preload = fileURLToPath(new URL("./project-native-custody.cjs", import.meta.url));
 const qualifications = [];
+const n8nReplay = beginN8nReplay({ root, packageDir, artifacts, receipt, binary });
 for (const [version, types] of [
   ["1.78.0", "7.0.2001"],
   ["1.86.0", "7.0.2003"],
@@ -139,7 +141,7 @@ for (const [version, types] of [
           "a tampered carrier reached native linting",
         );
         calls++;
-        if (event.args[1].enabledRules?.length === 51) batchCalls++;
+        if (event.hasRuleHint && event.args[1].enabledRules?.length === 51) batchCalls++;
       }
     }
     assert.ok(calls > 0, "no physical source-addon lint call was observed");
@@ -161,12 +163,14 @@ for (const [version, types] of [
       processes: loaded.size,
       originalProject: capture.qualified,
     });
+    replayN8nHost(n8nReplay, engine, version);
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
 }
 validateNativeHistoryBuild(nativeDir, receipt);
 assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
+finishN8nReplay(n8nReplay);
 fs.writeFileSync(
   path.join(artifacts, "qualification.json"),
   JSON.stringify(
@@ -177,7 +181,8 @@ fs.writeFileSync(
       qualifications,
       limits: [
         "authored wrapper controls only",
-        "direct51 scriptless and full licensed n8n acceptance remain separate",
+        "full licensed native/Vize-layer replay is qualified separately in n8n/qualification.json",
+        "direct51 scriptless, excluded n8n-local plugins and installed acceptance remain unfinished",
       ],
     },
     null,
