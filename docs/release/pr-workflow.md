@@ -4,11 +4,73 @@ Run this from an installed workspace with `gh` authenticated as a repository
 maintainer or administrator:
 
 ```sh
-vp run release patch -y
+vp run release minor -y
 ```
 
-The other supported bumps are `minor`, `major`, `alpha`, `beta`, `rc`, and
-`release`. Omit `-y` for an interactive confirmation.
+Vize increments the minor version for every `0.x` release, as specified in the
+[redundancy guide](../../ubugeeei-redundancy.md#versioning-before-10). The command
+also accepts `patch`, `major`, `alpha`, `beta`, `rc`, and `release`. Omit `-y` for
+an interactive confirmation.
+
+Choose the protocol before starting:
+
+| Protocol               | Start                           | Source and delivery                                                                                                                                               |
+| ---------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Current-main promotion | `vp run release minor -y`       | Refresh the release PR when `main` advances, then atomically promote its validated head and tag.                                                                  |
+| Immutable source cut   | `vp run release minor -y --pin` | Freeze the source, reuse successful build artifacts, and deliver generated version metadata through a separate protected PR while ordinary development continues. |
+
+## Immutable source cut
+
+Use `--pin` when the release should retain a fixed source while other PRs keep
+merging. The official command performs these steps:
+
+1. Fetch current `main`, prepare the minor version in an isolated worktree, and
+   open a draft source PR named `chore(release): vVERSION immutable source cut`.
+   Its base commit and generated version-only head become the frozen source.
+2. Open the associated `chore(release): integrate vVERSION version metadata`
+   PR. Its body identifies the source PR and exact source commit. Keep that
+   association intact throughout recovery.
+3. Dispatch Release for the frozen source. It builds and smokes the packages
+   and editor assets, validates the publish catalog, and runs preflight.
+   Full Check, Fuzz replay, Miri, Real Project Matrix and Docs build must all
+   succeed at the frozen head. The pinned protocol disables parent evidence
+   reuse; required source PR checks also remain mandatory.
+4. After required source checks, all five full source gates, every build and
+   full preflight succeed, the release operator admits the generated metadata
+   PR to the protected merge queue after its own checks pass. The command
+   authenticates the actual signed delivery, exact generated metadata, author
+   permission, required protected workflows and identical publish catalog.
+5. Create the immutable tag at the frozen source head, publish the existing
+   Release artifacts, and verify the public result. Changes merged after the
+   cut are included in a subsequent release.
+
+The source PR stays draft during qualification and closes after successful
+external verification. The metadata PR receives the
+ordinary protected merge; the official pinned runner owns source tagging and
+publication. Preserve the source branch, source commit, protocol markers and
+release run when resuming. A source that lacks the pinned workflow requires a
+new prepared cut containing that implementation.
+
+Resume the same source PR with its protocol:
+
+```sh
+vp run release --resume SOURCE_PR --pin
+```
+
+Resume reuses the authenticated source run and its artifacts and requests
+failed-job reruns on that same run. When recovering a cancelled run, verify that
+its cancelled promotion and dependent jobs resume successfully. Registry recovery
+keeps the same version and tag. The runner uses an operator lock to prevent
+concurrent publication of that source.
+
+Track completion separately for the signed metadata merge, full source
+qualification, tag/source identity, successful publication jobs, public GitHub
+Release and assets, every planned npm and crates.io version, and the VS Code
+Marketplace extension. Open VSX uses a separate workflow. Issue-specific
+installed-package reproductions remain required wherever the issue's acceptance
+criteria call for them.
+
+## Current-main promotion
 
 The command performs the whole release:
 
@@ -53,14 +115,18 @@ Docs and playground content changes still build and deploy Pages immediately
 after merging to `main`. Code-only changes use the daily Docs build or the
 release's exact-SHA build instead of rebuilding the site on every push.
 
-Use the release command to finish release PRs; manually squash-merging one does
-not preserve the validated commit identity and will not trigger publication.
+Use the release command to finish source PRs. For current-main promotion, the
+runner preserves the validated commit identity through its atomic promotion.
+For a pinned cut, deliver its separate metadata PR through the merge queue as
+described above.
 
 ## Resume after a failure or interruption
 
 ```sh
 vp run release --resume 1234
 ```
+
+For an immutable source cut, retain `--pin` when resuming its source PR.
 
 Before promotion, failed validation leaves an open PR and no remote tag. Resume
 reuses the matching run, reruns failed jobs, and refreshes against current main
@@ -78,6 +144,7 @@ For a first npm publication requiring owner configuration, follow
 crate handoff remains available by dispatching Release with an empty `release_pr`
 and the already-published GitHub Release tag.
 
-The command needs permission to push `main` after required checks pass. It does
-not bypass repository rules or force-update `main`. Publication continues to use
-the existing `release.yml` trusted-publisher identity and protected environments.
+Current-main promotion needs permission to push `main` after required checks
+pass. Pinned publication uses the protected metadata merge and tags the frozen
+source. Both protocols retain repository rules, the existing `release.yml`
+trusted-publisher identity and protected environments.
