@@ -202,3 +202,27 @@ The unchanged four release-scope controls now pass on Node 22.18.0 and
 still `23dc3c032a5a1629ac3efd0c034aff9300f3228e`; the observed source checkout
 merged with the planner's fresh main comparison cut, which grants no reason
 to rebase onto a computed merge commit or transfer source success.
+
+### Actual provider delivery and genuine main refresh
+
+After the first four native Stack layers actually merged, GitHub retargeted
+#8309 to signed main `8816b0d594ce9a5322ab33f60be5ccb6839fa774`.
+The old `3c501338c6c5672259be108de399f3dc9a1fb251` became genuinely
+conflicting, so new natural source Actions could not register. Archive that
+source and replay only its six owned commits after the former `23dc3c` provider
+onto this actual main. Do not rebase onto the computed `44d4` checkout.
+
+The single canonical conflict retains the whole incoming formatter-Stack
+terminal receipt and appends the exact root-authored original-bug closure
+clause. All 350 rows, incoming row 225, root closure rows 187/286 and the
+other incoming decisions remain. Every other owned source/test/action blob
+is byte-identical to the archived source before this delivery journal append.
+This refresh changes no selector, command, fixture, budget, required job or
+release inventory. Fresh successor Actions, protected qualification and
+actual signed delivery remain required; no historical source pass transfers.
+The genuine main refresh passes all 29 focused workflow/release/scope controls
+on Node 22.18.0 and 24.14.0, plus all three existing strict native TypeScript
+projects. The unchanged authoritative growth rules accept the complete
+14-path own delta against actual main, retaining 690/423/350 lines. These
+bounded local controls permit publication of the successor source; fresh
+natural hosted qualification remains pending.
