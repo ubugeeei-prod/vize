@@ -18,16 +18,25 @@ import {
 } from "../theme/open-graph.ts";
 import type { PageMetadata } from "../theme/open-graph.ts";
 
+type RenderedPageMetadata = PageMetadata & { imageSha256: string };
 type OgManifest = {
   version: number;
   width: number;
   height: number;
   assetFingerprint: string;
   sourceSha: string;
-  pages: PageMetadata[];
+  pages: RenderedPageMetadata[];
 };
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function isRenderedPageMetadata(value: unknown): value is RenderedPageMetadata {
+  return (
+    isPageMetadata(value) &&
+    "imageSha256" in value &&
+    typeof value.imageSha256 === "string" &&
+    /^[0-9a-f]{64}$/u.test(value.imageSha256)
+  );
 }
 function assertManifest(value: unknown): asserts value is OgManifest {
   assert(isRecord(value), "OG manifest must be an object");
@@ -37,7 +46,7 @@ function assertManifest(value: unknown): asserts value is OgManifest {
   assert.equal(typeof value.assetFingerprint, "string");
   assert.equal(typeof value.sourceSha, "string");
   assert(
-    Array.isArray(value.pages) && value.pages.every(isPageMetadata),
+    Array.isArray(value.pages) && value.pages.every(isRenderedPageMetadata),
     "Complete typed page metadata",
   );
 }
@@ -76,6 +85,7 @@ const manifest: unknown = JSON.parse(await readAsset("_og/manifest.json", true))
 assertManifest(manifest);
 assert.equal(manifest.width, ogWidth);
 assert.equal(manifest.height, ogHeight);
+assert.match(manifest.assetFingerprint, /^[0-9a-f]{64}$/u, "Actual template fingerprint");
 assert.match(manifest.sourceSha, /^[0-9a-f]{40}$/u, "Manifest must identify its actual source");
 assert.equal(
   manifest.sourceSha,
@@ -111,6 +121,14 @@ assert.equal(
   manifest.pages.length,
   "Duplicate image identities",
 );
+const locales: Record<string, string> = {
+  en: "en_US",
+  ja: "ja_JP",
+  "zh-CN": "zh_CN",
+  "pt-BR": "pt_BR",
+  fr: "fr_FR",
+};
+const homeRoutes = new Set(["/", ...Object.keys(locales).map((locale) => `/${locale}/`)]);
 const representativeRoutes = new Set([
   "/",
   "/ja/",
@@ -142,6 +160,23 @@ try {
     assert.equal(new URL(entry.image).origin, docsSiteUrl, entry.route);
     const png = await readAsset(imagePath);
     assertPngDimensions(png, entry.route);
+    assert.equal(
+      createHash("sha256").update(png).digest("hex"),
+      entry.imageSha256,
+      `${entry.route}: actual provider PNG byte custody`,
+    );
+    const routeLocale = entry.route.split("/")[1];
+    const locale = Object.hasOwn(locales, routeLocale) ? routeLocale : "en";
+    assert.equal(entry.props.locale, locale, `${entry.route}: route-derived language`);
+    assert.equal(entry.locale, locales[locale], `${entry.route}: route-derived Open Graph locale`);
+    assert.equal(
+      entry.props.isHome,
+      homeRoutes.has(entry.route),
+      `${entry.route}: homepage layout authority`,
+    );
+    assert.equal(entry.props.description, entry.description, `${entry.route}: image description`);
+    assert.equal(entry.props.siteName, "Vize", `${entry.route}: image site identity`);
+    assert(entry.props.category.trim(), `${entry.route}: image category`);
     const actual = await parser.evaluate(
       async ({ html, image }) => {
         const document = new DOMParser().parseFromString(html, "text/html");

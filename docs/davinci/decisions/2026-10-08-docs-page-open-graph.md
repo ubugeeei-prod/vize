@@ -56,7 +56,8 @@ different system browser as proof that its image API can launch. Reject duplicat
 routes, missing titles, missing/error results, and invalid or non-1200×630 PNGs.
 Only then write escaped absolute OG/Twitter image URLs, matching descriptions,
 image dimensions/alt text, page URL, site name, type and locale into each page.
-Retain a route/metadata/image manifest and representative generated PNG evidence.
+Retain a route/metadata/image manifest with per-page SHA-256 values from the actual
+successful provider bytes, plus representative generated PNG evidence.
 
 ## Strict TypeScript boundary
 
@@ -76,7 +77,12 @@ escaping, metadata replacement and PNG validation. Hosted Docs acceptance must
 validate actual generated metadata and decode every image, comparing the complete
 route inventory against source Markdown. Bind every social/image title to the
 unchanged native HTML document title, and bind URLs and image props to their route
-and compiled-template identity. Retain English, Japanese, long-rule and
+and compiled-template identity. Check route-derived language, OG locale and home
+layout, and keep image descriptions equal to page descriptions. Recompute every
+PNG digest when accepting hosted artifacts or public responses; distinct images
+permuted after generation must fail custody checks. This establishes byte custody;
+image content remains supported by the actual Vue/provider path and representative
+visual review. Retain English, Japanese, long-rule and
 homepage examples for visual review; their PNG bytes must differ. Authored CLI
 and Chinese homepage titles are checked independently where visible headings
 differ. Bypass task-result caching for this source-SHA-bearing build. Publication is

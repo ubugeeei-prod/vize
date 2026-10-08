@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
@@ -122,10 +123,13 @@ const results = await generateOgImages(
 );
 assert.equal(results.length, pages.length, "OG provider must return every page result");
 const resultsByPath = new Map(results.map((result) => [result.outputPath, result]));
+const imageHashes = new Map<string, string>();
 for (const page of pages) {
   const result = resultsByPath.get(page.imagePath);
   assert(result && !result.error, `${page.route}: ${result?.error ?? "missing image result"}`);
-  assertPngDimensions(await readFile(page.imagePath), page.route);
+  const png = await readFile(page.imagePath);
+  assertPngDimensions(png, page.route);
+  imageHashes.set(page.imagePath, createHash("sha256").update(png).digest("hex"));
   await writeFile(page.htmlPath, applyOpenGraphMetadata(page.originalHtml, page));
 }
 const source = spawnSync("git", ["rev-parse", "HEAD"], {
@@ -145,12 +149,11 @@ await writeFile(
       assetFingerprint,
       sourceSha,
       pages: pages.map(
-        ({
-          htmlPath: _htmlPath,
-          imagePath: _imagePath,
-          originalHtml: _originalHtml,
-          ...metadata
-        }) => metadata,
+        ({ htmlPath: _htmlPath, imagePath, originalHtml: _originalHtml, ...metadata }) => {
+          const imageSha256 = imageHashes.get(imagePath);
+          assert(imageSha256, `${metadata.route}: successful image must retain its byte custody`);
+          return { ...metadata, imageSha256 };
+        },
       ),
     },
     null,
