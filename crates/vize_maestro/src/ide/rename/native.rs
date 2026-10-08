@@ -4,7 +4,9 @@ use std::sync::Arc;
 use tower_lsp::lsp_types::WorkspaceEdit;
 use vize_canon::CorsaBridge;
 
-use super::{ArtCursorPosition, BlockType, IdeContext, RenameService, canonical, corsa};
+use super::{
+    ArtCursorPosition, BlockType, IdeContext, NativeRename, RenameService, canonical, corsa,
+};
 
 impl RenameService {
     /// Perform rename using Corsa when possible, with synchronous fallback.
@@ -15,26 +17,26 @@ impl RenameService {
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<WorkspaceEdit> {
         match canonical::rename(ctx, new_name, corsa_bridge.as_deref()).await {
-            canonical::Answer::Available(None) => return None,
-            canonical::Answer::Available(Some(edit)) => {
+            canonical::CanonicalRename::Refused => return None,
+            canonical::CanonicalRename::Owned { edit, mut scope } => {
                 // A component argument owns the public property identity. Its
                 // shorthand token also maps to a separate local value, which
                 // the structural provider must not add to this transaction.
                 if corsa::is_component_attribute_query(ctx) {
                     return corsa::merge_missing_authored_rename(ctx, Some(edit), None)
-                        .filter(|edit| corsa::RenameScope::new(ctx).admits_authored(edit));
+                        .filter(|edit| scope.admits_authored(edit));
                 }
                 return corsa::merge_missing_authored_rename(
                     ctx,
                     Some(edit),
                     Self::rename(ctx, new_name),
                 )
-                .filter(|edit| corsa::RenameScope::new(ctx).admits_authored(edit));
+                .filter(|edit| scope.admits_authored(edit));
             }
-            canonical::Answer::Unavailable if corsa::is_component_attribute_query(ctx) => {
+            canonical::CanonicalRename::Unavailable if corsa::is_component_attribute_query(ctx) => {
                 return None;
             }
-            canonical::Answer::Unavailable => {}
+            canonical::CanonicalRename::Unavailable => {}
         }
         let corsa_result = match ctx.block_type? {
             BlockType::Template => {
@@ -56,9 +58,15 @@ impl RenameService {
             BlockType::Style(_) | BlockType::Art(_) => None,
         };
 
+        let corsa_result = match corsa_result {
+            Some(NativeRename::Refused) => return None,
+            Some(NativeRename::Edit(edit)) => Some(edit),
+            None => None,
+        };
+
         // Corsa only renames the virtual document the request opened, so the
         // authored edits carry the other blocks of this SFC.
         corsa::merge_authored_rename(ctx, corsa_result, Self::rename(ctx, new_name))
-            .filter(|edit| corsa::RenameScope::new(ctx).admits_authored(edit))
+            .filter(|edit| corsa::RenameScope::native(ctx).admits_authored(edit))
     }
 }

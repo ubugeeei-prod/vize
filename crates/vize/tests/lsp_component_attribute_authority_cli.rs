@@ -21,6 +21,8 @@ mod library_refusal;
 mod native_probe;
 #[path = "lsp_component_attribute_authority_cli/original_reads.rs"]
 mod original_reads;
+#[path = "lsp_library_rename_refusal_cli/runtime_distribution.rs"]
+mod runtime_distribution;
 
 const ITEM: &str = include_str!(
     "../../../tests/_fixtures/differential/lsp/rename-source-authority/8009/Item.vue.txt"
@@ -45,6 +47,7 @@ struct Fixture {
     publications: std::collections::HashMap<(String, i64), Value>,
     mismatches: Vec<Value>,
     runtime: std::path::PathBuf,
+    runtime_distribution: Option<runtime_distribution::RuntimeDistribution>,
 }
 
 impl Fixture {
@@ -53,6 +56,15 @@ impl Fixture {
     }
 
     fn with_config(files: &[(&str, &str)], config: &str) -> Self {
+        Self::with_runtime(files, config, false, false)
+    }
+
+    fn with_runtime(
+        files: &[(&str, &str)],
+        config: &str,
+        copy_distribution: bool,
+        relay: bool,
+    ) -> Self {
         let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .unwrap()
@@ -70,6 +82,13 @@ impl Fixture {
             std::fs::create_dir_all(path.parent().unwrap()).unwrap();
             std::fs::write(path, text).unwrap();
         }
+        let runtime_distribution = copy_distribution.then(|| {
+            runtime_distribution::RuntimeDistribution::copy(&runtime, project.path(), relay)
+        });
+        let runtime = runtime_distribution
+            .as_ref()
+            .map(|distribution| distribution.executable.clone())
+            .unwrap_or(runtime);
         std::fs::write(project.path().join("tsconfig.json"), config).unwrap();
         let modules = project.path().join("node_modules");
         std::fs::create_dir_all(&modules).unwrap();
@@ -106,6 +125,7 @@ impl Fixture {
             publications: Default::default(),
             mismatches: Vec::new(),
             runtime,
+            runtime_distribution,
         };
         native_probe::prove(&mut fixture);
         fixture
@@ -212,6 +232,9 @@ impl Fixture {
         );
         self.lsp.send(json!({"jsonrpc":"2.0","method":"exit"}));
         assert!(self.lsp.wait_for_exit().success());
+        if let Some(distribution) = &self.runtime_distribution {
+            distribution.assert_unchanged();
+        }
         assert!(
             self.mismatches.is_empty(),
             "all whole publication mismatches: {:#?}",

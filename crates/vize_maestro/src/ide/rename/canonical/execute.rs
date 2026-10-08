@@ -43,28 +43,14 @@ pub(in crate::ide::rename) enum CanonicalRenameStage {
     Complete,
 }
 
-pub(in crate::ide::rename) async fn rename(
-    ctx: &IdeContext<'_>,
-    new_name: &str,
-    bridge: Option<&CorsaBridge>,
-) -> Answer<WorkspaceEdit> {
-    match rename_strict(ctx, new_name, bridge).await {
-        Ok(Answer::Unavailable) | Err(_)
-            if crate::ide::template_scope::needs_patterned_navigation(ctx) =>
-        {
-            Answer::Available(None)
-        }
-        Ok(answer) => answer,
-        Err(error) => error.into_lenient_answer(),
-    }
-}
-
+#[cfg(test)]
 pub(in crate::ide::rename) async fn rename_strict(
     ctx: &IdeContext<'_>,
     new_name: &str,
     bridge: Option<&CorsaBridge>,
 ) -> Result<Answer<WorkspaceEdit>, CanonicalFailure> {
-    rename_strict_inner(ctx, new_name, bridge, None).await
+    let mut scope = corsa_support::RenameScope::native(ctx);
+    rename_strict_inner(ctx, new_name, bridge, None, &mut scope).await
 }
 
 #[cfg(test)]
@@ -77,15 +63,17 @@ pub(in crate::ide::rename) async fn rename_strict_traced(
     Vec<CanonicalRenameStage>,
 ) {
     let mut trace = Vec::new();
-    let answer = rename_strict_inner(ctx, new_name, bridge, Some(&mut trace)).await;
+    let mut scope = corsa_support::RenameScope::native(ctx);
+    let answer = rename_strict_inner(ctx, new_name, bridge, Some(&mut trace), &mut scope).await;
     (answer, trace)
 }
 
-async fn rename_strict_inner(
+pub(super) async fn rename_strict_inner(
     ctx: &IdeContext<'_>,
     new_name: &str,
     bridge: Option<&CorsaBridge>,
     mut trace: Option<&mut Vec<CanonicalRenameStage>>,
+    scope: &mut corsa_support::RenameScope<'_>,
 ) -> Result<Answer<WorkspaceEdit>, CanonicalFailure> {
     let rename_kind = event_rename::query_kind(ctx);
     let Some(semantic_name) = event_rename::semantic_name(rename_kind, new_name) else {
@@ -166,7 +154,6 @@ async fn rename_strict_inner(
             })
         })
         .transpose()?;
-    let mut scope = corsa_support::RenameScope::new(ctx);
     if response
         .as_ref()
         .is_some_and(|edit| !scope.admits_native(&document, edit))
