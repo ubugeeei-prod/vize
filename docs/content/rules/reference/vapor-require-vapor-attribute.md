@@ -61,6 +61,6 @@ const count = 0;
 <template><p>{{ count }}</p></template>
 ```
 
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs#L17) · [All rules](../all.md)

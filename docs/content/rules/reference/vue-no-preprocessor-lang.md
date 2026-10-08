@@ -61,6 +61,6 @@ The same CSS declarations omit the preprocessor lang. This is the convention rep
 </style>
 ```
 
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) · [All rules](../all.md)

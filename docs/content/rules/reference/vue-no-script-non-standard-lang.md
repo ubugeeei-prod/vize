@@ -61,6 +61,6 @@ const count = 0;
 <template><p>Notice</p></template>
 ```
 
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_script_non_standard_lang.rs#L44) · [All rules](../all.md)
