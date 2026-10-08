@@ -154,6 +154,7 @@ export const toolingTestScopes = [
       "tests/tooling/release/release-preflight-github.test.ts",
       "tests/tooling/release/release-preflight-matrix-evidence-rejections.test.ts",
       "tests/tooling/release/release-preflight-matrix-evidence.test.ts",
+      "tests/tooling/release/release-preflight-matrix-selection.test.ts",
       "tests/tooling/release/release-preflight-parent-evidence.test.ts",
       "tests/tooling/release/release-preflight-runner-typecheck-policy.test.ts",
       "tests/tooling/release/release-preflight-runner.test.ts",

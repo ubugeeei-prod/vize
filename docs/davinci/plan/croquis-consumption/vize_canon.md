@@ -16,7 +16,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis`                      | type  | `croquis`           |    92 |   219 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |
-| `MacroTracker`                 | type  | `macros`            |     1 |     1 |
+| `MacroTracker`                 | type  | `macros`            |     1 |     2 |
 | `NonScriptSetupScopeData`      | type  | `scope`             |     1 |     3 |
 | `OptionGroup`                  | type  | `croquis`           |     2 |     7 |
 | `PassedProp`                   | type  | `croquis::template` |    11 |    25 |
@@ -36,7 +36,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `VSlotScopeData`               | type  | `scope`             |     1 |     4 |
 | `Croquis.import_statements`    | field | `croquis`           |     4 |     5 |
 | `Croquis.invalid_exports`      | field | `croquis`           |     1 |     1 |
-| `Croquis.macros`               | field | `croquis`           |    28 |    77 |
+| `Croquis.macros`               | field | `croquis`           |    28 |    78 |
 | `Croquis.options_descriptor`   | field | `croquis`           |     2 |     2 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     4 |
 | `Croquis.re_exports`           | field | `croquis`           |     1 |     1 |

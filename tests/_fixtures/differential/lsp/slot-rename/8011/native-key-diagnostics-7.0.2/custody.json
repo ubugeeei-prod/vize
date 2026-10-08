@@ -1,0 +1,97 @@
+{
+  "scope": "Independent native TypeScript7.0.2, not Vize successor/source/protected/release qualification. Whole packets retain actual diagnostics and both query origins before judgment. noImplicitAny disabled via strict:false.",
+  "nativeVersion": "7.0.2",
+  "validIndexedTypeExpected": {
+    "diagnostics": [],
+    "referencesPerOrigin": 2,
+    "renameEditsPerOrigin": 2,
+    "foreignOwnerAndUnrelatedExcluded": true
+  },
+  "missingValueBracketActual": {
+    "diagnostics": [],
+    "unsafeRename": null
+  },
+  "missingIndexedTypeExpected": {
+    "diagnostics": [
+      {
+        "range": {
+          "start": {
+            "line": 2,
+            "character": 49
+          },
+          "end": {
+            "line": 2,
+            "character": 66
+          }
+        },
+        "severity": 1,
+        "code": 2339,
+        "source": "ts",
+        "message": "Property 'item-row-absent' does not exist on type 'Card'."
+      }
+    ],
+    "unsafeRename": null
+  },
+  "files": [
+    {
+      "path": "native-key-diagnostics-7.0.2/missing-value-bracket-App.ts.txt",
+      "bytes": 299,
+      "sha256": "4f6d4c7f0be4631a3cba459ebf042439e8e15cedac7a250bfdc796f492747733"
+    },
+    {
+      "path": "native-key-diagnostics-7.0.2/missing-value-bracket-packet.json.txt",
+      "bytes": 3674,
+      "sha256": "c59a20069ffd8759e56fcaf21b5f8b7b11ad7e2e8cb9b2467db0934a5c49e7d5"
+    },
+    {
+      "path": "native-key-diagnostics-7.0.2/missing-value-bracket-frames.json.txt",
+      "bytes": 31083,
+      "sha256": "c42f8b4c816ab1485dfe57f74ad16e47fa3f1b93d3f132beb013e8508774a3e9"
+    },
+    {
+      "path": "native-key-diagnostics-7.0.2/missing-value-bracket-tsconfig.json.txt",
+      "bytes": 69,
+      "sha256": "24d28b4a099e797f9e3194ef5a42605e8edee9c3d644daf3fd61b1eaae512c10"
+    },
+    {
+      "path": "native-key-diagnostics-7.0.2/valid-indexed-type-App.ts.txt",
+      "bytes": 323,
+      "sha256": "ef2f09944039739797d915dd4e38f5c75d9a12bceb69db7f535c010a8c0a6bfc"
+    },
+    {
+      "path": "native-key-diagnostics-7.0.2/valid-indexed-type-packet.json.txt",
+      "bytes": 4884,
+      "sha256": "3b3e1e84d257106401a5a89a9d463fb4298137a398db38d20b87755e0b671ef0"
+    },
+    {
+      "path": "native-key-diagnostics-7.0.2/valid-indexed-type-frames.json.txt",
+      "bytes": 35984,
+      "sha256": "7f5b587a64689be742f1f20f422b0f0397a8dd9a9594a37eb47998c638a84e67"
+    },
+    {
+      "path": "native-key-diagnostics-7.0.2/valid-indexed-type-tsconfig.json.txt",
+      "bytes": 69,
+      "sha256": "24d28b4a099e797f9e3194ef5a42605e8edee9c3d644daf3fd61b1eaae512c10"
+    },
+    {
+      "path": "native-key-diagnostics-7.0.2/missing-indexed-type-App.ts.txt",
+      "bytes": 330,
+      "sha256": "a973e841a391233b9208e56b4d729d87cc323926d54a5436ddc35e1effa529e8"
+    },
+    {
+      "path": "native-key-diagnostics-7.0.2/missing-indexed-type-packet.json.txt",
+      "bytes": 4174,
+      "sha256": "c398f45e9500169ea662ab610245fcd077e20b143286f0677a98854037843433"
+    },
+    {
+      "path": "native-key-diagnostics-7.0.2/missing-indexed-type-frames.json.txt",
+      "bytes": 32049,
+      "sha256": "a3ff0c93ccf469c3db791850084d37c08ab3ef9142a929fd40f54267d678adf8"
+    },
+    {
+      "path": "native-key-diagnostics-7.0.2/missing-indexed-type-tsconfig.json.txt",
+      "bytes": 69,
+      "sha256": "24d28b4a099e797f9e3194ef5a42605e8edee9c3d644daf3fd61b1eaae512c10"
+    }
+  ]
+}

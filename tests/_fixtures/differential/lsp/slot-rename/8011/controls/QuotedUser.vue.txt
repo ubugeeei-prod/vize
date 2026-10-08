@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import Card from "./Card.vue";
+import Other from "./Other.vue";
+const unrelated = "item-row";
+const slotName = "header";
+</script>
+
+<template>
+  <Card>
+    <template #item-row="{ title }">{{ title }}</template>
+    <template #header="{ title }">{{ title }}</template>
+  </Card>
+  <Other><template #item-row="{ title }">{{ title }}</template></Other>
+  <Card><template #[slotName]="{ title }">{{ title }}</template></Card>
+</template>

@@ -28,7 +28,7 @@
 //! ```
 
 mod declaration_positions;
-mod no_display_none;
+pub(crate) mod no_display_none;
 mod no_hardcoded_values;
 mod no_id_selectors;
 mod no_important;

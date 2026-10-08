@@ -10,6 +10,7 @@ mod implicit_slot;
 mod model;
 mod slots;
 mod structural_slots;
+use super::template::{is_runtime_only_attr, transform_template_ref};
 use model::transform_component_v_model;
 
 /// Transform a component element into a `CreateComponent` operation.
@@ -43,6 +44,7 @@ pub(super) fn transform_component<'a>(
     let mut is_expr: Option<Box<'a, SimpleExpressionNode<'a>>> = None;
     let mut is_selected = false;
     let mut has_dynamic_slot = false;
+    let mut has_template_ref = false;
 
     // Check for v-slot on the component itself (named or default slot)
     let mut has_v_slot_on_component = false;
@@ -90,6 +92,10 @@ pub(super) fn transform_component<'a>(
                     if let Some(ref arg) = dir.arg {
                         if let ExpressionNode::Simple(key_exp) = arg {
                             if key_exp.is_static && key_exp.content == "key" {
+                                continue;
+                            }
+                            if key_exp.is_static && is_runtime_only_attr(key_exp.content) {
+                                has_template_ref |= key_exp.content == "ref";
                                 continue;
                             }
                             if kind == ComponentKind::Dynamic
@@ -159,7 +165,8 @@ pub(super) fn transform_component<'a>(
                 }
             }
             PropNode::Attribute(attr) => {
-                if attr.name == "key" {
+                if attr.name == "key" || is_runtime_only_attr(attr.name) {
+                    has_template_ref |= attr.name == "ref";
                     continue;
                 }
                 // `<component is="a">` names its component statically; it is
@@ -251,6 +258,9 @@ pub(super) fn transform_component<'a>(
     block
         .operation
         .push(OperationNode::CreateComponent(create_component));
+    if has_template_ref {
+        transform_template_ref(ctx, el, element_id, block);
+    }
     for prop in &el.props {
         if let PropNode::Directive(dir) = prop
             && !matches!(

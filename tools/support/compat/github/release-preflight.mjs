@@ -25,6 +25,7 @@ import {
 } from "./release-preflight-evidence.mjs";
 import { githubApiPages, githubApiRequest } from "./release-preflight-github.mjs";
 import { downloadArtifactEntries } from "./release-preflight-artifact-entries.mjs";
+import { currentMatrixArtifacts } from "./release-preflight-matrix-selection.mjs";
 import {
   assertRealProjectMatrixReleaseArtifacts,
   requireRealProjectMatrixRun,
@@ -262,6 +263,7 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
     );
   }
 
+  let currentMatrixJobs;
   const [issues] = await Promise.all([
     githubApiPages({
       apiUrl,
@@ -282,6 +284,7 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
           collection: "jobs",
         });
         assertRequiredWorkflowJobs(workflowName, jobs);
+        if (workflowName === "Real Project Matrix") currentMatrixJobs = jobs;
       }),
   ]);
   const blockers = findReleaseBlockers(issues, tag);
@@ -293,12 +296,10 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
     );
   }
   const realProjectMatrixRun = requireRealProjectMatrixRun(selectedRuns);
-  const artifacts = await githubApiPages({
-    apiUrl,
-    repository,
-    token,
-    resource: `actions/runs/${realProjectMatrixRun.id}/artifacts`,
-    collection: "artifacts",
+  const artifacts = await currentMatrixArtifacts({
+    run: realProjectMatrixRun,
+    currentJobs: currentMatrixJobs,
+    api: { apiUrl, repository, token },
   });
   await assertRealProjectMatrixReleaseArtifacts({
     run: realProjectMatrixRun,

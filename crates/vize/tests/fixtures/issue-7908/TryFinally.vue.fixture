@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { watchEffect } from "vue";
+watchEffect(() => {
+  try {
+    if (import.meta.env.SSR) return;
+    document.title;
+  } finally {
+    document.title;
+  }
+});
+</script>
+<template>
+  <p>Ready</p>
+</template>

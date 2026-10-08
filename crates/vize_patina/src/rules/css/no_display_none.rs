@@ -9,6 +9,8 @@
 //! Note: This is a suggestion, not an error. There are valid cases
 //! for `display: none` (e.g., print styles, initial hidden state).
 
+mod template_targets;
+
 use lightningcss::declaration::DeclarationBlock;
 use lightningcss::properties::Property;
 use lightningcss::properties::display::{Display, DisplayKeyword};
@@ -20,6 +22,7 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::declaration_positions::DeclarationPositions;
 use super::{CssLintResult, CssRule, CssRuleMeta};
+use template_targets::TemplateTargets;
 
 static META: CssRuleMeta = CssRuleMeta {
     name: "css/no-display-none",
@@ -42,13 +45,48 @@ impl CssRule for NoDisplayNone {
         offset: usize,
         result: &mut CssLintResult,
     ) {
-        for rule in &stylesheet.rules.0 {
-            self.check_rule(rule, source, offset, false, result);
-        }
+        self.check_with_template(source, stylesheet, offset, None, result);
+    }
+}
+
+/// SFC-only ownership input. The public standalone CSS rule stays unchanged.
+pub(crate) struct NoDisplayNoneForTemplate(TemplateTargets);
+
+impl NoDisplayNoneForTemplate {
+    pub(crate) fn new(root: &vize_relief::RootNode<'_>) -> Self {
+        Self(TemplateTargets::from_root(root))
+    }
+}
+
+impl CssRule for NoDisplayNoneForTemplate {
+    fn meta(&self) -> &'static CssRuleMeta {
+        &META
+    }
+
+    fn check<'i>(
+        &self,
+        source: &'i str,
+        stylesheet: &StyleSheet<'i>,
+        offset: usize,
+        result: &mut CssLintResult,
+    ) {
+        NoDisplayNone.check_with_template(source, stylesheet, offset, Some(&self.0), result);
     }
 }
 
 impl NoDisplayNone {
+    fn check_with_template<'i>(
+        &self,
+        source: &'i str,
+        stylesheet: &StyleSheet<'i>,
+        offset: usize,
+        targets: Option<&TemplateTargets>,
+        result: &mut CssLintResult,
+    ) {
+        for rule in &stylesheet.rules.0 {
+            self.check_rule(rule, source, offset, false, targets, result);
+        }
+    }
     #[inline]
     fn check_rule(
         &self,
@@ -56,6 +94,7 @@ impl NoDisplayNone {
         source: &str,
         offset: usize,
         inherited_external: bool,
+        targets: Option<&TemplateTargets>,
         result: &mut CssLintResult,
     ) {
         match rule {
@@ -70,7 +109,13 @@ impl NoDisplayNone {
                     .0
                     .iter()
                     .all(|selector| external_target(selector, inherited_external));
-                if !is_pseudo && !external {
+                let foreign = targets.is_some_and(|targets| {
+                    style_rule.selectors.0.iter().all(|selector| {
+                        external_target(selector, inherited_external)
+                            || targets.is_foreign_global(selector)
+                    })
+                });
+                if !is_pseudo && !external && !foreign {
                     let mut positions = DeclarationPositions::new(source, style_rule);
                     self.check_declarations(
                         &style_rule.declarations,
@@ -80,12 +125,14 @@ impl NoDisplayNone {
                     );
                 }
                 for rule in &style_rule.rules.0 {
-                    self.check_rule(rule, source, offset, external, result);
+                    // A foreign global ancestor can still contain a local subject.
+                    // Only deep/slotted ownership propagates through nesting.
+                    self.check_rule(rule, source, offset, external, targets, result);
                 }
             }
             LCssRule::LayerBlock(layer) => {
                 for rule in &layer.rules.0 {
-                    self.check_rule(rule, source, offset, inherited_external, result);
+                    self.check_rule(rule, source, offset, inherited_external, targets, result);
                 }
             }
             _ => {}

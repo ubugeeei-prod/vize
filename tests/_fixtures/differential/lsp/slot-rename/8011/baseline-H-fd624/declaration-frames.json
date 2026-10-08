@@ -1,0 +1,531 @@
+[
+  {
+    "direction": "request",
+    "time": 1791412994.835104,
+    "message": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "initialize",
+      "params": {
+        "processId": null,
+        "rootUri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration",
+        "capabilities": {},
+        "initializationOptions": {
+          "lint": false,
+          "typecheck": true,
+          "hover": true,
+          "crossFile": true
+        }
+      }
+    }
+  },
+  {
+    "direction": "response",
+    "time": 1791412995.219607,
+    "message": {
+      "jsonrpc": "2.0",
+      "result": {
+        "capabilities": {
+          "callHierarchyProvider": true,
+          "codeActionProvider": {
+            "codeActionKinds": [
+              "quickfix"
+            ],
+            "resolveProvider": false
+          },
+          "codeLensProvider": {
+            "resolveProvider": false
+          },
+          "colorProvider": true,
+          "completionProvider": {
+            "resolveProvider": true,
+            "triggerCharacters": [
+              "\"",
+              "'",
+              ":",
+              "@",
+              ".",
+              "<",
+              "=",
+              "/",
+              ">",
+              "+",
+              "^",
+              "*",
+              "(",
+              ")",
+              "#",
+              "[",
+              "]",
+              "$",
+              "-",
+              "{",
+              "}"
+            ]
+          },
+          "declarationProvider": true,
+          "definitionProvider": true,
+          "documentHighlightProvider": true,
+          "documentLinkProvider": {
+            "resolveProvider": false
+          },
+          "documentSymbolProvider": true,
+          "experimental": {
+            "vize": {
+              "jsxTypecheck": false
+            }
+          },
+          "foldingRangeProvider": true,
+          "hoverProvider": true,
+          "implementationProvider": true,
+          "inlayHintProvider": true,
+          "linkedEditingRangeProvider": true,
+          "referencesProvider": true,
+          "renameProvider": {
+            "prepareProvider": true
+          },
+          "selectionRangeProvider": true,
+          "semanticTokensProvider": {
+            "full": true,
+            "legend": {
+              "tokenModifiers": [
+                "declaration",
+                "definition",
+                "readonly",
+                "static",
+                "deprecated",
+                "abstract",
+                "async",
+                "modification",
+                "documentation",
+                "defaultLibrary"
+              ],
+              "tokenTypes": [
+                "namespace",
+                "type",
+                "class",
+                "enum",
+                "interface",
+                "struct",
+                "typeParameter",
+                "parameter",
+                "variable",
+                "property",
+                "enumMember",
+                "event",
+                "function",
+                "method",
+                "macro",
+                "keyword",
+                "modifier",
+                "comment",
+                "string",
+                "number",
+                "regexp",
+                "operator",
+                "decorator"
+              ]
+            },
+            "range": true
+          },
+          "signatureHelpProvider": {
+            "retriggerCharacters": [
+              ")"
+            ],
+            "triggerCharacters": [
+              "(",
+              ",",
+              "<"
+            ]
+          },
+          "textDocumentSync": {
+            "change": 2,
+            "openClose": true,
+            "save": {
+              "includeText": false
+            },
+            "willSave": false,
+            "willSaveWaitUntil": false
+          },
+          "typeDefinitionProvider": true,
+          "workspace": {
+            "fileOperations": {
+              "didCreate": {
+                "filters": [
+                  {
+                    "pattern": {
+                      "glob": "**/*.d.{ts,mts,cts}",
+                      "matches": "file"
+                    },
+                    "scheme": "file"
+                  },
+                  {
+                    "pattern": {
+                      "glob": "**/*.vue",
+                      "matches": "file"
+                    },
+                    "scheme": "file"
+                  },
+                  {
+                    "pattern": {
+                      "glob": "**/*",
+                      "matches": "folder"
+                    },
+                    "scheme": "file"
+                  }
+                ]
+              },
+              "didDelete": {
+                "filters": [
+                  {
+                    "pattern": {
+                      "glob": "**/*.d.{ts,mts,cts}",
+                      "matches": "file"
+                    },
+                    "scheme": "file"
+                  },
+                  {
+                    "pattern": {
+                      "glob": "**/*.vue",
+                      "matches": "file"
+                    },
+                    "scheme": "file"
+                  },
+                  {
+                    "pattern": {
+                      "glob": "**/*",
+                      "matches": "folder"
+                    },
+                    "scheme": "file"
+                  }
+                ]
+              },
+              "didRename": {
+                "filters": [
+                  {
+                    "pattern": {
+                      "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                      "matches": "file"
+                    },
+                    "scheme": "file"
+                  },
+                  {
+                    "pattern": {
+                      "glob": "**/*",
+                      "matches": "folder"
+                    },
+                    "scheme": "file"
+                  }
+                ]
+              },
+              "willRename": {
+                "filters": [
+                  {
+                    "pattern": {
+                      "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                      "matches": "file"
+                    },
+                    "scheme": "file"
+                  },
+                  {
+                    "pattern": {
+                      "glob": "**/*",
+                      "matches": "folder"
+                    },
+                    "scheme": "file"
+                  }
+                ]
+              }
+            },
+            "workspaceFolders": {
+              "changeNotifications": true,
+              "supported": true
+            }
+          },
+          "workspaceSymbolProvider": true
+        },
+        "serverInfo": {
+          "name": "vize-maestro",
+          "version": "0.435.1"
+        }
+      },
+      "id": 1
+    }
+  },
+  {
+    "direction": "request",
+    "time": 1791412995.2196841,
+    "message": {
+      "jsonrpc": "2.0",
+      "method": "initialized",
+      "params": {}
+    }
+  },
+  {
+    "direction": "request",
+    "time": 1791412995.219754,
+    "message": {
+      "jsonrpc": "2.0",
+      "method": "textDocument/didOpen",
+      "params": {
+        "textDocument": {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/Card.vue",
+          "languageId": "vue",
+          "version": 1,
+          "text": "<script setup lang=\"ts\">\ndefineSlots<{\n  header(props: { title: string }): unknown;\n}>();\n</script>\n\n<template>\n  <section>\n    <slot name=\"header\" title=\"Hello\" />\n  </section>\n</template>\n"
+        }
+      }
+    }
+  },
+  {
+    "direction": "response",
+    "time": 1791412995.219837,
+    "message": {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "message": "vize_maestro LSP server initialized",
+        "type": 3
+      }
+    }
+  },
+  {
+    "direction": "response",
+    "time": 1791412996.447562,
+    "message": {
+      "jsonrpc": "2.0",
+      "method": "textDocument/publishDiagnostics",
+      "params": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/Card.vue",
+        "version": 1
+      }
+    }
+  },
+  {
+    "direction": "request",
+    "time": 1791412996.447606,
+    "message": {
+      "jsonrpc": "2.0",
+      "method": "textDocument/didOpen",
+      "params": {
+        "textDocument": {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/CardUser.vue",
+          "languageId": "vue",
+          "version": 1,
+          "text": "<script setup lang=\"ts\">\nimport Card from \"./Card.vue\";\n</script>\n\n<template>\n  <Card>\n    <template #header=\"{ title }\">{{ title }}</template>\n  </Card>\n</template>\n"
+        }
+      }
+    }
+  },
+  {
+    "direction": "response",
+    "time": 1791412997.578784,
+    "message": {
+      "jsonrpc": "2.0",
+      "method": "textDocument/publishDiagnostics",
+      "params": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/CardUser.vue",
+        "version": 1
+      }
+    }
+  },
+  {
+    "direction": "request",
+    "time": 1791412997.5788538,
+    "message": {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "method": "textDocument/references",
+      "params": {
+        "textDocument": {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/Card.vue"
+        },
+        "position": {
+          "line": 2,
+          "character": 3
+        },
+        "context": {
+          "includeDeclaration": true
+        }
+      }
+    }
+  },
+  {
+    "direction": "response",
+    "time": 1791412997.6175601,
+    "message": {
+      "jsonrpc": "2.0",
+      "result": [
+        {
+          "range": {
+            "end": {
+              "character": 8,
+              "line": 2
+            },
+            "start": {
+              "character": 2,
+              "line": 2
+            }
+          },
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/Card.vue"
+        }
+      ],
+      "id": 2
+    }
+  },
+  {
+    "direction": "request",
+    "time": 1791412997.6175969,
+    "message": {
+      "jsonrpc": "2.0",
+      "id": 3,
+      "method": "textDocument/rename",
+      "params": {
+        "textDocument": {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/Card.vue"
+        },
+        "position": {
+          "line": 2,
+          "character": 3
+        },
+        "newName": "heading"
+      }
+    }
+  },
+  {
+    "direction": "response",
+    "time": 1791412997.625649,
+    "message": {
+      "jsonrpc": "2.0",
+      "result": {
+        "changes": {
+          "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/Card.vue": [
+            {
+              "newText": "heading",
+              "range": {
+                "end": {
+                  "character": 8,
+                  "line": 2
+                },
+                "start": {
+                  "character": 2,
+                  "line": 2
+                }
+              }
+            }
+          ]
+        }
+      },
+      "id": 3
+    }
+  },
+  {
+    "direction": "request",
+    "time": 1791412997.626096,
+    "message": {
+      "jsonrpc": "2.0",
+      "method": "textDocument/didChange",
+      "params": {
+        "textDocument": {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/Card.vue",
+          "version": 2
+        },
+        "contentChanges": [
+          {
+            "text": "<script setup lang=\"ts\">\ndefineSlots<{\n  heading(props: { title: string }): unknown;\n}>();\n</script>\n\n<template>\n  <section>\n    <slot name=\"header\" title=\"Hello\" />\n  </section>\n</template>\n"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "direction": "response",
+    "time": 1791412997.6770508,
+    "message": {
+      "jsonrpc": "2.0",
+      "method": "textDocument/publishDiagnostics",
+      "params": {
+        "diagnostics": [],
+        "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/Card.vue",
+        "version": 2
+      }
+    }
+  },
+  {
+    "direction": "request",
+    "time": 1791412997.677098,
+    "message": {
+      "jsonrpc": "2.0",
+      "method": "textDocument/didChange",
+      "params": {
+        "textDocument": {
+          "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/CardUser.vue",
+          "version": 2
+        },
+        "contentChanges": [
+          {
+            "text": "<script setup lang=\"ts\">\nimport Card from \"./Card.vue\";\n</script>\n\n<template>\n  <Card>\n    <template #header=\"{ title }\">{{ title }}</template>\n  </Card>\n</template>\n"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "direction": "response",
+    "time": 1791412997.6944482,
+    "message": {
+      "jsonrpc": "2.0",
+      "method": "textDocument/publishDiagnostics",
+      "params": {
+        "diagnostics": [
+          {
+            "code": 2339,
+            "message": "Property 'header' does not exist on type 'Partial<__VizeSlots>'.",
+            "range": {
+              "end": {
+                "character": 21,
+                "line": 6
+              },
+              "start": {
+                "character": 15,
+                "line": 6
+              }
+            },
+            "severity": 1,
+            "source": "vize/types"
+          }
+        ],
+        "uri": "file:///tmp/vize-n8n-p0-20261007/8011-slot-H-fd624-baseline/declaration/CardUser.vue",
+        "version": 2
+      }
+    }
+  },
+  {
+    "direction": "request",
+    "time": 1791412997.694478,
+    "message": {
+      "jsonrpc": "2.0",
+      "id": 4,
+      "method": "shutdown"
+    }
+  },
+  {
+    "direction": "response",
+    "time": 1791412997.694547,
+    "message": {
+      "jsonrpc": "2.0",
+      "result": null,
+      "id": 4
+    }
+  },
+  {
+    "direction": "request",
+    "time": 1791412997.694561,
+    "message": {
+      "jsonrpc": "2.0",
+      "method": "exit"
+    }
+  }
+]

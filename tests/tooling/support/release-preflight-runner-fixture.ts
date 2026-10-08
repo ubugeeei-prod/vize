@@ -37,8 +37,26 @@ export function createReleasePreflightVerifyOnlyFixture(
   const runs = releaseWorkflowRuns(tag);
   const matrixRun = runs.find((candidate) => candidate.name === "Real Project Matrix");
   assert.ok(matrixRun);
-  const artifacts = realProjectArtifacts(matrixRun);
+  Object.assign(matrixRun, {
+    run_attempt: 1,
+    created_at: "2026-07-12T00:06:00Z",
+    run_started_at: "2026-07-12T00:06:00Z",
+    updated_at: "2026-07-12T00:07:00Z",
+  });
+  const artifacts = realProjectArtifacts(matrixRun).map((artifact) => ({
+    ...artifact,
+    created_at: "2026-07-12T00:06:40Z",
+  }));
   const jobs = releaseWorkflowJobs();
+  jobs[106] = jobs[106].map((job, shard) => ({
+    ...job,
+    id: 2_000 + shard,
+    run_id: matrixRun.id,
+    run_attempt: 1,
+    head_sha: releaseSha,
+    started_at: "2026-07-12T00:06:01Z",
+    completed_at: "2026-07-12T00:06:50Z",
+  }));
   options.mutateRuns?.(runs);
   options.mutateJobs?.(jobs);
 

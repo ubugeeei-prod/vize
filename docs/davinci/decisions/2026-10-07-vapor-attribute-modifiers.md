@@ -73,3 +73,11 @@ every other scope uses the unchanged resolution body. These paths use existing
 metadata without changing outputs or raising ceilings. Fresh
 Actions and protected measurements must establish the resulting counts before
 this PR can be delivered; previous source success does not qualify the repair.
+
+## Actual original source delivery
+
+PR #8172 signed-merged as `1476c1921c0dd4026a64260dda26cbe89a9a1429` at 2026-10-07 16:27:51 UTC. Protected Check 37648954615 passed all four actual Rust workers, the required aggregate, canonical comparisons and original 104 instruction ceilings. The exact 192-byte original App and 434-byte Reactive source run eight whole compiled modules across both production and inline modes. The locked rc.9 oracle agrees on the reported value/title attributes, later static id precedence and authored reverse-order object precedence; full ordered attribute/property vectors, updates, node identity, empty diagnostics and unmount pass. These attribute observations do not claim recursive HTML or decoded-map accuracy.
+
+The complete original fenced source matches its retained issue body, manifest byte count and SHA at the actual signed merge. Combined original-source custody SHA-256 is `72b65a0913013914e274e1ce8abf5e6e980815895f0929962f872773e3d3a2c9`. The required law also passes later exact 2e96, whose own qualification remains distinct. The original source defect is [closed as completed](https://github.com/ubugeeei-prod/vize/issues/7888#issuecomment-6046652952).
+
+Earlier OPEN statements retain historical source/queue scope. Reported rc.10/Node26/installed public replay, browser/performance/release delivery and broader computed/component/filename-case/native custom-directive/SSR/hydration/native-only graduation remain unfinished; they are not new gates for the whole original source Expected contract and receive no acceptance from this closure.

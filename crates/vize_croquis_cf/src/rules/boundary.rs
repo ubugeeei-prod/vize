@@ -1,6 +1,6 @@
 //! Server/client, error and Suspense boundary analysis.
-//! Detects browser API usage, unprotected async components and missing boundaries.
-
+#[path = "boundary_client.rs"]
+mod client;
 #[path = "boundary_graph.rs"]
 mod graph_walk;
 use graph_walk::{find_error_sources, find_protected_components, has_ancestor_with_boundary};
@@ -46,7 +46,6 @@ pub fn analyze_boundaries(
     let mut boundaries = Vec::new();
     let mut diagnostics = Vec::new();
 
-    // Collect components with boundaries
     let mut error_boundaries: FxHashSet<FileId> = FxHashSet::default();
     let mut suspense_boundaries: FxHashSet<FileId> = FxHashSet::default();
     let mut client_only_apis: Vec<(FileId, CompactString, u32)> = Vec::new();
@@ -56,7 +55,6 @@ pub fn analyze_boundaries(
     for entry in registry.vue_components() {
         let analysis = &entry.analysis;
 
-        // Check for error boundary (onErrorCaptured)
         if has_error_captured(analysis) {
             error_boundaries.insert(entry.id);
             boundaries.push(BoundaryInfo {
@@ -67,7 +65,6 @@ pub fn analyze_boundaries(
             });
         }
 
-        // Check for Suspense usage
         if uses_suspense(analysis) {
             suspense_boundaries.insert(entry.id);
             boundaries.push(BoundaryInfo {
@@ -78,15 +75,17 @@ pub fn analyze_boundaries(
             });
         }
 
-        // Check for async setup
         if analysis.macros.is_async() {
             async_components.insert(entry.id);
         }
 
-        // Check for browser-only APIs used outside client-only hooks
+        // Resolve source-owned function reachability once per component.
+        let client_regions = analysis
+            .setup_context
+            .client_only_browser_ranges(&analysis.scopes, &analysis.template_expressions);
         let browser_usages = find_browser_api_usage(analysis);
         for (api, offset, context, source) in browser_usages {
-            if source != DiagnosticSource::Script || !is_in_client_only_context(analysis, offset) {
+            if !client::is_client_usage(analysis, offset, source, &client_regions) {
                 client_only_apis.push((entry.id, api.clone(), offset));
 
                 diagnostics.push(
@@ -101,7 +100,7 @@ pub fn analyze_boundaries(
                         "Browser API used in potentially SSR context",
                     )
                     .with_primary_source(source)
-                    .with_suggestion("Wrap in onMounted() or use import.meta.client check"),
+                    .with_suggestion("Wrap in onMounted() or guard with !import.meta.env.SSR, import.meta.client, or typeof window !== 'undefined'"),
                 );
             }
         }
@@ -274,17 +273,13 @@ fn is_ident_byte(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }
 
-/// Check if an offset is inside a client-only context.
 fn is_in_client_only_context(analysis: &vize_croquis::Croquis, offset: u32) -> bool {
-    // Find the scope at this offset
     for scope in analysis.scopes.iter() {
         if scope.span.start <= offset && offset <= scope.span.end {
-            // Check if this scope or any parent is client-only
             if scope.kind == vize_croquis::ScopeKind::ClientOnly {
                 return true;
             }
 
-            // Check parents
             for &parent_id in &scope.parents {
                 if let Some(parent) = analysis.scopes.get_scope(parent_id)
                     && parent.kind == vize_croquis::ScopeKind::ClientOnly

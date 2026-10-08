@@ -245,7 +245,7 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 
 | Rule | Severity | Presets | Fixable | Options | Implementation | Description |
 | --- | --- | --- | --- | --- | --- | --- |
-| [`css/no-display-none`](./reference/css-no-display-none.md) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L24) | Suggest using v-show instead of display: none |
+| [`css/no-display-none`](./reference/css-no-display-none.md) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L27) | Suggest using v-show instead of display: none |
 | [`css/no-hardcoded-values`](./reference/css-no-hardcoded-values.md) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_hardcoded_values.rs#L30) | Suggest using CSS variables instead of hardcoded values |
 | [`css/no-id-selectors`](./reference/css-no-id-selectors.md) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19) | Discourage use of ID selectors in CSS |
 | [`css/no-important`](./reference/css-no-important.md) | `warning` | `opinionated`, `nuxt` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L14) | Discourage use of !important in CSS |

@@ -1,0 +1,321 @@
+{
+  "actual": {
+    "files": [
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\nconst payload = { title: \"Hello\" };\nconst header = \"local header\";\ndefineSlots<{\n  \"item-row\": (props: { title: typeof payload.title }) => unknown;\n  header(props: { title: string }): unknown;\n}>();\n</script>\n\n<template>\n  <section>\n    <slot name=\"item-row\" title=\"Hello\" />\n    <slot name=\"header\" title=\"Hello\" />\n    <p>{{ header }}</p>\n  </section>\n</template>\n",
+        "file": "Card.vue",
+        "text": "<script setup lang=\"ts\">\nconst payload = { title: \"Hello\" };\nconst header = \"local header\";\ndefineSlots<{\n  \"item-row\": (props: { title: typeof payload.title }) => unknown;\n  header(props: { title: string }): unknown;\n}>();\n</script>\n\n<template>\n  <section>\n    <slot name=\"item-row\" title=\"Hello\" />\n    <slot name=\"header\" title=\"Hello\" />\n    <p>{{ header }}</p>\n  </section>\n</template>\n"
+      },
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\nimport Card from \"./Card.vue\";\nimport Other from \"./Other.vue\";\nconst unrelated = \"item-row\";\nconst slotName = \"header\";\n</script>\n\n<template>\n  <Card>\n    <template #item-row=\"{ title }\">{{ title }}</template>\n    <template #header=\"{ title }\">{{ title }}</template>\n  </Card>\n  <Other><template #item-row=\"{ title }\">{{ title }}</template></Other>\n  <Card><template #[slotName]=\"{ title }\">{{ title }}</template></Card>\n</template>\n",
+        "file": "CardUser.vue",
+        "text": "<script setup lang=\"ts\">\nimport Card from \"./Card.vue\";\nimport Other from \"./Other.vue\";\nconst unrelated = \"item-row\";\nconst slotName = \"header\";\n</script>\n\n<template>\n  <Card>\n    <template #item-row=\"{ title }\">{{ title }}</template>\n    <template #header=\"{ title }\">{{ title }}</template>\n  </Card>\n  <Other><template #item-row=\"{ title }\">{{ title }}</template></Other>\n  <Card><template #[slotName]=\"{ title }\">{{ title }}</template></Card>\n</template>\n"
+      },
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\ndefineSlots<{ \"item-row\"(props: { title: string }): unknown }>();\n</script>\n<template><slot name=\"item-row\" title=\"Other\" /></template>\n",
+        "file": "Other.vue",
+        "text": "<script setup lang=\"ts\">\ndefineSlots<{ \"item-row\"(props: { title: string }): unknown }>();\n</script>\n<template><slot name=\"item-row\" title=\"Other\" /></template>\n"
+      }
+    ],
+    "independentRepair": [
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\nconst payload = { title: \"Hello\" };\nconst header = \"local header\";\ndefineSlots<{\n  \"heading\": (props: { title: typeof payload.title }) => unknown;\n  header(props: { title: string }): unknown;\n}>();\n</script>\n\n<template>\n  <section>\n    <slot name=\"heading\" title=\"Hello\" />\n    <slot name=\"header\" title=\"Hello\" />\n    <p>{{ header }}</p>\n  </section>\n</template>\n",
+        "file": "Card.vue",
+        "text": "<script setup lang=\"ts\">\nconst payload = { title: \"Hello\" };\nconst header = \"local header\";\ndefineSlots<{\n  \"heading\": (props: { title: typeof payload.title }) => unknown;\n  header(props: { title: string }): unknown;\n}>();\n</script>\n\n<template>\n  <section>\n    <slot name=\"heading\" title=\"Hello\" />\n    <slot name=\"header\" title=\"Hello\" />\n    <p>{{ header }}</p>\n  </section>\n</template>\n",
+        "version": 3
+      },
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\nimport Card from \"./Card.vue\";\nimport Other from \"./Other.vue\";\nconst unrelated = \"item-row\";\nconst slotName = \"header\";\n</script>\n\n<template>\n  <Card>\n    <template #heading=\"{ title }\">{{ title }}</template>\n    <template #header=\"{ title }\">{{ title }}</template>\n  </Card>\n  <Other><template #item-row=\"{ title }\">{{ title }}</template></Other>\n  <Card><template #[slotName]=\"{ title }\">{{ title }}</template></Card>\n</template>\n",
+        "file": "CardUser.vue",
+        "text": "<script setup lang=\"ts\">\nimport Card from \"./Card.vue\";\nimport Other from \"./Other.vue\";\nconst unrelated = \"item-row\";\nconst slotName = \"header\";\n</script>\n\n<template>\n  <Card>\n    <template #heading=\"{ title }\">{{ title }}</template>\n    <template #header=\"{ title }\">{{ title }}</template>\n  </Card>\n  <Other><template #item-row=\"{ title }\">{{ title }}</template></Other>\n  <Card><template #[slotName]=\"{ title }\">{{ title }}</template></Card>\n</template>\n",
+        "version": 3
+      },
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\ndefineSlots<{ \"item-row\"(props: { title: string }): unknown }>();\n</script>\n<template><slot name=\"item-row\" title=\"Other\" /></template>\n",
+        "file": "Other.vue",
+        "text": "<script setup lang=\"ts\">\ndefineSlots<{ \"item-row\"(props: { title: string }): unknown }>();\n</script>\n<template><slot name=\"item-row\" title=\"Other\" /></template>\n",
+        "version": 3
+      }
+    ],
+    "references": [
+      {
+        "range": {
+          "end": {
+            "character": 11,
+            "line": 4
+          },
+          "start": {
+            "character": 3,
+            "line": 4
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/Card.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 24,
+            "line": 11
+          },
+          "start": {
+            "character": 16,
+            "line": 11
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/Card.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 27,
+            "line": 3
+          },
+          "start": {
+            "character": 19,
+            "line": 3
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/CardUser.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 7,
+            "line": 8
+          },
+          "start": {
+            "character": 7,
+            "line": 8
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/CardUser.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 23,
+            "line": 9
+          },
+          "start": {
+            "character": 15,
+            "line": 9
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/CardUser.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 12
+          },
+          "start": {
+            "character": 8,
+            "line": 12
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/CardUser.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 28,
+            "line": 12
+          },
+          "start": {
+            "character": 20,
+            "line": 12
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/CardUser.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 23,
+            "line": 1
+          },
+          "start": {
+            "character": 15,
+            "line": 1
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/Other.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 30,
+            "line": 3
+          },
+          "start": {
+            "character": 22,
+            "line": 3
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/Other.vue"
+      }
+    ],
+    "rename": null
+  },
+  "cliBinary": "/home/runner/_work/vize/vize/target/ci/vize",
+  "context": "authored slot controls consumer \"\\n\"",
+  "disableTsgo": "1",
+  "expected": {
+    "files": [
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\nconst payload = { title: \"Hello\" };\nconst header = \"local header\";\ndefineSlots<{\n  \"heading\": (props: { title: typeof payload.title }) => unknown;\n  header(props: { title: string }): unknown;\n}>();\n</script>\n\n<template>\n  <section>\n    <slot name=\"heading\" title=\"Hello\" />\n    <slot name=\"header\" title=\"Hello\" />\n    <p>{{ header }}</p>\n  </section>\n</template>\n",
+        "file": "Card.vue",
+        "text": "<script setup lang=\"ts\">\nconst payload = { title: \"Hello\" };\nconst header = \"local header\";\ndefineSlots<{\n  \"heading\": (props: { title: typeof payload.title }) => unknown;\n  header(props: { title: string }): unknown;\n}>();\n</script>\n\n<template>\n  <section>\n    <slot name=\"heading\" title=\"Hello\" />\n    <slot name=\"header\" title=\"Hello\" />\n    <p>{{ header }}</p>\n  </section>\n</template>\n"
+      },
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\nimport Card from \"./Card.vue\";\nimport Other from \"./Other.vue\";\nconst unrelated = \"item-row\";\nconst slotName = \"header\";\n</script>\n\n<template>\n  <Card>\n    <template #heading=\"{ title }\">{{ title }}</template>\n    <template #header=\"{ title }\">{{ title }}</template>\n  </Card>\n  <Other><template #item-row=\"{ title }\">{{ title }}</template></Other>\n  <Card><template #[slotName]=\"{ title }\">{{ title }}</template></Card>\n</template>\n",
+        "file": "CardUser.vue",
+        "text": "<script setup lang=\"ts\">\nimport Card from \"./Card.vue\";\nimport Other from \"./Other.vue\";\nconst unrelated = \"item-row\";\nconst slotName = \"header\";\n</script>\n\n<template>\n  <Card>\n    <template #heading=\"{ title }\">{{ title }}</template>\n    <template #header=\"{ title }\">{{ title }}</template>\n  </Card>\n  <Other><template #item-row=\"{ title }\">{{ title }}</template></Other>\n  <Card><template #[slotName]=\"{ title }\">{{ title }}</template></Card>\n</template>\n"
+      },
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\ndefineSlots<{ \"item-row\"(props: { title: string }): unknown }>();\n</script>\n<template><slot name=\"item-row\" title=\"Other\" /></template>\n",
+        "file": "Other.vue",
+        "text": "<script setup lang=\"ts\">\ndefineSlots<{ \"item-row\"(props: { title: string }): unknown }>();\n</script>\n<template><slot name=\"item-row\" title=\"Other\" /></template>\n"
+      }
+    ],
+    "independentRepair": [
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\nconst payload = { title: \"Hello\" };\nconst header = \"local header\";\ndefineSlots<{\n  \"heading\": (props: { title: typeof payload.title }) => unknown;\n  header(props: { title: string }): unknown;\n}>();\n</script>\n\n<template>\n  <section>\n    <slot name=\"heading\" title=\"Hello\" />\n    <slot name=\"header\" title=\"Hello\" />\n    <p>{{ header }}</p>\n  </section>\n</template>\n",
+        "file": "Card.vue",
+        "text": "<script setup lang=\"ts\">\nconst payload = { title: \"Hello\" };\nconst header = \"local header\";\ndefineSlots<{\n  \"heading\": (props: { title: typeof payload.title }) => unknown;\n  header(props: { title: string }): unknown;\n}>();\n</script>\n\n<template>\n  <section>\n    <slot name=\"heading\" title=\"Hello\" />\n    <slot name=\"header\" title=\"Hello\" />\n    <p>{{ header }}</p>\n  </section>\n</template>\n",
+        "version": 3
+      },
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\nimport Card from \"./Card.vue\";\nimport Other from \"./Other.vue\";\nconst unrelated = \"item-row\";\nconst slotName = \"header\";\n</script>\n\n<template>\n  <Card>\n    <template #heading=\"{ title }\">{{ title }}</template>\n    <template #header=\"{ title }\">{{ title }}</template>\n  </Card>\n  <Other><template #item-row=\"{ title }\">{{ title }}</template></Other>\n  <Card><template #[slotName]=\"{ title }\">{{ title }}</template></Card>\n</template>\n",
+        "file": "CardUser.vue",
+        "text": "<script setup lang=\"ts\">\nimport Card from \"./Card.vue\";\nimport Other from \"./Other.vue\";\nconst unrelated = \"item-row\";\nconst slotName = \"header\";\n</script>\n\n<template>\n  <Card>\n    <template #heading=\"{ title }\">{{ title }}</template>\n    <template #header=\"{ title }\">{{ title }}</template>\n  </Card>\n  <Other><template #item-row=\"{ title }\">{{ title }}</template></Other>\n  <Card><template #[slotName]=\"{ title }\">{{ title }}</template></Card>\n</template>\n",
+        "version": 3
+      },
+      {
+        "diagnostics": [],
+        "disk": "<script setup lang=\"ts\">\ndefineSlots<{ \"item-row\"(props: { title: string }): unknown }>();\n</script>\n<template><slot name=\"item-row\" title=\"Other\" /></template>\n",
+        "file": "Other.vue",
+        "text": "<script setup lang=\"ts\">\ndefineSlots<{ \"item-row\"(props: { title: string }): unknown }>();\n</script>\n<template><slot name=\"item-row\" title=\"Other\" /></template>\n",
+        "version": 3
+      }
+    ],
+    "references": [
+      {
+        "range": {
+          "end": {
+            "character": 11,
+            "line": 4
+          },
+          "start": {
+            "character": 3,
+            "line": 4
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/Card.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 24,
+            "line": 11
+          },
+          "start": {
+            "character": 16,
+            "line": 11
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/Card.vue"
+      },
+      {
+        "range": {
+          "end": {
+            "character": 23,
+            "line": 9
+          },
+          "start": {
+            "character": 15,
+            "line": 9
+          }
+        },
+        "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/CardUser.vue"
+      }
+    ],
+    "rename": {
+      "changes": {
+        "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/Card.vue": [
+          {
+            "newText": "heading",
+            "range": {
+              "end": {
+                "character": 11,
+                "line": 4
+              },
+              "start": {
+                "character": 3,
+                "line": 4
+              }
+            }
+          },
+          {
+            "newText": "heading",
+            "range": {
+              "end": {
+                "character": 24,
+                "line": 11
+              },
+              "start": {
+                "character": 16,
+                "line": 11
+              }
+            }
+          }
+        ],
+        "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-hvKyUg/CardUser.vue": [
+          {
+            "newText": "heading",
+            "range": {
+              "end": {
+                "character": 23,
+                "line": 9
+              },
+              "start": {
+                "character": 15,
+                "line": 9
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "initialFiles": [
+    {
+      "file": "Card.vue",
+      "text": "<script setup lang=\"ts\">\nconst payload = { title: \"Hello\" };\nconst header = \"local header\";\ndefineSlots<{\n  \"item-row\": (props: { title: typeof payload.title }) => unknown;\n  header(props: { title: string }): unknown;\n}>();\n</script>\n\n<template>\n  <section>\n    <slot name=\"item-row\" title=\"Hello\" />\n    <slot name=\"header\" title=\"Hello\" />\n    <p>{{ header }}</p>\n  </section>\n</template>\n"
+    },
+    {
+      "file": "CardUser.vue",
+      "text": "<script setup lang=\"ts\">\nimport Card from \"./Card.vue\";\nimport Other from \"./Other.vue\";\nconst unrelated = \"item-row\";\nconst slotName = \"header\";\n</script>\n\n<template>\n  <Card>\n    <template #item-row=\"{ title }\">{{ title }}</template>\n    <template #header=\"{ title }\">{{ title }}</template>\n  </Card>\n  <Other><template #item-row=\"{ title }\">{{ title }}</template></Other>\n  <Card><template #[slotName]=\"{ title }\">{{ title }}</template></Card>\n</template>\n"
+    },
+    {
+      "file": "Other.vue",
+      "text": "<script setup lang=\"ts\">\ndefineSlots<{ \"item-row\"(props: { title: string }): unknown }>();\n</script>\n<template><slot name=\"item-row\" title=\"Other\" /></template>\n"
+    }
+  ],
+  "requireTsgo": null,
+  "sourceSha": null,
+  "tsconfig": "{\n            \"compilerOptions\": { \"strict\": true, \"target\": \"ES2022\", \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"noEmit\": true },\n            \"include\": [\"*.vue\"]\n        }",
+  "vizeConfig": "{\"experimentals\":{\"patternedTemplate\":false},\"lsp\":{\"crossFile\":true,\"hover\":true,\"lint\":false,\"typecheck\":true},\"typeChecker\":{\"checkFallthroughAttrs\":false,\"corsaPath\":\"/home/runner/_work/vize/vize/node_modules/@typescript/typescript-linux-x64/lib/tsc\",\"optionsApi\":false}}"
+}

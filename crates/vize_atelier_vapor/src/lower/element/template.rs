@@ -262,7 +262,7 @@ fn extract_template_ref_value<'a>(
                 let Some(ExpressionNode::Simple(arg)) = dir.arg.as_ref() else {
                     continue;
                 };
-                if arg.content != "ref" {
+                if !arg.is_static || arg.content != "ref" {
                     continue;
                 }
 

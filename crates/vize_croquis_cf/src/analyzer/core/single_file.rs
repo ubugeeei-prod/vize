@@ -4,7 +4,13 @@ use vize_croquis::{Analyzer, Croquis};
 
 impl CrossFileAnalyzer {
     pub(super) fn analyze_single_file(&self, source: &str, path: &Path) -> Croquis {
-        let mut analyzer = Analyzer::with_options(self.single_file_options);
+        let analyzer = Analyzer::with_options(self.single_file_options);
+        let mut analyzer =
+            if self.options.server_client_boundary && self.single_file_options.analyze_script {
+                analyzer.with_binding_occurrences()
+            } else {
+                analyzer
+            };
 
         // Detect if it's a Vue SFC
         let is_vue = path

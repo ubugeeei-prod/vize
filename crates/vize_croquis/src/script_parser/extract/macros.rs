@@ -81,7 +81,7 @@ pub fn process_call_expression(
 
         MacroKind::DefineSlots => {
             if let Some(ref type_params) = call.type_arguments {
-                super::slots::extract_slots_from_type(result, &type_params.params, source);
+                super::slots::extract_slots_from_type(result, type_params, source);
             }
         }
 

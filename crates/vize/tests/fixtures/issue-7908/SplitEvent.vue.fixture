@@ -1,0 +1,9 @@
+<script lang="ts">
+function readTitle() { document.title; }
+</script>
+<script setup lang="ts">
+function goHome() { readTitle(); }
+</script>
+<template>
+  <button type="button" @click="goHome">Home</button>
+</template>

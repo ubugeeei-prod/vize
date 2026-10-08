@@ -7,12 +7,19 @@ use vize_carton::CompactString;
 use super::super::ScriptParseResult;
 use super::common::static_property_name;
 
+#[cfg(test)]
+mod tests;
+
 pub(super) fn extract_slots_from_type(
     result: &mut ScriptParseResult,
-    type_params: &oxc_allocator::Vec<'_, TSType<'_>>,
+    type_params: &oxc_ast::ast::TSTypeParameterInstantiation<'_>,
     source: &str,
 ) {
-    for type_param in type_params {
+    result.macros.set_slot_type_argument_range(
+        type_params.span.start.saturating_add(1),
+        type_params.span.end.saturating_sub(1),
+    );
+    for type_param in &type_params.params {
         extract_slots_from_ts_type(result, type_param, source);
     }
 }
@@ -29,19 +36,27 @@ fn extract_slots_from_ts_type(result: &mut ScriptParseResult, ty: &TSType<'_>, s
                         let props_type = property.type_annotation.as_ref().and_then(|annotation| {
                             slot_props_type_from_ts_type(&annotation.type_annotation, source)
                         });
-                        result.macros.add_slot(SlotsDefinition {
-                            name: CompactString::new(name),
-                            props_type,
-                        });
+                        let span = property.key.span();
+                        result.macros.add_slot_with_declaration(
+                            SlotsDefinition {
+                                name: CompactString::new(name),
+                                props_type,
+                            },
+                            (!property.computed).then_some((span.start, span.end)),
+                        );
                     }
                     oxc_ast::ast::TSSignature::TSMethodSignature(method) => {
                         let Some(name) = static_property_name(&method.key) else {
                             continue;
                         };
-                        result.macros.add_slot(SlotsDefinition {
-                            name: CompactString::new(name),
-                            props_type: first_param_type(&method.params, source),
-                        });
+                        let span = method.key.span();
+                        result.macros.add_slot_with_declaration(
+                            SlotsDefinition {
+                                name: CompactString::new(name),
+                                props_type: first_param_type(&method.params, source),
+                            },
+                            (!method.computed).then_some((span.start, span.end)),
+                        );
                     }
                     _ => {}
                 }

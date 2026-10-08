@@ -13,7 +13,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Analyzer`                             | type  | `analyzer`          |    21 |    42 |
 | `AnalyzerOptions`                      | type  | `analyzer`          |    15 |    21 |
 | `ComponentUsage`                       | type  | `croquis::template` |    14 |    38 |
-| `Croquis`                              | type  | `croquis`           |    42 |    97 |
+| `Croquis`                              | type  | `croquis`           |    43 |    98 |
 | `EffectGraphScript`                    | type  | `effect_graph`      |     1 |     1 |
 | `EffectGraphSummary`                   | type  | `effect_graph`      |     9 |    19 |
 | `ElementIdKind`                        | type  | `croquis::template` |     1 |     3 |
@@ -25,7 +25,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScopeKind`                            | type  | `scope`             |     7 |     8 |
 | `SlotUsage`                            | type  | `croquis::template` |     2 |     2 |
 | `TemplateExpression`                   | type  | `croquis`           |     1 |     1 |
-| `TemplateExpressionKind`               | type  | `croquis`           |     1 |     1 |
+| `TemplateExpressionKind`               | type  | `croquis`           |     2 |     2 |
 | `build_effect_graph_from_script`       | type  | `effect_graph`      |     1 |     2 |
 | `build_effect_graph_from_script_setup` | type  | `effect_graph`      |     1 |     1 |
 | `build_effect_graph_from_sfc_scripts`  | type  | `effect_graph`      |     1 |     1 |
@@ -35,9 +35,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis.macros`                       | field | `croquis`           |    14 |    25 |
 | `Croquis.re_export_forwards`           | field | `croquis`           |     1 |     1 |
 | `Croquis.reactivity`                   | field | `croquis`           |     2 |     2 |
-| `Croquis.scopes`                       | field | `croquis`           |    12 |    16 |
-| `Croquis.setup_context`                | field | `croquis`           |     2 |     3 |
-| `Croquis.template_expressions`         | field | `croquis`           |     2 |     4 |
+| `Croquis.scopes`                       | field | `croquis`           |    12 |    17 |
+| `Croquis.setup_context`                | field | `croquis`           |     2 |     4 |
+| `Croquis.template_expressions`         | field | `croquis`           |     3 |     6 |
 | `Croquis.template_info`                | field | `croquis`           |     5 |    14 |
 | `Croquis.type_exports`                 | field | `croquis`           |     1 |     1 |
 | `Croquis.types`                        | field | `croquis`           |     1 |     1 |

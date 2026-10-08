@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { watchEffect } from "vue";
+watchEffect(() => {
+  if (!import.meta.client) { document.title; }
+});
+</script>
+<template>
+  <p>Ready</p>
+</template>

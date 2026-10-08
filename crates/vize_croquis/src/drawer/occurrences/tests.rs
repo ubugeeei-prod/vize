@@ -167,3 +167,25 @@ fn ordinary_capture_storage_is_empty_and_pointer_sized() {
             .is_some()
     );
 }
+
+#[test]
+fn full_analysis_keeps_occurrences_explicit_and_complete_public_outputs_equal() {
+    let allocator = Allocator::default();
+    let (root, errors) = vize_armature::parse(&allocator, TEMPLATE);
+    assert!(errors.is_empty());
+    let mut ordinary = Drawer::with_options(DrawerOptions::full());
+    assert!(ordinary.occurrence_capture.is_none());
+    ordinary.draw_script_setup(SCRIPT).draw_template(&root);
+    assert!(ordinary.occurrence_capture.is_none());
+    let mut expected = ordinary.finish();
+    assert!(expected.setup_context.take_ssr_occurrences().is_none());
+    let mut captured = Drawer::with_options(DrawerOptions::full()).with_binding_occurrences();
+    captured.draw_script_setup(SCRIPT).draw_template(&root);
+    let (actual, packet) = captured.finish_with_binding_occurrences();
+    assert_eq!(actual.to_vir(), expected.to_vir());
+    assert_eq!(
+        serde_json::to_value(actual.semantic_snapshot()).unwrap(),
+        serde_json::to_value(expected.semantic_snapshot()).unwrap()
+    );
+    assert_eq!(packet.unwrap().occurrences().len(), 5);
+}

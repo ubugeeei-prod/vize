@@ -1,0 +1,16 @@
+<script setup lang="ts">
+const payload = { title: "Hello" };
+const header = "local header";
+defineSlots<{
+  "item-row": (props: { title: typeof payload.title }) => unknown;
+  header(props: { title: string }): unknown;
+}>();
+</script>
+
+<template>
+  <section>
+    <slot name="item-row" title="Hello" />
+    <slot name="header" title="Hello" />
+    <p>{{ header }}</p>
+  </section>
+</template>

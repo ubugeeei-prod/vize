@@ -1,0 +1,99 @@
+{
+  "sourceHead": "43958e1e832d46128486ec6e6f45880a088d28de",
+  "testedRevision": "8c3bf50bea3ef216fb8c87adb30381d3b9352f01",
+  "workflowRun": 37699397879,
+  "workerJob": 113060773404,
+  "artifactId": 11516609868,
+  "artifactZipSha256": "f7ce895ed833e119d056a4daf96247ed64c74bdd16ab5fb303f6521862df734e",
+  "embeddedSourceShaStatus": "Actual harness field is null; producer binding uses exact primary run/job/artifact and native binary hash, not an invented embedded SHA.",
+  "nativeKeyShapeScope": "Direct unchanged installed TSgo7.0.2 transport only; not a Vize successor/source/merge qualification.",
+  "observations": [
+    {
+      "path": "baseline-43958e-quoted/lsp-vue-1y9f4U.json",
+      "sha256": "a25bf9ea57eed44e59d3d7148073837291445ba6b9b03cba4935f94c910c8341",
+      "context": "authored slot controls outlet \"\\n\"",
+      "embeddedSourceSha": null,
+      "cliBinary": "/home/runner/_work/vize/vize/target/ci/vize"
+    },
+    {
+      "path": "baseline-43958e-quoted/lsp-vue-NPs1ag.json",
+      "sha256": "16ea756a9fddbc73847786c3daa400907c9d9bf7f0870ff492c058c0052fa707",
+      "context": "authored slot controls declaration \"\\n\"",
+      "embeddedSourceSha": null,
+      "cliBinary": "/home/runner/_work/vize/vize/target/ci/vize"
+    },
+    {
+      "path": "baseline-43958e-quoted/lsp-vue-P0YDHX.json",
+      "sha256": "a48bb87abb23853ba003aacf1e1f201eb1ec62ce7cedf6b53062b9f0e07b3f07",
+      "context": "authored slot controls consumer \"\\r\\n\"",
+      "embeddedSourceSha": null,
+      "cliBinary": "/home/runner/_work/vize/vize/target/ci/vize"
+    },
+    {
+      "path": "baseline-43958e-quoted/lsp-vue-P1xP2T.json",
+      "sha256": "d89bffdcf3ef1821b940b2bd5fb109013619a1c6b8113e80be596548d949dd48",
+      "context": "authored slot controls outlet \"\\r\\n\"",
+      "embeddedSourceSha": null,
+      "cliBinary": "/home/runner/_work/vize/vize/target/ci/vize"
+    },
+    {
+      "path": "baseline-43958e-quoted/lsp-vue-hvKyUg.json",
+      "sha256": "45351df2d519fe469d709c9b12b07dfbfa383fbe6f849206ee0efa55ff8aba3b",
+      "context": "authored slot controls consumer \"\\n\"",
+      "embeddedSourceSha": null,
+      "cliBinary": "/home/runner/_work/vize/vize/target/ci/vize"
+    },
+    {
+      "path": "baseline-43958e-quoted/lsp-vue-njcJmG.json",
+      "sha256": "f430ae88a7da7c4945602a2c3a2f7bc5bba0e7a16e139cdc4334630062b528bb",
+      "context": "authored slot controls declaration \"\\r\\n\"",
+      "embeddedSourceSha": null,
+      "cliBinary": "/home/runner/_work/vize/vize/target/ci/vize"
+    },
+    {
+      "path": "native-key-shape-7.0.2/destructure-App.ts.txt",
+      "sha256": "0e6eaf337578527757a638c03af8ab3a39b10ae06e37c880f43759076b5c0f91"
+    },
+    {
+      "path": "native-key-shape-7.0.2/destructure-packet.json.txt",
+      "sha256": "09d3398c4d4aac31afb8059656956c16ed8002033fd6daa7b3f338588fe46123"
+    },
+    {
+      "path": "native-key-shape-7.0.2/destructure-frames.json.txt",
+      "sha256": "e0308124cace83588c2f2e36b4e953d9ca2023097c5742534104f12f9a08552e"
+    },
+    {
+      "path": "native-key-shape-7.0.2/bracket-App.ts.txt",
+      "sha256": "b64b82d4d7e01c994847103c358fa5bb1cf73dd6c733567c12ca2146555c6e37"
+    },
+    {
+      "path": "native-key-shape-7.0.2/bracket-packet.json.txt",
+      "sha256": "7d3bb817a40e7f74fba8b7057a2bc6414d1bbc13a8a89fc6063b5c39e864e75a"
+    },
+    {
+      "path": "native-key-shape-7.0.2/bracket-frames.json.txt",
+      "sha256": "ffc61e6a578d15f97daa451f6ef1b67eae1cae8370703b922a4ff42d562982fd"
+    }
+  ],
+  "artifactPrimary": {
+    "id": 11516609868,
+    "node_id": "MDg6QXJ0aWZhY3QxMTUxNjYwOTg2OA==",
+    "name": "rust-test-shard-1-37699397879-1",
+    "size_in_bytes": 1361373,
+    "url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11516609868",
+    "archive_download_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11516609868/zip",
+    "expired": false,
+    "digest": "sha256:f7ce895ed833e119d056a4daf96247ed64c74bdd16ab5fb303f6521862df734e",
+    "created_at": "2026-10-07T23:05:47Z",
+    "updated_at": "2026-10-07T23:05:47Z",
+    "expires_at": "2026-10-14T23:05:46Z",
+    "workflow_run": {
+      "id": 37699397879,
+      "repository_id": 1123610216,
+      "head_repository_id": 1123610216,
+      "head_branch": "fix/lsp-slot-key-rename-8011",
+      "head_sha": "43958e1e832d46128486ec6e6f45880a088d28de"
+    }
+  },
+  "testedRevisionBasis": "Actual worker checkout raw: HEAD is now at 8c3bf50b Merge 43958e1e832d46128486ec6e6f45880a088d28de into 177933f33e75af1f696fdc468665e7850025d28b; downloaded archive name likewise pins the tested revision. Artifact workflow_run.head_sha binds the owned PR head separately."
+}

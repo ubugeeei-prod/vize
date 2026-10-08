@@ -100,3 +100,31 @@ Retain whole serialized input before process spawn and both child streams before
 Exact source `a3b08318` completed Check 37596283269 successfully: all four required contexts, 16,511 Rust cases, whole64/4 DOM/SFC comparisons, Vite tests and the canonical corpus pass. Those execution receipts remain historical rather than transferring to a new source SHA.
 
 A necessary live queue composition check finds only our `.gitattributes` EOF insertion conflicts with newly appended upstream byte-control rules. Relocate the exact three-line #7970 corpus block beside the existing compiler fixture rule; preserve its comment, pattern, every original/reference byte and all production/test code. All incoming queue rules must remain intact. This changes neither effective attributes nor acceptance/caps, and grants no merge or installed-public proof. Record the pure effective-attribute and clean-prefix tree checks, then rerun ordinary exact source Actions before matched admission. PR #8141 is Draft and offqueue during this scoped correction; unrelated #8143 inherited linter/canonical conflicts belong to its existing owner.
+
+## Actual source delivery
+
+PR #8141 actually signed-merged as `60ff4418565b14f372abeaa8fa7c0e6ecf9a1513`
+at 2026-10-07 12:35:56 UTC. Protected Check 37619635597 passed all 16,591
+executable Rust cases, 32 complete selected/retained modules, all 64 whole DOM
+cells and four original App/MyTitle SFC pairs. Both whitespace/comment modes,
+two updates, fragment anchors, full child-node vectors and HTML, diagnostics and
+unmount agree with independent locked Vue 3.5.35. All 64 render-owned maps were
+decoded and bounds-checked; the original SFC maps are null and receive no
+generated-map accuracy claim. Five separate raw compatibility controls and all
+104 unchanged instruction ceilings passed on the actual protected source.
+
+The original issue body and five fenced sources remain byte-exact. Independent
+source/runtime receipt SHA-256 is
+`405630d2b03f5d2fffcda3f38e394dbb2729911d9a3c65e9524ac3393cb20697`;
+whole slot runtime is
+`9d8f9cfaddf3e9dbc67cb838f5260d51dd0871838b136f9664f35a40d6f16f02`;
+unchanged-cap performance is
+`30cffb34a94c1ee365e6abf8c687078bc825cc9e6970522e21d19b0e96f085e6`.
+The original source defect is closed as completed in
+[#7970](https://github.com/ubugeeei-prod/vize/issues/7970#issuecomment-6046374417).
+This VDOM slice is separate from the Vapor slot-default repair #8170.
+
+Reported Vue 3.5.43 / Node 26.8.1 / Vite 8.2.2 installed-public verification,
+the CJK pixel screenshot, release delivery, Vue 1 runtime equivalence and whole
+native SFC graduation remain separate unfinished work. This delivery record
+does not turn those unknowns into acceptance.
