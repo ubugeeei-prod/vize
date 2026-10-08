@@ -1,0 +1,273 @@
+[
+  {
+    "name": "all-needed-success",
+    "mode": "needs",
+    "needs": { "fmt-rust": { "result": "success" }, "check-js": { "result": "success" } },
+    "expected": {
+      "result": {
+        "exitCode": 0,
+        "message": "test-report gate: all 2 needed jobs are accounted for. 2 succeeded; 0 skipped on a pull request by design."
+      }
+    }
+  },
+  {
+    "name": "whole-sorted-red-packet",
+    "mode": "needs",
+    "needs": {
+      "z-cancelled": { "result": "cancelled" },
+      "b-success": { "result": "success" },
+      "a-failure": { "result": "failure" }
+    },
+    "expected": {
+      "result": {
+        "exitCode": 1,
+        "message": "test-report gate: 2 of 3 needed jobs did not succeed.\n  - a-failure: failure\n  - z-cancelled: cancelled\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: ."
+      }
+    }
+  },
+  {
+    "name": "needed-skipped-is-red",
+    "mode": "needs",
+    "needs": { "check-js": { "result": "skipped" } },
+    "expected": {
+      "result": {
+        "exitCode": 1,
+        "message": "test-report gate: 1 of 1 needed jobs did not succeed.\n  - check-js: skipped\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: ."
+      }
+    }
+  },
+  {
+    "name": "declared-skip-exact",
+    "mode": "needs",
+    "needs": { "wit-contracts": { "result": "skipped" } },
+    "skippable": { "wit-contracts": "queue-only" },
+    "expected": {
+      "result": {
+        "exitCode": 0,
+        "message": "test-report gate: all 1 needed jobs are accounted for. 0 succeeded; 1 skipped on a pull request by design: wit-contracts."
+      }
+    }
+  },
+  {
+    "name": "null-needs",
+    "mode": "needs",
+    "needs": null,
+    "expected": {
+      "error": { "name": "Error", "message": "The needs context must be an object of job results" }
+    }
+  },
+  {
+    "name": "array-needs",
+    "mode": "needs",
+    "needs": [],
+    "expected": {
+      "error": { "name": "Error", "message": "The needs context must be an object of job results" }
+    }
+  },
+  {
+    "name": "empty-needs",
+    "mode": "needs",
+    "needs": {},
+    "expected": {
+      "error": {
+        "name": "Error",
+        "message": "The needs context is empty: test-report must depend on the jobs it gates"
+      }
+    }
+  },
+  {
+    "name": "missing-job-result",
+    "mode": "needs",
+    "needs": { "check-js": {} },
+    "expected": {
+      "error": {
+        "name": "Error",
+        "message": "Job check-js reported no result in the needs context"
+      }
+    }
+  },
+  {
+    "name": "null-job-result",
+    "mode": "needs",
+    "needs": { "check-js": null },
+    "expected": {
+      "error": {
+        "name": "Error",
+        "message": "Job check-js reported no result in the needs context"
+      }
+    }
+  },
+  {
+    "name": "empty-job-result",
+    "mode": "needs",
+    "needs": { "check-js": { "result": "" } },
+    "expected": {
+      "error": {
+        "name": "Error",
+        "message": "Job check-js reported no result in the needs context"
+      }
+    }
+  },
+  {
+    "name": "check-pr-queue-only-skip",
+    "mode": "check",
+    "event": "pull_request",
+    "needs": {
+      "pr-source-plan": { "result": "success" },
+      "wit-contracts": { "result": "skipped" }
+    },
+    "expected": {
+      "result": {
+        "exitCode": 0,
+        "message": "test-report gate: all 2 needed jobs are accounted for. 1 succeeded; 1 skipped on a pull request by design: wit-contracts."
+      }
+    }
+  },
+  {
+    "name": "check-queue-wit-cannot-skip",
+    "mode": "check",
+    "event": "merge_group",
+    "needs": {
+      "pr-source-plan": { "result": "success" },
+      "wit-contracts": { "result": "skipped" }
+    },
+    "expected": {
+      "result": {
+        "exitCode": 1,
+        "message": "test-report gate: 1 of 2 needed jobs did not succeed.\n  - wit-contracts: skipped\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: ."
+      }
+    }
+  },
+  {
+    "name": "check-unknown-event",
+    "mode": "check",
+    "event": "workflow_call",
+    "needs": {},
+    "expected": {
+      "error": { "name": "Error", "message": "Unsupported Check event: workflow_call" }
+    }
+  },
+  {
+    "name": "check-missing-wit",
+    "mode": "check",
+    "event": "merge_group",
+    "needs": {},
+    "expected": {
+      "error": { "name": "Error", "message": "Check needs context is missing wit-contracts" }
+    }
+  },
+  {
+    "name": "rust-pr-required-only",
+    "mode": "rust",
+    "event": "pull_request",
+    "runRust": "true",
+    "needs": {
+      "merge-rust-source": { "result": "skipped" },
+      "merge-rust-differential": { "result": "skipped" },
+      "pr-rust-build": { "result": "success" },
+      "pr-rust-shard": { "result": "success" }
+    },
+    "expected": {
+      "result": {
+        "exitCode": 0,
+        "message": "test-report gate: all 2 needed jobs are accounted for. 2 succeeded; 0 skipped on a pull request by design."
+      }
+    }
+  },
+  {
+    "name": "rust-queue-full-only",
+    "mode": "rust",
+    "event": "merge_group",
+    "runRust": "true",
+    "needs": {
+      "merge-rust-source": { "result": "success" },
+      "merge-rust-differential": { "result": "success" },
+      "pr-rust-build": { "result": "skipped" },
+      "pr-rust-shard": { "result": "success" }
+    },
+    "expected": {
+      "result": {
+        "exitCode": 0,
+        "message": "test-report gate: all 3 needed jobs are accounted for. 3 succeeded; 0 skipped on a pull request by design."
+      }
+    }
+  },
+  {
+    "name": "rust-pr-false-preserves-early-return",
+    "mode": "rust",
+    "event": "pull_request",
+    "runRust": "false",
+    "needs": null,
+    "expected": {
+      "result": {
+        "exitCode": 0,
+        "message": "Rust source plan selects no crates; archive and shards skipped."
+      }
+    }
+  },
+  {
+    "name": "rust-queue-refuses-false",
+    "mode": "rust",
+    "event": "merge_group",
+    "runRust": "false",
+    "needs": {},
+    "expected": {
+      "error": { "name": "Error", "message": "Merge queue must select the complete Rust workspace" }
+    }
+  },
+  {
+    "name": "rust-unknown-event",
+    "mode": "rust",
+    "event": "push",
+    "runRust": "true",
+    "needs": {},
+    "expected": { "error": { "name": "Error", "message": "Unexpected Rust tier event" } }
+  },
+  {
+    "name": "rust-missing-plan",
+    "mode": "rust",
+    "event": "pull_request",
+    "runRust": "",
+    "needs": {},
+    "expected": { "error": { "name": "Error", "message": "Missing Rust source plan" } }
+  },
+  {
+    "name": "rust-null-context",
+    "mode": "rust",
+    "event": "pull_request",
+    "runRust": "true",
+    "needs": null,
+    "expected": {
+      "error": { "name": "TypeError", "message": "Cannot convert undefined or null to object" }
+    }
+  },
+  {
+    "name": "rust-primitive-context",
+    "mode": "rust",
+    "event": "pull_request",
+    "runRust": "true",
+    "needs": true,
+    "expected": { "error": { "name": "Error", "message": "Missing Rust tier job: pr-rust-build" } }
+  },
+  {
+    "name": "rust-missing-shard",
+    "mode": "rust",
+    "event": "pull_request",
+    "runRust": "true",
+    "needs": { "pr-rust-build": { "result": "success" } },
+    "expected": { "error": { "name": "Error", "message": "Missing Rust tier job: pr-rust-shard" } }
+  },
+  {
+    "name": "rust-whole-failed-shard",
+    "mode": "rust",
+    "event": "pull_request",
+    "runRust": "true",
+    "needs": { "pr-rust-build": { "result": "success" }, "pr-rust-shard": { "result": "failure" } },
+    "expected": {
+      "result": {
+        "exitCode": 1,
+        "message": "test-report gate: 1 of 2 needed jobs did not succeed.\n  - pr-rust-shard: failure\ntest-report is a required status check, so it must not pass while a job it aggregates is red.\nOnly these jobs may skip on a pull request: ."
+      }
+    }
+  }
+]

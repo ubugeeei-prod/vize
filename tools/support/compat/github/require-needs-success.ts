@@ -7,13 +7,15 @@ import { fileURLToPath } from "node:url";
  */
 export const PULL_REQUEST_SKIPPED_JOBS = Object.freeze({});
 
-function sortedEntries(needs) {
+export type GateReport = { exitCode: 0 | 1; message: string };
+
+function sortedEntries(needs: object): Array<[string, unknown]> {
   return Object.entries(needs).sort(([left], [right]) =>
     left < right ? -1 : left > right ? 1 : 0,
   );
 }
 
-function formatNames(names) {
+function formatNames(names: string[]): string {
   return names.join(", ");
 }
 
@@ -29,7 +31,10 @@ function formatNames(names) {
  * @param {Record<string, string>} skippableJobs Jobs allowed to report `skipped`.
  * @returns {{ exitCode: number, message: string }}
  */
-export function aggregateNeedsResults(needs, skippableJobs = PULL_REQUEST_SKIPPED_JOBS) {
+export function aggregateNeedsResults(
+  needs: unknown,
+  skippableJobs: Readonly<Record<string, unknown>> = PULL_REQUEST_SKIPPED_JOBS,
+): GateReport {
   if (needs === null || typeof needs !== "object" || Array.isArray(needs)) {
     throw new Error("The needs context must be an object of job results");
   }
@@ -38,11 +43,14 @@ export function aggregateNeedsResults(needs, skippableJobs = PULL_REQUEST_SKIPPE
     throw new Error("The needs context is empty: test-report must depend on the jobs it gates");
   }
 
-  const succeeded = [];
-  const skippedByDesign = [];
-  const unresolved = [];
+  const succeeded: string[] = [];
+  const skippedByDesign: string[] = [];
+  const unresolved: string[] = [];
   for (const [job, value] of entries) {
-    const result = value === null || typeof value !== "object" ? undefined : value.result;
+    const result =
+      value === null || typeof value !== "object"
+        ? undefined
+        : (value as Record<string, unknown>).result;
     if (typeof result !== "string" || result === "") {
       throw new Error(`Job ${job} reported no result in the needs context`);
     }
@@ -79,19 +87,30 @@ export function aggregateNeedsResults(needs, skippableJobs = PULL_REQUEST_SKIPPE
 }
 
 /** The queue-only guest job must succeed before the existing Check report. */
-export function aggregateCheckNeedsResults(needs, eventName) {
+export function aggregateCheckNeedsResults(needs: unknown, eventName: unknown): GateReport {
   const nonqueue = ["pull_request", "push", "schedule", "workflow_dispatch"];
-  if (eventName !== "merge_group" && !nonqueue.includes(eventName)) {
-    throw new Error(`Unsupported Check event: ${eventName}`);
+  if (
+    eventName !== "merge_group" &&
+    (typeof eventName !== "string" || !nonqueue.includes(eventName))
+  ) {
+    // Template interpolation rejects primitive symbols; String otherwise uses
+    // the same string-hint coercion without introducing an unknown-value warning.
+    if (typeof eventName === "symbol")
+      throw new TypeError("Cannot convert a Symbol value to a string");
+    throw new Error(`Unsupported Check event: ${String(eventName)}`);
   }
-  if (!needs || !Object.hasOwn(needs, "wit-contracts")) {
+  if (
+    !needs ||
+    (typeof needs !== "object" && typeof needs !== "function") ||
+    !Object.hasOwn(needs, "wit-contracts")
+  ) {
     throw new Error("Check needs context is missing wit-contracts");
   }
   const skippable = eventName === "merge_group" ? {} : { "wit-contracts": "queue-only" };
   return aggregateNeedsResults(needs, skippable);
 }
 
-function main() {
+function main(): void {
   const args = process.argv.slice(2);
   if (args.length > 1 || (args.length === 1 && args[0] !== "--check")) {
     throw new Error("Unknown report mode");
@@ -104,7 +123,7 @@ function main() {
     process.exitCode = 1;
     return;
   }
-  const results = JSON.parse(raw);
+  const results: unknown = JSON.parse(raw);
   const { exitCode, message } =
     args[0] === "--check"
       ? aggregateCheckNeedsResults(results, process.env.GITHUB_EVENT_NAME)

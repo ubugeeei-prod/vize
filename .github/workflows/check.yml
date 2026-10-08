@@ -211,7 +211,7 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check package engine matrix
-        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/dependency-security-compat.test.mjs tests/tooling/comparison-base.test.ts tests/tooling/plan-source-checks.test.ts tests/tooling/typescript-tooling-project.test.ts
+        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/dependency-security-compat.test.mjs tests/tooling/comparison-base.test.ts tests/tooling/plan-source-checks.test.ts tests/tooling/typescript-tooling-project.test.ts tests/tooling/typescript-ci-gates.test.ts
   check-vize-apps:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
@@ -654,7 +654,7 @@ jobs:
       # Runs last so the inventory is collected and uploaded either way.
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
-        run: node tools/support/compat/github/require-needs-success.mjs
+        run: node tools/support/compat/github/require-needs-success.ts
   test-report-comment:
     name: test-report-comment
     runs-on: ubuntu-24.04

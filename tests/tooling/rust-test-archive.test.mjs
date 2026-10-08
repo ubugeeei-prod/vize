@@ -9,7 +9,7 @@ import {
   createArchiveReceipt,
   verifyArchiveReceipt,
 } from "../../tools/support/compat/github/rust-test-archive.mjs";
-import { requireRustTier } from "../../tools/support/compat/github/require-rust-tier.mjs";
+import { requireRustTier } from "../../tools/support/compat/github/require-rust-tier.ts";
 
 void test("Rust archives reject different source, baked paths, runner, nextest, and contents", async () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-rust-archive-"));

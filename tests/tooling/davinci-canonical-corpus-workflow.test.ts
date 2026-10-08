@@ -60,6 +60,8 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tests/tooling/fixtures/canonical-observer-logs/dom.log",
     "tools/support/compat/github/comparison-base.mjs",
     "tools/support/compat/github/comparison-base.ts",
+    "tools/support/compat/github/require-needs-success.ts",
+    "tools/support/compat/github/require-rust-tier.ts",
     "tools/support/compat/github/plan-source-checks.ts",
     "tools/benchmarks/scripts/vue-benchmarks-current-typecheck.mjs",
     ".github/workflows/davinci-canonical-corpus.yml",

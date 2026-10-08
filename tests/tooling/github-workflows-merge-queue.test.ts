@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.mjs";
+import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 type Step = {

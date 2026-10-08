@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.mjs";
+import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const workflow = parse(readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"));

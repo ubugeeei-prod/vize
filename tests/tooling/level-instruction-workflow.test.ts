@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.mjs";
+import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 type Job = {
@@ -71,7 +71,7 @@ test("required report keeps inventory and final dependency verification in the s
   assert.equal(report?.steps?.[1]?.uses, "./.github/actions/report-test-inventory");
   assert.equal(
     report?.steps?.at(-1)?.run,
-    "node tools/support/compat/github/require-needs-success.mjs",
+    "node tools/support/compat/github/require-needs-success.ts",
   );
   const action = parse(
     readRepoFile(".github", "actions", "report-test-inventory", "action.yml"),

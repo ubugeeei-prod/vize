@@ -6,7 +6,7 @@ import { parse } from "yaml";
 import {
   aggregateCheckNeedsResults,
   aggregateNeedsResults,
-} from "../../tools/support/compat/github/require-needs-success.mjs";
+} from "../../tools/support/compat/github/require-needs-success.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 type Workflow = {
@@ -75,7 +75,7 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
   );
   assert.equal(
     check.jobs["test-report"].steps?.at(-1)?.run,
-    "node tools/support/compat/github/require-needs-success.mjs",
+    "node tools/support/compat/github/require-needs-success.ts",
   );
   assert.equal(Object.hasOwn(contracts.on, "workflow_call"), true);
   assert.equal(Object.hasOwn(contracts.on, "push"), true);
@@ -161,7 +161,7 @@ test("queue refusals, absent results and unknown events fail closed", () => {
 });
 
 test("the actual Check CLI fails queue omissions while the shared strict mode stays exact", () => {
-  const script = "tools/support/compat/github/require-needs-success.mjs";
+  const script = "tools/support/compat/github/require-needs-success.ts";
   const run = (args: string[], event: string, rows: Record<string, { result: string }>) =>
     spawnSync(process.execPath, [script, ...args], {
       cwd: root,
