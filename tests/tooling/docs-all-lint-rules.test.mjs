@@ -72,9 +72,9 @@ await test("generation is deterministic without a previously built native binary
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
-await test("every Good script has valid module grammar and unique bindings", () => {
+await test("Good scripts and illustrative Bad sources have valid module grammar and unique bindings", () => {
   let scripts = 0;
-  for (const { file, language, source: example } of goodExamples()) {
+  for (const { file, language, source: example } of validatedExamples()) {
     const sources =
       language === "ts"
         ? [example]
@@ -97,9 +97,9 @@ await test("every Good script has valid module grammar and unique bindings", () 
   assert.ok(scripts > 100, "all authored script examples are parsed");
 });
 
-await test("Good Vue scripts use resolvable types and valid compiler-macro contexts", () => {
+await test("Good Vue scripts and illustrative Bad sources have valid compiler-macro contexts", () => {
   let scripts = 0;
-  for (const { file, language, source } of goodExamples()) {
+  for (const { file, language, source } of validatedExamples()) {
     if (language !== "vue" || !/<script\b/.test(source)) continue;
     scripts += 1;
     const { descriptor, errors } = parseSfc(source, { filename: file.replace(/\.md$/, ".vue") });
@@ -110,15 +110,27 @@ await test("Good Vue scripts use resolvable types and valid compiler-macro conte
   assert.ok(scripts > 90, "all Good SFC script contexts are checked");
 });
 
-function goodExamples() {
+function validatedExamples() {
   return ["reference", "project"].flatMap((section) =>
     readdirSync(resolve(root, `docs/content/rules/${section}`)).flatMap((file) => {
-      const page = read(`docs/content/rules/${section}/${file}`).split("## Good\n")[1];
-      return [...page.matchAll(/```(vue|ts|html)\n([\s\S]*?)\n```/g)].map((match) => ({
-        file: `${section}/${file}`,
-        language: match[1],
-        source: match[2],
-      }));
+      const source = read(`docs/content/rules/${section}/${file}`);
+      const parts = [source.split("## Good\n")[1]];
+      if (source.includes("Example qualification: `illustrative-source-pair`")) {
+        // This input explains a retained graph contract, not an emitted CLI finding.
+        // Validate its complete shared context and Bad source as well as Good.
+        assert.equal(file, "vize-croquis-cf-circular-reactive-dependency.md");
+        parts.push(
+          source.split("## Bad\n")[1].split("## Good\n")[0],
+          source.split("## Shared project files\n")[1].split("## Bad\n")[0],
+        );
+      }
+      return parts.flatMap((part) =>
+        [...part.matchAll(/```(vue|ts|html)\n([\s\S]*?)\n```/g)].map((match) => ({
+          file: `${section}/${file}`,
+          language: match[1],
+          source: match[2],
+        })),
+      );
     }),
   );
 }
@@ -176,7 +188,7 @@ await test("project references retain every code and distinguish actual CLI prod
       for (const heading of locale ? ["悪い", "良い"] : ["Bad", "Good"])
         assert.match(
           page.split(`## ${heading}\n`)[1],
-          /```(?:vue|ts|html|text)\n/,
+          /```(?:vue|ts|html)\n/,
           `${id}: concrete ${heading} scenario`,
         );
       assert.deepEqual(

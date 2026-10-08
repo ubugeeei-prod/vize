@@ -127,3 +127,15 @@ controller are changed, and only a fresh complete run qualifies the corrected he
 
 The expanded Japanese static-element rationale names the unchanged Enter-key handler exactly;
 it does not describe a click handler. This text correction changes no source example or oracle.
+
+The final screenshot review exposed one example-usability gap: circular-reactive-dependency
+showed only tracked A/B identities and edges. Supplement that unchanged graph with a complete
+Vue/TypeScript project: App provides a typed Ref, and CycleView computes its next value; Bad
+watches the derived value back into the same Ref, while Good removes only that feedback. All
+other 316 source pairs and the original 25 CLI witness inputs/count/oracles remain exact.
+The illustrative-source-pair marker explicitly separates this source explanation from an emitted
+CLI finding claim. Existing tooling parses and compiles its complete shared, Bad and Good scripts;
+dedicated native analyzer controls assert the complete cycle diagnostic, an acyclic graph, and a
+same-name/different-offset identity negative. Every generated source and retained graph packet
+remains covered by the strict all-317 browser/anchor observer. Fresh exact-head Actions and real
+rendered screenshots must qualify this correction before queue admission and public acceptance.

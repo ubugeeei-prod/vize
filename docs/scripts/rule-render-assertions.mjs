@@ -25,11 +25,21 @@ export async function verifyRenderedRulePackets(page, route) {
         resolve(root, `docs/content/${locale}rules/${section}/${file}`),
         "utf8",
       );
+      for (const heading of ja ? ["悪い", "良い"] : ["Bad", "Good"]) {
+        const example = source.split(`## ${heading}\n`)[1]?.split("\n## ")[0];
+        assert.match(example ?? "", /```(?:vue|ts|html)\n/, `${file}: actual ${heading} source`);
+      }
+      const graphs = [...source.matchAll(/```text\n([\s\S]*?)\n```/g)];
+      if (file === "vize-croquis-cf-circular-reactive-dependency.md") {
+        assert.equal(graphs.length, 2, "both retained Bad/Good graph packets are rendered");
+        assert.match(source, /Example qualification: `illustrative-source-pair`/);
+      }
       return {
         route: `/${locale}rules/${section}/${file.replace(/\.md$/, "")}`,
         id: source.match(/^# `([^`]+)`/m)?.[1],
         code: [...source.matchAll(/```\w+\n([\s\S]*?)\n```/g)].map((match) => match[1]),
         sourceSha256: createHash("sha256").update(source).digest("hex"),
+        graphBlocks: graphs.length,
       };
     }),
   );
@@ -75,6 +85,7 @@ export async function verifyRenderedRulePackets(page, route) {
         sourceSha256: authored.sourceSha256,
         wholeCodeSha256: createHash("sha256").update(JSON.stringify(rendered.code)).digest("hex"),
         codeBlocks: rendered.code.length,
+        graphBlocks: authored.graphBlocks,
       });
     }
   }
