@@ -31,7 +31,7 @@ const rows = (directory) =>
     .split("\n")
     .map((line) => JSON.parse(line));
 
-test("literal manifest spelling survives every source operation and prefix observation", () => {
+void test("literal manifest spelling survives every source operation and prefix observation", () => {
   const workspace = join(temporary, "cycle");
   const root = `${workspace}/tests/_fixtures/_git`;
   mkdirSync(`${workspace}/tests/davinci_test_support`, { recursive: true });
@@ -79,7 +79,7 @@ test("literal manifest spelling survives every source operation and prefix obser
   );
 });
 
-test("missing selected sources stay in the whole vector and retain fatal original IO errors", () => {
+void test("missing selected sources stay in the whole vector and retain fatal original IO errors", () => {
   const root = join(temporary, "missing");
   mkdirSync(root);
   const bytes = Buffer.from("<template>retained</template>\n");
@@ -106,7 +106,7 @@ test("missing selected sources stay in the whole vector and retain fatal origina
   assert.equal(operations[1].matches.read_to_string, true);
 });
 
-test("invalid UTF8 remains a fatal read_to_string failure while whole binary bytes are retained", () => {
+void test("invalid UTF8 remains a fatal read_to_string failure while whole binary bytes are retained", () => {
   const root = join(temporary, "utf8");
   mkdirSync(root);
   const bytes = Buffer.from([0x61, 0xff, 0x62, 0x0d, 0x0a]);
@@ -129,7 +129,7 @@ test("invalid UTF8 remains a fatal read_to_string failure while whole binary byt
   assert.match(operation.rust.read_to_string.detail, /InvalidData/);
 });
 
-test("diagnostics cannot suppress the ordinary SSR worker or become an accepted gate failure", () => {
+void test("diagnostics cannot suppress the ordinary SSR worker or become an accepted gate failure", () => {
   const workflow = readFileSync(".github/workflows/davinci-canonical-corpus.yml", "utf8");
   const diagnostic = workflow.indexOf("- name: Diagnose complete original corpus source IO");
   const ssr = workflow.indexOf("- name: Run L4 SSR and pug L1 differential corpora");
