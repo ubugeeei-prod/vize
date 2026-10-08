@@ -18,6 +18,14 @@ pub mod napi;
 #[path = "napi/lint_fix.rs"]
 mod lint_fix_tests;
 
+// Exercise the private original-path producer without linking Node's N-API.
+// With `napi`, its own module discovers these tests exactly once instead.
+#[cfg(all(test, not(feature = "napi")))]
+#[path = "napi/lint/file_collection"]
+mod oxlint_html_profile_tests {
+    mod oxlint_html_profile;
+}
+
 // The P4-16 JS plugin host's pure half (document, facts, batch), tested the
 // same way.
 #[cfg(test)]

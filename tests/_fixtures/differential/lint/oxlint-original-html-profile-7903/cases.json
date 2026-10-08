@@ -1,0 +1,151 @@
+{
+  "authority": "Independently authored before execution; private selected-set/custody proof only, not host HTML diagnostics or wrapper acceptance.",
+  "profiles": {
+    "Oxlint178": "c42d6397eab5b2d5bb2bd6746c57bc2a9cad21bd",
+    "Oxlint186": "2ae2939bb2fd98796393658b21556b2a2467e047"
+  },
+  "source_sha256": {
+    "scripted.html":"b1872d0153db2e4e6a1732ce40662e0d953a0cd9dc7bee579db92f0e2955bd70",
+    "scriptless.htm":"572cd2e726a62ea30f9e3ff7e7993e1344ad89928df8311ade2036b613477908",
+    "clean.html":"b2a94c6a15966c3e6c52e93bb20e161b1dfea69efd7f75125e314bd3da310b06"
+  },
+  "cases": [
+    {
+      "name": "genuine-html-defaults",
+      "rationale": "walk.rs hidden(false), generic/global false, exact extension and basename-min filters; unignored node_modules is eligible.",
+      "target": "src", "global_exclude": "src/Global.html\n",
+      "files": {"src/Scripted.html":"@scripted", "src/Scriptless.htm":"@scriptless", "src/Clean.html":"@clean", "src/.Hidden.html":"@clean", "src/Global.html":"@clean", "src/.ignore":"*\n", "src/vendor.min.bundle.html":"@scripted", "src/vendor-min.bundle.html":"@scripted", "src/vendor_min.bundle.html":"@scripted", "src/Upper.HTML":"@clean", "src/node_modules/Dependency.html":"@clean"},
+      "selected": ["src/.Hidden.html","src/Clean.html","src/Global.html","src/Scripted.html","src/Scriptless.htm","src/node_modules/Dependency.html"],
+      "authority_dirs": [".","src","src/node_modules"]
+    },
+    {
+      "name": "vcs-pruning-negation-index",
+      "rationale": "Git ancestor pruning; valid file reinclusion under allowed open dir; forced tracked ignored original remains excluded because index is not consulted.",
+      "target": "src", "force_track": ["src/Tracked.html"],
+      "files": {".gitignore":"src/Blocked.html\nsrc/blocked/\n!src/blocked/Keep.html\nsrc/open/*\n!src/open/Keep.html\nsrc/Tracked.html\nsrc/node_modules/\n", "src/Positive.html":"@scripted", "src/Blocked.html":"@scripted", "src/blocked/Keep.html":"@scripted", "src/open/Keep.html":"@scriptless", "src/open/Drop.html":"@scripted", "src/Tracked.html":"@scripted", "src/node_modules/Drop.html":"@scripted"},
+      "selected": ["src/Positive.html","src/open/Keep.html"], "authority_dirs": [".","src","src/open"]
+    },
+    {
+      "name": "explicit-ignored-file",
+      "rationale": "lint.rs 1.78 applies is_gitignored to all roots; 1.86 applies is_gitignored_walk_root only to directories.",
+      "target": "src/Blocked.html", "files": {".gitignore":"src/Blocked.html\n", "src/Blocked.html":"@scripted"},
+      "selected": [], "selected_186": ["src/Blocked.html"], "root_decision": "VcsExcluded", "root_decision_186": "Eligible", "authority_dirs": [".","src"]
+    },
+    {
+      "name": "explicit-ignored-file-no-ignore",
+      "rationale": "--no-ignore disables custom/CLI, not VCS; preserve exact host explicit-file distinction.",
+      "target": "src/Blocked.html", "no_ignore": true, "cli": ["**/Blocked.html"],
+      "files": {".gitignore":"src/Blocked.html\n", ".eslintignore":"Blocked.html\n", "src/Blocked.html":"@scripted"},
+      "selected": [], "selected_186": ["src/Blocked.html"], "root_decision": "VcsExcluded", "root_decision_186": "Eligible", "authority_dirs": [".","src"]
+    },
+    {
+      "name": "ignored-directory-root",
+      "rationale": "Both hosts prefilter directory roots before Walk's depth-zero exception.",
+      "target": "src/blocked", "files": {".gitignore":"src/blocked/\n", "src/blocked/Positive.html":"@scripted"},
+      "selected": [], "root_decision": "VcsExcluded", "authority_dirs": [".","src","src/blocked"]
+    },
+    {
+      "name": "bare-ancestor-root",
+      "rationale": "IncrementalIgnore rooted at Git boundary detects bare directory patterns and ancestors, not only literal final root.",
+      "target": "sub/generated/pkg", "files": {"sub/.gitignore":"generated\n", "sub/generated/pkg/Positive.html":"@scripted"},
+      "selected": [], "root_decision": "VcsExcluded", "authority_dirs": [".","sub","sub/generated","sub/generated/pkg"]
+    },
+    {
+      "name": "custom-whitelist-over-vcs-discovery",
+      "rationale": "dir.rs custom ignore match has priority over Git ignore during descendant traversal; do not hand-AND.",
+      "target": "src", "files": {"src/.gitignore":"Blocked.html\n", "src/.eslintignore":"!Blocked.html\n", "src/Blocked.html":"@scripted", "src/Clean.html":"@clean"},
+      "selected": ["src/Blocked.html","src/Clean.html"], "authority_dirs": [".","src"]
+    },
+    {
+      "name": "custom-parent-pruning",
+      "rationale": "A child whitelist cannot reopen a custom-ignored parent directory.",
+      "target": "src", "files": {".eslintignore":"src/blocked/\n!src/blocked/Keep.html\n", "src/Positive.html":"@scripted", "src/blocked/Keep.html":"@scriptless"},
+      "selected": ["src/Positive.html"], "authority_dirs": [".","src"]
+    },
+    {
+      "name": "explicit-custom-parent-direct-match",
+      "rationale": "Explicit-file custom prefilter uses matched(path,false), not any parents; explicit walk root bypasses traversal pruning.",
+      "target": "src/Positive.html", "files": {".eslintignore":"src/\n", "src/Positive.html":"@scripted"},
+      "selected": ["src/Positive.html"], "authority_dirs": [".","src"]
+    },
+    {
+      "name": "explicit-custom-exclusion",
+      "rationale": "Explicit-file prefilter independently ORs CLI with standalone custom Gitignore before VCS root phase.",
+      "target": "src/Blocked.html", "cli": ["**/Other.html"], "files": {".eslintignore":"Blocked.html\n", "src/Blocked.html":"@scripted"},
+      "selected": [], "root_decision": "CliOrCustomExcluded", "authority_dirs": [".","src"]
+    },
+    {
+      "name": "cli-original-exclusion",
+      "rationale": "OverrideBuilder receives the exact prefixed !**/Skipped.html string.",
+      "target": "src", "cli": ["**/Skipped.html"], "files": {"src/Positive.html":"@scripted", "src/Skipped.html":"@scriptless"},
+      "selected": ["src/Positive.html"], "authority_dirs": [".","src"]
+    },
+    {
+      "name": "cli-leading-bang-is-literal",
+      "rationale": "User !name.html becomes !!name.html; one bang is parsed, remaining literal bang matches only !name.html.",
+      "target": "src", "cli": ["!name.html"], "files": {"src/name.html":"@scripted", "src/!name.html":"@scriptless"},
+      "selected": ["src/name.html"], "authority_dirs": [".","src"]
+    },
+    {
+      "name": "no-ignore-retains-config-vcs",
+      "rationale": "Custom/CLI disabled; root config and VCS remain independently active in provider order.",
+      "target": "src", "no_ignore": true, "cli": ["**/Skipped.html"], "config": "{\"ignorePatterns\":[\"**/Clean.html\"]}\n",
+      "files": {".gitignore":"src/Blocked.html\n", ".eslintignore":"Positive.html\n", "src/Positive.html":"@scripted", "src/Skipped.html":"@scriptless", "src/Clean.html":"@clean", "src/Blocked.html":"@scripted"},
+      "selected": ["src/Positive.html","src/Skipped.html"], "authority_dirs": [".","src"]
+    },
+    {
+      "name": "config-file-whitelist-under-parent",
+      "rationale": "Config matched_path_or_any_parents checks full file first; whitelist retains Keep below config-ignored parent without pruning that parent.",
+      "target": ".", "config": "{\"ignorePatterns\":[\"vendor/\",\"!vendor/Keep.html\"]}\n",
+      "files": {"src/Positive.html":"@scripted", "vendor/Keep.html":"@scriptless", "vendor/Drop.html":"@scripted"},
+      "selected": ["src/Positive.html","vendor/Keep.html"], "authority_dirs": [".","src","vendor"]
+    },
+    {
+      "name": "config-relative-nested-cwd",
+      "rationale": "Explicit root JSON is relative to actual nested cwd; repository ancestor ignore remains active.",
+      "cwd": "package", "target": ".", "config": "{\"ignorePatterns\":[\"vendor/**\"]}\n",
+      "files": {".gitignore":"package/Blocked.html\n", "package/Keep.html":"@scripted", "package/Blocked.html":"@scriptless", "package/vendor/Drop.html":"@scripted"},
+      "selected": ["Keep.html"], "authority_dirs": [".","package","package/vendor"]
+    },
+    {
+      "name": "info-exclude-with-git-whitelist",
+      "rationale": "Repository Gitignore whitelist precedes info/exclude ignore.",
+      "target": "src", "files": {".gitignore":"!src/Keep.html\n", ".git/info/exclude":"src/Keep.html\nsrc/Drop.html\n", "src/Keep.html":"@scripted", "src/Drop.html":"@scriptless"},
+      "selected": ["src/Keep.html"], "authority_dirs": [".","src"]
+    },
+    {
+      "name": "custom-filename",
+      "rationale": "Actual add_custom_ignore_filename preserves a caller-selected single filename and nested matching roots.",
+      "target": "src", "custom": ".project-ignore", "files": {"src/.project-ignore":"Drop.html\n", "src/Keep.htm":"@scriptless", "src/Drop.html":"@scripted"},
+      "selected": ["src/Keep.htm"], "authority_dirs": [".","src"]
+    },
+    {"name":"malformed-json", "rationale":"Bounded refusal preserves original config failure bytes; not host CLI error parity.", "target":"src", "config":"{\"ignorePatterns\":", "files":{"src/Positive.html":"@scripted"}, "refusal":{"kind":"RootJsonSyntax","path":".oxlintrc.json","bytes":"{\"ignorePatterns\":"}},
+    {"name":"inherited-config", "rationale":"No detached inheritance authority.", "target":"src", "config":"{\"extends\":[]}\n", "files":{"src/Positive.html":"@scripted"}, "refusal":{"kind":"ConfigInheritance","path":".oxlintrc.json","bytes":"{\"extends\":[]}\n"}},
+    {"name":"override-config", "rationale":"No unqualified override config envelopes.", "target":"src", "config":"{\"overrides\":[{\"files\":[\"*.html\"]}]}\n", "files":{"src/Positive.html":"@scripted"}, "refusal":{"kind":"ConfigOverrides","path":".oxlintrc.json","bytes":"{\"overrides\":[{\"files\":[\"*.html\"]}]}\n"}},
+    {"name":"nested-config", "rationale":"Explicit refusal prevents silently using root ignores for a nested authority.", "target":"src", "files":{"src/Positive.html":"@scripted","src/nested/.oxlintrc.json":"{}\n","src/nested/Other.html":"@scriptless"}, "refusal":{"kind":"NestedConfig","path":"src/nested/.oxlintrc.json","bytes":"{}\n"}},
+    {"name":"wildcard-target", "rationale":"Literal target provenance is mandatory.", "target":"*.html", "files":{"Positive.html":"@scripted"}, "refusal":{"kind":"NonLiteralTarget","path":"*.html"}},
+    {"name":"missing-target", "rationale":"Missing source is explicit failure, not empty selected set.", "target":"Missing.html", "files":{}, "refusal":{"kind":"MissingTarget","path":"Missing.html"}},
+    {"name":"invalid-cli-pattern", "rationale":"OverrideBuilder disables unclosed character classes; original CLI bytes survive refusal.", "target":"src", "cli":["["], "files":{"src/Positive.html":"@scripted"}, "refusal":{"kind":"IgnoreSyntax","path":".","bytes":"["}},
+    {"name":"invalid-cli-disabled", "rationale":"--no-ignore skips CLI matcher construction, even malformed strings.", "target":"src", "no_ignore":true, "cli":["["], "files":{"src/Positive.html":"@scripted"}, "selected":["src/Positive.html"], "authority_dirs":[".","src"]},
+    {"name":"symlink-explicit", "rationale":"No original-path symlink credit.", "target":"src/Link.html", "files":{"src/Positive.html":"@scripted"}, "symlinks":{"src/Link.html":"Positive.html"}, "refusal":{"kind":"Symlink","path":"src/Link.html"}},
+    {"name":"symlink-discovery", "rationale":"Same collector refuses symlink before follow_links descent; no recursive prewalk.", "target":"src", "files":{"src/Positive.html":"@scripted"}, "symlinks":{"src/Link.html":"Positive.html"}, "refusal":{"kind":"Symlink","path":"src/Link.html"}},
+    {"name":"linked-git", "rationale":"Linked metadata is explicitly outside finite envelope.", "target":"src", "linked_git":true, "files":{"src/Positive.html":"@scripted"}, "refusal":{"kind":"LinkedGitMetadata","path":".git"}},
+    {"name":"nested-vcs", "rationale":"One repository boundary only; same traversal refuses nested marker before descent.", "target":"src", "files":{"src/Positive.html":"@scripted","src/nested/.git/marker":"owned\n","src/nested/Other.html":"@scriptless"}, "refusal":{"kind":"NestedVcs","path":"src/nested"}},
+    {"name":"jj-metadata", "rationale":"Jujutsu is not incidental Git acceptance.", "target":"src", "files":{".jj/marker":"owned\n","src/Positive.html":"@scripted"}, "refusal":{"kind":"JujutsuMetadata","path":"."}},
+    {"name":"non-string-config-pattern", "rationale":"Actual JSON authority must contain string patterns.", "target":"src", "config":"{\"ignorePatterns\":[true]}\n", "files":{"src/Positive.html":"@scripted"}, "refusal":{"kind":"RootJsonSyntax","path":".oxlintrc.json","bytes":"{\"ignorePatterns\":[true]}\n"}},
+    {"name":"explicit-vcs-metadata-root", "rationale":"Oxlint visitor prunes metadata even at depth zero, where ignore filter_entry is bypassed.", "target":".git", "files":{".git/Probe.html":"@scripted"}, "selected":[], "authority_dirs":[".",".git"]},
+    {"name":"fifo-descendant", "rationale":"Finite regular-file envelope refuses FIFO before source read; never encode a partial selected set.", "target":"src", "files":{"src/Positive.html":"@scripted"}, "fifo":"src/Pipe.html", "refusal":{"kind":"UnsupportedFileType","path":"src/Pipe.html"}},
+    {"name":"suppression-state", "rationale":"Exact host suppression filename is oxlint-suppressions.json without a leading dot; no suppression support is inferred.", "target":"src", "files":{"oxlint-suppressions.json":"{}\n","src/Positive.html":"@scripted"}, "refusal":{"kind":"SuppressionState","path":"oxlint-suppressions.json"}},
+    {"name":"symlink-gitignore", "rationale":"Referenced Git authority must be regular before matching reads it.", "target":"src", "files":{"owned-ignore":"Blocked.html\n","src/Positive.html":"@scripted"}, "symlinks":{".gitignore":"owned-ignore"}, "refusal":{"kind":"Symlink","path":".gitignore"}},
+    {"name":"symlink-custom-ignore", "rationale":"Referenced custom authority must be regular before matching reads it.", "target":"src", "files":{"owned-ignore":"Blocked.html\n","src/Positive.html":"@scripted"}, "symlinks":{".eslintignore":"owned-ignore"}, "refusal":{"kind":"Symlink","path":".eslintignore"}},
+    {"name":"symlink-root-config", "rationale":"Explicit JSON authority is the original regular file, never linked bytes.", "target":"src", "files":{"owned-config":"{}\n","src/Positive.html":"@scripted"}, "symlinks":{".oxlintrc.json":"owned-config"}, "refusal":{"kind":"Symlink","path":".oxlintrc.json"}},
+    {"name":"symlink-info-directory", "rationale":"Git info ancestor must be regular even when exclude is readable through a link.", "target":"src", "files":{"owned-info/exclude":"Blocked.html\n","src/Positive.html":"@scripted"}, "symlinks":{".git/info":"../owned-info"}, "refusal":{"kind":"Symlink","path":".git/info"}},
+    {"name":"symlink-target-ancestor", "rationale":"Original path ancestors are checked with symlink_metadata, preserving the target spelling.", "target":"src/link/Positive.html", "files":{"src/actual/Positive.html":"@scripted"}, "symlinks":{"src/link":"actual"}, "refusal":{"kind":"Symlink","path":"src/link"}},
+    {"name":"missing-git-boundary", "rationale":"Nonrepository behavior is explicitly outside finite profile, not substituted with repository defaults.", "target":"src", "no_git":true, "files":{"src/Positive.html":"@scripted"}, "refusal":{"kind":"MissingGitBoundary","path":"src"}},
+    {"name":"custom-path-refusal", "rationale":"add_custom_ignore_filename envelope is one literal filename; path-bearing custom sources remain unqualified.", "target":"src", "custom":"../ignore", "files":{"src/Positive.html":"@scripted"}, "refusal":{"kind":"CustomIgnoreFilename","path":"../ignore"}},
+    {"name":"malformed-custom-ignore", "rationale":"Present malformed authority is a profile refusal with bytes; stock CLI discards some parse errors and is not claimed equivalent.", "target":"src/Positive.html", "files":{".eslintignore":"[z-a]\n","src/Positive.html":"@scripted"}, "refusal":{"kind":"IgnoreSyntax","path":".eslintignore","bytes":"[z-a]\n"}},
+    {"name":"deeper-vcs-directory-whitelist", "rationale":"A deeper Gitignore whitelist may reopen the directory before it is pruned; root IncrementalIgnore honors hierarchy.", "target":"sub/generated/pkg", "files":{".gitignore":"generated\n","sub/.gitignore":"!generated\n","sub/generated/pkg/Positive.html":"@scripted"}, "selected":["sub/generated/pkg/Positive.html"], "authority_dirs":[".","sub","sub/generated","sub/generated/pkg"]},
+    {"name":"config-reversed-negation", "rationale":"Later root config ignore overrides earlier file whitelist; ordered matching is retained.", "target":".", "config":"{\"ignorePatterns\":[\"!vendor/Keep.html\",\"vendor/**\"]}\n", "files":{"src/Positive.html":"@scripted","vendor/Keep.html":"@scriptless","vendor/Drop.html":"@scripted"}, "selected":["src/Positive.html"], "authority_dirs":[".","src","vendor"]},
+    {"name":"nested-dangling-ignored-marker", "rationale":"Present nested marker is detected with symlink_metadata before descent even if dangling and its spelling is ignored.", "target":"src", "files":{"src/Positive.html":"@scripted","src/nested/.gitignore":".git\n","src/nested/Other.html":"@scriptless"}, "symlinks":{"src/nested/.git":"missing-owned-metadata"}, "refusal":{"kind":"NestedVcs","path":"src/nested"}}
+  ]
+}
