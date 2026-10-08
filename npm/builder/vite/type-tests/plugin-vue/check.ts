@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 const fixture = path.dirname(fileURLToPath(import.meta.url));
 const vitePlugin = path.resolve(fixture, "../..");
 
-function run(command, args, cwd) {
+function run(command: string, args: readonly string[], cwd: string) {
   execFileSync(command, args, { cwd, stdio: "inherit" });
 }
 
