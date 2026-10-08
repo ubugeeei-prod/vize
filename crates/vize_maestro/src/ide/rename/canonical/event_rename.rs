@@ -1,5 +1,7 @@
 use std::ops::Range as OffsetRange;
 
+use oxc_semantic::SemanticBuilder;
+use oxc_span::SourceType;
 use tower_lsp::lsp_types::{Range, WorkspaceEdit};
 use vize_croquis::{Drawer, DrawerOptions};
 
@@ -27,7 +29,7 @@ pub(super) fn query_kind(ctx: &IdeContext<'_>) -> Option<RenameKind> {
     if model::usage_range_at(ctx).is_some() {
         return Some(RenameKind::Model);
     }
-    if query_is_event_declaration(ctx) {
+    if query_is_event_source(ctx) {
         return Some(RenameKind::Event);
     }
     model::query_is_declaration(ctx).then_some(RenameKind::Model)
@@ -166,7 +168,7 @@ pub(super) fn component_event_ranges(source: &str, filename: &str) -> Vec<Offset
     ranges
 }
 
-fn query_is_event_declaration(ctx: &IdeContext<'_>) -> bool {
+fn query_is_event_source(ctx: &IdeContext<'_>) -> bool {
     let Some(descriptor) = ctx.state.sfc_descriptor(ctx.uri, &ctx.content) else {
         return false;
     };
@@ -176,18 +178,50 @@ fn query_is_event_declaration(ctx: &IdeContext<'_>) -> bool {
     let Some(relative) = ctx.offset.checked_sub(script.loc.start) else {
         return false;
     };
+    let allocator = oxc_allocator::Allocator::default();
+    let source_type = SourceType::ts().with_jsx(matches!(
+        script.lang.as_deref().map(str::trim),
+        Some("tsx" | "jsx")
+    ));
+    let parsed = vize_croquis::script_parser::parse_program_for_analysis(
+        &allocator,
+        &script.content,
+        source_type,
+    );
+    if parsed.panicked {
+        return false;
+    }
     let mut drawer = Drawer::with_options(DrawerOptions {
         analyze_script: true,
         ..Default::default()
     });
-    drawer.analyze_script_setup(&script.content);
+    drawer.analyze_script_setup_program(
+        &parsed.program,
+        &script.content,
+        script.attrs.get("generic").map(|generic| generic.as_ref()),
+    );
     let croquis = drawer.finish();
-    croquis.macros.emits().iter().any(|event| {
+    if croquis.macros.emits().iter().any(|event| {
         croquis
             .macros
             .emit_declaration(event.name.as_str())
             .is_some_and(|range| relative >= range.0 as usize && relative < range.1 as usize)
-    })
+    }) {
+        return true;
+    }
+    if croquis.macros.define_emits().is_none() || !parsed.diagnostics.is_empty() {
+        return false;
+    }
+    let built = SemanticBuilder::new().build(&parsed.program);
+    built.diagnostics.is_empty()
+        && vize_canon::virtual_ts::owned_emit_navigation_source_ranges(
+            &parsed.program,
+            built.semantic.scoping(),
+            &script.content,
+            &croquis,
+        )
+        .iter()
+        .any(|range| range.contains(&relative))
 }
 
 pub(super) fn offset_range(source: &str, range: OffsetRange<usize>) -> Range {
