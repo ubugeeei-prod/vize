@@ -1,0 +1,9 @@
+warning: patch `oxc_parser v0.142.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-template-closing-print-width-7876-20261008/vendor/oxc_parser_compat)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+   Compiling vize_glyph v0.436.0 (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-template-closing-print-width-7876-20261008/crates/vize_glyph)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.60s
+     Running tests/template_closing_print_width.rs (/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-template-child-print-width-7876-20261008/target/debug/deps/template_closing_print_width-0fb5c01bd9754f91)
+error: test failed, to rerun pass `-p vize_glyph --test template_closing_print_width`

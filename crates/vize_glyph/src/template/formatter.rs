@@ -16,6 +16,7 @@ use super::{
 };
 
 mod child_width;
+mod closing_width;
 mod interpolation;
 mod opening_attributes;
 mod preserved_text;
@@ -134,6 +135,13 @@ impl<'a> TemplateFormatter<'a> {
                     self.open_chunk(&mut output, depth, join);
                     output.extend_from_slice(b"</");
                     output.extend_from_slice(tag_name.as_bytes());
+                    if join.is_continuation()
+                        && !joiner.locks_current_line()
+                        && self.closing_bracket_overflows(&output)
+                    {
+                        output.extend_from_slice(self.newline);
+                        self.write_indent(&mut output, depth);
+                    }
                     output.push(b'>');
                     output.extend_from_slice(self.newline);
                     joiner.finish(end_pos);
@@ -166,6 +174,10 @@ impl<'a> TemplateFormatter<'a> {
                     // Compute once per opening tag; consumed in the two
                     // void-element branches below.
                     let is_void = is_void_element_str(&tag_name);
+                    // The policy is pure; ordinary nonempty tags previously
+                    // queried it twice. Self-closing tags never query it.
+                    let whitespace_significant = !is_self_closing
+                        && is_whitespace_significant_element(&tag_name, &sorted_attrs);
                     if is_self_closing {
                         if closing_bracket_on_own_line {
                             output.extend_from_slice(b"/>");
@@ -173,7 +185,7 @@ impl<'a> TemplateFormatter<'a> {
                             output.extend_from_slice(b" />");
                         }
                     } else if !is_void
-                        && !is_whitespace_significant_element(&tag_name, &sorted_attrs)
+                        && !whitespace_significant
                         && let Some(closing_end_pos) =
                             self.parse_immediate_empty_closing_tag(source, end_pos, &tag_name)
                     {
@@ -185,7 +197,7 @@ impl<'a> TemplateFormatter<'a> {
                         joiner.finish(closing_end_pos);
                         pos = closing_end_pos;
                         continue;
-                    } else if is_whitespace_significant_element(&tag_name, &sorted_attrs) {
+                    } else if whitespace_significant {
                         // Copy `<pre>`/`<textarea>`/`v-pre` content verbatim so
                         // the formatter never changes rendered output.
                         // (#963, #3249)
