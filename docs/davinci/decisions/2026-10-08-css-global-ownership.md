@@ -105,3 +105,67 @@ the genuine consumer inventory. Every new/historical fixture and observer
 remains byte-exact. No fixture split or cap/gate waiver is needed. Require fresh
 successor source and full protected qualification without transferring a90
 runtime acceptance.
+
+Actual signed delivery on 2026-10-08
+
+#8221 merged at `504426dbff2eac74084ce6ddbb0d2ad9241a6c64` on
+2026-10-08T00:26:37Z. Fresh protected Check 37706344985 passes every required
+upload and all four terminal checks, both 120-case owning API corpora, all 548
+complete CLI observations and all 104 unchanged ceilings across three identical
+measurements. Fresh main `7431d6b` retains all eleven historical fixtures and
+eleven owned source/corpus/observer files byte-exact to source `693b9ba8`; all
+218 old observation objects match original protected #8091 exactly, including
+the literal original no-diagnostic Expected.
+
+Keep #7976 open. This delivers proved foreign standalone simple class/ID/tag
+subjects; broader compound/attribute global subjects and the type-aware route
+without a retained template root remain conservatively unclassified. In the
+complete retained corpus, `global-compound-unknown` still warns at byte 126 for
+`:global(.foreign.local)` on known native fragment roots. Local global matches,
+dynamic inputs and single-root caller fallthrough deliberately retain advice.
+TODO: complete broader global ownership policy with original inputs and whole
+controls retained; root separately owns installed 0.435.2 acceptance.
+
+Next bounded compound-global preparation
+
+Use genuine delivered main `7431d6b` and the existing parsed inner global tokens.
+Vue global scope replaces the entire outer selector; an absent outer class, ID
+or type never establishes foreign ownership. Validate exactly one global and
+every outer component as same-compound class/ID/native type. Inner arguments
+accept an edge-trimmed literal class/ID sequence with an optional native type
+prefix. Validate the entire sequence before accepting a necessary absent inner
+class or ID, using unchanged complete template facts and decoded parser names.
+Internal whitespace/comments, namespaces, universals, multiple globals,
+attributes, pseudos, combinators and unknown roots remain conservative. All
+class/ID matching stays case sensitive; no extra parse, stage or API is added.
+
+Freeze all eleven historical files and both original 66-case/source fixtures.
+Separately authored whole before/after semantic packets change only
+`global-compound-unknown` and `outer-compound-unknown`: complete SFC/API, JSON
+and plain warning packets become zero, while original source, style offsets,
+standalone CSS expectations and every other field remain exact. Strict complete
+object delta laws apply in both API and source reference resolution; the
+original full assertions and 120-case/548-call execution counts remain.
+
+Add 62 independently authored complete CSS/SFC/JSON/plain/off controls and a
+310-call receipt-bound whole CLI observer, including reverse outer-missing but
+inner-local subjects, absent-first followed by unsupported tokens, escaped
+names, selector lists, nesting, dynamic DOM properties and fallthrough. Total
+qualification is 182 API cases and 858 CLI calls, with all original 218 process
+objects still byte-exact to protected #8091. Local formatting, four authored
+reference tests, assertion lint and generated consumer inventory pass; compiled
+source/native Actions, unchanged protected 104 ceilings and actual signed
+delivery remain pending. The broader global and no-retained-root policy and
+installed public qualification keep #7976 open.
+
+Initial compound source Check 37709829672 rejects the direct slice at helper
+line 144 under denied `clippy::indexing_slicing`, before owning Rust execution.
+Use checked `get` on the same derived inclusive edge-trim range, preserving
+all token interpretation, complete sources/expectations and 182/858 obligations.
+Retain the real failed log; require fresh successor source/native/protected
+qualification without a lint waiver or failed-head runtime transfer.
+
+The genuine consumer generator adds one test/dev L0 import row for the new
+compound API corpus. This owning shard was generated locally but omitted from
+the initial staging set; include the exact row in the successor. All other
+inventory, source/oracle and 182/858 obligations remain unchanged.

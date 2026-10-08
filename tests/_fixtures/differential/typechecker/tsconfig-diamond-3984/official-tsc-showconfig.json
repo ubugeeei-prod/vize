@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "target": "es2022",
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "rootDir": "./src/base",
+        "allowJs": false,
+        "declaration": true,
+        "declarationMap": true,
+        "declarationDir": "./types-base",
+        "outDir": "./dist-base",
+        "noEmit": true,
+        "noUnusedParameters": true
+    },
+    "files": [
+        "./src/base/main.ts"
+    ],
+    "include": [
+        "configs/../src/base/**/*"
+    ],
+    "exclude": [
+        "configs/../src/base/skip.ts"
+    ]
+}
