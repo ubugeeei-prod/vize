@@ -12,7 +12,7 @@ import {
   sha256,
 } from "./support/bound-slot-attribute-oracle.mjs";
 
-test("whole full51 official Vue-base packets retain every independent finding and metadata", async () => {
+await test("whole full51 official Vue-base packets retain every independent finding and metadata", async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bound-slot-oracle-"));
   const rawPath = path.join(dir, "raw.jsonl");
   const capture = await captureOracle({
@@ -27,7 +27,7 @@ test("whole full51 official Vue-base packets retain every independent finding an
   assert.equal(capture.captures.length, 92);
 });
 
-test("the actual before/after packets add exactly the declared bound finding", () => {
+await test("the actual before/after packets add exactly the declared bound finding", () => {
   const before = JSON.parse(fs.readFileSync(path.join(corpusRoot, "native-before.json"), "utf8"));
   const after = JSON.parse(fs.readFileSync(path.join(corpusRoot, "native-after.json"), "utf8"));
   assert.equal(before.sourceRevision, "26e56ac6a0de3f9f838db55bbdb71757317f2435");
@@ -70,7 +70,7 @@ test("the actual before/after packets add exactly the declared bound finding", (
   assert.equal(added, 22);
 });
 
-test("the original 40 packets and fresh baseline custody remain intact", () => {
+await test("the original 40 packets and fresh baseline custody remain intact", () => {
   const read = (name) => JSON.parse(fs.readFileSync(path.join(corpusRoot, name), "utf8"));
   const original = read("original-40/cases.json");
   assert.deepEqual(readCorpus().cases.slice(0, 40), original.cases);

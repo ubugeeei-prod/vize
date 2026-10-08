@@ -11,7 +11,7 @@ const dir = path.resolve(
 );
 const read = (file) => JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
 
-test("historical whole packets remain bound to their retained source custody", () => {
+await test("historical whole packets remain bound to their retained source custody", () => {
   const manifest = read("manifest.json");
   assert.equal(manifest.sourceRevision, "47c6f998d49cd6c7b790550098b3378639b949f7");
   for (const [file, expected] of Object.entries(manifest.files)) {
@@ -49,7 +49,7 @@ test("historical whole packets remain bound to their retained source custody", (
   );
 });
 
-test("all 118 owned sources retain both entire observations without findings filtering", () => {
+await test("all 118 owned sources retain both entire observations without findings filtering", () => {
   const inputs = read("observer-input.json");
   const native = read("native-packets.json");
   const provider = fs
