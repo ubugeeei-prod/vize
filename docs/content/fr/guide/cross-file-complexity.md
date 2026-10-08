@@ -28,24 +28,24 @@ La définition des métriques et les seuils fixés sur le corpus se trouvent dan
 
 Le rapport expose à la fois les signaux bruts et les scores dérivés.
 
-| Champ             | Signification                                                                                                                           |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `cyclomaticScore` | Somme de la complexité cyclomatique propre au template de chaque composant.                                                             |
-| `cognitiveScore`  | Somme de la complexité cognitive propre au template de chaque composant.                                                                |
+| Champ             | Signification                                                                                                                                  |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cyclomaticScore` | Somme de la complexité cyclomatique propre au template de chaque composant.                                                                    |
+| `cognitiveScore`  | Somme de la complexité cognitive propre au template de chaque composant.                                                                       |
 | `totalScore`      | Somme des scores par dimension : flux du template, slots, prop drilling, état global, provide/inject, attributs fallthrough et graphe réactif. |
-| `band`            | Catégorie lisible : `low`, `moderate`, `high` ou `extreme`.                                                                             |
+| `band`            | Catégorie lisible : `low`, `moderate`, `high` ou `extreme`.                                                                                    |
 
 L’entrée brute conserve aussi les chiffres derrière le score, notamment :
 
-| Signal                                                            | Pourquoi c’est important                                                                                          |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `templateCyclomatic` et `templateCognitive`                       | Les scores propres des templates, additionnés sur tous les composants.                                            |
-| `templateMaxNesting`                                              | L’imbrication la plus profonde de branches, de boucles et de slots à portée dans un même template.                |
-| `templateScopedSlotCount`                                         | Les slots à portée couplent les templates parent et enfant ; ils sont donc comptés à part des slots ordinaires. |
-| `templateUnknown`                                                 | Les expressions sans AST analysé (par exemple les handlers à plusieurs instructions). Elles n’ajoutent rien aux scores. |
-| `propDrillingEdgeCount`                                           | Les arêtes de props indiquent un flux de données qui traverse les frontières.                                     |
-| `provideInjectMaxDepth` et `provideInjectReferenceCount`          | Des arbres DI profonds ou larges rendent la propriété plus difficile à inspecter localement.                      |
-| `reactiveNodeCount`, `reactiveEdgeCount` et `reactiveCycleCount`  | Les graphes réactifs capturent l’état au niveau des déclarations, les effets et les cycles propices aux pertes.    |
+| Signal                                                           | Pourquoi c’est important                                                                                                |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `templateCyclomatic` et `templateCognitive`                      | Les scores propres des templates, additionnés sur tous les composants.                                                  |
+| `templateMaxNesting`                                             | L’imbrication la plus profonde de branches, de boucles et de slots à portée dans un même template.                      |
+| `templateScopedSlotCount`                                        | Les slots à portée couplent les templates parent et enfant ; ils sont donc comptés à part des slots ordinaires.         |
+| `templateUnknown`                                                | Les expressions sans AST analysé (par exemple les handlers à plusieurs instructions). Elles n’ajoutent rien aux scores. |
+| `propDrillingEdgeCount`                                          | Les arêtes de props indiquent un flux de données qui traverse les frontières.                                           |
+| `provideInjectMaxDepth` et `provideInjectReferenceCount`         | Des arbres DI profonds ou larges rendent la propriété plus difficile à inspecter localement.                            |
+| `reactiveNodeCount`, `reactiveEdgeCount` et `reactiveCycleCount` | Les graphes réactifs capturent l’état au niveau des déclarations, les effets et les cycles propices aux pertes.         |
 
 ## Frontières des composants
 
@@ -76,16 +76,24 @@ le p95 du corpus réel de Vize, soit 40 724 templates. L’avertissement pointe 
 étiquette les cinq constructions qui ajoutent le plus de complexité.
 
 Comme les limites sont un p95, environ un composant réel sur vingt les dépasse. Aucun preset n’active
-la règle : l’activer est une décision propre au projet. Nommez-la sous `linter.rules` pour l’activer :
+la règle : l’activer est une décision propre au projet. Nommez-la sous `lint.vize.rules` pour l’activer :
 
 ```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
 export default defineConfig({
-  linter: {
-    rules: {
-      "vue/max-template-complexity": "warn",
+  lint: {
+    vize: {
+      rules: {
+        "vue/max-template-complexity": "warn",
+      },
     },
   },
 });
+```
+
+```sh
+vp run lint
 ```
 
 `vize doctor` signale un point chaud de complexité de template, sous forme de notice, lorsque la

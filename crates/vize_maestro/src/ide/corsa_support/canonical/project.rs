@@ -105,8 +105,8 @@ fn authored_uris_match(left: &Url, right: &Url) -> bool {
     }
     match (left.to_file_path(), right.to_file_path()) {
         (Ok(left), Ok(right)) => {
-            vize_l0::path::canonicalize_non_verbatim(&left)
-                == vize_l0::path::canonicalize_non_verbatim(&right)
+            vize_carton::path::canonicalize_non_verbatim(&left)
+                == vize_carton::path::canonicalize_non_verbatim(&right)
         }
         _ => false,
     }

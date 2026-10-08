@@ -18,6 +18,7 @@ import {
   hash,
   frozen,
   currentBytes,
+  currentOriginalRun,
   git,
   put,
   commit,
@@ -61,7 +62,7 @@ test("complete authenticated actual C6d/H339 metadata selects all original seven
   });
 });
 
-test("ordinary source retains complete inline eight-target script and original downstream flags", () => {
+test("ordinary source retains complete incoming nine-target script and original downstream flags", () => {
   fixture((f) => {
     f.event.pull_request.head.ref = "fix/current-native";
     f.event.pull_request.body = "";
@@ -76,10 +77,9 @@ test("ordinary source retains complete inline eight-target script and original d
         .split("\nelse\n")[1]
         .replace(/\nfi\n$/u, "\n")
         .replace(/^  /gmu, "");
-    assert.equal(
-      inline,
-      sourceRun.replace(" --config ", " --test check_tsconfig_types_extends_cli --config "),
-    );
+    assert.equal(inline, currentOriginalRun);
+    assert.equal([...inline.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 9);
+    assert.ok(inline.includes("--test lsp_bare_script_symbols_cli"));
     assert.ok(run.includes('bash --noprofile --norc -e -o pipefail "$recipe"'));
     assert.ok(run.includes("GITHUB_WORKFLOW_SHA"));
     assert.equal([...run.matchAll(/--test check_tsconfig_types_extends_cli/gu)].length, 1);

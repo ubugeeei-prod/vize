@@ -10,3 +10,9 @@ Each original before/after blob has its own SHA256. The custody control
 decompresses without rewriting any byte and reconstructs disposable Git commits
 with explicitly different identities. This verifies exact metadata and complete
 recipe selection; it grants no hosted compiler or release acceptance.
+
+`native-current-recipe-8231.sh` preserves the complete current step from signed
+actual main `b41811e3b33676f68a0843a693c9ed4898f2e86a`, including the nine declared
+CLI targets and every downstream command/flag. Its SHA256 is
+`397a7119bdeab7cecdb7e1f7c5ed62b8df1232005fcd3d538ac6f20bf761fb13`.
+The wrapper's ordinary branch must retain these full bytes.

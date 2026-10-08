@@ -28,7 +28,7 @@ fn collect_explicit_virtual_module_aliases_inner(
     aliases: &mut FxHashSet<String>,
     seen: &mut FxHashSet<PathBuf>,
 ) {
-    let resolved = vize_l0::path::canonicalize_non_verbatim(tsconfig_path);
+    let resolved = vize_carton::path::canonicalize_non_verbatim(tsconfig_path);
     if !seen.insert(resolved.clone()) {
         return;
     }

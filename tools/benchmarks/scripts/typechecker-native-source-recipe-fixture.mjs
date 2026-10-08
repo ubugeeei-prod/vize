@@ -22,6 +22,14 @@ export const currentBytes = readFileSync(
   new URL("../../../.github/workflows/typechecker-native-phases.yml", import.meta.url),
   "utf8",
 );
+export const currentOriginalRun = readFileSync(
+  new URL("../../../tests/_fixtures/tooling/native-current-recipe-8231.sh", import.meta.url),
+  "utf8",
+);
+assert.equal(
+  hash(currentOriginalRun),
+  "397a7119bdeab7cecdb7e1f7c5ed62b8df1232005fcd3d538ac6f20bf761fb13",
+);
 
 export function git(root, ...args) {
   const r = spawnSync("git", args, {

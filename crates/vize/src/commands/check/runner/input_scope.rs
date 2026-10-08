@@ -209,8 +209,8 @@ fn emit_empty_json(args: &CheckArgs) {
 }
 
 fn is_strict_ancestor(ancestor: &Path, path: &Path) -> bool {
-    let ancestor = vize_l0::path::canonicalize_non_verbatim(ancestor);
-    let path = vize_l0::path::canonicalize_non_verbatim(path);
+    let ancestor = vize_carton::path::canonicalize_non_verbatim(ancestor);
+    let path = vize_carton::path::canonicalize_non_verbatim(path);
     path != ancestor && path.starts_with(&ancestor)
 }
 

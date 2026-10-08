@@ -1,8 +1,8 @@
 # Immutable release source native recipes
 
 Decision for [#6830](https://github.com/ubugeeei-prod/vize/issues/6830): ordinary
-pull requests keep the current complete native step, including all eight
-declared CLI targets. An authenticated immutable release source uses the whole
+pull requests keep the current complete native step, including all nine
+declared CLI targets, including the actual incoming bare-script navigation control. An authenticated immutable release source uses the whole
 original step from its source commit, which must equal its genuine cut's
 workflow. There is no target discovery, command filtering or fallback after
 failed source authentication.

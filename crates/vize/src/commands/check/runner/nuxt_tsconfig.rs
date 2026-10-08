@@ -253,7 +253,7 @@ fn absolute_tsconfig_path(source_base_dir: &Path, target: &str) -> PathBuf {
     let target_path = if target_path.is_absolute() {
         target_path.to_path_buf()
     } else {
-        vize_l0::path::canonicalize_non_verbatim(source_base_dir).join(target_path)
+        vize_carton::path::canonicalize_non_verbatim(source_base_dir).join(target_path)
     };
     normalize_path_lexically(&target_path)
 }

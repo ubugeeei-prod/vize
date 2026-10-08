@@ -1,0 +1,27 @@
+{
+  "issues": [8010, 3952, 3957],
+  "historicalProducerH": "fd6241bf8ea5466794cc955138a59a9b75a8aac2",
+  "historicalBinarySha256": "b9c49d65db94909ca9d6d1c24c64c635a82a26d99a55097ec026a320efa5eb7f",
+  "historicalEvidence": "lsp-8010-in-root-native-authority-H/positive-project/result.json",
+  "currentRuntimeCredit": false,
+  "originalSources": [
+    {
+      "authoredPath": "src/plain.ts",
+      "fixture": "H/plain.ts.txt",
+      "sha256": "76d1d63a212f6d1dd90dcebc7b7e06f432c5d4e9f19f0f7f6fa2be65ce958879"
+    },
+    {
+      "authoredPath": "src/lib.dom.d.ts",
+      "fixture": "H/lib.dom.d.ts.txt",
+      "sha256": "482ef0c05cc06e4e84910734b9aa986c8902a59611c75664f890faf5d9df2279"
+    },
+    {
+      "authoredPath": "src/ordinary.d.ts",
+      "fixture": "H/ordinary.d.ts.txt",
+      "sha256": "24356e674a61b86f5296a552fc132fe7e95fcbee35a5c1b4e31a0f0a812a2051"
+    }
+  ],
+  "oracle": "crates/vize/tests/lsp_bare_script_symbols_cli.rs",
+  "acceptedContract": "Exact read-only definitions and whole references. Bare prepareRename and rename remain wholly null; original disks and runtime library stay unchanged. Enabled JSX/TSX reads and disabled gates remain distinct. Native TS2322 is proven by stock NativeGuard.ts and the admitted Vize NativeGuard.vue route.",
+  "historicalPositiveRename": "H/unsupported-rename.expected.json: complete independent expectations remain unsupported and are not acceptance goldens."
+}

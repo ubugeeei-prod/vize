@@ -117,8 +117,8 @@ fn same_authored_uri(left: &tower_lsp::lsp_types::Url, right: &tower_lsp::lsp_ty
     }
     match (left.to_file_path(), right.to_file_path()) {
         (Ok(left), Ok(right)) => {
-            vize_l0::path::canonicalize_non_verbatim(&left)
-                == vize_l0::path::canonicalize_non_verbatim(&right)
+            vize_carton::path::canonicalize_non_verbatim(&left)
+                == vize_carton::path::canonicalize_non_verbatim(&right)
         }
         _ => false,
     }

@@ -39,6 +39,8 @@ pub(crate) mod pug;
 pub mod references;
 pub mod rename;
 pub(crate) mod script_identifier;
+#[cfg(feature = "native")]
+mod script_symbols;
 pub mod selection_range;
 pub mod semantic_tokens;
 pub(crate) mod sfc_region;
@@ -79,6 +81,8 @@ pub use jsx::{
 };
 pub use references::ReferencesService;
 pub use rename::RenameService;
+#[cfg(feature = "native")]
+pub(crate) use script_symbols::ScriptSymbolsService;
 pub use selection_range::SelectionRangeService;
 pub use semantic_tokens::{SemanticTokensService, TokenModifier, TokenType};
 pub use signature_help::SignatureHelpService;

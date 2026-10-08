@@ -33,15 +33,15 @@ Vize 的跨文件复杂度报告是 Croquis 生成的项目图摘要。它本身
 
 原始输入还保留了分数背后的数字，包括：
 
-| 信号                                                             | 为什么重要                                                           |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------- |
-| `templateCyclomatic` 和 `templateCognitive`                      | 各组件自身模板分数的总和。                                           |
-| `templateMaxNesting`                                             | 单个模板内分支、循环和作用域插槽嵌套的最大深度。                     |
-| `templateScopedSlotCount`                                        | 作用域插槽耦合父子模板，因此与普通插槽分开计数。                     |
+| 信号                                                             | 为什么重要                                                          |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `templateCyclomatic` 和 `templateCognitive`                      | 各组件自身模板分数的总和。                                          |
+| `templateMaxNesting`                                             | 单个模板内分支、循环和作用域插槽嵌套的最大深度。                    |
+| `templateScopedSlotCount`                                        | 作用域插槽耦合父子模板，因此与普通插槽分开计数。                    |
 | `templateUnknown`                                                | 没有解析出 AST 的表达式（例如多语句处理函数）。它们不计入任何分数。 |
-| `propDrillingEdgeCount`                                          | props 边表示跨边界的数据流。                                         |
-| `provideInjectMaxDepth` 和 `provideInjectReferenceCount`         | 过深或过宽的依赖注入树会让所有权更难在本地检查。                     |
-| `reactiveNodeCount`、`reactiveEdgeCount` 和 `reactiveCycleCount` | 响应式图反映声明级别的状态、副作用以及容易丢失响应性的循环。         |
+| `propDrillingEdgeCount`                                          | props 边表示跨边界的数据流。                                        |
+| `provideInjectMaxDepth` 和 `provideInjectReferenceCount`         | 过深或过宽的依赖注入树会让所有权更难在本地检查。                    |
+| `reactiveNodeCount`、`reactiveEdgeCount` 和 `reactiveCycleCount` | 响应式图反映声明级别的状态、副作用以及容易丢失响应性的循环。        |
 
 ## 组件边界
 
@@ -67,16 +67,24 @@ Vize 的跨文件复杂度报告是 Croquis 生成的项目图摘要。它本身
 增加复杂度最多的五个结构。
 
 由于上限是 p95，大约每二十个真实组件中就有一个超出上限。因此没有任何预设启用这条规则，是否启用由
-项目决定。在 `linter.rules` 中写上规则名即可启用：
+项目决定。在 `lint.vize.rules` 中写上规则名即可启用：
 
 ```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
 export default defineConfig({
-  linter: {
-    rules: {
-      "vue/max-template-complexity": "warn",
+  lint: {
+    vize: {
+      rules: {
+        "vue/max-template-complexity": "warn",
+      },
     },
   },
 });
+```
+
+```sh
+vp run lint
 ```
 
 当组件的渲染复杂度超过语料库的 p95（圈复杂度 106 或认知复杂度 139）时，`vize doctor` 会以 notice

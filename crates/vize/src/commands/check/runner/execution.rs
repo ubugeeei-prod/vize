@@ -186,9 +186,9 @@ pub(super) fn execute_program(
     if let (Some(authored), Some(prepared)) =
         (input.tsconfig_path.as_ref(), checker_tsconfig.path())
     {
-        let prepared = vize_l0::path::canonicalize_non_verbatim(prepared);
+        let prepared = vize_carton::path::canonicalize_non_verbatim(prepared);
         for diagnostic in &mut result.diagnostics {
-            if vize_l0::path::canonicalize_non_verbatim(&diagnostic.file) == prepared {
+            if vize_carton::path::canonicalize_non_verbatim(&diagnostic.file) == prepared {
                 diagnostic.file = authored.clone();
             }
         }

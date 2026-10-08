@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 
 const sourceDependencies = [
   ["vize_l0", "davinci/vize_l0/"],
+  ["vize_carton", "crates/vize_carton/"],
   ["vize_patina", "crates/vize_patina/"],
 ] as const;
 
