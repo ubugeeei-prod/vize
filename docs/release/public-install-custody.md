@@ -10,14 +10,23 @@ The existing `vize-public-registry-install-v1` required fields, including
 `registry.provenanceSourceH` and `registry.provenanceR`, retain their literal
 meaning and spelling.
 
-This change grants no public installation, native execution, Corsa execution or
-release credit. The retired v0.436 candidate remains unpublished. The next
-v0.437 candidate remains held with C/H/R unassigned. The actual
-[#8284 guard](https://github.com/ubugeeei-prod/vize/pull/8284),
-and [#8290 BOM fix](https://github.com/ubugeeei-prod/vize/pull/8290) have merged,
-but demonstrated ELOOP cause resolution and the complete original corpus still
-must qualify before the release cut is assigned. The original
-public runners remain prospective.
+This producer grants no public installation, native execution, Corsa execution
+or release credit. The retired v0.436 candidate remains unpublished; v0.437
+C/H/R remain unassigned. The [reviewed next-cut policy](./2026-10-08-release-437-cut-hold.md)
+requires its own actual protected delivery before selecting C from genuine
+main. The complete-catalog guard #8284, BOM observer #8290 and original
+full-corpus/fatal lossless post-SSR diagnostics #8292 have actual signed
+protected delivery. The ready manifest/product heads #8293, #8298 and #8262
+must also have actual main delivery, preserving strict catalog equality.
+
+Historical ELOOP remains UNKNOWN and #7951 stays open, without production-repair
+credit. Proving the inaccessible original binary/outside-prefix cause is no
+longer a perpetual prerequisite to trying a fresh fully gated candidate.
+Current failures remain blockers. Every fresh exact-H source/native/build and
+five-workflow gate, protected integration/own-candidate catalog check, complete
+public channel and original installed replay remains mandatory. The original
+public runners are prospective until those actual publication identities and
+receipts exist.
 
 ## Boundaries
 
