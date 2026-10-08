@@ -61,7 +61,7 @@ pub(super) struct LineJoiner<'s> {
     /// runtime Vue text node.
     previous_end: Option<usize>,
     /// Last ordinary opening tag, borrowed from the existing tag parser.
-    opening: Option<(usize, usize)>,
+    opening: Option<(usize, usize, usize)>,
 }
 
 impl<'s> LineJoiner<'s> {
@@ -101,8 +101,8 @@ impl<'s> LineJoiner<'s> {
             // The source gap must contain only whitespace; text and directive
             // expression newlines must never become template layout.
             blank_line = self.source.get(start) == Some(&b'<')
-                && gap.iter().copied().all(is_whitespace)
-                && gap.iter().filter(|&&byte| byte == b'\n').take(2).count() == 2;
+                && gap.iter().filter(|&&byte| byte == b'\n').take(2).count() == 2
+                && gap.iter().copied().all(is_whitespace);
         }
         if self.current.is_none() || self.current != previous {
             return if blank_line {
@@ -121,8 +121,8 @@ impl<'s> LineJoiner<'s> {
         )
     }
 
-    pub(super) fn opened_element(&mut self, start: usize, end: usize) {
-        self.opening = Some((start, end));
+    pub(super) fn opened_element(&mut self, start: usize, end: usize, name_len: usize) {
+        self.opening = Some((start, end, name_len));
     }
 
     pub(super) fn locks_current_line(&self) -> bool {

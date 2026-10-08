@@ -8,6 +8,7 @@ import { FORMATTER_ARGV, loadFormatterManifest, sha256 } from "./manifest.mjs";
 import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.mjs";
 import { runPlannedCases, validateResultEnvelope } from "./harness.mjs";
 import { expressionWidthReference } from "./formatter-expression-width-reference.mjs";
+import { soleChildWidthCliReference } from "./formatter-sole-child-width-reference.mjs";
 
 export function assertProcessSucceeded(result) {
   if (result.error) throw result.error;
@@ -265,6 +266,7 @@ export function runFormatterPack({ manifestPath, binaryPath, sourceRevision, rep
     loaded.cases = loaded.cases.map((fixture) => ({
       ...fixture,
       ...expressionWidthReference(repoRoot, fixture),
+      ...soleChildWidthCliReference(repoRoot, fixture),
     }));
     report.binary = {
       path: build.binaryPath,

@@ -11,7 +11,7 @@ fn configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point()
     let cases = [
         (
             include_str!("../../../tests/_fixtures/differential/formatter/sfc-vue2-filter-chain-crlf/App.vue.txt"),
-            include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue2-filter-chain-crlf/sole-child-width.current.expected.txt").as_slice(),
+            include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue2-filter-chain-crlf/reference.expected.txt").as_slice(),
             VueVersion::V2,
             EndOfLine::Crlf,
         ),
@@ -23,7 +23,7 @@ fn configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point()
         ),
         (
             include_str!("../../../tests/_fixtures/differential/formatter/sfc-vue3-bitwise-or/App.vue.txt"),
-            include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue3-bitwise-or/sole-child-width.current.expected.txt").as_slice(),
+            include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue3-bitwise-or/reference.expected.txt").as_slice(),
             VueVersion::V3,
             EndOfLine::Lf,
         ),

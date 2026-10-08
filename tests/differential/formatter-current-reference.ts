@@ -9,6 +9,7 @@ import { declarationCurrentReference } from "./formatter-declaration-reference.t
 import { huggedInterpolationCurrentReference } from "./formatter-hugged-interpolation-reference.ts";
 import { rootCommentCurrentReference } from "./formatter-root-comment-reference.ts";
 import { jsonLayoutCurrentReference } from "./formatter-json-layout-reference.ts";
+import { soleChildWidthApiReference } from "./formatter-sole-child-width-reference.mjs";
 
 const ID = "capture/style-block-keeps-box-values-and-implicit-nested-selectors/sfc/0";
 const AUTHORITY = "tests/_fixtures/differential/formatter-history/current-references-7826.json";
@@ -20,6 +21,8 @@ export function currentFormatterReference(
   input: Buffer,
   historical: Buffer,
 ) {
+  const child = soleChildWidthApiReference(root, fixture, input, historical);
+  if (Object.hasOwn(child, "currentReference")) return child;
   const json = jsonLayoutCurrentReference(root, fixture, input, historical);
   if (Object.hasOwn(json, "currentReference")) return json;
   if (fixture.id !== ID) {

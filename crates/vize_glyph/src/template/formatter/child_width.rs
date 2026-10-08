@@ -1,24 +1,19 @@
 //! Width of sole interpolation children hugged to their parent tags.
 use super::{TemplateFormatter, parse_interpolation_range, suppression::LineJoiner};
-use crate::template::helpers::{is_tag_name_char, is_whitespace};
+use crate::template::helpers::is_whitespace;
 use unicode_width::UnicodeWidthStr;
 
 pub(super) fn hugged_closing_name(
-    (source, opening, previous_end): (&[u8], Option<(usize, usize)>, Option<usize>),
+    (source, opening, previous_end): (&[u8], Option<(usize, usize, usize)>, Option<usize>),
     start: usize,
     end: usize,
 ) -> Option<&[u8]> {
-    let (tag_start, tag_end) = opening?;
+    let (tag_start, tag_end, name_len) = opening?;
     if tag_end != start || previous_end != Some(start) {
         return None;
     }
-    let opening = source.get(tag_start + 1..tag_end)?;
-    let name_len = opening
-        .iter()
-        .copied()
-        .take_while(|&b| is_tag_name_char(b))
-        .count();
-    let name = opening.get(..name_len)?;
+    // The successful tag parser already classified this unchanged source name.
+    let name = source.get(tag_start + 1..tag_start + 1 + name_len)?;
     let closing = source.get(end..)?;
     (closing.starts_with(b"</")
         && closing.get(2..2 + name_len) == Some(name)
