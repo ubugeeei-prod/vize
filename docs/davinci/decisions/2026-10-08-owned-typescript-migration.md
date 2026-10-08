@@ -22,19 +22,19 @@ The immutable inventory source is actual `main`
 The count includes fixture programs and compatibility witnesses; it is not an
 assertion that every path can change without reviewing its byte ownership.
 
-| Area | Tracked paths | Required ownership review |
-| --- | ---: | --- |
-| Actions bootstrap | 2 | Host Node availability before JavaScript setup |
-| Docs scripts and previews | 58 | Docs and Open Graph Stack owns its independent migration |
-| Editor host tooling | 12 | Packaged host, fixture and public runtime boundaries |
-| Package and example helpers | 30 | Node 22 public floor, emitted artifact interfaces |
-| Differential drivers | 22 | Every original corpus input and packet remains immutable |
-| Tooling tests and support | 250 | Same discovered tests, assertions and full outputs |
-| Benchmark producers | 111 | Exact runner, sampling, iterations and budgets |
-| Compatibility support | 269 | Import, Rust launcher and workflow consumer graph |
-| Owned command helper | 1 | Rust launcher and strict runtime contract |
-| Crate oracle wrapper | 1 | Original Babel package/version and whole result contract |
-| Fixture programs | 9 | Original user-world bytes and executable identities |
+| Area                        | Tracked paths | Required ownership review                                |
+| --------------------------- | ------------: | -------------------------------------------------------- |
+| Actions bootstrap           |             2 | Host Node availability before JavaScript setup           |
+| Docs scripts and previews   |            58 | Docs and Open Graph Stack owns its independent migration |
+| Editor host tooling         |            12 | Packaged host, fixture and public runtime boundaries     |
+| Package and example helpers |            30 | Node 22 public floor, emitted artifact interfaces        |
+| Differential drivers        |            22 | Every original corpus input and packet remains immutable |
+| Tooling tests and support   |           250 | Same discovered tests, assertions and full outputs       |
+| Benchmark producers         |           111 | Exact runner, sampling, iterations and budgets           |
+| Compatibility support       |           269 | Import, Rust launcher and workflow consumer graph        |
+| Owned command helper        |             1 | Rust launcher and strict runtime contract                |
+| Crate oracle wrapper        |             1 | Original Babel package/version and whole result contract |
+| Fixture programs            |             9 | Original user-world bytes and executable identities      |
 
 Inventory execution excludes `.git`, dependencies and local artifacts, while
 using Git's tracked path authority so hidden `.github` files cannot disappear.
