@@ -4,7 +4,9 @@ use crate::template::helpers::is_whitespace;
 use unicode_width::UnicodeWidthStr;
 
 pub(super) fn hugged_closing_name(
-    (source, opening, previous_end): (&[u8], Option<(usize, usize, usize)>, Option<usize>),
+    source: &[u8],
+    opening: Option<(usize, usize, usize)>,
+    previous_end: Option<usize>,
     start: usize,
     end: usize,
 ) -> Option<&[u8]> {

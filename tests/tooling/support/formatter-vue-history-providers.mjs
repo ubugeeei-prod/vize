@@ -65,17 +65,41 @@ export async function createVueHistoryProviders(repositoryRoot) {
   const vueRequire = createRequire(uiRequire.resolve("vue"));
   const rendererRequire = createRequire(uiRequire.resolve("vue/server-renderer"));
   const providers = {
-    vue26: [testsRequire, "vue-sfc-compiler-2-6/build.js", "vue-sfc-compiler-2-6"],
-    vue27: [testsRequire, "vue-sfc-compiler-2-7/dist/compiler-sfc.js", "vue-sfc-compiler-2-7"],
-    vue: [vueRequire, "vue", "vue"],
-    compilerDom: [vueRequire, "@vue/compiler-dom", "@vue/compiler-dom"],
-    compilerSfc: [vueRequire, "vue/compiler-sfc", "@vue/compiler-sfc"],
-    compilerSsr: [rendererRequire, "@vue/compiler-ssr", "@vue/compiler-ssr"],
-    renderer: [vueRequire, "vue/server-renderer", "@vue/server-renderer"],
-    happyDom: [uiRequire, "happy-dom", "happy-dom"],
+    vue26: {
+      require: testsRequire,
+      specifier: "vue-sfc-compiler-2-6/build.js",
+      packageName: "vue-sfc-compiler-2-6",
+    },
+    vue27: {
+      require: testsRequire,
+      specifier: "vue-sfc-compiler-2-7/dist/compiler-sfc.js",
+      packageName: "vue-sfc-compiler-2-7",
+    },
+    vue: { require: vueRequire, specifier: "vue", packageName: "vue" },
+    compilerDom: {
+      require: vueRequire,
+      specifier: "@vue/compiler-dom",
+      packageName: "@vue/compiler-dom",
+    },
+    compilerSfc: {
+      require: vueRequire,
+      specifier: "vue/compiler-sfc",
+      packageName: "@vue/compiler-sfc",
+    },
+    compilerSsr: {
+      require: rendererRequire,
+      specifier: "@vue/compiler-ssr",
+      packageName: "@vue/compiler-ssr",
+    },
+    renderer: {
+      require: vueRequire,
+      specifier: "vue/server-renderer",
+      packageName: "@vue/server-renderer",
+    },
+    happyDom: { require: uiRequire, specifier: "happy-dom", packageName: "happy-dom" },
   };
   const identities = {};
-  for (const [id, [require, specifier, packageName]] of Object.entries(providers)) {
+  for (const [id, { require, specifier, packageName }] of Object.entries(providers)) {
     const entry = require.resolve(specifier),
       manifest = require.resolve(`${packageName}/package.json`);
     const manifestBytes = fs.readFileSync(manifest),

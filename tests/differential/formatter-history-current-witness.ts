@@ -123,7 +123,7 @@ const OWNERS: Record<
   // #7876 shares a read-only matched-close query; the original placement law is unchanged.
   "crates/vize_glyph/src/template/formatter/suppression.rs": {
     originalSha256: "94b99ca1dcf0833d5706b73f95e41c9cdf280160e1dccdb751340ad86607b675",
-    actualMainSha256: "c3f8bdd2733233709264a5dcea3e281c5d3d28ea54f7c02557fb908227351e28",
+    actualMainSha256: "df1db7ef1b3a4ac0f854e3228a2b2895e3bb45e3768118f79e2e1b9d9aecdcfd",
     functions: {
       ranges_track_pragma_placement:
         "8120d76a61ca7b815e73c633c93431ba5399f1227d8274a699d09c7d2a5a5400",

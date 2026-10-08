@@ -130,8 +130,13 @@ impl<'s> LineJoiner<'s> {
     }
 
     pub(super) fn hugged_closing_name(&self, start: usize, end: usize) -> Option<&[u8]> {
-        let context = (self.source, self.opening, self.previous_end);
-        super::child_width::hugged_closing_name(context, start, end)
+        super::child_width::hugged_closing_name(
+            self.source,
+            self.opening,
+            self.previous_end,
+            start,
+            end,
+        )
     }
 
     /// A sole interpolation touching both parent tags shares their layout depth.

@@ -131,3 +131,22 @@ streams/files/configs, and stock observation of every actual result. Local
 reference observations grant no source CLI, native adapter, hosted, queue or
 installed-release credit. Fresh exact-head whole source and all104 gates
 remain required; both prior red instruction measurements stay retained.
+
+Exact `5f800e72e7b28f872e120378270411209cc4e3b8` passes all 104 unchanged
+ceilings in [37736385751](https://github.com/ubugeeei-prod/vize/actions/runs/37736385751):
+script 927636, simple 287657, reuse 268792 and complex 243794 against 244347,
+identical in three runs with original fixture hashes. Its full source gate
+rejects the new nested Rust context type and the stock-provider tuple's
+ambiguous inferred package name. Flatten named Rust parameters and use named
+provider records without changing execution, relaxing lint or suppressing
+warnings. Reprove the retained placement law before updating only its
+complete current owner pin. The successor requires fresh exact-head source
+and all 104 measurements; this earlier green is not transferred.
+
+The pure current-reference counter still expected twelve entries and exposed
+the two new finite registrations. Keep all original 300 cases and the twelve
+previous registrations; require exactly the two sealed Vue IDs in addition.
+Fresh Vue14 source accounting is twelve historical byte matches plus two
+current matches, each retaining its historical Difference and three complete
+actual passes. The immutable historical286 replay counts, all manifests,
+requirements and native zero-credit totals remain unchanged.
