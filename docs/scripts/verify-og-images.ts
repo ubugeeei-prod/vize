@@ -1,0 +1,294 @@
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
+import path from "node:path";
+import { parseArgs } from "node:util";
+import { chromium } from "playwright";
+import { DEFAULT_MARKDOWN_EXTENSIONS } from "@ox-content/vite-plugin";
+import { resolvePuppeteerExecutablePath } from "../browser-path.js";
+import { CATALOGUE_SOURCES } from "./materialize-content.ts";
+import { docsSiteUrl, ogHeight, ogWidth, pageRoute, isPageMetadata } from "../theme/open-graph.ts";
+import { verifyImageIdentity, verifyImageIdentityControls } from "./og-image-identity.ts";
+import type { RenderedPageMetadata } from "./og-image-identity.ts";
+
+type CheckedPage = Pick<
+  RenderedPageMetadata,
+  "route" | "title" | "descriptionOrigin" | "image" | "imageSha256"
+> & {
+  language: string;
+  width: number;
+  height: number;
+};
+type OgManifest = {
+  version: number;
+  width: number;
+  height: number;
+  assetFingerprint: string;
+  sourceSha: string;
+  pages: RenderedPageMetadata[];
+};
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function isRenderedPageMetadata(value: unknown): value is RenderedPageMetadata {
+  return (
+    isPageMetadata(value) &&
+    "imageSha256" in value &&
+    typeof value.imageSha256 === "string" &&
+    /^[0-9a-f]{64}$/u.test(value.imageSha256)
+  );
+}
+function assertManifest(value: unknown): asserts value is OgManifest {
+  assert(isRecord(value), "OG manifest must be an object");
+  assert.equal(value.version, 1, "OG manifest version");
+  assert.equal(typeof value.width, "number");
+  assert.equal(typeof value.height, "number");
+  assert.equal(typeof value.assetFingerprint, "string");
+  assert.equal(typeof value.sourceSha, "string");
+  assert(
+    Array.isArray(value.pages) && value.pages.every(isRenderedPageMetadata),
+    "Complete typed page metadata",
+  );
+}
+
+const { values } = parseArgs({
+  options: {
+    dir: { type: "string", default: "docs/dist" },
+    output: { type: "string", default: "docs-render-evidence/og-images" },
+    site: { type: "string" },
+    "expected-sha": { type: "string" },
+  },
+});
+const dist = path.resolve(values.dir);
+const output = path.resolve(values.output);
+const docsRoot = path.resolve(import.meta.dirname, "..");
+if (values.site)
+  assert(values["expected-sha"], "Live verification requires the expected deployed source SHA");
+const expectedSha =
+  values["expected-sha"] ??
+  process.env.GITHUB_SHA ??
+  spawnSync("git", ["rev-parse", "HEAD"], { cwd: docsRoot, encoding: "utf8" }).stdout.trim();
+async function readAsset(relative: string, text: true): Promise<string>;
+async function readAsset(relative: string, text?: false): Promise<Buffer>;
+async function readAsset(relative: string, text = false): Promise<string | Buffer> {
+  if (!values.site) return readFile(path.join(dist, relative), text ? "utf8" : undefined);
+  const response = await fetch(new URL(relative, values.site));
+  assert.equal(response.status, 200, relative);
+  assert.match(
+    response.headers.get("content-type") ?? "",
+    text ? /(?:text\/html|application\/json)/u : /image\/png/u,
+    relative,
+  );
+  return text ? response.text() : Buffer.from(await response.arrayBuffer());
+}
+const manifest: unknown = JSON.parse(await readAsset("_og/manifest.json", true));
+assertManifest(manifest);
+assert.equal(manifest.width, ogWidth);
+assert.equal(manifest.height, ogHeight);
+assert.match(manifest.assetFingerprint, /^[0-9a-f]{64}$/u, "Actual template fingerprint");
+assert.match(manifest.sourceSha, /^[0-9a-f]{40}$/u, "Manifest must identify its actual source");
+assert.equal(
+  manifest.sourceSha,
+  expectedSha,
+  "OG manifest differs from the expected source revision",
+);
+const contentDir = path.join(docsRoot, "content");
+const expectedRoutes = (await readdir(contentDir, { recursive: true, withFileTypes: true }))
+  .filter(
+    (file) =>
+      file.isFile() &&
+      DEFAULT_MARKDOWN_EXTENSIONS.some((extension) => extension === path.extname(file.name)),
+  )
+  .map((file) =>
+    path.relative(contentDir, path.join(file.parentPath, file.name)).replaceAll("\\", "/"),
+  )
+  .filter((file) => !CATALOGUE_SOURCES.includes(file))
+  .map(pageRoute)
+  .sort();
+assert.deepEqual(
+  manifest.pages.map((page) => page.route).sort(),
+  expectedRoutes,
+  "OG routes must cover the independent authored/generated source tree",
+);
+assert(manifest.pages.length > 0, "Empty OG manifest");
+assert.equal(
+  new Set(manifest.pages.map((page) => page.route)).size,
+  manifest.pages.length,
+  "Duplicate routes",
+);
+assert.equal(
+  new Set(manifest.pages.map((page) => page.image)).size,
+  manifest.pages.length,
+  "Duplicate image identities",
+);
+const representativeRoutes = new Set([
+  "/",
+  "/ja/",
+  "/zh-CN/",
+  "/guide/cli/",
+  "/getting-started/",
+  "/ja/getting-started/",
+  "/rules/all/",
+  "/ja/rules/all/",
+  "/rules/reference/vue-component-name-in-template-casing/",
+  "/ja/rules/reference/vue-component-name-in-template-casing/",
+]);
+const longestTitle = [...manifest.pages].sort(
+  (a, b) => b.props.title.length - a.props.title.length,
+)[0];
+representativeRoutes.add(longestTitle.route);
+await mkdir(output, { recursive: true });
+const browser = await chromium.launch({
+  executablePath: resolvePuppeteerExecutablePath(),
+  headless: true,
+});
+const checked: CheckedPage[] = [];
+const representativeHashes = new Map<string, string>();
+let identityControls: { route: string; foreignRoute: string; rejected: string[] } | undefined;
+try {
+  const parser = await browser.newPage();
+  for (const entry of manifest.pages) {
+    const html = await readAsset(`${entry.route.slice(1)}index.html`, true);
+    const imagePath = new URL(entry.image).pathname.slice(1);
+    assert.equal(new URL(entry.image).origin, docsSiteUrl, entry.route);
+    const png = await readAsset(imagePath);
+    const actual = await parser.evaluate(
+      async ({ html, image }) => {
+        const document = new DOMParser().parseFromString(html, "text/html");
+        const tags = [...document.head.querySelectorAll("meta[property], meta[name]")].map(
+          (tag) => ({
+            key: tag.getAttribute("property") || tag.getAttribute("name"),
+            attribute: tag.hasAttribute("property") ? "property" : "name",
+            content: tag.getAttribute("content"),
+          }),
+        );
+        const bitmap = await createImageBitmap(
+          await (await fetch(`data:image/png;base64,${image}`)).blob(),
+        );
+        const size = { width: bitmap.width, height: bitmap.height };
+        bitmap.close();
+        return {
+          title: document.title.replace(/\s+/gu, " ").trim(),
+          language: document.documentElement.lang,
+          tags,
+          size,
+        };
+      },
+      { html, image: png.toString("base64") },
+    );
+    verifyImageIdentity(entry, actual, png, manifest.assetFingerprint);
+    if (!identityControls) {
+      const foreign = manifest.pages.find((page) => page.imageSha256 !== entry.imageSha256);
+      assert(foreign, "Identity controls require a distinct actually generated page PNG");
+      const otherPng = await readAsset(new URL(foreign.image).pathname.slice(1));
+      identityControls = {
+        route: entry.route,
+        foreignRoute: foreign.route,
+        rejected: verifyImageIdentityControls(
+          entry,
+          actual,
+          png,
+          otherPng,
+          manifest.assetFingerprint,
+        ),
+      };
+    }
+    assert.deepEqual(actual.size, { width: ogWidth, height: ogHeight }, entry.route);
+    const expected = {
+      "og:title": entry.title,
+      "og:description": entry.description,
+      "og:url": entry.url,
+      "og:locale": entry.locale,
+      "og:site_name": "Vize",
+      "og:type": entry.type,
+      "og:image": entry.image,
+      "og:image:type": "image/png",
+      "og:image:width": String(ogWidth),
+      "og:image:height": String(ogHeight),
+      "og:image:alt": `${entry.props.title} · ${entry.props.category} · Vize`,
+      description: entry.description,
+      "twitter:card": "summary_large_image",
+      "twitter:title": entry.title,
+      "twitter:description": entry.description,
+      "twitter:image": entry.image,
+      "twitter:image:alt": `${entry.props.title} · ${entry.props.category} · Vize`,
+    };
+    for (const [key, content] of Object.entries(expected)) {
+      const tags = actual.tags.filter((tag) => tag.key === key);
+      assert.equal(tags.length, 1, `${entry.route}: ${key} count`);
+      assert.equal(
+        tags[0].attribute,
+        key.startsWith("og:") ? "property" : "name",
+        `${entry.route}: ${key} attribute`,
+      );
+      assert.equal(tags[0].content, content, `${entry.route}: ${key}`);
+      assert(content, `${entry.route}: empty ${key}`);
+    }
+    if (representativeRoutes.has(entry.route)) {
+      representativeHashes.set(entry.route, createHash("sha256").update(png).digest("hex"));
+      await writeFile(
+        path.join(output, `${entry.props.locale}-${entry.route.replaceAll("/", "_")}.png`),
+        png,
+      );
+    }
+    checked.push({
+      route: entry.route,
+      title: entry.title,
+      descriptionOrigin: entry.descriptionOrigin,
+      language: actual.language,
+      image: entry.image,
+      imageSha256: entry.imageSha256,
+      ...actual.size,
+    });
+  }
+} finally {
+  await browser.close();
+}
+for (const route of representativeRoutes)
+  assert(
+    checked.some((entry) => entry.route === route),
+    `Missing representative ${route}`,
+  );
+// These authored titles intentionally differ from the first visible heading.
+// Check the independent literal contract, rather than certifying the manifest.
+for (const [route, title] of [
+  ["/guide/cli/", "CLI"],
+  ["/zh-CN/", "维泽"],
+]) {
+  assert.equal(manifest.pages.find((entry) => entry.route === route)?.props.title, title, route);
+}
+assert.equal(
+  new Set(representativeHashes.values()).size,
+  representativeHashes.size,
+  "Representative pages must render distinct image bytes; a reused homepage image is invalid",
+);
+for (const route of ["/getting-started/", "/ja/getting-started/"]) {
+  const guide: CheckedPage | undefined = checked.find((page) => page.route === route);
+  assert(guide, `Missing authored guide ${route}`);
+  assert.equal(guide.descriptionOrigin, "authored", route);
+}
+for (const route of [
+  "/rules/reference/vue-component-name-in-template-casing/",
+  "/ja/rules/reference/vue-component-name-in-template-casing/",
+]) {
+  const rule: CheckedPage | undefined = checked.find((page) => page.route === route);
+  assert(rule, `Missing content rule ${route}`);
+  assert.equal(rule.descriptionOrigin, "content", route);
+}
+if (values.site) {
+  const after: unknown = JSON.parse(await readAsset("_og/manifest.json", true));
+  assertManifest(after);
+  assert.equal(
+    after.sourceSha,
+    expectedSha,
+    "Public deployment changed during whole-site verification",
+  );
+}
+await writeFile(
+  path.join(output, "metadata.json"),
+  `${JSON.stringify({ source: values.site ?? dist, sourceSha: manifest.sourceSha, assetFingerprint: manifest.assetFingerprint, identityControls, checked }, null, 2)}\n`,
+);
+console.log(
+  `Verified ${checked.length} actual page metadata frames and decoded 1200×630 PNGs; retained ${representativeRoutes.size} representative images`,
+);

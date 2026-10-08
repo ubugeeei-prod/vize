@@ -23,6 +23,7 @@
     "docs/scripts/rules/**/*.ts",
     "docs/scripts/generate-patina-rules-page.ts",
     "docs/scripts/materialize-content.ts",
-    "docs/scripts/i18n/*.ts"
+    "docs/scripts/i18n/*.ts",
+    "docs/theme/open-graph.ts"
   ]
 }
