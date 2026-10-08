@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const INPUT = new URL("../../data/css/fixtures/web-custom-data.json", import.meta.url);
+const INPUT = new URL("../../data/css/fixtures/web-custom-data.json.txt", import.meta.url);
 const COLORS = new URL("../../data/css/named-colors.json", import.meta.url);
 const OUTPUT = new URL("../../../crates/vize_maestro/src/ide/style/data/", import.meta.url);
 const SNAPSHOT_SHA = "7f228ab474664fe2a565fd88a2835fb6dda57a31da03aead96b14b965a5e205f";

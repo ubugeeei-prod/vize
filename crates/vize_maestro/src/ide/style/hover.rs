@@ -14,7 +14,7 @@ pub(crate) fn hover(ctx: &IdeContext<'_>, index: usize) -> Option<Hover> {
     let offset = ctx.offset - base;
     // Retain the old Vue feature range behavior while avoiding a word allocation.
     if let Some((start, end)) = crate::ide::token_span_at_offset(content, offset, |ch| {
-        ch.is_ascii_alphanumeric() || matches!(ch, '_' | '-' | '$' | ':')
+        ch.is_ascii_alphanumeric() || matches!(ch, b'_' | b'-' | b'$' | b':')
     }) && let Some(feature) = vue::feature(content.get(start..end)?)
     {
         return Some(Hover {

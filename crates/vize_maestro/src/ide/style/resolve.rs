@@ -1,10 +1,9 @@
 //! Immutable catalog identities resolve independently of document/typechecker state.
 
 #[cfg(feature = "native")]
-use super::{data, values, vue};
+use super::{data, documentation, values, vue};
 use super::{
     data::{CssEntry, CssValue},
-    documentation,
     values::StandardValue,
     vue::VueFeature,
 };

@@ -98,7 +98,7 @@ pub(super) fn color(name: &str) -> Option<&'static CssValue> {
     colors()
         .binary_search_by(|value| ascii_compare(value.name, name))
         .ok()
-        .map(|index| &colors()[index])
+        .and_then(|index| colors().get(index))
 }
 
 /// Binary search keeps ASCII case-insensitive CSS lookup allocation-free.
@@ -106,7 +106,7 @@ fn lookup(entries: &'static [&'static CssEntry], name: &str) -> Option<&'static 
     entries
         .binary_search_by(|entry| ascii_compare(entry.name, name))
         .ok()
-        .map(|index| entries[index])
+        .and_then(|index| entries.get(index).copied())
 }
 
 fn ascii_compare(left: &str, right: &str) -> Ordering {

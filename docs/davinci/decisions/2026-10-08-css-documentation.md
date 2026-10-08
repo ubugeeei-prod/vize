@@ -43,7 +43,9 @@ the frozen input and produce 110/88 effective pseudo entries respectively.
 The separate pinned named-color source retains 148 named hex colors plus
 `currentColor` and `transparent`. Five CSS-wide keywords and `var()`/`calc()`
 use the linked W3C specifications. Generation and verification are offline
-development operations.
+development operations. The immutable `web-custom-data.json.txt` fixture keeps
+the original source JSON bytes; normal repository formatting applies to
+handwritten generators and manifests, with no new formatting exclusion.
 
 ## Request cost
 

@@ -298,7 +298,7 @@ fn every_utf8_boundary_produces_valid_borrowed_spans() {
             assert!(start <= offset && offset <= end && end <= source.len());
             assert_eq!(source.get(start..offset), Some(prefix));
             assert!(source.get(start..end).is_some());
-            assert_eq!(prefix.as_ptr(), source[start..].as_ptr());
+            assert_eq!(Some(prefix.as_ptr()), source.get(start..).map(str::as_ptr));
         }
     }
 }

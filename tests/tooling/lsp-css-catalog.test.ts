@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { generate } from "../../tools/commands/fixtures/generate-css-catalog.ts";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url));
-const SOURCE = new URL("../../tools/data/css/fixtures/web-custom-data.json", import.meta.url);
+const SOURCE = new URL("../../tools/data/css/fixtures/web-custom-data.json.txt", import.meta.url);
 const COLORS = new URL("../../tools/data/css/named-colors.json", import.meta.url);
 const PIN = new URL("../../tools/data/css/source.json", import.meta.url);
 const FAMILIES = [

@@ -7,7 +7,7 @@
   "upstream_blob": "6363c511b09a58747a5f31829d74dd772f840f0d",
   "upstream_bytes": 1035084,
   "upstream_sha256": "b1f6d6250bfd86d640abda79046fedcb94123f127d47398b6ad5ca8b68c4464b",
-  "snapshot": "fixtures/web-custom-data.json",
+  "snapshot": "fixtures/web-custom-data.json.txt",
   "snapshot_bytes": 1034584,
   "snapshot_sha256": "7f228ab474664fe2a565fd88a2835fb6dda57a31da03aead96b14b965a5e205f",
   "snapshot_transform": "Exact JSON object literal bytes plus final newline; only TypeScript header/import/export wrapper removed. Source arrays and all metadata remain whole.",

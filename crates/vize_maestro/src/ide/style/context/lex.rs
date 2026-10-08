@@ -11,7 +11,7 @@ pub(super) fn is_name(byte: u8) -> bool {
 pub(super) fn url_end(bytes: &[u8], mut i: usize, limit: usize) -> Option<usize> {
     let mut quote = None;
     while i < limit {
-        match bytes[i] {
+        match *bytes.get(i)? {
             b'\\' => i += 2,
             byte if quote == Some(byte) => {
                 quote = None;
@@ -30,12 +30,12 @@ pub(super) fn url_end(bytes: &[u8], mut i: usize, limit: usize) -> Option<usize>
 
 pub(super) fn token_span(bytes: &[u8], offset: usize) -> Option<(usize, usize)> {
     let mut start = offset;
-    while start > 0 && is_name(bytes[start - 1]) {
+    while start > 0 && bytes.get(start - 1).is_some_and(|&b| is_name(b)) {
         start -= 1;
     }
     let mut end = offset;
     let limit = offset.saturating_add(MAX_LOOKAHEAD).min(bytes.len());
-    while end < limit && is_name(bytes[end]) {
+    while end < limit && bytes.get(end).is_some_and(|&b| is_name(b)) {
         end += 1;
     }
     if bytes.get(end).is_some_and(|&b| is_name(b) || !b.is_ascii()) {
@@ -46,7 +46,7 @@ pub(super) fn token_span(bytes: &[u8], offset: usize) -> Option<(usize, usize)> 
 
 pub(super) fn comment_end(bytes: &[u8], mut i: usize, limit: usize) -> Option<usize> {
     while i + 1 < limit {
-        if bytes[i] == b'*' && bytes[i + 1] == b'/' {
+        if bytes.get(i) == Some(&b'*') && bytes.get(i + 1) == Some(&b'/') {
             return Some(i + 2);
         }
         i += 1;
@@ -56,13 +56,13 @@ pub(super) fn comment_end(bytes: &[u8], mut i: usize, limit: usize) -> Option<us
 
 pub(super) fn trivia_end(bytes: &[u8], mut i: usize, limit: usize) -> Option<usize> {
     while i < limit {
-        if bytes[i].is_ascii_whitespace() {
+        if bytes.get(i)?.is_ascii_whitespace() {
             i += 1;
-        } else if bytes[i] == b'/' && bytes.get(i + 1) == Some(&b'*') {
+        } else if bytes.get(i) == Some(&b'/') && bytes.get(i + 1) == Some(&b'*') {
             i = comment_end(bytes, i + 2, limit)?;
-        } else if bytes[i] == b'/' && bytes.get(i + 1) == Some(&b'/') {
+        } else if bytes.get(i) == Some(&b'/') && bytes.get(i + 1) == Some(&b'/') {
             i += 2;
-            while i < limit && bytes[i] != b'\n' {
+            while i < limit && bytes.get(i) != Some(&b'\n') {
                 i += 1;
             }
             if i >= limit {
@@ -72,7 +72,7 @@ pub(super) fn trivia_end(bytes: &[u8], mut i: usize, limit: usize) -> Option<usi
             break;
         }
     }
-    if i == limit && limit < bytes.len() && bytes[i].is_ascii_whitespace() {
+    if i == limit && limit < bytes.len() && bytes.get(i)?.is_ascii_whitespace() {
         return None;
     }
     Some(i)
@@ -84,15 +84,17 @@ pub(super) fn property_name(head: &str) -> Option<&str> {
     if !bytes
         .get(start)
         .is_some_and(|b| b.is_ascii_alphabetic() || *b == b'-')
-        || bytes[start..].starts_with(b"--")
+        || bytes.get(start..)?.starts_with(b"--")
     {
         return None;
     }
     let mut end = start;
-    while end < bytes.len() && is_name(bytes[end]) {
+    while end < bytes.len() && bytes.get(end).is_some_and(|&b| is_name(b)) {
         end += 1;
     }
-    (trivia_end(bytes, end, bytes.len())? == bytes.len()).then_some(&head[start..end])
+    (trivia_end(bytes, end, bytes.len())? == bytes.len())
+        .then(|| head.get(start..end))
+        .flatten()
 }
 
 pub(super) fn declaration_block(head: &str) -> bool {
@@ -104,12 +106,15 @@ pub(super) fn declaration_block(head: &str) -> bool {
         return !head.ends_with('#');
     }
     let mut end = start + 1;
-    while end < bytes.len() && is_name(bytes[end]) {
+    while end < bytes.len() && bytes.get(end).is_some_and(|&b| is_name(b)) {
         end += 1;
     }
     ["font-face", "page", "property", "counter-style"]
         .iter()
-        .any(|name| head[start + 1..end].eq_ignore_ascii_case(name))
+        .any(|name| {
+            head.get(start + 1..end)
+                .is_some_and(|header| header.eq_ignore_ascii_case(name))
+        })
 }
 
 /// A completed nested selector is distinguishable from `property: value`.
@@ -117,7 +122,10 @@ pub(super) fn declaration_block(head: &str) -> bool {
 pub(super) fn following_rule(bytes: &[u8], mut i: usize) -> bool {
     let limit = i.saturating_add(MAX_LOOKAHEAD).min(bytes.len());
     while i < limit {
-        match bytes[i] {
+        let Some(&byte) = bytes.get(i) else {
+            return false;
+        };
+        match byte {
             b'{' => return true,
             b';' | b'}' | b'\'' | b'"' | b'\\' => return false,
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
