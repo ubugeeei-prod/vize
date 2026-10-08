@@ -128,3 +128,18 @@ retain 14 native diff blocks and 107 native line wrappers in light/dark desktop/
 checks. These local results do not establish hosted or public acceptance. Exact-head
 Actions, protected actual merge and deployed browser verification remain pending.
 Page-specific OG image work is tracked independently under #6101.
+
+## Source-growth correction
+
+Actual parent3a7 Check37764777956/tooling2 rejects Check693 against base690
+and the moved highlighter core535 as a new path. Preserve this failure. Keep
+the native Docs compiler inside the existing mutually exclusive full/fast JS
+steps, running once after installation on every event. Split unchanged language
+handlers into a bounded helper loaded before the core; retain the same token
+store, native wrappers and complete highlighted HTML. All 2,906 complete EN/JA
+catalogue blocks produce byte-identical HTML before/after this extraction. The
+11 actual syntax/native-annotation laws, 11 workflow laws and 10 source-growth
+laws pass; the broader local navigation invocation stops on its old missing
+typescript package link, so fresh installed Actions owns that acceptance. No
+source-growth budget changes. Full native Docs types and scoped formatting/lint
+pass; final-source Actions and actual deployment remain pending.

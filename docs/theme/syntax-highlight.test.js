@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createRequire } from "node:module";
 
+await import("./syntax-highlight-languages.js");
 await import("./syntax-highlight-core.js");
 await import("./syntax-highlight.js");
 
@@ -54,6 +55,16 @@ void test("createHighlightedHtml does not treat TypeScript generics in Vue scrip
   assert.match(html, /InjectionKey&lt;Ref&lt;Theme&gt;&gt;/);
   assert.doesNotMatch(html, /v-code__tag[^>]*>&lt;Ref/);
   assert.doesNotMatch(html, /v-code__tag[^>]*>&lt;Theme/);
+});
+
+void test("Vue style blocks use the shared language handlers", () => {
+  const source =
+    '<template><div class="panel">hello</div></template>\n<style scoped>\n.panel {\n  color: red;\n}\n</style>';
+  const html = syntax.createHighlightedHtml(source, "vue");
+
+  assert.match(html, /v-code__property">color<\/span>/);
+  assert.match(html, /\.panel \{/);
+  assert.match(html, /&lt;\/style/);
 });
 
 void test("createHighlightedHtml highlights bash commands and flags", () => {

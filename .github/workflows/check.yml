@@ -110,15 +110,12 @@ jobs:
       - uses: ./.github/actions/setup-js-check-runtime
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Check Docs TypeScript
-        # This job runs on Linux x64; use the pinned native compiler directly.
-        run: ./node_modules/@typescript/typescript-linux-x64/lib/tsc --noEmit --pretty false --project docs/tsconfig.json
       - name: Check JS/TS
         if: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
-        run: vp run --no-cache --filter './npm/native' build:debug && vp run --workspace-root check:ci
+        run: ./node_modules/@typescript/typescript-linux-x64/lib/tsc --noEmit --pretty false --project docs/tsconfig.json && vp run --no-cache --filter './npm/native' build:debug && vp run --workspace-root check:ci
       - name: Check fast JS/TS
         if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
-        run: vp run --workspace-root check:repo
+        run: ./node_modules/@typescript/typescript-linux-x64/lib/tsc --noEmit --pretty false --project docs/tsconfig.json && vp run --workspace-root check:repo
   semver-checks:
     name: cargo-semver-checks (${{ matrix.crate }})
     # Check published APIs before tag promotion and when resuming an exact release tag.
