@@ -45,3 +45,9 @@ these are preserved failures, despite whole runtime transaction success. The
 successor keeps the original core link cardinality and carries default-key edges
 separately through the same coordinate transformations. Fresh qualification is
 required; prior runtime success grants no merge or release acceptance.
+
+`historical-1c1e-qualification/` preserves the complete original400 prepare
+failure: the existing closed path qualifier refused this new reviewed source
+delta before measurement. Its successor admits only the exact reviewed literal
+paths, with every original workload and ceiling unchanged. No performance pass
+is inferred from qualification or from the aborted run.

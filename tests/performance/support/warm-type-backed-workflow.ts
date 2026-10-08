@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
+import { aliasHostPaths } from "./warm-type-backed-alias-host.ts";
 import { finiteCut } from "./warm-type-backed-cut.ts";
 import { gitBodyDigest, qualifyPathHostMove } from "./warm-type-backed-path-host.ts";
 import { qualifyTimingHostMove } from "./warm-type-backed-timing-host.ts";
@@ -76,6 +77,7 @@ if (process.argv[2] === "prepare") {
     .split("\n")
     .filter(Boolean);
   const allowed = new Set([
+    ...aliasHostPaths,
     // Reviewed #3952 workspace-symbol producer and exact helper/test footprint;
     // complete original 400-provider inputs and whole oracles remain unchanged.
     "crates/vize_maestro/src/ide/workspace_symbols.rs",

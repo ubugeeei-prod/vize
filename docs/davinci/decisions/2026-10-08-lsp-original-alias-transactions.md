@@ -162,3 +162,20 @@ ContentMapper parity credit. Fresh complete hosted Actions, protected execution,
 actual signed delivery and installed release replay remain mandatory.
 
 Paired carrier decision: [#8011 comment](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6053621182).
+
+## Literal original400 source qualification
+
+Producer head `1c1e5e3c61cf62d326fe0159b0323fa9cf1cbac9` triggered original400
+run `37736507006`, job `113177145490`. Its existing closed production-path
+qualifier refused the first new alias test path before any workload ran. Preserve
+the complete authentic prepare log and exact reviewed source-path inventory in
+`supplemental/historical-1c1e-qualification/`. This is an unqualified source pair,
+not a measured performance result; it grants no performance acceptance.
+
+Append only the 34 reviewed literal source paths of this identity correction to
+the existing closed set through `warm-type-backed-alias-host.ts`. No directory,
+regex or wildcard grants qualification. Preserve every existing admitted path,
+input digest check, the original400 workload, provider selection, native/build
+recipes, process budgets and numeric ceilings. The new helper only permits the
+real paired workload to run on this source pair; fresh exact-source measured
+execution and all original provider/result requirements remain necessary.
