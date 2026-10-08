@@ -15,14 +15,17 @@ mod inventory;
 #[cfg(test)]
 mod tests;
 
+#[cfg(test)]
+mod io_tests;
+
 pub use inventory::{
     IndexedGitlinks, InventoryError, SubmoduleState, parse_indexed_gitlinks,
     parse_submodule_status, reconcile,
 };
 
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::{fs, io};
 
 use vize_l0::CompactString;
 
@@ -128,14 +131,45 @@ pub fn require_reconciled_canonical_inventory(workspace: &Path) -> usize {
         .unwrap_or_else(|error| panic!("canonical corpus inventory rejected: {error}"))
 }
 
+fn fail_corpus_io(operation: &str, path: &Path, error: &io::Error) -> ! {
+    panic!(
+        "corpus IO failed: {operation} {}: {error} (kind={:?}, raw_os_error={:?})",
+        path.display(),
+        error.kind(),
+        error.raw_os_error(),
+    );
+}
+
+fn corpus_entry_path(root: &Path, entry: io::Result<fs::DirEntry>) -> PathBuf {
+    entry
+        .unwrap_or_else(|error| fail_corpus_io("read directory entry under", root, &error))
+        .path()
+}
+
+/// Read the complete UTF-8 source of a selected corpus file.
+///
+/// # Panics
+///
+/// Fails the calling test with the path and original IO error when a selected
+/// file cannot be read; unreadable files must never become omitted evidence.
+pub fn read_corpus_source(file: &Path) -> CompactString {
+    fs::read_to_string(file)
+        .unwrap_or_else(|error| fail_corpus_io("read source", file, &error))
+        .into()
+}
+
 /// Collect every `.vue` file under `root`, sorted, skipping `node_modules`
 /// trees (they repeat the same shipped sources; sweeps target project code).
+///
+/// # Panics
+///
+/// Fails the calling test with the directory and original IO error when
+/// enumeration fails, rather than reporting a partial corpus as complete.
 pub fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) {
-    let Ok(entries) = fs::read_dir(root) else {
-        return;
-    };
+    let entries =
+        fs::read_dir(root).unwrap_or_else(|error| fail_corpus_io("read directory", root, &error));
     let mut children: Vec<PathBuf> = entries
-        .filter_map(|entry| entry.ok().map(|entry| entry.path()))
+        .map(|entry| corpus_entry_path(root, entry))
         .collect();
     children.sort();
     for child in children {
