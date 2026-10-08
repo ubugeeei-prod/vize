@@ -1,5 +1,6 @@
 mod anchors;
 mod auto_import_stubs;
+mod binding_output;
 mod component_constructors;
 mod component_export;
 mod component_public_types;
@@ -846,7 +847,5 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ),
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);
-    let mut mapping = super::mapping::ProjectionMapping::from_parts(mappings, semantic_links);
-    mapping.set_prop_default_key_links(prop_default_key_links);
-    super::mapping::publish_virtual_ts(VirtualTsOutput { code: ts, mapping })
+    binding_output::publish(ts, mappings, semantic_links, prop_default_key_links)
 }
