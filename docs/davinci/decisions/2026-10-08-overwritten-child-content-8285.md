@@ -96,6 +96,16 @@ with declared Rust 1.99.0 and `CARGO_TARGET_DIR=target/no-child-content-source`.
 
 ## Delivery and limits
 
+The actual 3b3c successor [source run37740230433](https://github.com/ubugeeei-prod/vize/actions/runs/37740230433)
+rejected two unawaited test registrations under the zero-warning JS budget.
+Awaiting the existing registrations corrects that harness issue. Its
+[n8n run37740229787](https://github.com/ubugeeei-prod/vize/actions/runs/37740229787)
+also failed closed because the updated main workflow requested the newly
+merged CLI helpers while the explicit older PR source checkout lacked them.
+Rebasing onto fresh main `26e56ac6a0de3f9f838db55bbdb71757317f2435` preserves
+all corpus bytes and incoming canonical history, and includes the real helper
+files. Neither failure is waived; fresh successor qualification is required.
+
 Exact-head Actions, protected candidate checks and actual signed merge remain
 pending. Queue admission and release verification belong to the coordinating
 maintainer lane; an open or source-green PR is not completed delivery.

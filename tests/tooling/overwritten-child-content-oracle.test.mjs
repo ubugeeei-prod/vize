@@ -21,7 +21,7 @@ function authoredFilenameOnly(results, id) {
   return results.map((result) => ({ ...result, filePath: `${id}.vue` }));
 }
 
-test("all36 whole official Vue-base packets reproduce twice with all51 explicit rules", async () => {
+await test("all36 whole official Vue-base packets reproduce twice with all51 explicit rules", async () => {
   assert.equal(ids.length, 36);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(Object.keys(config.linter.rules).length, 51);
@@ -117,7 +117,7 @@ test("all36 whole official Vue-base packets reproduce twice with all51 explicit 
   }
 });
 
-test("the whole historical delta introduces only12 owned comment findings", () => {
+await test("the whole historical delta introduces only12 owned comment findings", () => {
   const changed = [];
   for (const id of ids) {
     const before = read("source-before", `${id}.json`);
