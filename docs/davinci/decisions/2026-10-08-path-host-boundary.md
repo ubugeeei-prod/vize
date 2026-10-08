@@ -45,3 +45,11 @@ recursion and remaining configuration/platform isolation need their own
 provider and ownership work. This slice changes no product route, stage,
 parser, fixture, manifest or numeric ceiling and grants no whole `no_std`,
 native/default graduation, release or installed-consumer credit.
+
+The first source head `d69880764bc7a655a9da86a797d187c15aa8a4f5` executed
+all seven original path/Git-metadata laws once across 16,874 passing Rust tests.
+Its old Canon alias assertion still counted the moved OS call as L0; retain
+its original total of two sites as one L0 storage site plus one exact Carton
+path site. Its distinct-host preflight refused the new production footprint
+before any measurement. Keep both failures as historical evidence and require
+a fresh complete successor; neither observation grants delivery credit.
