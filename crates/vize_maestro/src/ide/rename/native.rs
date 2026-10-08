@@ -16,10 +16,11 @@ impl RenameService {
         new_name: &str,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<WorkspaceEdit> {
-        match canonical::rename(ctx, new_name, corsa_bridge.as_deref()).await {
+        let (canonical_result, mut scope) =
+            canonical::rename(ctx, new_name, corsa_bridge.as_deref()).await;
+        match canonical_result {
             canonical::CanonicalRename::Refused => return None,
-            canonical::CanonicalRename::Owned { edit, mut scope } => {
-                let edit = *edit;
+            canonical::CanonicalRename::Owned(edit) => {
                 // A component argument owns the public property identity. Its
                 // shorthand token also maps to a separate local value, which
                 // the structural provider must not add to this transaction.

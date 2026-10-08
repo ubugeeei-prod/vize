@@ -25,20 +25,17 @@ pub(super) enum Answer<T> {
 /// The native caller keeps these exact request-local owners through its
 /// structural supplement and final whole-packet gate. Refusal never enters
 /// the unavailable-route fallback.
-pub(in crate::ide::rename) enum CanonicalRename<'a> {
+pub(in crate::ide::rename) enum CanonicalRename {
     Unavailable,
     Refused,
-    Owned {
-        edit: Box<WorkspaceEdit>,
-        scope: corsa_support::RenameScope<'a>,
-    },
+    Owned(WorkspaceEdit),
 }
 
 pub(in crate::ide::rename) async fn rename<'a>(
     ctx: &IdeContext<'a>,
     new_name: &str,
     bridge: Option<&CorsaBridge>,
-) -> CanonicalRename<'a> {
+) -> (CanonicalRename, corsa_support::RenameScope<'a>) {
     let mut scope = corsa_support::RenameScope::native(ctx);
     let answer = match execute::rename_strict_inner(ctx, new_name, bridge, None, &mut scope).await {
         Ok(Answer::Unavailable) | Err(_)
@@ -49,14 +46,12 @@ pub(in crate::ide::rename) async fn rename<'a>(
         Ok(answer) => answer,
         Err(error) => error.into_lenient_answer(),
     };
-    match answer {
+    let answer = match answer {
         Answer::Unavailable => CanonicalRename::Unavailable,
         Answer::Available(None) => CanonicalRename::Refused,
-        Answer::Available(Some(edit)) => CanonicalRename::Owned {
-            edit: Box::new(edit),
-            scope,
-        },
-    }
+        Answer::Available(Some(edit)) => CanonicalRename::Owned(edit),
+    };
+    (answer, scope)
 }
 
 pub(super) async fn prepare(
