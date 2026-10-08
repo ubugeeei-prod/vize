@@ -45,3 +45,9 @@ all immutable pins. The protected-main dispatch guard remains unchanged and
 does not accept an unmerged release H. There is no blind release-branch dispatch.
 Source SSR's separate 44366/44367 cardinality failure remains independent and
 unresolved; this recipe fix does not alter its original catalog or denominator.
+
+Initial source head 6599 passes formatter/apps and starts the actual current
+native recipe, but hosted check-js rejects all six unawaited test registrations.
+The successor awaits these registrations, following the original custody test
+pattern, without changing any body, input or expectation. The zero-warning gate
+and all fresh source/native/protected obligations remain mandatory.

@@ -25,7 +25,7 @@ import {
   fixture,
 } from "./typechecker-native-source-recipe-fixture.mjs";
 
-test("complete authenticated actual C6d/H339 metadata selects all original seven targets and full script", () => {
+await test("complete authenticated actual C6d/H339 metadata selects all original seven targets and full script", () => {
   assert.equal(frozen.originalCut, "6d26d84b4240e9356cf5078b6d277e181d311a42");
   assert.equal(frozen.originalHead, "3390cb6044d53d655a9d64e112d2618375cff5ca");
   fixture((f) => {
@@ -62,7 +62,7 @@ test("complete authenticated actual C6d/H339 metadata selects all original seven
   });
 });
 
-test("ordinary source retains complete incoming nine-target script and original downstream flags", () => {
+await test("ordinary source retains complete incoming nine-target script and original downstream flags", () => {
   fixture((f) => {
     f.event.pull_request.head.ref = "fix/current-native";
     f.event.pull_request.body = "";
@@ -88,7 +88,7 @@ test("ordinary source retains complete incoming nine-target script and original 
   });
 });
 
-test("outside-checkout helper bytes must match immutable workflow SHA before current inline selection", () => {
+await test("outside-checkout helper bytes must match immutable workflow SHA before current inline selection", () => {
   fixture((f) => {
     const helperNames = [
       "typechecker-native-source-recipe.mjs",
@@ -153,7 +153,7 @@ test("outside-checkout helper bytes must match immutable workflow SHA before cur
   });
 });
 
-test("forged identity, protocol, permission, pin and source context never fall back to current", () => {
+await test("forged identity, protocol, permission, pin and source context never fall back to current", () => {
   fixture((f) => {
     const controls = [
       (x) => {
@@ -239,7 +239,7 @@ test("forged identity, protocol, permission, pin and source context never fall b
   });
 });
 
-test("partial version, production, dependencies, flags, target deletion and modes are rejected", () => {
+await test("partial version, production, dependencies, flags, target deletion and modes are rejected", () => {
   fixture((f) => {
     for (const [path, change] of [
       ["npm/cli/package.json", (bytes) => bytes.replace("0.436.0", "0.435.1")],
@@ -259,7 +259,7 @@ test("partial version, production, dependencies, flags, target deletion and mode
   });
 });
 
-test("exact rewrite preserves benchmark, foreign dependency and non-version bytes", () => {
+await test("exact rewrite preserves benchmark, foreign dependency and non-version bytes", () => {
   const old = "1.2.3",
     next = "1.2.4";
   assert.equal(
