@@ -115,7 +115,7 @@ if (process.argv[2] === "terminate") {
   h.lint({ enabledRules: ["vue/no-v-html"], unknown: { complete: true } });
   process.kill(process.pid, "SIGTERM");
 } else {
-  test("whole old/new records retain every argument/result, throw and order byte-exact", () => {
+  void test("whole old/new records retain every argument/result, throw and order byte-exact", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-recorder-equivalence-"));
     try {
       const vectors = [];
@@ -144,7 +144,7 @@ if (process.argv[2] === "terminate") {
   });
 
   for (const code of [before, after]) {
-    test(`${path.basename(code)}: physical and repeated CAS mutations fail before native`, () => {
+    void test(`${path.basename(code)}: physical and repeated CAS mutations fail before native`, () => {
       const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-recorder-mutation-"));
       const h = harness(code, directory);
       try {
@@ -163,7 +163,7 @@ if (process.argv[2] === "terminate") {
     });
   }
 
-  test("exclusive CAS creation races retain exact bytes and refuse foreign bytes", () => {
+  void test("exclusive CAS creation races retain exact bytes and refuse foreign bytes", () => {
     for (const raceBytes of [source, "foreign collision"]) {
       const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-recorder-race-"));
       const cas = path.join(directory, "sources", digest(Buffer.from(source)) + ".vue");
@@ -194,7 +194,7 @@ if (process.argv[2] === "terminate") {
     }
   });
 
-  test("a failed append aborts and closes the owned descriptor without false records", () => {
+  void test("a failed append aborts and closes the owned descriptor without false records", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-recorder-append-"));
     let appends = 0;
     const h = harness(after, directory, {
@@ -217,7 +217,7 @@ if (process.argv[2] === "terminate") {
     }
   });
 
-  test("SIGTERM preserves synchronous complete records without granting completion", () => {
+  void test("SIGTERM preserves synchronous complete records without granting completion", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-recorder-abort-"));
     try {
       const result = spawnSync(process.execPath, [__filename, "terminate", directory], {
