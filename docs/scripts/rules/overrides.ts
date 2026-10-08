@@ -1,14 +1,20 @@
-import { runtimeOverrides } from "./runtime-overrides.mjs";
-import { verifiedOverrides } from "./verified-examples.mjs";
-import { scopedOverrides } from "./scoped-examples.mjs";
+import type { CodeExample, RuleExample, RuleExampleOptions } from "./types.ts";
+import { runtimeOverrides } from "./runtime-overrides.ts";
+import { verifiedOverrides } from "./verified-examples.ts";
+import { scopedOverrides } from "./scoped-examples.ts";
 
-const vue = (source) => ({ language: "vue", source });
-const template = (source) => vue(`<template>\n${source}\n</template>`);
-const script = (source, setup = true) =>
+const vue = (source: string): CodeExample => ({ language: "vue", source });
+const template = (source: string) => vue(`<template>\n${source}\n</template>`);
+const script = (source: string, setup = true) =>
   vue(`<script${setup ? " setup" : ""} lang="ts">\n${source}\n</script>`);
-const pair = (bad, good, evidence, extra = {}) => ({ bad, good, evidence, ...extra });
+const pair = (
+  bad: CodeExample,
+  good: CodeExample,
+  evidence: string,
+  extra: RuleExampleOptions = {},
+): RuleExample => ({ bad, good, evidence, ...extra });
 
-export const overrides = {
+export const overrides: Record<string, RuleExample> = {
   ...scopedOverrides,
   ...verifiedOverrides,
   "css/prefer-nested-selectors": pair(

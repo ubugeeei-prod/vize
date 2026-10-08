@@ -1,5 +1,6 @@
+import type { ExplanationRecord } from "./types.ts";
 // Each row is [rule, Bad EN, Good EN, Bad JA, Good JA].
-export const accessibilityExplanations = [
+export const accessibilityExplanations: readonly ExplanationRecord[] = [
   [
     "a11y/alt-text",
     "The image submit control supplies only its image URL; it has no `alt` text describing the action.",

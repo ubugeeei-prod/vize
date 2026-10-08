@@ -1,14 +1,20 @@
-const vue = (source) => ({ language: "vue", source });
-const template = (source) => vue(`<template>\n${source}\n</template>`);
-const script = (source) => vue(`<script lang="ts">\n${source}\n</script>`);
-const pair = (bad, good, evidence, extra = {}) => ({ bad, good, evidence, ...extra });
+import type { CodeExample, RuleExample, RuleExampleOptions } from "./types.ts";
+const vue = (source: string): CodeExample => ({ language: "vue", source });
+const template = (source: string) => vue(`<template>\n${source}\n</template>`);
+const script = (source: string) => vue(`<script lang="ts">\n${source}\n</script>`);
+const pair = (
+  bad: CodeExample,
+  good: CodeExample,
+  evidence: string,
+  extra: RuleExampleOptions = {},
+): RuleExample => ({ bad, good, evidence, ...extra });
 const noSfcFinding = {
   availability: "no-sfc-finding",
   note: "This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.",
   noteJa:
     "このカタログ項目は現在の SFC lint では固有の検出を生成しません。悪い例・良い例は意図した規約の説明で、実行すると検出される例ではありません。ID を設定しても未対応の SFC 検査は追加されません。",
 };
-export const runtimeOverrides = {
+export const runtimeOverrides: Record<string, RuleExample> = {
   "vue/require-component-registration": pair(
     template("<MissingWidget />"),
     template("<MyButton />"),

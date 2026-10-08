@@ -1,3 +1,4 @@
+import type { ProjectRuleExample } from "./types.ts";
 const common = {
   "index.html": '<div id="app"></div>\n<script type="module" src="/src/main.ts"></script>',
   "src/main.ts":
@@ -7,7 +8,7 @@ const common = {
   "src/router.ts":
     'import { createRouter, createWebHistory } from "vue-router";\nimport UserPost from "./UserPost.vue";\nexport const router = createRouter({\n  history: createWebHistory(),\n  routes: [{ path: "/users/:userId/posts/:postId", name: "user-post", component: UserPost }],\n});',
 };
-export const routerExamples = Object.fromEntries(
+export const routerExamples: Record<string, ProjectRuleExample> = Object.fromEntries(
   [
     [
       "unknown-route",
@@ -38,7 +39,7 @@ export const routerExamples = Object.fromEntries(
       "必須の postId がありません。現在のルートに依存する遷移になります。",
     ],
   ].map(([id, severity, bad, note, noteJa]) => {
-    const source = (params) =>
+    const source = (params: string) =>
       `<script setup lang="ts">\nimport { useRouter } from "vue-router";\nconst router = useRouter();\nrouter.push(${params});\n</script>\n<template><p>Post</p></template>`;
     return [
       `ecosystem/vue-router-${id}`,

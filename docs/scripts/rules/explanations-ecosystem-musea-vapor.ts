@@ -1,5 +1,6 @@
+import type { ExplanationRecord } from "./types.ts";
 // Each row is [rule, Bad EN, Good EN, Bad JA, Good JA].
-export const ecosystemMuseaVaporExplanations = [
+export const ecosystemMuseaVaporExplanations: readonly ExplanationRecord[] = [
   [
     "ecosystem/nuxt-prefer-nuxt-link",
     "The internal settings destination uses a plain anchor in a Nuxt application.",

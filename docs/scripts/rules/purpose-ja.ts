@@ -1,4 +1,4 @@
-export const purposeJa = {
+export const purposeJa: Readonly<Record<string, string>> = {
   "a11y/alt-text": "画像などのメディアに代替テキストを用意します。",
   "a11y/anchor-has-content": "リンクに支援技術で読める内容を用意します。",
   "a11y/anchor-is-valid": "リンクの href に有効な移動先を指定します。",

@@ -1,5 +1,6 @@
+import type { ExplanationRecord } from "./types.ts";
 // Each row is [rule, Bad EN, Good EN, Bad JA, Good JA].
-export const vue0Explanations = [
+export const vue0Explanations: readonly ExplanationRecord[] = [
   [
     "vue/a11y-img-alt",
     "Neither the static image nor the dynamically sourced image supplies an alt attribute.",

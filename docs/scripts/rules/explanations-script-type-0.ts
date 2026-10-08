@@ -1,4 +1,5 @@
-export const scriptType0Explanations = [
+import type { ExplanationRecord } from "./types.ts";
+export const scriptType0Explanations: readonly ExplanationRecord[] = [
   [
     "nuxt/no-nuxt-config-test-key",
     "The exported Nuxt config sets the identifier key `test` to the boolean `true`, the obsolete config shape this rule rejects.",

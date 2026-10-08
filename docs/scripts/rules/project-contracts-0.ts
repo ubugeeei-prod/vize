@@ -1,4 +1,5 @@
-export const contract0Examples = {
+import type { ContractExample } from "./types.ts";
+export const contract0Examples: Record<string, ContractExample> = {
   "array-mutation": {
     shared: {
       "main.ts":

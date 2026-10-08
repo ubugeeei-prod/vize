@@ -1,5 +1,6 @@
+import type { ProjectExample } from "./types.ts";
 // Complete project contexts retained from the original reference.
-export const original2 = {
+export const original2: Record<string, ProjectExample> = {
   "destructuring-breaks-reactivity": {
     shared: {
       "main.ts":

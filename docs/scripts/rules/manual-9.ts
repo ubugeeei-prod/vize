@@ -1,5 +1,6 @@
+import type { RuleExample } from "./types.ts";
 // Authored examples retained from the previous category reference.
-export const manual9 = {
+export const manual9: Record<string, RuleExample> = {
   "vue/sfc-element-order": {
     bad: {
       language: "vue",

@@ -1,19 +1,31 @@
+import type {
+  ProjectExample,
+  ProjectRuleExample,
+  ProjectPage,
+  ProjectFiles,
+  CrossRuleMetadata,
+} from "./types.ts";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { original0 } from "./cross-original-0.mjs";
-import { original1 } from "./cross-original-1.mjs";
-import { original2 } from "./cross-original-2.mjs";
-import { extra, composed } from "./cross-extra.mjs";
-import { crossMetadata, explanation } from "./project-metadata.mjs";
-import { routerExamples } from "./router-project.mjs";
-import { projectExplanations } from "./project-explanations.mjs";
-import { exampleLinks } from "./example-links.mjs";
-import { contractExamples } from "./project-contracts.mjs";
-import { reactiveCycleExample } from "./reactive-cycle-project.mjs";
-const examples = { ...original0, ...original1, ...original2, ...extra };
-const slug = (id) => id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
-export function generateProjectPages(root, checking) {
-  const pages = new Map();
+import { original0 } from "./cross-original-0.ts";
+import { original1 } from "./cross-original-1.ts";
+import { original2 } from "./cross-original-2.ts";
+import { extra, composed } from "./cross-extra.ts";
+import { crossMetadata, explanation } from "./project-metadata.ts";
+import { routerExamples } from "./router-project.ts";
+import { projectExplanations } from "./project-explanations.ts";
+import { exampleLinks } from "./example-links.ts";
+import { contractExamples } from "./project-contracts.ts";
+import { reactiveCycleExample } from "./reactive-cycle-project.ts";
+const examples: Record<string, ProjectExample> = {
+  ...original0,
+  ...original1,
+  ...original2,
+  ...extra,
+};
+const slug = (id: string) => id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+export function generateProjectPages(root: string, checking: boolean) {
+  const pages = new Map<string, ProjectPage[]>();
   const metadata = crossMetadata(root);
   const contracts = metadata
     .filter((rule) => rule.status === "contract")
@@ -23,11 +35,11 @@ export function generateProjectPages(root, checking) {
     throw new Error("Contract examples must match all published producer-free contracts");
   for (const locale of ["", "ja/"]) {
     const ja = Boolean(locale);
-    const details = [];
+    const details: ProjectPage[] = [];
     pages.set(locale, details);
     const directory = resolve(root, `docs/content/${locale}rules`);
     if (!checking) mkdirSync(resolve(directory, "project"), { recursive: true });
-    const label = (en, jp) => (ja ? jp : en);
+    const label = (en: string, jp: string) => (ja ? jp : en);
     const lines = [
       "---",
       `title: ${label("Cross-file rules", "ファイル間ルール")}`,
@@ -99,7 +111,7 @@ export function generateProjectPages(root, checking) {
   }
   return pages;
 }
-function config(id, _ja) {
+function config(id: string, _ja: boolean) {
   return [
     "```ts",
     'import { defineConfig } from "@vizejs/vite-plugin/vite-plus";',
@@ -118,9 +130,9 @@ function config(id, _ja) {
     "```",
   ];
 }
-function crossDetail(root, rule, ja) {
+function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
   const { code, name, status, severity, producer } = rule;
-  const label = (en, jp) => (ja ? jp : en);
+  const label = (en: string, jp: string) => (ja ? jp : en);
   const info = explanation(root, code, ja);
   if (name === "hydration-risk")
     info.purpose = label(
@@ -211,8 +223,8 @@ function crossDetail(root, rule, ja) {
   lines.push(`[${label("Cross-file index", "ファイル間ルール一覧")}](../cross-file.md)`, "");
   return lines.join("\n");
 }
-function projectDetail(id, example, ja, severity) {
-  const label = (en, jp) => (ja ? jp : en);
+function projectDetail(id: string, example: ProjectRuleExample, ja: boolean, severity: string) {
+  const label = (en: string, jp: string) => (ja ? jp : en);
   const description = example.note
     ? ja
       ? example.noteJa
@@ -256,8 +268,8 @@ function projectDetail(id, example, ja, severity) {
     "",
   ].join("\n");
 }
-function fixture(example, ja) {
-  const label = (en, jp) => (ja ? jp : en);
+function fixture(example: ProjectExample, ja: boolean) {
+  const label = (en: string, jp: string) => (ja ? jp : en);
   const lines = [
     `## ${label("Shared project files", "共通のプロジェクト ファイル")}`,
     "",
@@ -267,7 +279,7 @@ function fixture(example, ja) {
     ),
     "",
   ];
-  const files = (inputs) => {
+  const files = (inputs: ProjectFiles) => {
     for (const [path, source] of Object.entries(inputs))
       lines.push(
         `\`${path}\``,
@@ -282,7 +294,7 @@ function fixture(example, ja) {
   for (const [key, title] of [
     ["bad", label("Bad", "悪い")],
     ["good", label("Good", "良い")],
-  ]) {
+  ] as const) {
     lines.push(`## ${title}`, "");
     const rationale = example[`${key}Explanation`]?.[ja ? "ja" : "en"];
     if (!rationale) throw new Error(`Missing project example explanation: ${title}`);
@@ -300,7 +312,7 @@ function fixture(example, ja) {
   );
   return lines;
 }
-function output(path, text, checking) {
+function output(path: string, text: string, checking: boolean) {
   if (checking) {
     if (readFileSync(path, "utf8") !== text) throw new Error(`Stale project reference: ${path}`);
   } else writeFileSync(path, text);

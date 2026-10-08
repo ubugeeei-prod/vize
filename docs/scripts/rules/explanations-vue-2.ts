@@ -1,4 +1,5 @@
-export const vue2Explanations = [
+import type { ExplanationRecord } from "./types.ts";
+export const vue2Explanations: readonly ExplanationRecord[] = [
   [
     "vue/require-component-is",
     "The dynamic `<component>` has no `is` target, so Vue cannot choose a component to render.",

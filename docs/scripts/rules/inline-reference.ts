@@ -1,5 +1,5 @@
 /** Embed an existing reference without changing any fenced source bytes. */
-export function inlineReference(reference, id) {
+export function inlineReference(reference: string, id: string) {
   const slug = id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
   const lines = reference.split("\n");
   if (lines[0] !== "---") throw new Error(`Missing reference frontmatter: ${id}`);

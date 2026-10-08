@@ -1,5 +1,6 @@
+import type { RuleExample } from "./types.ts";
 // Authored examples retained from the previous category reference.
-export const manual6 = {
+export const manual6: Record<string, RuleExample> = {
   "vapor/prefer-static-class": {
     bad: {
       language: "vue",

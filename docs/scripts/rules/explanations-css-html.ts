@@ -1,5 +1,6 @@
+import type { ExplanationRecord } from "./types.ts";
 // Each row is [rule, Bad EN, Good EN, Bad JA, Good JA].
-export const cssHtmlExplanations = [
+export const cssHtmlExplanations: readonly ExplanationRecord[] = [
   [
     "css/no-display-none",
     "The `.message` declaration hides the local paragraph through CSS rather than a template visibility condition.",

@@ -1,5 +1,6 @@
+import type { ExplanationRecord } from "./types.ts";
 // Each row is [rule, Bad EN, Good EN, Bad JA, Good JA].
-export const vue1Explanations = [
+export const vue1Explanations: readonly ExplanationRecord[] = [
   [
     "vue/no-mutating-props",
     "Incrementing props.count writes directly to a value supplied by the parent.",

@@ -1,7 +1,8 @@
+import type { CrossRuleMetadata, RuleProducer } from "./types.ts";
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 const prefix = "vize:croquis/cf/";
-export function crossMetadata(root) {
+export function crossMetadata(root: string): CrossRuleMetadata[] {
   const directory = resolve(root, "crates/vize_croquis_cf/src");
   const codes = [
     ...readFileSync(resolve(directory, "diagnostics/codes.rs"), "utf8").matchAll(
@@ -15,8 +16,8 @@ export function crossMetadata(root) {
       ),
     ].map((m) => [m[1], m[2]]),
   );
-  const sources = new Map();
-  function walk(path) {
+  const sources = new Map<string, RuleProducer[] | undefined>();
+  function walk(path: string): void {
     for (const entry of readdirSync(resolve(root, path), { withFileTypes: true })) {
       const file = `${path}/${entry.name}`;
       if (entry.name.includes("test")) continue;
@@ -77,7 +78,7 @@ export function crossMetadata(root) {
     };
   });
 }
-export function explanation(root, code, ja) {
+export function explanation(root: string, code: string, ja: boolean) {
   const text = readFileSync(
     resolve(root, `crates/vize/src/commands/explain/snapshots/${ja ? "ja" : "en"}.txt`),
     "utf8",

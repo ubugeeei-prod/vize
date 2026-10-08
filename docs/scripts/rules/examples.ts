@@ -1,9 +1,10 @@
+import type { CodeExample, RuleExample, RuleMetadata } from "./types.ts";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { manualExamples } from "./manual.mjs";
-import { overrides } from "./overrides.mjs";
+import { manualExamples } from "./manual.ts";
+import { overrides } from "./overrides.ts";
 
-export function ruleExamples(root, rule) {
+export function ruleExamples(root: string, rule: RuleMetadata): RuleExample {
   const override = overrides[rule.name];
   if (override) return override;
   if (manualExamples[rule.name]) return manualExamples[rule.name];
@@ -28,12 +29,12 @@ export function ruleExamples(root, rule) {
   throw new Error(`Missing executable Bad/Good examples for ${rule.name}`);
 }
 
-function firstCode(text) {
+function firstCode(text: string): CodeExample | null {
   const match = text.match(/```(vue|ts|js|html|css)\n([\s\S]*?)\n```/);
   return match && { language: match[1], source: match[2] };
 }
 
-function normalize(example, rule) {
+function normalize(example: CodeExample, rule: RuleMetadata): CodeExample {
   let { source, language } = example;
   if (language === "html" && rule.name.startsWith("petite-vue/")) {
     source = `<!doctype html>\n<html><body>\n${source}\n<script src="https://unpkg.com/petite-vue" init></script>\n</body></html>`;

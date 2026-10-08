@@ -1,5 +1,6 @@
+import type { RuleExample } from "./types.ts";
 // Authored examples retained from the previous category reference.
-export const manual4 = {
+export const manual4: Record<string, RuleExample> = {
   "ecosystem/vue-i18n-no-missing-key": {
     bad: {
       language: "vue",

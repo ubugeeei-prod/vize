@@ -1,4 +1,5 @@
-export const reactiveCycleExample = {
+import type { ProjectExample } from "./types.ts";
+export const reactiveCycleExample: ProjectExample = {
   shared: {
     "main.ts": `import { createApp } from 'vue';
 import App from './App.vue';

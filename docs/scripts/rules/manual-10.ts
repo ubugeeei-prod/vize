@@ -1,5 +1,6 @@
+import type { RuleExample } from "./types.ts";
 // Authored examples retained from the previous category reference.
-export const manual10 = {
+export const manual10: Record<string, RuleExample> = {
   "vue/valid-v-if": {
     bad: {
       language: "vue",

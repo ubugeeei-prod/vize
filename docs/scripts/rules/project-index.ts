@@ -1,10 +1,10 @@
-import { composed } from "./cross-extra.mjs";
-import { exampleLinks } from "./example-links.mjs";
-import { crossMetadata } from "./project-metadata.mjs";
-import { routerExamples } from "./router-project.mjs";
+import { composed } from "./cross-extra.ts";
+import { exampleLinks } from "./example-links.ts";
+import { crossMetadata } from "./project-metadata.ts";
+import { routerExamples } from "./router-project.ts";
 
-export function projectIndex(root, ja, inline = false) {
-  const label = (en, jp) => (ja ? jp : en);
+export function projectIndex(root: string, ja: boolean, inline = false) {
+  const label = (en: string, jp: string) => (ja ? jp : en);
   const entries = [
     ...Object.keys({ ...routerExamples, ...composed }).map((id) => ({ id, status: "cli" })),
     ...crossMetadata(root).map(({ code: id, status }) => ({ id, status })),

@@ -1,4 +1,5 @@
-export const contract1Examples = {
+import type { ContractExample } from "./types.ts";
+export const contract1Examples: Record<string, ContractExample> = {
   "dom-access-without-next-tick": {
     shared: {
       "main.ts":

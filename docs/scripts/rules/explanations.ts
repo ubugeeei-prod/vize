@@ -1,13 +1,14 @@
-import { accessibilityExplanations } from "./explanations-accessibility.mjs";
-import { cssHtmlExplanations } from "./explanations-css-html.mjs";
-import { ecosystemMuseaVaporExplanations } from "./explanations-ecosystem-musea-vapor.mjs";
-import { scriptType0Explanations } from "./explanations-script-type-0.mjs";
-import { scriptType1Explanations } from "./explanations-script-type-1.mjs";
-import { scriptType2Explanations } from "./explanations-script-type-2.mjs";
-import { scriptType3Explanations } from "./explanations-script-type-3.mjs";
-import { vue0Explanations } from "./explanations-vue-0.mjs";
-import { vue1Explanations } from "./explanations-vue-1.mjs";
-import { vue2Explanations } from "./explanations-vue-2.mjs";
+import type { RuleExplanation, RuleMetadata } from "./types.ts";
+import { accessibilityExplanations } from "./explanations-accessibility.ts";
+import { cssHtmlExplanations } from "./explanations-css-html.ts";
+import { ecosystemMuseaVaporExplanations } from "./explanations-ecosystem-musea-vapor.ts";
+import { scriptType0Explanations } from "./explanations-script-type-0.ts";
+import { scriptType1Explanations } from "./explanations-script-type-1.ts";
+import { scriptType2Explanations } from "./explanations-script-type-2.ts";
+import { scriptType3Explanations } from "./explanations-script-type-3.ts";
+import { vue0Explanations } from "./explanations-vue-0.ts";
+import { vue1Explanations } from "./explanations-vue-1.ts";
+import { vue2Explanations } from "./explanations-vue-2.ts";
 
 const records = [
   ...accessibilityExplanations,
@@ -21,7 +22,7 @@ const records = [
   ...vue1Explanations,
   ...vue2Explanations,
 ];
-export const exampleExplanations = new Map();
+export const exampleExplanations = new Map<string, RuleExplanation>();
 for (const [name, badEn, goodEn, badJa, goodJa] of records) {
   if (exampleExplanations.has(name)) throw new Error(`Duplicate example explanation: ${name}`);
   for (const text of [badEn, goodEn, badJa, goodJa]) {
@@ -34,7 +35,7 @@ for (const [name, badEn, goodEn, badJa, goodJa] of records) {
   });
 }
 
-export function validateExampleExplanations(rules) {
+export function validateExampleExplanations(rules: readonly RuleMetadata[]) {
   const registered = new Set(rules.map((rule) => rule.name));
   for (const name of registered) {
     if (!exampleExplanations.has(name)) throw new Error(`Missing example explanation: ${name}`);

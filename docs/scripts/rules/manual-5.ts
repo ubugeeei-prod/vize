@@ -1,5 +1,6 @@
+import type { RuleExample } from "./types.ts";
 // Authored examples retained from the previous category reference.
-export const manual5 = {
+export const manual5: Record<string, RuleExample> = {
   "musea/no-empty-variant": {
     bad: {
       language: "vue",

@@ -1,7 +1,8 @@
-import { projectExplanations0 } from "./project-explanations-0.mjs";
-import { projectExplanations1 } from "./project-explanations-1.mjs";
+import type { ProjectExplanation } from "./types.ts";
+import { projectExplanations0 } from "./project-explanations-0.ts";
+import { projectExplanations1 } from "./project-explanations-1.ts";
 
-export const projectExplanations = new Map();
+export const projectExplanations = new Map<string, ProjectExplanation>();
 for (const [id, badEn, goodEn, badJa, goodJa] of [
   ...projectExplanations0,
   ...projectExplanations1,

@@ -1,14 +1,14 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-export function migrationPage(root, ruleNames, ja) {
+export function migrationPage(root: string, ruleNames: ReadonlySet<string>, ja: boolean) {
   const inventory = JSON.parse(
     readFileSync(resolve(root, "tests/_fixtures/patina-eslint-vue-rule-map.json"), "utf8"),
-  );
+  ) as { entries: Record<string, { status: string; patinaRule?: string }> };
   const entries = Object.entries(inventory.entries).sort(([a], [b]) => a.localeCompare(b));
-  const counts = new Map();
+  const counts = new Map<string, number>();
   for (const [, value] of entries) counts.set(value.status, (counts.get(value.status) ?? 0) + 1);
-  const label = (en, japanese) => (ja ? japanese : en);
+  const label = (en: string, japanese: string) => (ja ? japanese : en);
   const lines = [
     "---",
     `title: ${label("ESLint rule migration map", "ESLint ルール移行対応表")}`,
@@ -60,9 +60,13 @@ export function migrationPage(root, ruleNames, ja) {
       ? `[\`${entry.patinaRule}\`](./reference/${entry.patinaRule.replaceAll("/", "-")}.md)`
       : "—";
     const status = ja
-      ? { mapped: "対応付け", "intentional-divergence": "意図的な差異", unimplemented: "未実装" }[
-          entry.status
-        ]
+      ? (
+          {
+            mapped: "対応付け",
+            "intentional-divergence": "意図的な差異",
+            unimplemented: "未実装",
+          } as Record<string, string>
+        )[entry.status]
       : entry.status;
     lines.push(`| \`${name}\` | ${target} | ${status} |`);
   }

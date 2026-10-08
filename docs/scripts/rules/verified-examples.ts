@@ -1,9 +1,14 @@
-const vue = (source) => ({ language: "vue", source });
-const template = (source) => vue(`<template>\n${source}\n</template>`);
-const script = (source) => vue(`<script setup lang="ts">\n${source}\n</script>`);
-const pair = (bad, good, name) => ({ bad, good, evidence: `crates/vize_patina/src/rules/${name}` });
+import type { CodeExample, RuleExample } from "./types.ts";
+const vue = (source: string): CodeExample => ({ language: "vue", source });
+const template = (source: string) => vue(`<template>\n${source}\n</template>`);
+const script = (source: string) => vue(`<script setup lang="ts">\n${source}\n</script>`);
+const pair = (bad: CodeExample, good: CodeExample, name: string): RuleExample => ({
+  bad,
+  good,
+  evidence: `crates/vize_patina/src/rules/${name}`,
+});
 
-export const verifiedOverrides = {
+export const verifiedOverrides: Record<string, RuleExample> = {
   "script/no-deep-destructure-in-props": pair(
     script("const { user: { name } } = defineProps<{ user: { name: string } }>();"),
     script(

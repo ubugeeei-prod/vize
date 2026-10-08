@@ -1,4 +1,5 @@
-export const projectExplanations1 = [
+import type { ExplanationRecord } from "./types.ts";
+export const projectExplanations1: readonly ExplanationRecord[] = [
   [
     "prop-type-mismatch",
     "The parent passes the numeric expression `42` to the resolved child's `title: string` prop.",

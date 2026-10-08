@@ -1,4 +1,5 @@
-export const contract3Examples = {
+import type { ContractExample } from "./types.ts";
+export const contract3Examples: Record<string, ContractExample> = {
   "toraw-mutation": {
     shared: {
       "main.ts":

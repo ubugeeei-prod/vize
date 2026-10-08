@@ -1,4 +1,5 @@
-export const contract2Examples = {
+import type { ContractExample } from "./types.ts";
+export const contract2Examples: Record<string, ContractExample> = {
   "pinia-getter": {
     shared: {
       "main.ts":

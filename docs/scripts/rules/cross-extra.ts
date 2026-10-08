@@ -1,6 +1,7 @@
-const sfc = (script, template = "<p>Content</p>", setup = true) =>
+import type { ProjectExample, ProjectFiles, ProjectRuleExample } from "./types.ts";
+const sfc = (script: string, template = "<p>Content</p>", setup = true) =>
   `<script${setup ? " setup" : ""} lang="ts">\n${script}\n</script>\n<template>${template}</template>`;
-export function project(bad, good, root = "App.vue") {
+export function project(bad: ProjectFiles, good: ProjectFiles, root = "App.vue"): ProjectExample {
   return {
     shared: {
       "main.ts": `import { createApp } from "vue";\nimport Root from "./${root}";\ncreateApp(Root).mount("#app");`,
@@ -10,7 +11,7 @@ export function project(bad, good, root = "App.vue") {
     good: { ...bad, ...good },
   };
 }
-const child = (bad, good, template = "<Child />") =>
+const child = (bad: string, good: string, template = "<Child />") =>
   project(
     {
       "App.vue": sfc('import Child from "./Child.vue";', template),
@@ -20,7 +21,7 @@ const child = (bad, good, template = "<Child />") =>
   );
 const props = "const props = defineProps<{ title: string }>();";
 const emits = "const emit = defineEmits<{ save: [] }>();";
-export const extra = {
+export const extra: Record<string, ProjectExample> = {
   "browser-api-ssr": project(
     { "App.vue": sfc("const width = window.innerWidth;") },
     {
@@ -168,12 +169,12 @@ extra["uncaught-error"].good["App.vue"] = sfc(
   'import { onErrorCaptured } from "vue";\nimport Child from "./Child.vue";\nonErrorCaptured(() => false);',
   "<Child />",
 );
-for (const side of ["bad", "good"])
+for (const side of ["bad", "good"] as const)
   extra["provide-inject-type"][side]["App.vue"] = sfc(
     'import { provide } from "vue";\nimport Child from "./Child.vue";\nprovide("title", "Hello" as string);',
     "<Child />",
   );
-export const composed = {
+export const composed: Record<string, ProjectRuleExample> = {
   "html/cross-component-nesting": project(
     {
       "App.vue": sfc('import Child from "./Child.vue";', "<p><Child /></p>"),

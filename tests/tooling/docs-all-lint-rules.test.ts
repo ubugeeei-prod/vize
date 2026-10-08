@@ -3,16 +3,33 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
-import { parseSync } from "@babel/core";
-import tsSyntax from "@babel/plugin-syntax-typescript";
+import { createRequire } from "node:module";
+
+// These pinned CommonJS oracles do not publish declarations. Keep their API
+// boundary narrow while retaining the exact parser and plugin used before.
+const require = createRequire(import.meta.url);
+const { parseSync } = require("@babel/core") as {
+  parseSync(
+    this: void,
+    source: string,
+    options: {
+      filename: string;
+      sourceType: "module";
+      configFile: false;
+      babelrc: false;
+      plugins: unknown[];
+    },
+  ): unknown;
+};
+const tsSyntax: unknown = require("@babel/plugin-syntax-typescript");
 import { parse as parseSfc, compileScript } from "vue-computed-inlay-oracle/compiler-sfc";
-import { crossMetadata } from "../../docs/scripts/rules/project-metadata.mjs";
+import { crossMetadata } from "../../docs/scripts/rules/project-metadata.ts";
 
 const root = resolve(import.meta.dirname, "../..");
-const read = (path) => readFileSync(resolve(root, path), "utf8");
+const read = (path: string) => readFileSync(resolve(root, path), "utf8");
 
 function implementations(directory = "crates/vize_patina/src/rules") {
-  const found = new Set();
+  const found = new Set<string>();
   for (const entry of readdirSync(resolve(root, directory), { withFileTypes: true })) {
     const path = `${directory}/${entry.name}`;
     if (entry.isDirectory() && entry.name !== "snapshots") {
@@ -70,7 +87,7 @@ await test("the generated bilingual reference covers every implemented rule with
 await test("generation is deterministic without a previously built native binary", () => {
   const result = spawnSync(
     process.execPath,
-    ["docs/scripts/generate-patina-rules-page.mjs", "--check"],
+    ["docs/scripts/generate-patina-rules-page.ts", "--check"],
     { cwd: root, encoding: "utf8" },
   );
   assert.equal(result.status, 0, result.stderr || result.stdout);
@@ -160,7 +177,7 @@ await test("migration retains all mapped, divergent and unsupported ESLint ident
   }
 });
 
-function codeBlocks(page) {
+function codeBlocks(page: string) {
   return [...page.matchAll(/```\w+\n[\s\S]*?\n```/g)].map((match) => match[0]);
 }
 

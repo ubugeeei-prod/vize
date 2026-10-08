@@ -1,4 +1,5 @@
-export const scriptType3Explanations = [
+import type { ExplanationRecord } from "./types.ts";
+export const scriptType3Explanations: readonly ExplanationRecord[] = [
   [
     "script/require-prop-types",
     "The array entry declares only the name `status`; the `null` value and empty descriptor declare no runtime prop type either.",

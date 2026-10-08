@@ -1,4 +1,5 @@
-export const scriptType2Explanations = [
+import type { ExplanationRecord } from "./types.ts";
+export const scriptType2Explanations: readonly ExplanationRecord[] = [
   [
     "script/no-restricted-members",
     'With `{ object: "window", property: "localStorage" }` configured in `ruleOptions`, `window.localStorage` accesses the forbidden object/member pair. This rule has no default forbidden members.',

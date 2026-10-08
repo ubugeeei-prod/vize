@@ -1,14 +1,15 @@
+import type { RulePageOptions, RuleMetadata, RuleExample } from "./types.ts";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { generateCategoryPages } from "./category-render.mjs";
-import { generateProjectPages } from "./project-render.mjs";
-import { ruleExamples } from "./examples.mjs";
-import { exampleExplanations, validateExampleExplanations } from "./explanations.mjs";
-import { migrationPage } from "./migration.mjs";
-import { purposeJa } from "./purpose-ja.mjs";
-import { exampleLinks } from "./example-links.mjs";
-import { projectIndex } from "./project-index.mjs";
-import { inlineReference } from "./inline-reference.mjs";
+import { generateCategoryPages } from "./category-render.ts";
+import { generateProjectPages } from "./project-render.ts";
+import { ruleExamples } from "./examples.ts";
+import { exampleExplanations, validateExampleExplanations } from "./explanations.ts";
+import { migrationPage } from "./migration.ts";
+import { purposeJa } from "./purpose-ja.ts";
+import { exampleLinks } from "./example-links.ts";
+import { projectIndex } from "./project-index.ts";
+import { inlineReference } from "./inline-reference.ts";
 
 export const configurableRules = new Set([
   "html/no-empty-palpable-content",
@@ -33,7 +34,7 @@ export function generateRulePages({
   groupedRules,
   sortedCategories,
   categoryLabels,
-}) {
+}: RulePageOptions) {
   const checking = process.argv.includes("--check");
   validateExampleExplanations(rules);
   const projectPages = generateProjectPages(workspaceRoot, checking);
@@ -83,7 +84,7 @@ export function generateRulePages({
       "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ];
     for (const category of sortedCategories) {
-      const group = groupedRules.get(category);
+      const group = groupedRules.get(category)!;
       const label = categoryLabels[category] ?? category;
       for (const rule of group) {
         const path = `${slug(rule.name)}.md`;
@@ -110,7 +111,7 @@ export function generateRulePages({
       "",
       `## ${ja ? "プロジェクトの例" : "Project examples"}`,
       "",
-      ...projectPages.get(locale).map(({ id, text }) => inlineReference(text, id)),
+      ...projectPages.get(locale)!.map(({ id, text }) => inlineReference(text, id)),
     ];
     const generated = resolve(workspaceRoot, `docs/content/generated/rules/${ja ? "ja" : "en"}`);
     if (!checking) mkdirSync(generated, { recursive: true });
@@ -118,8 +119,8 @@ export function generateRulePages({
   }
 }
 
-function detail(rule, example, ja) {
-  const label = (en, japanese) => (ja ? japanese : en);
+function detail(rule: RuleMetadata, example: RuleExample, ja: boolean) {
+  const label = (en: string, japanese: string) => (ja ? japanese : en);
   const config = {
     preset: "incremental",
     rules: { [rule.name]: rule.defaultSeverity === "warning" ? "warn" : "error" },
@@ -197,13 +198,13 @@ function detail(rule, example, ja) {
   for (const [key, title] of [
     ["bad", label("Bad", "悪い")],
     ["good", label("Good", "良い")],
-  ]) {
+  ] as const) {
     let { language, source } = example[key];
     if (example.standaloneScript) {
       language = "ts";
       source = source.replace(/^<script[^>]*>\n/, "").replace(/\n<\/script>$/, "");
     }
-    lines.push(`## ${title}`, "", exampleExplanations.get(rule.name)[key][ja ? "ja" : "en"], "");
+    lines.push(`## ${title}`, "", exampleExplanations.get(rule.name)![key][ja ? "ja" : "en"], "");
     const filename = example[`${key}Filename`] ?? example.filename;
     if (filename) lines.push(`\`${filename}\``, "");
     lines.push(`\`\`\`${language}`, source, "```", "");
@@ -225,7 +226,7 @@ function detail(rule, example, ja) {
   return lines.join("\n");
 }
 
-function scopeLabel(rule, example, ja) {
+function scopeLabel(rule: RuleMetadata, example: RuleExample, ja: boolean) {
   if (example.standaloneScript)
     return ja ? "Nuxt 設定ファイル（nuxt.config.ts）" : "Nuxt configuration files (nuxt.config.ts)";
   if (rule.name.startsWith("petite-vue/"))
@@ -259,23 +260,23 @@ function scopeLabel(rule, example, ja) {
     : "Vue SFC templates and blocks, with script context where the rule requires it";
 }
 
-function presets(values) {
+function presets(values: readonly string[]) {
   return values.length
     ? values
         .map((value) => `\`${value === "general-recommended" ? "happy-path" : value}\``)
         .join(", ")
     : "_none_";
 }
-function implementation(rule) {
+function implementation(rule: RuleMetadata) {
   return `[source](https://github.com/ubugeeei-prod/vize/blob/main/${rule.implementationPath}#L${rule.implementationLine})`;
 }
-function slug(value) {
+function slug(value: string) {
   return value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 }
-function cell(value) {
+function cell(value: string) {
   return String(value)
     .replaceAll("|", "\\|")
     .replaceAll("<", "&lt;")
@@ -283,12 +284,12 @@ function cell(value) {
     .replace(/\s+/g, " ")
     .trim();
 }
-function prose(value) {
+function prose(value: string) {
   return String(value).replace(/(`+)([\s\S]*?)\1|[<>]/g, (token) =>
     token === "<" ? "&lt;" : token === ">" ? "&gt;" : token,
   );
 }
-function output(path, content, checking) {
+function output(path: string, content: string, checking: boolean) {
   if (checking) {
     if (readFileSync(path, "utf8") !== content)
       throw new Error(`Generated rule reference is stale: ${path}`);

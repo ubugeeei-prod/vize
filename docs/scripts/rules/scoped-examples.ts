@@ -1,8 +1,14 @@
-const vue = (source) => ({ language: "vue", source });
-const script = (source) => vue(`<script setup lang="ts">\n${source}\n</script>`);
-const pair = (bad, good, evidence, extra = {}) => ({ bad, good, evidence, ...extra });
+import type { CodeExample, RuleExample, RuleExampleOptions } from "./types.ts";
+const vue = (source: string): CodeExample => ({ language: "vue", source });
+const script = (source: string) => vue(`<script setup lang="ts">\n${source}\n</script>`);
+const pair = (
+  bad: CodeExample,
+  good: CodeExample,
+  evidence: string,
+  extra: RuleExampleOptions = {},
+): RuleExample => ({ bad, good, evidence, ...extra });
 
-export const scopedOverrides = {
+export const scopedOverrides: Record<string, RuleExample> = {
   "vue/no-negated-v-if-condition": pair(
     vue('<template>\n<div v-if="!ok">A</div>\n<div v-else>B</div>\n</template>'),
     vue(

@@ -1,9 +1,9 @@
+import type { RuleMetadata } from "./types.ts";
 import { readFileSync, writeFileSync } from "node:fs";
-import { purposeJa } from "./purpose-ja.mjs";
+import { purposeJa } from "./purpose-ja.ts";
 import { resolve } from "node:path";
-import { exampleLinks } from "./example-links.mjs";
-/** @type {Array<[string, string, string, (name: string) => boolean]>} */
-const categories = [
+import { exampleLinks } from "./example-links.ts";
+const categories: readonly [string, string, string, (name: string) => boolean][] = [
   ["vue", "Vue rules", "Vue ルール", (name) => name.startsWith("vue/")],
   [
     "type-and-script",
@@ -43,7 +43,11 @@ const categories = [
     (name) => name.startsWith("musea/") || name.startsWith("css/"),
   ],
 ];
-export function generateCategoryPages(root, rules, checking) {
+export function generateCategoryPages(
+  root: string,
+  rules: readonly RuleMetadata[],
+  checking: boolean,
+) {
   for (const [file, en, jp, select] of categories) {
     for (const locale of ["", "ja/"]) {
       const ja = Boolean(locale);

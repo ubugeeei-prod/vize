@@ -1,4 +1,4 @@
-export function exampleLinks(path, ja, id) {
+export function exampleLinks(path: string, ja: boolean, id?: string) {
   if (id)
     return ja
       ? `[悪い例](${path}#${id}-bad) · [良い例](${path}#${id}-good)`

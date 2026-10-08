@@ -1,5 +1,6 @@
+import type { RuleExample } from "./types.ts";
 // Authored examples retained from the previous category reference.
-export const manual7 = {
+export const manual7: Record<string, RuleExample> = {
   "vue/no-inline-style": {
     bad: {
       language: "vue",

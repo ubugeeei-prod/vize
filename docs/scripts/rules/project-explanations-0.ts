@@ -1,4 +1,5 @@
-export const projectExplanations0 = [
+import type { ExplanationRecord } from "./types.ts";
+export const projectExplanations0: readonly ExplanationRecord[] = [
   [
     "unmatched-inject",
     "`ThemeLabel.vue` injects `ThemeKey`, but its reachable `App.vue` ancestor never provides that key.",

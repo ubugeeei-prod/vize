@@ -1,4 +1,5 @@
-export const scriptType1Explanations = [
+import type { ExplanationRecord } from "./types.ts";
+export const scriptType1Explanations: readonly ExplanationRecord[] = [
   [
     "script/no-deprecated-dollar-scopedslots-api",
     "`this.$scopedSlots`, `ctx.$scopedSlots`, and the bare `$scopedSlots` reference use the Vue 2 scoped-slot API removed in Vue 3.",

@@ -1,5 +1,6 @@
+import type { ProjectExample } from "./types.ts";
 // Complete project contexts retained from the original reference.
-export const original0 = {
+export const original0: Record<string, ProjectExample> = {
   "unmatched-inject": {
     shared: {
       "main.ts":
