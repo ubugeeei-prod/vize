@@ -255,14 +255,22 @@ Paired decision: [#8011 comment](https://github.com/ubugeeei-prod/vize/issues/80
 
 Before queue admission, genuine current main advanced to `8e18cfb61e74b00d117f3d1e876f9ad25227654a`
 and source9fe became conflicting. Read-only merge-tree isolated the shared
-original400 allowance. Rebase on that actual main and compose only the closed
+original400 allowance. The rebase command used origin/main after it advanced to genuine delivered
+`91699ec9cd636436c476c69d7d3f3cbf55922182`; compose only the closed
 LSP36 import/spread before the complete delivered RSS7 literal block. All prior
 owned non-doc bytes remain exact except that two-owner workflow composition;
 original400 inputs, provider/build recipes, budgets and oracles are unchanged.
 Preserve all incoming 350 canonical rows and the whole owned diagnostic clause,
-with every other incoming row exact. Restore a transient unowned clause revived
-by rebase to the actual-main row. Unchanged source inventory and generated
+with every other incoming row exact. The subsequent canonical restore mistakenly used older8e18 and omitted the
+incoming native process clause. Raw object ancestry and complete path comparison
+confirm that f6 itself includes actual916 and all its process producers/laws.
+Restore every unowned row from actual `e8a00fbb629d3e092e08fd474a58a01d1aeadc47`,
+including that process clause and later independently delivered decisions.
+Preserve all existing owned clauses; no producer, helper, input, oracle, recipe
+or budget changes in this receipt correction. Unchanged source inventory and generated
 ledger checks pass. Archive9fe, refresh the dependent helper Stack and require
 fresh source/native/n8n/original400 execution; 9fe's completed success grants no
 new-head, protected or public credit. Paired decision:
 [#8011 comment](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6055720128).
+
+Receipt correction: [#8011 comment](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6056093708).
