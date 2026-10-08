@@ -46,7 +46,7 @@ script は message しか宣言していませんが、テンプレートが mis
 
 ## 良い
 
-宣言済みの message を補間で参照します。
+script setup で宣言済みの message を補間で参照し、未定義の名前を取り除きます。
 
 ```vue
 <script setup>const message = "Hello";</script>

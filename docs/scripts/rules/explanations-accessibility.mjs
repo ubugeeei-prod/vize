@@ -81,7 +81,7 @@ export const accessibilityExplanations = [
     "a11y/img-alt",
     "The avatar image is missing its `alt` attribute.",
     '`alt="User avatar"` supplies a text alternative for the avatar.',
-    "アバター画像に `alt` 属性がありません。",
+    "アバター画像に `alt` 属性がなく、画像の代替テキストを確認できません。",
     '`alt="User avatar"` で画像の代わりとなる文字を指定します。',
   ],
   [
@@ -137,7 +137,7 @@ export const accessibilityExplanations = [
     "a11y/no-autofocus",
     "The input requests automatic focus when it appears.",
     "Removing `autofocus` avoids this automatic focus request while retaining the query input.",
-    "入力欄が表示時に自動でフォーカスを要求しています。",
+    "検索の入力欄に autofocus があり、表示時に利用者の操作なしでフォーカスを要求します。",
     "autofocus を取り除き、検索欄はそのまま残します。",
   ],
   [
@@ -180,7 +180,7 @@ export const accessibilityExplanations = [
     "A static section receives an Enter-key action without an interactive role.",
     "A native button carries the same action with an appropriate interactive element.",
     "操作の役割がない section に Enter キーの操作を指定しています。",
-    "同じ操作を標準の button に指定します。",
+    "同じ click 操作を標準の button に指定し、要素自体に操作の意味を持たせます。",
   ],
   [
     "a11y/placeholder-label-option",

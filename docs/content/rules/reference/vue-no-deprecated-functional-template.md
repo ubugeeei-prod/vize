@@ -4,7 +4,7 @@ title: "vue/no-deprecated-functional-template"
 
 # `vue/no-deprecated-functional-template`
 
-Disallow the `functional` attribute on the SFC `&lt;template&gt;`
+Disallow the `functional` attribute on the SFC `<template>`
 
 [Bad](#bad) · [Good](#good)
 

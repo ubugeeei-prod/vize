@@ -108,3 +108,12 @@ following example sections as HTML script content. Generated leaf purposes now e
 brackets, as the summary tables already did. All 317 whole-code and real-anchor checks remain
 strict; authored Bad/Good source packets are unchanged. The failed run is retained as evidence,
 and fresh Actions and Docs must qualify the corrected head before queue admission.
+
+The first source tooling run also exposed inherited layout assumptions after adding examples.
+The all-rule index now uses one category-labelled single-file table plus the complete project
+table, retaining all 317 rows and direct example links within 344 lines in both locales.
+The owning options test verifies the Examples column and the same six type-aware rows in that
+table. petite-vue navigation uses the existing English/Japanese locale override because other
+locales have no authored petite-vue page; every locale has aligned labels. Seven terse Japanese
+rationales gain literal-specific context. Purpose escaping preserves existing inline-code spans
+so angle brackets inside backticks remain readable rather than becoming literal entities.

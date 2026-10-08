@@ -4,7 +4,7 @@ title: "vue/valid-template-root"
 
 # `vue/valid-template-root`
 
-Enforce a valid `&lt;template&gt;` root for Vue 3 fragment semantics
+Enforce a valid `<template>` root for Vue 3 fragment semantics
 
 [Bad](#bad) · [Good](#good)
 

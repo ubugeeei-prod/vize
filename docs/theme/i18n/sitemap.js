@@ -32,6 +32,21 @@
     /^\/rules\/(?:reference|project)\//,
   ];
 
+  // petite-vue has authored pages in English and Japanese only.
+  const rulePaths = [
+    "/rules",
+    "/rules/all",
+    "/rules/vue",
+    "/rules/type-and-script",
+    "/rules/html",
+    "/rules/accessibility",
+    "/rules/ssr",
+    "/rules/vapor",
+    "/rules/ecosystem",
+    "/rules/musea-and-css",
+    "/rules/cross-file",
+  ];
+
   // `key` selects the section heading from a locale's `ui.groups`.
   sitemap.navGroups = [
     {
@@ -77,20 +92,11 @@
     },
     {
       key: "rules",
-      paths: [
-        "/rules",
-        "/rules/all",
-        "/rules/vue",
-        "/rules/type-and-script",
-        "/rules/html",
-        "/rules/accessibility",
-        "/rules/ssr",
-        "/rules/petite-vue",
-        "/rules/vapor",
-        "/rules/ecosystem",
-        "/rules/musea-and-css",
-        "/rules/cross-file",
-      ],
+      paths: rulePaths,
+      pathsByLocale: {
+        en: [...rulePaths, "/rules/petite-vue"],
+        ja: [...rulePaths, "/rules/petite-vue"],
+      },
     },
     {
       key: "tooling",

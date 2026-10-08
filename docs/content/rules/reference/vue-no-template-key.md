@@ -4,7 +4,7 @@ title: "vue/no-template-key"
 
 # `vue/no-template-key`
 
-Disallow `key` attribute on `&lt;template&gt;`
+Disallow `key` attribute on `<template>`
 
 [Bad](#bad) · [Good](#good)
 

@@ -46,7 +46,7 @@ script setup の message をテンプレートで使っていません。
 
 ## 良い
 
-p の補間で message を参照します。
+script setup で宣言した message を p の補間で参照し、未使用の宣言を残しません。
 
 ```vue
 <script setup>const message = "Hello";</script>

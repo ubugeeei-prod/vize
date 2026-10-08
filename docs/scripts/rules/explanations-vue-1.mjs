@@ -103,14 +103,14 @@ export const vue1Explanations = [
     "The template reads missing, although the script declares only message.",
     "The interpolation reads the existing message binding.",
     "script は message しか宣言していませんが、テンプレートが missing を参照しています。",
-    "宣言済みの message を補間で参照します。",
+    "script setup で宣言済みの message を補間で参照し、未定義の名前を取り除きます。",
   ],
   [
     "vue/no-unsafe-url",
     "The anchor destination begins with the executable javascript: scheme.",
     "The anchor uses the ordinary local /next navigation destination.",
     "a の移動先に、実行可能な javascript: のスキームを使っています。",
-    "通常のローカルの移動先 /next に変更します。",
+    "実行可能な URL を除き、通常のローカルの移動先 /next に変更します。",
   ],
   [
     "vue/no-unsandboxed-iframe",
@@ -145,7 +145,7 @@ export const vue1Explanations = [
     "The script setup message binding is never read by the template.",
     "The paragraph interpolates message, using the declared binding.",
     "script setup の message をテンプレートで使っていません。",
-    "p の補間で message を参照します。",
+    "script setup で宣言した message を p の補間で参照し、未使用の宣言を残しません。",
   ],
   [
     "vue/no-unused-vars",

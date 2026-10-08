@@ -73,34 +73,22 @@ export function generateRulePages({
         ? "[ESLint からのルール移行対応表](./migration.md)で対応名と未実装の範囲を確認できます。"
         : "See the [ESLint migration map](./migration.md) for rule IDs, differences, and unsupported mappings.",
       "",
-      `## ${ja ? "カテゴリ" : "Categories"}`,
+      `## ${ja ? "単一ファイルのルール" : "Single-file rules"} (${rules.length})`,
       "",
-      ja ? "| カテゴリ | ルール数 |" : "| Category | Rules |",
-      "| --- | ---: |",
+      ja
+        ? "| ルール | 例 | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 | カテゴリ |"
+        : "| Rule | Examples | Severity | Presets | Fixable | Options | Implementation | Description | Category |",
+      "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ];
-    for (const category of sortedCategories) {
-      const label = categoryLabels[category] ?? category;
-      const count = groupedRules.get(category).length;
-      lines.push(`| [${label}](#${slug(`${label} ${count}`)}) | ${count} |`);
-    }
     for (const category of sortedCategories) {
       const group = groupedRules.get(category);
       const label = categoryLabels[category] ?? category;
-      lines.push(
-        "",
-        `## ${label} (${group.length})`,
-        "",
-        ja
-          ? "| ルール | 例 | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 |"
-          : "| Rule | Examples | Severity | Presets | Fixable | Options | Implementation | Description |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- |",
-      );
       for (const rule of group) {
         const path = `${slug(rule.name)}.md`;
         const example = ruleExamples(workspaceRoot, rule);
         if (!purposeJa[rule.name]) throw new Error(`Missing Japanese purpose for ${rule.name}`);
         lines.push(
-          `| [\`${rule.name}\`](./reference/${path}) | ${exampleLinks(`./reference/${path}`, ja)} | \`${rule.defaultSeverity}\` | ${presets(rule.presets)} | ${rule.fixable ? (ja ? "あり" : "Yes") : ja ? "なし" : "No"} | ${configurableRules.has(rule.name) ? "[`ruleOptions`](./options.md)" : ja ? "なし" : "No"} | ${implementation(rule)} | ${cell(ja ? purposeJa[rule.name] : rule.description)} |`,
+          `| [\`${rule.name}\`](./reference/${path}) | ${exampleLinks(`./reference/${path}`, ja)} | \`${rule.defaultSeverity}\` | ${presets(rule.presets)} | ${rule.fixable ? (ja ? "あり" : "Yes") : ja ? "なし" : "No"} | ${configurableRules.has(rule.name) ? "[`ruleOptions`](./options.md)" : ja ? "なし" : "No"} | ${implementation(rule)} | ${cell(ja ? purposeJa[rule.name] : rule.description)} | ${cell(label)} |`,
         );
         output(resolve(directory, "reference", path), detail(rule, example, ja), checking);
       }
@@ -268,10 +256,17 @@ function slug(value) {
     .replace(/^-|-$/g, "");
 }
 function cell(value) {
-  return prose(value).replaceAll("|", "\\|").replace(/\s+/g, " ").trim();
+  return String(value)
+    .replaceAll("|", "\\|")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 function prose(value) {
-  return String(value).replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+  return String(value).replace(/(`+)([\s\S]*?)\1|[<>]/g, (token) =>
+    token === "<" ? "&lt;" : token === ">" ? "&gt;" : token,
+  );
 }
 function output(path, content, checking) {
   if (checking) {

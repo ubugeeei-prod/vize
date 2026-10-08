@@ -229,7 +229,7 @@ export const vue0Explanations = [
     "Two spaces separate attributes or the element name and the first attribute.",
     "Single spaces separate the same attributes.",
     "属性同士や、要素名と最初の属性の間に空白が二つあります。",
-    "同じ属性の区切りを、一つの空白に揃えます。",
+    "同じ class と id 属性を保ち、属性間の連続した空白を一つの空白に揃えます。",
   ],
   [
     "vue/no-multiple-objects-in-class",

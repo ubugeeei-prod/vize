@@ -4,7 +4,7 @@ title: "vue/no-non-component-keep-alive-child"
 
 # `vue/no-non-component-keep-alive-child`
 
-Disallow plain element wrappers directly below `&lt;KeepAlive&gt;`
+Disallow plain element wrappers directly below `<KeepAlive>`
 
 [Bad](#bad) · [Good](#good)
 
