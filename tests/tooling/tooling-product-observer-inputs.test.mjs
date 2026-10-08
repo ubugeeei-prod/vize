@@ -21,7 +21,7 @@ for (const directory of ["tests/tooling", "tests/tooling/davinci", "tests/toolin
 for (const file of observers) writeFileSync(join(fixtureRoot, file), "export {};\n");
 const sourcePlan = (file) => planToolingTests([file], { cwd: fixtureRoot });
 
-test("release prose and decision changes skip only the audited native product observers", () => {
+void test("release prose and decision changes skip only the audited native product observers", () => {
   for (const file of [
     "docs/release/2026-10-08-p0-delivery-ledger.md",
     "docs/release/pr-workflow.md",
@@ -35,7 +35,7 @@ test("release prose and decision changes skip only the audited native product ob
   }
 });
 
-test("source, fixture, build and manually loaded runtime inputs retain both whole observers", () => {
+void test("source, fixture, build and manually loaded runtime inputs retain both whole observers", () => {
   for (const file of [
     "crates/vize_atelier_sfc/src/lib.rs",
     "davinci/vize_l1_to_l2/src/pass/cfg/source.rs",
@@ -72,7 +72,7 @@ test("source, fixture, build and manually loaded runtime inputs retain both whol
   }
 });
 
-test("incomplete or nonliteral observer imports retain conservative docs qualification", () => {
+void test("incomplete or nonliteral observer imports retain conservative docs qualification", () => {
   const file = join(fixtureRoot, observers[0]);
   try {
     for (const source of [
@@ -100,7 +100,7 @@ test("incomplete or nonliteral observer imports retain conservative docs qualifi
   }
 });
 
-test("full merge qualification always retains both original product observers", () => {
+void test("full merge qualification always retains both original product observers", () => {
   for (const paths of [[], ["docs/release/pr-workflow.md"], ["unclassified-input"]]) {
     const plan = planToolingTests(paths, { tier: "merge" });
     assert.equal(plan.tests.length, plan.totalTests);
