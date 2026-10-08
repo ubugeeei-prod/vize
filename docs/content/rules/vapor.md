@@ -4,18 +4,18 @@ title: Vapor rules
 
 # Vapor rules
 
-Follow each rule for purpose, severity, scope, configuration, and Bad/Good examples. Individual pages are the reference for current support boundaries.
+Follow each rule for purpose, severity, scope, configuration, and Bad/Good examples. The complete catalogue keeps all examples and current support boundaries on one page.
 
 Configure `lint.vize.rules` and run `vp run lint` with the Vite+ helper. Check each page for type-aware, filename, or additional-configuration prerequisites.
 
 | Rule | Examples | Purpose |
 | --- | --- | --- |
-| [`script/no-get-current-instance`](./reference/script-no-get-current-instance.md) | [Bad](./reference/script-no-get-current-instance.md#bad) · [Good](./reference/script-no-get-current-instance.md#good) | Disallow getCurrentInstance() in Vapor mode (returns null) |
-| [`script/no-next-tick`](./reference/script-no-next-tick.md) | [Bad](./reference/script-no-next-tick.md#bad) · [Good](./reference/script-no-next-tick.md#good) | Disallow nextTick() usage in Vapor-oriented components |
-| [`script/no-options-api`](./reference/script-no-options-api.md) | [Bad](./reference/script-no-options-api.md#bad) · [Good](./reference/script-no-options-api.md#good) | Disallow Options API patterns in Vapor mode |
-| [`vapor/no-inline-template`](./reference/vapor-no-inline-template.md) | [Bad](./reference/vapor-no-inline-template.md#bad) · [Good](./reference/vapor-no-inline-template.md#good) | Disallow deprecated inline-template attribute |
-| [`vapor/no-vue-lifecycle-events`](./reference/vapor-no-vue-lifecycle-events.md) | [Bad](./reference/vapor-no-vue-lifecycle-events.md#bad) · [Good](./reference/vapor-no-vue-lifecycle-events.md#good) | Disallow @vue:xxx per-element lifecycle events (not supported in Vapor) |
-| [`vapor/prefer-static-class`](./reference/vapor-prefer-static-class.md) | [Bad](./reference/vapor-prefer-static-class.md#bad) · [Good](./reference/vapor-prefer-static-class.md#good) | Prefer static class over dynamic class binding for string literals |
-| [`vapor/require-vapor-attribute`](./reference/vapor-require-vapor-attribute.md) | [Bad](./reference/vapor-require-vapor-attribute.md#bad) · [Good](./reference/vapor-require-vapor-attribute.md#good) | Suggest adding vapor attribute to script setup |
+| [`script/no-get-current-instance`](./all.md#script-no-get-current-instance) | [Bad](./all.md#script-no-get-current-instance-bad) · [Good](./all.md#script-no-get-current-instance-good) | Disallow getCurrentInstance() in Vapor mode (returns null) |
+| [`script/no-next-tick`](./all.md#script-no-next-tick) | [Bad](./all.md#script-no-next-tick-bad) · [Good](./all.md#script-no-next-tick-good) | Disallow nextTick() usage in Vapor-oriented components |
+| [`script/no-options-api`](./all.md#script-no-options-api) | [Bad](./all.md#script-no-options-api-bad) · [Good](./all.md#script-no-options-api-good) | Disallow Options API patterns in Vapor mode |
+| [`vapor/no-inline-template`](./all.md#vapor-no-inline-template) | [Bad](./all.md#vapor-no-inline-template-bad) · [Good](./all.md#vapor-no-inline-template-good) | Disallow deprecated inline-template attribute |
+| [`vapor/no-vue-lifecycle-events`](./all.md#vapor-no-vue-lifecycle-events) | [Bad](./all.md#vapor-no-vue-lifecycle-events-bad) · [Good](./all.md#vapor-no-vue-lifecycle-events-good) | Disallow @vue:xxx per-element lifecycle events (not supported in Vapor) |
+| [`vapor/prefer-static-class`](./all.md#vapor-prefer-static-class) | [Bad](./all.md#vapor-prefer-static-class-bad) · [Good](./all.md#vapor-prefer-static-class-good) | Prefer static class over dynamic class binding for string literals |
+| [`vapor/require-vapor-attribute`](./all.md#vapor-require-vapor-attribute) | [Bad](./all.md#vapor-require-vapor-attribute-bad) · [Good](./all.md#vapor-require-vapor-attribute-good) | Suggest adding vapor attribute to script setup |
 
 [All rules](./all.md) · [Rule Options](./options.md) · [ESLint migration map](./migration.md) · [Project checks](./cross-file.md)

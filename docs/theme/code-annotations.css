@@ -1,0 +1,11 @@
+/* Native line wrappers retain their newline text nodes and copyable source. */
+.content {
+  pre.ox-code-block--annotated {
+    .ox-code-line {
+      display: inline-block;
+      box-sizing: border-box;
+      min-width: 100%;
+      width: max-content;
+    }
+  }
+}

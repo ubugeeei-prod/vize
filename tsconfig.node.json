@@ -16,5 +16,13 @@
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.cache/tsconfig.node.tsbuildinfo"
   },
-  "include": ["tests/tooling/**/*.ts", "tools/config/vite-plus/**/*.ts", "vite.config.ts"]
+  "include": [
+    "tests/tooling/**/*.ts",
+    "tools/config/vite-plus/**/*.ts",
+    "vite.config.ts",
+    "docs/scripts/rules/**/*.ts",
+    "docs/scripts/generate-patina-rules-page.ts",
+    "docs/scripts/materialize-content.ts",
+    "docs/scripts/i18n/*.ts"
+  ]
 }

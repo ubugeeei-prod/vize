@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { defineConfig } from "vite-plus";
 import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin";
 import { resolvePuppeteerExecutablePath } from "./browser-path.js";
+import { materializeContent } from "./scripts/materialize-content.ts";
 import { buildDocsBackgroundScript, createDocsBackgroundHtml } from "./theme/background";
 
 const puppeteerExecutablePath = resolvePuppeteerExecutablePath();
@@ -16,6 +17,7 @@ const themeCss = [
   "navigation.css",
   "entry-layout.css",
   "features.css",
+  "code-annotations.css",
   "i18n/locale-selector.css",
 ]
   .map((file) => readFileSync(resolve(themeDir, file), "utf-8"))
@@ -25,7 +27,7 @@ const themeJs = buildDocsBackgroundScript(themeDir);
 export default defineConfig({
   plugins: [
     oxContent({
-      srcDir: "content",
+      srcDir: materializeContent(import.meta.dirname),
       outDir: "dist",
 
       i18n: {
@@ -124,6 +126,7 @@ export default defineConfig({
       },
 
       highlight: false,
+      codeAnnotations: true,
       mermaid: true,
       // Keep source tree clean; this site does not use Ox Content's API docs generator.
       docs: false,

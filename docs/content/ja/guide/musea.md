@@ -59,16 +59,16 @@ export default defineConfig({
 `@vitejs/plugin-vue` を使う既存の Vite+ プロジェクトからは、次の差分で移行できます。
 他の Vite オプションとプラグインは維持してください。
 
-```diff
--import { defineConfig } from "vite-plus";
--import vue from "@vitejs/plugin-vue";
-+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-+import { musea } from "@vizejs/vite-plugin-musea";
+```ts annotate="remove:1,2,7;add:3,4,8"
+import { defineConfig } from "vite-plus";
+import vue from "@vitejs/plugin-vue";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { musea } from "@vizejs/vite-plugin-musea";
 
- export default defineConfig({
--  plugins: [vue()],
-+  plugins: [musea({ include: ["**/*.art.vue"] })],
- });
+export default defineConfig({
+  plugins: [vue()],
+  plugins: [musea({ include: ["**/*.art.vue"] })],
+});
 ```
 
 dev サーバーを起動して、設定した Musea のルートを開きます。

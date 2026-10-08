@@ -31,16 +31,16 @@ vp install -D @vizejs/vite-plugin
 
 `vite.config.ts` を変更します。
 
-```diff
--import { defineConfig } from "vite-plus";
--import vue from "@vitejs/plugin-vue";
-+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+```ts annotate="remove:1,2,6;add:3,7"
+import { defineConfig } from "vite-plus";
+import vue from "@vitejs/plugin-vue";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
- export default defineConfig({
--  plugins: [vue()],
-+  compiler: {},
-   server: { port: 3000 },
- });
+export default defineConfig({
+  plugins: [vue()],
+  compiler: {},
+  server: { port: 3000 },
+});
 ```
 
 helper が Vize コンパイラとネイティブタスクを登録します。その他の plugin、alias、
@@ -49,9 +49,9 @@ server 設定、test はそのまま残してください。`compiler: {}` は�
 
 対応する plugin オプションは `compiler` に移します。Vue コンパイラを二重に登録しないでください。
 
-```diff
--  plugins: [vue({ template: { compilerOptions: { whitespace: "preserve" } } })],
-+  compiler: { whitespace: "preserve" },
+```ts annotate="remove:1;add:2"
+  plugins: [vue({ template: { compilerOptions: { whitespace: "preserve" } } })],
+  compiler: { whitespace: "preserve" },
 ```
 
 その他のオプションは[対応範囲](./vite-plugin.md#drop-in-scope)を確認してから移します。
@@ -76,15 +76,15 @@ vp run check
 
 `vite` の `defineConfig` を維持し、plugin だけ置き換えます。
 
-```diff
- import { defineConfig } from "vite";
--import vue from "@vitejs/plugin-vue";
-+import vize from "@vizejs/vite-plugin";
+```ts annotate="remove:2,6;add:3,7"
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import vize from "@vizejs/vite-plugin";
 
- export default defineConfig({
--  plugins: [vue()],
-+  plugins: [vize()],
- });
+export default defineConfig({
+  plugins: [vue()],
+  plugins: [vize()],
+});
 ```
 
 ```bash
@@ -101,13 +101,13 @@ lint・フォーマット・型チェックは既存のツールを使い続け�
 helper を使う Vite+ プロジェクトでは、次の script 変更でネイティブタスクを利用できます。
 変更は1つずつ確認してください。
 
-```diff
--  "typecheck": "vue-tsc --noEmit",
-+  "typecheck": "vp run vize:typecheck",
--  "lint": "eslint src",
-+  "lint": "vp run vize:lint",
--  "format": "prettier --write src",
-+  "format": "vp run fmt"
+```json annotate="remove:1,3,5;add:2,4,6"
+  "typecheck": "vue-tsc --noEmit",
+  "typecheck": "vp run vize:typecheck",
+  "lint": "eslint src",
+  "lint": "vp run vize:lint",
+  "format": "prettier --write src",
+  "format": "vp run fmt"
 ```
 
 既存の `typecheck`・`lint` script があると、helper は `vize:typecheck`・`vize:lint` を生成します。
@@ -131,18 +131,18 @@ helper を使う Vite+ プロジェクトでは、次の script 変更でネイ�
 単独 CLI/LSP を使う場合は別の `vize.config.ts` を利用します。
 統合タスク用の設定は `vite.config.ts` に移してください。
 
-```diff
--import { defineConfig } from "vize";
-+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+```ts annotate="remove:1,5,6,7;add:2,8,9,10"
+import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
- export default defineConfig({
--  linter: { preset: "essential" },
--  formatter: { printWidth: 100 },
--  typeChecker: { strict: true },
-+  lint: { vize: { preset: "essential" } },
-+  fmt: { vize: { printWidth: 100 } },
-+  typecheck: { strict: true },
- });
+export default defineConfig({
+  linter: { preset: "essential" },
+  formatter: { printWidth: 100 },
+  typeChecker: { strict: true },
+  lint: { vize: { preset: "essential" } },
+  fmt: { vize: { printWidth: 100 } },
+  typecheck: { strict: true },
+});
 ```
 
 import だけでなく設定も移します。項目名が異なる点に注意してください。

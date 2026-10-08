@@ -42,13 +42,13 @@ export default defineConfig({
 
 Replace these lines when migrating from `@vitejs/plugin-vue`; retain your other Vite options and plugins:
 
-```diff
--import { defineConfig } from "vite-plus";
--import vue from "@vitejs/plugin-vue";
-+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-+import { musea } from "@vizejs/vite-plugin-musea";
--  plugins: [vue()],
-+  plugins: [musea({ include: ["**/*.art.vue"] })],
+```ts annotate="remove:1,2,5;add:3,4,6"
+import { defineConfig } from "vite-plus";
+import vue from "@vitejs/plugin-vue";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { musea } from "@vizejs/vite-plugin-musea";
+  plugins: [vue()],
+  plugins: [musea({ include: ["**/*.art.vue"] })],
 ```
 
 Start the dev server and open the configured Musea route:

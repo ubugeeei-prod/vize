@@ -80,6 +80,8 @@ void test("theme scripts load the sitemap and every locale before navigation", (
     "i18n/locales/pt-BR",
     "i18n/locales/fr",
     "i18n/navigation",
+    "syntax-highlight-languages",
+    "syntax-highlight-core",
     "syntax-highlight",
   ]);
 

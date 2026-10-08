@@ -8,13 +8,13 @@ The committed ESLint mapping records 252 rule IDs: 123 mapped, 2 intentional div
 
 Enable Vize rules under `lint.vize.rules` in the Vite+ configuration. Keep JS/TS rules handled by Oxlint in `lint.rules`. Do not copy an ESLint option tuple directly: Vize severity and typed `ruleOptions` are separate.
 
-```diff
-- import vue from "eslint-plugin-vue";
-- export default [{ plugins: { vue }, rules: { "vue/attributes-order": "warn" } }];
-+ import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-+ export default defineConfig({
-+   lint: { vize: { rules: { "vue/attribute-order": "warn" } } },
-+ });
+```ts annotate="remove:1,2;add:3,4,5,6"
+ import vue from "eslint-plugin-vue";
+ export default [{ plugins: { vue }, rules: { "vue/attributes-order": "warn" } }];
+ import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+ export default defineConfig({
+   lint: { vize: { rules: { "vue/attribute-order": "warn" } } },
+ });
 ```
 
 Remove only the overlapping Vue rule after checking the linked Bad/Good examples. Run `vp run lint`; if an existing package script occupies that task name, the generated task is `vp run vize:lint`. Explicit task configuration takes precedence.

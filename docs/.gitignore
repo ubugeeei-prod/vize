@@ -8,3 +8,6 @@ content/guide/ui/
 content/guide/composables/
 content/*/guide/ui/
 content/*/guide/composables/
+
+# Native renderer input composed from authored content and generated catalogues.
+.generated/

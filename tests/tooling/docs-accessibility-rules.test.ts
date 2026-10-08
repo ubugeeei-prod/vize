@@ -40,22 +40,25 @@ const accessibilityRules = [
 ];
 
 for (const locale of ["", "ja/"]) {
-  test(`${locale || "English"} accessibility reference gives every rule a complete page`, () => {
+  test(`${locale || "English"} accessibility navigation targets the complete same-page catalogue`, () => {
     const overview = fs.readFileSync(
       path.join(repoRoot, `docs/content/${locale}rules/accessibility.md`),
       "utf8",
     );
-    const links = [...overview.matchAll(/^\| \[`([^`]+)`\]\(\.\/reference\/([^)]*)\)/gm)];
+    const links = [...overview.matchAll(/^\| \[`([^`]+)`\]\(\.\/all\.md#([^)]*)\)/gm)];
     assert.deepEqual(
       links.map((row) => row[1]).sort((a, b) => a.localeCompare(b)),
       [...accessibilityRules].sort((a, b) => a.localeCompare(b)),
     );
-    for (const [_, ruleId, file] of links) {
+    for (const [_, ruleId, slug] of links) {
+      const file = `${slug}.md`;
       const section = fs.readFileSync(
         path.join(repoRoot, `docs/content/${locale}rules/reference/${file}`),
         "utf8",
       );
       assert.ok(section.includes(`# \`${ruleId}\``));
+      assert.ok(overview.includes(`./all.md#${slug}-bad`), `${ruleId}: same-page Bad`);
+      assert.ok(overview.includes(`./all.md#${slug}-good`), `${ruleId}: same-page Good`);
       for (const label of locale
         ? ["既定の重大度:", "プリセット:", "オプション:", "## 悪い", "## 良い"]
         : ["Default severity:", "Presets:", "Options:", "## Bad", "## Good"])

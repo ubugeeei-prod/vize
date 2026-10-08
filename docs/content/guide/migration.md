@@ -31,16 +31,16 @@ vp install -D @vizejs/vite-plugin
 
 Change `vite.config.ts`:
 
-```diff
--import { defineConfig } from "vite-plus";
--import vue from "@vitejs/plugin-vue";
-+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+```ts annotate="remove:1,2,6;add:3,7"
+import { defineConfig } from "vite-plus";
+import vue from "@vitejs/plugin-vue";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
- export default defineConfig({
--  plugins: [vue()],
-+  compiler: {},
-   server: { port: 3000 },
- });
+export default defineConfig({
+  plugins: [vue()],
+  compiler: {},
+  server: { port: 3000 },
+});
 ```
 
 The helper registers the Vize compiler and native tasks. Preserve unrelated
@@ -49,9 +49,9 @@ the defaults; you can also omit it.
 
 Move supported plugin options to `compiler`, rather than retaining two Vue compilers:
 
-```diff
--  plugins: [vue({ template: { compilerOptions: { whitespace: "preserve" } } })],
-+  compiler: { whitespace: "preserve" },
+```ts annotate="remove:1;add:2"
+  plugins: [vue({ template: { compilerOptions: { whitespace: "preserve" } } })],
+  compiler: { whitespace: "preserve" },
 ```
 
 Check [plugin option coverage](./vite-plugin.md#drop-in-scope) before moving
@@ -77,15 +77,15 @@ See [task names](./vite-plus.md#tasks) before replacing a CI command.
 
 Keep `defineConfig` from `vite` and replace the plugin:
 
-```diff
- import { defineConfig } from "vite";
--import vue from "@vitejs/plugin-vue";
-+import vize from "@vizejs/vite-plugin";
+```ts annotate="remove:2,6;add:3,7"
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import vize from "@vizejs/vite-plugin";
 
- export default defineConfig({
--  plugins: [vue()],
-+  plugins: [vize()],
- });
+export default defineConfig({
+  plugins: [vue()],
+  plugins: [vize()],
+});
 ```
 
 ```bash
@@ -102,13 +102,13 @@ tools. [Vite plugin options](./vite-plugin.md#compiler-options) live directly in
 In a Vite+ project using the helper, these literal script changes opt into the
 native tasks. Test each change independently:
 
-```diff
--  "typecheck": "vue-tsc --noEmit",
-+  "typecheck": "vp run vize:typecheck",
--  "lint": "eslint src",
-+  "lint": "vp run vize:lint",
--  "format": "prettier --write src",
-+  "format": "vp run fmt"
+```json annotate="remove:1,3,5;add:2,4,6"
+  "typecheck": "vue-tsc --noEmit",
+  "typecheck": "vp run vize:typecheck",
+  "lint": "eslint src",
+  "lint": "vp run vize:lint",
+  "format": "prettier --write src",
+  "format": "vp run fmt"
 ```
 
 An existing `typecheck` or `lint` script makes the helper generate `vize:typecheck`
@@ -133,18 +133,18 @@ review the formatter diff before changing CI. Formatting writes files;
 Only a standalone CLI/LSP workflow needs a separate `vize.config.ts`.
 For integration tasks, move these settings into `vite.config.ts`:
 
-```diff
--import { defineConfig } from "vize";
-+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+```ts annotate="remove:1,5,6,7;add:2,8,9,10"
+import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
- export default defineConfig({
--  linter: { preset: "essential" },
--  formatter: { printWidth: 100 },
--  typeChecker: { strict: true },
-+  lint: { vize: { preset: "essential" } },
-+  fmt: { vize: { printWidth: 100 } },
-+  typecheck: { strict: true },
- });
+export default defineConfig({
+  linter: { preset: "essential" },
+  formatter: { printWidth: 100 },
+  typeChecker: { strict: true },
+  lint: { vize: { preset: "essential" } },
+  fmt: { vize: { printWidth: 100 } },
+  typecheck: { strict: true },
+});
 ```
 
 Move the settings, not just the import: the field names differ. Preserve a

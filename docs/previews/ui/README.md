@@ -17,7 +17,7 @@ The docs build generates the browser app under
 All basic examples receive live previews. Eight common examples additionally
 receive actual Playwright screenshots: Button, Input, Checkbox, Switch, Tabs,
 Dialog, Alert, and Card. These are illustrative captures after the interactions
-in `capture.mjs`, not pixel-difference baselines.
+in `capture.ts`, not pixel-difference baselines.
 
 ```bash
 vp run --filter './docs' generate:ui-previews
@@ -32,7 +32,7 @@ browser evidence records the source and successful scenarios. It does not claim
 that every component has been audited for accessibility or every advanced
 variant has been exercised.
 
-After SSG completes, `check-site.mjs` checks eight generated English/Japanese
+After SSG completes, `check-site.ts` checks eight generated English/Japanese
 documentation routes, their local links and images, and an embedded Button's
 state update at desktop/mobile widths. The production docs build runs both
 browser checks with its normal OG-image configuration.

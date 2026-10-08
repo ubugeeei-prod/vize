@@ -1,6 +1,8 @@
 tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # Keep GitHub language statistics focused on authored source code.
 *.snap linguist-generated=true
+docs/content/generated/rules/en/all.md linguist-generated=true -text whitespace=-blank-at-eol
+docs/content/generated/rules/ja/all.md linguist-generated=true -text whitespace=-blank-at-eol
 **/__snapshots__/** linguist-generated=true
 npm/fresco-native/index.d.ts linguist-generated=true text eol=lf
 
