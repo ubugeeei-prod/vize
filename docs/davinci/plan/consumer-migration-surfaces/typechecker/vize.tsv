@@ -120,9 +120,10 @@ typechecker	Typechecker	source	crates/vize/src/commands/check/runner/resolve.rs	
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/socket.rs	8	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/text_style.rs	6	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs.rs	14	l0	L0	stage	vize_l0	preferred	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs.rs	158	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs.rs	161	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/ambient.rs	8	l0	L0	stage	vize_l0	preferred	2
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/ambient/path_manifest_tests.rs	30	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/chain.rs	8	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/collect.rs	6	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/collect.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/default_exclude_tests.rs	17	l0	L0	stage	vize_l0	preferred	1

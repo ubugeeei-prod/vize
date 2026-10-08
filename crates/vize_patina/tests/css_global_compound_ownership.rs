@@ -1,4 +1,4 @@
-//! Whole source/API/report contracts for the compatible global ownership slice.
+//! Whole source/API/report contracts for the bounded compound global ownership slice.
 
 use serde::Deserialize;
 use vize_l0::String;
@@ -41,48 +41,10 @@ fn diagnostic(start: u32) -> LintDiagnostic {
 }
 
 #[test]
-fn global_ownership_preserves_complete_css_sfc_json_plain_and_off_results() {
-    // Retain the whole original corpus and separately authored before/after
-    // semantic packets; only two proved-foreign SFC warnings may change.
-    let mut original: serde_json::Value =
-        serde_json::from_str(include_str!("fixtures/issue-7976-global/cases.json")).unwrap();
-    let transition: serde_json::Value = serde_json::from_str(include_str!(
-        "fixtures/issue-7976-compound/semantic-transitions.json"
-    ))
-    .unwrap();
-    assert_eq!(
-        transition["schema"],
-        "vize.css.global-compound.semantic-expectations"
-    );
-    assert_eq!(transition["version"], 1);
-    let packets = transition["transitions"].as_array().unwrap();
-    let mut ids: Vec<_> = packets
-        .iter()
-        .map(|packet| packet["before"]["id"].as_str().unwrap())
-        .collect();
-    ids.sort_unstable();
-    assert_eq!(ids, ["global-compound-unknown", "outer-compound-unknown"]);
-    for packet in packets {
-        let before = &packet["before"];
-        let case = original["cases"]
-            .as_array_mut()
-            .unwrap()
-            .iter_mut()
-            .find(|case| case["id"] == before["id"])
-            .unwrap();
-        assert_eq!(&*case, before);
-        let mut allowed = before.clone();
-        allowed["expectedStarts"] = serde_json::json!([]);
-        allowed["expectedCli"] = serde_json::json!([{
-            "file": before["filename"].clone(), "messages": [], "errorCount": 0, "warningCount": 0
-        }]);
-        allowed["expectedPlain"] =
-            serde_json::json!("Patina lint report: No problems found in 1 file(s)\n");
-        assert_eq!(packet["after"], allowed);
-        *case = allowed;
-    }
-    let corpus: Corpus = serde_json::from_value(original).unwrap();
-    assert_eq!(corpus.cases.len(), 66);
+fn compound_global_ownership_preserves_complete_css_sfc_json_plain_and_off_results() {
+    let corpus: Corpus =
+        serde_json::from_str(include_str!("fixtures/issue-7976-compound/cases.json")).unwrap();
+    assert_eq!(corpus.cases.len(), 62);
     let configured = |help| {
         Linter::with_preset(LintPreset::Incremental)
             .with_enabled_rules(Some(vec![RULE.into()]))

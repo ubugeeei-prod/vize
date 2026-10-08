@@ -14,6 +14,7 @@ use std::path::{Path, PathBuf};
 use vize_l0::FxHashSet;
 
 mod ambient;
+mod chain;
 mod collect;
 mod glob;
 mod implicit_exclude;
@@ -26,6 +27,8 @@ mod type_references;
 
 #[cfg(test)]
 mod default_exclude_tests;
+#[cfg(test)]
+mod diamond_tests;
 #[cfg(test)]
 mod hidden_include_tests;
 #[cfg(test)]
