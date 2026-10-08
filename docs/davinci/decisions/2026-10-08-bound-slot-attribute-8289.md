@@ -62,13 +62,13 @@ both reject the two `.slot` key spans. Their complete failed packets are retaine
 Taking the maximum parsed argument/modifier end repairs this boundary. No
 oracle field or finding was removed to make that attempt pass.
 
-| Source receipt | SHA256 |
-| --- | --- |
-| Baseline observer | `4172bcb0657b5f029ccf6cc80a6faf57e57e0fbcb1c1cda393236cfa8025929a` |
-| Baseline complete 46-case raw packets | `24df0ac6d0cfb0f8e2fda2861917d54919b1b69635c91742813679cd3f9c4833` |
-| Final working-tree observer | `2c50597b0012450ca3ba37ec3e7c29caf33bbed639028f70497f75c4b917175f` |
+| Source receipt                          | SHA256                                                             |
+| --------------------------------------- | ------------------------------------------------------------------ |
+| Baseline observer                       | `4172bcb0657b5f029ccf6cc80a6faf57e57e0fbcb1c1cda393236cfa8025929a` |
+| Baseline complete 46-case raw packets   | `24df0ac6d0cfb0f8e2fda2861917d54919b1b69635c91742813679cd3f9c4833` |
+| Final working-tree observer             | `2c50597b0012450ca3ba37ec3e7c29caf33bbed639028f70497f75c4b917175f` |
 | Final working-tree complete raw packets | `4690666b8031f0eea914a308ef5b2491ec17b8ed42a95b7468afc15f5580ef41` |
-| Complete independent raw packets | `54ccb5004f6b41debf9b8db38e3a3e8c814829f7d8b7e12a5f8019c70d9a6243` |
+| Complete independent raw packets        | `54ccb5004f6b41debf9b8db38e3a3e8c814829f7d8b7e12a5f8019c70d9a6243` |
 
 These baseline/working-tree receipts do not transfer to a future committed head.
 Exact-head Actions and protected queue delivery must build and run the current
@@ -85,18 +85,18 @@ physical binary hash, build/execution receipts, complete identical 10,178-file
 source inventory, provider pins, and classifications. That source API custody is
 historical research and grants no proof for this fresh source or later heads.
 
-| Deprecated rule | Cases | Provider positive / target-clean | Historical native positive / target-clean |
-| --- | ---: | ---: | ---: |
-| functional-template | 10 | 4 / 6 | 4 / 6 |
-| html-element-is | 16 | 8 / 8 | 8 / 8 |
-| inline-template | 8 | 4 / 4 | 4 / 4 |
-| router-link-tag-prop | 12 | 6 / 6 | 6 / 6 |
-| scope-attribute | 8 | 2 / 6 | 2 / 6 |
-| slot-attribute | 10 | 8 / 2 | 6 / 4 |
-| slot-scope-attribute | 8 | 4 / 4 | 4 / 4 |
-| v-bind-sync | 16 | 10 / 6 | 10 / 6 |
-| v-on-native-modifier | 12 | 6 / 6 | 6 / 6 |
-| v-on-number-modifiers | 18 | 10 / 8 | 14 / 4 |
+| Deprecated rule       | Cases | Provider positive / target-clean | Historical native positive / target-clean |
+| --------------------- | ----: | -------------------------------: | ----------------------------------------: |
+| functional-template   |    10 |                            4 / 6 |                                     4 / 6 |
+| html-element-is       |    16 |                            8 / 8 |                                     8 / 8 |
+| inline-template       |     8 |                            4 / 4 |                                     4 / 4 |
+| router-link-tag-prop  |    12 |                            6 / 6 |                                     6 / 6 |
+| scope-attribute       |     8 |                            2 / 6 |                                     2 / 6 |
+| slot-attribute        |    10 |                            8 / 2 |                                     6 / 4 |
+| slot-scope-attribute  |     8 |                            4 / 4 |                                     4 / 4 |
+| v-bind-sync           |    16 |                           10 / 6 |                                    10 / 6 |
+| v-on-native-modifier  |    12 |                            6 / 6 |                                     6 / 6 |
+| v-on-number-modifiers |    18 |                           10 / 8 |                                    14 / 4 |
 
 This table counts target presence only. Whole-packet parity and exhaustive rule
 accuracy remain unqualified. The retained research names custom-tag/bound HTML
