@@ -8,6 +8,7 @@ import { unqualifiedReceiptPaths } from "./warm-type-backed-build-receipt-extens
 import { finiteCut } from "./warm-type-backed-cut.ts";
 import { gitBodyDigest, qualifyPathHostMove } from "./warm-type-backed-path-host.ts";
 import { qualifyTimingHostMove } from "./warm-type-backed-timing-host.ts";
+import { htmlHoverPaths } from "./warm-type-backed-html-hover-host.ts";
 
 import {
   driverRoot,
@@ -78,6 +79,7 @@ if (process.argv[2] === "prepare") {
     .split("\n")
     .filter(Boolean);
   const allowed = new Set([
+    ...htmlHoverPaths,
     ...aliasHostPaths,
     // Reviewed #3952 workspace-symbol producer and exact helper/test footprint;
     // complete original 400-provider inputs and whole oracles remain unchanged.

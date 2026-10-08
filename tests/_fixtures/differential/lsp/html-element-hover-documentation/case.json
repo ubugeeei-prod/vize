@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "id": "lsp/regression/html-element-hover-documentation",
+  "provenance": {
+    "fixCommit": "8816b0d594ce9a5322ab33f60be5ccb6839fa774",
+    "issue": 3957,
+    "meaning": "source revision before HTML documentation enrichment, not migration completion credit",
+    "witness": {
+      "path": "source.json",
+      "sha256": "76772626578cb94c3ef215275b9263744431070a6fc62dcaf7a60867add73e56"
+    }
+  },
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "App.vue",
+      "sha256": "29b4ddec58cf798ca0494f3a564ad16967b99de65e3f035c7844725e6df4a15b"
+    }
+  ],
+  "entry": "App.vue",
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "6deae84ca412dc5765afbbe6026e2c105ec453e5c04d3d7995bbd436c7e2207e"
+  },
+  "method": "textDocument/hover",
+  "scope": "whole default legacy HTML tag hover; no native migration or publication credit"
+}

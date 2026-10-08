@@ -41,10 +41,10 @@ function linkAt(message: JsonRpcMessage, index: number) {
 }
 
 void test("LSP manifest binds original complete contracts and every original request", () => {
-  assert.equal(loaded.cases.length, 17);
+  assert.equal(loaded.cases.length, 18);
   assert.deepEqual(
     loaded.cases.map((fixture) => fixture.requests.length),
-    [1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 2, 2, 1, 1, 1, 7],
+    [1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 2, 2, 1, 1, 1, 7, 2],
   );
   assert.equal(loaded.cases[1].files[0].bytes.filter((byte) => byte === 13).length, 18);
   for (const relative of [
@@ -53,6 +53,8 @@ void test("LSP manifest binds original complete contracts and every original req
     "on-type-crlf/App.vue.txt",
     "component-hover-readability/LongComponent.vue.txt",
     "component-hover-readability/responses.expected.json",
+    "html-element-hover-documentation/App.vue.txt",
+    "html-element-hover-documentation/responses.expected.json",
   ]) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "lsp-manifest-law-"));
     try {
@@ -204,7 +206,7 @@ void test("LSP unavailable executables fail every planned case without trying a 
       sourceRevision: build.sourceRevision,
     });
     assert.equal(report.binary, null);
-    assert.equal(report.summary.legacyFailures, 17);
+    assert.equal(report.summary.legacyFailures, 18);
     assert.equal(report.summary.nativeHandled, 0);
     assert(
       report.rows.every(

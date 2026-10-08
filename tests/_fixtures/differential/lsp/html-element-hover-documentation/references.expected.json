@@ -1,0 +1,558 @@
+{
+  "verifiedAt": "2026-10-08T11:27:36.069639+00:00",
+  "sourceHead": "8816b0d594ce9a5322ab33f60be5ccb6839fa774",
+  "sourceTagConfigSha256": "a1aef098df1de9d219a9cb3e2423cd4cf11ef306f2952f55fdb9b7635fba6ab4",
+  "auditSha256": "8ec042fab0050feb3d32e3554a5519fe9e31d78f15c86e7ef96b0d9e961ed359",
+  "references": [
+    {
+      "tag": "html",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/html",
+      "spec": "https://html.spec.whatwg.org/multipage/semantics.html#the-html-element"
+    },
+    {
+      "tag": "body",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/body",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-body-element"
+    },
+    {
+      "tag": "base",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/base",
+      "spec": "https://html.spec.whatwg.org/multipage/semantics.html#the-base-element"
+    },
+    {
+      "tag": "head",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/head",
+      "spec": "https://html.spec.whatwg.org/multipage/semantics.html#the-head-element"
+    },
+    {
+      "tag": "link",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/link",
+      "spec": "https://html.spec.whatwg.org/multipage/semantics.html#the-link-element"
+    },
+    {
+      "tag": "meta",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meta",
+      "spec": "https://html.spec.whatwg.org/multipage/semantics.html#the-meta-element"
+    },
+    {
+      "tag": "style",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/style",
+      "spec": "https://html.spec.whatwg.org/multipage/semantics.html#the-style-element"
+    },
+    {
+      "tag": "title",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/title",
+      "spec": "https://html.spec.whatwg.org/multipage/semantics.html#the-title-element"
+    },
+    {
+      "tag": "address",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/address",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-address-element"
+    },
+    {
+      "tag": "article",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/article",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-article-element"
+    },
+    {
+      "tag": "aside",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/aside",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-aside-element"
+    },
+    {
+      "tag": "footer",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/footer",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-footer-element"
+    },
+    {
+      "tag": "header",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/header",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-header-element"
+    },
+    {
+      "tag": "hgroup",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/hgroup",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-hgroup-element"
+    },
+    {
+      "tag": "h1",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/Heading_Elements",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"
+    },
+    {
+      "tag": "h2",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/Heading_Elements",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"
+    },
+    {
+      "tag": "h3",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/Heading_Elements",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"
+    },
+    {
+      "tag": "h4",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/Heading_Elements",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"
+    },
+    {
+      "tag": "h5",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/Heading_Elements",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"
+    },
+    {
+      "tag": "h6",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/Heading_Elements",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-h1,-h2,-h3,-h4,-h5,-and-h6-elements"
+    },
+    {
+      "tag": "nav",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/nav",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-nav-element"
+    },
+    {
+      "tag": "section",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/section",
+      "spec": "https://html.spec.whatwg.org/multipage/sections.html#the-section-element"
+    },
+    {
+      "tag": "div",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/div",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-div-element"
+    },
+    {
+      "tag": "dd",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dd",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-dd-element"
+    },
+    {
+      "tag": "dl",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dl",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-dl-element"
+    },
+    {
+      "tag": "dt",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dt",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-dt-element"
+    },
+    {
+      "tag": "figcaption",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/figcaption",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-figcaption-element"
+    },
+    {
+      "tag": "figure",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/figure",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-figure-element"
+    },
+    {
+      "tag": "picture",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/picture",
+      "spec": "https://html.spec.whatwg.org/multipage/embedded-content.html#the-picture-element"
+    },
+    {
+      "tag": "hr",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/hr",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-hr-element"
+    },
+    {
+      "tag": "img",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img",
+      "spec": "https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element"
+    },
+    {
+      "tag": "li",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/li",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-li-element"
+    },
+    {
+      "tag": "main",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/main",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-main-element"
+    },
+    {
+      "tag": "ol",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ol",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-ol-element"
+    },
+    {
+      "tag": "p",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/p",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-p-element"
+    },
+    {
+      "tag": "pre",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/pre",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-pre-element"
+    },
+    {
+      "tag": "ul",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ul",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-ul-element"
+    },
+    {
+      "tag": "a",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-a-element"
+    },
+    {
+      "tag": "b",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/b",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-b-element"
+    },
+    {
+      "tag": "abbr",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/abbr",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-abbr-element"
+    },
+    {
+      "tag": "bdi",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/bdi",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-bdi-element"
+    },
+    {
+      "tag": "bdo",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/bdo",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-bdo-element"
+    },
+    {
+      "tag": "br",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/br",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-br-element"
+    },
+    {
+      "tag": "cite",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/cite",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-cite-element"
+    },
+    {
+      "tag": "code",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/code",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-code-element"
+    },
+    {
+      "tag": "data",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/data",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-data-element"
+    },
+    {
+      "tag": "dfn",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dfn",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-dfn-element"
+    },
+    {
+      "tag": "em",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/em",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-em-element"
+    },
+    {
+      "tag": "i",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/i",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-i-element"
+    },
+    {
+      "tag": "kbd",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/kbd",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-kbd-element"
+    },
+    {
+      "tag": "mark",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/mark",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-mark-element"
+    },
+    {
+      "tag": "q",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/q",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-q-element"
+    },
+    {
+      "tag": "rp",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/rp",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-rp-element"
+    },
+    {
+      "tag": "rt",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/rt",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-rt-element"
+    },
+    {
+      "tag": "ruby",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ruby",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-ruby-element"
+    },
+    {
+      "tag": "s",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/s",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-s-element"
+    },
+    {
+      "tag": "samp",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/samp",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-samp-element"
+    },
+    {
+      "tag": "small",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/small",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-small-element"
+    },
+    {
+      "tag": "span",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/span",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-span-element"
+    },
+    {
+      "tag": "strong",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/strong",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-strong-element"
+    },
+    {
+      "tag": "sub",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/sub",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-sub-and-sup-elements"
+    },
+    {
+      "tag": "sup",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/sup",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-sub-and-sup-elements"
+    },
+    {
+      "tag": "time",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/time",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-time-element"
+    },
+    {
+      "tag": "u",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/u",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-u-element"
+    },
+    {
+      "tag": "var",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/var",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-var-element"
+    },
+    {
+      "tag": "wbr",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/wbr",
+      "spec": "https://html.spec.whatwg.org/multipage/text-level-semantics.html#the-wbr-element"
+    },
+    {
+      "tag": "area",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/area",
+      "spec": "https://html.spec.whatwg.org/multipage/image-maps.html#the-area-element"
+    },
+    {
+      "tag": "audio",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/audio",
+      "spec": "https://html.spec.whatwg.org/multipage/media.html#the-audio-element"
+    },
+    {
+      "tag": "map",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/map",
+      "spec": "https://html.spec.whatwg.org/multipage/image-maps.html#the-map-element"
+    },
+    {
+      "tag": "track",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/track",
+      "spec": "https://html.spec.whatwg.org/multipage/media.html#the-track-element"
+    },
+    {
+      "tag": "video",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/video",
+      "spec": "https://html.spec.whatwg.org/multipage/media.html#the-video-element"
+    },
+    {
+      "tag": "embed",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/embed",
+      "spec": "https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-embed-element"
+    },
+    {
+      "tag": "object",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/object",
+      "spec": "https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-object-element"
+    },
+    {
+      "tag": "source",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/source",
+      "spec": "https://html.spec.whatwg.org/multipage/embedded-content.html#the-source-element"
+    },
+    {
+      "tag": "canvas",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/canvas",
+      "spec": "https://html.spec.whatwg.org/multipage/canvas.html#the-canvas-element"
+    },
+    {
+      "tag": "script",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script",
+      "spec": "https://html.spec.whatwg.org/multipage/scripting.html#the-script-element"
+    },
+    {
+      "tag": "noscript",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/noscript",
+      "spec": "https://html.spec.whatwg.org/multipage/scripting.html#the-noscript-element"
+    },
+    {
+      "tag": "del",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/del",
+      "spec": "https://html.spec.whatwg.org/multipage/edits.html#the-del-element"
+    },
+    {
+      "tag": "ins",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/ins",
+      "spec": "https://html.spec.whatwg.org/multipage/edits.html#the-ins-element"
+    },
+    {
+      "tag": "caption",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/caption",
+      "spec": "https://html.spec.whatwg.org/multipage/tables.html#the-caption-element"
+    },
+    {
+      "tag": "col",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/col",
+      "spec": "https://html.spec.whatwg.org/multipage/tables.html#the-col-element"
+    },
+    {
+      "tag": "colgroup",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/colgroup",
+      "spec": "https://html.spec.whatwg.org/multipage/tables.html#the-colgroup-element"
+    },
+    {
+      "tag": "table",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/table",
+      "spec": "https://html.spec.whatwg.org/multipage/tables.html#the-table-element"
+    },
+    {
+      "tag": "thead",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/thead",
+      "spec": "https://html.spec.whatwg.org/multipage/tables.html#the-thead-element"
+    },
+    {
+      "tag": "tbody",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/tbody",
+      "spec": "https://html.spec.whatwg.org/multipage/tables.html#the-tbody-element"
+    },
+    {
+      "tag": "td",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/td",
+      "spec": "https://html.spec.whatwg.org/multipage/tables.html#the-td-element"
+    },
+    {
+      "tag": "th",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/th",
+      "spec": "https://html.spec.whatwg.org/multipage/tables.html#the-th-element"
+    },
+    {
+      "tag": "tr",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/tr",
+      "spec": "https://html.spec.whatwg.org/multipage/tables.html#the-tr-element"
+    },
+    {
+      "tag": "button",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button",
+      "spec": "https://html.spec.whatwg.org/multipage/form-elements.html#the-button-element"
+    },
+    {
+      "tag": "datalist",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/datalist",
+      "spec": "https://html.spec.whatwg.org/multipage/form-elements.html#the-datalist-element"
+    },
+    {
+      "tag": "fieldset",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/fieldset",
+      "spec": "https://html.spec.whatwg.org/multipage/form-elements.html#the-fieldset-element"
+    },
+    {
+      "tag": "form",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/form",
+      "spec": "https://html.spec.whatwg.org/multipage/forms.html#the-form-element"
+    },
+    {
+      "tag": "input",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input",
+      "spec": "https://html.spec.whatwg.org/multipage/input.html#the-input-element"
+    },
+    {
+      "tag": "label",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/label",
+      "spec": "https://html.spec.whatwg.org/multipage/forms.html#the-label-element"
+    },
+    {
+      "tag": "legend",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/legend",
+      "spec": "https://html.spec.whatwg.org/multipage/form-elements.html#the-legend-element"
+    },
+    {
+      "tag": "meter",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/meter",
+      "spec": "https://html.spec.whatwg.org/multipage/form-elements.html#the-meter-element"
+    },
+    {
+      "tag": "optgroup",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/optgroup",
+      "spec": "https://html.spec.whatwg.org/multipage/form-elements.html#the-optgroup-element"
+    },
+    {
+      "tag": "option",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/option",
+      "spec": "https://html.spec.whatwg.org/multipage/form-elements.html#the-option-element"
+    },
+    {
+      "tag": "output",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/output",
+      "spec": "https://html.spec.whatwg.org/multipage/form-elements.html#the-output-element"
+    },
+    {
+      "tag": "progress",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/progress",
+      "spec": "https://html.spec.whatwg.org/multipage/form-elements.html#the-progress-element"
+    },
+    {
+      "tag": "select",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/select",
+      "spec": "https://html.spec.whatwg.org/multipage/form-elements.html#the-select-element"
+    },
+    {
+      "tag": "textarea",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/textarea",
+      "spec": "https://html.spec.whatwg.org/multipage/form-elements.html#the-textarea-element"
+    },
+    {
+      "tag": "details",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/details",
+      "spec": "https://html.spec.whatwg.org/multipage/interactive-elements.html#the-details-element"
+    },
+    {
+      "tag": "dialog",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog",
+      "spec": "https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element"
+    },
+    {
+      "tag": "menu",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/menu",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-menu-element"
+    },
+    {
+      "tag": "search",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/search",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-search-element"
+    },
+    {
+      "tag": "summary",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/summary",
+      "spec": "https://html.spec.whatwg.org/multipage/interactive-elements.html#the-summary-element"
+    },
+    {
+      "tag": "blockquote",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/blockquote",
+      "spec": "https://html.spec.whatwg.org/multipage/grouping-content.html#the-blockquote-element"
+    },
+    {
+      "tag": "iframe",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe",
+      "spec": "https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-iframe-element"
+    },
+    {
+      "tag": "tfoot",
+      "mdn": "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/tfoot",
+      "spec": "https://html.spec.whatwg.org/multipage/tables.html#the-tfoot-element"
+    }
+  ]
+}

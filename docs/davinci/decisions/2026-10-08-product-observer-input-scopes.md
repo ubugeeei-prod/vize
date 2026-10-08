@@ -281,3 +281,35 @@ and resource-companion blobs remain byte-exact to archived `40a`. The merged
 workflow remains 690 lines and the canonical record 350, without ratcheting
 any cap. Local composition checks do not transfer historical source success;
 the published successor must obtain its own natural Actions.
+
+## Original #7976 closure
+
+The original [#7976](https://github.com/ubugeeei-prod/vize/issues/7976)
+reports unreachable `v-show` advice for the literal flat/nested `:deep()` and
+`:slotted()` examples. [#8091](https://github.com/ubugeeei-prod/vize/pull/8091)
+delivered that correction at signed
+`47a2dc95d172a4f817b48c172689eadb1228f04c`. Its immutable original SFCs,
+54 complete authored API/report controls and 218 actual source CLI observations
+remain retained. Global ownership and the native type-aware route were then
+delivered by [#8266](https://github.com/ubugeeei-prod/vize/pull/8266) and
+[#8278](https://github.com/ubugeeei-prod/vize/pull/8278), signed
+`c580a6921602d6d47c6151dcf3f619f4eba21d60` and
+`26e56ac6a0de3f9f838db55bbdb71757317f2435`.
+
+[Protected Check 37738180532](https://github.com/ubugeeei-prod/vize/actions/runs/37738180532)
+is terminal successful on exact `26e56ac6`. Its protected n8n, Musea and both
+Nuxt workflows also pass on that exact candidate. Current signed main
+`8816b0d594ce9a5322ab33f60be5ccb6839fa774` retains the owning CSS production
+modules, original54 integration test and original fixture tree byte-exact to
+that delivered commit. The original ScheduleView packet expects complete zero
+diagnostics, rather than a nonempty-response or captured-output assertion.
+
+Close the original bug as fixed on main. Earlier companion statements keeping
+it open for publication or every unsupported global ownership construct are
+historical agent-added scope. Publication remains separately unfinished under
+[#6239](https://github.com/ubugeeei-prod/vize/issues/6239); public0.435.0 does
+not contain all these changes. Known conservative treatment of broader global
+attribute, pseudo and combinator subjects stays explicit future work in the
+existing CSS ownership records. A reachable local global subject intentionally
+keeps its `v-show` advice. This closure changes no product behavior, fixture,
+source gate or resource budget and claims no installed release acceptance.
