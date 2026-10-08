@@ -667,6 +667,7 @@ body::after {
 
 /* Table */
 .content table {
+  width: fit-content;
   border: 1px solid var(--octc-color-border);
   border-radius: 0;
   overflow: hidden;
