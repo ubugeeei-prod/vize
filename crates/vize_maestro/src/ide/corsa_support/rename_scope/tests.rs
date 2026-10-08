@@ -16,9 +16,10 @@ use crate::ide::IdeContext;
 use crate::ide::corsa_support::canonical_dependency_tests::host_document;
 use crate::server::ServerState;
 
-const SOURCE: &str = "<script setup>const value = 1</script><template>{{ value }}</template>";
+pub(super) const SOURCE: &str =
+    "<script setup>const value = 1</script><template>{{ value }}</template>";
 
-fn entry(uri: Url) -> WorkspaceEdit {
+pub(super) fn entry(uri: Url) -> WorkspaceEdit {
     WorkspaceEdit {
         changes: Some(HashMap::from([(
             uri,

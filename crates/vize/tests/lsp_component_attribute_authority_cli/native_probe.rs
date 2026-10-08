@@ -18,7 +18,7 @@ pub(super) fn prove(fixture: &mut Fixture) {
             "message":"Type 'string' is not assignable to type 'number'."
         }]),
     );
-    fixture.change("src/NativeGuard.vue", repaired, 2, json!([]));
+    fixture.change_with_native_completion("src/NativeGuard.vue", repaired, 2, json!([]));
 }
 
 impl Fixture {
@@ -69,5 +69,42 @@ impl Fixture {
             false
         });
         packets
+    }
+}
+
+impl Fixture {
+    pub(crate) fn change_with_native_completion(
+        &mut self,
+        file: &str,
+        text: &str,
+        version: i64,
+        diagnostics: Value,
+    ) {
+        let uri = self.uri(file);
+        let prompt = json!({
+            "jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
+            "params":{"uri":uri,"version":version,"diagnostics":[]}
+        });
+        let native = json!({
+            "jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
+            "params":{"uri":uri,"version":version,"diagnostics":diagnostics}
+        });
+        self.publications
+            .insert((uri.clone(), version), prompt.clone());
+        let expected_packets = [prompt, native];
+        println!(
+            "preauthored prompt/native publications: {}",
+            json!(expected_packets)
+        );
+        self.lsp.send(
+            json!({"jsonrpc":"2.0","method":"textDocument/didChange","params":{
+                "textDocument":{"uri":uri,"version":version},"contentChanges":[{"text":text}]
+            }}),
+        );
+        let packets = self.recv_publication_sequence(&uri, version, &expected_packets);
+        assert_eq!(
+            packets, expected_packets,
+            "complete ordered prompt/native publications before the next source request"
+        );
     }
 }
