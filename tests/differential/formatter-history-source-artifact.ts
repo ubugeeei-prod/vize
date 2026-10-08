@@ -9,6 +9,10 @@ import {
   validatePreservedJsonLayoutWitness,
 } from "./formatter-json-layout-source.ts";
 import { stripRust } from "../../tools/support/compat/davinci/lib/rust-source.mjs";
+import {
+  resolveSoleChildVueSource,
+  validateSoleChildVueWitness,
+} from "./formatter-sole-child-width-reference.mjs";
 
 // This is an assertion-only source witness, never a formatter output oracle.
 // The original pins remain authoritative; current source must also match.
@@ -139,6 +143,8 @@ export function resolvePreservedFormatterSource(
   root: string,
   artifact: { path: string; sha256: string },
 ) {
+  const child = resolveSoleChildVueSource(root, artifact);
+  if (child) return child;
   const json = resolvePreservedJsonLayoutSource(root, artifact);
   if (json) return json;
   const layout = resolvePreservedLayoutSource(root, artifact);
@@ -152,6 +158,7 @@ export function validatePreservedFormatterWitness(
   entry: { path: string; sha256: string; revisions: string[] },
   name: string,
 ) {
+  if (validateSoleChildVueWitness(root, entry, name)) return true;
   if (validatePreservedJsonLayoutWitness(root, entry, name)) return true;
   if (entry.path !== PRESERVED_FORMATTER_SOURCE.owner) return false;
   assert.deepEqual(

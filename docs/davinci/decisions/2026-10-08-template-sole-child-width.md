@@ -1,0 +1,258 @@
+# Sole inline interpolation width
+
+Issue: [#7876](https://github.com/ubugeeei-prod/vize/issues/7876).
+
+The complete second reporter case in retained comment 5987414404 is still
+authentically red on actual main `3e493feb7f98ef664cdaf2ce53d1ba94cb25c86b`.
+Its start tag fits the configured width, but the same physical line also owns
+the interpolation and matching closing tag. Measuring the header alone joins
+the whole child onto an overflowing line. The before public API test fails
+the independently authored original whole expectation on pass one; its raw
+receipt SHA-256 is `cb6f36ca8b3fa951b123f0f1cd7f4d89bb6092c1988dfdf6fe43b0e9fa7a84c4`.
+
+Measure only a sole interpolation whose original source immediately adjoins
+its parent opening and matching closing tags. Include the actual emitted
+prefix, formatted mustache, full normalized closing tag, SFC base indent,
+configured tab width and Unicode display width. When that line overflows,
+break inside `{{ }}` and anchor the closing mustache at the existing parent
+depth. Reuse the already formatted expression and existing literal renderer;
+no extra parse, pipeline stage or serialization is added. Newly chosen breaks
+honor the current suppression lock after opening the chunk. The original
+multiline, composite-text, preserved-text and closing-tag emission paths keep
+their existing owners.
+
+An independent read-only review authored sixteen complete Oxfmt 0.63.0
+references before reading modified production. Retain the complete original
+and compact carrier, exact100/over99, closing-suffix-only overflow, spaces and
+tabs4, Unicode, explicit/Auto CRLF, suppression, raw literals, owned block
+comments and unchanged #7969 controls. The sealed reference artifact SHA-256
+is `ebe294c117dc2e5e055575a110f68e2b5195beed5f2328f6693b3650efb27fe4`;
+its provider entry and source report are separately pinned. Thirty-two stock
+Vue 3.5.35 complete before/reference compiler packets execute the unmodified
+template content, including its first LF/CRLF. The sealed author's declared
+capture recipe is checked separately and never used for execution. All 128
+before/reference states retain complete DOM HTML/text, SSR HTML and
+click/submit effects, with no warnings. The unavailable MyButton
+module uses an explicit deterministic slot/button/event observer; this
+supplies no claim about that external module's implementation.
+
+The public API requires whole outputs and changed flags through three passes.
+The configured CLI requires eighty complete check/write/write/write/check
+statuses, output streams, file buffers and unchanged configuration buffers.
+The complete original #7969 and eleven continuation-prefix laws pass locally.
+The current suppression-owner hash changes only after proving the original
+placement law body and historical authority remain exact; all five local
+history/current-reference controls pass. Original fixtures, references,
+manifests, denominators and source laws remain separately byte-exact; the
+finite current Vue successors below retain their historical comparison.
+Every instruction ceiling remains unchanged.
+
+Required: exact-head hosted source/runtime and whole corpus qualification,
+all 104 unchanged instruction ceilings, root-owned protected queue and actual
+merge, then a supported registry-installed release replay. Earlier #8252
+measurements grant no composed-head performance or delivery credit. Composite
+children, independent closing-tag reflow, other expression shapes and native
+admission remain unfinished. Native shared accounting stays Unsupported16/16,
+handled0/16 and equivalent0/16. This bounded slice does not close #7876.
+
+Composed source `59d826ba25187bc71c605a4edb20d91888842979`, containing actual
+#8252 merge `09e40bd8ecf5b29f570651f57af1370b8c9ad12b`, failed the unchanged
+complex-template ceiling at 247297 against 244347 in three identical hosted
+runs [37731869349](https://github.com/ubugeeei-prod/vize/actions/runs/37731869349).
+The other three formatter and all 100 level ceilings held. Preserve that
+failure and the complete artifact `11530156510`; this PR was never queued.
+Skip the suppression query for non-mustache text and avoid UTF-8 validation
+and exact-width scans only when the complete byte-length upper bound already
+fits and neither segment has tabs. `unicode-width` 0.2.2 display width never
+exceeds UTF-8 byte length; tabbed or possibly overflowing lines retain the
+original exact width calculation. All source/reference bytes and caps stay
+unchanged; fresh successor measurements and hosted whole-output qualification
+remain required.
+
+Use the same adjacent matching-close query for the retained multiline
+interpolation depth and the new child-width path, as requested in review 4215149196. Source-owned offsets come from the successful opening-tag parser;
+matching names, closing-tag grammar whitespace and parent-depth behavior keep
+their existing rules. The original placement-law body/hash stays unchanged,
+and only the complete current owner pin follows the extraction. Keep every
+retained multiline literal/comment and three-pass law intact.
+
+Successor `adffaadda5c92e63a5bae512a21807d689a5b3af` measured 245873 against
+the same 244347 cap in three identical hosted runs
+[37732826799](https://github.com/ubugeeei-prod/vize/actions/runs/37732826799).
+The byte-fit bound saves 1424 instructions but does not qualify the slice.
+Pass only the opening parser's already computed unchanged ASCII name byte
+length into its existing source-offset state. The shared matcher still
+borrows original name bytes and checks exact adjacency/closing grammar;
+avoid a second name-character scan without parsing, allocating or copying
+again. Independent ownership review checked the only caller and parser.
+Original sources, outputs and ceilings remain immutable and fresh successor
+gates remain required.
+
+For the existing blank-line decision, test its unchanged requirement for two
+LF bytes before scanning all gap whitespace. The conjunction is pure and
+equivalent; ordinary single-LF, CRLF and lone-CR gaps cannot be blank lines
+under that existing law. Retain authored text/directive gaps, current locks
+and the precise LF definition. Independent review found no semantic blocker;
+fresh hosted measurement alone determines performance qualification.
+
+The complete hosted source failure on `59d826` and `adffa` identifies only two
+shared16/Vue14 historical expectation drifts: Vue2 filter-chain CRLF is
+252→260 bytes (the old 131-column child becomes 63/64/8 columns), and Vue3
+bitwise-OR is 125→131 bytes (101 becomes 48/49/8). Default print width is 100.
+Independently author only the two mustache grammar breaks; retain every
+attribute, expression, carrier, source input and old output byte. The sealed
+whole before/current packet is `current-vue-references.json`, SHA-256
+`bf8c553b9fd93908061acbeb8a239a0ee945c7f59209ce25d406d53ef28a3d36`.
+Vue2.7 remains unchanged. Native default/3 follows the same Vue3 successor;
+native2/2.7, original literal constants, four selectors, three passes and
+invalid-selector laws remain. Complete original Rust/native test owners are
+held separately, and the Rust history adapter admits exactly two expected
+path literals after reversing them restores its entire original owner.
+
+All original shared16 and Vue14 manifests remain pinned. Compare every raw
+CLI/API manifest field and the actual executed config buffer, including its
+hash, before admitting either current reference. Retain the old comparison
+as Different alongside the separate current comparison; the unchanged rows
+remain exact. Independent review rejected config-buffer substitution with a
+retained SHA and replaced witnesses; durable controls now reject both plus
+metadata, source-owner, input, historical/current-output and option poisons.
+The complete original300 custody audit still passes, without execution credit.
+
+Fresh local stock observation qualifies 18 whole compiler packets, 72 states,
+15 source-owned root packets and four rejecting controls. Vue2.6.14/2.7.16
+use official functions with declared VNode/filter observers. The original
+Vue2 two-root diagnostic and complete ranges remain; fragment executions
+grant no valid-component or Vue2 DOM/SSR claim. Vue3.5.35 uses actual mounted
+DOM/text, SSR and JavaScript call traces. Whole Oxfmt outputs are retained as
+negative evidence where they alter carrier or attribute spelling; they do
+not authorize replacing the historical whole output. The source CLI law
+requires 15 actual check/write/write/write/check commands, all complete
+streams/files/configs, and stock observation of every actual result. Local
+reference observations grant no source CLI, native adapter, hosted, queue or
+installed-release credit. Fresh exact-head whole source and all104 gates
+remain required; both prior red instruction measurements stay retained.
+
+Exact `5f800e72e7b28f872e120378270411209cc4e3b8` passes all 104 unchanged
+ceilings in [37736385751](https://github.com/ubugeeei-prod/vize/actions/runs/37736385751):
+script 927636, simple 287657, reuse 268792 and complex 243794 against 244347,
+identical in three runs with original fixture hashes. Its full source gate
+rejects the new nested Rust context type and the stock-provider tuple's
+ambiguous inferred package name. Flatten named Rust parameters and use named
+provider records without changing execution, relaxing lint or suppressing
+warnings. Reprove the retained placement law before updating only its
+complete current owner pin. The successor requires fresh exact-head source
+and all 104 measurements; this earlier green is not transferred.
+
+The pure current-reference counter still expected twelve entries and exposed
+the two new finite registrations. Keep all original 300 cases and the twelve
+previous registrations; require exactly the two sealed Vue IDs in addition.
+Fresh Vue14 source accounting is twelve historical byte matches plus two
+current matches, each retaining its historical Difference and three complete
+actual passes. The immutable historical286 replay counts, all manifests,
+requirements and native zero-credit totals remain unchanged.
+
+Native-phase run [37737740081](https://github.com/ubugeeei-prod/vize/actions/runs/37737740081)
+on exact `27eeb19868924a3c5b34d5b5dec6ad709ba510e1` fails before executing
+its requested cohort: `check_tsconfig_bom_cli` is absent from selected
+`MAIN_SOURCE_SHA=f9cfdaa0e84152ab9f11382e1b49e501d1ea44b6`. The receipt pins
+`DRIVER_SHA=27eeb19868924a3c5b34d5b5dec6ad709ba510e1`, the same f9 base, and
+`MAIN_HEAD_SHA=7ac87faaab5af9b937489320e50ad2d881e46dd5`. Retain the whole raw
+failure and artifact 11531739068, digest
+`af071b44478ac94648c2cb6e5a2e39b9b7598245e536adfacd466bd7759c6112`.
+This is native driver/source target cardinality drift, not formatter output
+failure. Its unresolved selection race is tracked under
+[#6830](https://github.com/ubugeeei-prod/vize/issues/6830).
+
+Preserve the previous parent head under `backup/formatter-8267-27eeb-20261008`
+and genuinely rebase the whole owned history onto actual protected signed
+main `68e0dc38973a8690bac8ce1c0d6b6349eb4a491a`, verified by GitHub. That
+incorporates the real BOM/ignore target providers without skipping tests or
+substituting source authority. Keep every original formatter product/corpus
+and history pin, the complete incoming 350 canonical rows and all peer clauses.
+The new exact source, all 104 and native-phase gates must run afresh; earlier
+greens are not transferred, and child/queue admission remains pending.
+
+Fresh exact `d5fa74e48d01cfe7dfd9a21f41a5d2bc41d42fff` instruction run
+[37739274859](https://github.com/ubugeeei-prod/vize/actions/runs/37739274859)
+passes all 104 unchanged ceilings across three identical repetitions:
+script 927636, simple 287658, reuse 268793, complex 243799 (cap 244347).
+Retain formatter artifact 11533830022, digest
+`59f56dd784c9fb574ca31fe4748028dc6b83eeb2a249c8f8efc9493b25969da0`,
+and level artifact 11533431347, digest
+`50cc207013ab191afe1710ca78448cff8d36710bd5a8a03ae624c440a7fe5ab7`.
+These measurements qualify only this exact head.
+
+Its fresh full source Check
+[37739279068](https://github.com/ubugeeei-prod/vize/actions/runs/37739279068)
+exposes an inherited BOM CLI failure in source-coverage job 113185989482:
+`malformed_plain_and_bom_configs_preserve_whole_original_cli_failure`,
+`direct/bom/explicit=false`, emits ANSI-colored `Error:` where the original
+whole stderr authority is plain. Keep both complete outputs and the 294862-byte
+raw log, SHA `fb1d46d20a40d0d1fdb72eadb08b7e067bbbd5322c8feaea2491dc370db17a2d`.
+No formatter assertion failed in that job. Keep the native requirements and
+whole stderr oracle; route the source repair to its owner, then genuinely
+refresh ancestry and require all successor source/native/instruction checks.
+Closing-child and queue admission stay pending; no failed job is skipped and
+no prior green is borrowed.
+
+Fresh review checks register an ID before loading its sealed authority row.
+Eight existing current-reference/custody controls pass; every input, expected
+output, configuration, witness, manifest and authority hash stays unchanged.
+Retain the original absolute provider entry/realEntry paths as observed capture
+metadata: no loader resolves or executes them, and the actual stock provider
+resolver is checkout-relative with exact package-version and entry-byte checks.
+These public-owner provenance fields contain no credentials. Preserve the
+whole independently authored authority rather than normalize and re-hash it;
+the review itself confirms there is no CI path-comparison failure.
+
+The next closing-only slice stays pending exact parent source qualification.
+Read-only replay of its independently sealed 13-vector packet reproduces all
+26 complete original/expected stock Vue compiler packets and 104 runtime states,
+including native-button submit events. This is stock-reference evidence only:
+zero Vize CLI calls, no changed formatter behavior and no installed acceptance.
+Its complete template packets include the first LF/CRLF. A future observer
+must compare those full packets directly; the prior sole-child authority's
+separate author-recipe trimming is not applicable to this new packet. Keep
+10 independent closing positives plus three unchanged fit/suppression controls,
+all complete original reporter carriers and the broader composite gap open.
+
+Fresh native-phase run
+[37739282080](https://github.com/ubugeeei-prod/vize/actions/runs/37739282080)
+completes successfully on exact d5fa. Retain whole artifact 11533158046,
+digest `0ba35a0f460586424df5f74452221bf9583dbe5fd2b686b40a8cc8383dc0bfed`.
+Its source-custody packet binds both driver and source to d5fa, tree
+`453317125f73792b76401206c49deb95d2f26091`, baseline/main signed 68e,
+and the `current-inline` source recipe. The earlier f9/27e/7ac missing-target
+red remains intact. PR Check
+[37739283150](https://github.com/ubugeeei-prod/vize/actions/runs/37739283150)
+also succeeds. Full source qualification remains incomplete because the
+separate whole BOM observer failure is retained.
+
+The BOM owner independently reproduces both FORCE_COLOR and CLICOLOR_FORCE
+overriding NO_COLOR through 24 complete original-CLI observations. Reviewed
+[#8290](https://github.com/ubugeeei-prod/vize/pull/8290) repairs the test's
+explicit plain process envelope by clearing both force variables and retaining
+NO_COLOR, with 48 additive actual colored-versus-controlled CLI observations.
+The producer/parser/output policy and all eight original whole gold packets
+remain unchanged. This refines the earlier source-repair description: the
+observed defect is inherited environment control in the test observer. Wait
+for actual signed provider delivery before genuinely refreshing this parent;
+no unmerged repair or observed output normalization is used.
+
+The observer repair actually merges on 2026-10-08 at 08:12:09Z as signed
+`e8a00fbb629d3e092e08fd474a58a01d1aeadc47`. Its exact original-caller
+source-coverage job 113194708236 succeeds with all four BOM bodies and the
+unchanged coverage caps; protected Check 37745743753 also succeeds. Preserve
+the D5 raw whole failure and every original expected packet.
+
+Genuinely rebase all eight preserved owned commits from actual signed 68e
+onto freshly fetched actual signed e8a00fbb, retaining the old local head
+`0da49113a64ae0d532d493c68acf142cfb7cd771` under a backup branch. The
+resulting pre-receipt head `304e4269008d966f3a7d00ca80db85d219d0b2e3` is
+clean: all 35 noncanonical owned paths are byte-identical to that preserved
+head, and all 350 incoming canonical rows survive with only the authorized
+formatter rows 187/189 changed. No fixture, expected output or instruction
+ceiling changes. Fresh exact-head full Check, native phases and all 104
+three-repetition measurements remain required; no D5 success transfers.
+Only a qualified parent may own the genuine 13-vector dependent closing
+child and native Stack registration, before protected queue admission.

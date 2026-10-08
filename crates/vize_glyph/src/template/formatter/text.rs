@@ -27,7 +27,8 @@ impl TemplateFormatter<'_> {
             format_interpolations_with_vue_version(text.as_str(), self.options, self.vue_version);
         let start = text.start();
         let end = text.end();
-        let depth = if formatted.contains('\n')
+        let multiline = formatted.contains('\n');
+        let depth = if multiline
             && parse_interpolation_range(text.as_str().as_bytes(), 0)
                 .is_some_and(|(_, _, end)| end == text.as_str().len())
         {
@@ -40,7 +41,7 @@ impl TemplateFormatter<'_> {
         // `{{ expr }}` emission would leave the wrapped lines indented
         // relative to column 0 instead of the interpolation's depth. Emit the
         // canonical multi-line shape on the first pass. (#957)
-        if formatted.contains('\n')
+        if multiline
             && let Some(rewrapped) =
                 self.rewrap_text_with_multiline_interpolation(&formatted, depth)
         {
@@ -60,6 +61,10 @@ impl TemplateFormatter<'_> {
             return;
         }
         self.open_chunk(output, depth, joiner.open(start));
+        if self.write_wrapped_hugged_child(output, &formatted, start, end, depth, joiner) {
+            joiner.finish(end);
+            return;
+        }
         output.extend_from_slice(formatted.as_bytes());
         output.extend_from_slice(self.newline);
         joiner.finish(end);

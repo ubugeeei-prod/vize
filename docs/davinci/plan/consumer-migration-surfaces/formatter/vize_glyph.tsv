@@ -402,5 +402,6 @@ formatter	Formatter	test/dev	crates/vize_glyph/tests/style_rule_blank_lines.rs	5
 formatter	Formatter	test/dev	crates/vize_glyph/tests/template_attribute_print_width.rs	6	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/template_continuation_prefix_width.rs	6	l0	L0	stage	vize_l0	preferred	4
 formatter	Formatter	test/dev	crates/vize_glyph/tests/template_expression_parens.rs	3	l0	L0	stage	vize_l0	preferred	1
+formatter	Formatter	test/dev	crates/vize_glyph/tests/template_sole_child_print_width.rs	5	l0	L0	stage	vize_l0	preferred	2
 formatter	Formatter	test/dev	crates/vize_glyph/tests/typed_arrow_last_argument.rs	30	l0	L0	stage	vize_l0	preferred	1
 formatter	Formatter	test/dev	crates/vize_glyph/tests/utf8_bom.rs	3	l0	L0	stage	vize_l0	preferred	1

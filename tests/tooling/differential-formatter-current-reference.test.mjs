@@ -33,9 +33,14 @@ const cases = packs.flatMap(
 );
 const qualified = cases.filter((row) => row.currentReference);
 
-void test("twelve reviewed current references keep all original300 source and captured outputs", () => {
+void test("fourteen reviewed current references keep all original300 source and captured outputs", () => {
   assert.equal(cases.length, 300);
-  assert.equal(qualified.length, 12);
+  assert.equal(qualified.length, 14);
+  assert.equal(qualified.filter((row) => row.currentReference.issue !== 7876).length, 12);
+  assert.deepEqual(
+    qualified.filter((row) => row.currentReference.issue === 7876).map((row) => row.id),
+    ["vue-version/sfc/filter-chain-crlf-v2", "vue-version/sfc/bitwise-or-v3"],
+  );
   const fixture = qualified.find((row) => row.currentReference.issue === 7826);
   assert.equal(fixture.api, "format_sfc");
   assert.equal(fixture.currentReference.issue, 7826);

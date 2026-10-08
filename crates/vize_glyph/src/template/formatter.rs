@@ -15,6 +15,7 @@ use super::{
     },
 };
 
+mod child_width;
 mod interpolation;
 mod opening_attributes;
 mod preserved_text;
@@ -201,7 +202,7 @@ impl<'a> TemplateFormatter<'a> {
                         output.push(b'>');
                         if !is_void {
                             depth += 1;
-                            joiner.opened_element(pos, end_pos);
+                            joiner.opened_element(pos, end_pos, tag_name.len());
                         }
                     }
                     output.extend_from_slice(self.newline);

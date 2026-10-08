@@ -8,7 +8,7 @@ fn fmt_uses_explicit_project_vue_version_and_no_config_retains_vue3() {
         (
             include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue2-filter-chain-crlf/App.vue.txt").as_slice(),
             include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue2-filter-chain-crlf/vize.config.json").as_slice(),
-            include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue2-filter-chain-crlf/reference.expected.txt").as_slice(),
+            include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue2-filter-chain-crlf/sole-child-width.current.expected.txt").as_slice(),
         ),
         (
             include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue2-7-filter-chain/App.vue.txt").as_slice(),
@@ -18,7 +18,7 @@ fn fmt_uses_explicit_project_vue_version_and_no_config_retains_vue3() {
         (
             include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue3-bitwise-or/App.vue.txt").as_slice(),
             include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue3-bitwise-or/vize.config.json").as_slice(),
-            include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue3-bitwise-or/reference.expected.txt").as_slice(),
+            include_bytes!("../../../tests/_fixtures/differential/formatter/sfc-vue3-bitwise-or/sole-child-width.current.expected.txt").as_slice(),
         ),
     ];
     for (source, config, expected) in cases {

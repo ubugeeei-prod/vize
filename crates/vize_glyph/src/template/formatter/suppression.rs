@@ -17,7 +17,7 @@
 use std::cmp::Ordering;
 
 use super::TemplateFormatter;
-use crate::template::helpers::{is_tag_name_char, is_whitespace};
+use crate::template::helpers::is_whitespace;
 
 /// Pragmas whose suppression covers the line *after* the comment.
 const NEXT_LINE_PRAGMAS: [&[u8]; 4] = [
@@ -61,7 +61,7 @@ pub(super) struct LineJoiner<'s> {
     /// runtime Vue text node.
     previous_end: Option<usize>,
     /// Last ordinary opening tag, borrowed from the existing tag parser.
-    opening: Option<(usize, usize)>,
+    opening: Option<(usize, usize, usize)>,
 }
 
 impl<'s> LineJoiner<'s> {
@@ -101,8 +101,8 @@ impl<'s> LineJoiner<'s> {
             // The source gap must contain only whitespace; text and directive
             // expression newlines must never become template layout.
             blank_line = self.source.get(start) == Some(&b'<')
-                && gap.iter().copied().all(is_whitespace)
-                && gap.iter().filter(|&&byte| byte == b'\n').take(2).count() == 2;
+                && gap.iter().filter(|&&byte| byte == b'\n').take(2).count() == 2
+                && gap.iter().copied().all(is_whitespace);
         }
         if self.current.is_none() || self.current != previous {
             return if blank_line {
@@ -121,40 +121,27 @@ impl<'s> LineJoiner<'s> {
         )
     }
 
-    pub(super) fn opened_element(&mut self, start: usize, end: usize) {
-        self.opening = Some((start, end));
+    pub(super) fn opened_element(&mut self, start: usize, end: usize, name_len: usize) {
+        self.opening = Some((start, end, name_len));
     }
 
     pub(super) fn locks_current_line(&self) -> bool {
         self.current.is_some()
     }
 
+    pub(super) fn hugged_closing_name(&self, start: usize, end: usize) -> Option<&[u8]> {
+        super::child_width::hugged_closing_name(
+            self.source,
+            self.opening,
+            self.previous_end,
+            start,
+            end,
+        )
+    }
+
     /// A sole interpolation touching both parent tags shares their layout depth.
     pub(super) fn interpolation_depth(&self, start: usize, end: usize, depth: usize) -> usize {
-        let Some((tag_start, tag_end)) = self.opening else {
-            return depth;
-        };
-        if tag_end != start || self.previous_end != Some(start) {
-            return depth;
-        }
-        let opening = self.source.get(tag_start + 1..tag_end).unwrap_or_default();
-        let name_len = opening
-            .iter()
-            .copied()
-            .take_while(|&b| is_tag_name_char(b))
-            .count();
-        let name = opening.get(..name_len).unwrap_or_default();
-        let closing = self.source.get(end..).unwrap_or_default();
-        if closing.starts_with(b"</")
-            && closing.get(2..2 + name_len) == Some(name)
-            && closing
-                .get(2 + name_len..)
-                .unwrap_or_default()
-                .iter()
-                .copied()
-                .find(|&b| !is_whitespace(b))
-                == Some(b'>')
-        {
+        if self.hugged_closing_name(start, end).is_some() {
             depth.saturating_sub(1)
         } else {
             depth
