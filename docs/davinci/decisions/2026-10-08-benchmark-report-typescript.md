@@ -45,7 +45,7 @@ Reproduce the bounded checks with the repository's pinned Node runtime:
 
 ```sh
 vp exec node tools/support/typescript/check-project.ts tsconfig.benchmark-reports.json
-vp exec node --test tools/benchmarks/scripts/check-gate-report.test.ts tests/tooling/check-bench-trigger.test.ts tests/tooling/tool-benchmark-trigger.test.ts
+vp exec node --test tests/tooling/check-bench-trigger.test.ts tests/tooling/tool-benchmark-trigger.test.ts
 ```
 
 The four original budget tests and three additional complete-output/order/count
@@ -54,6 +54,11 @@ local comparison with the literal `0bb7d231e70c318240337f35c74957488adde735` pro
 retains 507 whole budget outcomes, 16 complete measurement/error observations and
 four byte-exact Markdown outputs. The original engine map is identical. This is
 deterministic reporter acceptance, not compiler throughput or accuracy evidence.
+
+The existing check-bench trigger test imports the actual report test module so
+those same seven laws execute in the existing PR tooling worker. The scheduled
+benchmark also retains its direct test invocation; repeated execution of those
+laws is not independent coverage or a new workflow stage.
 
 All seven existing caller test modules execute locally: 23 tests pass and the two
 tests requiring a built source CLI remain explicitly skipped. The first local CLI

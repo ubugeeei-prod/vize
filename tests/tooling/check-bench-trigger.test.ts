@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import "../../tools/benchmarks/scripts/check-gate-report.test.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 test("check-bench keeps optional scheduled and manual fail-closed measurements", () => {
