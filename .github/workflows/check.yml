@@ -55,6 +55,32 @@ jobs:
     uses: ./.github/workflows/level-instruction-counts.yml
   level-dependency-direction:
     uses: ./.github/workflows/level-dependencies.yml
+  release-integration-catalog:
+    name: Release integration catalog
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 10
+    permissions: { contents: read, pull-requests: read }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Select the official integration candidate
+        id: candidate
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: node tools/support/compat/github/release-integration-event.mjs
+      - name: Fetch exact integration history
+        if: ${{ steps.candidate.outputs.integration != '' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        if: ${{ steps.candidate.outputs.integration != '' }}
+      - uses: ./.github/actions/setup-rust-script
+        if: ${{ steps.candidate.outputs.integration != '' }}
+      - name: Authenticate metadata and the complete pinned catalog before merge
+        if: ${{ steps.candidate.outputs.integration != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INTEGRATION_PR: ${{ steps.candidate.outputs.integration }}
+        run: rust-script tools/commands/release/pr.rs check-integration-candidate "$INTEGRATION_PR"
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
@@ -646,6 +672,7 @@ jobs:
       - pr-source-checks
       - instruction-counts
       - level-dependency-direction
+      - release-integration-catalog
     permissions:
       contents: read
     steps:

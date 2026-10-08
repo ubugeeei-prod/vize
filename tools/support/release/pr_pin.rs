@@ -10,11 +10,14 @@ use std::{
     thread::sleep,
     time::{Duration, Instant},
 };
+#[path = "pr_pin_candidate.rs"]
+mod candidate;
 #[path = "pr_pin_catalog.rs"]
 mod catalog;
 #[cfg(test)]
 #[path = "pr_pin_catalog_tests.rs"]
 mod catalog_tests;
+pub use candidate::{check_candidate, verify_candidate};
 #[path = "pr_pin_delivery.rs"]
 mod delivery;
 #[path = "pr_pin_dispatch.rs"]

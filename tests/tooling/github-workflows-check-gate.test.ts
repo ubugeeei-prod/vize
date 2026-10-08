@@ -18,6 +18,7 @@ const PR_JOBS = [
   "pr-source-checks",
   "instruction-counts",
   "level-dependency-direction",
+  "release-integration-catalog",
 ];
 const FULL_SUITE_JOBS = [
   "nix-flake",

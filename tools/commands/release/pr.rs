@@ -6,7 +6,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: shipping-target-catalog-v2.
+//! Driver source pin: pre-merge-catalog-v3.
 
 #[path = "../../support/release/pr_checks.rs"]
 mod pr_checks;
@@ -70,6 +70,12 @@ fn run() -> Result<(), String> {
             run_id.parse().map_err(|_| "Invalid release run number")?,
             &root,
         ),
+        ["verify-integration-candidate", number, candidate, base, head] => pr_pin::verify_candidate(
+            number.parse().map_err(|_| "Invalid integration PR number")?, candidate, base, head, &root,
+        ),
+        ["check-integration-candidate", number] => pr_pin::check_candidate(
+            number.parse().map_err(|_| "Invalid integration PR number")?, &root,
+        ),
         [command @ ("validate" | "wait-promotion"), number, head, tag] => {
             let number = number.parse().map_err(|_| "Invalid PR number")?;
             if *command == "validate" {
@@ -79,7 +85,7 @@ fn run() -> Result<(), String> {
             }
         }
         _ => Err(
-            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run>"
+            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run> | verify-integration-candidate <integration PR> <candidate SHA> <base SHA> <integration head SHA> | check-integration-candidate <integration PR>"
                 .into(),
         ),
     }
