@@ -110,6 +110,9 @@ test("release Check job evidence covers the exact SemVer matrix in Rust and JS",
   assert.equal(crates.length, 12);
   assert.deepEqual(requiredWorkflowJobNames("Check"), [
     "test-scripts",
+    "test-js-packages",
+    "build-js-packages",
+    "full-js-report",
     ...crates.map((name) => `cargo-semver-checks (${name})`),
   ]);
 
@@ -161,6 +164,25 @@ test("newest matching run wins across cancellation, reruns, and concurrent runs"
       releaseSha,
     ),
   );
+});
+
+test("release full JS jobs reject missing, duplicate, unfinished and unsuccessful qualification", () => {
+  const jobs = requiredWorkflowJobNames("Check").map(successfulReleaseJob);
+  for (const name of ["test-js-packages", "build-js-packages", "full-js-report"]) {
+    const original = jobs.find((job) => job.name === name);
+    assert.ok(original);
+    for (const variant of [
+      jobs.filter((job) => job.name !== name),
+      [...jobs, original],
+      ...["skipped", "failure", "cancelled"].map((conclusion) =>
+        jobs.map((job) => (job.name === name ? { ...job, conclusion } : job)),
+      ),
+      jobs.map((job) => (job.name === name ? { ...job, status: "in_progress" } : job)),
+    ]) {
+      assert.throws(() => assertRequiredWorkflowJobs("Check", variant), new RegExp(name));
+      assert.ok(summarizeRequiredWorkflowJobFailures("Check", variant)?.includes(name));
+    }
+  }
 });
 
 test("matrix-sensitive release gates require every successful job", () => {

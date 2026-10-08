@@ -76,7 +76,7 @@ test("obsolete main validation is cancelled when the branch advances", () => {
   }
 });
 
-test("source gates cover PRs and merge groups while extra checks require schedule or dispatch", () => {
+test("source gates cover PRs and merge groups while full JS qualification also runs on main", () => {
   assert.ok(workflow.on?.pull_request);
   assert.deepEqual(workflow.on?.merge_group, {
     types: ["checks_requested"],
@@ -96,7 +96,9 @@ test("source gates cover PRs and merge groups while extra checks require schedul
   for (const job of FULL_SUITE_JOBS) {
     assert.equal(
       workflow.jobs?.[job]?.if,
-      "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+      ["test-scripts", "build-js-packages", "test-js-packages"].includes(job)
+        ? "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}"
+        : "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
     );
   }
   assert.equal(
@@ -116,11 +118,11 @@ test("source gates cover PRs and merge groups while extra checks require schedul
   const checkSteps = workflow.jobs?.["check-js"]?.steps ?? [];
   assert.equal(
     checkSteps.find((step) => step.name === "Check fast JS/TS")?.if,
-    "${{ github.event_name == 'pull_request' || github.event_name == 'push' }}",
+    "${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main') }}",
   );
   assert.equal(
     checkSteps.find((step) => step.name === "Check JS/TS")?.if,
-    "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+    "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}",
   );
   const inventory = checkSteps.find((step) => step.name === "Check Davinci source inventories");
   assert.ok(inventory);
@@ -180,7 +182,12 @@ test("source gates cover PRs and merge groups while extra checks require schedul
   );
   assert.match(commands("check-vize-apps"), /cargo build --profile ci -p vize/);
   assert.match(commands("test-scripts"), /vp run --workspace-root test:scripts/);
-  assert.match(commands("test-js-packages"), /vp run --workspace-root test:js/);
+  const history = parse(
+    readRepoFile(".github", "actions", "test-js-packages-with-history", "action.yml"),
+  ) as { runs: { steps: Array<{ run?: string }> } };
+  const jsTestCommands = history.runs.steps.map((step) => step.run ?? "").join("\n");
+  assert.match(jsTestCommands, /vp run --workspace-root test:js/);
+  assert.match(jsTestCommands, /node npm\/oxlint\/scripts\/check-project-transport\.mjs/);
   assert.match(commands("clippy-and-test"), /cargo clippy --workspace/);
   assert.equal(
     workflow.jobs?.["clippy-and-test"]?.steps?.find((step) => step.name === "Test")?.uses,
@@ -225,6 +232,58 @@ test("report command exits nonzero for a failed dependency", () => {
   });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /check-vize-apps: failure/);
+});
+
+test("full JS qualification retains independent native builds and strictly gates all full events", () => {
+  const full = workflow.jobs?.["full-js-report"];
+  assert.ok(full);
+  assert.equal(
+    full.if,
+    "${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}",
+  );
+  const fullJobs = ["test-js-packages", "build-js-packages", "test-scripts", "check-js"];
+  assert.deepEqual(full.needs, fullJobs);
+  const gate = full.steps?.at(-1);
+  assert.ok(gate?.run);
+  assert.equal(gate?.run, "node tools/support/compat/github/require-needs-success.ts");
+  const setup = full.steps?.find((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
+  assert.ok(setup);
+  assert.deepEqual(setup.with, {
+    "node-version-file": "package.json",
+    cache: false,
+    "run-install": false,
+  });
+  assert.ok(full.steps && full.steps.indexOf(setup) < full.steps.indexOf(gate));
+  const testJob = workflow.jobs?.["test-js-packages"];
+  const history = testJob?.steps?.find((step) => step.name === "Test JS packages");
+  assert.equal(history?.if, "${{ always() }}");
+  assert.equal(history?.uses, "./.github/actions/test-js-packages-with-history");
+  assert.equal(history?.run, undefined);
+  for (const job of [testJob, workflow.jobs?.["build-js-packages"]]) {
+    assert.ok(job);
+    assert.equal(job.needs, undefined, "each exact-source job owns its physical native build");
+    assert.ok(job.steps?.some((step) => step.uses?.startsWith("actions/checkout@")));
+    assert.equal(
+      job.steps?.some((step) => step.uses?.startsWith("actions/download-artifact@")),
+      false,
+      "a shared CI addon cannot substitute for the debug history producer",
+    );
+  }
+  const allSucceeded = Object.fromEntries(fullJobs.map((job) => [job, { result: "success" }]));
+  assert.equal(aggregateNeedsResults(allSucceeded).exitCode, 0);
+  for (const job of fullJobs) {
+    for (const result of ["failure", "cancelled", "skipped", "unknown"]) {
+      const observed = { ...allSucceeded, [job]: { result } };
+      assert.equal(aggregateNeedsResults(observed).exitCode, 1, `${job}: ${result}`);
+      const command = spawnSync(process.execPath, [gate.run.split(" ")[1]], {
+        cwd: root,
+        encoding: "utf8",
+        env: { ...process.env, NEEDS_JSON: JSON.stringify(observed) },
+      });
+      assert.equal(command.status, 1, `${command.stderr}\n${command.stdout}`);
+      assert.ok(command.stderr.includes(`${job}: ${result}`));
+    }
+  }
 });
 
 test("slow suites use schedules or explicit dispatch without starting on PRs", () => {

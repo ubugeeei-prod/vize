@@ -86,7 +86,13 @@ const requiredSemverCrates = [
 const requiredJobNames = new Map([
   [
     "Check",
-    ["test-scripts", ...requiredSemverCrates.map((name) => `cargo-semver-checks (${name})`)],
+    [
+      "test-scripts",
+      "test-js-packages",
+      "build-js-packages",
+      "full-js-report",
+      ...requiredSemverCrates.map((name) => `cargo-semver-checks (${name})`),
+    ],
   ],
   ["Benchmark", ["pr-benchmark-budget"]],
   [

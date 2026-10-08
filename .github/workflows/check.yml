@@ -111,10 +111,10 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check JS/TS
-        if: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
         run: ./node_modules/@typescript/typescript-linux-x64/lib/tsc --noEmit --pretty false --project docs/tsconfig.json && vp run --no-cache --filter './npm/native' build:debug && vp run --workspace-root check:ci
       - name: Check fast JS/TS
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+        if: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main') }}
         run: ./node_modules/@typescript/typescript-linux-x64/lib/tsc --noEmit --pretty false --project docs/tsconfig.json && vp run --workspace-root check:repo
   semver-checks:
     name: cargo-semver-checks (${{ matrix.crate }})
@@ -272,7 +272,7 @@ jobs:
       - uses: ./.github/actions/check-vue-parity
   test-scripts:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }} # CLI, MoonBit and native artifact fixtures require the full bootstrap.
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }} # CLI, MoonBit and native artifact fixtures require the full bootstrap.
     timeout-minutes: 30
     env: { NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169" }
     steps:
@@ -326,7 +326,7 @@ jobs:
       - uses: ./.github/actions/vscode-host-smoke
   build-js-packages:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -376,7 +376,7 @@ jobs:
           retention-days: 7
   test-js-packages:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
     timeout-minutes: 45
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -399,7 +399,25 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Test JS packages
-        run: vp run --workspace-root test:js
+        if: ${{ always() }}
+        uses: ./.github/actions/test-js-packages-with-history
+  full-js-report:
+    name: full-js-report
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}
+    needs:
+      - test-js-packages
+      - build-js-packages
+      - test-scripts
+      - check-js
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", cache: false, run-install: false }
+      - name: Require every full JS qualification job to succeed
+        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
+        run: node tools/support/compat/github/require-needs-success.ts
   clippy-and-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}

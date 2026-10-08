@@ -892,13 +892,20 @@ fn workflow_requires_job_evidence(workflow_name: &str) -> bool {
 
 fn required_workflow_job_names(workflow_name: &str) -> Vec<String> {
     match workflow_name {
-        "Check" => std::iter::once("test-scripts".to_string())
-            .chain(
-                REQUIRED_SEMVER_CRATES
-                    .iter()
-                    .map(|crate_name| format!("cargo-semver-checks ({crate_name})")),
-            )
-            .collect(),
+        "Check" => [
+            "test-scripts",
+            "test-js-packages",
+            "build-js-packages",
+            "full-js-report",
+        ]
+        .into_iter()
+        .map(str::to_string)
+        .chain(
+            REQUIRED_SEMVER_CRATES
+                .iter()
+                .map(|crate_name| format!("cargo-semver-checks ({crate_name})")),
+        )
+        .collect(),
         "Benchmark" => vec!["pr-benchmark-budget".to_string()],
         "Fuzz" => vec![
             "Fuzz sfc_parse".to_string(),
