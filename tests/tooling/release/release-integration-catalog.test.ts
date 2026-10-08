@@ -55,6 +55,25 @@ test("integration planning selects its own PR and queue root while ordinary PRs 
   );
 });
 
+test("ordinary batched queue roots succeed while official integrations reject ambiguous bases", () => {
+  const batched = { ...event, merge_group: { ...event.merge_group, base_sha: "d".repeat(40) } };
+  const ordinary = { ...pull, head: { ref: "fix/ordinary" }, body: "ordinary" };
+  assert.equal(
+    integrationEvent("merge_group", batched, repository, candidate, () => ordinary),
+    "",
+  );
+  assert.throws(() => integrationEvent("merge_group", batched, repository, candidate, () => pull));
+  assert.throws(() =>
+    integrationEvent(
+      "merge_group",
+      { ...batched, merge_group: { ...batched.merge_group, base_sha: "short" } },
+      repository,
+      candidate,
+      () => ordinary,
+    ),
+  );
+});
+
 test("integration planning rejects missing, foreign and ambiguous event identities", () => {
   for (const mutated of [
     { ...event, repository: { full_name: "foreign/repo" } },
@@ -69,6 +88,7 @@ test("integration planning rejects missing, foreign and ambiguous event identiti
     { head_ref: "refs/heads/other" },
     { head_sha: base },
     { base_sha: candidate },
+    { base_sha: "short" },
     { base_ref: "refs/heads/other" },
   ]) {
     assert.throws(() =>

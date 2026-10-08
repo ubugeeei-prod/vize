@@ -14,7 +14,8 @@ parents. For its own merge group it checks the event's exact candidate, single
 parent, and `gh-readonly-queue/main/pr-PR-PARENT` branch. Ambiguous or batched
 delivery projections fail closed. The existing required `test-report` consumes
 this job's result; a failed, cancelled, or skipped job cannot authorize a merge.
-Ordinary PRs finish the lightweight event selection without building a catalog.
+Ordinary PRs and batched queue roots finish the lightweight event selection
+without building a catalog or imposing release-only parent constraints.
 
 The integration PR opens before source initialization finishes. A check that
 observes an absent backlink or pin fails closed; rerun it after initialization.
