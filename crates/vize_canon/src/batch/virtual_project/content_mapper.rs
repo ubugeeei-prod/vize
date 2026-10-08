@@ -142,6 +142,7 @@ pub fn generate_vue_content_mapper_transform_with_options(
         mut code,
         mut mappings,
         mut semantic_links,
+        mut prop_default_key_links,
         diagnostics,
         ..
     } = generate_vue_virtual_ts(
@@ -171,7 +172,12 @@ pub fn generate_vue_content_mapper_transform_with_options(
     )?;
 
     if use_tsx {
-        prepend_vue_jsx_reference(&mut code, &mut mappings, &mut semantic_links);
+        prepend_vue_jsx_reference(
+            &mut code,
+            &mut mappings,
+            &mut semantic_links,
+            &mut prop_default_key_links,
+        );
     }
 
     let spans = protocol_spans(content, &code, &mappings);

@@ -28,27 +28,33 @@ pub(crate) fn linked_semantic_positions(
     else {
         return Vec::new();
     };
-    linked_offsets(&result.semantic_links, start, end)
-        .into_iter()
-        .map(|offset| {
-            let (line, character) = crate::ide::offset_to_position(&result.code, offset);
-            CanonicalSemanticPosition {
-                request_uri: request_uri.clone(),
-                line,
-                character,
-            }
-        })
-        .collect()
+    linked_offsets(
+        &result.semantic_links,
+        &result.prop_default_key_links,
+        start,
+        end,
+    )
+    .into_iter()
+    .map(|offset| {
+        let (line, character) = crate::ide::offset_to_position(&result.code, offset);
+        CanonicalSemanticPosition {
+            request_uri: request_uri.clone(),
+            line,
+            character,
+        }
+    })
+    .collect()
 }
 
 fn linked_offsets(
     links: &[vize_canon::virtual_ts::VizeSemanticLink],
+    prop_default_key_links: &[vize_canon::virtual_ts::VizeSemanticLink],
     start: usize,
     end: usize,
 ) -> Vec<usize> {
     // Most native locations are not bridge endpoints. Preserve their scan-only
     // fast path without allocating graph state for unrelated references.
-    if !links.iter().any(|link| {
+    if !links.iter().chain(prop_default_key_links).any(|link| {
         is_binding_link(link.kind)
             && ((link.source_range.start == start && link.source_range.end == end)
                 || (link.target_range.start == start && link.target_range.end == end))
@@ -61,7 +67,7 @@ fn linked_offsets(
     let mut pending = vec![origin];
     let mut offsets = Vec::new();
     while let Some(endpoint) = pending.pop() {
-        for link in links {
+        for link in links.iter().chain(prop_default_key_links) {
             if !is_binding_link(link.kind) {
                 continue;
             }
@@ -121,8 +127,8 @@ mod tests {
         };
         let links = vec![first, second];
 
-        assert_eq!(linked_offsets(&links, 115, 121), vec![130]);
-        assert_eq!(linked_offsets(&links, 130, 136), vec![115]);
+        assert_eq!(linked_offsets(&links, &[], 115, 121), vec![130]);
+        assert_eq!(linked_offsets(&links, &[], 130, 136), vec![115]);
     }
 
     #[test]
@@ -154,12 +160,31 @@ mod tests {
                 kind: VizeSemanticLinkKind::VueTemplatePropBinding,
             },
         ];
-        assert_eq!(linked_offsets(&links, 10, 14), vec![20, 30]);
-        assert_eq!(linked_offsets(&links, 20, 24), vec![10, 30]);
-        assert_eq!(linked_offsets(&links, 30, 34), vec![10, 20]);
-        assert!(linked_offsets(&links, 10, 13).is_empty());
-        assert!(linked_offsets(&links, 40, 44).is_empty());
-        assert_eq!(linked_offsets(&links, 110, 114), vec![120]);
+        assert_eq!(linked_offsets(&links, &[], 10, 14), vec![20, 30]);
+        assert_eq!(linked_offsets(&links, &[], 20, 24), vec![10, 30]);
+        assert_eq!(linked_offsets(&links, &[], 30, 34), vec![10, 20]);
+        assert!(linked_offsets(&links, &[], 10, 13).is_empty());
+        assert!(linked_offsets(&links, &[], 40, 44).is_empty());
+        assert_eq!(linked_offsets(&links, &[], 110, 114), vec![120]);
+    }
+
+    #[test]
+    fn private_default_key_edges_join_the_existing_single_core_link() {
+        let core = vec![VizeSemanticLink {
+            source_range: 10..14,
+            target_range: 20..24,
+            kind: VizeSemanticLinkKind::VueTemplatePropBinding,
+        }];
+        let auxiliary = vec![VizeSemanticLink {
+            source_range: 10..14,
+            target_range: 30..34,
+            kind: VizeSemanticLinkKind::VueTemplatePropBinding,
+        }];
+        assert_eq!(core.len(), 1);
+        assert_eq!(linked_offsets(&core, &auxiliary, 10, 14), vec![20, 30]);
+        assert_eq!(linked_offsets(&core, &auxiliary, 20, 24), vec![10, 30]);
+        assert_eq!(linked_offsets(&core, &auxiliary, 30, 34), vec![10, 20]);
+        assert!(linked_offsets(&core, &auxiliary, 30, 33).is_empty());
     }
 
     #[test]
@@ -180,6 +205,7 @@ mod tests {
                 code: code.into(),
                 source_mappings: Vec::new(),
                 semantic_links: vec![link],
+                prop_default_key_links: Vec::new(),
                 import_source_map: ImportSourceMap::empty(),
             },
             dependencies: Vec::new(),

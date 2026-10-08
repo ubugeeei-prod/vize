@@ -131,4 +131,8 @@ impl SfcSourceMap {
     pub fn semantic_links(&self) -> &[VizeSemanticLink] {
         self.projection.semantic_links()
     }
+    /// Supplemental inline-default binding edges, separate from core links.
+    pub fn prop_default_key_links(&self) -> &[VizeSemanticLink] {
+        self.projection.prop_default_key_links()
+    }
 }

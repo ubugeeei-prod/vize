@@ -90,9 +90,9 @@ separate objects, spreads, computed/string keys, methods or accessors grant no
 edge. Unowned/imported or ambiguous members, and multiple distinct defineProps
 owners, also grant no edge. Owner and key offsets shift together. Canon projects
 those exact spans through existing equal-length copied setup mappings and checks
-the generated endpoint bytes against the retained key bytes. The existing
-`VueTemplatePropBinding` metadata joins the bare binding to that default key;
-its prior bare-binding-to-public-access link remains first and unchanged.
+the generated endpoint bytes against the retained key bytes. A supplementary private carrier joins the bare binding to that default key.
+The existing core `VueTemplatePropBinding` vector retains only its original
+bare-binding-to-public-access link and its exact cardinality.
 
 Maestro completes the exact connected binding endpoint set before its existing
 native follow-up batch, from any of the three origins. Exact ranges, visited
@@ -118,3 +118,47 @@ control mixed the generator's `u32` offset with `usize` string positions
 offset 37, all exact span assertions, source/golden bytes and provider contracts
 are unchanged. The failed build grants no runtime execution credit, and the
 successor requires fresh complete hosted qualification.
+
+## Core mapping contract and supplementary carrier
+
+Exact producer head `c2bc3a55a2b70dc4dd6c4e43ee0737c347476398` compiled merge
+`651ef91ce3856cb02516874605d6a1cfb80a58b9` in Check `37733410875`.
+All 32 new complete alias captures, and all 82 prior complete report captures,
+matched their whole expected responses. The six original defaulted-tone failures
+now include all three rename edits and clean actual version-2 application.
+Nevertheless the source run failed two mapping controls. The unchanged existing
+bare-prop control requires exactly one core link; inserting the new default-key
+edge into its vector returned two. The new copied-key control supplied no
+parsed template, so its requested bare binding did not exist and returned no
+links. Preserve both complete authentic failed job logs and all 32 exact runtime
+packets, compressed without changing their decompressed bytes, under
+`supplemental/historical-c2bc/`. The receipt records every verified artifact ZIP
+digest and binds the compiled merge and PR head. Runtime success does not override
+a failed existing law or confer protected merge or release credit.
+
+Keep that original count-one control and every original fixture and golden
+byte-exact. `ProjectionMapping` already has only private fields, so a private
+supplementary `prop_default_key_links` vector preserves its public construction
+contract. Existing constructors, the core getter and the two-part consuming
+accessor remain unchanged. An additive complete consuming accessor moves the
+supplementary edges without cloning into private materialization and editor
+results. Both replacement paths, expression binding retargeting, TSX prefix
+insertion and import rewriting apply the same existing coordinate transformation
+to both carriers. Generated package shadows retain edges only when their content
+is the original generated content; authored identity and synthetic shadows grant
+none. The existing native follow-up traversal scans the core and supplementary
+carriers together, preserving its unrelated-location allocation-free path and
+all native packet admission and authored owner checks.
+
+The copied-key control now supplies an actual parsed `<div>{{ tone }}</div>`
+template and analyzes its scope before generation. It keeps script offset 37,
+LF/CRLF, the exact copied default-key source span and the unrelated-key refusal.
+It requires one unchanged core link plus one supplementary link with the same
+bare-binding endpoint. Separate controls cover carrier consumption, all generated
+coordinate shifts, native editor import/TSX/UTF-16 coordinates, materialization,
+and traversal from every endpoint. The public stock ContentMapper semantic-link
+protocol remains the original core protocol, so this carrier grants no stock
+ContentMapper parity credit. Fresh complete hosted Actions, protected execution,
+actual signed delivery and installed release replay remain mandatory.
+
+Paired carrier decision: [#8011 comment](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6053621182).

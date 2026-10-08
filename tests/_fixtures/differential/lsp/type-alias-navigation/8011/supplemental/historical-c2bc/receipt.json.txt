@@ -1,0 +1,312 @@
+{
+  "kind": "historical-source-unit-failure-with-complete-cli-success",
+  "pr": 8262,
+  "prHead": "c2bc3a55a2b70dc4dd6c4e43ee0737c347476398",
+  "compiledMergeRef": "651ef91ce3856cb02516874605d6a1cfb80a58b9",
+  "runId": 37733410875,
+  "attempt": 1,
+  "runConclusion": "failure",
+  "logs": [
+    {
+      "jobId": 113169680450,
+      "shard": 4,
+      "file": "rust-shard-4-job.log.gz",
+      "rawLogSha256": "5f6d9b07a5e146737d6bf7bf79cfb66d7352fc179f2aa1022e3f0e559ea7d939",
+      "gzipSha256": "2a679ee9d5ca5ea03060c377b7591ae98b957e4f97dab101433bc96d7683edb4",
+      "failure": "New copied-key unit test supplied no template topology, so no bare binding was emitted: expected2 actual0."
+    },
+    {
+      "jobId": 113169680462,
+      "shard": 3,
+      "file": "rust-shard-3-job.log.gz",
+      "rawLogSha256": "bf9f3f19a8142be02aef0e6dee37aeec0ecc2c1e83be898f5fbc61f1797356cb",
+      "gzipSha256": "48f869574eec8a9376ddef847564006419f420fa795e77a88f700227e9b5804a",
+      "failure": "Existing unchanged core VueTemplatePropBinding oracle expected exactly1 link but the initial producer inserted an auxiliary default-key edge into the same vector: actual2."
+    }
+  ],
+  "artifacts": [
+    {
+      "shard": 1,
+      "artifactId": 11531355800,
+      "artifactZipSha256": "4b77b057b7ea4c1c6cb7776c49f4820197e0134d941a23dc76ba33c8d3a5b5b7",
+      "archiveDigestVerified": true
+    },
+    {
+      "shard": 2,
+      "artifactId": 11531216100,
+      "artifactZipSha256": "7dc5bfa85a76c07eff228b92ae93502fc7fbdae93f7f6bee957fccc1e5cb73e6",
+      "archiveDigestVerified": true
+    },
+    {
+      "shard": 3,
+      "artifactId": 11531086739,
+      "artifactZipSha256": "35ab831b997f3f43bdc61884dc56a1c080de691b99c66b0a51a61dbe16f923f5",
+      "archiveDigestVerified": true
+    },
+    {
+      "shard": 4,
+      "artifactId": 11531106688,
+      "artifactZipSha256": "2c62994a6ce60bcb12f4c91f9e38e3ffe18ab57911637fed6cf1ad9cc59b1ef3",
+      "archiveDigestVerified": true
+    }
+  ],
+  "packets": [
+    {
+      "file": "lsp-vue-0PEj4y.json.txt.gz",
+      "rawPacketSha256": "b0c872cb9126e0e21f543a9c8c99ac388bef1a58d496b621e1e20103faa96aa4",
+      "gzipSha256": "f1cf90c6d726ff84de14bcbce97c426dc748eb9d990c98836f3513abdf3cfa9a",
+      "context": "alias Plain, tone, tone?:, newline=\"\\r\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-7NfQQ3.json.txt.gz",
+      "rawPacketSha256": "84fb10cdd706df33c156271d37e213bd7e33ca4325ff9ac634cf487e06858471",
+      "gzipSha256": "8225eef7df2411932a1893c300a4fc3cb7e4b789c70ed647eb989fb966509c9c",
+      "context": "alias Defaults, hidden, hidden\", newline=\"\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-H5WYGH.json.txt.gz",
+      "rawPacketSha256": "01aff3e9a0c2372bbadf85762edec697f2ae8807f7c2a2eb0d8fa9e9aa3cdbff",
+      "gzipSha256": "2f2cc821a57c06abdf206cf6d09d3bacd2fa52bf118cf90bc4c0eb8cf83ce70e",
+      "context": "alias Defaults, tone, tone: \"light\", newline=\"\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-UIP97D.json.txt.gz",
+      "rawPacketSha256": "f44eeb607a7204447efe182d4213cbf2b42af0141ce7c11b1b82f510ffbe695e",
+      "gzipSha256": "715ad2292446ac8fd9778d1de34d4114245bd468eadabc968b9ca68be8955037",
+      "context": "alias Defaults, tone, tone\", newline=\"\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-W8Q1FT.json.txt.gz",
+      "rawPacketSha256": "f12340d1c99d1646c8206ccc4298cd8ea8e7c35e4127714f085630391d459d72",
+      "gzipSha256": "256cf49d8bde0ee99a967a277ad2ae3f03514221d4df720600ff0c0bec704d71",
+      "context": "alias Defaults, tone, tone?:, newline=\"\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-WBTTs5.json.txt.gz",
+      "rawPacketSha256": "0e4b4e43a05cc74242a316a1852b4917d55b9458b5e14348e8a9ce593addd4e5",
+      "gzipSha256": "d56d4ed0afd743ab43a6cd41803fa5c1495692a08788c94f17a50c5938eb609f",
+      "context": "alias Defaults, hidden, hidden?:, newline=\"\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-Y0fLBz.json.txt.gz",
+      "rawPacketSha256": "d4eb052a724cd9c4533e69a63807ee75f92b8acf3433e16ba525208ce5a96f22",
+      "gzipSha256": "7b07128cb3570a9df5e8c2a7869ee8c05fff4fe35fb810a925573e9b96efa549",
+      "context": "alias Plain, tone, tone\", newline=\"\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-fsASnk.json.txt.gz",
+      "rawPacketSha256": "2f88f0fd2bb273a9c2bfcf4844b3fccd851c00df1e63a034df182a7ccc350f1d",
+      "gzipSha256": "aaa413e10e362f056e163527d0df582481a31020ca39bb8be6ea1dfdb6423f1a",
+      "context": "alias Defaults, hidden, hidden?:, newline=\"\\r\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-jaUbg8.json.txt.gz",
+      "rawPacketSha256": "4cdb6ddfc084ec7d9913fb3b5e1ef3f14ed94d81128e4133df3decd7109b909e",
+      "gzipSha256": "5a4dbb69fb644954cf2b14ce5b13d97345124c7f06502018921d091d63332737",
+      "context": "alias Plain, tone, tone\", newline=\"\\r\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-kjJyxt.json.txt.gz",
+      "rawPacketSha256": "a2636aa02cd62412f130ef451763bfdedcacad5150763f22db2dcc09300ef1d4",
+      "gzipSha256": "7f4fcf32ea260bd15502e7c3720e9b3f3ea4388d11053b64a7a36419f5545066",
+      "context": "alias Defaults, tone, tone: \"light\", newline=\"\\r\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-lqcPF6.json.txt.gz",
+      "rawPacketSha256": "316c036591fabb970baf78d3616f1f403df567a606fd2df74edeca9db68341ca",
+      "gzipSha256": "ab5dd7ac59a4e6554da5fdba85c316011400e459700663a21d7c7af606bc61c1",
+      "context": "alias Plain, hidden, hidden\", newline=\"\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-lx8H41.json.txt.gz",
+      "rawPacketSha256": "5026dceff24ad50d55d7257ae06e10118cc713542d2017cafa9f07e16482fa33",
+      "gzipSha256": "ff2d3091e93a543f84cc33edb01dbf64ab879d8d90c2e437d295ac0a4919c877",
+      "context": "alias Defaults, tone, tone?:, newline=\"\\r\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-rs52jJ.json.txt.gz",
+      "rawPacketSha256": "ec2f0640f5420703083be4a1d57ec7abc70596b2918dc13e46840a18c61004aa",
+      "gzipSha256": "1eadc6ea25f63b9fee7870df2f0b0359750042eabd11e6babc6e9586a3f49b0d",
+      "context": "alias Plain, hidden, hidden\", newline=\"\\r\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-t7gSGG.json.txt.gz",
+      "rawPacketSha256": "6dce7353c837ffcb3a679fed52fd8873efe997a6def5677afd60edc0534923c5",
+      "gzipSha256": "b5424bf80e2161af8138e580266251beea4c98a515d6fb4fe9b8dc2caaab782f",
+      "context": "alias Defaults, hidden, hidden\", newline=\"\\r\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-u5WeZl.json.txt.gz",
+      "rawPacketSha256": "0f145516c08154dbe663c4c0da8f4e8e0f843873e1f90d55e7f32121cec35ce9",
+      "gzipSha256": "4ce609247608e91b3d190f5cffdd6fe25c361d641053fa1cbd25e7523e1aae0c",
+      "context": "alias Plain, tone, tone?:, newline=\"\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-uzC4WQ.json.txt.gz",
+      "rawPacketSha256": "5f04c76d03f3acdbcd368b17934ae74987c007563759e3bd86d9aa5d0662c6db",
+      "gzipSha256": "3799350cad9a61dd49b04875f3f677eedd4a01a68b06a9b3c82d3f8c507773bf",
+      "context": "alias Plain, hidden, hidden?:, newline=\"\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-yqsSvK.json.txt.gz",
+      "rawPacketSha256": "87545e029959f340ca0ace3db2e043646dd28f399dc1a7c5e0ff90f40905b1c7",
+      "gzipSha256": "b7cd1ec9dd9698a055e61eab9b24b95360911af9a44b0003fdd405c467643e94",
+      "context": "alias Defaults, tone, tone\", newline=\"\\r\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-yrgcZ5.json.txt.gz",
+      "rawPacketSha256": "377c8f46cfbd0e6a924f6c95fb5ae08413173b5f3c2f6095cb70494b932edbae",
+      "gzipSha256": "67a0b23d9cfb436b59ab55a1baf8f56ec9a5ffe7ffe6ac1efa0010f4c6f05090",
+      "context": "alias Plain, hidden, hidden?:, newline=\"\\r\\n\"",
+      "shard": 2,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-1OClA5.json.txt.gz",
+      "rawPacketSha256": "a57ddbbe9937b3e1a6bc69b367a50aac813cc4d079a25ef0b6e28608a0c03007",
+      "gzipSha256": "998b359d97c7b012f69df8df0daaf4e9e544176744e025ceef6af8657a871de1",
+      "context": "alias definitions Partial, newline=\"\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-6EOsME.json.txt.gz",
+      "rawPacketSha256": "3dd1bd9789116a939ffb76b226578bab66e8ea9ba38fce4411b24dfb280cfb6f",
+      "gzipSha256": "8f9533308eec012352e3f40a25c122a327ba4c25e0f0ecda9872e7f861440089",
+      "context": "alias definitions Defaults, newline=\"\\r\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-KguS1e.json.txt.gz",
+      "rawPacketSha256": "db2e674c40948cfed2db5d77d7adb65ae6c9d9018d47eb84afc90e3d51ad7c8d",
+      "gzipSha256": "44cd7aab1e0cb0a481e57394f08ecd2bfa11f3ae02a44b0f6a5d8aed6765b7ea",
+      "context": "alias definitions Defaults, newline=\"\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-MsmteE.json.txt.gz",
+      "rawPacketSha256": "bc6d6f8c52d222f41a2637782508f7154e1257fa5827b02eb69aee8c2323f647",
+      "gzipSha256": "2e3b5f1bdb3cdf47f13822d059413032df2cfef75c5d631d4290710f93d51735",
+      "context": "alias definitions Plain, newline=\"\\r\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-OR2Uc9.json.txt.gz",
+      "rawPacketSha256": "8108a9c414c75c34609ea41855cc66b8f82fc42f11e3c19bfdfc9169601ea2b6",
+      "gzipSha256": "149d5e9c540b14705baedba3d3fcbbf48dae0cb0de7de1fb309de3f554e65f82",
+      "context": "alias Partial, hidden, hidden\", newline=\"\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-PzVlWh.json.txt.gz",
+      "rawPacketSha256": "786d7be8822b5ee55cf674217e8a3a1b6fc64bd6a1b1b5e265e852a3662996d7",
+      "gzipSha256": "5c269c96057922aadb5b07375be317e3bb7cae441f2a5b2d30354e45059ecd7a",
+      "context": "alias Partial, tone, tone?:, newline=\"\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-RddEu1.json.txt.gz",
+      "rawPacketSha256": "2d956c58e45ac7defc253328db6cbd24c4cc6c71d92c6c905b7b858754bfc4e5",
+      "gzipSha256": "9249e47994db9a84285ab637b47e73f65b8b3fffda63ef61871a3c639519c978",
+      "context": "alias Partial, hidden, hidden?:, newline=\"\\r\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-WvGrca.json.txt.gz",
+      "rawPacketSha256": "3063c325b6bb45fd1b81c7f9ea8f12b163c8e6132991944d71ced7355597450f",
+      "gzipSha256": "56ba94b9198e989116396a2381ef9d5b4b1bf2467ab41ca6453d60c1203d8607",
+      "context": "alias Partial, hidden, hidden?:, newline=\"\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-fEjTfb.json.txt.gz",
+      "rawPacketSha256": "94d4550a4f95879ecab77406e1f83c28b7ec3e62b400c1b6da53d26bf64c56ed",
+      "gzipSha256": "1544bc70333cfb4e9398d2f3622d222e881ef41207e28d3f3ab3c03cef4d24e2",
+      "context": "alias Partial, tone, tone\", newline=\"\\r\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-fLp0kf.json.txt.gz",
+      "rawPacketSha256": "d7ed1e32df9dcd67209cc385590ee17bc46f4ba3422a5dbd53262d8969cb7428",
+      "gzipSha256": "29c90bd64ad073cbbebad4d58912439b8b307d2456f567fc1d86af2127924db3",
+      "context": "alias Partial, tone, tone\", newline=\"\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-pXrUGe.json.txt.gz",
+      "rawPacketSha256": "53ea187330db7546d26b76a2c42f88c6349dae43faf62cf1e49abe749bb217b5",
+      "gzipSha256": "6696768ede457c51c61846d1c304a95a8930efb17deb027d777235c31f3b3914",
+      "context": "alias definitions Plain, newline=\"\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-pcl8oR.json.txt.gz",
+      "rawPacketSha256": "645066aa254a5cd48056eb54b91c57fa3fdd788593161f0735ae59356177efbe",
+      "gzipSha256": "d23fa66af9f13eab5a698c9ccffedf77c15671ebd221b605bc37be4b48151ab5",
+      "context": "alias Partial, hidden, hidden\", newline=\"\\r\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-tI62pC.json.txt.gz",
+      "rawPacketSha256": "17173ab66e7e311fad6dd3c74f75dc3fc486c34ecd6c460cf3dc7d337f2dfc7d",
+      "gzipSha256": "711b1bf069fd09e922c9009f7ba8baa2583452ce6c84e091ee6a763d7f0ef9b6",
+      "context": "alias definitions Partial, newline=\"\\r\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    },
+    {
+      "file": "lsp-vue-vA7HTC.json.txt.gz",
+      "rawPacketSha256": "8ef4886c302e6214db377f9763dd9c2326b0dec4bc643367404432ec26d81037",
+      "gzipSha256": "6e64fbb60098ef1122b63233f9fce7c531438f11d8ecb0cc5bec8d0597bafe20",
+      "context": "alias Partial, tone, tone?:, newline=\"\\r\\n\"",
+      "shard": 3,
+      "wholeActualEqualsExpected": true
+    }
+  ],
+  "authority": "Each packet retains exact decompressed bytes, sourceSha:null, whole actual/expected transactions, complete guards and repairs. Run/job/artifact/build checkout bind source. Runtime success cannot override the unchanged failed core mapping law; no queue or release credit is granted."
+}

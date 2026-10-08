@@ -24,6 +24,8 @@ mod virtual_ts_art_bindings;
 mod virtual_ts_inline_art;
 
 #[cfg(test)]
+mod prop_default_key_link_tests;
+#[cfg(test)]
 mod relative_import_tests;
 #[cfg(test)]
 mod semantic_link_tests;

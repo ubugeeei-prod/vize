@@ -35,3 +35,13 @@ key-origin renames omitted the alias/template. Actual application yielded TS2353
 while every independent golden and native guard repaired cleanly. The correction
 joins only AST-owned inline keys to existing binding metadata; all sources and
 expected transactions remain byte-exact, with fresh hosted qualification required.
+
+`historical-c2bc/` retains both complete source-unit failure logs and all 32
+complete successful alias runtime captures from Check `37733410875` on compiled
+merge `651ef91ce3856cb02516874605d6a1cfb80a58b9`. Its receipt verifies the official
+artifact ZIP digests and the unchanged decompressed packet bytes. The run failed
+the original core count-one mapping law and a new control with no template scope;
+these are preserved failures, despite whole runtime transaction success. The
+successor keeps the original core link cardinality and carries default-key edges
+separately through the same coordinate transformations. Fresh qualification is
+required; prior runtime success grants no merge or release acceptance.

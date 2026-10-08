@@ -18,6 +18,7 @@ pub(crate) struct MaterializedSourceDocument {
     pub(crate) code: vize_carton::String,
     pub(crate) mappings: Vec<crate::virtual_ts::VizeMapping>,
     pub(crate) semantic_links: Vec<crate::virtual_ts::VizeSemanticLink>,
+    pub(crate) prop_default_key_links: Vec<crate::virtual_ts::VizeSemanticLink>,
     pub(crate) import_source_map: crate::batch::ImportSourceMap,
     pub(crate) mapping_kind: MaterializedSourceMappingKind,
 }
@@ -39,6 +40,12 @@ impl VirtualProject {
                     .as_ref()
                     .map(|map| map.mappings().to_vec())
                     .unwrap_or_default();
+                let prop_default_key_links = file
+                    .source_map
+                    .sfc_map
+                    .as_ref()
+                    .map(|map| map.prop_default_key_links().to_vec())
+                    .unwrap_or_default();
                 let semantic_links = file
                     .source_map
                     .sfc_map
@@ -52,6 +59,7 @@ impl VirtualProject {
                     code: file.content.clone(),
                     mappings,
                     semantic_links,
+                    prop_default_key_links,
                     import_source_map: file.source_map.import_map.clone(),
                     mapping_kind: MaterializedSourceMappingKind::Generated,
                 }
@@ -95,6 +103,16 @@ impl VirtualProject {
             } else {
                 Vec::new()
             };
+            let prop_default_key_links = if mapping_kind == MaterializedSourceMappingKind::Generated
+            {
+                file.source_map
+                    .sfc_map
+                    .as_ref()
+                    .map(|map| map.prop_default_key_links().to_vec())
+                    .unwrap_or_default()
+            } else {
+                Vec::new()
+            };
             let import_source_map = if mapping_kind == MaterializedSourceMappingKind::Generated {
                 file.source_map.import_map.clone()
             } else {
@@ -107,6 +125,7 @@ impl VirtualProject {
                 code,
                 mappings,
                 semantic_links,
+                prop_default_key_links,
                 import_source_map,
                 mapping_kind,
             });
@@ -123,6 +142,7 @@ impl VirtualProject {
                 code: source.into(),
                 mappings: Vec::new(),
                 semantic_links: Vec::new(),
+                prop_default_key_links: Vec::new(),
                 import_source_map: Default::default(),
                 mapping_kind: MaterializedSourceMappingKind::AuthoredIdentity,
             });
@@ -162,5 +182,50 @@ mod tests {
         assert_eq!(document.source, "{\"answer\":42}\n");
         assert_eq!(document.code, document.source);
         assert!(document.mappings.is_empty());
+    }
+}
+
+#[cfg(test)]
+mod default_key_tests {
+    use super::{MaterializedSourceMappingKind, VirtualProject};
+
+    #[test]
+    fn materialized_vue_documents_retain_private_default_key_endpoints() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("App.vue");
+        std::fs::write(
+            &path,
+            r#"<!-- 😀 -->
+<script setup lang="tsx">
+type Props = { tone?: 'light' | 'dark' };
+withDefaults(defineProps<Props>(), { tone: 'light' });
+</script>
+<template><div>{{ tone }}</div></template>"#,
+        )
+        .unwrap();
+        let mut project = VirtualProject::new(root.path()).unwrap();
+        project.register_path(&path).unwrap();
+        let document = project
+            .materialized_source_documents()
+            .into_iter()
+            .find(|document| {
+                document.source_path == vize_carton::path::canonicalize_non_verbatim(&path)
+            })
+            .unwrap();
+        assert_eq!(
+            document.mapping_kind,
+            MaterializedSourceMappingKind::Generated
+        );
+        assert_eq!(document.prop_default_key_links.len(), 1);
+        let key = &document.prop_default_key_links[0];
+        assert_eq!(document.code.get(key.source_range.clone()), Some("tone"));
+        assert_eq!(document.code.get(key.target_range.clone()), Some("tone"));
+        assert!(
+            document
+                .semantic_links
+                .iter()
+                .any(|core| core.source_range == key.source_range
+                    && core.target_range != key.target_range)
+        );
     }
 }

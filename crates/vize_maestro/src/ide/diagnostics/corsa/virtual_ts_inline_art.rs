@@ -97,7 +97,8 @@ impl DiagnosticService {
                     &virtual_ts_options,
                 );
                 let code = output.code;
-                let (source_mappings, semantic_links) = output.mapping.into_parts();
+                let (source_mappings, semantic_links, prop_default_key_links) =
+                    output.mapping.into_binding_parts();
 
                 results.push((
                     current_variant_index,
@@ -105,6 +106,7 @@ impl DiagnosticService {
                         code: code.to_string(),
                         source_mappings,
                         semantic_links,
+                        prop_default_key_links,
                         import_source_map: Default::default(),
                     },
                 ));

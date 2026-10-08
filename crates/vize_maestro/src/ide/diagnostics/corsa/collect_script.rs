@@ -74,6 +74,7 @@ impl DiagnosticService {
             code: opened.code.to_string(),
             source_mappings: mappings,
             semantic_links: Vec::new(),
+            prop_default_key_links: Vec::new(),
             import_source_map: opened.import_source_map,
         });
         let finished = fetch_finished_diagnostics(&bridge, &opened.request_uri, &document, 0)

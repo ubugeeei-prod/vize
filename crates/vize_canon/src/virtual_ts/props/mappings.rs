@@ -32,6 +32,7 @@ pub(crate) fn prop_source<'a>(
 pub(crate) struct PropBindingMappings<'a> {
     mappings: &'a mut Vec<VizeMapping>,
     semantic_links: &'a mut Vec<VizeSemanticLink>,
+    prop_default_key_links: &'a mut Vec<VizeSemanticLink>,
     summary: &'a Croquis,
     script_content: Option<&'a str>,
     script_source_offset: &'a dyn Fn(usize) -> usize,
@@ -41,6 +42,7 @@ impl<'a> PropBindingMappings<'a> {
     pub(crate) fn new(
         mappings: &'a mut Vec<VizeMapping>,
         semantic_links: &'a mut Vec<VizeSemanticLink>,
+        prop_default_key_links: &'a mut Vec<VizeSemanticLink>,
         summary: &'a Croquis,
         script_content: Option<&'a str>,
         script_source_offset: &'a dyn Fn(usize) -> usize,
@@ -48,6 +50,7 @@ impl<'a> PropBindingMappings<'a> {
         Self {
             mappings,
             semantic_links,
+            prop_default_key_links,
             summary,
             script_content,
             script_source_offset,
@@ -101,7 +104,7 @@ impl<'a> PropBindingMappings<'a> {
                     if authored.is_none() || ts.get(target.clone()) != authored {
                         continue;
                     }
-                    self.semantic_links.push(VizeSemanticLink {
+                    self.prop_default_key_links.push(VizeSemanticLink {
                         source_range: start..start + binding.len(),
                         target_range: target,
                         kind: VizeSemanticLinkKind::VueTemplatePropBinding,

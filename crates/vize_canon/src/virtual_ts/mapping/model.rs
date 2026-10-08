@@ -33,6 +33,7 @@ pub struct ProjectionMapping {
     /// Per-row metadata; empty while every row carries the default.
     meta: Vec<ProjectionMeta>,
     semantic_links: Vec<VizeSemanticLink>,
+    prop_default_key_links: Vec<VizeSemanticLink>,
     authored_base: usize,
     /// Rows are sorted by authored start with pairwise disjoint authored
     /// ranges, so a binary search finds the unique containing row.
@@ -45,6 +46,7 @@ impl Default for ProjectionMapping {
             spans: Vec::new(),
             meta: Vec::new(),
             semantic_links: Vec::new(),
+            prop_default_key_links: Vec::new(),
             authored_base: 0,
             authored_disjoint: true,
         }
@@ -70,6 +72,7 @@ impl ProjectionMapping {
             spans,
             meta: Vec::new(),
             semantic_links,
+            prop_default_key_links: Vec::new(),
             authored_base: 0,
             authored_disjoint,
         }
@@ -200,7 +203,11 @@ impl ProjectionMapping {
                     shift_generated_range(&mut sub.gen_range, start, old_end, delta);
                 }
             }
-            for link in &mut self.semantic_links {
+            for link in self
+                .semantic_links
+                .iter_mut()
+                .chain(&mut self.prop_default_key_links)
+            {
                 shift_generated_range(&mut link.source_range, start, old_end, delta);
                 shift_generated_range(&mut link.target_range, start, old_end, delta);
             }
@@ -242,7 +249,11 @@ impl ProjectionMapping {
                 self.push_with(span, row_meta);
             }
         }
-        for link in &mut self.semantic_links {
+        for link in self
+            .semantic_links
+            .iter_mut()
+            .chain(&mut self.prop_default_key_links)
+        {
             shift_generated_range(&mut link.source_range, start, old_end, delta);
             shift_generated_range(&mut link.target_range, start, old_end, delta);
         }
@@ -271,7 +282,11 @@ impl ProjectionMapping {
                 adjust(&mut sub.gen_range);
             }
         }
-        for link in &mut self.semantic_links {
+        for link in self
+            .semantic_links
+            .iter_mut()
+            .chain(&mut self.prop_default_key_links)
+        {
             adjust(&mut link.source_range);
             adjust(&mut link.target_range);
         }

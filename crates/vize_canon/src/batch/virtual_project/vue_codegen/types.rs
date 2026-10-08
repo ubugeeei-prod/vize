@@ -9,6 +9,8 @@ pub(in crate::batch::virtual_project) struct GeneratedVueFile {
     pub(in crate::batch::virtual_project) code: CompactString,
     pub(in crate::batch::virtual_project) mappings: Vec<crate::virtual_ts::VizeMapping>,
     pub(in crate::batch::virtual_project) semantic_links: Vec<crate::virtual_ts::VizeSemanticLink>,
+    pub(in crate::batch::virtual_project) prop_default_key_links:
+        Vec<crate::virtual_ts::VizeSemanticLink>,
     pub(in crate::batch::virtual_project) diagnostics: Vec<Diagnostic>,
     pub(in crate::batch::virtual_project) typed_router_import: bool,
 }
