@@ -64,6 +64,7 @@ await test("all 118 owned sources retain both entire observations without findin
   assert.equal(provider.length, 236);
   for (const input of inputs) {
     const sourceCase = native.cases.find((c) => c.id === input.id);
+    assert.ok(sourceCase, input.id);
     assert.equal(sourceCase.source, input.source);
     assert.equal(sourceCase.filename, input.filename);
     assert.equal(sourceCase.observations.length, 2);

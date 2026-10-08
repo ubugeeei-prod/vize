@@ -21,8 +21,10 @@ research and must be rebuilt on its declared revision when replayed.
 `summary.json` counts target presence only. `metadata-and-foreign-classification.json`
 retains the named metadata and foreign-identity differences. These observations
 do not establish whole native/provider packet equality or exhaustive rule parity.
-The initial expectation for a literal slot under an ordinary HTML parent was
-corrected from the provider observation; its original source and packets remain.
+`reviewed-provider-coverage.json` records the corrected literal-slot expectation
+from the provider observation. `authored-cases.json` intentionally retains the
+original `expectedTarget: false` for both `slot-attribute--unrelated-native-parent`
+cases; their original source and packets remain unchanged.
 
 Three identities have bounded target-presence differences: deprecated HTML `is`,
 bound slot, and numeric event modifiers. Bound slot is addressed separately by
