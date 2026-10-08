@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { finiteCut } from "./warm-type-backed-cut.ts";
 import { gitBodyDigest, qualifyPathHostMove } from "./warm-type-backed-path-host.ts";
+import { qualifyTimingHostMove } from "./warm-type-backed-timing-host.ts";
 
 import {
   driverRoot,
@@ -225,10 +226,15 @@ if (process.argv[2] === "prepare") {
         gitBodyDigest(driverRoot, side === "before" ? baseline : head, file),
       )
     : null;
+  const timingHostMove = !cut
+    ? qualifyTimingHostMove(production, allowed, (side, file) =>
+        gitBodyDigest(driverRoot, side === "before" ? baseline : head, file),
+      )
+    : null;
   if (!cut) {
     for (const file of production)
       assert.ok(
-        allowed.has(file) || pathHostMove?.files.includes(file),
+        allowed.has(file) || pathHostMove?.files.includes(file) || timingHostMove?.files.includes(file),
         `unqualified production delta: ${file}`,
       );
   }
@@ -270,6 +276,7 @@ if (process.argv[2] === "prepare") {
         baseline,
         production,
         pathHostMove,
+        timingHostMove,
         afterRoot,
         driverSource: driver,
         authority: cut
@@ -310,7 +317,7 @@ if (process.argv[2] === "prepare") {
           ? "Literal published v0.433 and root-frozen release cut; complete changed Git-entry manifest, independent driver, identical fresh ci builds, original400 and one recorded runtime"
           : harnessOnly
             ? "Same production source; closed reviewed harness-only delta and unchanged original inputs/locks. Qualification only, no performance or source-effect gain."
-            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack, shared editor reference-options, document-batch transfer, event navigation/rename ownership or exact authenticated path-host move delta; one worker, identical release recipe, original400 inputs and current locked runtime",
+            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack, shared editor reference-options, document-batch transfer, event navigation/rename ownership or exact authenticated path-host move delta or exact authenticated timing-observer host move delta; one worker, identical release recipe, original400 inputs and current locked runtime",
       },
       null,
       2,
