@@ -26,16 +26,9 @@ const EXPECTED: &str = include_str!(concat!(
 ));
 
 fn original_sources() -> Vec<(Url, String)> {
-    vec![
-        (
-            Url::parse("file:///workspace/Widget.vue").unwrap(),
-            WIDGET.into(),
-        ),
-        (
-            Url::parse("file:///workspace/module.ts").unwrap(),
-            MODULE.into(),
-        ),
-    ]
+    let widget = Url::parse("file:///workspace/Widget.vue").unwrap();
+    let module = Url::parse("file:///workspace/module.ts").unwrap();
+    vec![(widget, WIDGET.into()), (module, MODULE.into())]
 }
 
 #[test]
@@ -240,8 +233,24 @@ fn streamed_inventory_preserves_roots_exclusions_errors_overlays_and_retired_nam
 #[test]
 fn streamed_symbols_retry_complete_results_after_project_and_document_changes() {
     block_on(async {
+        #[derive(Debug, PartialEq)]
+        enum Change {
+            Root,
+            Folders,
+            Created,
+            Deleted,
+            Changed,
+            Closed,
+            Reopened,
+        }
         for change in [
-            "root", "folders", "created", "deleted", "changed", "closed", "reopened",
+            Change::Root,
+            Change::Folders,
+            Change::Created,
+            Change::Deleted,
+            Change::Changed,
+            Change::Closed,
+            Change::Reopened,
         ] {
             let root = tempfile::tempdir().unwrap();
             let next = tempfile::tempdir().unwrap();
@@ -252,7 +261,7 @@ fn streamed_symbols_retry_complete_results_after_project_and_document_changes() 
             let uri = Url::from_file_path(&file).unwrap();
             let state = ServerState::new();
             state.set_workspace_root(root.path().to_owned());
-            if change != "deleted" {
+            if change != Change::Deleted {
                 state.documents.open(
                     uri.clone(),
                     "export const before = 1;".into(),
@@ -267,15 +276,15 @@ fn streamed_symbols_retry_complete_results_after_project_and_document_changes() 
             let mutate = async {
                 waiting.await.unwrap();
                 match change {
-                    "root" => state.set_workspace_root(next.path().to_owned()),
-                    "folders" => state.set_workspace_folders(vec![next.path().to_owned()]),
-                    "created" => {
+                    Change::Root => state.set_workspace_root(next.path().to_owned()),
+                    Change::Folders => state.set_workspace_folders(vec![next.path().to_owned()]),
+                    Change::Created => {
                         let path = root.path().join("created.ts");
                         std::fs::write(&path, "export const created = 1;").unwrap();
                         state.observe_workspace_project_membership(&path, true);
                     }
-                    "deleted" => state.observe_workspace_project_membership(&file, false),
-                    "changed" => {
+                    Change::Deleted => state.observe_workspace_project_membership(&file, false),
+                    Change::Changed => {
                         state.documents.apply_changes(
                             &uri,
                             vec![tower_lsp::lsp_types::TextDocumentContentChangeEvent {
@@ -286,8 +295,8 @@ fn streamed_symbols_retry_complete_results_after_project_and_document_changes() 
                             2,
                         );
                     }
-                    "closed" => state.documents.close(&uri),
-                    "reopened" => {
+                    Change::Closed => state.documents.close(&uri),
+                    Change::Reopened => {
                         state.documents.close(&uri);
                         state.documents.open(
                             uri.clone(),
@@ -296,7 +305,6 @@ fn streamed_symbols_retry_complete_results_after_project_and_document_changes() 
                             "typescript".into(),
                         );
                     }
-                    _ => unreachable!(),
                 }
                 resume.send(()).unwrap();
             };
@@ -305,7 +313,7 @@ fn streamed_symbols_retry_complete_results_after_project_and_document_changes() 
             assert_eq!(
                 actual,
                 WorkspaceSymbolsService::search_sources(&sources, ""),
-                "{change}"
+                "{change:?}"
             );
         }
     });

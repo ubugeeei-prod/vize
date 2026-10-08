@@ -48,6 +48,25 @@ retirement/recreation, dirty/outside-root buffers and in-flight project and
 document mutations. Existing production workspace-symbol and file-lifecycle
 oracles remain required.
 
+The [paired source-methodology decision](https://github.com/ubugeeei-prod/vize/issues/3952#issuecomment-6053506988)
+records the root owner's explicit authorization to add only the seven changed Rust paths
+from this producer's actual call chain and regressions to the paired source
+methodology: the existing IDE collector and extracted source collector, server
+symbol route, project inventory and extracted path/stream helpers, and stream
+tests. This permits the actual reviewed producer delta to run the original
+400-provider qualification; it changes no request, input digest, complete
+response comparison, source/lock custody, observed output, timeout or budget.
+No directory wildcard, unrelated production path or harness-only shortcut is
+admitted. Independent review verifies the exact seven-path footprint and unchanged original
+inputs/oracles; the generated source receipt names this admitted producer. Fresh
+exact-source qualification precedes any benchmark credit.
+
+The first exact-source build rejected a test-only wildcard `unreachable!()`;
+an exhaustive mutation-case enum preserves all seven race cases and assertions.
+Its separate native bare-script law timed out waiting for an LSP response after
+`lib.dom.d.ts` initial diagnostics. That failed observation remains retained;
+this producer decision supplies no success or unrelated-failure claim for it.
+
 TODO: qualify this exact source on Actions and the protected queue; the root
 owner coordinates any separately authorized current-source campaign. This source
 change does not measure an RSS improvement, close #3952 or #6883, qualify all

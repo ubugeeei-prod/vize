@@ -76,6 +76,15 @@ if (process.argv[2] === "prepare") {
     .split("\n")
     .filter(Boolean);
   const allowed = new Set([
+    // Reviewed #3952 workspace-symbol producer and exact helper/test footprint;
+    // complete original 400-provider inputs and whole oracles remain unchanged.
+    "crates/vize_maestro/src/ide/workspace_symbols.rs",
+    "crates/vize_maestro/src/ide/workspace_symbols/sources.rs",
+    "crates/vize_maestro/src/server/state/workspace_project_files.rs",
+    "crates/vize_maestro/src/server/state/workspace_project_files/paths.rs",
+    "crates/vize_maestro/src/server/state/workspace_project_files/symbols.rs",
+    "crates/vize_maestro/src/server/state/workspace_project_files/symbols/tests.rs",
+    "crates/vize_maestro/src/server/workspace_symbols.rs",
     // Art lint delivery retains the original 400-provider protocol corpus.
     "crates/vize_maestro/src/ide/diagnostics/art_lint_tests.rs",
     "crates/vize_maestro/src/ide/diagnostics/art_lint.rs",
@@ -321,7 +330,7 @@ if (process.argv[2] === "prepare") {
           ? "Literal published v0.433 and root-frozen release cut; complete changed Git-entry manifest, independent driver, identical fresh ci builds, original400 and one recorded runtime"
           : harnessOnly
             ? "Same production source; closed reviewed harness-only delta and unchanged original inputs/locks. Qualification only, no performance or source-effect gain."
-            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack, shared editor reference-options, document-batch transfer, event navigation/rename ownership or exact authenticated path-host move delta or exact authenticated timing-observer host move delta; one worker, identical release recipe, original400 inputs and current locked runtime",
+            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack, shared editor reference-options, document-batch transfer, streamed workspace-symbol producer, event navigation/rename ownership or exact authenticated path-host move delta or exact authenticated timing-observer host move delta; one worker, identical release recipe, original400 inputs and current locked runtime",
       },
       null,
       2,
