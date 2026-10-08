@@ -160,6 +160,29 @@ pub(super) fn rewrite(path: &str, content: &str, old: &str, new: &str) -> String
         .join("\n")
 }
 
+/// Standalone SDK locks share the same byte-exact authority as integration.
+pub fn rewrite_guest_lock(path: &str, old: &str, new: &str, root: &Path) -> Result<(), String> {
+    if !matches!(
+        path,
+        "davinci/vize_extension_host/tests/guests/expression-echo/Cargo.lock"
+            | "davinci/vize_extension_host/tests/guests/output-echo/Cargo.lock"
+            | "davinci/vize_extension_host/tests/guests/typed-expression-echo/Cargo.lock"
+            | "examples/volt-target/Cargo.lock"
+    ) {
+        return Err("Not a standalone in-tree SDK lockfile.".into());
+    }
+    let file = root.join(path);
+    let before = std::fs::read_to_string(&file).map_err(|error| error.to_string())?;
+    let expected = format!("name = \"vize_guest\"\nversion = \"{old}\"");
+    if old == new || before.matches(&expected).count() != 1 {
+        return Err(format!(
+            "{path} must contain one vize_guest at the original version."
+        ));
+    }
+    let after = rewrite(path, &before, old, new);
+    std::fs::write(file, after).map_err(|error| error.to_string())
+}
+
 pub(super) fn verify_delta(
     parent: &str,
     head: &str,

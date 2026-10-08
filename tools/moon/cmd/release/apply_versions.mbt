@@ -176,22 +176,28 @@ async fn prepare_candidate(
 
   // These standalone workspaces depend on the in-tree SDK and build with
   // --locked. Updating the root workspace lockfile cannot refresh them.
-  for manifest in [
-    "davinci/vize_extension_host/tests/guests/expression-echo/Cargo.toml",
-    "davinci/vize_extension_host/tests/guests/output-echo/Cargo.toml",
-    "davinci/vize_extension_host/tests/guests/typed-expression-echo/Cargo.toml",
-    "examples/volt-target/Cargo.toml",
-  ] {
+  for
+    manifest in [
+      "davinci/vize_extension_host/tests/guests/expression-echo/Cargo.toml", "davinci/vize_extension_host/tests/guests/output-echo/Cargo.toml",
+      "davinci/vize_extension_host/tests/guests/typed-expression-echo/Cargo.toml",
+      "examples/volt-target/Cargo.toml",
+    ] {
     if !@tool.path_exists(manifest) {
       continue
     }
-    if @process.run("cargo", [
-        "update", "--manifest-path", manifest, "-p", "vize_guest", "--offline",
-      ]) != 0 {
-      @stdio.stderr.write("Failed to update the SDK guest lockfile for \{manifest}\n")
+    let guest_lockfile = manifest.replace(old="Cargo.toml", new="Cargo.lock")
+    // Reuse the protected integration's exact version transformation. Cargo's
+    // offline resolver can downgrade unrelated packages absent from its cache.
+    if @process.run("rust-script", [
+        "tools/commands/release/pr.rs", "rewrite-guest-lock", guest_lockfile, current_version,
+        new_version,
+      ]) !=
+      0 {
+      @stdio.stderr.write(
+        "Failed to update the SDK guest lockfile for \{manifest}\n",
+      )
       return 1
     }
-    let guest_lockfile = manifest.replace(old="Cargo.toml", new="Cargo.lock")
     println("  Updated \{guest_lockfile}")
     files_to_stage.push(guest_lockfile)
   }
