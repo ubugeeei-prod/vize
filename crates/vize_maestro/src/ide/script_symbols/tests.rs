@@ -52,9 +52,8 @@ fn authored(uri: &Url, line: u32, character: u32) -> Location {
 }
 
 #[test]
-fn complete_mapping_keeps_utf16_crlf_order_and_duplicate_occurrences()
--> Result<(), Box<dyn std::error::Error>> {
-    let uri = Url::parse("file:///authored/source.ts")?;
+fn complete_mapping_keeps_utf16_crlf_order_and_duplicate_occurrences() {
+    let uri = Url::parse("file:///authored/source.ts").expect("authored file URI");
     let state = ServerState::new();
     let ctx = IdeContext::testing(&state, &uri, 0, SOURCE.into());
     let document = document(&uri);
@@ -71,13 +70,11 @@ fn complete_mapping_keeps_utf16_crlf_order_and_duplicate_occurrences()
             authored(&uri, 1, 21),
         ])
     );
-    Ok(())
 }
 
 #[test]
-fn one_private_unmapped_member_refuses_the_complete_packet()
--> Result<(), Box<dyn std::error::Error>> {
-    let uri = Url::parse("file:///authored/source.ts")?;
+fn one_private_unmapped_member_refuses_the_complete_packet() {
+    let uri = Url::parse("file:///authored/source.ts").expect("authored file URI");
     let state = ServerState::new();
     let ctx = IdeContext::testing(&state, &uri, 0, SOURCE.into());
     let document = document(&uri);
@@ -88,5 +85,4 @@ fn one_private_unmapped_member_refuses_the_complete_packet()
         assert_eq!(map_complete_locations(&ctx, &document, &locations), None);
     }
     assert_eq!(map_complete_locations(&ctx, &document, &[]), Some(vec![]));
-    Ok(())
 }
