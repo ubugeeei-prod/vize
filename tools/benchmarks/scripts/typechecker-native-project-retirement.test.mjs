@@ -28,7 +28,7 @@ function fixture(mode, body) {
   }
 }
 
-test("immutable historical source needs no new test or fixture and receives no process credit", () => {
+await test("immutable historical source needs no new test or fixture and receives no process credit", () => {
   fixture("immutable-source-step", (options) => {
     const receipt = qualifyNativeProjectRetirement({
       ...options,
@@ -42,7 +42,7 @@ test("immutable historical source needs no new test or fixture and receives no p
   });
 });
 
-test("unknown recipe mode cannot fall back to historical no-credit behavior", () => {
+await test("unknown recipe mode cannot fall back to historical no-credit behavior", () => {
   fixture("unknown", (options) =>
     assert.throws(() =>
       qualifyNativeProjectRetirement({
@@ -53,7 +53,7 @@ test("unknown recipe mode cannot fall back to historical no-credit behavior", ()
   );
 });
 
-test("a successful zero-test filter cannot qualify the physical native law", () => {
+await test("a successful zero-test filter cannot qualify the physical native law", () => {
   fixture("current-inline", (options) => {
     let calls = 0;
     assert.throws(() =>
@@ -69,14 +69,14 @@ test("a successful zero-test filter cannot qualify the physical native law", () 
   });
 });
 
-test("historical mode rejects a stale producer log instead of reusing its credit", () => {
+await test("historical mode rejects a stale producer log instead of reusing its credit", () => {
   fixture("immutable-source-step", (options) => {
     writeFileSync(join(options.capture, "native-project-retirement-3952.log"), "stale");
     assert.throws(() => qualifyNativeProjectRetirement(options));
   });
 });
 
-test("historical mode retains the original editor and monorepo alias binary gates", () => {
+await test("historical mode retains the original editor and monorepo alias binary gates", () => {
   fixture("immutable-source-step", (options) => {
     const foreign = join(options.capture, "foreign-control");
     writeFileSync(foreign, "different binary");
@@ -88,7 +88,7 @@ test("historical mode retains the original editor and monorepo alias binary gate
   });
 });
 
-test("copied observer requires its immutable workflow bytes and exact source/recipe binding", () => {
+await test("copied observer requires its immutable workflow bytes and exact source/recipe binding", () => {
   const root = mkdtempSync(join(tmpdir(), "vize-project-retirement-custody-"));
   try {
     const git = (...args) => {
