@@ -150,3 +150,24 @@ Fresh Vue14 source accounting is twelve historical byte matches plus two
 current matches, each retaining its historical Difference and three complete
 actual passes. The immutable historical286 replay counts, all manifests,
 requirements and native zero-credit totals remain unchanged.
+
+Native-phase run [37737740081](https://github.com/ubugeeei-prod/vize/actions/runs/37737740081)
+on exact `27eeb19868924a3c5b34d5b5dec6ad709ba510e1` fails before executing
+its requested cohort: `check_tsconfig_bom_cli` is absent from selected
+`MAIN_SOURCE_SHA=f9cfdaa0e84152ab9f11382e1b49e501d1ea44b6`. The receipt pins
+`DRIVER_SHA=27eeb19868924a3c5b34d5b5dec6ad709ba510e1`, the same f9 base, and
+`MAIN_HEAD_SHA=7ac87faaab5af9b937489320e50ad2d881e46dd5`. Retain the whole raw
+failure and artifact 11531739068, digest
+`af071b44478ac94648c2cb6e5a2e39b9b7598245e536adfacd466bd7759c6112`.
+This is native driver/source target cardinality drift, not formatter output
+failure. Its unresolved selection race is tracked under
+[#6830](https://github.com/ubugeeei-prod/vize/issues/6830).
+
+Preserve the previous parent head under `backup/formatter-8267-27eeb-20261008`
+and genuinely rebase the whole owned history onto actual protected signed
+main `68e0dc38973a8690bac8ce1c0d6b6349eb4a491a`, verified by GitHub. That
+incorporates the real BOM/ignore target providers without skipping tests or
+substituting source authority. Keep every original formatter product/corpus
+and history pin, the complete incoming 350 canonical rows and all peer clauses.
+The new exact source, all 104 and native-phase gates must run afresh; earlier
+greens are not transferred, and child/queue admission remains pending.
