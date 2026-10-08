@@ -75,6 +75,13 @@ Exact-head Actions and protected queue delivery must build and run the current
 source again. Existing consumer inventory and bilingual generated rule references
 must remain fresh; source and fixture fields do not bypass their checks.
 
+The hosted source suite also rejected stale CLI `explain` examples. Only the
+owned slot page gains the documented bound example in each of the three existing
+locales; all other 398 pages remain byte-exact per locale. The whole actual EN
+slot page matches the retained hosted output. A separate inherited casing-page
+drift is root-owned and requires its own fresh source repair; JA/ZH runtime output
+was not observed after the first EN assertion failed.
+
 ## Retained wider research
 
 The [historical full-packet research](../../../tests/_fixtures/differential/lint/deprecated-template-research-47c6/README.md)
