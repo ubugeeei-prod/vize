@@ -1,0 +1,7731 @@
+{
+  "authoredBeforeAnyCurrentNativeQuery": true,
+  "sourceAuthoredOracleSha256": "b334437925b1b18b863f70f2b01dccc7f8788769c5dd7b174547cce2f6be0db2",
+  "caseCount": 20,
+  "cursorTripleCount": 660,
+  "contractedDefinitionCount": 500,
+  "declarationDefinitionObservationCount": 160,
+  "selectedApplicationQueryIndex": 0,
+  "cases": [
+    {
+      "form": "record",
+      "newline": "\n",
+      "newName": "nextEvent",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ saveItem: [id: string] }>();\nfunction fire() {\n  emit(\"saveItem\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @saveItem=\"onSave\" />\n  <Child @save-item=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ nextEvent: [id: string] }>();\nfunction fire() {\n  emit(\"nextEvent\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @next-event=\"onSave\" />\n  <Child @next-event=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "record",
+      "newline": "\n",
+      "newName": "next-event",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ saveItem: [id: string] }>();\nfunction fire() {\n  emit(\"saveItem\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @saveItem=\"onSave\" />\n  <Child @save-item=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ nextEvent: [id: string] }>();\nfunction fire() {\n  emit(\"nextEvent\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @next-event=\"onSave\" />\n  <Child @next-event=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "record",
+      "newline": "\r\n",
+      "newName": "nextEvent",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits<{ saveItem: [id: string] }>();\r\nfunction fire() {\r\n  emit(\"saveItem\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @saveItem=\"onSave\" />\r\n  <Child @save-item=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits<{ nextEvent: [id: string] }>();\r\nfunction fire() {\r\n  emit(\"nextEvent\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @next-event=\"onSave\" />\r\n  <Child @next-event=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "record",
+      "newline": "\r\n",
+      "newName": "next-event",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits<{ saveItem: [id: string] }>();\r\nfunction fire() {\r\n  emit(\"saveItem\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @saveItem=\"onSave\" />\r\n  <Child @save-item=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits<{ nextEvent: [id: string] }>();\r\nfunction fire() {\r\n  emit(\"nextEvent\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @next-event=\"onSave\" />\r\n  <Child @next-event=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "call-signature",
+      "newline": "\n",
+      "newName": "nextEvent",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ (event: \"saveItem\", id: string): void }>();\nfunction fire() {\n  emit(\"saveItem\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @saveItem=\"onSave\" />\n  <Child @save-item=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 36
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 37
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 38
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 39
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 40
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 41
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 42
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 43
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ (event: \"nextEvent\", id: string): void }>();\nfunction fire() {\n  emit(\"nextEvent\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @next-event=\"onSave\" />\n  <Child @next-event=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "call-signature",
+      "newline": "\n",
+      "newName": "next-event",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ (event: \"saveItem\", id: string): void }>();\nfunction fire() {\n  emit(\"saveItem\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @saveItem=\"onSave\" />\n  <Child @save-item=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 36
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 37
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 38
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 39
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 40
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 41
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 42
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 43
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits<{ (event: \"nextEvent\", id: string): void }>();\nfunction fire() {\n  emit(\"nextEvent\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @next-event=\"onSave\" />\n  <Child @next-event=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "call-signature",
+      "newline": "\r\n",
+      "newName": "nextEvent",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits<{ (event: \"saveItem\", id: string): void }>();\r\nfunction fire() {\r\n  emit(\"saveItem\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @saveItem=\"onSave\" />\r\n  <Child @save-item=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 36
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 37
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 38
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 39
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 40
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 41
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 42
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 43
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits<{ (event: \"nextEvent\", id: string): void }>();\r\nfunction fire() {\r\n  emit(\"nextEvent\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @next-event=\"onSave\" />\r\n  <Child @next-event=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "call-signature",
+      "newline": "\r\n",
+      "newName": "next-event",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits<{ (event: \"saveItem\", id: string): void }>();\r\nfunction fire() {\r\n  emit(\"saveItem\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @saveItem=\"onSave\" />\r\n  <Child @save-item=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 36
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 37
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 38
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 39
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 40
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 41
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 42
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 43
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits<{ (event: \"nextEvent\", id: string): void }>();\r\nfunction fire() {\r\n  emit(\"nextEvent\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @next-event=\"onSave\" />\r\n  <Child @next-event=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 36
+            },
+            "end": {
+              "line": 1,
+              "character": 44
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "runtime-array",
+      "newline": "\n",
+      "newName": "nextEvent",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits([\"saveItem\"]);\nfunction fire() {\n  emit(\"saveItem\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @saveItem=\"onSave\" />\n  <Child @save-item=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits([\"nextEvent\"]);\nfunction fire() {\n  emit(\"nextEvent\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @next-event=\"onSave\" />\n  <Child @next-event=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "runtime-array",
+      "newline": "\n",
+      "newName": "next-event",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits([\"saveItem\"]);\nfunction fire() {\n  emit(\"saveItem\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @saveItem=\"onSave\" />\n  <Child @save-item=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits([\"nextEvent\"]);\nfunction fire() {\n  emit(\"nextEvent\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @next-event=\"onSave\" />\n  <Child @next-event=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "runtime-array",
+      "newline": "\r\n",
+      "newName": "nextEvent",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits([\"saveItem\"]);\r\nfunction fire() {\r\n  emit(\"saveItem\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @saveItem=\"onSave\" />\r\n  <Child @save-item=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits([\"nextEvent\"]);\r\nfunction fire() {\r\n  emit(\"nextEvent\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @next-event=\"onSave\" />\r\n  <Child @next-event=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "runtime-array",
+      "newline": "\r\n",
+      "newName": "next-event",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits([\"saveItem\"]);\r\nfunction fire() {\r\n  emit(\"saveItem\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @saveItem=\"onSave\" />\r\n  <Child @save-item=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits([\"nextEvent\"]);\r\nfunction fire() {\r\n  emit(\"nextEvent\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @next-event=\"onSave\" />\r\n  <Child @next-event=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "runtime-object",
+      "newline": "\n",
+      "newName": "nextEvent",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits({ saveItem: (id: string) => id.length > 0 });\nfunction fire() {\n  emit(\"saveItem\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @saveItem=\"onSave\" />\n  <Child @save-item=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits({ nextEvent: (id: string) => id.length > 0 });\nfunction fire() {\n  emit(\"nextEvent\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @next-event=\"onSave\" />\n  <Child @next-event=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "runtime-object",
+      "newline": "\n",
+      "newName": "next-event",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits({ saveItem: (id: string) => id.length > 0 });\nfunction fire() {\n  emit(\"saveItem\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @saveItem=\"onSave\" />\n  <Child @save-item=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\nconst emit = defineEmits({ nextEvent: (id: string) => id.length > 0 });\nfunction fire() {\n  emit(\"nextEvent\", \"item\");\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @next-event=\"onSave\" />\n  <Child @next-event=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "runtime-object",
+      "newline": "\r\n",
+      "newName": "nextEvent",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits({ saveItem: (id: string) => id.length > 0 });\r\nfunction fire() {\r\n  emit(\"saveItem\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @saveItem=\"onSave\" />\r\n  <Child @save-item=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits({ nextEvent: (id: string) => id.length > 0 });\r\nfunction fire() {\r\n  emit(\"nextEvent\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @next-event=\"onSave\" />\r\n  <Child @next-event=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "runtime-object",
+      "newline": "\r\n",
+      "newName": "next-event",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits({ saveItem: (id: string) => id.length > 0 });\r\nfunction fire() {\r\n  emit(\"saveItem\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @saveItem=\"onSave\" />\r\n  <Child @save-item=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\">\r\nconst emit = defineEmits({ nextEvent: (id: string) => id.length > 0 });\r\nfunction fire() {\r\n  emit(\"nextEvent\", \"item\");\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @next-event=\"onSave\" />\r\n  <Child @next-event=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "generic",
+      "newline": "\n",
+      "newName": "nextEvent",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends string = string\">\nconst emit = defineEmits<{ saveItem: [id: T] }>();\nfunction fire() {\n  emit(\"saveItem\", \"item\" as T);\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @saveItem=\"onSave\" />\n  <Child @save-item=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends string = string\">\nconst emit = defineEmits<{ nextEvent: [id: T] }>();\nfunction fire() {\n  emit(\"nextEvent\", \"item\" as T);\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @next-event=\"onSave\" />\n  <Child @next-event=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "generic",
+      "newline": "\n",
+      "newName": "next-event",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends string = string\">\nconst emit = defineEmits<{ saveItem: [id: T] }>();\nfunction fire() {\n  emit(\"saveItem\", \"item\" as T);\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @saveItem=\"onSave\" />\n  <Child @save-item=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends string = string\">\nconst emit = defineEmits<{ nextEvent: [id: T] }>();\nfunction fire() {\n  emit(\"nextEvent\", \"item\" as T);\n}\nfunction unrelated(emit: (name: string, id: string) => void) {\n  emit(\"saveItem\", \"shadow\");\n}\nvoid unrelated;\n</script>\n\n<template><button @click=\"fire\">save</button></template>\n",
+        "Parent.vue": "<script setup lang=\"ts\">\nimport Child from \"./Child.vue\";\nimport Other from \"./Other.vue\";\nconst onSave = (id: string) => id;\n</script>\n\n<template>💥\n  <Child @next-event=\"onSave\" />\n  <Child @next-event=\"onSave\" />\n  <Other @save-item=\"onSave\" />\n</template>\n",
+        "Other.vue": "<script setup lang=\"ts\">\ndefineEmits<{ saveItem: [id: string] }>();\n</script>\n\n<template><span>unrelated</span></template>\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "generic",
+      "newline": "\r\n",
+      "newName": "nextEvent",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends string = string\">\r\nconst emit = defineEmits<{ saveItem: [id: T] }>();\r\nfunction fire() {\r\n  emit(\"saveItem\", \"item\" as T);\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @saveItem=\"onSave\" />\r\n  <Child @save-item=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends string = string\">\r\nconst emit = defineEmits<{ nextEvent: [id: T] }>();\r\nfunction fire() {\r\n  emit(\"nextEvent\", \"item\" as T);\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @next-event=\"onSave\" />\r\n  <Child @next-event=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    },
+    {
+      "form": "generic",
+      "newline": "\r\n",
+      "newName": "next-event",
+      "sources": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends string = string\">\r\nconst emit = defineEmits<{ saveItem: [id: T] }>();\r\nfunction fire() {\r\n  emit(\"saveItem\", \"item\" as T);\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @saveItem=\"onSave\" />\r\n  <Child @save-item=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "fullReferences": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          }
+        }
+      ],
+      "queries": [
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 27
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 28
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 29
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 30
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 31
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 32
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 33
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 1,
+            "character": 34
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 8
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 9
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 10
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 12
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 13
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 14
+          }
+        },
+        {
+          "file": "Child.vue",
+          "position": {
+            "line": 3,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 7,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 10
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 11
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 12
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 13
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 14
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 15
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 16
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 17
+          }
+        },
+        {
+          "file": "Parent.vue",
+          "position": {
+            "line": 8,
+            "character": 18
+          }
+        }
+      ],
+      "fullEdits": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 3,
+              "character": 8
+            },
+            "end": {
+              "line": 3,
+              "character": 16
+            }
+          },
+          "newText": "nextEvent"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 10
+            },
+            "end": {
+              "line": 7,
+              "character": 18
+            }
+          },
+          "newText": "next-event"
+        },
+        {
+          "file": "Parent.vue",
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 10
+            },
+            "end": {
+              "line": 8,
+              "character": 19
+            }
+          },
+          "newText": "next-event"
+        }
+      ],
+      "completeGoldenFiles": {
+        "Child.vue": "<script setup lang=\"ts\" generic=\"T extends string = string\">\r\nconst emit = defineEmits<{ nextEvent: [id: T] }>();\r\nfunction fire() {\r\n  emit(\"nextEvent\", \"item\" as T);\r\n}\r\nfunction unrelated(emit: (name: string, id: string) => void) {\r\n  emit(\"saveItem\", \"shadow\");\r\n}\r\nvoid unrelated;\r\n</script>\r\n\r\n<template><button @click=\"fire\">save</button></template>\r\n",
+        "Parent.vue": "<script setup lang=\"ts\">\r\nimport Child from \"./Child.vue\";\r\nimport Other from \"./Other.vue\";\r\nconst onSave = (id: string) => id;\r\n</script>\r\n\r\n<template>💥\r\n  <Child @next-event=\"onSave\" />\r\n  <Child @next-event=\"onSave\" />\r\n  <Other @save-item=\"onSave\" />\r\n</template>\r\n",
+        "Other.vue": "<script setup lang=\"ts\">\r\ndefineEmits<{ saveItem: [id: string] }>();\r\n</script>\r\n\r\n<template><span>unrelated</span></template>\r\n"
+      },
+      "expectedVersion2Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "expectedIndependentVersion3Diagnostics": {
+        "Child.vue": [],
+        "Parent.vue": [],
+        "Other.vue": []
+      },
+      "definitionFromAllParentAndCallPositions": [
+        {
+          "file": "Child.vue",
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 27
+            },
+            "end": {
+              "line": 1,
+              "character": 35
+            }
+          }
+        }
+      ],
+      "completeNegativePreservation": "shadowed emit string, Other declaration/listener, local fire/onSave and native button click stay byte-exact"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+<script setup lang="ts">
+const emit = defineEmits<{ (event: "saveItem", id: string): void }>();
+function fire() {
+  emit("saveItem", "item");
+}
+function unrelated(emit: (name: string, id: string) => void) {
+  emit("saveItem", "shadow");
+}
+void unrelated;
+</script>
+
+<template><button @click="fire">save</button></template>

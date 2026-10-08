@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineEmits<{ saveItem: [id: string] }>();
+</script>
+
+<template><span>unrelated</span></template>

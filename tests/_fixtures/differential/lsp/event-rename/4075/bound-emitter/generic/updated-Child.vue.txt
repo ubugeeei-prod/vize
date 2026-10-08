@@ -1,0 +1,12 @@
+<script setup lang="ts" generic="T extends string = string">
+const emit = defineEmits<{ nextEvent: [id: T] }>();
+function fire() {
+  emit("nextEvent", "item" as T);
+}
+function unrelated(emit: (name: string, id: string) => void) {
+  emit("saveItem", "shadow");
+}
+void unrelated;
+</script>
+
+<template><button @click="fire">save</button></template>

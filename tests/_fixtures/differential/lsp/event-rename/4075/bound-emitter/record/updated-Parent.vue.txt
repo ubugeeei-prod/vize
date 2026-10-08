@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+import Other from "./Other.vue";
+const onSave = (id: string) => id;
+</script>
+
+<template>💥
+  <Child @next-event="onSave" />
+  <Child @next-event="onSave" />
+  <Other @save-item="onSave" />
+</template>
