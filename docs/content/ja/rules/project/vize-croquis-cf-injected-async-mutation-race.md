@@ -49,8 +49,8 @@ createApp(Root).mount("#app");
 `api.ts`
 
 ```ts
-export async function loadCount(query: string): Promise<number> {
-  const response = await fetch(`/count?q=${encodeURIComponent(query)}`);
+export async function loadCount(query: string, options?: { signal?: AbortSignal }): Promise<number> {
+  const response = await fetch(`/count?q=${encodeURIComponent(query)}`, options);
   return Number(await response.text());
 }
 ```

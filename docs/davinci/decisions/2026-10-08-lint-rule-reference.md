@@ -74,6 +74,9 @@ when inverting the condition, preserving the Bad branch behavior; other single-f
 remain intact. The repeated-ID project pair also defines its previously missing `results` input
 with two items in both alternatives, making the copied project complete without changing either
 ID example or expected finding. Other previously authored source project contexts remain intact.
+The injected async-mutation project's shared `loadCount` helper now accepts and forwards the
+optional abort signal already passed by its Good loader, fixing an inherited argument mismatch
+and making its cancellation work. Both component bodies and finding expectations remain intact.
 
 All-rule, category, and cross-file tables link directly to both example sections. The all-rule
 index additionally includes the 66 project entries, with CLI/library/contract status shown in

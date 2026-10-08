@@ -86,7 +86,7 @@ export const original2 = {
         'import { createApp } from "vue";\nimport Root from "./StoreProvider.vue";\ncreateApp(Root).mount("#app");',
       "index.html": '<div id="app"></div>\n<script type="module" src="/main.ts"></script>',
       "api.ts":
-        "export async function loadCount(query: string): Promise<number> {\n  const response = await fetch(`/count?q=${encodeURIComponent(query)}`);\n  return Number(await response.text());\n}",
+        "export async function loadCount(query: string, options?: { signal?: AbortSignal }): Promise<number> {\n  const response = await fetch(`/count?q=${encodeURIComponent(query)}`, options);\n  return Number(await response.text());\n}",
       "CountSummary.vue":
         '<script setup lang="ts">\nimport { inject } from "vue";\nimport { StoreKey } from "./keys/store";\nconst store = inject(StoreKey)!;\n</script>\n<template><p>{{ store.count }}</p></template>',
     },
