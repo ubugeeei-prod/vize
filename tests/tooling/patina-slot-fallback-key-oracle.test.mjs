@@ -151,7 +151,7 @@ if (process.argv.includes("--record")) {
   fixture.oracleCapture = result.recorded;
   fs.writeFileSync(fixturePath, JSON.stringify(fixture, null, 2) + "\n");
 } else {
-  test("slot fallback key cases preserve complete pinned official Vue base packets", async (t) => {
+  await test("slot fallback key cases preserve complete pinned official Vue base packets", async (t) => {
     const result = await capture();
     t.diagnostic(`Complete raw provider receipt: ${result.receipts}/raw.json`);
     validateCapture(result);

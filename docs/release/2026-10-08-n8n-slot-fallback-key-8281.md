@@ -25,6 +25,9 @@ static-key, object-`v-bind`, dynamic slot forwarding, slot-outlet and
 any-directly-keyed-child contracts. This is a focused key discovery fix,
 not a replacement of the native rule's complete policy with ESLint's policy.
 It adds no parse or pipeline stage and no child collection allocation.
+The descendant search accepts bound child keys only. Keep the original
+loop-root slot, static-key and object-binding exemptions at that root;
+recursing through the complete root helper would incorrectly inherit them.
 
 The independently authored reproduction is:
 
@@ -50,7 +53,7 @@ const rows = [{ id: 1 }];
 ## Evidence and limits
 
 The [owned corpus](../../crates/vize_patina/tests/fixtures/slot-fallback-key/cases.json)
-records sixteen sources, complete pinned independent packets, source API
+records twenty-one sources, complete pinned independent packets, source API
 before/after packets and their producer metadata. The independent provider uses
 all 51 selected adoption rules and the three explicit options, plus the
 mandatory official `vue/vue` processor, `vue/comment-directive` and
@@ -72,10 +75,14 @@ assertion. The producer starts at fresh main `f399905053` and uses the
 installed declared Rust 1.99.0 compiler directly with a private target.
 The failed Nix selector attempt and the separate Rust 1.98.1 observation
 are retained locally; they provide no declared-toolchain qualification.
-The declared-toolchain after run passes all sixteen whole source API packet
-comparisons. It removes three findings through transparent carriers while
-retaining the five expected errors, including ordinary-wrapper and empty-slot
-guards. The before and after binary hashes, source hashes, patch hash and raw
+The original sixteen Before/After packets are retained. Review of the first
+PR producer at `5bf1959473` added five nested exemption inversions: all five
+incorrectly became clean. A separate actual producer run with the historical
+rule restored reports an error for each. The corrected descendant-only search
+restores those errors while retaining the original keyed fallback fix. The
+full provider packets also retain the slot-parent and template-key findings;
+the controls do not imply their invalid template forms are supported.
+The before, reviewed and after binary hashes, source hashes, patch hash and raw
 packet hashes distinguish the fresh-main base from the modified producer.
 
 ESLint recursively checks every ordinary fallback child. Native history
@@ -89,7 +96,7 @@ adoption, product migration, releases or performance.
 
 ## Verification
 
-- Declared Rust 1.99.0 passes the sixteen complete owned source API packets,
+- Declared Rust 1.99.0 passes the twenty-one complete owned source API packets,
   the existing key/object-bind/template-child-key history regressions and
   the pinned complete independent provider replay.
 - Verify exact-head Actions and the protected merge queue before completion.

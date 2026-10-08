@@ -97,7 +97,10 @@ fn has_markup_template_v_for_key(element: &MarkupElement<'_>, exact: bool) -> bo
     if has_markup_key(element, exact) {
         return true;
     }
+    has_markup_child_bound_key(element, exact)
+}
 
+fn has_markup_child_bound_key(element: &MarkupElement<'_>, exact: bool) -> bool {
     let mut found = false;
     element.walk_children(&mut |child| {
         if found {
@@ -112,13 +115,12 @@ fn has_markup_template_v_for_key(element: &MarkupElement<'_>, exact: bool) -> bo
                         binding.arg_name_eq("key")
                     };
             });
-            // Template/slot carriers do not render an ordinary wrapper. Keep
-            // the historical child-key policy, but inspect their fallbacks.
+            // Root slot/static/object-key exemptions do not belong to descendants.
             if !found
                 && (matches!(child.tag(), "template" | "slot")
                     || (!exact && (child.is_tag("template") || child.is_tag("slot"))))
             {
-                found = ensure_sufficient_stack(|| has_markup_template_v_for_key(&child, exact));
+                found = ensure_sufficient_stack(|| has_markup_child_bound_key(&child, exact));
             }
         }
     });
@@ -223,17 +225,21 @@ fn relief_directive_is_bound_key(directive: &DirectiveNode<'_>) -> bool {
 fn relief_template_v_for_has_key(element: &ElementNode<'_>) -> bool {
     relief_template_has_slot_directive(element)
         || relief_element_has_key(element)
-        || element.children.iter().any(|child| {
-            matches!(
-                child,
-                TemplateChildNode::Element(child) if child
-                    .props
-                    .iter()
-                    .any(|prop| matches!(prop, PropNode::Directive(dir) if relief_directive_is_bound_key(dir)))
-                    || (matches!(child.tag, "template" | "slot")
-                        && ensure_sufficient_stack(|| relief_template_v_for_has_key(child)))
-            )
-        })
+        || relief_child_has_bound_key(element)
+}
+
+fn relief_child_has_bound_key(element: &ElementNode<'_>) -> bool {
+    element.children.iter().any(|child| {
+        matches!(
+            child,
+            TemplateChildNode::Element(child) if child
+                .props
+                .iter()
+                .any(|prop| matches!(prop, PropNode::Directive(dir) if relief_directive_is_bound_key(dir)))
+                || (matches!(child.tag, "template" | "slot")
+                    && ensure_sufficient_stack(|| relief_child_has_bound_key(child)))
+        )
+    })
 }
 
 fn relief_template_has_slot_directive(element: &ElementNode<'_>) -> bool {

@@ -367,6 +367,126 @@
         "filename": "dynamic-slot-forwarding-history.vue",
         "warning_count": 0
       }
+    },
+    {
+      "id": "nested-slot-directive-unkeyed-positive",
+      "filename": "nested-slot-directive-unkeyed-positive.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table>\n    <tbody>\n      <template v-for=\"row in rows\">\n        <template #default><div>{{ row.id }}</div></template>\n      </template>\n    </tbody>\n  </table>\n</template>\n",
+      "expectedNativeDiagnostics": 1,
+      "policyLimit": "Descendant v-slot must not inherit the original loop-root slot forwarding exemption. Official full configuration also retains invalid slot-parent findings.",
+      "expectedNativePacket": {
+        "diagnostics": [
+          {
+            "end": 119,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 100
+          }
+        ],
+        "error_count": 1,
+        "filename": "nested-slot-directive-unkeyed-positive.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "nested-template-static-key-positive",
+      "filename": "nested-template-static-key-positive.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table>\n    <tbody>\n      <template v-for=\"row in rows\">\n        <template key=\"static\"><div>{{ row.id }}</div></template>\n      </template>\n    </tbody>\n  </table>\n</template>\n",
+      "expectedNativeDiagnostics": 1,
+      "policyLimit": "Static-key exemption belongs to the original loop root; transparent descendant search accepts bound child keys only.",
+      "expectedNativePacket": {
+        "diagnostics": [
+          {
+            "end": 119,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 100
+          }
+        ],
+        "error_count": 1,
+        "filename": "nested-template-static-key-positive.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "nested-slot-static-key-positive",
+      "filename": "nested-slot-static-key-positive.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table>\n    <tbody>\n      <template v-for=\"row in rows\">\n        <slot key=\"static\" :row=\"row\"><div>{{ row.id }}</div></slot>\n      </template>\n    </tbody>\n  </table>\n</template>\n",
+      "expectedNativeDiagnostics": 1,
+      "policyLimit": "Static-key exemption belongs to the original loop root; transparent descendant search accepts bound child keys only.",
+      "expectedNativePacket": {
+        "diagnostics": [
+          {
+            "end": 119,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 100
+          }
+        ],
+        "error_count": 1,
+        "filename": "nested-slot-static-key-positive.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "nested-template-object-bind-key-positive",
+      "filename": "nested-template-object-bind-key-positive.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table>\n    <tbody>\n      <template v-for=\"row in rows\">\n        <template v-bind=\"{ key: row.id }\"><div>{{ row.id }}</div></template>\n      </template>\n    </tbody>\n  </table>\n</template>\n",
+      "expectedNativeDiagnostics": 1,
+      "policyLimit": "Object-bind exemption belongs to the original loop root; transparent descendant search accepts bound child keys only.",
+      "expectedNativePacket": {
+        "diagnostics": [
+          {
+            "end": 119,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 100
+          }
+        ],
+        "error_count": 1,
+        "filename": "nested-template-object-bind-key-positive.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "nested-slot-object-bind-key-positive",
+      "filename": "nested-slot-object-bind-key-positive.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table>\n    <tbody>\n      <template v-for=\"row in rows\">\n        <slot v-bind=\"{ key: row.id }\"><div>{{ row.id }}</div></slot>\n      </template>\n    </tbody>\n  </table>\n</template>\n",
+      "expectedNativeDiagnostics": 1,
+      "policyLimit": "Object-bind exemption belongs to the original loop root; transparent descendant search accepts bound child keys only.",
+      "expectedNativePacket": {
+        "diagnostics": [
+          {
+            "end": 119,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 100
+          }
+        ],
+        "error_count": 1,
+        "filename": "nested-slot-object-bind-key-positive.vue",
+        "warning_count": 0
+      }
     }
   ],
   "oracleCapture": {
@@ -872,6 +992,171 @@
           }
         ],
         "providerError": null
+      },
+      {
+        "caseId": "nested-slot-directive-unkeyed-positive",
+        "packets": [
+          {
+            "filePath": "owned/nested-slot-directive-unkeyed-positive.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive must be owned by a custom element, but 'template' is not.",
+                "line": 8,
+                "column": 19,
+                "messageId": "ownerMustBeCustomElement",
+                "endLine": 8,
+                "endColumn": 27
+              },
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 8,
+                "column": 28,
+                "messageId": "requireKey",
+                "endLine": 8,
+                "endColumn": 33
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 2,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table>\n    <tbody>\n      <template v-for=\"row in rows\">\n        <template #default><div>{{ row.id }}</div></template>\n      </template>\n    </tbody>\n  </table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "nested-template-static-key-positive",
+        "packets": [
+          {
+            "filePath": "owned/nested-template-static-key-positive.vue",
+            "messages": [
+              {
+                "ruleId": "vue/no-template-key",
+                "severity": 2,
+                "message": "'<template>' cannot be keyed. Place the key on real elements instead.",
+                "line": 8,
+                "column": 19,
+                "messageId": "disallow",
+                "endLine": 8,
+                "endColumn": 31
+              },
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 8,
+                "column": 32,
+                "messageId": "requireKey",
+                "endLine": 8,
+                "endColumn": 37
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 2,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table>\n    <tbody>\n      <template v-for=\"row in rows\">\n        <template key=\"static\"><div>{{ row.id }}</div></template>\n      </template>\n    </tbody>\n  </table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "nested-slot-static-key-positive",
+        "packets": [
+          {
+            "filePath": "owned/nested-slot-static-key-positive.vue",
+            "messages": [
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 8,
+                "column": 39,
+                "messageId": "requireKey",
+                "endLine": 8,
+                "endColumn": 44
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table>\n    <tbody>\n      <template v-for=\"row in rows\">\n        <slot key=\"static\" :row=\"row\"><div>{{ row.id }}</div></slot>\n      </template>\n    </tbody>\n  </table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "nested-template-object-bind-key-positive",
+        "packets": [
+          {
+            "filePath": "owned/nested-template-object-bind-key-positive.vue",
+            "messages": [
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 8,
+                "column": 44,
+                "messageId": "requireKey",
+                "endLine": 8,
+                "endColumn": 49
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table>\n    <tbody>\n      <template v-for=\"row in rows\">\n        <template v-bind=\"{ key: row.id }\"><div>{{ row.id }}</div></template>\n      </template>\n    </tbody>\n  </table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "nested-slot-object-bind-key-positive",
+        "packets": [
+          {
+            "filePath": "owned/nested-slot-object-bind-key-positive.vue",
+            "messages": [
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 8,
+                "column": 40,
+                "messageId": "requireKey",
+                "endLine": 8,
+                "endColumn": 45
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table>\n    <tbody>\n      <template v-for=\"row in rows\">\n        <slot v-bind=\"{ key: row.id }\"><div>{{ row.id }}</div></slot>\n      </template>\n    </tbody>\n  </table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
       }
     ]
   },
@@ -1142,7 +1427,659 @@
       }
     ]
   },
-  "nativeAfterCapture": {
+  "nativeReviewedHeadCapture": {
+    "origin": {
+      "phase": "reviewed-first-PR-head",
+      "sourceRevision": "5bf1959473a75777fc1925363a86d683ae24adf1",
+      "producerSourceSha256": "b5b5339911de5f5fd6e19055189424262a09536239f88efb263f08d0871af53f",
+      "observerSourceSha256": "d6e174ae3abd1305473e29760d94b0d6ad251d5f401484ee00c5bd2eb48379f2",
+      "cargoLockSha256": "29c04664c582321e5a91d4992c8dee62e7db9846962e472855ce55e546fed910",
+      "rustc": "1.99.0",
+      "rustcCommit": "b940084d7eb6a299eb4bfeb8e34901bc051e7ac4",
+      "cargo": "1.99.0 (5f94df478 2026-08-27)",
+      "host": "aarch64-apple-darwin",
+      "llvm": "23.1.1",
+      "privateTarget": "/tmp/vize-cargo-slot-fallback-key-8281-rust199-20261008",
+      "observerBinarySha256": "653e8380f08718725c8d99db713a2cb8029979fec7ca65ca124ea87774ed1f44",
+      "command": [
+        "cargo",
+        "test",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_patina",
+        "--test",
+        "require_v_for_key_slot_fallback",
+        "--",
+        "--nocapture"
+      ],
+      "declaredToolchain": true,
+      "ignoreRustVersion": false,
+      "result": "Expected failure on nested control; all21 source packets preserved before assertions",
+      "producerAuthority": "Actual public Linter API on fresh-main source plus owned test harness; not a CLI run, native/package migration, all51 semantics or performance qualification",
+      "rawPacketsSha256": "4fc440a12a853ca6d65dd6914e88056531d0870d02e74c96f05234a24a34bdec",
+      "producerPatchSha256": "6e7b1a7e7538352cf4d9f50a212960e7a572e1b22620ac9164eeb2d581e83ea9",
+      "semanticInputsSha256": "f03bc47f65d77d37d75147c59d864e838394abbb44d2b5574e48691d74561fe8",
+      "sourceContext": "Committed first-PR-head producer plus expanded owned test inputs; original16 remain retained"
+    },
+    "packets": [
+      {
+        "caseId": "slot-keyed-fallback-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-keyed-fallback-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-unkeyed-fallback-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-unkeyed-fallback-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "ordinary-wrapper-keyed-descendant-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "ordinary-wrapper-keyed-descendant-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-transparent-keyed-fallback-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "nested-transparent-keyed-fallback-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-ordinary-wrapper-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-ordinary-wrapper-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-element-key-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-element-key-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-element-missing-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 106,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 87
+            }
+          ],
+          "error_count": 1,
+          "filename": "direct-element-missing-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-template-key-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-template-key-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-child-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-child-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "object-bind-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "object-bind-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "static-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "static-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "empty-slot-policy-limit",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "empty-slot-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "multiple-child-any-key-policy-limit",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "multiple-child-any-key-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "mixed-fallback-any-key-policy-limit",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "mixed-fallback-any-key-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-v-for-outlet-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-v-for-outlet-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "dynamic-slot-forwarding-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-slot-forwarding-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-slot-directive-unkeyed-positive",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "nested-slot-directive-unkeyed-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-template-static-key-positive",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "nested-template-static-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-slot-static-key-positive",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "nested-slot-static-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-template-object-bind-key-positive",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "nested-template-object-bind-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-slot-object-bind-key-positive",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "nested-slot-object-bind-key-positive.vue",
+          "warning_count": 0
+        }
+      }
+    ]
+  },
+  "nativeExpandedHistoricalCapture": {
+    "origin": {
+      "phase": "expanded-historical-producer-controls",
+      "sourceRevision": "5bf1959473a75777fc1925363a86d683ae24adf1",
+      "producerSourceSha256": "2c0d2760fdcbeec3263e67e4c0f7453f0d6c23a9b73a1875958bb99c10403b90",
+      "observerSourceSha256": "d6e174ae3abd1305473e29760d94b0d6ad251d5f401484ee00c5bd2eb48379f2",
+      "cargoLockSha256": "29c04664c582321e5a91d4992c8dee62e7db9846962e472855ce55e546fed910",
+      "rustc": "1.99.0",
+      "rustcCommit": "b940084d7eb6a299eb4bfeb8e34901bc051e7ac4",
+      "cargo": "1.99.0 (5f94df478 2026-08-27)",
+      "host": "aarch64-apple-darwin",
+      "llvm": "23.1.1",
+      "privateTarget": "/tmp/vize-cargo-slot-fallback-key-8281-rust199-20261008",
+      "observerBinarySha256": "c0b866d0734b7c0d68dd0b49897d6e91740b561a4496d02ad964784c34ea70e5",
+      "command": [
+        "cargo",
+        "test",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_patina",
+        "--test",
+        "require_v_for_key_slot_fallback",
+        "--",
+        "--nocapture"
+      ],
+      "declaredToolchain": true,
+      "ignoreRustVersion": false,
+      "result": "Expected keyed-slot failure; all21 whole source API packets preserved before assertions; all five nested controls report one error",
+      "producerAuthority": "Actual public Linter API on fresh-main source plus owned test harness; not a CLI run, native/package migration, all51 semantics or performance qualification",
+      "rawPacketsSha256": "7bd4e18fd5f6963afce284d697ff201219575a83b5088fe4869e92b2f6b01482",
+      "producerRestoredFromRevision": "f399905053ced78738f387a8b940e8e0ed514d7d",
+      "sourceContext": "First PR checkout with only require_v_for_key.rs restored byte-for-byte from the fresh-main historical producer and expanded owned inputs; not a clean historical full checkout",
+      "semanticInputsSha256": "f03bc47f65d77d37d75147c59d864e838394abbb44d2b5574e48691d74561fe8"
+    },
+    "packets": [
+      {
+        "caseId": "slot-keyed-fallback-clean",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-keyed-fallback-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-unkeyed-fallback-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-unkeyed-fallback-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "ordinary-wrapper-keyed-descendant-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "ordinary-wrapper-keyed-descendant-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-transparent-keyed-fallback-clean",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-transparent-keyed-fallback-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-ordinary-wrapper-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-ordinary-wrapper-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-element-key-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-element-key-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-element-missing-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 106,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 87
+            }
+          ],
+          "error_count": 1,
+          "filename": "direct-element-missing-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-template-key-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-template-key-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-child-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-child-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "object-bind-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "object-bind-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "static-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "static-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "empty-slot-policy-limit",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "empty-slot-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "multiple-child-any-key-policy-limit",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "multiple-child-any-key-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "mixed-fallback-any-key-policy-limit",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "mixed-fallback-any-key-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-v-for-outlet-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-v-for-outlet-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "dynamic-slot-forwarding-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-slot-forwarding-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-slot-directive-unkeyed-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 119,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 100
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-slot-directive-unkeyed-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-template-static-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 119,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 100
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-template-static-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-slot-static-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 119,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 100
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-slot-static-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-template-object-bind-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 119,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 100
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-template-object-bind-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-slot-object-bind-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 119,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 100
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-slot-object-bind-key-positive.vue",
+          "warning_count": 0
+        }
+      }
+    ]
+  },
+  "nativeInitialAfterCapture": {
     "origin": {
       "phase": "after",
       "sourceRevision": "f399905053ced78738f387a8b940e8e0ed514d7d",
@@ -1379,5 +2316,378 @@
         }
       }
     ]
+  },
+  "nativeAfterCapture": {
+    "origin": {
+      "phase": "final-formatted-descendant-only-after",
+      "sourceRevision": "5bf1959473a75777fc1925363a86d683ae24adf1",
+      "producerSourceSha256": "6916e2952f805876b8f1b9472987da54a41fb81e47e167448d63537e2c6dd480",
+      "observerSourceSha256": "d6e174ae3abd1305473e29760d94b0d6ad251d5f401484ee00c5bd2eb48379f2",
+      "cargoLockSha256": "29c04664c582321e5a91d4992c8dee62e7db9846962e472855ce55e546fed910",
+      "rustc": "1.99.0",
+      "rustcCommit": "b940084d7eb6a299eb4bfeb8e34901bc051e7ac4",
+      "cargo": "1.99.0 (5f94df478 2026-08-27)",
+      "host": "aarch64-apple-darwin",
+      "llvm": "23.1.1",
+      "privateTarget": "/tmp/vize-cargo-slot-fallback-key-8281-rust199-20261008",
+      "observerBinarySha256": "bf0d40a375f4a4cd2c612c4c1aee1a36750b1b5c664b291dcdf2018768430756",
+      "command": [
+        "cargo",
+        "test",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_patina",
+        "--test",
+        "require_v_for_key_slot_fallback",
+        "--",
+        "--nocapture"
+      ],
+      "declaredToolchain": true,
+      "ignoreRustVersion": false,
+      "result": "Passed all21 whole public Linter API expectations, including five genuine historical nested exemption controls; all21 raw packets retained before assertions",
+      "producerAuthority": "Actual public Linter API on fresh-main source plus owned test harness; not a CLI run, native/package migration, all51 semantics or performance qualification",
+      "rawPacketsSha256": "36a6d792fac2d338d0bee75a792ce971c7011245ef07bc7d9faa2a19eb968686",
+      "producerPatchSha256": "96922d577af115b6c5dba4c4042cc99c1929a3797223c61e6f132070965d67c7",
+      "buildInputFixtureSha256": "4c1380e6bc3eba544d67080a9eca36def0967ee2d28c0da7d391431a2da50e70",
+      "semanticInputsSha256": "f03bc47f65d77d37d75147c59d864e838394abbb44d2b5574e48691d74561fe8",
+      "sourceContext": "Committed first PR producer plus the recorded corrective working-tree patch; sourceRevision identifies that base, not an exact clean after commit"
+    },
+    "packets": [
+      {
+        "caseId": "slot-keyed-fallback-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-keyed-fallback-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-unkeyed-fallback-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-unkeyed-fallback-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "ordinary-wrapper-keyed-descendant-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "ordinary-wrapper-keyed-descendant-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-transparent-keyed-fallback-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "nested-transparent-keyed-fallback-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-ordinary-wrapper-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-ordinary-wrapper-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-element-key-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-element-key-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-element-missing-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 106,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 87
+            }
+          ],
+          "error_count": 1,
+          "filename": "direct-element-missing-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-template-key-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-template-key-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-child-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-child-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "object-bind-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "object-bind-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "static-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "static-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "empty-slot-policy-limit",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "empty-slot-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "multiple-child-any-key-policy-limit",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "multiple-child-any-key-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "mixed-fallback-any-key-policy-limit",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "mixed-fallback-any-key-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-v-for-outlet-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-v-for-outlet-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "dynamic-slot-forwarding-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-slot-forwarding-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-slot-directive-unkeyed-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 119,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 100
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-slot-directive-unkeyed-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-template-static-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 119,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 100
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-template-static-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-slot-static-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 119,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 100
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-slot-static-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-template-object-bind-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 119,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 100
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-template-object-bind-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-slot-object-bind-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 119,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 100
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-slot-object-bind-key-positive.vue",
+          "warning_count": 0
+        }
+      }
+    ]
+  },
+  "nativeIntermediateAfterOrigin": {
+    "phase": "corrected-descendant-only-after",
+    "sourceRevision": "5bf1959473a75777fc1925363a86d683ae24adf1",
+    "producerSourceSha256": "6afd61324a8127bcd925b4ff3523530c74e47f910b3fc3d1c68badc6bf6737f0",
+    "observerSourceSha256": "d6e174ae3abd1305473e29760d94b0d6ad251d5f401484ee00c5bd2eb48379f2",
+    "cargoLockSha256": "29c04664c582321e5a91d4992c8dee62e7db9846962e472855ce55e546fed910",
+    "rustc": "1.99.0",
+    "rustcCommit": "b940084d7eb6a299eb4bfeb8e34901bc051e7ac4",
+    "cargo": "1.99.0 (5f94df478 2026-08-27)",
+    "host": "aarch64-apple-darwin",
+    "llvm": "23.1.1",
+    "privateTarget": "/tmp/vize-cargo-slot-fallback-key-8281-rust199-20261008",
+    "observerBinarySha256": "043861185fcd295db59882b058f7cf148a31d79afd1b3e9cbf5516946213ffbb",
+    "command": [
+      "cargo",
+      "test",
+      "--profile",
+      "ci",
+      "-p",
+      "vize_patina",
+      "--test",
+      "require_v_for_key_slot_fallback",
+      "--",
+      "--nocapture"
+    ],
+    "declaredToolchain": true,
+    "ignoreRustVersion": false,
+    "result": "Passed all21 whole public Linter API expectations, including five genuine historical nested exemption controls; all21 raw packets retained before assertions",
+    "producerAuthority": "Actual public Linter API on fresh-main source plus owned test harness; not a CLI run, native/package migration, all51 semantics or performance qualification",
+    "rawPacketsSha256": "36a6d792fac2d338d0bee75a792ce971c7011245ef07bc7d9faa2a19eb968686",
+    "producerPatchSha256": "b8e026055fa3d1a99f53fe71b918d91e9986675230cf36bb0bc3f3824aa38cec",
+    "buildInputFixtureSha256": "fc9253571a7dcc7514d50126a5ac638c23b841d31c5a7c889c70bdc845db1ddb",
+    "semanticInputsSha256": "f03bc47f65d77d37d75147c59d864e838394abbb44d2b5574e48691d74561fe8",
+    "sourceContext": "Committed first PR producer plus the recorded corrective working-tree patch; sourceRevision identifies that base, not an exact clean after commit"
   }
 }
