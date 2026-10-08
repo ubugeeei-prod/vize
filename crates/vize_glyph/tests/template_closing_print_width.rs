@@ -58,8 +58,10 @@ fn independent_closing_grammar_keeps_complete_fixed_points() {
             assert_eq!(
                 actual.changed,
                 current != case.expected,
-                "{} pass {pass}",
-                case.id
+                "{} pass {pass}; whole actual={:?}; expected={:?}",
+                case.id,
+                actual.code,
+                case.expected
             );
             assert_eq!(actual.code, case.expected, "{} whole pass {pass}", case.id);
             current = actual.code;
