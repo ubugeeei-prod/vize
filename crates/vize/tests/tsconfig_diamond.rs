@@ -135,7 +135,7 @@ fn check(root: &Path, corsa: &str, declaration: bool, expected_status: i32) -> V
     serde_json::from_str(stdout).unwrap_or_else(|error| panic!("{error}: {stdout}\n{stderr}"))
 }
 
-fn expected_library(corpus: &Value, broken: bool, declaration: bool) -> Value {
+fn expected_library(corpus: &Value, root: &Path, broken: bool, declaration: bool) -> Value {
     let mut files = corpus["expected"]["brokenFiles"].clone();
     if !broken {
         for file in files.as_array_mut().unwrap() {
@@ -146,7 +146,42 @@ fn expected_library(corpus: &Value, broken: bool, declaration: bool) -> Value {
     if declaration {
         result["declarations"] = corpus["expected"]["declarations"].clone();
     }
-    result
+    bind_library_report_paths(corpus, root, result)
+}
+
+fn bind_library_report_paths(corpus: &Value, root: &Path, mut expected: Value) -> Value {
+    // Compiler snapshots deliberately use absolute paths. Bind only authored
+    // path fields; complete fields and diagnostics are still compared below.
+    for key in ["rootDir", "outDir", "declarationDir"] {
+        let value = expected["programs"][0]["compilerOptions"][key]
+            .as_str()
+            .unwrap();
+        expected["programs"][0]["compilerOptions"][key] = json!(root.join(value).to_string_lossy());
+    }
+    if let Some(entries) = expected.get_mut("declarations") {
+        let source: Value =
+            serde_json::from_str(corpus["files"]["configs/shared.json"].as_str().unwrap()).unwrap();
+        let destination = source["compilerOptions"]["declarationDir"]
+            .as_str()
+            .unwrap();
+        let relative = corpus["expected"]["compilerOptions"]["declarationDir"]
+            .as_str()
+            .unwrap();
+        assert_eq!(destination, cstr!("../{relative}").as_str());
+        for entry in entries.as_array_mut().unwrap() {
+            let original = Path::new(entry.as_str().unwrap());
+            let file = original.strip_prefix(relative).unwrap();
+            // The public emitter reports the original config anchor without
+            // lexical compaction; derive it from the preserved authored config.
+            *entry = json!(
+                Path::new("configs")
+                    .join(destination)
+                    .join(file)
+                    .to_string_lossy()
+            );
+        }
+    }
+    expected
 }
 
 #[test]
@@ -158,7 +193,7 @@ fn diamond_default_project_reports_whole_authored_selection_and_repair() {
     let root = create_library("diamond-default-selection", &corpus);
     assert_eq!(
         check(&root, &corsa, false, 1),
-        expected_library(&corpus, true, false)
+        expected_library(&corpus, &root, true, false)
     );
     std::fs::write(
         root.join("src/base/main.ts"),
@@ -167,7 +202,7 @@ fn diamond_default_project_reports_whole_authored_selection_and_repair() {
     .unwrap();
     assert_eq!(
         check(&root, &corsa, false, 0),
-        expected_library(&corpus, false, false)
+        expected_library(&corpus, &root, false, false)
     );
     // Reversing only config order must select the sibling's clean root. Every
     // request starts a fresh process, so no stale merged spec may survive.
@@ -176,13 +211,16 @@ fn diamond_default_project_reports_whole_authored_selection_and_repair() {
         r#"{"extends":["./configs/second.json","./configs/first.json"]}"#,
     )
     .unwrap();
-    let mut expected_reversed = expected_library(&corpus, false, false);
+    let mut expected_reversed = expected_library(&corpus, &root, false, false);
     expected_reversed["files"] = json!([{"file":"src/first/first.ts","diagnostics":[]}]);
     expected_reversed["programs"][0]["files"] = json!(["src/first/first.ts"]);
     expected_reversed["fileCount"] = json!(1);
     expected_reversed["programs"][0]["compilerOptions"] =
         corpus["expected"]["reverseCompilerOptions"].clone();
-    assert_eq!(check(&root, &corsa, false, 0), expected_reversed);
+    assert_eq!(
+        check(&root, &corsa, false, 0),
+        bind_library_report_paths(&corpus, &root, expected_reversed)
+    );
     std::fs::write(
         root.join("tsconfig.json"),
         corpus["files"]["tsconfig.json"].as_str().unwrap(),
@@ -190,7 +228,7 @@ fn diamond_default_project_reports_whole_authored_selection_and_repair() {
     .unwrap();
     assert_eq!(
         check(&root, &corsa, false, 0),
-        expected_library(&corpus, false, false)
+        expected_library(&corpus, &root, false, false)
     );
     std::fs::remove_dir_all(root).unwrap();
 }
@@ -211,7 +249,7 @@ fn diamond_declarations_maps_and_packed_vue_consumer_keep_complete_types() {
     // come from the shared ancestor of the later sibling.
     assert_eq!(
         check(&root, &corsa, true, 0),
-        expected_library(&corpus, false, true)
+        expected_library(&corpus, &root, false, true)
     );
     assert!(!root.join("types-first").exists());
     assert!(!root.join("dist-first").exists());

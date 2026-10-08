@@ -68,3 +68,32 @@ protected suites and immutable instruction gates before actual merge. An ordinar
 PR worker's disable-TSGO early return remains zero native-body acceptance. This
 coverage change does not qualify the separate types-array successor or close the
 full #3984 project, declaration, build/watch, LSP, parity or performance roadmap.
+
+## Authored public JSON path envelope
+
+The fresh source-native run for `ffc8df2e37613ce77eeacbb02754ce9b318f8754`
+reached the first complete JSON packet in each new law. The authored diagnostics,
+reported files, program roots and file counts matched, but the newly anticipated
+path spelling did not match the existing public reporting contract. Neither law
+completed, and the six later CLI invocations remained unexecuted.
+
+The compiler-options snapshot explicitly makes every path-bearing option
+absolute before public JSON reporting. Declaration reporting strips the project
+root while preserving the literal config anchor, so the unchanged authored
+`configs/shared.json` destination `../types-base` is reported as
+`configs/../types-base/...`. The five original declaration tests establish no
+alternative inherited-path spelling contract.
+
+The harness now binds only the expected `rootDir`, `outDir` and `declarationDir`
+to its independently known project root and derives each expected declaration
+path from the preserved authored config anchor. No actual response supplies an
+expected value, and no field is removed or filtered. The frozen seven corpus
+files and every original expected literal remain byte exact. An independent
+compiled projection/inverse law recovers the complete original expected DTOs for
+both inheritance orders and the declaration report, preserves unknown fields,
+and keeps wrong-sibling paths unequal. Production reporting stays byte exact.
+
+Fresh source-native Actions must still execute both complete laws and all eight
+original CLI invocations, followed by the full protected suites before actual
+merge. This correction does not close the remaining #3984 project, declaration,
+build/watch, LSP, parity or performance requirements.
