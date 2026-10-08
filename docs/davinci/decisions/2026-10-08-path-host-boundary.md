@@ -53,3 +53,14 @@ its original total of two sites as one L0 storage site plus one exact Carton
 path site. Its distinct-host preflight refused the new production footprint
 before any measurement. Keep both failures as historical evidence and require
 a fresh complete successor; neither observation grants delivery credit.
+
+The successor distinct-host preflight admits this move only through a frozen
+complete before/after body mapping for the original L0 module, its Carton
+owner, both module declarations and all 56 callers. Every body, absence and
+full changed footprint must match; unknown production changes still refuse.
+Preserve the separately reviewed event-owned 16+5 eligibility clauses and
+scope words without claiming event performance or incoming source ancestry.
+The same existing build recipe now cleans and attests changed Carton as well
+as L0 on both sides. Original 400-provider inputs, RPC checks, methodology,
+limits and historical/cut routes remain unchanged. Actual measurements still
+require fresh hosted execution.
