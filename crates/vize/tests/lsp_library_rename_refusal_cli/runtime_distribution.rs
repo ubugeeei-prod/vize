@@ -45,6 +45,7 @@ const AFTER_ALIAS: &str = include_str!(
     "../../../../tests/_fixtures/differential/lsp/rename-runtime-distribution/8010/Probe.alias.after.vue.txt"
 );
 
+#[path = "runtime_distribution/assets.rs"]
 mod assets;
 pub(super) use assets::RuntimeDistribution;
 
