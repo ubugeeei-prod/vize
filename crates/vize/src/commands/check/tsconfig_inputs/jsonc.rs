@@ -3,6 +3,7 @@
 use serde_json::Value;
 
 pub(crate) fn parse_jsonc_value(content: &str) -> Result<Value, serde_json::Error> {
+    let content = content.strip_prefix('\u{feff}').unwrap_or(content);
     let stripped = strip_json_comments(content);
     let normalized = strip_trailing_commas(&stripped);
     serde_json::from_str(&normalized)
@@ -122,3 +123,7 @@ fn strip_trailing_commas(content: &str) -> std::string::String {
 
     output
 }
+
+#[cfg(test)]
+#[path = "jsonc/bom_tests.rs"]
+mod bom_tests;

@@ -1,0 +1,1429 @@
+{
+  "checkedAt": "2026-10-08T02:21:46.826658+00:00",
+  "inputSha256": "b095dd3bbc687e671d4cae2f8c1a70207f73ac791a2a8feb5dccb3127c6d360d",
+  "inputWhole": {
+    "scope": "Read-only public CLI whole BOM/plain probe; no source qualification or implementation yet",
+    "borrowedStubSource": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-check-tsconfig-types-presence-delivery-20261008/tests/_fixtures/differential/typechecker/tsconfig-types-extends-3984/input.json",
+    "borrowedWholeSourceSha256": "b01dfbb12d28be7f34743ee4061dd545a61f2ceb66e40bc8955f5ef129a60e21",
+    "borrowedStubWholePins": {
+      "node_modules/vue/package.json": "cea60ab11b5418edc32be920e0b9e0ee57fbd6fa52e8ccc4f6bfb5bf937d5957",
+      "node_modules/vue/index.d.ts": "d13d248743aacfb399540190ed5951e3b0f60873ac4ffbe7260bfcfa1fe3bd13",
+      "node_modules/vue/jsx.d.ts": "a6af7b4cbf1ad2cadbc3eb54f1bcd8ecd919240f6f50e669b03f9ee50a95186e",
+      "node_modules/@types/base/package.json": "fad5440bfd70ecde30f1c80ab9e9de91704914d72cb55288ddc88a5d65ed3132",
+      "node_modules/@types/base/index.d.ts": "cdaf02b64ebd737fec15b5f67fe1ff80039c2752e7bc592dee5e377cad5111de",
+      "node_modules/@types/base/globals.d.mts": "51b19d00c190f96f5cde198c23808a5706d4692f98dd1b991dbbb88f2e73ca30"
+    },
+    "commonFiles": {
+      "node_modules/vue/package.json": "{\n  \"name\": \"vue\",\n  \"types\": \"index.d.ts\"\n}",
+      "node_modules/vue/index.d.ts": "export type Slot = (...args: any[]) => unknown[];\nexport type Slots = Readonly<Record<string, Slot | undefined>>;\nexport interface ComponentCustomProperties {}\n\nexport interface ComponentPublicInstance<Props = {}> extends ComponentCustomProperties {\n  $props: Props;\n  $attrs: Record<string, unknown>;\n  $slots: Record<string, unknown>;\n  $refs: Record<string, unknown>;\n  $emit: (...args: any[]) => void;\n}\n\nexport type DefineComponent<Props = {}> = {\n  new (): ComponentPublicInstance<Props>;\n};\n\nexport type ComponentOptions<Props = {}> = {\n  props?: Props;\n  setup?: any;\n  render?: Function;\n};\n\nexport interface FunctionalComponent<P = {}> {\n  (props: P, ctx: any): any;\n}\n\nexport type ConcreteComponent<Props = {}> =\n  | ComponentOptions<Props>\n  | FunctionalComponent<Props>;\n\ndeclare const RefSymbol: unique symbol;\n\nexport interface Ref<T = unknown, _Raw = T> {\n  value: T;\n  [RefSymbol]: true;\n}\n\nexport interface ShallowRef<T = unknown, _Raw = T> extends Ref<T, _Raw> {\n  readonly __v_isShallow?: true;\n}\n\nexport type PropType<T> = { new (...args: any[]): T & {} } | { (): T } | null;\n\nexport declare const Transition: DefineComponent;\nexport declare function defineComponent(options: any): DefineComponent;\n",
+      "node_modules/vue/jsx.d.ts": "declare global {\n  namespace JSX {\n    interface IntrinsicElements {\n      [name: string]: unknown;\n    }\n  }\n}\n\nexport {};\n",
+      "node_modules/@types/base/package.json": "{\n  \"name\": \"@types/base\",\n  \"version\": \"0.0.0\",\n  \"types\": \"index.d.ts\"\n}\n",
+      "node_modules/@types/base/index.d.ts": "/// <reference path=\"./globals.d.mts\" />\nexport {};\n",
+      "node_modules/@types/base/globals.d.mts": "import type { DefineComponent } from \"vue\";\ndeclare global {\n  const selectedGlobal: \"base\";\n  const baseOnly: 1;\n}\ndeclare module \"vue\" {\n  interface GlobalComponents {\n    SharedGlobal: DefineComponent<{ label: string }>;\n  }\n}\nexport {};\n",
+      "src/App.vue": "<script setup lang=\"ts\">\nimport { label } from \"@model\";\n</script>\n<template><div>{{ label }}</div></template>\n",
+      "src/model.ts": "export const label: string = \"ok\";\n",
+      "src/main.ts": "export const selected: \"base\" = selectedGlobal;\nexport const own: 1 = baseOnly;\n",
+      "ignored/Excluded.vue": "<script setup lang=\"ts\">\nconst deliberatelyExcluded: string = 1;\n</script>\n<template><div>{{ deliberatelyExcluded }}</div></template>\n",
+      "ignored/excluded.ts": "export const deliberatelyExcluded: string = 1;\n"
+    },
+    "cases": {
+      "direct": {
+        "plain": {
+          "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"./src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"src/**/*\"\n  ],\n  \"exclude\": [\n    \"ignored/**/*\"\n  ]\n}\n"
+        },
+        "bom": {
+          "tsconfig.json": "﻿{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"./src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"src/**/*\"\n  ],\n  \"exclude\": [\n    \"ignored/**/*\"\n  ]\n}\n"
+        }
+      },
+      "extended": {
+        "plain": {
+          "tsconfig.json": "{\n  \"extends\": \"./configs/base.json\"\n}\n",
+          "configs/base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+        },
+        "bom-root": {
+          "tsconfig.json": "﻿{\n  \"extends\": \"./configs/base.json\"\n}\n",
+          "configs/base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+        },
+        "bom-parent": {
+          "tsconfig.json": "{\n  \"extends\": \"./configs/base.json\"\n}\n",
+          "configs/base.json": "﻿{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+        }
+      }
+    },
+    "phases": {
+      "clean": "export const selected: \"base\" = selectedGlobal;\nexport const own: 1 = baseOnly;\n",
+      "broken": "export const selected: number = selectedGlobal;\nexport const own: 1 = baseOnly;\n",
+      "repair": "export const selected: \"base\" = selectedGlobal;\nexport const own: 1 = baseOnly;\n"
+    },
+    "authoredSelectedFiles": [
+      "src/App.vue",
+      "src/main.ts",
+      "src/model.ts"
+    ],
+    "lexicalLaw": "Only UTF-8 EF BB BF inserted at byte zero of a config; identical whole Vize and stock status/stdout/stderr are required for each otherwise identical input; no field filtering, expected response copying, diagnostic dedup or packet rewriting. Stock engine versions remain separate.",
+    "noCurrentVizeResultUsedToAuthorInput": true
+  },
+  "versions": {
+    "typescript-6.0.3": {
+      "exitCode": 0,
+      "stdout": "Version 6.0.3\n",
+      "stderr": ""
+    },
+    "typescript-7.0.2": {
+      "exitCode": 0,
+      "stdout": "Version 7.0.2\n",
+      "stderr": ""
+    },
+    "vize": {
+      "exitCode": 0,
+      "stdout": "vize 0.435.2\n",
+      "stderr": ""
+    }
+  },
+  "cliBinding": {
+    "path": "/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/cli-source-artifact/vize",
+    "bytes": 39882048,
+    "sha256": "4d02d0c14a83e5ce4d4d8239d69c8f221a9f5b0875237e44b17af67d4f95730d",
+    "metadataPath": "/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/cli-source-artifact/cli-source-custody.json",
+    "metadataSha256": "e4743b928154eedf75176437510ce7b1349bb55d85cb3188d0d2c46c0bfc5ae4",
+    "metadataWhole": {
+      "checkedAt": "2026-10-08T02:21:18.964751+00:00",
+      "scope": "Read-only source-BOM reproduction using unpublished superseded .2 candidate; no .2/.436 publication, installed or current-source graduation credit",
+      "H": "212692e21c618cc36e8281f041e2aa704c46eb0c",
+      "actualSourceCutC": "6d26d84b4240e9356cf5078b6d277e181d311a42",
+      "R": 37715578811,
+      "producerJob": 113111721791,
+      "producerTerminalSuccess": true,
+      "hostExecutableDescription": "/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/cli-source-artifact/vize: Mach-O 64-bit executable arm64",
+      "cliPath": "/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/cli-source-artifact/vize",
+      "cliBytes": 39882048,
+      "cliSha256": "4d02d0c14a83e5ce4d4d8239d69c8f221a9f5b0875237e44b17af67d4f95730d",
+      "zipPath": "/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/cli-source-artifact/cli-11523926056.zip",
+      "zipBytes": 17621775,
+      "zipSha256": "a5d872f1a646dc25654b6ee6be3c2022984b7f68176df8338180b8dca254f029",
+      "artifactMetadataWhole": {
+        "id": 11523926056,
+        "node_id": "MDg6QXJ0aWZhY3QxMTUyMzkyNjA1Ng==",
+        "name": "cli-aarch64-apple-darwin",
+        "size_in_bytes": 17621775,
+        "url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11523926056",
+        "archive_download_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11523926056/zip",
+        "expired": false,
+        "digest": "sha256:a5d872f1a646dc25654b6ee6be3c2022984b7f68176df8338180b8dca254f029",
+        "created_at": "2026-10-08T02:07:48Z",
+        "updated_at": "2026-10-08T02:07:48Z",
+        "expires_at": "2027-01-06T01:58:45Z",
+        "workflow_run": {
+          "id": 37715578811,
+          "repository_id": 1123610216,
+          "head_repository_id": 1123610216,
+          "head_branch": "release/v0.435.2",
+          "head_sha": "212692e21c618cc36e8281f041e2aa704c46eb0c"
+        }
+      },
+      "producerJobWhole": {
+        "id": 113111721791,
+        "run_id": 37715578811,
+        "workflow_name": "Pinned Release v0.435.2 PR #8243 @ 212692e21c618cc36e8281f041e2aa704c46eb0c",
+        "head_branch": "release/v0.435.2",
+        "run_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/runs/37715578811",
+        "run_attempt": 1,
+        "node_id": "CR_kwDOQvjuaM8AAAAaVfvnPw",
+        "head_sha": "212692e21c618cc36e8281f041e2aa704c46eb0c",
+        "url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/jobs/113111721791",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/37715578811/job/113111721791",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-10-08T02:00:53Z",
+        "started_at": "2026-10-08T02:01:09Z",
+        "completed_at": "2026-10-08T02:07:53Z",
+        "name": "Build CLI - aarch64-apple-darwin",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1,
+            "started_at": "2026-10-08T02:01:10Z",
+            "completed_at": "2026-10-08T02:01:11Z"
+          },
+          {
+            "name": "Set up runner",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2,
+            "started_at": "2026-10-08T02:01:11Z",
+            "completed_at": "2026-10-08T02:01:12Z"
+          },
+          {
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3,
+            "started_at": "2026-10-08T02:01:12Z",
+            "completed_at": "2026-10-08T02:01:16Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-moonbit",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4,
+            "started_at": "2026-10-08T02:01:16Z",
+            "completed_at": "2026-10-08T02:01:29Z"
+          },
+          {
+            "name": "Enable long paths (Windows)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 5,
+            "started_at": "2026-10-08T02:01:29Z",
+            "completed_at": "2026-10-08T02:01:29Z"
+          },
+          {
+            "name": "Setup Rust",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6,
+            "started_at": "2026-10-08T02:01:29Z",
+            "completed_at": "2026-10-08T02:01:34Z"
+          },
+          {
+            "name": "Install Rust target",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7,
+            "started_at": "2026-10-08T02:01:34Z",
+            "completed_at": "2026-10-08T02:01:41Z"
+          },
+          {
+            "name": "Run ./.github/actions/setup-rust-script",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8,
+            "started_at": "2026-10-08T02:01:41Z",
+            "completed_at": "2026-10-08T02:01:59Z"
+          },
+          {
+            "name": "Setup Wild linker (Linux)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 9,
+            "started_at": "2026-10-08T02:01:59Z",
+            "completed_at": "2026-10-08T02:01:59Z"
+          },
+          {
+            "name": "Stabilize Ubuntu package archive (Linux ARM64)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 10,
+            "started_at": "2026-10-08T02:01:59Z",
+            "completed_at": "2026-10-08T02:01:59Z"
+          },
+          {
+            "name": "Install cross-compilation tools (Linux ARM64)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 11,
+            "started_at": "2026-10-08T02:01:59Z",
+            "completed_at": "2026-10-08T02:01:59Z"
+          },
+          {
+            "name": "Setup Zig (Linux musl CLI)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 12,
+            "started_at": "2026-10-08T02:01:59Z",
+            "completed_at": "2026-10-08T02:01:59Z"
+          },
+          {
+            "name": "Configure Zig linker (Linux musl CLI)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 13,
+            "started_at": "2026-10-08T02:01:59Z",
+            "completed_at": "2026-10-08T02:01:59Z"
+          },
+          {
+            "name": "Mount Rust sticky disks (Linux)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 14,
+            "started_at": "2026-10-08T02:01:59Z",
+            "completed_at": "2026-10-08T02:01:59Z"
+          },
+          {
+            "name": "Cache Rust (non-Linux)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 15,
+            "started_at": "2026-10-08T02:01:59Z",
+            "completed_at": "2026-10-08T02:02:01Z"
+          },
+          {
+            "name": "Tune Windows release profile",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 16,
+            "started_at": "2026-10-08T02:02:01Z",
+            "completed_at": "2026-10-08T02:02:01Z"
+          },
+          {
+            "name": "Build CLI",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 17,
+            "started_at": "2026-10-08T02:02:01Z",
+            "completed_at": "2026-10-08T02:07:45Z"
+          },
+          {
+            "name": "Create archive (Unix)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 18,
+            "started_at": "2026-10-08T02:07:45Z",
+            "completed_at": "2026-10-08T02:07:47Z"
+          },
+          {
+            "name": "Create archive (Windows)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 19,
+            "started_at": "2026-10-08T02:07:47Z",
+            "completed_at": "2026-10-08T02:07:47Z"
+          },
+          {
+            "name": "Upload artifact",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 20,
+            "started_at": "2026-10-08T02:07:47Z",
+            "completed_at": "2026-10-08T02:07:48Z"
+          },
+          {
+            "name": "Post Cache Rust (non-Linux)",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 37,
+            "started_at": "2026-10-08T02:07:48Z",
+            "completed_at": "2026-10-08T02:07:49Z"
+          },
+          {
+            "name": "Post Run ./.github/actions/setup-moonbit",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 38,
+            "started_at": "2026-10-08T02:07:49Z",
+            "completed_at": "2026-10-08T02:07:49Z"
+          },
+          {
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 39,
+            "started_at": "2026-10-08T02:07:49Z",
+            "completed_at": "2026-10-08T02:07:50Z"
+          },
+          {
+            "name": "Complete runner",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 40,
+            "started_at": "2026-10-08T02:07:50Z",
+            "completed_at": "2026-10-08T02:07:50Z"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 41,
+            "started_at": "2026-10-08T02:07:50Z",
+            "completed_at": "2026-10-08T02:07:51Z"
+          }
+        ],
+        "check_run_url": "https://api.github.com/repos/ubugeeei-prod/vize/check-runs/113111721791",
+        "labels": [
+          "blacksmith-12vcpu-macos-15"
+        ],
+        "runner_id": 920364,
+        "runner_name": "blacksmith-12vcpu-macos-15-545mrx5jxg6qdwzm",
+        "runner_group_id": 8,
+        "runner_group_name": "blacksmith scale sets - blacksmith-12vcpu-macos-15"
+      },
+      "sourceRunWhole": {
+        "id": 37715578811,
+        "name": "Pinned Release v0.435.2 PR #8243 @ 212692e21c618cc36e8281f041e2aa704c46eb0c",
+        "node_id": "WFR_kwLOQvjuaM8AAAAIyAYPuw",
+        "head_branch": "release/v0.435.2",
+        "head_sha": "212692e21c618cc36e8281f041e2aa704c46eb0c",
+        "path": ".github/workflows/release.yml",
+        "display_title": "Pinned Release v0.435.2 PR #8243 @ 212692e21c618cc36e8281f041e2aa704c46eb0c",
+        "run_number": 810,
+        "event": "workflow_dispatch",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "workflow_id": 222571196,
+        "check_suite_id": 102176742798,
+        "check_suite_node_id": "CS_kwDOQvjuaM8AAAAXyjVdjg",
+        "url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/runs/37715578811",
+        "html_url": "https://github.com/ubugeeei-prod/vize/actions/runs/37715578811",
+        "pull_requests": [],
+        "created_at": "2026-10-08T01:58:43Z",
+        "updated_at": "2026-10-08T02:16:09Z",
+        "actor": {
+          "login": "ubugeeei",
+          "id": 71201308,
+          "node_id": "MDQ6VXNlcjcxMjAxMzA4",
+          "avatar_url": "https://avatars.githubusercontent.com/u/71201308?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/ubugeeei",
+          "html_url": "https://github.com/ubugeeei",
+          "followers_url": "https://api.github.com/users/ubugeeei/followers",
+          "following_url": "https://api.github.com/users/ubugeeei/following{/other_user}",
+          "gists_url": "https://api.github.com/users/ubugeeei/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/ubugeeei/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/ubugeeei/subscriptions",
+          "organizations_url": "https://api.github.com/users/ubugeeei/orgs",
+          "repos_url": "https://api.github.com/users/ubugeeei/repos",
+          "events_url": "https://api.github.com/users/ubugeeei/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/ubugeeei/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "run_attempt": 1,
+        "referenced_workflows": [
+          {
+            "path": "ubugeeei-prod/vize/.github/workflows/release-preflight.yml@212692e21c618cc36e8281f041e2aa704c46eb0c",
+            "sha": "212692e21c618cc36e8281f041e2aa704c46eb0c",
+            "ref": "refs/heads/release/v0.435.2"
+          },
+          {
+            "path": "ubugeeei-prod/vize/.github/workflows/release-promotion.yml@212692e21c618cc36e8281f041e2aa704c46eb0c",
+            "sha": "212692e21c618cc36e8281f041e2aa704c46eb0c",
+            "ref": "refs/heads/release/v0.435.2"
+          }
+        ],
+        "run_started_at": "2026-10-08T01:58:43Z",
+        "triggering_actor": {
+          "login": "ubugeeei",
+          "id": 71201308,
+          "node_id": "MDQ6VXNlcjcxMjAxMzA4",
+          "avatar_url": "https://avatars.githubusercontent.com/u/71201308?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/ubugeeei",
+          "html_url": "https://github.com/ubugeeei",
+          "followers_url": "https://api.github.com/users/ubugeeei/followers",
+          "following_url": "https://api.github.com/users/ubugeeei/following{/other_user}",
+          "gists_url": "https://api.github.com/users/ubugeeei/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/ubugeeei/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/ubugeeei/subscriptions",
+          "organizations_url": "https://api.github.com/users/ubugeeei/orgs",
+          "repos_url": "https://api.github.com/users/ubugeeei/repos",
+          "events_url": "https://api.github.com/users/ubugeeei/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/ubugeeei/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "jobs_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/runs/37715578811/jobs",
+        "logs_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/runs/37715578811/logs",
+        "check_suite_url": "https://api.github.com/repos/ubugeeei-prod/vize/check-suites/102176742798",
+        "artifacts_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/runs/37715578811/artifacts",
+        "cancel_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/runs/37715578811/cancel",
+        "rerun_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/runs/37715578811/rerun",
+        "previous_attempt_url": null,
+        "workflow_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/workflows/222571196",
+        "head_commit": {
+          "id": "212692e21c618cc36e8281f041e2aa704c46eb0c",
+          "tree_id": "410a774a82a4f17015ae74e08c1062018b5eb0aa",
+          "message": "chore: release v0.435.2",
+          "timestamp": "2026-10-08T01:53:59Z",
+          "author": {
+            "name": "ubugeeei",
+            "email": "ubuge1122@gmail.com"
+          },
+          "committer": {
+            "name": "ubugeeei",
+            "email": "ubuge1122@gmail.com"
+          }
+        },
+        "repository": {
+          "id": 1123610216,
+          "node_id": "R_kgDOQvjuaA",
+          "name": "vize",
+          "full_name": "ubugeeei-prod/vize",
+          "private": false,
+          "owner": {
+            "login": "ubugeeei-prod",
+            "id": 288813381,
+            "node_id": "O_kgDOETbxRQ",
+            "avatar_url": "https://avatars.githubusercontent.com/u/288813381?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/ubugeeei-prod",
+            "html_url": "https://github.com/ubugeeei-prod",
+            "followers_url": "https://api.github.com/users/ubugeeei-prod/followers",
+            "following_url": "https://api.github.com/users/ubugeeei-prod/following{/other_user}",
+            "gists_url": "https://api.github.com/users/ubugeeei-prod/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/ubugeeei-prod/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/ubugeeei-prod/subscriptions",
+            "organizations_url": "https://api.github.com/users/ubugeeei-prod/orgs",
+            "repos_url": "https://api.github.com/users/ubugeeei-prod/repos",
+            "events_url": "https://api.github.com/users/ubugeeei-prod/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/ubugeeei-prod/received_events",
+            "type": "Organization",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "html_url": "https://github.com/ubugeeei-prod/vize",
+          "description": "blazing fast Vue.js toolchain. compiler, linter, type checker, formatter, lsp, story system, editors.  already passed 27k+ tests.",
+          "fork": false,
+          "url": "https://api.github.com/repos/ubugeeei-prod/vize",
+          "forks_url": "https://api.github.com/repos/ubugeeei-prod/vize/forks",
+          "keys_url": "https://api.github.com/repos/ubugeeei-prod/vize/keys{/key_id}",
+          "collaborators_url": "https://api.github.com/repos/ubugeeei-prod/vize/collaborators{/collaborator}",
+          "teams_url": "https://api.github.com/repos/ubugeeei-prod/vize/teams",
+          "hooks_url": "https://api.github.com/repos/ubugeeei-prod/vize/hooks",
+          "issue_events_url": "https://api.github.com/repos/ubugeeei-prod/vize/issues/events{/number}",
+          "events_url": "https://api.github.com/repos/ubugeeei-prod/vize/events",
+          "assignees_url": "https://api.github.com/repos/ubugeeei-prod/vize/assignees{/user}",
+          "branches_url": "https://api.github.com/repos/ubugeeei-prod/vize/branches{/branch}",
+          "tags_url": "https://api.github.com/repos/ubugeeei-prod/vize/tags",
+          "blobs_url": "https://api.github.com/repos/ubugeeei-prod/vize/git/blobs{/sha}",
+          "git_tags_url": "https://api.github.com/repos/ubugeeei-prod/vize/git/tags{/sha}",
+          "git_refs_url": "https://api.github.com/repos/ubugeeei-prod/vize/git/refs{/sha}",
+          "trees_url": "https://api.github.com/repos/ubugeeei-prod/vize/git/trees{/sha}",
+          "statuses_url": "https://api.github.com/repos/ubugeeei-prod/vize/statuses/{sha}",
+          "languages_url": "https://api.github.com/repos/ubugeeei-prod/vize/languages",
+          "stargazers_url": "https://api.github.com/repos/ubugeeei-prod/vize/stargazers",
+          "contributors_url": "https://api.github.com/repos/ubugeeei-prod/vize/contributors",
+          "subscribers_url": "https://api.github.com/repos/ubugeeei-prod/vize/subscribers",
+          "subscription_url": "https://api.github.com/repos/ubugeeei-prod/vize/subscription",
+          "commits_url": "https://api.github.com/repos/ubugeeei-prod/vize/commits{/sha}",
+          "git_commits_url": "https://api.github.com/repos/ubugeeei-prod/vize/git/commits{/sha}",
+          "comments_url": "https://api.github.com/repos/ubugeeei-prod/vize/comments{/number}",
+          "issue_comment_url": "https://api.github.com/repos/ubugeeei-prod/vize/issues/comments{/number}",
+          "contents_url": "https://api.github.com/repos/ubugeeei-prod/vize/contents/{+path}",
+          "compare_url": "https://api.github.com/repos/ubugeeei-prod/vize/compare/{base}...{head}",
+          "merges_url": "https://api.github.com/repos/ubugeeei-prod/vize/merges",
+          "archive_url": "https://api.github.com/repos/ubugeeei-prod/vize/{archive_format}{/ref}",
+          "downloads_url": "https://api.github.com/repos/ubugeeei-prod/vize/downloads",
+          "issues_url": "https://api.github.com/repos/ubugeeei-prod/vize/issues{/number}",
+          "pulls_url": "https://api.github.com/repos/ubugeeei-prod/vize/pulls{/number}",
+          "milestones_url": "https://api.github.com/repos/ubugeeei-prod/vize/milestones{/number}",
+          "notifications_url": "https://api.github.com/repos/ubugeeei-prod/vize/notifications{?since,all,participating}",
+          "labels_url": "https://api.github.com/repos/ubugeeei-prod/vize/labels{/name}",
+          "releases_url": "https://api.github.com/repos/ubugeeei-prod/vize/releases{/id}",
+          "deployments_url": "https://api.github.com/repos/ubugeeei-prod/vize/deployments"
+        },
+        "head_repository": {
+          "id": 1123610216,
+          "node_id": "R_kgDOQvjuaA",
+          "name": "vize",
+          "full_name": "ubugeeei-prod/vize",
+          "private": false,
+          "owner": {
+            "login": "ubugeeei-prod",
+            "id": 288813381,
+            "node_id": "O_kgDOETbxRQ",
+            "avatar_url": "https://avatars.githubusercontent.com/u/288813381?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/ubugeeei-prod",
+            "html_url": "https://github.com/ubugeeei-prod",
+            "followers_url": "https://api.github.com/users/ubugeeei-prod/followers",
+            "following_url": "https://api.github.com/users/ubugeeei-prod/following{/other_user}",
+            "gists_url": "https://api.github.com/users/ubugeeei-prod/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/ubugeeei-prod/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/ubugeeei-prod/subscriptions",
+            "organizations_url": "https://api.github.com/users/ubugeeei-prod/orgs",
+            "repos_url": "https://api.github.com/users/ubugeeei-prod/repos",
+            "events_url": "https://api.github.com/users/ubugeeei-prod/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/ubugeeei-prod/received_events",
+            "type": "Organization",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "html_url": "https://github.com/ubugeeei-prod/vize",
+          "description": "blazing fast Vue.js toolchain. compiler, linter, type checker, formatter, lsp, story system, editors.  already passed 27k+ tests.",
+          "fork": false,
+          "url": "https://api.github.com/repos/ubugeeei-prod/vize",
+          "forks_url": "https://api.github.com/repos/ubugeeei-prod/vize/forks",
+          "keys_url": "https://api.github.com/repos/ubugeeei-prod/vize/keys{/key_id}",
+          "collaborators_url": "https://api.github.com/repos/ubugeeei-prod/vize/collaborators{/collaborator}",
+          "teams_url": "https://api.github.com/repos/ubugeeei-prod/vize/teams",
+          "hooks_url": "https://api.github.com/repos/ubugeeei-prod/vize/hooks",
+          "issue_events_url": "https://api.github.com/repos/ubugeeei-prod/vize/issues/events{/number}",
+          "events_url": "https://api.github.com/repos/ubugeeei-prod/vize/events",
+          "assignees_url": "https://api.github.com/repos/ubugeeei-prod/vize/assignees{/user}",
+          "branches_url": "https://api.github.com/repos/ubugeeei-prod/vize/branches{/branch}",
+          "tags_url": "https://api.github.com/repos/ubugeeei-prod/vize/tags",
+          "blobs_url": "https://api.github.com/repos/ubugeeei-prod/vize/git/blobs{/sha}",
+          "git_tags_url": "https://api.github.com/repos/ubugeeei-prod/vize/git/tags{/sha}",
+          "git_refs_url": "https://api.github.com/repos/ubugeeei-prod/vize/git/refs{/sha}",
+          "trees_url": "https://api.github.com/repos/ubugeeei-prod/vize/git/trees{/sha}",
+          "statuses_url": "https://api.github.com/repos/ubugeeei-prod/vize/statuses/{sha}",
+          "languages_url": "https://api.github.com/repos/ubugeeei-prod/vize/languages",
+          "stargazers_url": "https://api.github.com/repos/ubugeeei-prod/vize/stargazers",
+          "contributors_url": "https://api.github.com/repos/ubugeeei-prod/vize/contributors",
+          "subscribers_url": "https://api.github.com/repos/ubugeeei-prod/vize/subscribers",
+          "subscription_url": "https://api.github.com/repos/ubugeeei-prod/vize/subscription",
+          "commits_url": "https://api.github.com/repos/ubugeeei-prod/vize/commits{/sha}",
+          "git_commits_url": "https://api.github.com/repos/ubugeeei-prod/vize/git/commits{/sha}",
+          "comments_url": "https://api.github.com/repos/ubugeeei-prod/vize/comments{/number}",
+          "issue_comment_url": "https://api.github.com/repos/ubugeeei-prod/vize/issues/comments{/number}",
+          "contents_url": "https://api.github.com/repos/ubugeeei-prod/vize/contents/{+path}",
+          "compare_url": "https://api.github.com/repos/ubugeeei-prod/vize/compare/{base}...{head}",
+          "merges_url": "https://api.github.com/repos/ubugeeei-prod/vize/merges",
+          "archive_url": "https://api.github.com/repos/ubugeeei-prod/vize/{archive_format}{/ref}",
+          "downloads_url": "https://api.github.com/repos/ubugeeei-prod/vize/downloads",
+          "issues_url": "https://api.github.com/repos/ubugeeei-prod/vize/issues{/number}",
+          "pulls_url": "https://api.github.com/repos/ubugeeei-prod/vize/pulls{/number}",
+          "milestones_url": "https://api.github.com/repos/ubugeeei-prod/vize/milestones{/number}",
+          "notifications_url": "https://api.github.com/repos/ubugeeei-prod/vize/notifications{?since,all,participating}",
+          "labels_url": "https://api.github.com/repos/ubugeeei-prod/vize/labels{/name}",
+          "releases_url": "https://api.github.com/repos/ubugeeei-prod/vize/releases{/id}",
+          "deployments_url": "https://api.github.com/repos/ubugeeei-prod/vize/deployments"
+        }
+      },
+      "jsoncEntryWholePins": [
+        {
+          "path": "crates/vize/src/commands/check/tsconfig_inputs/jsonc.rs",
+          "bytes": 3194,
+          "sha256": "92b5a42fffb4b1c8bba683edc3a4c4eaea6e15d7b59cb54b3acc1b10eb85e32b",
+          "wholeBytesExactAcrossH2ActualC6dAndSource2716": true
+        },
+        {
+          "path": "crates/vize_canon/src/batch/virtual_project/tsconfig_paths.rs",
+          "bytes": 8514,
+          "sha256": "5012f4e6011601adf1719feca8af4aa930533cf4a3cb79da67328ba7b661b398",
+          "wholeBytesExactAcrossH2ActualC6dAndSource2716": true
+        }
+      ],
+      "onlyJSONCEntryEqualityClaimedNotUniversalClosure": true,
+      "producerRawBytes": 134016,
+      "producerRawSha256": "7b6e75435acd0ae3b2faa25caf9bef98a33a7798c65ea8bbcf42d9877995d72f",
+      "producerLog": "/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/cli-source-artifact/producer-terminal.log",
+      "noNapiHydration": true,
+      "oneCliArtifactDownload": true
+    }
+  },
+  "records": {
+    "direct": {
+      "clean": {
+        "plain": {
+          "sourceWhole": {
+            "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"./src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"src/**/*\"\n  ],\n  \"exclude\": [\n    \"ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 0,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/direct/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 0,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            },
+            "explicit": {
+              "exitCode": 0,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/direct/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 0,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            }
+          }
+        },
+        "bom": {
+          "sourceWhole": {
+            "tsconfig.json": "﻿{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"./src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"src/**/*\"\n  ],\n  \"exclude\": [\n    \"ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            },
+            "explicit": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            }
+          }
+        }
+      },
+      "broken": {
+        "plain": {
+          "sourceWhole": {
+            "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"./src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"src/**/*\"\n  ],\n  \"exclude\": [\n    \"ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 2,
+                "stdout": "src/main.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 1,
+                "stdout": "src/main.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 1,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": [\n        \"error:1:14 [TS2322] Type 'string' is not assignable to type 'number'.\"\n      ]\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/direct/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 1,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            },
+            "explicit": {
+              "exitCode": 1,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": [\n        \"error:1:14 [TS2322] Type 'string' is not assignable to type 'number'.\"\n      ]\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/direct/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 1,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            }
+          }
+        },
+        "bom": {
+          "sourceWhole": {
+            "tsconfig.json": "﻿{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"./src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"src/**/*\"\n  ],\n  \"exclude\": [\n    \"ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 2,
+                "stdout": "src/main.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 1,
+                "stdout": "src/main.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            },
+            "explicit": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            }
+          }
+        }
+      },
+      "repair": {
+        "plain": {
+          "sourceWhole": {
+            "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"./src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"src/**/*\"\n  ],\n  \"exclude\": [\n    \"ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 0,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/direct/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 0,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            },
+            "explicit": {
+              "exitCode": 0,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/direct/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 0,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            }
+          }
+        },
+        "bom": {
+          "sourceWhole": {
+            "tsconfig.json": "﻿{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"./src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"src/**/*\"\n  ],\n  \"exclude\": [\n    \"ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"./src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"src/**/*\"\n    ],\n    \"exclude\": [\n        \"ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            },
+            "explicit": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            }
+          }
+        }
+      }
+    },
+    "extended": {
+      "clean": {
+        "plain": {
+          "sourceWhole": {
+            "tsconfig.json": "{\n  \"extends\": \"./configs/base.json\"\n}\n",
+            "configs/base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 0,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/extended/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 0,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            },
+            "explicit": {
+              "exitCode": 0,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/extended/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 0,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            }
+          }
+        },
+        "bom-root": {
+          "sourceWhole": {
+            "tsconfig.json": "﻿{\n  \"extends\": \"./configs/base.json\"\n}\n",
+            "configs/base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            },
+            "explicit": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            }
+          }
+        },
+        "bom-parent": {
+          "sourceWhole": {
+            "tsconfig.json": "{\n  \"extends\": \"./configs/base.json\"\n}\n",
+            "configs/base.json": "﻿{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            },
+            "explicit": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            }
+          }
+        }
+      },
+      "broken": {
+        "plain": {
+          "sourceWhole": {
+            "tsconfig.json": "{\n  \"extends\": \"./configs/base.json\"\n}\n",
+            "configs/base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 2,
+                "stdout": "src/main.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 1,
+                "stdout": "src/main.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 1,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": [\n        \"error:1:14 [TS2322] Type 'string' is not assignable to type 'number'.\"\n      ]\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/extended/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 1,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            },
+            "explicit": {
+              "exitCode": 1,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": [\n        \"error:1:14 [TS2322] Type 'string' is not assignable to type 'number'.\"\n      ]\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/extended/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 1,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            }
+          }
+        },
+        "bom-root": {
+          "sourceWhole": {
+            "tsconfig.json": "﻿{\n  \"extends\": \"./configs/base.json\"\n}\n",
+            "configs/base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 2,
+                "stdout": "src/main.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 1,
+                "stdout": "src/main.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            },
+            "explicit": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            }
+          }
+        },
+        "bom-parent": {
+          "sourceWhole": {
+            "tsconfig.json": "{\n  \"extends\": \"./configs/base.json\"\n}\n",
+            "configs/base.json": "﻿{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 2,
+                "stdout": "src/main.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 1,
+                "stdout": "src/main.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            },
+            "explicit": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            }
+          }
+        }
+      },
+      "repair": {
+        "plain": {
+          "sourceWhole": {
+            "tsconfig.json": "{\n  \"extends\": \"./configs/base.json\"\n}\n",
+            "configs/base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 0,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/extended/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 0,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            },
+            "explicit": {
+              "exitCode": 0,
+              "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"src/App.vue\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/main.ts\",\n      \"diagnostics\": []\n    },\n    {\n      \"file\": \"src/model.ts\",\n      \"diagnostics\": []\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@model\": [\n            \"/private/tmp/vize-n8n-p0-20261007/typechecker3984-next-project-readonly/bom-whole-public/projects/extended/src/model.ts\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\",\n        \"types\": [\n          \"base\"\n        ]\n      },\n      \"files\": [\n        \"node_modules/@types/base/globals.d.mts\",\n        \"node_modules/@types/base/index.d.ts\",\n        \"src/App.vue\",\n        \"src/main.ts\",\n        \"src/model.ts\"\n      ]\n    }\n  ],\n  \"errorCount\": 0,\n  \"warningCount\": 0,\n  \"fileCount\": 3\n}\n",
+              "stderr": ""
+            }
+          }
+        },
+        "bom-root": {
+          "sourceWhole": {
+            "tsconfig.json": "﻿{\n  \"extends\": \"./configs/base.json\"\n}\n",
+            "configs/base.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            },
+            "explicit": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            }
+          }
+        },
+        "bom-parent": {
+          "sourceWhole": {
+            "tsconfig.json": "{\n  \"extends\": \"./configs/base.json\"\n}\n",
+            "configs/base.json": "﻿{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"noEmit\": true,\n    \"types\": [\n      \"base\"\n    ],\n    \"paths\": {\n      \"@model\": [\n        \"../src/model.ts\"\n      ]\n    }\n  },\n  \"include\": [\n    \"../src/**/*\"\n  ],\n  \"exclude\": [\n    \"../ignored/**/*\"\n  ]\n}\n"
+          },
+          "official": {
+            "typescript-6.0.3": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"types\": [\n            \"base\"\n        ],\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        }\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}\n",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            },
+            "typescript-7.0.2": {
+              "showConfig": {
+                "exitCode": 0,
+                "stdout": "{\n    \"compilerOptions\": {\n        \"module\": \"esnext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n            \"@model\": [\n                \"../src/model.ts\"\n            ]\n        },\n        \"strict\": true,\n        \"target\": \"es2022\",\n        \"types\": [\n            \"base\"\n        ]\n    },\n    \"files\": [\n        \"./src/main.ts\",\n        \"./src/model.ts\"\n    ],\n    \"include\": [\n        \"configs/../src/**/*\"\n    ],\n    \"exclude\": [\n        \"configs/../ignored/**/*\"\n    ]\n}",
+                "stderr": ""
+              },
+              "check": {
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          "vize": {
+            "default": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            },
+            "explicit": {
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+            }
+          }
+        }
+      }
+    }
+  },
+  "differences": [
+    {
+      "group": "direct",
+      "phase": "clean",
+      "variant": "bom",
+      "engine": "vize",
+      "mode": "default",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "direct",
+      "phase": "clean",
+      "variant": "bom",
+      "engine": "vize",
+      "mode": "explicit",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "direct",
+      "phase": "broken",
+      "variant": "bom",
+      "engine": "vize",
+      "mode": "default",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "direct",
+      "phase": "broken",
+      "variant": "bom",
+      "engine": "vize",
+      "mode": "explicit",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "direct",
+      "phase": "repair",
+      "variant": "bom",
+      "engine": "vize",
+      "mode": "default",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "direct",
+      "phase": "repair",
+      "variant": "bom",
+      "engine": "vize",
+      "mode": "explicit",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "clean",
+      "variant": "bom-root",
+      "engine": "vize",
+      "mode": "default",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "clean",
+      "variant": "bom-root",
+      "engine": "vize",
+      "mode": "explicit",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "clean",
+      "variant": "bom-parent",
+      "engine": "vize",
+      "mode": "default",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "clean",
+      "variant": "bom-parent",
+      "engine": "vize",
+      "mode": "explicit",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "broken",
+      "variant": "bom-root",
+      "engine": "vize",
+      "mode": "default",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "broken",
+      "variant": "bom-root",
+      "engine": "vize",
+      "mode": "explicit",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "broken",
+      "variant": "bom-parent",
+      "engine": "vize",
+      "mode": "default",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "broken",
+      "variant": "bom-parent",
+      "engine": "vize",
+      "mode": "explicit",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "repair",
+      "variant": "bom-root",
+      "engine": "vize",
+      "mode": "default",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "repair",
+      "variant": "bom-root",
+      "engine": "vize",
+      "mode": "explicit",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "repair",
+      "variant": "bom-parent",
+      "engine": "vize",
+      "mode": "default",
+      "wholePacketDiffers": true
+    },
+    {
+      "group": "extended",
+      "phase": "repair",
+      "variant": "bom-parent",
+      "engine": "vize",
+      "mode": "explicit",
+      "wholePacketDiffers": true
+    }
+  ],
+  "wholeComparisonsUseNoFilteringOrNormalization": true,
+  "publicVizeExecuted": true
+}

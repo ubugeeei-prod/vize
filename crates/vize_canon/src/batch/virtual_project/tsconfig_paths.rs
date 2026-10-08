@@ -157,6 +157,7 @@ pub(super) fn normalize_path_lexically(path: &Path) -> PathBuf {
 }
 
 pub(crate) fn parse_jsonc_value(content: &str) -> CorsaResult<Value> {
+    let content = content.strip_prefix('\u{feff}').unwrap_or(content);
     let stripped = strip_json_comments(content);
     let normalized = strip_trailing_commas(&stripped);
     Ok(serde_json::from_str(&normalized)?)
@@ -276,3 +277,7 @@ fn strip_trailing_commas(content: &str) -> CompactString {
 
     output
 }
+
+#[cfg(test)]
+#[path = "tsconfig_paths/bom_tests.rs"]
+mod bom_tests;

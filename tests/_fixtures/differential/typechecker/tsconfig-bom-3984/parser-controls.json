@@ -1,0 +1,26 @@
+{
+  "plain": "// config comment\r\n{\n  \"compilerOptions\": { \"types\": [], \"paths\": { \"@bom\": [\"\\uFEFFvalue/*keep*/\"], }, },\n  \"unknown\": { \"flag\": false, \"array\": [1, 2,], },\n  \"url\": \"https://example.invalid//keep\",\n  \"\\uFEFFkey\": \"data\",\n}\n",
+  "expected": {
+    "compilerOptions": {
+      "types": [],
+      "paths": {
+        "@bom": [
+          "﻿value/*keep*/"
+        ]
+      }
+    },
+    "unknown": {
+      "flag": false,
+      "array": [
+        1,
+        2
+      ]
+    },
+    "url": "https://example.invalid//keep",
+    "﻿key": "data"
+  },
+  "invalid": [
+    "{\"compilerOptions\": ",
+    "{\"include\": [\"src/**/*\"] \"missingComma\": true}"
+  ]
+}

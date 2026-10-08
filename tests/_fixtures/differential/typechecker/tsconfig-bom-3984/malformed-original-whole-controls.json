@@ -1,0 +1,83 @@
+{
+  "scope": "Complete original malformed CLI failure controls from authenticated unpublished H2 source; no current fixed-output golden",
+  "wholeCases": {
+    "direct": {
+      "plain": {
+        "tsconfig.json": "{\"compilerOptions\": "
+      },
+      "bom": {
+        "tsconfig.json": "﻿{\"compilerOptions\": "
+      }
+    },
+    "extended": {
+      "plain": {
+        "tsconfig.json": "{\"extends\":\"./configs/base.json\"}\n",
+        "configs/base.json": "{\"compilerOptions\": "
+      },
+      "bom-parent": {
+        "tsconfig.json": "{\"extends\":\"./configs/base.json\"}\n",
+        "configs/base.json": "﻿{\"compilerOptions\": "
+      }
+    }
+  },
+  "wholeOriginalPackets": {
+    "direct": {
+      "plain": {
+        "default": {
+          "exitCode": 1,
+          "stdout": "",
+          "stderr": "Error: JSON parse error: EOF while parsing a value at line 1 column 20\n"
+        },
+        "explicit": {
+          "exitCode": 1,
+          "stdout": "",
+          "stderr": "Error: JSON parse error: EOF while parsing a value at line 1 column 20\n"
+        }
+      },
+      "bom": {
+        "default": {
+          "exitCode": 1,
+          "stdout": "",
+          "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+        },
+        "explicit": {
+          "exitCode": 1,
+          "stdout": "",
+          "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+        }
+      }
+    },
+    "extended": {
+      "plain": {
+        "default": {
+          "exitCode": 1,
+          "stdout": "",
+          "stderr": "Error: JSON parse error: EOF while parsing a value at line 1 column 20\n"
+        },
+        "explicit": {
+          "exitCode": 1,
+          "stdout": "",
+          "stderr": "Error: JSON parse error: EOF while parsing a value at line 1 column 20\n"
+        }
+      },
+      "bom-parent": {
+        "default": {
+          "exitCode": 1,
+          "stdout": "",
+          "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+        },
+        "explicit": {
+          "exitCode": 1,
+          "stdout": "",
+          "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+        }
+      }
+    }
+  },
+  "expectedPlainFailure": {
+    "exitCode": 1,
+    "stdout": "",
+    "stderr": "Error: JSON parse error: EOF while parsing a value at line 1 column 20\n"
+  },
+  "authorExpectationMatchesEveryPlainPacket": true
+}

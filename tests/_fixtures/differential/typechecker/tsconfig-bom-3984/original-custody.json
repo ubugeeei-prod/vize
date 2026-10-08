@@ -1,0 +1,44 @@
+{
+  "originalInputByteExactToPreVizeAuthor": true,
+  "officialCompletePacketByteExactToOriginal": true,
+  "beforeCliWholePacketByteExactToOriginal": true,
+  "noCurrentFixedProducerResultUsedToAuthorExpected": true,
+  "authorPathBindingOnly": "Known canonical fixtureRoot + authored src/model.ts alias target",
+  "originalFiles": [
+    {
+      "file": "README.md",
+      "bytes": 2617,
+      "sha256": "3803357bd2a95a50658e027fdb31f35b638343f507b1ce81f26c94407ce7ff8e"
+    },
+    {
+      "file": "before-cli-whole-observations.json",
+      "bytes": 93765,
+      "sha256": "608dde49cb9fe37290d40e9bac0007bf1917777f9290857db5bca91069af1be3"
+    },
+    {
+      "file": "expected-cli.json",
+      "bytes": 3072,
+      "sha256": "f20e1cbdb1bedd5a29e9cd306ad6a0ccd3ba75ce07c2f8f134c8c4668a29a93e"
+    },
+    {
+      "file": "input.json",
+      "bytes": 7140,
+      "sha256": "b095dd3bbc687e671d4cae2f8c1a70207f73ac791a2a8feb5dccb3127c6d360d"
+    },
+    {
+      "file": "malformed-original-whole-controls.json",
+      "bytes": 2420,
+      "sha256": "39db5cc8bd548050f4e929b6e7b1df8f8cc71b87b7ae8ecdc1a8d7880aeebc04"
+    },
+    {
+      "file": "official-whole-observations.json",
+      "bytes": 44298,
+      "sha256": "d70683f88408665904308ca892326b607eb3de396e37afddf78c8bf3f341917d"
+    },
+    {
+      "file": "parser-controls.json",
+      "bytes": 696,
+      "sha256": "8fc60ff9b3ea851ba842f9719123fe3db8c89195a91f003236124cda75c8745b"
+    }
+  ]
+}
