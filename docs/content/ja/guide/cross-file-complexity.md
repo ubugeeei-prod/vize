@@ -313,7 +313,7 @@ WASM のファイル間解析結果では、`complexityReport`、`complexityHots
 
 ## 実装と既存の検証
 
-- [指標の仕様と当時のコーパス](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/plan/complexity-metrics.md)
+- [指標の仕様と当時のコーパス](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/plan/complexity-metrics.md?plain=1)
 - [L2 の領域と式の計算](https://github.com/ubugeeei-prod/vize/tree/main/davinci/vize_l1_to_l2/src/pass/cfg)
 - [Lint の完全な例と診断ラベル](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/max_template_complexity/tests.rs)
 - [ファイル間の重み、カウンター、到達性](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_croquis_cf/src/rules/complexity)

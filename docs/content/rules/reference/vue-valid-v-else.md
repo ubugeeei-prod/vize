@@ -6,6 +6,8 @@ title: "vue/valid-v-else"
 
 Enforce valid `v-else` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The examples give `v-else` an expression, combine it with `v-if`, or omit its adjacent preceding conditional branch.
+
 ```vue
 <template>
   <div v-else="ready"></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Place bare `v-else` immediately after the corresponding `v-if` branch.
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/slot-name-casing"
 
 Enforce kebab-case for named slots used via v-slot
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The named slot `mySlot` uses camelCase where the rule requires a hyphenated name.
+
 ```vue
 <template>
 <MyCard><template #mySlot>Content</template></MyCard>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`#my-slot` uses kebab-case. Rename the corresponding slot outlet to the same name.
 
 ```vue
 <template>

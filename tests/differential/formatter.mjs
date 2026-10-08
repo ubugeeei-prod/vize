@@ -7,6 +7,7 @@ import { compareBytes } from "./compare.mjs";
 import { FORMATTER_ARGV, loadFormatterManifest, sha256 } from "./manifest.mjs";
 import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.mjs";
 import { runPlannedCases, validateResultEnvelope } from "./harness.mjs";
+import { expressionWidthReference } from "./formatter-expression-width-reference.mjs";
 
 export function assertProcessSucceeded(result) {
   if (result.error) throw result.error;
@@ -26,7 +27,7 @@ const processObservation = (result) => ({
   processError: result.error?.message ?? null,
 });
 
-export function formatterAttempt(pass, input, output, result, expected) {
+export function formatterAttempt(pass, input, output, result, expected, currentExpected) {
   return {
     pass,
     inputBase64: input.toString("base64"),
@@ -35,6 +36,9 @@ export function formatterAttempt(pass, input, output, result, expected) {
     outputBase64: output?.toString("base64") ?? null,
     outputSha256: output ? sha256(output) : null,
     referenceComparison: output ? compareBytes(expected, output) : null,
+    ...(currentExpected
+      ? { currentReferenceComparison: output ? compareBytes(currentExpected, output) : null }
+      : {}),
   };
 }
 
@@ -58,9 +62,17 @@ export function validateFormatterReport(loaded, report, expectedBuild) {
     pairedComparisons: 0,
     nativeHandled: 0,
     nativeEquivalent: 0,
+    ...(loaded.cases.some((fixture) => fixture.currentReference)
+      ? { currentReferenceMatches: 0 }
+      : {}),
   };
   for (const fixture of loaded.cases) {
     const row = rows.get(fixture.id);
+    assert.deepEqual(
+      row.currentReference,
+      fixture.currentReference,
+      "current qualification changed",
+    );
     assert.equal(row.native.state, "unsupported");
     assert.equal(row.native.reason, fixture.adapters.reasons.native);
     assert.equal(row.comparison.state, "not-compared");
@@ -87,6 +99,10 @@ export function validateFormatterReport(loaded, report, expectedBuild) {
         assert.equal(index, row.legacy.passes.length - 1);
         assert.equal(observation.outputSha256, null);
         assert.equal(observation.referenceComparison, null);
+        assert.equal(
+          observation.currentReferenceComparison,
+          fixture.currentExpected ? null : undefined,
+        );
       } else {
         const output = Buffer.from(observation.outputBase64, "base64");
         assert.equal(sha256(output), observation.outputSha256, "observed output digest mismatch");
@@ -94,6 +110,11 @@ export function validateFormatterReport(loaded, report, expectedBuild) {
           observation.referenceComparison,
           compareBytes(fixture.expected, output),
           "forged reference comparison",
+        );
+        assert.deepEqual(
+          observation.currentReferenceComparison,
+          fixture.currentExpected ? compareBytes(fixture.currentExpected, output) : undefined,
+          "forged current reference comparison",
         );
         previous = output;
       }
@@ -110,7 +131,19 @@ export function validateFormatterReport(loaded, report, expectedBuild) {
       summary.legacyFailures += 1;
     } else {
       assert(report.binary, "completed formatter comparison requires observed executable identity");
-      if (row.legacy.verdict === "matched-reference") {
+      if (row.legacy.verdict === "matched-current-reference") {
+        assert(fixture.currentReference, "unqualified current comparison");
+        assert.equal(row.legacy.passes.length, 3, "all current passes are required");
+        assert(row.legacy.passes.every((pass) => pass.referenceComparison.state === "different"));
+        assert(
+          row.legacy.passes.every((pass) => pass.currentReferenceComparison.state === "equal"),
+        );
+        summary.currentReferenceMatches += 1;
+      } else if (row.legacy.verdict === "matched-reference") {
+        assert(
+          !fixture.currentReference,
+          "qualified current behavior cannot match the historical drift",
+        );
         assert.equal(
           row.legacy.passes.length,
           3,
@@ -135,6 +168,7 @@ function runFormatterCase(fixture, binaryPath, binaryFailure) {
     legacy: { state: "failed", verdict: "failed", passes: [] },
     native: { state: "unsupported", reason: fixture.adapters.reasons.native },
     comparison: { state: "not-compared", reason: "native formatter adapter unavailable" },
+    ...(fixture.currentReference ? { currentReference: fixture.currentReference } : {}),
   };
   if (fixture.config.length) {
     row.legacy.argv = [...fixture.argv];
@@ -157,13 +191,24 @@ function runFormatterCase(fixture, binaryPath, binaryFailure) {
         maxBuffer: 4 * 1024 * 1024,
       });
       const output = fs.existsSync(entry) ? fs.readFileSync(entry) : null;
-      const observation = formatterAttempt(pass, input, output, result, fixture.expected);
+      const observation = formatterAttempt(
+        pass,
+        input,
+        output,
+        result,
+        fixture.expected,
+        fixture.currentExpected,
+      );
       row.legacy.passes.push(observation);
       assertProcessSucceeded(result);
       assert(output, "formatter removed the entry file");
       row.legacy.state = "completed";
       row.legacy.verdict =
-        observation.referenceComparison.state === "equal" ? "matched-reference" : "baseline-drift";
+        observation.currentReferenceComparison?.state === "equal"
+          ? "matched-current-reference"
+          : observation.referenceComparison.state === "equal"
+            ? "matched-reference"
+            : "baseline-drift";
       if (row.legacy.verdict === "baseline-drift") break;
     }
   } catch (error) {
@@ -217,6 +262,10 @@ export function runFormatterPack({ manifestPath, binaryPath, sourceRevision, rep
     report.binaryProbe = processObservation(version);
     assertProcessSucceeded(version);
     assert.equal(version.stdout.toString().trim(), build.cliVersion);
+    loaded.cases = loaded.cases.map((fixture) => ({
+      ...fixture,
+      ...expressionWidthReference(repoRoot, fixture),
+    }));
     report.binary = {
       path: build.binaryPath,
       sha256: build.binarySha256,
@@ -237,6 +286,13 @@ export function runFormatterPack({ manifestPath, binaryPath, sourceRevision, rep
     pairedComparisons: 0,
     nativeHandled: 0,
     nativeEquivalent: 0,
+    ...(loaded.cases.some((fixture) => fixture.currentReference)
+      ? {
+          currentReferenceMatches: report.rows.filter(
+            (row) => row.legacy.verdict === "matched-current-reference",
+          ).length,
+        }
+      : {}),
   };
   validateFormatterReport(loaded, report, build);
   return report;

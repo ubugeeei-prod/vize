@@ -6,6 +6,8 @@ title: "vue/max-template-complexity"
 
 Limit a component's own template complexity (cyclomatic and cognitive)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -13,6 +15,8 @@ Applies to: Vue SFC templates and blocks, with script context where the rule req
 Options: No rule-specific options. Severity and preset selection are configurable.
 
 Bad has cyclomatic complexity 13 and cognitive complexity 25 (limits: 11 and 16). Each component is measured separately; only inline HTML templates are supported.
+
+See [complexity scoring and component boundaries](../../guide/cross-file-complexity.md) for the contributions behind the example's two scores.
 
 ## Configuration (Vite+)
 
@@ -36,6 +40,8 @@ vp run lint
 ```
 
 ## Bad
+
+The parent-authored branches, loop, slot content, and expression decisions produce scores of 13 and 25, above the default limits 11 and 16.
 
 ```vue
 <script setup lang="ts">
@@ -61,6 +67,8 @@ defineProps<{ rows: Row[] }>();
 ```
 
 ## Good
+
+The parent template delegates rendering to RowList and keeps one v-if; its own scores are 2 and 1.
 
 ```vue
 <template>

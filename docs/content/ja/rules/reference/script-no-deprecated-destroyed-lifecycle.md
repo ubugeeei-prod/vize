@@ -6,6 +6,8 @@ title: "script/no-deprecated-destroyed-lifecycle"
 
 Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 の hook に置き換えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+タイマーの後片付けに、Vue 3 で削除された Vue 2 のライフサイクルオプション `beforeDestroy` を使っています。
+
 ```vue
 <script lang="ts">
 export default { beforeDestroy() { clearTimeout(this.timer); } };
@@ -42,6 +46,8 @@ export default { beforeDestroy() { clearTimeout(this.timer); } };
 ```
 
 ## 良い
+
+フック名を `beforeUnmount` に変え、後片付けの本体を Vue 3 のライフサイクル名で保ちます。
 
 ```vue
 <script lang="ts">

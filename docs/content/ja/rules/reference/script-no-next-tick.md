@@ -6,6 +6,8 @@ title: "script/no-next-tick"
 
 Vapor 向けコンポーネントの nextTick() 使用を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+Vapor 向けコンポーネントが `nextTick` をインポートして await し、この移行ルールが拒否する DOM 更新待ちの依存を作っています。
+
 ```vue
 <script setup lang="ts" vapor>
 import { nextTick } from "vue";
@@ -43,6 +47,8 @@ await nextTick();
 ```
 
 ## 良い
+
+`useTemplateRef` で input を取得し、`onMounted` でフォーカスします。例の `nextTick` への依存を、明示的なマウント時の処理に置き換えます。
 
 ```vue
 <script setup lang="ts" vapor>

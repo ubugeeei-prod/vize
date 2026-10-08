@@ -6,6 +6,8 @@ title: "musea/unique-variant-names"
 
 Require unique variant names
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Two variants in the same art block both use the primary name.
+
 ```vue
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+The variants have distinct primary and secondary names.
 
 ```vue
 <art title="Button" component="./Button.vue">

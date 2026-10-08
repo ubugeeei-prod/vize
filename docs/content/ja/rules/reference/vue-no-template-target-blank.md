@@ -6,6 +6,8 @@ title: "vue/no-template-target-blank"
 
 target=_blank の外部リンクに適切な rel を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+外部リンクを target=_blank で開きますが、必要な rel の保護がありません。
+
 ```vue
 <template>
 <a href="https://example.com" target="_blank">x</a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じリンクに noopener noreferrer を指定します。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/no-v-for-template-key-on-child"
 
 template v-for の key を子ではなく template に指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+繰り返す template に key がなく、子の p に指定しています。
+
 ```vue
 <template>
 <template v-for="item in items"><p :key="item.id">{{ item.name }}</p></template>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+template の v-for に key を移し、繰り返す fragment 全体を識別します。
 
 ```vue
 <template>

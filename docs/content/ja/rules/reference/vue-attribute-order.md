@@ -6,6 +6,8 @@ title: "vue/attribute-order"
 
 テンプレートの属性を一定の順に並べます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+構造を決める v-if と通常の id 属性より前に、イベントを指定しています。
+
 ```vue
 <template>
   <div @click="onClick" v-if="show" id="main"></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+v-if、id、イベントの順に並べ、ルールの順序に合わせます。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "script/no-async-in-computed"
 
 Disallow async functions in computed properties
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The `computed` getter is `async`, so the fetch produces a Promise instead of a synchronously derived computed value.
+
 ```vue
 <script setup lang="ts">
 import { computed } from "vue";
@@ -46,6 +50,8 @@ const data = computed(async () => {
 ```
 
 ## Good
+
+The asynchronous fetch moves into `watch` and stores its result in `data.value`. Cleanup aborts the old request and prevents an inactive callback from writing a stale result; no async computed getter remains.
 
 ```vue
 <script setup lang="ts">

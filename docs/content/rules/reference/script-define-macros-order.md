@@ -4,7 +4,9 @@ title: "script/define-macros-order"
 
 # `script/define-macros-order`
 
-Enforce a consistent order of the Vue compiler macros in <script setup>
+Enforce a consistent order of the Vue compiler macros in &lt;script setup&gt;
+
+[Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
 Presets: _none_  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`defineProps` appears before `defineModel`, although `defineModel` has the earlier rank in the canonical macro order.
+
 ```vue
 <script setup lang="ts">
 // defineProps before defineModel (out of canonical order)
@@ -44,6 +48,8 @@ const model = defineModel<string>()
 ```
 
 ## Good
+
+The declarations follow the exact sequence `defineOptions`, `defineModel`, `defineProps`, `defineEmits`, `defineSlots`, before unrelated runtime statements.
 
 ```vue
 <script setup lang="ts">

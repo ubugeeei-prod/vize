@@ -6,6 +6,8 @@ title: "html/no-dupe-style-properties"
 
 Disallow duplicate properties in inline style attributes
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Each static style repeats one property; `margin` and `MARGIN` also count as the same property.
+
 ```vue
 <template>
 <div style="color: red; color: blue">text</div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+The static style uses distinct color and background properties. Dynamic style bindings are outside this static-attribute check.
 
 ```vue
 <template>

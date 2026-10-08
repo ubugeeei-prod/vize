@@ -6,6 +6,8 @@ title: "script/no-side-effects-in-computed-properties"
 
 Disallow side effects in Options API computed getters
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`doubled` assigns to `this.count`, and `reversed` mutates `this.items` through `reverse()`. Both getters modify the state they are supposed to derive from.
+
 ```vue
 <script lang="ts">
 export default {
@@ -55,6 +59,8 @@ return this.items.reverse() // side effect: mutates the array
 ```
 
 ## Good
+
+`doubled` returns the multiplication without assignment. `reversed` copies the array before reversing it, so the original component state is unchanged by the getter.
 
 ```vue
 <script lang="ts">

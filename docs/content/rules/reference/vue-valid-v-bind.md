@@ -6,6 +6,8 @@ title: "vue/valid-v-bind"
 
 Enforce valid `v-bind` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The bare `v-bind` has no object expression, and the empty argument form has no attribute name.
+
 ```vue
 <template>
   <div v-bind></div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+Provide an attribute and expression, bind an object, or use Vue 3.4+ same-name shorthand such as `:loading`.
 
 ```vue
 <template>

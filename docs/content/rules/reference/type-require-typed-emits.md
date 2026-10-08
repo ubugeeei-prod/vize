@@ -6,6 +6,8 @@ title: "type/require-typed-emits"
 
 Require type definition for defineEmits
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -38,6 +40,8 @@ vp run lint
 
 ## Bad
 
+The array-only `defineEmits(["save"])` declares the event name without a typed payload contract.
+
 ```vue
 <script setup lang="ts">
 defineEmits(["save"]);
@@ -45,6 +49,8 @@ defineEmits(["save"]);
 ```
 
 ## Good
+
+`defineEmits<{ save: [] }>()` declares the typed `save` event with an empty payload tuple, explicitly stating that it takes no payload arguments.
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "vue/no-dupe-v-else-if"
 
 v-if / v-else-if の条件重複を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+最初と同じ ready の条件を else-if に書き、後の分岐に到達できません。
+
 ```vue
 <template>
   <p v-if="status === 'ready'">Ready</p>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+二つ目で別の loading の状態を検査し、else-if に到達できる条件にします。
 
 ```vue
 <template>

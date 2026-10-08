@@ -6,6 +6,8 @@ title: "petite-vue/no-unsupported-directive"
 
 petite-vue が対応しないディレクティブを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`v-memo`、`v-slot:header`、カスタムの `v-my-directive` は petite-vue の対応ディレクティブ一覧にありません。petite-vue の script によって、この HTML が対象の方言として判定されます。
+
 ```html
 <!doctype html>
 <html><body>
@@ -46,6 +50,8 @@ vp run lint
 ```
 
 ## 良い
+
+対応している `v-scope`、`v-effect`、`v-if`、`v-bind`、`v-on` を使い、未対応のディレクティブへの依存を取り除きます。
 
 ```html
 <!doctype html>

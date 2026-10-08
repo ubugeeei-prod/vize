@@ -4,7 +4,9 @@ title: "musea/require-title"
 
 # `musea/require-title`
 
-Require title attribute in <art> block
+Require title attribute in &lt;art&gt; block
+
+[Bad](#bad) · [Good](#good)
 
 Default severity: `error`  
 Presets: _none_  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The art block identifies Button.vue but supplies no title.
+
 ```vue
 <art component="./Button.vue">
   <variant name="primary" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The defineArt options supply the Button title for the art block.
 
 ```vue
 <script setup>

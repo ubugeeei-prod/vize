@@ -6,6 +6,8 @@ title: "script/require-explicit-slots"
 
 useSlots() で使う slot を defineSlots の型で宣言します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+型付きの `defineProps<{ id: number }>()` により TypeScript の構文があることが分かりますが、setup が `defineSlots` の宣言なしに `useSlots()` を使い、参照する slot の明示的な契約がありません。
+
 ```vue
 <script setup lang="ts">
 const props = defineProps<{ id: number }>()
@@ -43,6 +47,8 @@ const slots = useSlots()
 ```
 
 ## 良い
+
+`defineSlots` で `msg: string` を props に持つ `default` slot を宣言し、`useSlots()` と明示的な型付き slot 契約を併記します。
 
 ```vue
 <script setup lang="ts">

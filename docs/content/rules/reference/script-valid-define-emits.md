@@ -6,6 +6,8 @@ title: "script/valid-define-emits"
 
 Enforce valid defineEmits() usage (no type+runtime args, no local references, single call)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The same `defineEmits` call supplies both a type argument and the runtime array `["save"]`, mixing two mutually exclusive declarations.
+
 ```vue
 <script setup lang="ts">
 defineEmits<{ save: [] }>(["save"]);
@@ -42,6 +46,8 @@ defineEmits<{ save: [] }>(["save"]);
 ```
 
 ## Good
+
+Removing the runtime argument leaves a single type-based event declaration for `save`.
 
 ```vue
 <script setup lang="ts">

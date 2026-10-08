@@ -46,6 +46,7 @@ struct Fixture {
     id: i64,
     publications: std::collections::HashMap<(String, i64), Value>,
     mismatches: Vec<Value>,
+    publication_sequences: Vec<Value>,
     runtime: std::path::PathBuf,
     runtime_distribution: Option<runtime_distribution::RuntimeDistribution>,
 }
@@ -127,6 +128,7 @@ impl Fixture {
             id: 2,
             publications: Default::default(),
             mismatches: Vec::new(),
+            publication_sequences: Vec::new(),
             runtime,
             runtime_distribution,
         };

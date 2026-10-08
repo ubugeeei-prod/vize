@@ -6,6 +6,8 @@ title: "vue/no-unsandboxed-iframe"
 
 Require a sandbox attribute on iframe elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The embedded frame has no sandbox attribute limiting its capabilities.
+
 ```vue
 <template>
 <iframe src="/embed"></iframe>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+sandbox applies restrictions; allow-scripts explicitly opts into that one capability when needed.
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/no-preprocessor-lang"
 
 CSS preprocessor より標準の CSS を使う方針を適用します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: SFC lint では未対応  
@@ -39,6 +41,8 @@ vp run lint
 
 ## 悪い
 
+style の lang に SCSS を指定しています。preprocessor を使わない規約の例で、現在の SFC 検査はこのルールを生成しません。
+
 ```vue
 <template><p>Notice</p></template>
 <style lang="scss">
@@ -48,6 +52,8 @@ vp run lint
 
 ## 良い
 
+同じ CSS から preprocessor の lang を取り除きます。規約の修正例で、現在の実行結果の診断の違いを示すものではありません。
+
 ```vue
 <template><p>Notice</p></template>
 <style>
@@ -55,6 +61,6 @@ vp run lint
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) · [全ルール](../all.md)

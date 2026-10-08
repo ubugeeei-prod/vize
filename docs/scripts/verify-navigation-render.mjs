@@ -5,6 +5,7 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import { chromium } from "playwright";
 import { resolvePuppeteerExecutablePath } from "../browser-path.js";
+import { ruleRenderRoutes, verifyRenderedRulePackets } from "./rule-render-assertions.mjs";
 
 const { values } = parseArgs({
   options: {
@@ -24,6 +25,7 @@ const pages = [
   "/guide/vite-plugin",
   "/guide/configuration-reference",
   "/guide/compiler-configuration-reference",
+  ...ruleRenderRoutes,
 ];
 const routes = values.routes?.split(",") ?? pages.flatMap((route) => [route, `/ja${route}`]);
 const types = {
@@ -52,6 +54,7 @@ await mkdir(output, { recursive: true });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
 const reports = [];
+const linkedPages = new Map();
 let browser;
 try {
   browser = await chromium.launch({
@@ -143,6 +146,7 @@ try {
           (element) => element.href,
         ),
       }));
+      const rulePackets = await verifyRenderedRulePackets(page, route);
       assert(metrics.bodyWidth <= viewport.width + 1, `${route}: page overflows viewport`);
       assert.equal(pageErrors.length, 0, pageErrors.join("\n"));
       const sidebar = page.locator(".sidebar");
@@ -181,10 +185,14 @@ try {
       for (const href of new Set(metrics.links)) {
         const target = new URL(href);
         if (target.origin !== origin) continue;
-        const linked = await page.request.get(`${target.origin}${target.pathname}`);
-        assert.equal(linked.status(), 200, `${route}: broken link ${href}`);
+        const linkedUrl = `${target.origin}${target.pathname}`;
+        if (!linkedPages.has(linkedUrl)) {
+          const linked = await page.request.get(linkedUrl);
+          assert.equal(linked.status(), 200, `${route}: broken link ${href}`);
+          linkedPages.set(linkedUrl, await linked.text());
+        }
         if (target.hash) {
-          const html = await linked.text();
+          const html = linkedPages.get(linkedUrl);
           const id = decodeURIComponent(target.hash.slice(1));
           assert(
             html.includes(`id="${id}"`) || html.includes(`name="${id}"`),
@@ -195,7 +203,29 @@ try {
       const name = route.replace(/^\//, "").replaceAll("/", "-") || "home";
       const screenshot = `${name}-${device}.png`;
       await page.screenshot({ path: path.join(output, screenshot), fullPage: true });
-      reports.push({ route, device, screenshot, pageErrors, japaneseFonts, ...metrics });
+      const themeScreenshots = [];
+      if (/^\/(?:ja\/)?rules\//.test(route)) {
+        const controlSelector = device === "mobile" ? "[data-mobile-theme]" : ".theme-toggle";
+        for (const theme of ["light", "dark"]) {
+          if ((await page.locator("html").getAttribute("data-theme")) !== theme)
+            await page.locator(controlSelector).click();
+          assert.equal(await page.locator("html").getAttribute("data-theme"), theme);
+          assert.equal(await page.evaluate(() => localStorage.getItem("theme")), theme);
+          const file = `${name}-${device}-${theme}.png`;
+          await page.screenshot({ path: path.join(output, file), fullPage: true });
+          themeScreenshots.push({ theme, screenshot: file, controlSelector });
+        }
+      }
+      reports.push({
+        route,
+        device,
+        screenshot,
+        themeScreenshots,
+        pageErrors,
+        japaneseFonts,
+        rulePackets,
+        ...metrics,
+      });
       await page.close();
     }
   }

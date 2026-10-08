@@ -6,6 +6,8 @@ title: "css/no-hardcoded-values"
 
 CSS の直接指定値を CSS 変数にまとめます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+button の余白と色に数値や 16 進の色を直接指定しています。
+
 ```vue
 <style scoped>
 .button {
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## 良い
+
+余白と色を名前付きのカスタムプロパティで参照し、トークンとして管理できる形にします。
 
 ```vue
 <style scoped>

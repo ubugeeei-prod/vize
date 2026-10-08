@@ -22,6 +22,7 @@ pub(crate) struct ParsedAttribute {
     /// Original index in the source for stable sorting
     pub(crate) original_index: usize,
     pub(crate) indent_multiline_value: bool,
+    pub(crate) owns_value_lines: bool,
 }
 
 /// Sort attributes based on the configured options.

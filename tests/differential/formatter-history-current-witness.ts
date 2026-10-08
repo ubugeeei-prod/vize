@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "./manifest.mjs";
 import { validateDeclarationSnapshotAuthority } from "./formatter-declaration-reference.ts";
+import { validateExpressionWidthWitness } from "./formatter-expression-width-witness.ts";
 import {
   retainedFormatterFunction,
   validatePreservedFormatterWitness,
@@ -96,10 +97,10 @@ const OWNERS: Record<
         "aeb192094f63391b90c1c078b0c17e49e85702af5daa9122e77c8edcacdff928",
     },
   },
-  // #7880/#8087 stabilization cost changes retain all ten complete original script laws.
+  // #7880/#8087 and #7876 expression extraction retain all ten complete original script laws.
   "crates/vize_glyph/src/script.rs": {
     originalSha256: "a205174795bb6d993e84b0cc29dfc5d10c36602dfb6216f1db2278a982b2e0ab",
-    actualMainSha256: "547b8296f7b21c133331e2f207856a72836cc5d1c214f3735bfb4ec6adf1574e",
+    actualMainSha256: "30ece91fbfcd338dbe999a9fb1ba5d2d8d65dfee78f5a07c032a4685e666eb78",
     functions: {
       test_format_tsx_component_script:
         "d108e897e74d4289b8fdf44555eed4b7ad551aff2ac7673b5a80ca8601220d9b",
@@ -131,6 +132,7 @@ const OWNERS: Record<
 };
 
 export function validateCurrentFormatterWitness(root: string, entry: any, name: string) {
+  if (validateExpressionWidthWitness(root, entry, name)) return;
   if (
     entry.path === "crates/vize_glyph/src/style.rs" &&
     name === "test_format_nested_css_at_rule"

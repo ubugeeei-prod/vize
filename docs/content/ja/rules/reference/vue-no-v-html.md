@@ -6,6 +6,8 @@ title: "vue/no-v-html"
 
 未処理の HTML を表示する v-html の XSS リスクを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+v-html で content を通常の文字ではなく HTML として扱っています。
+
 ```vue
 <template>
   <article v-html="content" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+mustache の補間で、HTML を挿入せず content をエスケープした文字として表示します。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/no-undefined-refs"
 
 Disallow undefined variable references in templates
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,12 +37,16 @@ vp run lint
 
 ## Bad
 
+The template reads missing, although the script declares only message.
+
 ```vue
 <script setup>const message = "Hello";</script>
 <template>{{ missing }}</template>
 ```
 
 ## Good
+
+The interpolation reads the existing message binding.
 
 ```vue
 <script setup>const message = "Hello";</script>

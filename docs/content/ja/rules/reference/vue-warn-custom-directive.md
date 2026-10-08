@@ -6,6 +6,8 @@ title: "vue/warn-custom-directive"
 
 登録が必要なカスタムディレクティブを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`v-focus`、`v-mask`、`v-click-outside` はプロジェクト固有の directive 実装を必要とし、この任意の規約で警告されます。
+
 ```vue
 <template>
   <input v-focus />
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+組み込みの `v-if`、`v-model`、`v-on` を使います。規約を無効にすれば、正しく登録した custom directive は有効な Vue として使えます。
 
 ```vue
 <template>

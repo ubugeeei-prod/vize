@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `main.ts`
 
@@ -55,6 +55,8 @@ export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 ```
 
 ## 悪い
+
+`App.vue` に `ThemeKey` の provide がありますが、描画する `Dashboard.vue` の下に使用側がありません。
 
 `App.vue`
 
@@ -82,6 +84,8 @@ provide(ThemeKey, theme);
 ```
 
 ## 良い
+
+dashboard が `ThemeLabel.vue` を描画し、祖先と同一の `ThemeKey` を inject します。
 
 `App.vue`
 
@@ -123,7 +127,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

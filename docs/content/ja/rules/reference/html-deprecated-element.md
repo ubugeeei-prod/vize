@@ -6,6 +6,8 @@ title: "html/deprecated-element"
 
 非推奨の HTML 要素を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+旧来の見た目のための center 要素を使っています。
+
 ```vue
 <template>
   <center>Profile</center>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+内容は残し、section とスタイル用のクラスに置き換えます。
 
 ```vue
 <template>

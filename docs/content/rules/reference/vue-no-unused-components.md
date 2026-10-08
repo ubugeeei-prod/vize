@@ -6,6 +6,8 @@ title: "vue/no-unused-components"
 
 Disallow registering components that are not used inside templates
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+UserAvatar is imported as a component but the template never renders it.
+
 ```vue
 <script setup lang="ts">
 import UserAvatar from "./UserAvatar.vue";
@@ -46,6 +50,8 @@ import UserAvatar from "./UserAvatar.vue";
 ```
 
 ## Good
+
+The template renders the imported UserAvatar and passes the user binding.
 
 ```vue
 <script setup lang="ts">

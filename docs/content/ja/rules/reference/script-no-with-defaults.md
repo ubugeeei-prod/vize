@@ -6,6 +6,8 @@ title: "script/no-with-defaults"
 
 Vue 3.5 以降の props 分割代入の既定値を勧めます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+型付きの props 宣言を `withDefaults` で包んで `count` と `name` の既定値を指定しており、ここで推奨する Vue 3.5 以降の分割代入の既定値を使っていません。
+
 ```vue
 <script setup lang="ts">
 const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { count: 0, name: "Ada" });
@@ -42,6 +46,8 @@ const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { c
 ```
 
 ## 良い
+
+分割代入の変数に `count = 0` と `name = "Ada"` を直接指定し、`withDefaults` のラッパーを取り除きます。
 
 ```vue
 <script setup lang="ts">

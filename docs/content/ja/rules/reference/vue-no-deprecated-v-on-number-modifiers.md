@@ -6,6 +6,8 @@ title: "vue/no-deprecated-v-on-number-modifiers"
 
 v-on の削除済み数値 keyCode modifier を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+キーを、廃止された数値コード 13 と 27 で指定しています。
+
 ```vue
 <template>
 <input @keyup.13="submit" />
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+キーの名前を使い、enter と esc の modifier に変更します。
 
 ```vue
 <template>

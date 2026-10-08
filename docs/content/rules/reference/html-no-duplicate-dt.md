@@ -4,7 +4,9 @@ title: "html/no-duplicate-dt"
 
 # `html/no-duplicate-dt`
 
-Disallow duplicate <dt> names in <dl>
+Disallow duplicate &lt;dt&gt; names in &lt;dl&gt;
+
+[Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The same definition list repeats the `API` term for two descriptions.
+
 ```vue
 <template>
   <dl>
@@ -47,6 +51,8 @@ vp run lint
 ```
 
 ## Good
+
+One API term is followed by both descriptions, avoiding the repeated term.
 
 ```vue
 <template>

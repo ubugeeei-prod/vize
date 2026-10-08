@@ -6,6 +6,8 @@ title: "html/id-duplication"
 
 Disallow duplicate element IDs
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Both the input and help paragraph declare `id="email"`, so the label target is ambiguous.
+
 ```vue
 <template>
   <label for="email">Email</label>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The input keeps `email`; the help paragraph uses `email-help`, and aria-describedby refers to that distinct ID.
 
 ```vue
 <template>

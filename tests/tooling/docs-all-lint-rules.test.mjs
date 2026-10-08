@@ -42,6 +42,13 @@ await test("the generated bilingual reference covers every implemented rule with
     for (const [, name, file] of links) {
       const page = read(`docs/content/${locale}rules/reference/${file}`);
       assert.ok(page.includes(`# \`${name}\``), name);
+      const [bad, good] = locale ? ["悪い", "良い"] : ["bad", "good"];
+      assert.ok(index.includes(`./reference/${file}#${bad}`), `${name}: direct Bad link`);
+      assert.ok(index.includes(`./reference/${file}#${good}`), `${name}: direct Good link`);
+      for (const heading of locale ? ["悪い", "良い"] : ["Bad", "Good"]) {
+        const rationale = page.split(`## ${heading}\n`)[1].split("```")[0].trim();
+        assert.ok(rationale.length > 25, `${name}: explain the authored ${heading} example`);
+      }
       for (const label of locale
         ? ["既定の重大度:", "プリセット:", "適用範囲:", "オプション:", "## 悪い", "## 良い"]
         : ["Default severity:", "Presets:", "Applies to:", "Options:", "## Bad", "## Good"]) {
@@ -65,15 +72,13 @@ await test("generation is deterministic without a previously built native binary
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
-await test("every Good script has valid module grammar and unique bindings", () => {
+await test("Good scripts and illustrative Bad sources have valid module grammar and unique bindings", () => {
   let scripts = 0;
-  for (const file of readdirSync(resolve(root, "docs/content/rules/reference"))) {
-    const page = read(`docs/content/rules/reference/${file}`);
-    const good = page.split("## Good\n")[1].match(/```(\w+)\n([\s\S]*?)\n```/);
+  for (const { file, language, source: example } of validatedExamples()) {
     const sources =
-      good[1] === "ts"
-        ? [good[2]]
-        : [...good[2].matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
+      language === "ts"
+        ? [example]
+        : [...example.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
     for (const source of sources) {
       scripts += 1;
       assert.doesNotThrow(
@@ -92,20 +97,43 @@ await test("every Good script has valid module grammar and unique bindings", () 
   assert.ok(scripts > 100, "all authored script examples are parsed");
 });
 
-await test("Good Vue scripts use resolvable types and valid compiler-macro contexts", () => {
+await test("Good Vue scripts and illustrative Bad sources have valid compiler-macro contexts", () => {
   let scripts = 0;
-  for (const file of readdirSync(resolve(root, "docs/content/rules/reference"))) {
-    const page = read(`docs/content/rules/reference/${file}`);
-    const good = page.split("## Good\n")[1].match(/```(\w+)\n([\s\S]*?)\n```/);
-    if (good[1] !== "vue" || !/<script\b/.test(good[2])) continue;
+  for (const { file, language, source } of validatedExamples()) {
+    if (language !== "vue" || !/<script\b/.test(source)) continue;
     scripts += 1;
-    const { descriptor, errors } = parseSfc(good[2], { filename: file.replace(/\.md$/, ".vue") });
+    const { descriptor, errors } = parseSfc(source, { filename: file.replace(/\.md$/, ".vue") });
     assert.deepEqual(errors, [], file);
     // This checks the authored example, not Vize compiler output or parity.
     assert.doesNotThrow(() => compileScript(descriptor, { id: file }), file);
   }
   assert.ok(scripts > 90, "all Good SFC script contexts are checked");
 });
+
+function validatedExamples() {
+  return ["reference", "project"].flatMap((section) =>
+    readdirSync(resolve(root, `docs/content/rules/${section}`)).flatMap((file) => {
+      const source = read(`docs/content/rules/${section}/${file}`);
+      const parts = [source.split("## Good\n")[1]];
+      if (source.includes("Example qualification: `illustrative-source-pair`")) {
+        // This input explains a retained graph contract, not an emitted CLI finding.
+        // Validate its complete shared context and Bad source as well as Good.
+        assert.equal(file, "vize-croquis-cf-circular-reactive-dependency.md");
+        parts.push(
+          source.split("## Bad\n")[1].split("## Good\n")[0],
+          source.split("## Shared project files\n")[1].split("## Bad\n")[0],
+        );
+      }
+      return parts.flatMap((part) =>
+        [...part.matchAll(/```(vue|ts|html)\n([\s\S]*?)\n```/g)].map((match) => ({
+          file: `${section}/${file}`,
+          language: match[1],
+          source: match[2],
+        })),
+      );
+    }),
+  );
+}
 
 await test("migration retains all mapped, divergent and unsupported ESLint identities", () => {
   const inventory = JSON.parse(read("tests/_fixtures/patina-eslint-vue-rule-map.json"));
@@ -142,15 +170,27 @@ await test("project references retain every code and distinguish actual CLI prod
     assert.equal(codes.filter((code) => code.status === status).length, count);
   for (const locale of ["", "ja/"]) {
     const index = read(`docs/content/${locale}rules/cross-file.md`);
+    const all = read(`docs/content/${locale}rules/all.md`);
     const rows = [...index.matchAll(/^\| \[`([^`]+)`\]\(\.\/project\/([^)]*)\)/gm)];
     assert.equal(rows.length, 66);
     for (const [_, id, path] of rows) {
       const page = read(`docs/content/${locale}rules/project/${path}`);
       assert.ok(page.includes(`# \`${id}\``), id);
+      const [bad, good] = locale ? ["悪い", "良い"] : ["bad", "good"];
+      for (const source of [index, all]) {
+        assert.ok(source.includes(`./project/${path}#${bad}`), `${id}: direct Bad link`);
+        assert.ok(source.includes(`./project/${path}#${good}`), `${id}: direct Good link`);
+      }
       for (const label of locale
         ? ["既定の重大度:", "適用範囲:", "オプション:", "## 悪い", "## 良い"]
         : ["Default severity:", "Applies to:", "Options:", "## Bad", "## Good"])
         assert.ok(page.includes(label), `${id}: ${label}`);
+      for (const heading of locale ? ["悪い", "良い"] : ["Bad", "Good"])
+        assert.match(
+          page.split(`## ${heading}\n`)[1],
+          /```(?:vue|ts|html)\n/,
+          `${id}: concrete ${heading} scenario`,
+        );
       assert.deepEqual(
         codeBlocks(page),
         codeBlocks(read(`docs/content/rules/project/${path}`)),

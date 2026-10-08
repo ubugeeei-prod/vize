@@ -6,6 +6,8 @@ title: "petite-vue/valid-v-effect"
 
 Require v-effect to have a non-empty expression
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Each `v-effect` has no executable expression: its value is missing, empty, or only whitespace.
+
 ```html
 <!doctype html>
 <html><body>
@@ -46,6 +50,8 @@ vp run lint
 ```
 
 ## Good
+
+Both `v-effect` values contain an expression: one updates `el.textContent`, and the other increments `count`. This rule checks for a nonempty expression, not the effect’s business logic.
 
 ```html
 <!doctype html>

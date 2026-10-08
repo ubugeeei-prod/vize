@@ -6,6 +6,8 @@ title: "script/return-in-emits-validator"
 
 Options API の emits validator に戻り値を用意します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -37,6 +39,8 @@ vp run lint
 
 ## 悪い
 
+`submit` の validator が payload をログ出力するだけで検査結果を返さず、ブロックの結果が undefined になります。
+
 ```vue
 <script lang="ts">
 export default { emits: { submit: (payload: unknown) => { console.log(payload); } } };
@@ -44,6 +48,8 @@ export default { emits: { submit: (payload: unknown) => { console.log(payload); 
 ```
 
 ## 良い
+
+`return payload != null` を追加し、値を返さず終了する代わりに payload の真偽値の検査結果を返します。
 
 ```vue
 <script lang="ts">

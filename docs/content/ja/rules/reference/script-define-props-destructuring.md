@@ -6,6 +6,8 @@ title: "script/define-props-destructuring"
 
 defineProps の分割代入スタイルを指定した方針に揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`defineProps` の結果を分割代入せず、単一の `props` 変数に代入しており、既定の分割代入の推奨に従っていません。
+
 ```vue
 <script setup lang="ts">
 const props = defineProps<{ foo: string }>()
@@ -42,6 +46,8 @@ const props = defineProps<{ foo: string }>()
 ```
 
 ## 良い
+
+オブジェクトパターンで `foo` と `bar` を直接取り出し、省略可能な `bar` に既定値を付けます。Vue 3.5 以降のリアクティブな props 分割代入を前提とし、設定を `never` にした場合は逆の形式を推奨します。
 
 ```vue
 <script setup lang="ts">

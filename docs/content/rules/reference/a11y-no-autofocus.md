@@ -6,6 +6,8 @@ title: "a11y/no-autofocus"
 
 Disallow the use of the autofocus attribute
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The input requests automatic focus when it appears.
+
 ```vue
 <template>
   <input autofocus name="query" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Removing `autofocus` avoids this automatic focus request while retaining the query input.
 
 ```vue
 <template>

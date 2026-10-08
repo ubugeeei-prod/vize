@@ -6,6 +6,8 @@ title: "vue/no-inline-style"
 
 インラインの style 属性を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+静的な style 属性に色の宣言を直接書いています。
+
 ```vue
 <template>
   <div style="color: red">Text</div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+固定した色にはクラスを使います。ratio に依存する幅の動的な style は、静的属性の検査の対象外です。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/valid-template-root"
 
 Enforce a valid `<template>` root for Vue 3 fragment semantics
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+A plain nested `<template>` occupies the template root without a directive that gives it a rendering role.
+
 ```vue
 <template>
 <template>content</template>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The `<div>` is a renderable root element. This example does not impose a universal single-root restriction on Vue 3 fragments.
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/valid-v-slot"
 
 v-slot の適用先・宣言・modifier を検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+ネイティブの `<div>` に slot directive を付けるか、他の default / 名前付き slot 宣言と競合させています。
+
 ```vue
 <template>
   <div v-slot:header></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+default slot はコンポーネント上、名前付き slot は子の `<template #header>` に宣言します。
 
 ```vue
 <template>

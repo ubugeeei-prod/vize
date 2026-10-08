@@ -6,6 +6,8 @@ title: "vue/no-template-key"
 
 Disallow `key` attribute on `<template>`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+A non-loop template wrapper has a key even though it is not the keyed iteration boundary.
+
 ```vue
 <template>
 <template :key="section"><div>Details</div></template>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The key belongs to a template v-for iteration, where it identifies each repeated fragment.
 
 ```vue
 <template>

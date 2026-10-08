@@ -6,6 +6,8 @@ title: "vue/no-unused-components"
 
 登録しているのにテンプレートで使わないコンポーネントを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+UserAvatar をコンポーネントとして import していますが、テンプレートで使っていません。
+
 ```vue
 <script setup lang="ts">
 import UserAvatar from "./UserAvatar.vue";
@@ -46,6 +50,8 @@ import UserAvatar from "./UserAvatar.vue";
 ```
 
 ## 良い
+
+import した UserAvatar をテンプレートで表示し、user を渡します。
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "script/no-reactive-destructure"
 
 Disallow destructuring reactive objects which loses reactivity
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`const { count, name } = state` copies primitive properties out of the `reactive` object, losing their connection to subsequent property changes.
+
 ```vue
 <script setup lang="ts">
 import { reactive } from "vue";
@@ -44,6 +48,8 @@ const { count, name } = state;
 ```
 
 ## Good
+
+Destructuring `toRefs(state)` creates refs for `count` and `name`, keeping each binding linked to the original reactive property.
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "vue/no-root-v-if"
 
 テンプレートの単一ルートに v-if を指定する箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+コンポーネントのルート自体を v-if で表示・非表示にしています。
+
 ```vue
 <template>
 <div v-if="show">content</div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+外側の div をルートとして残し、内側の p に表示条件を指定します。
 
 ```vue
 <template>

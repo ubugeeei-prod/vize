@@ -1,0 +1,18 @@
+<template>
+  <section>
+    <ul>
+      <li>
+        <span
+          class="label"
+          :title="
+            buildTooltipText(
+              currentItem.primaryValue,
+              currentItem.secondaryValue,
+              currentItem.extra,
+            ) /* retained trailing */
+          "
+        />
+      </li>
+    </ul>
+  </section>
+</template>

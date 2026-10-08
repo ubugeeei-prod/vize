@@ -6,6 +6,8 @@ title: "vapor/no-inline-template"
 
 Vapor で削除済みの inline-template 属性を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+LegacyCard の内部のマークアップに inline-template を使っています。
+
 ```vue
 <template>
   <LegacyCard inline-template>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じマークアップを default slot として渡します。
 
 ```vue
 <template>

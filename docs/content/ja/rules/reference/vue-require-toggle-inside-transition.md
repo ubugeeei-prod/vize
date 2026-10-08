@@ -6,6 +6,8 @@ title: "vue/require-toggle-inside-transition"
 
 transition の子要素に表示を切り替える条件を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`<Transition>` 内の静的な子に表示の切り替えや動的な選択がなく、enter / leave が発生する条件がありません。
+
 ```vue
 <template>
 <transition>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+`v-if="show"` で子の有無を切り替え、enter / leave の対象にします。
 
 ```vue
 <template>

@@ -15,7 +15,7 @@ The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pa
 
 ## Shared project files
 
-Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
+Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
 
 `main.ts`
 
@@ -33,6 +33,8 @@ createApp(Root).mount("#app");
 ```
 
 ## Bad
+
+The child calls `emit("save")` but its `defineEmits` contract declares only `cancel`.
 
 `App.vue`
 
@@ -55,6 +57,8 @@ emit("save");
 
 ## Good
 
+Declare `save` with its empty argument tuple so the emitted event agrees with the component contract.
+
 `App.vue`
 
 ```vue
@@ -74,7 +78,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-Good avoids this finding; other diagnostics can still apply to the complete project.
+The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

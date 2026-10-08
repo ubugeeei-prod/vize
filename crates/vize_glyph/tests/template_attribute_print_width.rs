@@ -8,6 +8,9 @@ use vize_l0::String;
 #[path = "../../../tests/support/formatter_continuation_reference.rs"]
 mod current_reference;
 
+#[path = "../../../tests/support/formatter_expression_width_reference.rs"]
+mod expression_reference;
+
 #[derive(Deserialize)]
 struct Corpus {
     cases: Vec<Case>,
@@ -36,6 +39,7 @@ fn original_and_boundary_outputs_are_complete_three_pass_fixed_points() -> Resul
         let input = fs::read(directory.join(case.input.as_str()))?;
         let expected = fs::read(directory.join(case.output.as_str()))?;
         let expected = current_reference::expected(&case.id, &input, expected);
+        let expected = expression_reference::expected(&case.id, &input, expected);
         let mut previous = String::from(core::str::from_utf8(&input)?);
         for pass in 1..=3 {
             let output = match case.api.as_str() {

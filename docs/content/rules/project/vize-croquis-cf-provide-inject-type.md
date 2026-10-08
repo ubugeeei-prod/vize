@@ -31,7 +31,7 @@ This check compares explicit provider/consumer type annotations, not inferred li
 
 ## Shared project files
 
-Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
+Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
 
 `main.ts`
 
@@ -49,6 +49,8 @@ createApp(Root).mount("#app");
 ```
 
 ## Bad
+
+The provider explicitly annotates `title` as `string`, while the descendant requests `inject<number>` for the same key.
 
 `App.vue`
 
@@ -73,6 +75,8 @@ const title = inject<number>("title");
 
 ## Good
 
+The consumer's explicit `inject<string>` agrees with the provider annotation. Keep `as string`: this producer compares explicit annotations, not inferred literal types.
+
 `App.vue`
 
 ```vue
@@ -94,7 +98,7 @@ const title = inject<string>("title");
 <template><p>Content</p></template>
 ```
 
-Good avoids this finding; other diagnostics can still apply to the complete project.
+The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

@@ -6,6 +6,8 @@ title: "css/require-font-display"
 
 @font-face に font-display を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+font-face にフォントの参照先はありますが、font-display の方針を指定していません。
+
 ```vue
 <style>
 @font-face {
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## 良い
+
+font-display: swap を追加し、フォールバックからフォントを表示する方針を指定します。
 
 ```vue
 <style>

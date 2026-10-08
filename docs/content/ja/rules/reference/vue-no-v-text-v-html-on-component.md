@@ -6,6 +6,8 @@ title: "vue/no-v-text-v-html-on-component"
 
 コンポーネントでの v-text / v-html を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+コンポーネントに、要素の内容を置き換える v-html や v-text を指定しています。
+
 ```vue
 <template>
   <MyComponent v-html="content" />
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+標準の HTML 要素にはディレクティブを使えます。MyComponent には default slot から内容を渡します。
 
 ```vue
 <template>

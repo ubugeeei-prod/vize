@@ -6,6 +6,8 @@ title: "vue/no-unsafe-url"
 
 Warn about potentially unsafe URL bindings
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The anchor destination begins with the executable javascript: scheme.
+
 ```vue
 <template>
 <a href="javascript:alert(1)">Continue</a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The anchor uses the ordinary local /next navigation destination.
 
 ```vue
 <template>

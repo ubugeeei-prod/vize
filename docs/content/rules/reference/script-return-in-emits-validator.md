@@ -6,6 +6,8 @@ title: "script/return-in-emits-validator"
 
 Require a return value in every Options API emits validator
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -37,6 +39,8 @@ vp run lint
 
 ## Bad
 
+The `submit` validator logs the payload but does not return a validation result, so its block body yields undefined.
+
 ```vue
 <script lang="ts">
 export default { emits: { submit: (payload: unknown) => { console.log(payload); } } };
@@ -44,6 +48,8 @@ export default { emits: { submit: (payload: unknown) => { console.log(payload); 
 ```
 
 ## Good
+
+`return payload != null` supplies a boolean validation result for the submitted payload instead of ending without a returned value.
 
 ```vue
 <script lang="ts">

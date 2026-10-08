@@ -6,6 +6,8 @@ title: "vue/no-array-index-key"
 
 Disallow using the v-for index variable directly as the :key
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The list key is its current index, so item identity changes when the list is reordered.
+
 ```vue
 <template>
 <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The key comes from item.id, preserving the identity of each item across position changes.
 
 ```vue
 <template>

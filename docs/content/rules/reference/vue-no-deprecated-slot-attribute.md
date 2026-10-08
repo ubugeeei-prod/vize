@@ -6,6 +6,8 @@ title: "vue/no-deprecated-slot-attribute"
 
 Disallow the deprecated `slot` attribute
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The header slot is selected through the old slot attribute.
+
 ```vue
 <template>
 <Foo>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+v-slot:header explicitly selects the header slot with the current directive.
 
 ```vue
 <template>

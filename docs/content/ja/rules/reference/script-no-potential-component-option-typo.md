@@ -6,6 +6,8 @@ title: "script/no-potential-component-option-typo"
 
 Options API のオプション名の入力ミスを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+オプション名が既知の `methods` から一文字欠けた `method` になり、意図したメソッド宣言として扱われません。
+
 ```vue
 <script lang="ts">
 export default { method: { save() {} } };
@@ -42,6 +46,8 @@ export default { method: { save() {} } };
 ```
 
 ## 良い
+
+キーを `methods` に修正し、`save()` を既知のコンポーネントオプション内に置きます。
 
 ```vue
 <script lang="ts">

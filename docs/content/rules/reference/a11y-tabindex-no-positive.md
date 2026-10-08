@@ -6,6 +6,8 @@ title: "a11y/tabindex-no-positive"
 
 Disallow positive tabindex values
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+A positive tabindex of 3 creates a custom focus order ahead of ordinary controls.
+
 ```vue
 <template>
   <button tabindex="3">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The button uses its native focus order without a positive tabindex.
 
 ```vue
 <template>

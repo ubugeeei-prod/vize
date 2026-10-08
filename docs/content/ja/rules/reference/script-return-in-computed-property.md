@@ -6,6 +6,8 @@ title: "script/return-in-computed-property"
 
 computed の getter に値を返す return を用意します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+ブロック形式の computed getter が `1 + 2` を計算するだけで返さず、computed の値が undefined になります。
+
 ```vue
 <script setup lang="ts">
 import { computed } from "vue";
@@ -43,6 +47,8 @@ const total = computed(() => { 1 + 2; });
 ```
 
 ## 良い
+
+`return 1 + 2` で式を getter の戻り値にします。このルールは式文だけでなく、getter 自身の値を返す return を確認します。
 
 ```vue
 <script setup lang="ts">

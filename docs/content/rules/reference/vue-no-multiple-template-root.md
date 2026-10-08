@@ -6,6 +6,8 @@ title: "vue/no-multiple-template-root"
 
 Disallow multiple root nodes in a template
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -37,6 +39,8 @@ vp run lint
 
 ## Bad
 
+The opt-in single-root convention sees two sibling paragraphs at the template root.
+
 ```vue
 <template>
 <p>First</p>
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## Good
+
+A section wraps the paragraphs into one root; enable this convention only when a single-root contract is intended.
 
 ```vue
 <template>

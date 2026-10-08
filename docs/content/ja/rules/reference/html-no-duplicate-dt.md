@@ -6,6 +6,8 @@ title: "html/no-duplicate-dt"
 
 dl 内の dt の名前重複を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+同じ dl に API の用語を二回指定しています。
+
 ```vue
 <template>
   <dl>
@@ -47,6 +51,8 @@ vp run lint
 ```
 
 ## 良い
+
+API の dt を一つにし、その後に二つの dd を並べます。
 
 ```vue
 <template>

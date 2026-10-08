@@ -24,7 +24,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis.binding_spans`        | field | `croquis`           |     2 |     2 |
 | `Croquis.bindings`             | field | `croquis`           |     1 |     2 |
 | `Croquis.component_shape`      | field | `croquis`           |     1 |     1 |
-| `Croquis.macros`               | field | `croquis`           |     7 |    14 |
+| `Croquis.macros`               | field | `croquis`           |     8 |    15 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     3 |
 | `Croquis.scopes`               | field | `croquis`           |    10 |    17 |
 | `Croquis.template_expressions` | field | `croquis`           |     1 |     2 |
@@ -61,7 +61,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `extract_identifiers_oxc`     |     2 |     2 |
 | `hyphenate`                   |     1 |     1 |
 | `is_kebab_case`               |     1 |     1 |
-| `parse_program_for_analysis`  |     2 |     2 |
+| `parse_program_for_analysis`  |     3 |     3 |
 | `parse_script_setup`          |     2 |     4 |
 | `reactivity_lookup`           |     3 |     3 |
 | `reactivity_sources`          |     3 |     3 |

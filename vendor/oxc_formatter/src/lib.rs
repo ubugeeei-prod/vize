@@ -193,6 +193,46 @@ pub fn format_program<'a>(
     )
 }
 
+/// Format the call argument of a single parsed unary-expression statement.
+///
+/// The program must come from [`parse_for_format`]. The retained parent chain
+/// provides the enclosing spans and ancestors used by comment formatting.
+pub fn format_unary_call_argument<'a>(
+    allocator: &'a Allocator,
+    program: &'a Program<'a>,
+    options: JsFormatOptions,
+) -> Option<Formatted<'a, JsFormatContext<'a>>> {
+    let [Statement::ExpressionStatement(statement)] = program.body.as_slice() else {
+        return None;
+    };
+    let Expression::UnaryExpression(unary) = &statement.expression else {
+        return None;
+    };
+    if !matches!(unary.argument, Expression::CallExpression(_)) {
+        return None;
+    }
+    let program_node = allocator.alloc(AstNode::new(program, AstNodes::Dummy(), allocator));
+    let statement_node = allocator.alloc(AstNode::new(
+        statement.as_ref(),
+        AstNodes::Program(program_node),
+        allocator,
+    ));
+    let unary_node = allocator.alloc(AstNode::new(
+        unary.as_ref(),
+        AstNodes::ExpressionStatement(statement_node),
+        allocator,
+    ));
+    Some(format_node(
+        allocator,
+        options,
+        unary_node.argument(),
+        program.source_text,
+        program.source_type,
+        &program.comments,
+        None,
+    ))
+}
+
 /// Parse `source_text` the way the formatter requires, for AST-in callers of [`format_program`].
 ///
 /// Applies the formatter's parse options and JSX enabling, exactly as [`format()`] does internally,

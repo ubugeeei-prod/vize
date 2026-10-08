@@ -6,6 +6,8 @@ title: "vue/no-use-v-else-with-v-for"
 
 同じ要素での v-else / v-else-if と v-for の併用を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+同じ p に v-else と v-for を指定しています。
+
 ```vue
 <template>
 <p v-if="ready">Ready</p>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+template に v-else を分け、その子の p に v-for を指定します。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/require-v-for-key"
 
 Require `v-bind:key` with `v-for` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Each repeated `<li>` lacks a key that identifies its corresponding item during list updates.
+
 ```vue
 <template>
   <li v-for="item in items">{{ item.name }}</li>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`:key="item.id"` gives each repeated node the item's identity rather than its current position.
 
 ```vue
 <template>

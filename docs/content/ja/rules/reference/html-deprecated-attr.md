@@ -6,6 +6,8 @@ title: "html/deprecated-attr"
 
 非推奨の HTML 属性を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+p に見た目を指定する旧来の align 属性を使っています。
+
 ```vue
 <template>
 <p align="center">Notice</p>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+クラスと text-align: center で、配置を CSS に移します。
 
 ```vue
 <template><p class="notice">Notice</p></template>

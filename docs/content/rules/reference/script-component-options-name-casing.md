@@ -6,6 +6,8 @@ title: "script/component-options-name-casing"
 
 Enforce PascalCase for the component `name` option
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The component option `name: 'my-component'` is kebab-case, whereas this rule requires a literal component name in PascalCase.
+
 ```vue
 <script lang="ts">
 export default {
@@ -44,6 +48,8 @@ name: 'my-component' // kebab-case
 ```
 
 ## Good
+
+`MyComponent` begins with an uppercase letter and contains only alphanumeric characters, satisfying the name check.
 
 ```vue
 <script lang="ts">

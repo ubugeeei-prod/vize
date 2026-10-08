@@ -6,6 +6,8 @@ title: "vue/no-non-component-keep-alive-child"
 
 KeepAlive の直下に通常の HTML 要素を置く箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+KeepAlive の条件付きの子が UserCard ではなく、標準の div になっています。
+
 ```vue
 <template>
   <KeepAlive>
@@ -46,6 +50,8 @@ vp run lint
 ```
 
 ## 良い
+
+最初の例は UserCard を条件付きの子にします。v-show の wrapper はこの条件付きの子の検査の対象外を示す例で、標準要素がキャッシュされるという意味ではありません。
 
 ```vue
 <template>

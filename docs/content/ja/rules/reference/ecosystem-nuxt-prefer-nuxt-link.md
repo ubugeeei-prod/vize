@@ -6,6 +6,8 @@ title: "ecosystem/nuxt-prefer-nuxt-link"
 
 Nuxt の内部リンクに NuxtLink を使います。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+Nuxt の内部ページへの移動に通常の a を使っています。
+
 ```vue
 <template>
   <a href="/settings">Settings</a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じ移動先を NuxtLink に指定し、Nuxt のルーターを使います。
 
 ```vue
 <template>

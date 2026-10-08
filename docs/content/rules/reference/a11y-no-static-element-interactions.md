@@ -6,6 +6,8 @@ title: "a11y/no-static-element-interactions"
 
 Disallow event handlers on static elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+A static section receives an Enter-key action without an interactive role.
+
 ```vue
 <template>
   <section @keydown.enter="select">Select</section>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+A native button carries the same action with an appropriate interactive element.
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "css/prefer-nested-selectors"
 
 子孫セレクターを CSS nesting でまとめます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+平らなルールの `.card .title` に、親のセレクターを含めて指定しています。
+
 ```vue
 <style scoped>
 .card .title { color: red; }
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+`.card` の中に `.title` を入れ、親子のスタイルを一緒に管理します。
 
 ```vue
 <style scoped>

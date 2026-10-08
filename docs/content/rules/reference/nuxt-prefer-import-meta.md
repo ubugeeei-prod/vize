@@ -6,6 +6,8 @@ title: "nuxt/prefer-import-meta"
 
 Prefer using `import.meta.*` over `process.*`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `nuxt`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`process.client` uses a legacy Nuxt environment flag that the rule asks to migrate to `import.meta`.
+
 ```vue
 <script setup lang="ts">
 if (process.client) console.log("browser");
@@ -42,6 +46,8 @@ if (process.client) console.log("browser");
 ```
 
 ## Good
+
+`import.meta.client` keeps the browser-only branch explicit using the replacement environment flag.
 
 ```vue
 <script setup lang="ts">

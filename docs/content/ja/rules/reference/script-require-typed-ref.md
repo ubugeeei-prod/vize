@@ -6,6 +6,8 @@ title: "script/require-typed-ref"
 
 空・null・undefined で初期化する ref() に型引数を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+インポートした `ref` に型引数がなく、引数なし、`null`、`undefined` からは将来代入する値の型を推論できません。
+
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -46,6 +50,8 @@ const c = ref(undefined)  // Ref<undefined>
 ```
 
 ## 良い
+
+型引数で string と nullable な User の ref を指定します。`ref(0)` には具体的な数値の初期値があり、型推論を使えます。
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "html/require-datetime"
 
 time 要素に機械可読の datetime を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+time に人が読む日付だけがあり、機械が読む datetime がありません。
+
 ```vue
 <template>
   <time>May 13, 2026</time>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+`datetime="2026-05-13"` に対応する日付を指定します。
 
 ```vue
 <template>

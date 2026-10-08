@@ -6,6 +6,8 @@ title: "a11y/tabindex-no-positive"
 
 通常のフォーカス順序を変える正の tabindex を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+正の tabindex 3 で、通常の操作要素より先に独自のフォーカス順を作っています。
+
 ```vue
 <template>
   <button tabindex="3">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+正の tabindex を取り除き、button の標準のフォーカス順を使います。
 
 ```vue
 <template>

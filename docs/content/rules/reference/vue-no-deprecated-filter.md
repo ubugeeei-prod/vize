@@ -6,6 +6,8 @@ title: "vue/no-deprecated-filter"
 
 Disallow deprecated Vue 2 filter syntax using the pipe operator
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The pipe uses the removed Vue filter syntax to apply capitalize.
+
 ```vue
 <template>
 {{ message | capitalize }}
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Calling capitalize(message) applies the transformation as an ordinary expression.
 
 ```vue
 <template>

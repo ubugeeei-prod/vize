@@ -6,6 +6,8 @@ title: "vue/prefer-props-shorthand"
 
 Vue 3.4 の同名 prop バインディングの省略形を使います。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+ハイフン区切りに対応する camelCase も含め、属性と対応する変数名を式に重複して書いています。
+
 ```vue
 <template>
   <MyComponent :foo="foo" />
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## 良い
+
+Vue 3.4 以降の同名の省略形で式を省きます。bar のように別の変数を渡す式は明示します。
 
 ```vue
 <template>

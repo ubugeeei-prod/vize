@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { purposeJa } from "./purpose-ja.mjs";
 import { resolve } from "node:path";
+import { exampleLinks } from "./example-links.mjs";
 /** @type {Array<[string, string, string, (name: string) => boolean]>} */
 const categories = [
   ["vue", "Vue rules", "Vue ルール", (name) => name.startsWith("vue/")],
@@ -18,6 +19,7 @@ const categories = [
     (name) => name.startsWith("a11y/") || name === "vue/use-unique-element-ids",
   ],
   ["ssr", "SSR rules", "SSR ルール", (name) => name.startsWith("ssr/")],
+  ["petite-vue", "petite-vue rules", "petite-vue ルール", (name) => name.startsWith("petite-vue/")],
   [
     "vapor",
     "Vapor rules",
@@ -61,14 +63,14 @@ export function generateCategoryPages(root, rules, checking) {
           ? "Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。"
           : "Configure `lint.vize.rules` and run `vp run lint` with the Vite+ helper. Check each page for type-aware, filename, or additional-configuration prerequisites.",
         "",
-        ja ? "| ルール | 目的 |" : "| Rule | Purpose |",
-        "| --- | --- |",
+        ja ? "| ルール | 例 | 目的 |" : "| Rule | Examples | Purpose |",
+        "| --- | --- | --- |",
       ];
       for (const rule of rules
         .filter((rule) => select(rule.name))
         .sort((a, b) => a.name.localeCompare(b.name))) {
         lines.push(
-          `| [\`${rule.name}\`](./reference/${rule.name.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}.md) | ${(ja ? purposeJa[rule.name] : rule.description).replaceAll("|", "\\|").replaceAll("<", "&lt;").replaceAll(">", "&gt;")} |`,
+          `| [\`${rule.name}\`](./reference/${rule.name.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}.md) | ${exampleLinks(`./reference/${rule.name.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}.md`, ja)} | ${(ja ? purposeJa[rule.name] : rule.description).replaceAll("|", "\\|").replaceAll("<", "&lt;").replaceAll(">", "&gt;")} |`,
         );
       }
       lines.push(

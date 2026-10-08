@@ -6,6 +6,8 @@ title: "vue/no-deprecated-v-on-native-modifier"
 
 Disallow the deprecated `.native` modifier on `v-on`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The component handlers use the removed .native event modifier.
+
 ```vue
 <template>
 <MyComponent @click.native="handler" />
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The handlers omit .native and preserve other event modifiers such as .stop.
 
 ```vue
 <template>

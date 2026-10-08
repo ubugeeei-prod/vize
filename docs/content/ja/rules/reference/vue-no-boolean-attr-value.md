@@ -6,6 +6,8 @@ title: "vue/no-boolean-attr-value"
 
 HTML の boolean 属性に不要な値を指定した箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+boolean の disabled と checked に、不要な文字列の値を指定しています。
+
 ```vue
 <template>
   <input disabled="disabled" />
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+値を付けず、boolean 属性があることだけで同じ状態を表します。
 
 ```vue
 <template>

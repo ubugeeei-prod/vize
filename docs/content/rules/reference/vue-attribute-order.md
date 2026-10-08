@@ -6,6 +6,8 @@ title: "vue/attribute-order"
 
 Enforce a consistent order of attributes
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The event handler appears before the structural v-if directive and ordinary id attribute.
+
 ```vue
 <template>
   <div @click="onClick" v-if="show" id="main"></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+v-if comes first, followed by id and then the event handler, following the rule ordering.
 
 ```vue
 <template>

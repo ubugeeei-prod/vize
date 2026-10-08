@@ -6,6 +6,8 @@ title: "a11y/iframe-has-title"
 
 iframe に内容を説明する title を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+決済画面の iframe に URL はありますが、内容を説明する title がありません。
+
 ```vue
 <template>
   <iframe src="/checkout"></iframe>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+`title="Checkout preview"` で iframe の内容を説明します。
 
 ```vue
 <template>

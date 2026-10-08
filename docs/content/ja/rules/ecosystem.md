@@ -8,21 +8,21 @@ title: エコシステム ルール
 
 Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。
 
-| ルール | 目的 |
-| --- | --- |
-| [`ecosystem/nuxt-prefer-nuxt-link`](./reference/ecosystem-nuxt-prefer-nuxt-link.md) | Nuxt の内部リンクに NuxtLink を使います。 |
-| [`ecosystem/pinia-prefer-store-to-refs`](./reference/ecosystem-pinia-prefer-store-to-refs.md) | Pinia store の分割代入に storeToRefs() を使います。 |
-| [`ecosystem/router-link-require-to`](./reference/ecosystem-router-link-require-to.md) | RouterLink / NuxtLink に to を指定します。 |
-| [`ecosystem/void-link-require-href`](./reference/ecosystem-void-link-require-href.md) | Void Vue の Link に href を指定します。 |
-| [`ecosystem/void-link-valid-method`](./reference/ecosystem-void-link-valid-method.md) | Void Vue の Link に有効な静的 method を指定します。 |
-| [`ecosystem/vue-i18n-no-missing-key`](./reference/ecosystem-vue-i18n-no-missing-key.md) | SFC 内の翻訳データに存在しない静的キーを検出します。 |
-| [`ecosystem/vue-router-prefer-named-link`](./reference/ecosystem-vue-router-prefer-named-link.md) | RouterLink の文字列パスを名前付きルートの指定に置き換えます。 |
-| [`ecosystem/vue-router-prefer-named-push`](./reference/ecosystem-vue-router-prefer-named-push.md) | Vue Router のプログラムによる移動に名前付きルートを使います。 |
-| [`ecosystem/vue-test-utils-no-html-snapshot`](./reference/ecosystem-vue-test-utils-no-html-snapshot.md) | wrapper.html() 全体の snapshot に依存するテストを検出します。 |
-| [`nuxt/no-nuxt-config-test-key`](./reference/nuxt-no-nuxt-config-test-key.md) | Nuxt が自動判定する test 環境の手動設定を検出します。 |
-| [`nuxt/no-page-meta-runtime-values`](./reference/nuxt-no-page-meta-runtime-values.md) | definePageMeta の即時評価部分で実行時コンテキストを使う箇所を検出します。 |
-| [`nuxt/nuxt-config-keys-order`](./reference/nuxt-nuxt-config-keys-order.md) | Nuxt 設定のプロパティを推奨順に並べます。 |
-| [`nuxt/prefer-import-meta`](./reference/nuxt-prefer-import-meta.md) | Nuxt の環境フラグを process.* から import.meta.* に置き換えます。 |
+| ルール | 例 | 目的 |
+| --- | --- | --- |
+| [`ecosystem/nuxt-prefer-nuxt-link`](./reference/ecosystem-nuxt-prefer-nuxt-link.md) | [悪い例](./reference/ecosystem-nuxt-prefer-nuxt-link.md#悪い) · [良い例](./reference/ecosystem-nuxt-prefer-nuxt-link.md#良い) | Nuxt の内部リンクに NuxtLink を使います。 |
+| [`ecosystem/pinia-prefer-store-to-refs`](./reference/ecosystem-pinia-prefer-store-to-refs.md) | [悪い例](./reference/ecosystem-pinia-prefer-store-to-refs.md#悪い) · [良い例](./reference/ecosystem-pinia-prefer-store-to-refs.md#良い) | Pinia store の分割代入に storeToRefs() を使います。 |
+| [`ecosystem/router-link-require-to`](./reference/ecosystem-router-link-require-to.md) | [悪い例](./reference/ecosystem-router-link-require-to.md#悪い) · [良い例](./reference/ecosystem-router-link-require-to.md#良い) | RouterLink / NuxtLink に to を指定します。 |
+| [`ecosystem/void-link-require-href`](./reference/ecosystem-void-link-require-href.md) | [悪い例](./reference/ecosystem-void-link-require-href.md#悪い) · [良い例](./reference/ecosystem-void-link-require-href.md#良い) | Void Vue の Link に href を指定します。 |
+| [`ecosystem/void-link-valid-method`](./reference/ecosystem-void-link-valid-method.md) | [悪い例](./reference/ecosystem-void-link-valid-method.md#悪い) · [良い例](./reference/ecosystem-void-link-valid-method.md#良い) | Void Vue の Link に有効な静的 method を指定します。 |
+| [`ecosystem/vue-i18n-no-missing-key`](./reference/ecosystem-vue-i18n-no-missing-key.md) | [悪い例](./reference/ecosystem-vue-i18n-no-missing-key.md#悪い) · [良い例](./reference/ecosystem-vue-i18n-no-missing-key.md#良い) | SFC 内の翻訳データに存在しない静的キーを検出します。 |
+| [`ecosystem/vue-router-prefer-named-link`](./reference/ecosystem-vue-router-prefer-named-link.md) | [悪い例](./reference/ecosystem-vue-router-prefer-named-link.md#悪い) · [良い例](./reference/ecosystem-vue-router-prefer-named-link.md#良い) | RouterLink の文字列パスを名前付きルートの指定に置き換えます。 |
+| [`ecosystem/vue-router-prefer-named-push`](./reference/ecosystem-vue-router-prefer-named-push.md) | [悪い例](./reference/ecosystem-vue-router-prefer-named-push.md#悪い) · [良い例](./reference/ecosystem-vue-router-prefer-named-push.md#良い) | Vue Router のプログラムによる移動に名前付きルートを使います。 |
+| [`ecosystem/vue-test-utils-no-html-snapshot`](./reference/ecosystem-vue-test-utils-no-html-snapshot.md) | [悪い例](./reference/ecosystem-vue-test-utils-no-html-snapshot.md#悪い) · [良い例](./reference/ecosystem-vue-test-utils-no-html-snapshot.md#良い) | wrapper.html() 全体の snapshot に依存するテストを検出します。 |
+| [`nuxt/no-nuxt-config-test-key`](./reference/nuxt-no-nuxt-config-test-key.md) | [悪い例](./reference/nuxt-no-nuxt-config-test-key.md#悪い) · [良い例](./reference/nuxt-no-nuxt-config-test-key.md#良い) | Nuxt が自動判定する test 環境の手動設定を検出します。 |
+| [`nuxt/no-page-meta-runtime-values`](./reference/nuxt-no-page-meta-runtime-values.md) | [悪い例](./reference/nuxt-no-page-meta-runtime-values.md#悪い) · [良い例](./reference/nuxt-no-page-meta-runtime-values.md#良い) | definePageMeta の即時評価部分で実行時コンテキストを使う箇所を検出します。 |
+| [`nuxt/nuxt-config-keys-order`](./reference/nuxt-nuxt-config-keys-order.md) | [悪い例](./reference/nuxt-nuxt-config-keys-order.md#悪い) · [良い例](./reference/nuxt-nuxt-config-keys-order.md#良い) | Nuxt 設定のプロパティを推奨順に並べます。 |
+| [`nuxt/prefer-import-meta`](./reference/nuxt-prefer-import-meta.md) | [悪い例](./reference/nuxt-prefer-import-meta.md#悪い) · [良い例](./reference/nuxt-prefer-import-meta.md#良い) | Nuxt の環境フラグを process.* から import.meta.* に置き換えます。 |
 
 [全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md)
 

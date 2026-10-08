@@ -6,6 +6,8 @@ title: "script/prefer-import-from-vue"
 
 内部パッケージではなく vue から import します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`ref` と `h` を公開パッケージ `vue` ではなく、内部の `@vue/runtime-core` と `@vue/runtime-dom` からインポートしています。
+
 ```vue
 <script setup lang="ts">
 import { ref } from '@vue/runtime-core'
@@ -43,6 +47,8 @@ import { h } from '@vue/runtime-dom'
 ```
 
 ## 良い
+
+両ヘルパーを `vue` からまとめてインポートし、内部パッケージではなく公開エントリーポイントを使います。
 
 ```vue
 <script setup lang="ts">

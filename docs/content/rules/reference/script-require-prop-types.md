@@ -6,6 +6,8 @@ title: "script/require-prop-types"
 
 Require every prop to declare a type
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The array entry declares only the name `status`; the `null` value and empty descriptor declare no runtime prop type either.
+
 ```vue
 <script lang="ts">
 export default {
@@ -51,6 +55,8 @@ other: {}                  // empty descriptor: no type
 ```
 
 ## Good
+
+`status: String` supplies a shorthand constructor, and `other` supplies `type: Number` inside its descriptor. Both props now carry type declarations.
 
 ```vue
 <script lang="ts">

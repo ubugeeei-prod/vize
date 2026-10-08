@@ -14,6 +14,7 @@ impl TemplateFormatter<'_> {
         &self,
         source: &[u8],
         start: usize,
+        depth: usize,
     ) -> Option<(String, Vec<ParsedAttribute>, bool, usize)> {
         let len = source.len();
         let mut pos = start + 1; // Skip '<'
@@ -56,7 +57,7 @@ impl TemplateFormatter<'_> {
             }
 
             // Parse single attribute
-            let (attr, new_pos) = self.parse_single_attribute(source, pos, attr_index);
+            let (attr, new_pos) = self.parse_single_attribute(source, pos, attr_index, depth);
             if let Some(attr) = attr {
                 attrs.push(attr);
                 attr_index += 1;
@@ -104,6 +105,7 @@ impl TemplateFormatter<'_> {
         source: &[u8],
         start: usize,
         index: usize,
+        depth: usize,
     ) -> (Option<ParsedAttribute>, usize) {
         let len = source.len();
         let mut pos = start;
@@ -180,8 +182,14 @@ impl TemplateFormatter<'_> {
         };
 
         // Normalize directives and determine priority
-        let (name, value, priority, indent_multiline_value) =
-            normalize_attribute_with_vue_version(&raw_name, value, self.options, self.vue_version);
+        let (name, value, priority, indent_multiline_value, owns_value_lines) =
+            normalize_attribute_with_vue_version(
+                &raw_name,
+                value,
+                self.options,
+                self.vue_version,
+                depth + self.base_depth,
+            );
 
         (
             Some(ParsedAttribute {
@@ -190,6 +198,7 @@ impl TemplateFormatter<'_> {
                 priority,
                 original_index: index,
                 indent_multiline_value,
+                owns_value_lines,
             }),
             pos,
         )

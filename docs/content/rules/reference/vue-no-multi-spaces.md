@@ -6,6 +6,8 @@ title: "vue/no-multi-spaces"
 
 Disallow multiple consecutive spaces
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Two spaces separate attributes or the element name and the first attribute.
+
 ```vue
 <template>
   <div  class="panel"></div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+Single spaces separate the same attributes.
 
 ```vue
 <template>

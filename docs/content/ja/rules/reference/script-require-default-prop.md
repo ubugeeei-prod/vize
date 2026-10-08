@@ -6,6 +6,8 @@ title: "script/require-default-prop"
 
 任意指定で Boolean ではない prop に default を用意します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`name` と `age` は必須でない Boolean 以外の実行時 props で、未指定時の既定値がありません。
+
 ```vue
 <script lang="ts">
 export default {
@@ -48,6 +52,8 @@ age: { type: Number },
 ```
 
 ## 良い
+
+`name` に `default: ''` を付けます。`enabled` は Boolean の暗黙の false を使い、必須の `id` には代替値が不要であるため、二つの除外条件も示しています。
 
 ```vue
 <script lang="ts">

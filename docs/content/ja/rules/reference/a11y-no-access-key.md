@@ -6,6 +6,8 @@ title: "a11y/no-access-key"
 
 環境のショートカットと衝突し得る accesskey を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`accesskey="s"` がブラウザーや支援技術のショートカットと競合する可能性があります。
+
 ```vue
 <template>
   <button accesskey="s">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+accesskey を取り除き、通常の Save ボタンは残します。
 
 ```vue
 <template>

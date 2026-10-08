@@ -6,6 +6,8 @@ title: "script/no-arrow-functions-in-watch"
 
 Disallow arrow functions as Options API watch handlers
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The Options API watcher `value` and the nested `other.handler` are arrow functions. An arrow captures its surrounding `this` rather than receiving the component instance.
+
 ```vue
 <script lang="ts">
 export default {
@@ -52,6 +56,8 @@ handler: () => {}
 ```
 
 ## Good
+
+Both handlers become ordinary methods, allowing Vue to bind `this` to the component. The `deep: true` watcher option remains compatible with the object form.
 
 ```vue
 <script lang="ts">

@@ -6,6 +6,8 @@ title: "vapor/no-vue-lifecycle-events"
 
 Disallow @vue:xxx per-element lifecycle events (not supported in Vapor)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The input uses the @vue:mounted template lifecycle event.
+
 ```vue
 <template>
   <input @vue:mounted="focusInput" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+onMounted accesses the named template reference and focuses the input through the supported script lifecycle hook.
 
 ```vue
 <script setup lang="ts" vapor>

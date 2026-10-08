@@ -6,6 +6,8 @@ title: "vue/prefer-true-attribute-shorthand"
 
 Prefer the shorthand for a boolean attribute bound to `true`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+A native boolean disabled attribute binds the constant true value.
+
 ```vue
 <template>
 <input :disabled="true" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The native attribute uses its boolean shorthand. False bindings and component props retain their explicit values.
 
 ```vue
 <template>

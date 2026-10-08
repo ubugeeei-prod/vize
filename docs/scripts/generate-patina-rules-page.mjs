@@ -168,9 +168,11 @@ function readExistingRulePresets() {
       readFileSync(resolve(import.meta.dirname, "../content/rules/all.md"), "utf8")
         .split("\n")
         .flatMap((line) => {
-          const match = line.match(/^\| (?:\[)?`([^`]+)`(?:\]\([^)]*\))? \| `[^`]+` \| (.*?) \| /);
-          return match
-            ? [[match[1], [...match[2].matchAll(/`([^`]+)`/g)].map((preset) => preset[1])]]
+          const name = line.match(/^\| (?:\[)?`([^`]+)`(?:\]\([^)]*\))? \| /)?.[1];
+          const cells = line.split(" | ");
+          const severity = cells.findIndex((cell) => /^`(?:error|warning)`$/.test(cell));
+          return name && severity >= 0
+            ? [[name, [...cells[severity + 1].matchAll(/`([^`]+)`/g)].map((preset) => preset[1])]]
             : [];
         }),
     );

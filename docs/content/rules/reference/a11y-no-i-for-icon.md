@@ -4,7 +4,9 @@ title: "a11y/no-i-for-icon"
 
 # `a11y/no-i-for-icon`
 
-Disallow using <i> element for icons
+Disallow using &lt;i&gt; element for icons
+
+[Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The icon is rendered through `i`, whose text semantics do not describe an icon-only action.
+
 ```vue
 <template>
   <button>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+A decorative span hides the icon glyph, while the separate `Delete item` text names the button action.
 
 ```vue
 <template>

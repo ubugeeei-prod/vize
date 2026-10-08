@@ -6,6 +6,8 @@ title: "a11y/click-events-have-key-events"
 
 Require keyboard event handlers with click events
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -37,6 +39,8 @@ vp run lint
 
 ## Bad
 
+The non-interactive `div` has a click handler but no keyboard event handling.
+
 ```vue
 <template>
 <div @click="activate">Activate</div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+A native `button` provides keyboard activation for the same `activate` handler.
 
 ```vue
 <template>

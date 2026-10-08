@@ -6,6 +6,8 @@ title: "vue/no-undefined-refs"
 
 テンプレート内の未定義変数参照を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,12 +37,16 @@ vp run lint
 
 ## 悪い
 
+script は message しか宣言していませんが、テンプレートが missing を参照しています。
+
 ```vue
 <script setup>const message = "Hello";</script>
 <template>{{ missing }}</template>
 ```
 
 ## 良い
+
+script setup で宣言済みの message を補間で参照し、未定義の名前を取り除きます。
 
 ```vue
 <script setup>const message = "Hello";</script>

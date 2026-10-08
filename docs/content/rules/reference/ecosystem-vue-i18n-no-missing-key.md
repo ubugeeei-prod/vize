@@ -6,6 +6,8 @@ title: "ecosystem/vue-i18n-no-missing-key"
 
 Report static vue-i18n keys that are absent from local SFC messages
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `ecosystem`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The template requests auth.missing, but the local English messages declare only auth.login.
+
 ```vue
 <template>{{ $t("auth.missing") }}</template>
 
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The template requests the auth.login key that exists in the local messages.
 
 ```vue
 <template>{{ $t("auth.login") }}</template>

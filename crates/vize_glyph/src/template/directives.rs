@@ -32,10 +32,11 @@ pub(super) fn format_directive_value(
     value: &str,
     options: &FormatOptions,
     vue_version: crate::VueVersion,
-) -> (String, bool) {
+    attribute_depth: usize,
+) -> (String, bool, bool) {
     let trimmed = value.trim();
     if trimmed.is_empty() {
-        return (value.to_compact_string(), false);
+        return (value.to_compact_string(), false, false);
     }
 
     // Formatting a leading line comment as a standalone JS expression moves
@@ -44,12 +45,13 @@ pub(super) fn format_directive_value(
     // continuations before the attribute and SFC printers add their depth.
     // Values starting on the following line remain verbatim (#6694).
     if value.contains('\n') && trimmed.starts_with("//") {
-        return reanchor_continuation_lines(value, options, Representation::Html);
+        let (value, indent) = reanchor_continuation_lines(value, options, Representation::Html);
+        return (value, indent, false);
     }
 
     // v-for has special syntax: "(item, index) in items"
     if name == "v-for" {
-        return (format_v_for_expression(trimmed), false);
+        return (format_v_for_expression(trimmed), false, false);
     }
 
     let decoded = decode_expression_attribute_entities(trimmed);
@@ -63,11 +65,15 @@ pub(super) fn format_directive_value(
             super::vue_filters::format_filter_expression(expression, options, vue_version, true)
     {
         let multiline = formatted.contains('\n');
-        return (formatted, multiline);
+        return (formatted, multiline, false);
     }
 
     // Try to format as JS expression via oxc_formatter
-    match script::format_js_expression_in_attribute_with_layout(expression, options) {
+    match script::format_js_expression_in_attribute_with_layout(
+        expression,
+        options,
+        attribute_depth,
+    ) {
         Some(formatted) if formatted.retained_bare_sequence => {
             // These authored bytes retain absolute source indentation. Rebase
             // code continuations before the attribute printer adds its depth.
@@ -79,13 +85,22 @@ pub(super) fn format_directive_value(
                     .as_ref()
                     .map_or(&[], |value| value.amp_positions.as_slice()),
             );
-            reanchor_continuation_lines(&code, options, Representation::JavaScript)
+            let (value, indent) =
+                reanchor_continuation_lines(&code, options, Representation::JavaScript);
+            (value, indent, false)
         }
         Some(formatted) => {
             let indent_multiline_value = formatted.code.contains('\n');
-            (formatted.code, indent_multiline_value)
+            (
+                formatted.code,
+                indent_multiline_value,
+                formatted.owns_attribute_lines,
+            )
         }
-        None => reanchor_continuation_lines(value, options, Representation::Html),
+        None => {
+            let (value, indent) = reanchor_continuation_lines(value, options, Representation::Html);
+            (value, indent, false)
+        }
     }
 }
 

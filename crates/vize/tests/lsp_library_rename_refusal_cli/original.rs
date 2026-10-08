@@ -1,8 +1,17 @@
-//! Complete #8010 originals, strict whole refusal, and unchanged authored/lib bytes.
+//! Complete #8010 originals, atomic owned rename, and unchanged authored/lib bytes.
 
 use serde_json::{Value, json};
 
 use super::{Fixture, range};
+
+#[path = "cold_collision.rs"]
+mod cold_collision;
+#[path = "diagnostic_witness.rs"]
+mod diagnostic_witness;
+#[path = "safe_update.rs"]
+mod safe_update;
+#[path = "safety_controls.rs"]
+mod safety_controls;
 
 const TOGGLE: &str = include_str!(
     "../../../../tests/_fixtures/differential/lsp/rename-library-refusal/8010/Toggle.vue.txt"
@@ -19,7 +28,7 @@ const CONFIG: &str = r#"{
 }"#;
 
 #[test]
-fn original_emit_string_refuses_the_whole_library_transaction_without_file_writes() {
+fn original_emit_string_keeps_atomic_owned_updates_and_unsafe_name_refusals_without_file_writes() {
     for crlf in [false, true] {
         for parent_open in [false, true] {
             let convert = |text: &str| {
@@ -78,11 +87,26 @@ fn original_emit_string_refuses_the_whole_library_transaction_without_file_write
                     );
                     let _: Option<lsp_types::WorkspaceEdit> =
                         serde_json::from_value(actual.clone()).unwrap();
-                    assert_eq!(
-                        actual,
-                        Value::Null,
-                        "library edits must refuse the whole rename"
-                    );
+                    if new_name == "update" {
+                        let references = fixture.request(
+                            "src/Toggle.vue",
+                            "textDocument/references",
+                            position.clone(),
+                            json!({"context":{"includeDeclaration":true}}),
+                        );
+                        assert_eq!(
+                            references,
+                            safe_update::references(&fixture, source, &app),
+                            "all three complete owned sites, without library references"
+                        );
+                        assert_eq!(
+                            actual,
+                            safe_update::rename(&fixture, source, &app),
+                            "the exact atomic transaction has no library or generated target"
+                        );
+                    } else {
+                        assert_eq!(actual, Value::Null, "unsafe names refuse the whole rename");
+                    }
                     assert_eq!(
                         std::fs::read(fixture.project.path().join("src/Toggle.vue")).unwrap(),
                         toggle.as_bytes()

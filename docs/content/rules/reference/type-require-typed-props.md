@@ -6,6 +6,8 @@ title: "type/require-typed-props"
 
 Require type definition for defineProps
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -38,6 +40,8 @@ vp run lint
 
 ## Bad
 
+The array-only `defineProps(["title"])` declares `title` by name without giving it a type.
+
 ```vue
 <script setup lang="ts">
 defineProps(["title"]);
@@ -45,6 +49,8 @@ defineProps(["title"]);
 ```
 
 ## Good
+
+`defineProps<{ title: string }>()` gives `title` an explicit string type instead of a name-only runtime declaration.
 
 ```vue
 <script setup lang="ts">

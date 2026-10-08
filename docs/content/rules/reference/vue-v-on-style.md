@@ -6,6 +6,8 @@ title: "vue/v-on-style"
 
 Enforce `v-on` directive style
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`v-on:click` uses the long event-listener form where the rule requires shorthand.
+
 ```vue
 <template>
   <div v-on:click="handleClick"></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`@click` keeps the same handler while using the configured shorthand.
 
 ```vue
 <template>

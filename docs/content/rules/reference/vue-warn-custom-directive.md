@@ -6,6 +6,8 @@ title: "vue/warn-custom-directive"
 
 Warn about custom directives that need registration
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`v-focus`, `v-mask`, and `v-click-outside` require project-specific directive implementations that this optional convention flags.
+
 ```vue
 <template>
   <input v-focus />
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The example uses built-in `v-if`, `v-model`, and `v-on`. A correctly registered custom directive can still be valid Vue when this policy is disabled.
 
 ```vue
 <template>

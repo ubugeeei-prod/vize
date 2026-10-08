@@ -6,6 +6,8 @@ title: "vue/no-invalid-html-attribute"
 
 静的 HTML 属性の無効な値を検出します。現在は rel が対象です。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+a の rel に、stylesheet の link 要素向けの stylesheet を指定しています。
+
 ```vue
 <template>
 <a href="/guide" rel="stylesheet">Guide</a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+a の rel に、ヘルプへの参照を表す help を指定します。
 
 ```vue
 <template>

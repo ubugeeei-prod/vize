@@ -6,6 +6,8 @@ title: "vapor/require-vapor-attribute"
 
 Vapor 向けの script setup に vapor 属性を付ける方針を適用します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: SFC lint では未対応  
@@ -39,6 +41,8 @@ vp run lint
 
 ## 悪い
 
+script setup に Vapor の指定がありません。これは規約を示す例で、現在の空の callback は診断を生成しません。
+
 ```vue
 <script setup>
 const count = 0;
@@ -48,6 +52,8 @@ const count = 0;
 
 ## 良い
 
+vapor を追加して Vapor のコンパイルを選択します。修正方針を示す例であり、現在の linter がこのルールを検出するという意味ではありません。
+
 ```vue
 <script setup vapor>
 const count = 0;
@@ -55,6 +61,6 @@ const count = 0;
 <template><p>{{ count }}</p></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs#L17) · [全ルール](../all.md)

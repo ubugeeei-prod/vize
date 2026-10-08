@@ -22,7 +22,7 @@ mod preamble;
 mod root_element;
 mod script_blocks;
 mod script_module;
-mod setup_helpers;
+pub(super) mod setup_helpers;
 mod setup_imports;
 mod setup_lines;
 mod setup_props;
@@ -34,7 +34,7 @@ mod template_ref_keys;
 mod template_refs;
 mod type_only_imports;
 mod unresolved_components;
-use self::anchors::emit_setup_binding_anchors;
+use self::anchors::SetupBindingAnchors;
 use self::auto_import_stubs::emit_auto_import_stubs;
 use self::component_constructors::{ComponentInstanceAliases, emit_component_constructors};
 use self::component_export::{emit_authored_component_aliases, emit_default_export_declaration};
@@ -109,7 +109,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
     let (template_usage_names, has_template_scope) =
         template_usage(summary, template_ast, generation_options);
-    let template_referenced_names = preserve_unused_diagnostics.then_some(&template_usage_names);
     let inferred_slots = component_public_types::infers_slots(summary, template_ast, check_options);
     let mut setup_imports = SetupImportPlan::new(
         script_content,
@@ -118,8 +117,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         inferred_slots,
         check_options,
     );
-    let reference_setup_bindings_comment =
-        self::anchors::setup_binding_anchor_comment(preserve_unused_diagnostics);
     let lib_references = generation_options
         .lib_references
         .unwrap_or(DEFAULT_LIB_REFERENCES);
@@ -211,7 +208,18 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     // Whether a default-export rewrite declared `__default__`, tracked as
     // state: grepping the generated text would match helper type positions
     // and user code that merely mentions the name (#3888).
-    let setup_helpers = setup_helpers::SetupHelperPlan::collect(summary, script_content);
+    let binding_anchors = SetupBindingAnchors {
+        summary,
+        script_content,
+        usage: &module_plan.identifier_usage,
+        template_usage_names: &template_usage_names,
+        preserve_unused_diagnostics,
+    };
+    let setup_helpers = setup_helpers::SetupHelperPlan::collect(
+        summary,
+        script_content,
+        generation_options.preserve_event_navigation,
+    );
     let mut declared_default_alias = false;
     if let Some(script) = script_content {
         profile!("canon.virtual_ts.emit_module_statements", {
@@ -712,36 +720,28 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 &syntactic_type_only_imported_names,
             );
 
-            profile!(
-                "canon.virtual_ts.emit_setup_binding_anchors",
-                emit_setup_binding_anchors(
-                    &mut ts,
-                    summary,
-                    script_content,
-                    &module_plan.identifier_usage,
-                    template_referenced_names,
-                    reference_setup_bindings_comment,
-                )
-            );
+            binding_anchors.emit(&mut ts, "canon.virtual_ts.emit_setup_binding_anchors");
 
             ts.push_str("  })();\n");
         });
     }
 
     if has_template_scope && !check_options.check_template_bindings && preserve_unused_diagnostics {
-        profile!(
+        binding_anchors.emit(
+            &mut ts,
             "canon.virtual_ts.emit_no_check_template_binding_anchors",
-            emit_setup_binding_anchors(
-                &mut ts,
-                summary,
-                script_content,
-                &module_plan.identifier_usage,
-                template_referenced_names,
-                reference_setup_bindings_comment,
-            )
         );
     }
 
+    if generation_options.preserve_event_navigation {
+        setup_helpers.emit_event_navigation(
+            &mut ts,
+            &mut mappings,
+            summary,
+            generic_param,
+            &script_source_offset,
+        );
+    }
     emit_setup_scope_macro_anchors(&mut ts, summary, &setup_helpers);
     let define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
     let mut setup_return_fields: Vec<String> = Vec::new();

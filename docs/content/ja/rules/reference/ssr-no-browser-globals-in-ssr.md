@@ -6,6 +6,8 @@ title: "ssr/no-browser-globals-in-ssr"
 
 SSR で実行されるコードのブラウザー専用グローバル参照を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+setup の実行時に `window.innerWidth` を直接読みますが、サーバー上のコンポーネント実行時には `window` が存在しません。
+
 ```vue
 <script setup lang="ts">
 const width = window.innerWidth;
@@ -42,6 +46,8 @@ const width = window.innerWidth;
 ```
 
 ## 良い
+
+初期の幅をサーバーでも扱える ref の値にし、ブラウザー API の参照を SSR の setup ではなくクライアントで実行する `onMounted` に移します。
 
 ```vue
 <script setup lang="ts">

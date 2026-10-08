@@ -113,7 +113,7 @@ test("all rules reference shows which rules accept lint rule options", () => {
 
   assert.match(
     allRules,
-    /\| Rule \| Severity \| Presets \| Fixable \| Options \| Implementation \| Description \|/,
+    /\| Rule \| Examples \| Severity \| Presets \| Fixable \| Options \| Implementation \| Description \| Category \|/,
   );
   assert.match(allRules, /rule-option support/);
 
@@ -176,14 +176,20 @@ test("strict boolean rows render within the complete option and type-aware table
     assert.deepEqual(tableRules(source), expectedOptions, locale || "en");
   }
   const allRules = fs.readFileSync(path.join(repoRoot, "docs/content/rules/all.md"), "utf8");
-  assert.deepEqual(tableRules(sectionFor(allRules, "## Type Aware (6)")), [
-    "type/no-floating-promises",
-    "type/no-reactivity-loss",
-    "type/no-unsafe-template-binding",
-    "type/require-typed-emits",
-    "type/require-typed-props",
-    "type/strict-boolean-expressions",
-  ]);
+  const typeRows = allRules.split("\n").filter((line) => line.startsWith("| [`type/"));
+  assert.equal(typeRows.length, 6);
+  assert.ok(typeRows.every((row) => row.endsWith("| Type Aware |")));
+  assert.deepEqual(
+    tableRules(allRules).filter((name) => name.startsWith("type/")),
+    [
+      "type/no-floating-promises",
+      "type/no-reactivity-loss",
+      "type/no-unsafe-template-binding",
+      "type/require-typed-emits",
+      "type/require-typed-props",
+      "type/strict-boolean-expressions",
+    ],
+  );
 });
 
 function tableRules(source: string): string[] {

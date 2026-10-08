@@ -6,6 +6,8 @@ title: "type/strict-boolean-expressions"
 
 script とテンプレートの条件式で安全な真偽判定を使います。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -40,6 +42,8 @@ vp run lint
 
 ## 悪い
 
+`if (count)` が nullable な数値の truthiness に依存し、明示的な真偽値の検査を使っていません。ゼロと未指定も同じ偽として扱います。
+
 ```vue
 <script setup lang="ts">
 const count: number | undefined = undefined;
@@ -48,6 +52,8 @@ if (count) console.log(count);
 ```
 
 ## 良い
+
+`count !== undefined && count > 0` で存在と正の値を別々に検査し、省略可能な値を絞り込んだうえで明示的な真偽値の条件を作ります。
 
 ```vue
 <script setup lang="ts">

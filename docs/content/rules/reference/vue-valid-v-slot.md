@@ -6,6 +6,8 @@ title: "vue/valid-v-slot"
 
 Enforce valid `v-slot` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The slot directive is on a native `<div>` or conflicts with other default/named slot declarations.
+
 ```vue
 <template>
   <div v-slot:header></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Declare a component's default slot on that component, or its named slot on a child `<template #header>`.
 
 ```vue
 <template>

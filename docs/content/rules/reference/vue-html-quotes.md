@@ -6,6 +6,8 @@ title: "vue/html-quotes"
 
 Enforce quotes style of HTML attributes
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The attributes use single quotes or no quotes instead of the double-quote convention.
+
 ```vue
 <template>
   <div class='foo'></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Both ordinary attributes and directive expressions use double quotes.
 
 ```vue
 <template>

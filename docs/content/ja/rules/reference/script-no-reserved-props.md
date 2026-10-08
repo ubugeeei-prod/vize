@@ -6,6 +6,8 @@ title: "script/no-reserved-props"
 
 prop 宣言に Vue の予約名を使う箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+オブジェクト形式の `ref` と `$foo`、配列形式の `key` は予約された prop 名です。`ref` と `key` はフレームワーク用であり、`$` で始まる名前も拒否されます。
+
 ```vue
 <script lang="ts">
 export default {
@@ -51,6 +55,8 @@ props: ['key']    // reserved (array form)
 ```
 
 ## 良い
+
+通常の prop 名 `name` と `refValue` に変え、予約された名前と接頭辞を避けます。
 
 ```vue
 <script lang="ts">

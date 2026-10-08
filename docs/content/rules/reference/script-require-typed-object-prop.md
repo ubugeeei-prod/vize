@@ -6,6 +6,8 @@ title: "script/require-typed-object-prop"
 
 Require an explicit type on a prop whose runtime type is `Object` or `Array`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Bare `Object` and `Array` constructors describe only broad runtime categories, so neither `user` nor the `items` element shape has an explicit static type.
+
 ```vue
 <script setup lang="ts">
 const props = defineProps({ user: Object, items: { type: Array } });
@@ -42,6 +46,8 @@ const props = defineProps({ user: Object, items: { type: Array } });
 ```
 
 ## Good
+
+`PropType<User>` and `PropType<User[]>` add the object and element types while retaining the same runtime constructors.
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "vue/no-v-text-v-html-on-component"
 
 Disallow v-text / v-html on component elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The component tag receives v-html or v-text, which replaces element content rather than supplying component slots.
+
 ```vue
 <template>
   <MyComponent v-html="content" />
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+Native HTML targets can receive the directives; MyComponent receives its content through the default slot.
 
 ```vue
 <template>

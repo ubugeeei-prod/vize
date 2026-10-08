@@ -6,6 +6,8 @@ title: "a11y/mouse-events-have-key-events"
 
 マウス操作と対応する focus / blur 操作を用意します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+プレビューの表示切り替えを mouseenter と mouseleave だけに指定しています。
+
 ```vue
 <template>
   <div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+フォーカスできる button で、同じ操作を focus と blur からも実行します。
 
 ```vue
 <template>

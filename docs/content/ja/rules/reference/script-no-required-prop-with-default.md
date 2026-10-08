@@ -6,6 +6,8 @@ title: "script/no-required-prop-with-default"
 
 required: true と default を同時に持つ prop を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`title` に必須指定と `"Untitled"` の既定値を同時に付け、必須の入力という契約と未指定時の代替値を併記しています。
+
 ```vue
 <script lang="ts">
 export default { props: { title: { type: String, required: true, default: "Untitled" } } };
@@ -42,6 +46,8 @@ export default { props: { title: { type: String, required: true, default: "Untit
 ```
 
 ## 良い
+
+`required: true` を除いて `title` を任意入力にし、`"Untitled"` を未指定時の既定値として残します。
 
 ```vue
 <script lang="ts">

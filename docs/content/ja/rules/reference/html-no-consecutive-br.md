@@ -6,6 +6,8 @@ title: "html/no-consecutive-br"
 
 連続する br 要素による余白指定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+一つの p の中に br を二つ続けて入れ、ブロック間の余白を作っています。
+
 ```vue
 <template>
   <p>First line<br /><br />Second block</p>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+内容を別の p に分け、連続した br を使いません。
 
 ```vue
 <template>

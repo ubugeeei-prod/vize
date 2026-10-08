@@ -6,6 +6,8 @@ title: "script/no-reactive-destructure"
 
 reactive オブジェクトの反応性を失う分割代入を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`const { count, name } = state` が `reactive` オブジェクトからプリミティブ値をコピーし、その後のプロパティ更新とのつながりを失います。
+
 ```vue
 <script setup lang="ts">
 import { reactive } from "vue";
@@ -44,6 +48,8 @@ const { count, name } = state;
 ```
 
 ## 良い
+
+`toRefs(state)` を分割代入して `count` と `name` の ref を作り、それぞれを元のリアクティブなプロパティにつなげます。
 
 ```vue
 <script setup lang="ts">

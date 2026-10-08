@@ -6,6 +6,8 @@ title: "vue/single-style-block"
 
 SFC の style を一つのブロックにまとめます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+panel と title の scoped スタイルを二つの style ブロックに分けています。
+
 ```vue
 <style scoped>
 .panel {
@@ -50,6 +54,8 @@ vp run lint
 ```
 
 ## 良い
+
+両方のセレクタを一つの scoped style にまとめ、どちらのスタイルも残します。
 
 ```vue
 <style scoped>

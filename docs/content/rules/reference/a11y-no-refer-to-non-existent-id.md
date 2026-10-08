@@ -6,6 +6,8 @@ title: "a11y/no-refer-to-non-existent-id"
 
 Disallow references to non-existent IDs
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`aria-labelledby` points to `save-label`, but no element declares that ID.
+
 ```vue
 <template>
   <button aria-labelledby="save-label">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Adding the matching span resolves the reference and provides the button label.
 
 ```vue
 <template>

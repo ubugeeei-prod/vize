@@ -37,6 +37,8 @@ pub(in crate::ide) mod corsa;
 #[cfg(test)]
 mod default_lint_correctness_tests;
 #[cfg(all(test, feature = "native"))]
+mod editor_event_partial_diagnostics_tests;
+#[cfg(all(test, feature = "native"))]
 mod editor_reference_options_tests;
 #[cfg(all(test, feature = "native"))]
 mod editor_typecheck_defaults_tests;

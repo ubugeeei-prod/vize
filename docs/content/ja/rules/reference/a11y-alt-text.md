@@ -6,6 +6,8 @@ title: "a11y/alt-text"
 
 画像などのメディアに代替テキストを用意します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+画像の送信ボタンには URL しかなく、操作を説明する `alt` がありません。
+
 ```vue
 <template>
   <input type="image" src="/submit.png" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+`alt="Submit search"` を追加し、検索を送信する操作の名前を指定します。
 
 ```vue
 <template>

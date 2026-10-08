@@ -6,6 +6,8 @@ title: "vue/valid-v-once"
 
 v-once の引数・値・modifier を検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+一度だけ描画する印である `v-once` に、値・引数・修飾子を渡しています。
+
 ```vue
 <template>
 <div v-once="foo"></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+値のない `v-once` で、サブツリーを一度だけ描画する対象にします。
 
 ```vue
 <template>

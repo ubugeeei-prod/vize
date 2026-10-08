@@ -6,6 +6,8 @@ title: "script/no-boolean-default"
 
 Boolean prop の冗長な default を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`disabled` と `checked` は、単独の型が `Boolean` である prop に `default` を指定しています。明示的な `false` もこのルールの対象です。
+
 ```vue
 <script lang="ts">
 export default {
@@ -48,6 +52,8 @@ checked: { type: Boolean, default: false }
 ```
 
 ## 良い
+
+Boolean のみの props では `default` を省き、Vue の暗黙の false を使います。`[Boolean, String]` の共用型と Number の prop は、この検査が単独の `Boolean` コンストラクターに限られることを示します。
 
 ```vue
 <script lang="ts">

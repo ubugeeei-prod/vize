@@ -6,6 +6,8 @@ title: "script/no-deprecated-destroyed-lifecycle"
 
 Disallow deprecated destroyed and beforeDestroy lifecycle hooks
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`beforeDestroy` is the removed Vue 2 lifecycle option used for the timer cleanup.
+
 ```vue
 <script lang="ts">
 export default { beforeDestroy() { clearTimeout(this.timer); } };
@@ -42,6 +46,8 @@ export default { beforeDestroy() { clearTimeout(this.timer); } };
 ```
 
 ## Good
+
+Renaming the hook to `beforeUnmount` preserves the cleanup body under its Vue 3 lifecycle name.
 
 ```vue
 <script lang="ts">

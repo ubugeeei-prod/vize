@@ -4,7 +4,9 @@ title: "script/prefer-define-options"
 
 # `script/prefer-define-options`
 
-Prefer defineOptions() over a plain <script> that only sets name/inheritAttrs
+Prefer defineOptions() over a plain &lt;script&gt; that only sets name/inheritAttrs
+
+[Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
 Presets: _none_  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The plain script’s only meaningful statement exports an object containing just `name` and `inheritAttrs`; these options can be expressed by `defineOptions`.
+
 ```vue
 <script lang="ts">
 export default { name: 'MyComponent', inheritAttrs: false }
@@ -42,6 +46,8 @@ export default { name: 'MyComponent', inheritAttrs: false }
 ```
 
 ## Good
+
+The shown `data()` method makes the script carry real Options API logic, so it falls outside this rule’s conservative options-only suggestion. This Good demonstrates an allowed exception; the direct migration would put `defineOptions({ name: 'MyComponent', inheritAttrs: false })` in `<script setup>`.
 
 ```vue
 <script lang="ts">

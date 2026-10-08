@@ -6,6 +6,8 @@ title: "vue/prop-name-casing"
 
 宣言する prop 名の形式を揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -37,6 +39,8 @@ vp run lint
 
 ## 悪い
 
+宣言した prop の user_name をアンダースコア区切りにしています。
+
 ```vue
 <script setup lang="ts">
 defineProps<{ user_name: string }>();
@@ -45,6 +49,8 @@ defineProps<{ user_name: string }>();
 ```
 
 ## 良い
+
+宣言とテンプレートの参照を、camelCase の userName に揃えます。
 
 ```vue
 <script setup lang="ts">

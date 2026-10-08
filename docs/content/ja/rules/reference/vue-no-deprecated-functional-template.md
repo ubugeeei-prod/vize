@@ -6,6 +6,8 @@ title: "vue/no-deprecated-functional-template"
 
 SFC の template で削除済みの functional 属性を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+SFC の template に廃止された functional を指定し、旧来の props の参照を使っています。
+
 ```vue
 <template functional>
 <div>{{ props.msg }}</div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+functional を取り除き、コンポーネントの msg を直接参照します。
 
 ```vue
 <template>

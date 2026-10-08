@@ -6,6 +6,8 @@ title: "vue/no-deprecated-scope-attribute"
 
 template の削除済み scope 属性を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+slot の template に、廃止された scope で props を宣言しています。
+
 ```vue
 <template>
 <Card><template scope="props">{{ props.name }}</template></Card>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+現在の default slot のディレクティブで、同じ props を受け取ります。
 
 ```vue
 <template>

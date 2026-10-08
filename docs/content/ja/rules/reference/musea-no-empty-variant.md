@@ -6,6 +6,8 @@ title: "musea/no-empty-variant"
 
 内容のない variant ブロックを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+primary の名前がある variant が空で、プレビューする内容がありません。
+
 ```vue
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+variant の中に primary の Button と Save の内容を入れます。
 
 ```vue
 <art title="Button" component="./Button.vue">

@@ -6,6 +6,8 @@ title: "vue/v-slot-style"
 
 Enforce `v-slot` directive style
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The component uses `#default` and the template uses `v-slot:header`, opposite to the rule's context-specific styles.
+
 ```vue
 <template>
   <MyComponent #default="props">{{ props.item }}</MyComponent>
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## Good
+
+Use `v-slot` for the component's default slot and `#header` for the template's named slot.
 
 ```vue
 <template>

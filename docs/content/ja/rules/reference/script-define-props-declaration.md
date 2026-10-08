@@ -6,6 +6,8 @@ title: "script/define-props-declaration"
 
 defineProps を型による宣言形式に揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`defineProps({ title: String })` は実行時オブジェクトを渡しており、このルールが推奨する型ベースの props 宣言と異なります。
+
 ```vue
 <script setup lang="ts">
 const props = defineProps({ title: String });
@@ -43,6 +47,8 @@ console.log(props.title);
 ```
 
 ## 良い
+
+`defineProps<{ title: string }>()` の型引数で `title` を宣言し、実行時の宣言引数を使わずに `props.title` の参照を保ちます。
 
 ```vue
 <script setup lang="ts">

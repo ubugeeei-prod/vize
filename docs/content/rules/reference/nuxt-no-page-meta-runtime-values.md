@@ -6,6 +6,8 @@ title: "nuxt/no-page-meta-runtime-values"
 
 Disallow runtime context values inside `definePageMeta` at the eager level, which is extracted into a separate chunk at build time and runs before component setup
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`useRoute()` is evaluated immediately while building the `definePageMeta` object, although the macro hoists that metadata outside the setup runtime context.
+
 ```vue
 <script setup lang="ts">
 definePageMeta({ title: useRoute() });
@@ -42,6 +46,8 @@ definePageMeta({ title: useRoute() });
 ```
 
 ## Good
+
+`validate` receives a callback, so its `useRoute().params.id` access is deferred until the callback runs. The rule distinguishes deferred function bodies from eager metadata values.
 
 ```vue
 <script setup lang="ts">

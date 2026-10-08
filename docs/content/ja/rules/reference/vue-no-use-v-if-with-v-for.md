@@ -6,6 +6,8 @@ title: "vue/no-use-v-if-with-v-for"
 
 同じ要素での v-if と v-for の併用を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+同じ li に v-if と v-for を指定し、ループの変数で表示条件を検査しています。
+
 ```vue
 <template>
   <li v-for="item in items" v-if="item.visible" :key="item.id">
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+computed で表示する項目を先に絞り込み、テンプレートはその配列を繰り返します。
 
 ```vue
 <script setup lang="ts">

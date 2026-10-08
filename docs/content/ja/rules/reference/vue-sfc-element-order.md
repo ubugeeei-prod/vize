@@ -6,6 +6,8 @@ title: "vue/sfc-element-order"
 
 SFC のトップレベルブロックを設定した順に並べます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+style が script より前にあり、設定した SFC ブロック順に合いません。
+
 ```vue
 <style scoped>
 .panel {
@@ -47,6 +51,8 @@ const label = "Save";
 ```
 
 ## 良い
+
+script → template → style の順に並べます。型付きオプションで別の順序を選べます。
 
 ```vue
 <script setup lang="ts">

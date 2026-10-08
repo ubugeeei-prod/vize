@@ -6,6 +6,8 @@ title: "css/no-utility-classes"
 
 コンポーネント内で utility class を定義する箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`.flex`、`.mt-4`、`.text-center` のように、個々の見た目を名前にしたクラスを定義しています。
+
 ```vue
 <style scoped>
 .flex { display: flex; }
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+コンポーネント固有の `.my-component` にスタイルをまとめます。
 
 ```vue
 <style scoped>

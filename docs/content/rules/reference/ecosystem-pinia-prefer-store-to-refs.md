@@ -6,6 +6,8 @@ title: "ecosystem/pinia-prefer-store-to-refs"
 
 Prefer storeToRefs() when destructuring Pinia stores
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `ecosystem`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Destructuring `name` directly from the store separates the value from its reactive store access.
+
 ```vue
 <script setup lang="ts">
 const { name } = useUserStore();
@@ -42,6 +46,8 @@ const { name } = useUserStore();
 ```
 
 ## Good
+
+The store remains intact and storeToRefs creates a reactive reference for name.
 
 ```vue
 <script setup lang="ts">

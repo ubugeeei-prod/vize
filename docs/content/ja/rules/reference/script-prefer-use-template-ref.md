@@ -6,6 +6,8 @@ title: "script/prefer-use-template-ref"
 
 テンプレート参照に Vue 3.5 の useTemplateRef() を使います。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+null で初期化した `input` の ref がテンプレートのリテラル `ref="input"` と対応し、通常の nullable なデータではなく要素参照であることが分かります。
+
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -46,6 +50,8 @@ const input = ref<HTMLInputElement | null>(null)
 ```
 
 ## 良い
+
+Vue 3.5 以降の `useTemplateRef<HTMLInputElement>('input')` でテンプレート参照を明示します。対応する要素参照のない `error = ref(null)` は通常のデータであり、このルールの対象外です。
 
 ```vue
 <script setup lang="ts">

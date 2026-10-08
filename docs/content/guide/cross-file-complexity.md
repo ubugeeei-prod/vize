@@ -318,7 +318,7 @@ facts remain coverage limits, not evidence that a component is easy to understan
 
 ## Implementation and existing controls
 
-- [Metric specification and historical corpus](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/plan/complexity-metrics.md)
+- [Metric specification and historical corpus](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/plan/complexity-metrics.md?plain=1)
 - [L2 region and expression calculation](https://github.com/ubugeeei-prod/vize/tree/main/davinci/vize_l1_to_l2/src/pass/cfg)
 - [Whole lint example and diagnostic labels](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/max_template_complexity/tests.rs)
 - [Cross-file weights, counters, and reachability](https://github.com/ubugeeei-prod/vize/tree/main/crates/vize_croquis_cf/src/rules/complexity)

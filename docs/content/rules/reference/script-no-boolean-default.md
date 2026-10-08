@@ -6,6 +6,8 @@ title: "script/no-boolean-default"
 
 Disallow a default on a Boolean prop
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Both `disabled` and `checked` declare a `default` on a prop whose sole constructor is `Boolean`; the rule rejects even an explicit `false` default.
+
 ```vue
 <script lang="ts">
 export default {
@@ -48,6 +52,8 @@ checked: { type: Boolean, default: false }
 ```
 
 ## Good
+
+The Boolean-only props omit `default`, using Vue’s implicit false value. The `[Boolean, String]` union and the Number prop illustrate that this check is limited to the sole `Boolean` constructor.
 
 ```vue
 <script lang="ts">

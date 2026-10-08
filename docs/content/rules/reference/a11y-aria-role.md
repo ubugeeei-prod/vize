@@ -6,6 +6,8 @@ title: "a11y/aria-role"
 
 Elements with ARIA roles must use a valid, non-abstract ARIA role
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`datepicker` is not a recognized ARIA role for this section.
+
 ```vue
 <template>
   <section role="datepicker">...</section>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The section uses the recognized `dialog` role and a label describing the date selection.
 
 ```vue
 <template>

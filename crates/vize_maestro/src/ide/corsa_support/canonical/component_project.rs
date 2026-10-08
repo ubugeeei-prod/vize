@@ -1,5 +1,7 @@
-//! On-demand configured-project coverage for public component prop navigation.
+//! On-demand configured-project coverage for public component member navigation.
 
+use oxc_semantic::SemanticBuilder;
+use oxc_span::SourceType;
 use vize_canon::CorsaBridge;
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
@@ -13,10 +15,10 @@ use crate::ide::IdeContext;
 mod definition_positions;
 
 /// Ordinary local symbols keep the existing open-importer surface. Public
-/// component props also need unopened consumers, independent of `crossFile`.
+/// component props and events also need unopened consumers, independent of `crossFile`.
 /// This route is called only by references and rename, never by document edits,
 /// diagnostics, hover, completion or prepareRename. The existing TypeScript
-/// definition checks still decide which same-spelling prop endpoints match.
+/// definition checks still decide which same-spelling public endpoints match.
 pub(crate) async fn open_canonical_virtual_navigation_project_document_strict(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,
@@ -45,9 +47,46 @@ fn may_query_component_prop(ctx: &IdeContext<'_>) -> bool {
     let Some(script) = descriptor.script_setup.as_ref() else {
         return false;
     };
+    let allocator = oxc_allocator::Allocator::default();
+    let source_type = SourceType::ts().with_jsx(matches!(
+        script.lang.as_deref().map(str::trim),
+        Some("tsx" | "jsx")
+    ));
+    let parsed = vize_croquis::script_parser::parse_program_for_analysis(
+        &allocator,
+        &script.content,
+        source_type,
+    );
+    if parsed.panicked {
+        return false;
+    }
     let mut analyzer = Drawer::with_options(DrawerOptions::full());
-    analyzer.analyze_script_setup(&script.content);
+    analyzer.analyze_script_setup_program(
+        &parsed.program,
+        &script.content,
+        script.attrs.get("generic").map(|generic| generic.as_ref()),
+    );
     let croquis = analyzer.finish();
+    let event_candidate = croquis
+        .macros
+        .emits()
+        .iter()
+        .any(|event| event.name.as_str() == name);
+    if event_candidate && parsed.diagnostics.is_empty() {
+        let built = SemanticBuilder::new().build(&parsed.program);
+        if built.diagnostics.is_empty()
+            && vize_canon::virtual_ts::owned_emit_navigation_source_ranges(
+                &parsed.program,
+                built.semantic.scoping(),
+                &script.content,
+                &croquis,
+            )
+            .iter()
+            .any(|range| range.contains(&ctx.offset.saturating_sub(script.loc.start)))
+        {
+            return true;
+        }
+    }
     if ctx.block_type == Some(crate::virtual_code::BlockType::ScriptSetup)
         && croquis
             .scopes
@@ -139,5 +178,41 @@ mod tests {
             let ctx = IdeContext::new(&state, &uri, source.find(needle).unwrap()).unwrap();
             assert_eq!(may_query_component_prop(&ctx), expected, "{needle}");
         }
+    }
+
+    #[test]
+    fn declared_event_keys_and_literal_calls_expand_the_configured_project() {
+        let source = "<script setup lang=\"ts\">\nconst emit = defineEmits<{ change: [value: boolean] }>();\nfunction flip() { emit(\"change\", true); }\n</script>";
+        let state = ServerState::new();
+        let uri = Url::parse("file:///workspace/Toggle.vue").unwrap();
+        state
+            .documents
+            .open(uri.clone(), source.to_owned(), 1, "vue".to_owned());
+        for (needle, expected) in [("change:", true), ("change\"", true), ("flip()", false)] {
+            let ctx = IdeContext::new(&state, &uri, source.find(needle).unwrap()).unwrap();
+            assert_eq!(may_query_component_prop(&ctx), expected, "{needle}");
+        }
+    }
+
+    #[test]
+    fn public_event_roles_expand_without_admitting_same_name_value_roles() {
+        let source = "<script setup lang=\"ts\">\nconst emit = defineEmits<{ change: [value: boolean] }>();\nconst change = true;\nfunction flip() { emit(\"change\", change); }\nfunction shadow(emit: (name: string, value: boolean) => void) { emit(\"change\", change); }\n</script>";
+        let state = ServerState::new();
+        let uri = Url::parse("file:///workspace/Toggle.vue").unwrap();
+        state
+            .documents
+            .open(uri.clone(), source.to_owned(), 1, "vue".to_owned());
+        let actual = [
+            "change:",
+            "change =",
+            "change\", change",
+            "change);",
+            "change\", change); }\n</script>",
+        ]
+        .map(|needle| {
+            let ctx = IdeContext::new(&state, &uri, source.find(needle).unwrap()).unwrap();
+            may_query_component_prop(&ctx)
+        });
+        assert_eq!(actual, [true, false, true, false, false]);
     }
 }

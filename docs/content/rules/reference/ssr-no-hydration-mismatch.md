@@ -6,6 +6,8 @@ title: "ssr/no-hydration-mismatch"
 
 Disallow non-deterministic values that cause hydration mismatch
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The template evaluates `Math.random()` during rendering, so the server and client can produce different text for the same paragraph.
+
 ```vue
 <template>
   <p>{{ Math.random() }}</p>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The paragraph renders the stable `seed` state instead of a fresh random result. In this Nuxt-style example, `useState` supplies the shared state and the initializer is the constant `"stable"`.
 
 ```vue
 <script setup lang="ts">

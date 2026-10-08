@@ -6,6 +6,8 @@ title: "a11y/click-events-have-key-events"
 
 クリックで操作する要素にキーボード操作も用意します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -37,6 +39,8 @@ vp run lint
 
 ## 悪い
 
+通常の `div` に click handler だけを指定し、キーボード操作に対応していません。
+
 ```vue
 <template>
 <div @click="activate">Activate</div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じ `activate` を button に指定し、標準のキーボード操作を使います。
 
 ```vue
 <template>

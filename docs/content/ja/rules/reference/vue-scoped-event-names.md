@@ -6,6 +6,8 @@ title: "vue/scoped-event-names"
 
 イベント名を context:event の形式に揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`playAudio`、`pauseAudio`、`reloadAudio` は camelCase の末尾に対象を付けており、このルールのコロン区切りの規約に合いません。
+
 ```vue
 <template>
   <AudioPlayer
@@ -46,6 +50,8 @@ vp run lint
 ```
 
 ## 良い
+
+`audio:play`、`audio:pause`、`audio:reload` に `audio:` のスコープを明示します。emit 側も同じ名前に合わせます。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/no-v-text"
 
 Disallow the v-text directive; prefer mustache interpolation
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The div's content is supplied through the v-text directive.
+
 ```vue
 <template>
 <div v-text="message"></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Mustache interpolation expresses the same text binding directly in the element content.
 
 ```vue
 <template>

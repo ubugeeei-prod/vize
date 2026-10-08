@@ -6,6 +6,8 @@ title: "vue/no-useless-v-bind"
 
 Disallow a v-bind whose value is a plain string literal
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The foo binding evaluates a constant quoted string or a template string without interpolation.
+
 ```vue
 <template>
 <div :foo="'bar'"></div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+The constant value becomes a static attribute; variable and interpolated values retain their binding.
 
 ```vue
 <template>

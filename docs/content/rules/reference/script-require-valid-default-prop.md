@@ -6,6 +6,8 @@ title: "script/require-valid-default-prop"
 
 Require a prop's default value to be valid for its declared type
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The Number and Boolean props receive mismatched scalar defaults, and the Array and Object props use shared literal values instead of factories.
+
 ```vue
 <script lang="ts">
 export default {
@@ -49,6 +53,8 @@ config: { type: Object, default: {} }       // literal must be a factory
 ```
 
 ## Good
+
+The scalar defaults become `0` and `false`; the array and object defaults become functions returning fresh values. The `[String, Number]` example accepts its string default because it matches one declared type.
 
 ```vue
 <script lang="ts">

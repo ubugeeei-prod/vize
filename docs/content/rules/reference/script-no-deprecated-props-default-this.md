@@ -6,6 +6,8 @@ title: "script/no-deprecated-props-default-this"
 
 Disallow `this` inside a prop default/validator function (removed in Vue 3)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The prop default and validator read `this`, but those functions cannot rely on the component instance in Vue 3.
+
 ```vue
 <script lang="ts">
 export default {
@@ -58,6 +62,8 @@ return this.value > 0
 ```
 
 ## Good
+
+The default reads `props.baseSize` from its argument, and the validator tests its `value` argument. Both stop depending on an unavailable instance receiver.
 
 ```vue
 <script lang="ts">

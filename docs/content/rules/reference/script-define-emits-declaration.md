@@ -4,7 +4,9 @@ title: "script/define-emits-declaration"
 
 # `script/define-emits-declaration`
 
-Enforce the type-based defineEmits<{}>() form over the runtime/array form
+Enforce the type-based defineEmits&lt;{}&gt;() form over the runtime/array form
+
+[Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
 Presets: _none_  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`defineEmits(["change"])` uses a runtime array declaration; this style rule prefers a type-based declaration.
+
 ```vue
 <script setup lang="ts">
 const emit = defineEmits(["change"]);
@@ -43,6 +47,8 @@ emit("change", 1);
 ```
 
 ## Good
+
+`defineEmits<{ change: [id: number] }>()` moves the event declaration into a type argument and explicitly describes the numeric payload used by `emit("change", 1)`.
 
 ```vue
 <script setup lang="ts">

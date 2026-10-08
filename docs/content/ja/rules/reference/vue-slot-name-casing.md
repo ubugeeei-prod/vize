@@ -6,6 +6,8 @@ title: "vue/slot-name-casing"
 
 名前付き slot を kebab-case に揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+名前付きスロット `mySlot` が camelCase で、ハイフン区切りの規約に合いません。
+
 ```vue
 <template>
 <MyCard><template #mySlot>Content</template></MyCard>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+`#my-slot` を kebab-case にします。受け取る slot の名前も合わせます。
 
 ```vue
 <template>

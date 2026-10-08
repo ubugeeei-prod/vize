@@ -6,6 +6,8 @@ title: "vue/no-unused-vars"
 
 Disallow unused variable definitions in v-for and v-slot directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The loop declares an unused index and the slot declares foo without referencing it.
+
 ```vue
 <template>
   <li v-for="(item, index) in items" :key="item.id">{{ item.name }}</li>
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## Good
+
+The examples consume index or mark it intentionally unused as _index, and the slot renders data. Index keys are only a usage example here, not a recommendation for stable item identity.
 
 ```vue
 <template>

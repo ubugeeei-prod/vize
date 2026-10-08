@@ -6,6 +6,8 @@ title: "css/no-id-selectors"
 
 詳細度が高い CSS の ID セレクターを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`#submit` で ID セレクターにスタイルを結び付けています。
+
 ```vue
 <style scoped>
 #submit {
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+再利用できる `.submit` のクラスを使い、ID セレクターを取り除きます。
 
 ```vue
 <style scoped>

@@ -6,6 +6,8 @@ title: "vue/valid-v-html"
 
 Enforce valid `v-html` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`v-html` lacks its expression or uses an argument/modifier that this directive does not support.
+
 ```vue
 <template>
 <div v-html></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+`v-html="html"` supplies a valid expression. Syntax validity does not sanitize HTML or make untrusted content safe.
 
 ```vue
 <template>

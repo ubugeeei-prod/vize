@@ -32,7 +32,21 @@ export function collectorHarness(bytes) {
   );
   assert.equal(bodies?.length, 1, "Missing unique original Rust collector body");
   const body = bodies[0];
-  const harness = `use std::{fs, io::{self, Write}, path::{Path, PathBuf}};\n${body}\nfn main() {
+  const names = ["fail_corpus_io", "corpus_entry_path"];
+  const helpers = names.flatMap((name) => {
+    const matches = source.match(new RegExp(`^fn ${name}\\([\\s\\S]*?\\n\\}\\n`, "gm")) ?? [];
+    assert(matches.length <= 1, `Missing unique original Rust helper ${name}`);
+    return matches;
+  });
+  const program = [...helpers, body].join("\n");
+  for (const name of names)
+    assert(
+      !new RegExp(`\\b${name}\\(`).test(program) ||
+        helpers.some((helper) => helper.startsWith(`fn ${name}(`)),
+      `Missing unique original Rust helper ${name}`,
+    );
+  const prefix = helpers.length ? `${helpers.join("\n")}\n` : "";
+  const harness = `use std::{fs, io::{self, Write}, path::{Path, PathBuf}};\n${prefix}${body}\nfn main() {
     let root = std::env::args_os().nth(1).expect("corpus root");
     let root = Path::new(&root);
     let mut files = Vec::new();

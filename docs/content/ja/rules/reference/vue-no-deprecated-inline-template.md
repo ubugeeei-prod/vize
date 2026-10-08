@@ -6,6 +6,8 @@ title: "vue/no-deprecated-inline-template"
 
 削除済みの inline-template 属性を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+Card に渡す内容に、廃止された inline-template を指定しています。
+
 ```vue
 <template>
 <Card inline-template><p>Details</p></Card>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+inline-template を取り除き、同じ内容を通常の形で渡します。
 
 ```vue
 <template>

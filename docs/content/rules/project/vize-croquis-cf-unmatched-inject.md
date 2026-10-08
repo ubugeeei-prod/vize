@@ -29,7 +29,7 @@ vp run lint
 
 ## Shared project files
 
-Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
+Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
 
 `main.ts`
 
@@ -47,6 +47,8 @@ createApp(Root).mount("#app");
 ```
 
 ## Bad
+
+`ThemeLabel.vue` injects `ThemeKey`, but its reachable `App.vue` ancestor never provides that key.
 
 `keys/theme.ts`
 
@@ -84,6 +86,8 @@ const theme = inject(ThemeKey);
 ```
 
 ## Good
+
+`App.vue` provides a reactive theme using the same exported `ThemeKey`, before rendering the descendant that injects it.
 
 `keys/theme.ts`
 
@@ -125,7 +129,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-Good avoids this finding; other diagnostics can still apply to the complete project.
+The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

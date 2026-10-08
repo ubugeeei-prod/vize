@@ -63,6 +63,14 @@ its cancelled promotion and dependent jobs resume successfully. Registry recover
 keeps the same version and tag. The runner uses an operator lock to prevent
 concurrent publication of that source.
 
+When a delivered workflow repair must requalify an unchanged source PR, first
+verify that its tested merge snapshot contains that repair. GitHub computes
+these snapshots asynchronously; a new event timestamp alone cannot establish
+which workflow bytes ran. Coordinate any temporary close/reopen with the release
+operator while its promotion watchers are stopped, preserving the exact source,
+draft state, body, pin, run and artifact catalog. Recover that same Release run
+and verify cancelled dependent jobs before resuming publication.
+
 Track completion separately for the signed metadata merge, full source
 qualification, tag/source identity, successful publication jobs, public GitHub
 Release and assets, every planned npm and crates.io version, and the VS Code

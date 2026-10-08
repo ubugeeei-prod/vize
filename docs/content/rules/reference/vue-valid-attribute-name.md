@@ -6,6 +6,8 @@ title: "vue/valid-attribute-name"
 
 Require valid attribute names
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -39,6 +41,8 @@ vp run lint
 
 ## Bad
 
+The quote inside `my"attr` makes the attribute name malformed. This example produces the parser's `parser/template` diagnostic rather than promising a separate rule diagnostic.
+
 ```vue
 <template>
 <div my"attr="value"></div>
@@ -46,6 +50,8 @@ vp run lint
 ```
 
 ## Good
+
+`my-attr` is a well-formed attribute name, so the template parser can read the attribute and its value.
 
 ```vue
 <template>

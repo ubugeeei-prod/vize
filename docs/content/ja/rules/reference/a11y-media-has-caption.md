@@ -6,6 +6,8 @@ title: "a11y/media-has-caption"
 
 音声・動画に字幕を用意します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+動画に再生操作はありますが、字幕の track がありません。
+
 ```vue
 <template>
   <video src="/demo.mp4" controls />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じ動画に `kind="captions"` の track を追加して英語の字幕を指定します。
 
 ```vue
 <template>

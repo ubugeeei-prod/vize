@@ -1,0 +1,13 @@
+<script setup lang="ts">
+const emit = defineEmits<{
+  update: [value: boolean];
+}>();
+
+function flip() {
+  emit("update", true);
+}
+</script>
+
+<template>
+  <button @click="flip">toggle</button>
+</template>

@@ -6,6 +6,8 @@ title: "vue/valid-v-if"
 
 Enforce valid `v-if` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The conditions omit an expression or combine `v-if` with an else directive on the same node.
+
 ```vue
 <template>
   <div v-if></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Each `v-if` has a nonempty condition such as `ready` or `count > 0`, without an incompatible else directive.
 
 ```vue
 <template>

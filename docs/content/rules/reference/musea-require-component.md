@@ -4,7 +4,9 @@ title: "musea/require-component"
 
 # `musea/require-component`
 
-Require component attribute in <art> block
+Require component attribute in &lt;art&gt; block
+
+[Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
 Presets: _none_  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The art block supplies a title but does not identify the component being previewed.
+
 ```vue
 <art title="Button">
   <variant name="primary" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+defineArt supplies ./Button.vue as the component for the art block.
 
 ```vue
 <script setup>

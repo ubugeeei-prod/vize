@@ -6,6 +6,8 @@ title: "a11y/media-has-caption"
 
 Require media elements to have captions
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The video has playback controls but no caption track.
+
 ```vue
 <template>
   <video src="/demo.mp4" controls />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+A `track` with `kind="captions"` supplies the English captions for the same video.
 
 ```vue
 <template>

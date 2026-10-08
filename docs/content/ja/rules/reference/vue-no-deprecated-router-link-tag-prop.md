@@ -6,6 +6,8 @@ title: "vue/no-deprecated-router-link-tag-prop"
 
 router-link の削除済み tag prop を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+RouterLink の廃止された tag で button を指定しています。
+
 ```vue
 <template>
 <router-link to="/home" tag="button">Home</router-link>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+slot から navigate を受け取り、明示的に記述した button で実行します。
 
 ```vue
 <template>

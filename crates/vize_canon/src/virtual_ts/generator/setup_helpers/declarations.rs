@@ -15,11 +15,16 @@ pub(crate) struct SetupHelperPlan {
     shadowed: FxHashSet<CompactString>,
     vue_template_ref_import: bool,
     pub(crate) macro_results: Vec<CompactString>,
+    pub(super) emit_calls: Vec<super::emit_navigation::OwnedEmitCall>,
 }
 
 impl SetupHelperPlan {
-    pub(crate) fn collect(summary: &Croquis, source: Option<&str>) -> Self {
-        shadowed_helpers(summary, source)
+    pub(crate) fn collect(
+        summary: &Croquis,
+        source: Option<&str>,
+        preserve_event_navigation: bool,
+    ) -> Self {
+        shadowed_helpers(summary, source, preserve_event_navigation)
     }
 
     pub(crate) fn emit_import_anchors(&self, ts: &mut String) {
@@ -122,11 +127,16 @@ pub(super) fn emit(
     }
 }
 
-fn shadowed_helpers(summary: &Croquis, source: Option<&str>) -> SetupHelperPlan {
+fn shadowed_helpers(
+    summary: &Croquis,
+    source: Option<&str>,
+    preserve_event_navigation: bool,
+) -> SetupHelperPlan {
     let mut plan = SetupHelperPlan {
         shadowed: FxHashSet::default(),
         vue_template_ref_import: false,
         macro_results: Vec::new(),
+        emit_calls: Vec::new(),
     };
     if !SETUP_MACRO_HELPERS
         .iter()
@@ -184,6 +194,15 @@ fn shadowed_helpers(summary: &Croquis, source: Option<&str>) -> SetupHelperPlan 
         }
     }
     plan.macro_results = super::macro_results::collect(&parsed.program, &plan.shadowed, summary);
+    if preserve_event_navigation && parsed.diagnostics.is_empty() && built.diagnostics.is_empty() {
+        plan.emit_calls = super::emit_navigation::collect(
+            &parsed.program,
+            scoping,
+            source,
+            &plan.shadowed,
+            summary,
+        );
+    }
     plan
 }
 

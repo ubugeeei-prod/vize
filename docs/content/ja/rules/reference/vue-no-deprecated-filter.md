@@ -6,6 +6,8 @@ title: "vue/no-deprecated-filter"
 
 Vue 2 の pipe による filter 構文を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+capitalize を適用するために、廃止された filter のパイプ構文を使っています。
+
 ```vue
 <template>
 {{ message | capitalize }}
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+通常の式で capitalize(message) を呼び出します。
 
 ```vue
 <template>

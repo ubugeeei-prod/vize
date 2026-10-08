@@ -4,7 +4,9 @@ title: "script/define-props-destructuring"
 
 # `script/define-props-destructuring`
 
-Enforce consistent style for defineProps destructuring in <script setup>
+Enforce consistent style for defineProps destructuring in &lt;script setup&gt;
+
+[Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
 Presets: _none_  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`defineProps` is assigned to the single `props` binding rather than destructured, contrary to the default destructuring preference.
+
 ```vue
 <script setup lang="ts">
 const props = defineProps<{ foo: string }>()
@@ -42,6 +46,8 @@ const props = defineProps<{ foo: string }>()
 ```
 
 ## Good
+
+The object pattern binds `foo` and `bar` directly and gives the optional `bar` a default. This relies on Vue 3.5+ reactive props destructuring; the configurable `never` mode prefers the opposite form.
 
 ```vue
 <script setup lang="ts">

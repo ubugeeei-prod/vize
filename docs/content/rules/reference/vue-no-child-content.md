@@ -6,6 +6,8 @@ title: "vue/no-child-content"
 
 Disallow child content when using v-html or v-text
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+v-text replaces the paragraph content, so the authored fallback text cannot survive that directive.
+
 ```vue
 <template>
   <p v-text="message">Fallback text</p>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Removing the child text leaves v-text as the single source of paragraph content.
 
 ```vue
 <template>

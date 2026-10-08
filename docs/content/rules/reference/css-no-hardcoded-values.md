@@ -6,6 +6,8 @@ title: "css/no-hardcoded-values"
 
 Suggest using CSS variables instead of hardcoded values
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The button embeds spacing numbers and a hexadecimal color directly in the declarations.
+
 ```vue
 <style scoped>
 .button {
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## Good
+
+The declarations refer to named spacing and color custom properties, so these values can be maintained as tokens.
 
 ```vue
 <style scoped>

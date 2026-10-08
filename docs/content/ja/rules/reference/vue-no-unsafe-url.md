@@ -6,6 +6,8 @@ title: "vue/no-unsafe-url"
 
 危険なスキームになり得る URL 属性やバインディングを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+a の移動先に、実行可能な javascript: のスキームを使っています。
+
 ```vue
 <template>
 <a href="javascript:alert(1)">Continue</a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+実行可能な URL を除き、通常のローカルの移動先 /next に変更します。
 
 ```vue
 <template>

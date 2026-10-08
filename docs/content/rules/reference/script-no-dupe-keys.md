@@ -6,6 +6,8 @@ title: "script/no-dupe-keys"
 
 Disallow duplicate keys across Options API props/data/computed/methods/setup/inject
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`foo` is declared by both props and data, and `bar` by both computed and methods. Those declarations compete for the same component instance keys.
+
 ```vue
 <script lang="ts">
 export default {
@@ -53,6 +57,8 @@ bar() {} // duplicate of computed `bar`
 ```
 
 ## Good
+
+The prop, data, and computed declarations use distinct names (`foo`, `bar`, and `baz`), eliminating both cross-option collisions.
 
 ```vue
 <script lang="ts">

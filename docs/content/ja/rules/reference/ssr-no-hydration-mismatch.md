@@ -6,6 +6,8 @@ title: "ssr/no-hydration-mismatch"
 
 サーバーとクライアントで一致しないテンプレート値を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+テンプレートが描画時に `Math.random()` を評価し、同じ段落でもサーバーとクライアントで異なるテキストになり得ます。
+
 ```vue
 <template>
   <p>{{ Math.random() }}</p>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+新たな乱数ではなく、安定した `seed` の状態を段落に描画します。この Nuxt 形式の例では `useState` が状態を共有し、初期値も定数 `"stable"` です。
 
 ```vue
 <script setup lang="ts">

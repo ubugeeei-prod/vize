@@ -6,6 +6,8 @@ title: "vue/html-quotes"
 
 HTML 属性値の引用符を揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+属性の値にシングルクォートを使うか、クォートを省略しています。
+
 ```vue
 <template>
   <div class='foo'></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+通常の属性とディレクティブの式をダブルクォートで囲みます。
 
 ```vue
 <template>

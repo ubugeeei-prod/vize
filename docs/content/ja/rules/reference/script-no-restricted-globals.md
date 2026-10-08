@@ -6,6 +6,8 @@ title: "script/no-restricted-globals"
 
 設定で禁止した実行環境のグローバル参照を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+既定で制限されるグローバル `process`、`localStorage`、`sessionStorage` を直接参照し、設定やストレージ用の明示的なヘルパーを通していません。
+
 ```vue
 <script setup lang="ts">
 const flag = process.env.FEATURE_FLAG
@@ -44,6 +48,8 @@ sessionStorage.setItem('view.scroll', String(window.scrollY))
 ```
 
 ## 良い
+
+`useFeatureFlag`、`authStorage.read`、`viewStorage.write` に移し、制限対象のグローバルの直接参照を除きます。残る `window.scrollY` はこのルールの既定の制限対象ではなく、SSR の安全性は別途確認が必要です。
 
 ```vue
 <script setup lang="ts">

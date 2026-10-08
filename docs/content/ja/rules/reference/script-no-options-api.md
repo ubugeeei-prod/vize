@@ -6,6 +6,8 @@ title: "script/no-options-api"
 
 Vapor で Options API を使用する箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+default export のオブジェクトに Options API の `data()` を宣言しており、このルールが禁止するコンポーネントオプションの形式です。
+
 ```vue
 <script lang="ts">
 export default {
@@ -46,6 +50,8 @@ export default {
 ```
 
 ## 良い
+
+状態を Vapor の `<script setup>` 内の Composition API `ref` に移し、Options API のオブジェクトと `data` オプションを取り除きます。
 
 ```vue
 <script setup lang="ts" vapor>

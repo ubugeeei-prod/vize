@@ -4,7 +4,9 @@ title: "script/no-export-in-script-setup"
 
 # `script/no-export-in-script-setup`
 
-Disallow export statements inside <script setup>
+Disallow export statements inside &lt;script setup&gt;
+
+[Bad](#bad) · [Good](#good)
 
 Default severity: `error`  
 Presets: _none_  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`export const count` attempts to expose a module export from `<script setup>`, where runtime exports are prohibited.
+
 ```vue
 <script setup lang="ts">
 export const count = 1;
@@ -42,6 +46,8 @@ export const count = 1;
 ```
 
 ## Good
+
+Removing `export` keeps `count` as a setup binding rather than a module export.
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "vue/prefer-true-attribute-shorthand"
 
 true を指定するバインディングを boolean 属性の省略形にします。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+標準の boolean 属性 disabled に、固定の true をバインドしています。
+
 ```vue
 <template>
 <input :disabled="true" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+標準の boolean 属性は省略形にします。false のバインディングやコンポーネントの prop は値を残します。
 
 ```vue
 <template>

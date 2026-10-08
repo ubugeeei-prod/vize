@@ -6,6 +6,8 @@ title: "script/prefer-ref-over-reactive"
 
 状態管理に reactive() より ref() を使う方針を適用します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+状態を `reactive` で作り、この意見を持つルールが推奨する ref を使っていません。これはスタイルの推奨を示す例であり、reactive オブジェクト自体が不正という意味ではありません。
+
 ```vue
 <script setup lang="ts">
 // reactive requires careful handling to avoid losing reactivity
@@ -46,6 +50,8 @@ name: 'foo'
 ```
 
 ## 良い
+
+スカラーとオブジェクトの状態をどちらも `ref` で作ります。関連するフィールドを個別の ref に分ける例も含め、推奨する状態の作成形式にそろえます。
 
 ```vue
 <script setup lang="ts">

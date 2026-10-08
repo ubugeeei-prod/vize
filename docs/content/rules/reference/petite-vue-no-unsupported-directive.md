@@ -6,6 +6,8 @@ title: "petite-vue/no-unsupported-directive"
 
 Disallow directives that petite-vue does not support
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`v-memo`, `v-slot:header`, and the custom `v-my-directive` are absent from petite-vue’s supported directive list. The petite-vue script marks this HTML as the relevant dialect.
+
 ```html
 <!doctype html>
 <html><body>
@@ -46,6 +50,8 @@ vp run lint
 ```
 
 ## Good
+
+The replacement uses supported `v-scope`, `v-effect`, `v-if`, `v-bind`, and `v-on` syntax instead of relying on unsupported directives.
 
 ```html
 <!doctype html>

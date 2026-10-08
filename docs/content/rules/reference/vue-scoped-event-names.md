@@ -6,6 +6,8 @@ title: "vue/scoped-event-names"
 
 Recommend scoped event names using context:event format
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`playAudio`, `pauseAudio`, and `reloadAudio` encode their scope as camel-case suffixes rather than the rule's colon-separated event convention.
+
 ```vue
 <template>
   <AudioPlayer
@@ -46,6 +50,8 @@ vp run lint
 ```
 
 ## Good
+
+`audio:play`, `audio:pause`, and `audio:reload` share an explicit `audio:` scope. The emitting component must use the same names.
 
 ```vue
 <template>

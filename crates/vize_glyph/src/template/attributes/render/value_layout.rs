@@ -2,6 +2,7 @@
 
 use super::{AttributeLayout, ParsedAttribute, write_indent};
 use crate::template::directives::should_format_expression;
+use crate::template::literal_lines::LiteralLineState;
 use unicode_width::UnicodeWidthStr;
 
 pub(super) fn write_overflowing_value(
@@ -15,7 +16,7 @@ pub(super) fn write_overflowing_value(
 ) -> bool {
     if !should_format_expression(&attr.name)
         || attr.name == "v-for"
-        || rendered.contains(['\r', '\n'])
+        || (rendered.contains(['\r', '\n']) && !attr.owns_value_lines)
     {
         return false;
     }
@@ -39,7 +40,7 @@ pub(super) fn write_overflowing_value(
     let column = line.split('\t').map(str::width).sum::<usize>()
         + line.bytes().filter(|byte| *byte == b'\t').count() * indent_width
         + layout.base_depth * indent_width;
-    if column + rendered.width() <= width {
+    if !attr.owns_value_lines && column + rendered.width() <= width {
         return false;
     }
 
@@ -48,9 +49,16 @@ pub(super) fn write_overflowing_value(
     output.extend_from_slice(newline);
     // The existing SFC mask owns all lines after a quote with no same-line
     // value. Emit their final indentation here; its outer writer keeps them raw.
-    write_indent(output, indent, depth + layout.base_depth + 1);
-    output.extend_from_slice(value.as_bytes());
-    output.extend_from_slice(newline);
+    let mut literal = LiteralLineState::rendered();
+    for line in value.split('\n') {
+        let line = line.trim_end_matches('\r');
+        if !literal.line_is_raw() {
+            write_indent(output, indent, depth + layout.base_depth + 1);
+        }
+        output.extend_from_slice(line.as_bytes());
+        output.extend_from_slice(newline);
+        literal.advance_line(line);
+    }
     write_indent(output, indent, depth + layout.base_depth);
     output.push(b'"');
     true

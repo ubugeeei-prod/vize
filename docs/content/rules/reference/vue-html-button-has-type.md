@@ -6,6 +6,8 @@ title: "vue/html-button-has-type"
 
 Require an explicit valid type on button elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+One button omits type and another supplies the unsupported foo type.
+
 ```vue
 <template>
 <button>Click</button>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+Buttons specify button, submit, or reset; a bound type is treated as dynamic.
 
 ```vue
 <template>

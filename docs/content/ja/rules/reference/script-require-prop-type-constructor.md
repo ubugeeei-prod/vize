@@ -6,6 +6,8 @@ title: "script/require-prop-type-constructor"
 
 prop の type に文字列ではなくコンストラクターを指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+props の実行時の型に文字列 `"String"` と `"Number"` を使い、コンストラクターの配列にも文字列を入れています。これらの文字列はコンストラクター関数ではありません。
+
 ```vue
 <script lang="ts">
 export default {
@@ -49,6 +53,8 @@ id: { type: ["String", "Number"] }
 ```
 
 ## 良い
+
+型を実際の `String` と `Number` の識別子にし、共用型の配列も `[String, Number]` に変えます。
 
 ```vue
 <script lang="ts">

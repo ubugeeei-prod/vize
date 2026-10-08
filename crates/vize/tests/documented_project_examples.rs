@@ -24,6 +24,15 @@ fn documented_cli_project_bad_and_good_pairs_match_the_supported_findings() {
             .expect("published rule ID");
         let no_source_finding = page.contains("Current support: `no-source-async-fact`");
         assert_eq!(no_source_finding, id == "vize:croquis/cf/async-no-suspense");
+        let illustrative = page.contains("Example qualification: `illustrative-source-pair`");
+        assert_eq!(
+            illustrative,
+            id == "vize:croquis/cf/circular-reactive-dependency",
+            "only the existing tracked-identity graph example has illustrative source"
+        );
+        if illustrative {
+            continue;
+        }
         if !page.contains("## Shared project files")
             || (!page.contains("vp run lint") && !no_source_finding)
         {

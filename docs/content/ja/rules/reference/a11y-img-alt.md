@@ -6,6 +6,8 @@ title: "a11y/img-alt"
 
 画像に alt 属性を指定します。装飾画像は空の alt を使います。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+アバター画像に `alt` 属性がなく、画像の代替テキストを確認できません。
+
 ```vue
 <template>
   <img src="/avatar.png" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+`alt="User avatar"` で画像の代わりとなる文字を指定します。
 
 ```vue
 <template>

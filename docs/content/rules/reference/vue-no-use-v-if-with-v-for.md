@@ -6,6 +6,8 @@ title: "vue/no-use-v-if-with-v-for"
 
 Disallow using `v-if` on the same element as `v-for`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The same list element combines v-if and v-for and tests visibility through the loop binding.
+
 ```vue
 <template>
   <li v-for="item in items" v-if="item.visible" :key="item.id">
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+A computed collection filters the visible items before the template iterates over them.
 
 ```vue
 <script setup lang="ts">

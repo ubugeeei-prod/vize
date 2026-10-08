@@ -6,6 +6,8 @@ title: "a11y/heading-has-content"
 
 見出しに支援技術で読める内容を用意します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`h2` の見出しレベルはありますが、見出しの内容が空です。
+
 ```vue
 <template>
   <h2></h2>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じ `h2` に `Billing settings` の内容を入れます。
 
 ```vue
 <template>

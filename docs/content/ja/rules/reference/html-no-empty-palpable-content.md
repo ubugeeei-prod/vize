@@ -6,6 +6,8 @@ title: "html/no-empty-palpable-content"
 
 可視コンテンツを期待する要素が空の場合に検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+p、li、td がいずれも空で、意味のある内容がありません。
+
 ```vue
 <template>
   <p></p>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+p は文字、li は補間で内容を入れ、空の td には aria-label で名前を指定します。
 
 ```vue
 <template>
