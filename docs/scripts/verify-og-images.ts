@@ -12,6 +12,14 @@ import { docsSiteUrl, ogHeight, ogWidth, pageRoute, isPageMetadata } from "../th
 import { verifyImageIdentity, verifyImageIdentityControls } from "./og-image-identity.ts";
 import type { RenderedPageMetadata } from "./og-image-identity.ts";
 
+type CheckedPage = Pick<
+  RenderedPageMetadata,
+  "route" | "title" | "descriptionOrigin" | "image" | "imageSha256"
+> & {
+  language: string;
+  width: number;
+  height: number;
+};
 type OgManifest = {
   version: number;
   width: number;
@@ -135,7 +143,7 @@ const browser = await chromium.launch({
   executablePath: resolvePuppeteerExecutablePath(),
   headless: true,
 });
-const checked = [];
+const checked: CheckedPage[] = [];
 const representativeHashes = new Map<string, string>();
 let identityControls: { route: string; foreignRoute: string; rejected: string[] } | undefined;
 try {
@@ -256,17 +264,17 @@ assert.equal(
   "Representative pages must render distinct image bytes; a reused homepage image is invalid",
 );
 for (const route of ["/getting-started/", "/ja/getting-started/"]) {
-  const entry = checked.find((entry) => entry.route === route);
-  assert(entry, `Missing authored guide ${route}`);
-  assert.equal(entry.descriptionOrigin, "authored", route);
+  const guide: CheckedPage | undefined = checked.find((page) => page.route === route);
+  assert(guide, `Missing authored guide ${route}`);
+  assert.equal(guide.descriptionOrigin, "authored", route);
 }
 for (const route of [
   "/rules/reference/vue-component-name-in-template-casing/",
   "/ja/rules/reference/vue-component-name-in-template-casing/",
 ]) {
-  const entry = checked.find((entry) => entry.route === route);
-  assert(entry, `Missing content rule ${route}`);
-  assert.equal(entry.descriptionOrigin, "content", route);
+  const rule: CheckedPage | undefined = checked.find((page) => page.route === route);
+  assert(rule, `Missing content rule ${route}`);
+  assert.equal(rule.descriptionOrigin, "content", route);
 }
 if (values.site) {
   const after: unknown = JSON.parse(await readAsset("_og/manifest.json", true));
