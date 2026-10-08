@@ -27,6 +27,13 @@ Unignored and ignored genuine HTML can both be absent: empty stock output,
 success status or an unrelated Vue positive cannot qualify HTML ignores.
 [1.78 selection order][lint-178]; [1.86 selection order][lint-186].
 
+VCS root filtering differs between these exact hosts. [1.78][lint-178] applies
+`GitignoreChecker::is_gitignored` to every target root, including explicit files.
+[1.86][lint-186] uses `is_gitignored_walk_root`, which filters directory roots
+and retains explicit files; its [shared method and tests][walk-root-186] state that
+distinction. Both retain VCS filtering under `--no-ignore`. One unconditional
+explicit-file bypass cannot preserve both host contracts.
+
 `Walk::with_extensions` is inside private `mod walk`; `config_loader` is
 private too. Inner Rust `pub` items are not externally exported selectors.
 [1.78 exports][lib-178]; [1.86 exports][lib-186]. Published npm exports and
@@ -104,9 +111,11 @@ records, reducing counts or changing batching/instruction controls.
 - Genuine original-path exclusions: VCS, config `ignorePatterns`, CLI patterns,
   `.eslintignore` and custom ignore paths; filename/directory/extension patterns,
   ordered negations and ignored ancestors. Exclude before carrier creation.
-- Explicit gitignored files remain eligible; directory discovery is excluded.
-  `--no-ignore` disables ignore-file/CLI sources while keeping config and VCS
-  discovery filtering. Cover linked worktrees, VCS boundaries, info/exclude,
+- On 1.78, explicitly targeted gitignored files and directory roots are excluded.
+  On 1.86, explicit files remain eligible but gitignored directory roots are
+  excluded. Directory discovery remains VCS-filtered on both. `--no-ignore`
+  disables ignore-file/CLI sources while keeping config and VCS root/discovery
+  filtering. Cover linked worktrees, VCS boundaries, info/exclude,
   hidden files, ignored global/generic ignore sources, minified names, symlinks
   and overlapping targets. Fix behavior to each pinned host. [Ignore contract][ignore-doc].
 - Discovered/explicit root JSON and TS/MTS retain config-relative roots, object
@@ -170,6 +179,7 @@ OXC remain read-only: no comments, changes or fork-publication are authorized.
 [run-186]: https://github.com/oxc-project/oxc/blob/2ae2939bb2fd98796393658b21556b2a2467e047/apps/oxlint/src/run.rs
 [shared-178]: https://github.com/oxc-project/oxc/blob/c42d6397eab5b2d5bb2bd6746c57bc2a9cad21bd/crates/oxc_config/src/lib.rs
 [shared-186]: https://github.com/oxc-project/oxc/blob/2ae2939bb2fd98796393658b21556b2a2467e047/crates/oxc_config/src/lib.rs
+[walk-root-186]: https://github.com/oxc-project/oxc/blob/2ae2939bb2fd98796393658b21556b2a2467e047/crates/oxc_config/src/walk.rs
 [matcher-178]: https://github.com/oxc-project/oxc/blob/c42d6397eab5b2d5bb2bd6746c57bc2a9cad21bd/crates/oxc_linter/src/config/ignore_matcher.rs
 [matcher-186]: https://github.com/oxc-project/oxc/blob/2ae2939bb2fd98796393658b21556b2a2467e047/crates/oxc_linter/src/config/ignore_matcher.rs
 [config-manifest-178]: https://github.com/oxc-project/oxc/blob/c42d6397eab5b2d5bb2bd6746c57bc2a9cad21bd/crates/oxc_config/Cargo.toml
