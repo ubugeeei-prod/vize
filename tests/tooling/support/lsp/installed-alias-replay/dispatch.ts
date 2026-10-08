@@ -21,10 +21,15 @@ export function settlePublication(
       params?.version !== wait.version
     )
       continue;
-    clearTimeout(wait.timer);
-    publications.splice(publications.indexOf(wait), 1);
-    if (Array.isArray(params.diagnostics)) wait.resolve(packet);
-    else {
+    if (Array.isArray(params.diagnostics)) {
+      wait.packets.push(packet);
+      if (wait.packets.length !== wait.count) continue;
+      clearTimeout(wait.timer);
+      publications.splice(publications.indexOf(wait), 1);
+      wait.resolve(wait.packets);
+    } else {
+      clearTimeout(wait.timer);
+      publications.splice(publications.indexOf(wait), 1);
       failures.push("malformed diagnostic publication");
       wait.reject(new InstalledAliasError("malformed diagnostic publication", packet));
     }
@@ -45,8 +50,11 @@ export function settleReply(
   pending.outcome.status = "error" in packet ? "rpc-error" : "response";
   if ("error" in packet) {
     pending.outcome.error = `JSON-RPC error for ${pending.outcome.method}: ${JSON.stringify(packet.error)}`;
-    failures.push(pending.outcome.error);
-    pending.reject(new InstalledAliasError(pending.outcome.error, packet));
+    if (pending.observed) pending.resolve(packet);
+    else {
+      failures.push(pending.outcome.error);
+      pending.reject(new InstalledAliasError(pending.outcome.error, packet));
+    }
   } else if (!("result" in packet)) {
     pending.outcome.status = "malformed-response";
     pending.outcome.error = "response has neither result nor error";
