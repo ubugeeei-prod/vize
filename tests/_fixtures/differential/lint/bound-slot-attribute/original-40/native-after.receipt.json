@@ -1,0 +1,10 @@
+{
+  "sourceRevision": "26e56ac6a0de3f9f838db55bbdb71757317f2435+bound-slot-working-tree",
+  "binarySha256": "84f8dda3dfec768bbeca8ef4b4301d11ae89987fe31f8dcc934314f938ef7e66",
+  "driverSha256": "366afe6f130cdbd386cbc705ce0bfd6a8caa35d0b643aaab5321651075c4f767",
+  "ruleSourceSha256": "d5471c1b9777b9d7d2c03017194bfede193db867888cdc4a64c8cb3d682e07f8",
+  "status": 0,
+  "inputSha256": "6871d9b2dda202a9b4507f10599217d453a5c5b07fd072a7135b9ca7549ad04d",
+  "rawSha256": "c19963c193ed3c4b1e9b6d8543de9bf9e18b47685067d728018600ae4af5f9eb",
+  "scope": "Actual26e56 + focused working-tree producer with parsed-argument/modifier key span; sourceAPI only, no committed-head/CLI/public/performance credit"
+}

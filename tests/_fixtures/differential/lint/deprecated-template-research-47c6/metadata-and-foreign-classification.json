@@ -1,0 +1,183 @@
+{
+  "executionReceiptSha256": "c3d7f427ba02275266b7c526b2e12fb954246fbe533d1f05e674f7a91eeafabf",
+  "statusVerified": true,
+  "sourceRevision": "47c6f998d49cd6c7b790550098b3378639b949f7",
+  "totalCases": 118,
+  "completeBothPositiveCases": 56,
+  "alignedTargetRangeDifferenceCases": [
+    "functional-template--boolean--scripted",
+    "functional-template--boolean--scriptless",
+    "functional-template--literal-false--scripted",
+    "functional-template--literal-false--scriptless",
+    "router-link-tag-prop--pascal-literal--scripted",
+    "router-link-tag-prop--pascal-literal--scriptless",
+    "router-link-tag-prop--kebab-bound--scripted",
+    "router-link-tag-prop--kebab-bound--scriptless",
+    "router-link-tag-prop--pascal-long-bound--scripted",
+    "router-link-tag-prop--pascal-long-bound--scriptless",
+    "scope-attribute--template-scope--scripted",
+    "scope-attribute--template-scope--scriptless",
+    "slot-scope-attribute--template--scripted",
+    "slot-scope-attribute--template--scriptless",
+    "slot-scope-attribute--native-child--scripted",
+    "slot-scope-attribute--native-child--scriptless",
+    "v-bind-sync--component-short--scripted",
+    "v-bind-sync--component-short--scriptless",
+    "v-bind-sync--native-long--scripted",
+    "v-bind-sync--native-long--scriptless",
+    "v-bind-sync--object--scripted",
+    "v-bind-sync--object--scriptless",
+    "v-bind-sync--dynamic-argument--scripted",
+    "v-bind-sync--dynamic-argument--scriptless",
+    "v-bind-sync--mixed-modifiers--scripted",
+    "v-bind-sync--mixed-modifiers--scriptless"
+  ],
+  "providerFixNativeMissingCases": [
+    "scope-attribute--template-scope--scripted",
+    "scope-attribute--template-scope--scriptless",
+    "slot-attribute--native-child-literal--scripted",
+    "slot-attribute--native-child-literal--scriptless",
+    "slot-attribute--template-literal--scripted",
+    "slot-attribute--template-literal--scriptless",
+    "slot-scope-attribute--template--scripted",
+    "slot-scope-attribute--template--scriptless",
+    "slot-scope-attribute--native-child--scripted",
+    "slot-scope-attribute--native-child--scriptless",
+    "v-bind-sync--component-short--scripted",
+    "v-bind-sync--component-short--scriptless",
+    "v-bind-sync--native-long--scripted",
+    "v-bind-sync--native-long--scriptless",
+    "v-bind-sync--dynamic-argument--scripted",
+    "v-bind-sync--dynamic-argument--scriptless",
+    "v-on-number-modifiers--known-code-13--scripted",
+    "v-on-number-modifiers--known-code-13--scriptless",
+    "v-on-number-modifiers--known-code-27--scripted",
+    "v-on-number-modifiers--known-code-27--scriptless",
+    "v-on-number-modifiers--dynamic-argument--scripted",
+    "v-on-number-modifiers--dynamic-argument--scriptless"
+  ],
+  "foreignIdentityDifferenceCases": [
+    {
+      "id": "html-element-is--html-literal--scripted",
+      "native": [],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "html-element-is--html-literal--scriptless",
+      "native": [],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "html-element-is--svg-literal--scripted",
+      "native": [],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "html-element-is--svg-literal--scriptless",
+      "native": [],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "html-element-is--math-literal--scripted",
+      "native": [
+        "vue/component-name-in-template-casing",
+        "vue/component-name-in-template-casing"
+      ],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "html-element-is--math-literal--scriptless",
+      "native": [
+        "vue/component-name-in-template-casing",
+        "vue/component-name-in-template-casing"
+      ],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "html-element-is--vue-prefix--scripted",
+      "native": [],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "html-element-is--vue-prefix--scriptless",
+      "native": [],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "html-element-is--custom-element--scripted",
+      "native": [
+        "vue/require-component-registration",
+        "vue/component-name-in-template-casing"
+      ],
+      "provider": [
+        "vue/no-undef-components",
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "html-element-is--custom-element--scriptless",
+      "native": [
+        "vue/require-component-registration",
+        "vue/component-name-in-template-casing"
+      ],
+      "provider": [
+        "vue/no-undef-components",
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "router-link-tag-prop--pascal-literal--scriptless",
+      "native": [],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "router-link-tag-prop--kebab-bound--scriptless",
+      "native": [
+        "vue/component-name-in-template-casing"
+      ],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "router-link-tag-prop--pascal-long-bound--scriptless",
+      "native": [],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "router-link-tag-prop--absent--scriptless",
+      "native": [],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    },
+    {
+      "id": "router-link-tag-prop--dynamic-argument--scriptless",
+      "native": [],
+      "provider": [
+        "vue/no-undef-components"
+      ]
+    }
+  ],
+  "note": "These named metadata/foreign identity differences are observations only; no field is removed from raw or combined whole packets. Full51 parity remains unqualified."
+}

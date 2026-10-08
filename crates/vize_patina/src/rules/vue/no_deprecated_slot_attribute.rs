@@ -16,6 +16,7 @@
 //! <template>
 //!   <Foo>
 //!     <template slot="header"><h1>Title</h1></template>
+//!     <div :slot="name">Title</div>
 //!   </Foo>
 //! </template>
 //! ```
@@ -33,7 +34,7 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
-use vize_relief::{ElementNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, SourceLocation};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-deprecated-slot-attribute",
@@ -68,6 +69,39 @@ impl Rule for NoDeprecatedSlotAttribute {
                 );
             }
         }
+    }
+
+    fn check_directive<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        _element: &ElementNode<'a>,
+        directive: &DirectiveNode<'a>,
+    ) {
+        if ctx.dialect() != VueDialect::Vue || directive.name != "bind" {
+            return;
+        }
+        let Some(ExpressionNode::Simple(argument)) = &directive.arg else {
+            return;
+        };
+        if !argument.is_static || argument.content != "slot" {
+            return;
+        }
+
+        // Report the authored directive key, including its prefix/modifiers.
+        // Dot shorthand has a synthesized prop modifier at the prefix only.
+        // Computed arguments and object bindings do not identify a slot key.
+        let start = directive.loc.span.start;
+        let end = directive
+            .modifiers
+            .last()
+            .map_or(argument.loc.span.end, |modifier| {
+                argument.loc.span.end.max(modifier.loc.span.end)
+            });
+        ctx.error_with_help(
+            ctx.t("vue/no-deprecated-slot-attribute.message"),
+            &SourceLocation::new(start, end),
+            ctx.t("vue/no-deprecated-slot-attribute.help"),
+        );
     }
 }
 

@@ -1,0 +1,220 @@
+{
+  "schema": "vize.n8n.deprecated-template-whole-packet-research",
+  "version": 1,
+  "sourceRevision": "47c6f998d49cd6c7b790550098b3378639b949f7",
+  "cases": 118,
+  "providerWholeCaptures": 236,
+  "nativeWholeCaptures": 236,
+  "providerRules": 51,
+  "mandatoryVueInfrastructureRules": 2,
+  "providerErrors": 0,
+  "providerFatalErrors": 0,
+  "providerRepeatDifferences": 0,
+  "nativeRepeatDifferences": 0,
+  "matrix": [
+    {
+      "rule": "vue/no-deprecated-functional-template",
+      "cases": 10,
+      "providerPositive": 4,
+      "providerTargetClean": 6,
+      "nativePositive": 4,
+      "nativeTargetClean": 6,
+      "providerOnly": [],
+      "nativeOnly": [],
+      "targetCardinalityDiffers": [],
+      "foreignNativeCases": 0,
+      "foreignProviderCases": 0
+    },
+    {
+      "rule": "vue/no-deprecated-html-element-is",
+      "cases": 16,
+      "providerPositive": 8,
+      "providerTargetClean": 8,
+      "nativePositive": 8,
+      "nativeTargetClean": 8,
+      "providerOnly": [
+        "html-element-is--html-bound--scripted",
+        "html-element-is--html-bound--scriptless"
+      ],
+      "nativeOnly": [
+        "html-element-is--custom-element--scripted",
+        "html-element-is--custom-element--scriptless"
+      ],
+      "targetCardinalityDiffers": [],
+      "foreignNativeCases": 4,
+      "foreignProviderCases": 10
+    },
+    {
+      "rule": "vue/no-deprecated-inline-template",
+      "cases": 8,
+      "providerPositive": 4,
+      "providerTargetClean": 4,
+      "nativePositive": 4,
+      "nativeTargetClean": 4,
+      "providerOnly": [],
+      "nativeOnly": [],
+      "targetCardinalityDiffers": [],
+      "foreignNativeCases": 3,
+      "foreignProviderCases": 3
+    },
+    {
+      "rule": "vue/no-deprecated-router-link-tag-prop",
+      "cases": 12,
+      "providerPositive": 6,
+      "providerTargetClean": 6,
+      "nativePositive": 6,
+      "nativeTargetClean": 6,
+      "providerOnly": [],
+      "nativeOnly": [],
+      "targetCardinalityDiffers": [],
+      "foreignNativeCases": 3,
+      "foreignProviderCases": 7
+    },
+    {
+      "rule": "vue/no-deprecated-scope-attribute",
+      "cases": 8,
+      "providerPositive": 2,
+      "providerTargetClean": 6,
+      "nativePositive": 2,
+      "nativeTargetClean": 6,
+      "providerOnly": [],
+      "nativeOnly": [],
+      "targetCardinalityDiffers": [],
+      "foreignNativeCases": 3,
+      "foreignProviderCases": 3
+    },
+    {
+      "rule": "vue/no-deprecated-slot-attribute",
+      "cases": 10,
+      "providerPositive": 8,
+      "providerTargetClean": 2,
+      "nativePositive": 6,
+      "nativeTargetClean": 4,
+      "providerOnly": [
+        "slot-attribute--bound-child--scripted",
+        "slot-attribute--bound-child--scriptless"
+      ],
+      "nativeOnly": [],
+      "targetCardinalityDiffers": [],
+      "foreignNativeCases": 4,
+      "foreignProviderCases": 4
+    },
+    {
+      "rule": "vue/no-deprecated-slot-scope-attribute",
+      "cases": 8,
+      "providerPositive": 4,
+      "providerTargetClean": 4,
+      "nativePositive": 4,
+      "nativeTargetClean": 4,
+      "providerOnly": [],
+      "nativeOnly": [],
+      "targetCardinalityDiffers": [],
+      "foreignNativeCases": 4,
+      "foreignProviderCases": 4
+    },
+    {
+      "rule": "vue/no-deprecated-v-bind-sync",
+      "cases": 16,
+      "providerPositive": 10,
+      "providerTargetClean": 6,
+      "nativePositive": 10,
+      "nativeTargetClean": 6,
+      "providerOnly": [],
+      "nativeOnly": [],
+      "targetCardinalityDiffers": [],
+      "foreignNativeCases": 6,
+      "foreignProviderCases": 6
+    },
+    {
+      "rule": "vue/no-deprecated-v-on-native-modifier",
+      "cases": 12,
+      "providerPositive": 6,
+      "providerTargetClean": 6,
+      "nativePositive": 6,
+      "nativeTargetClean": 6,
+      "providerOnly": [],
+      "nativeOnly": [],
+      "targetCardinalityDiffers": [],
+      "foreignNativeCases": 4,
+      "foreignProviderCases": 4
+    },
+    {
+      "rule": "vue/no-deprecated-v-on-number-modifiers",
+      "cases": 18,
+      "providerPositive": 10,
+      "providerTargetClean": 8,
+      "nativePositive": 14,
+      "nativeTargetClean": 4,
+      "providerOnly": [
+        "v-on-number-modifiers--numeric-prefix-13x--scripted",
+        "v-on-number-modifiers--numeric-prefix-13x--scriptless"
+      ],
+      "nativeOnly": [
+        "v-on-number-modifiers--digit-0--scripted",
+        "v-on-number-modifiers--digit-0--scriptless",
+        "v-on-number-modifiers--digit-9--scripted",
+        "v-on-number-modifiers--digit-9--scriptless",
+        "v-on-number-modifiers--first-digit-0-followed-13--scripted",
+        "v-on-number-modifiers--first-digit-0-followed-13--scriptless"
+      ],
+      "targetCardinalityDiffers": [],
+      "foreignNativeCases": 0,
+      "foreignProviderCases": 0
+    }
+  ],
+  "providerRawSha256": "95d4948584ff74e0b937f113699a47a765cca75bb2646fe7ca5ced1f47083d13",
+  "nativeRawSha256": "25a9f91e4b952dbe2fbdaf7e530e54de41aeb3aff13d3d43e4557f9b40d87ac9",
+  "observerCustody": {
+    "receiptPath": "/tmp/vize-n8n-next-semantic-gap-20261008/research-47c6/receipt.json",
+    "receiptSha256": "8ca276d3cad3383f8061b85e1a7a8b44cfddc307928dfb6d71865d7d4cea74eb",
+    "sourceRevision": "47c6f998d49cd6c7b790550098b3378639b949f7",
+    "sourceTree": "6140f34b3e3479b6ab02be574b36078467ce5af7",
+    "checkedFiles": [
+      "n8n_source_research_47c6.rs",
+      "parser-input.json",
+      "config.json",
+      "environment-before.json",
+      "smoke-stderr.txt",
+      "parser-stdout.txt",
+      "source-files-before.json",
+      "smoke-input.json",
+      "parser-output.json",
+      "smoke-output.json",
+      "n8n_source_research_47c6",
+      "source-files-after.json",
+      "smoke-stdout.txt",
+      "parser-stderr.txt",
+      "build.log"
+    ],
+    "sourceFileCount": 10178,
+    "sourceInventoryBeforeAfterEqual": true,
+    "sourceDefinitionChecks": {
+      "crates/vize_patina/src/diagnostic/types.rs": {
+        "gitBlob": "ee72cda3f3047fd84b22f34ac7d67e196e2d665a",
+        "sha256": "a47ef156ff0078b7a4e873a68fc239550ff28ba1faa40ad0d665043cab45a040"
+      },
+      "crates/vize_patina/src/linter/config.rs": {
+        "gitBlob": "26a426ba6c026ec0e25c454c85bf9d3b28653044",
+        "sha256": "08c7bece87e46b927f550b8b0b503af83da19f1de989ad1a34b044605dedb568"
+      },
+      "crates/vize_patina/src/linter.rs": {
+        "gitBlob": "45df18015bd15d0a7c01056a95e7947bc1c9035a",
+        "sha256": "bcb691653e788b6e9c851b31a0936a2943daeba386e3c0bdd6e4c357ca7c906b"
+      },
+      "crates/vize_patina/src/rules/vue/no_deprecated_html_element_is.rs": {
+        "gitBlob": "d13e18bb70475b9a48a860c1d18ca88fbb7c5e16",
+        "sha256": "62ddb4aab73ca57d12dd55b2a62445d474d2c1fd48403c00adf729d7d2c6d5df"
+      },
+      "crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs": {
+        "gitBlob": "f37d7124f63d45cf5f9d9caf5e763af3051bd908",
+        "sha256": "5eb4d4d850d86f6d7abf894a88b005bed8db5695382706f0d163005095dc87ea"
+      }
+    },
+    "driverSha256": "54b71b1988911bf1f4a5cab081389b813355212fc8b91b14d644dcc746017003",
+    "binarySha256": "e78028b4c31709037f85edf1d053f7d69974b2be4117ec788836eca3c3a6fdc7",
+    "driverEnvelopeAudit": "Compared committed LintResult and LintDiagnostic/Label/Fix/TextEdit definitions with retained complete() serializer. Every data field is retained. Enabled rules are complete51 with no findings/status selection; exact3 options and HelpLevel::Full, complete observations persist twice with partial output before calls.",
+    "configIdentityVerified": true,
+    "qualification": "Retained committed47c6 source API research only; current-main/CLI/installed/hosted/protected/performance unfinished."
+  },
+  "qualification": "Independent minimal owned source observations at retained committed47c6 source API. All full native/provider packet fields and foreign findings preserved. No whole native/provider packet equality, full51 semantic parity, current-main, CLI, installed product, real project adoption or performance credit."
+}

@@ -3938,6 +3938,7 @@ vue/no-deprecated-slot-attribute · lint ルール
   <template>
     <Foo>
       <template slot="header"><h1>Title</h1></template>
+      <div :slot="name">Title</div>
     </Foo>
   </template>
 

@@ -43,6 +43,7 @@ vp run lint
 <template>
 <Foo>
 <template slot="header"><h1>Title</h1></template>
+<div :slot="name">Title</div>
 </Foo>
 </template>
 ```
@@ -61,4 +62,4 @@ vp run lint
 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L38) · [全ルール](../all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) · [全ルール](../all.md)
