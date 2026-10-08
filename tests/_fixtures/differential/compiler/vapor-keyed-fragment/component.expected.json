@@ -1,0 +1,101 @@
+[
+  {
+    "tree": [
+      {
+        "tag": "button",
+        "attributes": {},
+        "children": [
+          "reset"
+        ],
+        "disabled": false
+      },
+      {
+        "tag": "i",
+        "attributes": {},
+        "children": [
+          "0"
+        ]
+      }
+    ],
+    "same": true,
+    "setups": 1,
+    "disposed": 0,
+    "diagnostics": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "button",
+        "attributes": {},
+        "children": [
+          "reset"
+        ],
+        "disabled": false
+      },
+      {
+        "tag": "i",
+        "attributes": {},
+        "children": [
+          "1"
+        ]
+      }
+    ],
+    "same": true,
+    "setups": 1,
+    "disposed": 0,
+    "diagnostics": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "button",
+        "attributes": {},
+        "children": [
+          "reset"
+        ],
+        "disabled": false
+      },
+      {
+        "tag": "i",
+        "attributes": {},
+        "children": [
+          "0"
+        ]
+      }
+    ],
+    "same": false,
+    "setups": 2,
+    "disposed": 1,
+    "diagnostics": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "button",
+        "attributes": {},
+        "children": [
+          "reset"
+        ],
+        "disabled": false
+      },
+      {
+        "tag": "i",
+        "attributes": {},
+        "children": [
+          "1"
+        ]
+      }
+    ],
+    "same": true,
+    "setups": 2,
+    "disposed": 1,
+    "diagnostics": []
+  },
+  {
+    "tree": [],
+    "same": false,
+    "setups": 2,
+    "disposed": 2,
+    "diagnostics": []
+  }
+]

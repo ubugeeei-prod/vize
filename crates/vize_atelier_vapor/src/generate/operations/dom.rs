@@ -67,8 +67,11 @@ pub(crate) fn set_prop_call(
         ("setClass", call("_setClass", None, ""))
     } else if *key == "style" {
         ("setStyle", call("_setStyle", None, ""))
-    } else if *key == "value" && set_prop.tag == "option" && !set_prop.prop_modifier {
-        // Select models read the option's raw `_value`, not its DOM string.
+    } else if *key == "value"
+        && matches!(set_prop.tag, "input" | "option")
+        && !set_prop.prop_modifier
+    {
+        // Input values also retain their default attribute; options retain `_value`.
         ("setValue", call("_setValue", None, ""))
     } else if set_prop.prop_modifier {
         ("setDOMProp", call("_setDOMProp", Some(&named), ""))

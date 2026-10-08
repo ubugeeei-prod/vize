@@ -8,30 +8,50 @@ use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::Span;
 use vize_carton::ensure_sufficient_stack;
 
+mod attributes;
+pub(in crate::lower) use attributes::RootAttributes;
 mod writer;
 use writer::{LeadingNewlineWriter, TemplateWriter};
 
-/// Generate element template string (recursively includes static children)
+/// Generate an element template from its already-classified root key scope.
 #[inline(always)]
-pub(crate) fn generate_element_template(
-    el: &ElementNode<'_>,
+pub(in crate::lower) fn generate_element_template(
+    root: RootAttributes<'_, '_>,
     scope_id: Option<&str>,
     source: &str,
 ) -> String {
     let mut template = String::default();
-    write_element_template(&mut template, el, scope_id, source);
+    let el = root.owner();
+    let non_reactive = root.non_reactive();
+    write_element_template(
+        &mut template,
+        el,
+        scope_id,
+        source,
+        non_reactive,
+        Some(root),
+    );
     template
 }
 
 /// [`generate_element_template`] linking the tag names, static attributes and
 /// text it copies to their authored ranges (Davinci P3-9); identical bytes.
-pub(crate) fn generate_element_template_spanned(
-    el: &ElementNode<'_>,
+pub(in crate::lower) fn generate_element_template_spanned(
+    root: RootAttributes<'_, '_>,
     scope_id: Option<&str>,
     source: &str,
 ) -> EmitDocument {
     let mut template = EmitDocument::default();
-    write_element_template(&mut template, el, scope_id, source);
+    let el = root.owner();
+    let non_reactive = root.non_reactive();
+    write_element_template(
+        &mut template,
+        el,
+        scope_id,
+        source,
+        non_reactive,
+        Some(root),
+    );
     template
 }
 
@@ -40,7 +60,12 @@ fn write_element_template(
     el: &ElementNode<'_>,
     scope_id: Option<&str>,
     source: &str,
+    non_reactive: bool,
+    root: Option<RootAttributes<'_, '_>>,
 ) {
+    // Root facts came from its actual lowering walk. Recursion still owns
+    // each child's once/memo derivation and never broadens the lower's context.
+    let mut non_reactive = non_reactive;
     template.push_str("<");
     let tag_start = el.loc.span.start + 1;
     template.push_linked(
@@ -53,63 +78,7 @@ fn write_element_template(
     }
 
     if !el.props.is_empty() {
-        // Collect dynamic binding names to skip their static counterparts
-        let mut has_static_attr = false;
-        let dynamic_attrs: vize_carton::FxHashSet<&str> =
-            if matches!(el.props.as_slice(), [PropNode::Attribute(_)]) {
-                has_static_attr = true;
-                vize_carton::FxHashSet::default()
-            } else {
-                el.props
-                    .iter()
-                    .filter_map(|p| match p {
-                        PropNode::Attribute(_) => {
-                            has_static_attr = true;
-                            None
-                        }
-                        PropNode::Directive(dir) if dir.name == "bind" => match dir.arg.as_ref() {
-                            Some(ExpressionNode::Simple(key)) => Some(key.content),
-                            _ => None,
-                        },
-                        _ => None,
-                    })
-                    .collect()
-            };
-
-        // Add static attributes (skip those overridden by dynamic bindings).
-        // This result depends only on the unchanged props. The first pass above
-        // avoids computing it for elements without static attributes.
-        let uses_computed = has_static_attr
-            && !dynamic_attrs.is_empty()
-            && super::super::merged_props::uses_computed_props(el);
-        for prop in el.props.iter() {
-            if let PropNode::Attribute(attr) = prop {
-                if uses_computed || is_runtime_only_attr(attr.name) {
-                    continue;
-                }
-                if dynamic_attrs.contains(attr.name) {
-                    continue;
-                }
-                template.push_str(" ");
-                template.push_linked(attr.name, attr.name_loc.span);
-                if let Some(ref value) = attr.value {
-                    template.push_str("=\"");
-                    // Verbatim double-quoted values can retain their authored HTML.
-                    // Decoded or synthesized values need escaping before HTML reparses
-                    // them; single/unquoted values also need quote normalization.
-                    let start = value.loc.span.start as usize;
-                    if value.content.as_ptr() != source.as_ptr().wrapping_add(start)
-                        || value.content.len() != value.loc.span.len() as usize
-                        || source.as_bytes().get(start.wrapping_sub(1)) != Some(&b'"')
-                    {
-                        template.push_linked(&escape_html_text(value.content), value.loc.span);
-                    } else {
-                        template.push_linked(value.content, value.loc.span);
-                    }
-                    template.push_str("\"");
-                }
-            }
-        }
+        attributes::write_attributes(template, el, source, &mut non_reactive, root);
     }
 
     if is_void_element(el.tag) {
@@ -125,7 +94,7 @@ fn write_element_template(
         // transparent wrapper in Vapor just as it is in the main element
         // dispatcher, so its children contribute directly to the enclosing
         // element's static template instead of producing a component lookup.
-        let placeholders = super::insertion::block_placeholders(&el.children);
+        let placeholders = super::insertion::block_placeholders(&el.children, non_reactive);
         let mut placeholders = placeholders.into_iter();
         if el.ns == vize_atelier_core::Namespace::Html && matches!(el.tag, "pre" | "textarea") {
             let mut children = LeadingNewlineWriter {
@@ -137,10 +106,18 @@ fn write_element_template(
                 &el.children,
                 scope_id,
                 source,
+                non_reactive,
                 &mut placeholders,
             );
         } else {
-            append_child_templates(template, &el.children, scope_id, source, &mut placeholders);
+            append_child_templates(
+                template,
+                &el.children,
+                scope_id,
+                source,
+                non_reactive,
+                &mut placeholders,
+            );
         }
 
         template.push_str("</");
@@ -154,6 +131,7 @@ fn append_child_templates(
     children: &[TemplateChildNode<'_>],
     scope_id: Option<&str>,
     source: &str,
+    non_reactive: bool,
     placeholders: &mut std::vec::IntoIter<bool>,
 ) {
     for child in children {
@@ -171,13 +149,16 @@ fn append_child_templates(
                         &child_el.children,
                         scope_id,
                         source,
+                        super::super::key::is_non_reactive(child_el, non_reactive),
                         placeholders,
                     )
                 });
             }
-            TemplateChildNode::Element(child_el) if is_template_backed_element(child_el) => {
+            TemplateChildNode::Element(child_el)
+                if is_template_backed_element(child_el, non_reactive) =>
+            {
                 ensure_sufficient_stack(|| {
-                    write_element_template(template, child_el, scope_id, source)
+                    write_element_template(template, child_el, scope_id, source, non_reactive, None)
                 });
             }
             // Only a block followed by template-rendered siblings keeps its
@@ -226,7 +207,6 @@ pub(crate) fn is_static_element(el: &ElementNode<'_>) -> bool {
         }
     }
 
-    // Check if any child is dynamic
     for child in el.children.iter() {
         match child {
             TemplateChildNode::Interpolation(_) => return false,
@@ -243,8 +223,9 @@ pub(crate) fn is_static_element(el: &ElementNode<'_>) -> bool {
     true
 }
 
-pub(super) fn is_template_backed_element(el: &ElementNode<'_>) -> bool {
+pub(super) fn is_template_backed_element(el: &ElementNode<'_>, non_reactive: bool) -> bool {
     matches!(el.tag_type, ElementType::Element)
+        && super::super::key::value(el, non_reactive).is_none()
 }
 
 pub(super) fn transform_template_ref<'a>(
@@ -331,3 +312,6 @@ fn is_void_element(tag: &str) -> bool {
             | "wbr"
     )
 }
+
+#[cfg(test)]
+mod facts_tests;

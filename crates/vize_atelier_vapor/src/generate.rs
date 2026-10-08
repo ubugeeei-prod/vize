@@ -9,6 +9,7 @@ mod expression_retained;
 mod helpers;
 mod names;
 mod operations;
+mod root_key;
 mod setup;
 pub(crate) mod spans;
 
@@ -46,6 +47,7 @@ fn operation_has_template_refs(op: &OperationNode<'_>) -> bool {
                     .is_some_and(negative_branch_has_template_refs)
         }
         OperationNode::For(for_node) => block_has_template_refs(&for_node.render),
+        OperationNode::Key(node) => block_has_template_refs(&node.render),
         OperationNode::CreateComponent(component) => component
             .slots
             .iter()
@@ -134,6 +136,7 @@ fn collect_custom_directives_from_operation(
         OperationNode::For(for_node) => {
             collect_custom_directives_from_block(&for_node.render, directives);
         }
+        OperationNode::Key(node) => collect_custom_directives_from_block(&node.render, directives),
         OperationNode::CreateComponent(component) => {
             collect_custom_directives_from_component(component, directives);
         }
@@ -262,6 +265,7 @@ fn returned_root_operation_id(op: &OperationNode<'_>) -> Option<usize> {
         OperationNode::SlotOutlet(node) if node.parent.is_none() => Some(node.id),
         OperationNode::If(node) if node.parent.is_none() => Some(node.id),
         OperationNode::For(node) if node.parent.is_none() => Some(node.id),
+        OperationNode::Key(node) if node.parent.is_none() => Some(node.id),
         _ => None,
     }
 }

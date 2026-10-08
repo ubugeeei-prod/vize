@@ -4,7 +4,9 @@ use super::types::{InjectInfo, ProvideInfo, ProvideInjectBranch, ProvideInjectTr
 use crate::registry::{FileId, ModuleRegistry};
 use std::hash::Hash;
 use vize_carton::{FxHashMap, FxHashSet};
-use vize_croquis::provide::{InjectEntry, ProvideEntry, ProvideKey};
+use vize_croquis::provide::ProvideKey;
+
+type ExpandedContext<K> = (FileId, Vec<(K, FileId)>, Option<Vec<FileId>>);
 
 pub(crate) fn build_provide_inject_tree_with_index(
     registry: &ModuleRegistry,
@@ -30,7 +32,10 @@ pub(crate) fn build_provide_inject_tree_with_index(
     let mut child_map: FxHashMap<FileId, Vec<FileId>> = FxHashMap::default();
     let mut nodes_with_parent = FxHashSet::default();
 
-    for &(parent, child) in edges {
+    // Key-specific matches share one runtime slot ancestry in the displayed
+    // tree. Do not show the same consumer with different keys falsely missing.
+    let edges = index.tree_edges(edges);
+    for &(parent, child) in edges.iter() {
         included_nodes.insert(parent);
         included_nodes.insert(child);
         child_map.entry(parent).or_default().push(child);
@@ -115,11 +120,11 @@ fn build_roots<'a, K: Copy + Eq + Hash + Ord>(
                 file_id,
                 registry,
                 child_map,
-                index.provides(),
-                index.injects(),
+                index,
                 consumer_counts,
                 &FxHashMap::default(),
                 &mut active_nodes,
+                &mut Vec::new(),
                 &mut expanded,
                 !nodes_with_parent.contains(&file_id),
                 key_identity,
@@ -133,16 +138,19 @@ fn build_node<'a, K: Copy + Eq + Hash + Ord>(
     file_id: FileId,
     registry: &ModuleRegistry,
     child_map: &FxHashMap<FileId, Vec<FileId>>,
-    provides_map: &'a FxHashMap<FileId, Vec<ProvideEntry>>,
-    injects_map: &'a FxHashMap<FileId, Vec<InjectEntry>>,
+    index: &'a ProvideInjectIndex,
     consumer_counts: &FxHashMap<(FileId, u32), usize>,
     active_providers: &FxHashMap<K, FileId>,
     active_nodes: &mut FxHashSet<FileId>,
-    expanded: &mut FxHashSet<(FileId, Vec<(K, FileId)>)>,
+    ancestry: &mut Vec<FileId>,
+    expanded: &mut FxHashSet<ExpandedContext<K>>,
     show_injects: bool,
     key_identity: &impl Fn(&'a ProvideKey) -> K,
 ) -> ProvideNode {
     active_nodes.insert(file_id);
+    ancestry.push(file_id);
+    let provides_map = index.provides();
+    let injects_map = index.injects();
 
     let component_name = registry.get(file_id).and_then(|e| e.component_name.clone());
 
@@ -207,22 +215,25 @@ fn build_node<'a, K: Copy + Eq + Hash + Ord>(
     // Repeated render paths in the same context retain the node but refer to
     // the already-expanded descendants instead of copying them exponentially.
     let mut children = Vec::new();
-    if expanded.insert((file_id, provider_context))
+    let slot_context = index.tree_receiver(file_id).then(|| ancestry.clone());
+    if expanded.insert((file_id, provider_context, slot_context))
         && let Some(child_ids) = child_map.get(&file_id)
     {
         for &child_id in child_ids {
-            if active_nodes.contains(&child_id) {
+            if active_nodes.contains(&child_id)
+                || !index.tree_edge_visible(file_id, child_id, ancestry)
+            {
                 continue;
             }
             let child_node = build_node(
                 child_id,
                 registry,
                 child_map,
-                provides_map,
-                injects_map,
+                index,
                 consumer_counts,
                 &child_providers,
                 active_nodes,
+                ancestry,
                 expanded,
                 true,
                 key_identity,
@@ -232,6 +243,7 @@ fn build_node<'a, K: Copy + Eq + Hash + Ord>(
     }
 
     active_nodes.remove(&file_id);
+    ancestry.pop();
 
     ProvideNode {
         file_id,

@@ -89,6 +89,7 @@ tests/_fixtures/differential/formatter-regressions/hugged-interpolation-indent-7
 # Whole #7876 directive-width inputs and references retain authored LF/CRLF.
 tests/_fixtures/differential/formatter-regressions/directive-print-width-7876/** -text whitespace=cr-at-eol
 tests/_fixtures/differential/formatter/sfc-directive-prefix-print-width/** -text whitespace=cr-at-eol
+tests/_fixtures/differential/formatter-regressions/continuation-prefix-width-7876/** -text whitespace=cr-at-eol
 
 # Original #8015 SFC and Issue inputs retain authored checkout bytes.
 tests/_fixtures/differential/lsp/template-expression-globals-8015/** -text whitespace=cr-at-eol

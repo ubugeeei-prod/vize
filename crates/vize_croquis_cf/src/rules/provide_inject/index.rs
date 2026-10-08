@@ -7,8 +7,12 @@ use std::cmp::Ordering;
 use vize_carton::{FxHashMap, FxHashSet};
 use vize_croquis::provide::{InjectEntry, ProvideEntry, ProvideKey};
 
+mod calls;
+mod frames;
+use calls::{extract_provide_inject, matching_provider};
 mod parents;
-use parents::{runtime_component_parents, stable_file_order, stable_rank};
+use frames::{frame_contains, path_from_frame};
+use parents::{SlotScopes, runtime_component_parents, stable_file_order, stable_rank};
 
 #[derive(Debug)]
 pub(crate) struct ProvideInjectIndex {
@@ -16,6 +20,7 @@ pub(crate) struct ProvideInjectIndex {
     injects: FxHashMap<FileId, Vec<InjectEntry>>,
     reactive_provides: FxHashSet<(FileId, u32)>,
     component_parents: FxHashMap<FileId, Vec<FileId>>,
+    slot_scopes: SlotScopes,
     stable_file_order: FxHashMap<FileId, usize>,
 }
 
@@ -86,13 +91,15 @@ impl ProvideInjectIndex {
         }
 
         let stable_file_order = stable_file_order(registry);
-        let component_parents = runtime_component_parents(registry, graph, &stable_file_order);
+        let (component_parents, slot_scopes) =
+            runtime_component_parents(registry, graph, &stable_file_order);
 
         Self {
             provides,
             injects,
             reactive_provides,
             component_parents,
+            slot_scopes,
             stable_file_order,
         }
     }
@@ -103,6 +110,23 @@ impl ProvideInjectIndex {
 
     pub(crate) fn injects(&self) -> &FxHashMap<FileId, Vec<InjectEntry>> {
         &self.injects
+    }
+
+    pub(crate) fn tree_edge_visible(
+        &self,
+        parent: FileId,
+        child: FileId,
+        ancestry: &[FileId],
+    ) -> bool {
+        self.slot_scopes
+            .tree_edge_visible(parent, child, ancestry, &self.provides)
+    }
+
+    pub(crate) fn tree_edges<'a>(
+        &self,
+        edges: &'a [(FileId, FileId)],
+    ) -> std::borrow::Cow<'a, [(FileId, FileId)]> {
+        self.slot_scopes.tree_edges(edges, &self.provides)
     }
 
     pub(crate) fn provider_is_reactive(&self, provider: &ResolvedProvider) -> bool {
@@ -209,18 +233,25 @@ impl ProvideInjectIndex {
                 terminals.push(current);
                 continue;
             };
+            let parents = self.slot_scopes.parents(
+                current,
+                key,
+                &self.provides,
+                parents,
+                &self.stable_file_order,
+            );
             if parents.is_empty() {
                 terminals.push(current);
                 continue;
             }
-            for &parent in parents {
+            for &parent in parents.iter() {
                 edges.push((parent, current));
                 predecessor.entry(parent).or_insert(current);
                 if visited.insert(parent) {
                     queue.push(parent);
                 }
             }
-            parents_by_node.insert(current, parents.clone());
+            parents_by_node.insert(current, parents.into_owned());
         }
 
         // Count all render paths through the explored DAG without materializing
@@ -321,7 +352,16 @@ impl ProvideInjectIndex {
             }
 
             let mut explored_parent = false;
-            for &parent_id in self.component_parents.get(&current).into_iter().flatten() {
+            let parents = self.component_parents.get(&current).map(|parents| {
+                self.slot_scopes.parents(
+                    current,
+                    key,
+                    &self.provides,
+                    parents,
+                    &self.stable_file_order,
+                )
+            });
+            for &parent_id in parents.as_deref().into_iter().flatten() {
                 if frame_contains(&frames, frame_index, parent_id) {
                     continue;
                 }
@@ -374,55 +414,6 @@ impl ProvideInjectIndex {
             .cmp(&stable_rank(&self.stable_file_order, right))
             .then_with(|| left.as_u32().cmp(&right.as_u32()))
     }
-}
-
-fn matching_provider<'a>(
-    component_provides: &'a [ProvideEntry],
-    key: &ProvideKey,
-) -> Option<&'a ProvideEntry> {
-    component_provides
-        .iter()
-        .rev()
-        .find(|provide| provide.key == *key)
-}
-
-fn path_from_frame(frames: &[AncestorFrame], mut index: usize) -> Vec<FileId> {
-    let mut path = Vec::new();
-    while let Some(&frame) = frames.get(index) {
-        path.push(frame.current);
-        let Some(parent) = frame.parent else {
-            break;
-        };
-        index = parent;
-    }
-    path
-}
-
-fn frame_contains(frames: &[AncestorFrame], mut index: usize, needle: FileId) -> bool {
-    loop {
-        let Some(&frame) = frames.get(index) else {
-            return false;
-        };
-        if frame.current == needle {
-            return true;
-        }
-        let Some(parent) = frame.parent else {
-            return false;
-        };
-        index = parent;
-    }
-}
-
-/// Extract provide/inject calls from a component's analysis.
-/// Uses the ProvideInjectTracker for precise static analysis - no heuristics.
-#[inline]
-fn extract_provide_inject(
-    analysis: &vize_croquis::Croquis,
-) -> (Vec<ProvideEntry>, Vec<InjectEntry>) {
-    // Use the actual provide/inject tracker data - precise static analysis
-    let provides = vize_croquis::facts::provide_entries(analysis);
-    let injects = vize_croquis::facts::inject_entries(analysis);
-    (provides, injects)
 }
 
 #[cfg(test)]

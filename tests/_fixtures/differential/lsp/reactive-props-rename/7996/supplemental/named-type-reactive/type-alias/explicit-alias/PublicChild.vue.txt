@@ -1,0 +1,10 @@
+<script setup lang="ts">
+type Props = {
+  heading: string;
+};
+const { heading: localLabel } = defineProps<Props>();
+</script>
+
+<template>
+  <p>{{ localLabel }}</p>
+</template>

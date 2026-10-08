@@ -1,0 +1,2 @@
+:where(.box) { color: red; }
+.x :deep(p) { margin: 0; }

@@ -1,11 +1,12 @@
-use crate::css::scoped_selector::split_before_trailing_universal_or_pseudo;
 use vize_carton::{SmallVec, String};
 
 mod at_rules;
+mod attribute;
 mod legacy_deep;
 mod slotted;
 
 use at_rules::should_recurse_at_rule;
+use attribute::add_scope_to_selector_end;
 
 /// Scope CSS with the Vite plugin pipeline's selector model.
 pub(super) fn scope_css_for_pipeline(css: &str, scope_id: &str) -> String {
@@ -479,29 +480,6 @@ fn trailing_combinator_start(selector: &str) -> Option<usize> {
         .strip_suffix("||")
         .or_else(|| selector.strip_suffix(['>', '+', '~']))
         .map(str::len)
-}
-
-fn add_scope_to_selector_end(selector: &str, scope_id: &str) -> String {
-    if let Some((prefix, boundary, suffix)) = split_before_trailing_universal_or_pseudo(selector) {
-        let mut output = add_scope_to_selector_end(prefix.trim_end(), scope_id);
-        output.push_str(boundary);
-        output.push_str(suffix.trim_start());
-        return output;
-    }
-
-    let (before_target, target) = selector
-        .split_at_checked(find_last_compound_start(selector))
-        .unwrap_or(("", selector));
-    let (head, tail) = target
-        .split_at_checked(find_scope_insert_position(target))
-        .unwrap_or((target, ""));
-
-    let mut output = String::with_capacity(selector.len() + scope_id.len() + 2);
-    output.push_str(before_target);
-    output.push_str(head);
-    push_scope_attr(&mut output, scope_id);
-    output.push_str(tail);
-    output
 }
 
 fn find_last_compound_start(selector: &str) -> usize {

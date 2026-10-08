@@ -68,6 +68,7 @@ impl CorsaProjectClient {
             return Ok(());
         }
 
+        let authored_result = self.retire_original_diagnosing_session();
         let project_result = self.session.take().map_or(Ok(()), |session| {
             corsa::runtime::block_on(session.close())
                 .map_err(|error| cstr!("Failed to close Corsa project session: {error}"))
@@ -77,7 +78,7 @@ impl CorsaProjectClient {
         self.diagnostics.clear();
         self.overlay_versions.clear();
         self.closed = true;
-        project_result.and(editor_result)
+        authored_result.and(project_result).and(editor_result)
     }
 
     /// Open a virtual document.

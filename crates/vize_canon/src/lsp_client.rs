@@ -65,6 +65,8 @@ pub struct CorsaProjectClient {
     /// project-session API rejects as unsupported (corsa-bind#409), and the
     /// standard-tsgo diagnostics path when no project-session API exists.
     editor_lsp: Option<editor_lsp::EditorLspSession>,
+    /// Independent authored diagnostics never share a live virtual overlay.
+    original_diagnosing_session: Option<editor_lsp::OriginalDiagnosingSession>,
     /// Whether the reusable editor LSP needs the latest virtual project mirror.
     editor_lsp_documents_dirty: bool,
     /// Runtime support for `workspace/willRenameFiles`, probed through the
@@ -92,6 +94,7 @@ impl CorsaProjectClient {
             external_document_uris: Default::default(),
             temp_dir: None,
             editor_lsp: None,
+            original_diagnosing_session: None,
             editor_lsp_documents_dirty: true,
             editor_lsp_will_rename_supported: None,
             closed: false,

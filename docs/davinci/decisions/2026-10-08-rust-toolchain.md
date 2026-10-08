@@ -137,3 +137,33 @@ simulated banner from the declared sibling pin, retain the old 1.98 banner as
 an explicit refused envelope, and keep every foreign/corrupt archive and full
 feature-failure control intact. No stored historical fixture, archive validator,
 production behavior or numerical ceiling changes.
+
+## Nix development and MSRV packaging
+
+The actual 177933 main checkout still pinned rust-overlay revision
+`61ec6a4fc56fe0c2b863f7b3eaba07b6664697d9` (2026-05-16), whose stable manifests
+stop at 1.95.0. Update only that input's locked metadata to the first official
+[1.99 manifest revision](https://github.com/oxalica/rust-overlay/blob/dcee1adabb61484343af863501d2e3d91ef51f72/manifests/stable/1.99.0.nix),
+`dcee1adabb61484343af863501d2e3d91ef51f72` (2026-10-01). Keep every other input,
+its original reference and the nixpkgs follow edge unchanged.
+
+A private `rustDevToolchain` reads the exact `rust-toolchain.toml` through
+rust-overlay's `fromRustupToolchainFile`. Only the development shell and its
+`RUST_SRC_PATH` use it. Contributor Rust, its declared components and both
+Wasm targets therefore follow the source pin, currently 1.99.0. The existing
+package `rustToolchain` stays at MSRV 1.95.0 with the same extensions and target;
+Crane and the package build retain that compiler. Preserve all four systems
+in `tools/nix/systems.nix`, including x86_64-darwin.
+
+The observed host `origin` Rust launcher separately resolves its own immutable
+Nix-store overlay, whose latest stable is 1.98.1. It does not read Vize's
+`flake.lock`; this change cannot refresh that external launcher. The already
+installed `~/.cargo/bin/rustfmt +1.99.0` reports 1.10.0/b940084d7 and provides a
+local formatter route without changing a global profile or Rust default.
+
+Validation uses evaluation only, with import-from-derivation disabled, to
+inspect development and package compiler dependencies on every supported
+system. No local Nix build, source compiler build or release hold is added.
+Fresh exact-source Actions and actual protected delivery remain required;
+the ongoing release from the earlier actual main keeps its independent source
+pin and qualification.

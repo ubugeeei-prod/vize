@@ -27,7 +27,6 @@ use std::{
     },
 };
 use vize_l0::{FxHashMap, FxHashSet, String, cstr};
-
 #[cfg(test)]
 mod batch_test_receipt;
 mod call_hierarchy;
@@ -54,6 +53,7 @@ mod synchronize;
 #[cfg(test)]
 mod tests;
 mod type_definition;
+pub(super) use original_program::OriginalDiagnosingSession;
 use requests::{
     RawCompletionRequest, RawDefinitionRequest, RawHoverRequest, RawPrepareRenameRequest,
     RawReferencesRequest, RawRenameRequest, RawSignatureHelpRequest, RawWillRenameFilesRequest,

@@ -1,0 +1,185 @@
+[
+  {
+    "tree": [
+      {
+        "tag": "section",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "reset"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "label"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "attributes": {},
+            "children": [],
+            "value": "first",
+            "checked": false
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              "tail"
+            ]
+          }
+        ]
+      }
+    ],
+    "same": true,
+    "setups": 0,
+    "disposed": 0,
+    "diagnostics": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "section",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "reset"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "label"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "attributes": {},
+            "children": [],
+            "value": "typed",
+            "checked": false
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              "tail"
+            ]
+          }
+        ]
+      }
+    ],
+    "same": true,
+    "setups": 0,
+    "disposed": 0,
+    "diagnostics": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "section",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "reset"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "label"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "attributes": {},
+            "children": [],
+            "value": "first",
+            "checked": false
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              "tail"
+            ]
+          }
+        ]
+      }
+    ],
+    "same": false,
+    "setups": 0,
+    "disposed": 0,
+    "diagnostics": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "section",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "reset"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "label"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "attributes": {},
+            "children": [],
+            "value": "second",
+            "checked": false
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              "tail"
+            ]
+          }
+        ]
+      }
+    ],
+    "same": true,
+    "setups": 0,
+    "disposed": 0,
+    "diagnostics": []
+  },
+  {
+    "tree": [],
+    "same": false,
+    "setups": 0,
+    "disposed": 0,
+    "diagnostics": []
+  }
+]

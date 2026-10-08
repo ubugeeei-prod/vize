@@ -51,7 +51,7 @@ fn nested_and_slotted_sfc_css_matches_vite_pipeline() {
     let expected = super::vite_plugin::scope_css_for_pipeline(css, "data-v-x");
     assert_eq!(actual.trim(), expected.trim());
     assert!(actual.contains(".c .d[data-v-x]"), "{actual}");
-    assert!(actual.contains(".a[data-v-x] >.b[data-v-x-s]"), "{actual}");
+    assert!(actual.contains(".a >.b[data-v-x-s]"), "{actual}");
 }
 
 #[test]

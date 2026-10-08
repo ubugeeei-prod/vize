@@ -1,0 +1,95 @@
+{
+  "issue": 7883,
+  "author": {
+    "login": "ubugeeei",
+    "id": 71201308
+  },
+  "base": "143c1d4a9fbe6530cdd06f1f001b816f39c1d00a",
+  "files": [
+    {
+      "path": "App.vue.txt",
+      "bytes": 198,
+      "sha256": "e0786dcf6e6ba2c84a8eb42d3c935e4a54932a55e55f43f6e535f55da4619741"
+    },
+    {
+      "path": "Counter.vue.txt",
+      "bytes": 130,
+      "sha256": "8a6eb674ad1372c69d7de96664bf8e5553e6cbf9f5ef1867f6d089169b7b2acf"
+    },
+    {
+      "path": "component.expected.json",
+      "bytes": 1542,
+      "sha256": "7d69167b27a9be416c05768ec77d426295aab8815d57a854169a899e99e454ef"
+    },
+    {
+      "path": "element.expected.json",
+      "bytes": 3583,
+      "sha256": "81a012a3cf3c36eda3dc173e860cae1ac45df67289296aeaacec0f8a02ec44c9"
+    },
+    {
+      "path": "element.vue.txt",
+      "bytes": 277,
+      "sha256": "ff187a9968676c5c25798c964a42346c5eea441bf5a805fdcc8bba2b7774c3b7"
+    },
+    {
+      "path": "original-issue.md",
+      "bytes": 1547,
+      "sha256": "854917e4d71ea66c94adba814e9aeaccae10c6b01bf024c5b1fd3bdd24802aed"
+    },
+    {
+      "path": "stable.expected.json",
+      "bytes": 1179,
+      "sha256": "33ce92f1ad88ed0d726f7537fae7756b87e9cb7e8f76c5e6c60e83bed792df11"
+    },
+    {
+      "path": "stable.vue.txt",
+      "bytes": 199,
+      "sha256": "ee700ce7be25e5c8600d823ac634420893becae73b4917bd3031e2486b30383e"
+    },
+    {
+      "path": "nested-attrs.vue.txt",
+      "bytes": 264,
+      "sha256": "79062372e62a5a6c79fe383c603af8f89fa6049cb7a06c308aecda46f06922f4"
+    },
+    {
+      "path": "nested-attrs.expected.json",
+      "bytes": 2516,
+      "sha256": "03467bc308b39d543e27ffa78982600e5ef929f280de4a8cb2a81a15aef60d50"
+    },
+    {
+      "path": "root-attrs.vue.txt",
+      "bytes": 204,
+      "sha256": "b8aea4b59ea86e8bf2fda80be984ca2aae8c88aafcc29048fc21786083367106"
+    },
+    {
+      "path": "root-attrs.expected.json",
+      "bytes": 940,
+      "sha256": "48825f3167cf00f5dd5d46822e5a4923156d36d79fb5a5fb460b308bed4a08c8"
+    },
+    {
+      "path": "if-attrs.vue.txt",
+      "bytes": 236,
+      "sha256": "f3c1006377ac2694b810149236858529f1ec59526358b146262854582e85cce9"
+    },
+    {
+      "path": "if-attrs.expected.json",
+      "bytes": 940,
+      "sha256": "48825f3167cf00f5dd5d46822e5a4923156d36d79fb5a5fb460b308bed4a08c8"
+    },
+    {
+      "path": "element.expected-current.json",
+      "bytes": 3760,
+      "sha256": "80ea9390c23553d47043f9c91ba706884bcb052784018bcd64420ce92bbe8a68"
+    },
+    {
+      "path": "nested-if-attrs.vue.txt",
+      "bytes": 296,
+      "sha256": "5839927a94a3fb7e35f1d83760924621b97a143cc10baba8604e7ddab56b220d"
+    },
+    {
+      "path": "nested-if-attrs.expected.json",
+      "bytes": 2516,
+      "sha256": "03467bc308b39d543e27ffa78982600e5ef929f280de4a8cb2a81a15aef60d50"
+    }
+  ]
+}

@@ -1,0 +1,1958 @@
+{
+  "node": "v24.14.0",
+  "nodePath": "/Users/ubugeeei/.local/share/mise/installs/node/24.14.0/bin/node",
+  "identities": {
+    "compilerDom": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-dom@3.5.35/node_modules/@vue/compiler-dom/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-dom@3.5.35/node_modules/@vue/compiler-dom/index.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-dom@3.5.35/node_modules/@vue/compiler-dom/index.js",
+      "version": "3.5.35",
+      "entrySha256": "21407fc5cebe255208627dd039f2284156be88abbd9123281a79581d349b48c1"
+    },
+    "compilerSsr": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-ssr@3.5.35/node_modules/@vue/compiler-ssr/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-ssr@3.5.35/node_modules/@vue/compiler-ssr/dist/compiler-ssr.cjs.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-ssr@3.5.35/node_modules/@vue/compiler-ssr/dist/compiler-ssr.cjs.js",
+      "version": "3.5.35",
+      "entrySha256": "b43751e2c5171bdeda85fed83d4d236849dccbfe4f13de4e62adf6b895d70baa"
+    },
+    "compilerSfc": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-sfc@3.5.35/node_modules/@vue/compiler-sfc/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-sfc@3.5.35/node_modules/@vue/compiler-sfc/dist/compiler-sfc.cjs.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-sfc@3.5.35/node_modules/@vue/compiler-sfc/dist/compiler-sfc.cjs.js",
+      "version": "3.5.35",
+      "entrySha256": "ba385b877d16db089c6d16dd41a3c8026aa3e2092ae784c283567757b015fb56"
+    },
+    "renderer": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+server-renderer@3.5.35_vue@3.5.35_typescript@6.0.3_/node_modules/@vue/server-renderer/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+server-renderer@3.5.35_vue@3.5.35_typescript@6.0.3_/node_modules/@vue/server-renderer/index.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+server-renderer@3.5.35_vue@3.5.35_typescript@6.0.3_/node_modules/@vue/server-renderer/index.js",
+      "version": "3.5.35",
+      "entrySha256": "649f9ecc1d681df415cfe6e0a94bcab03c8ac7a98c2f14dee08afeeec43e1880"
+    },
+    "vue": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/index.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/index.js",
+      "version": "3.5.35",
+      "entrySha256": "a5287f6056bc5c2c569d318063ee043f55a0d323fa7262f64456d58fd574f928"
+    },
+    "happyDom": {
+      "packageJson": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@20.11.2/node_modules/happy-dom/package.json",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@20.11.2/node_modules/happy-dom/lib/index.js",
+      "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@20.11.2/node_modules/happy-dom/lib/index.js",
+      "version": "20.11.2",
+      "entrySha256": "d38c1614c3184c41b04199fe84d0e1406633414ff07f1003e675faae5628475a"
+    }
+  },
+  "compilerOptions": {
+    "whitespace": "condense"
+  },
+  "scope": "Stock Vue renders whole template with explicit binding contexts. Missing MyList module is a deterministic prop/event observer, not the reporter component. No Vize implementation or installed Vize replay was executed.",
+  "results": [
+    {
+      "id": "original-example",
+      "strictWholeDomAndSsrEqual": true,
+      "comparisons": [
+        {
+          "source": "old-partial-reference",
+          "strictWholeDomAndSsrEqual": true,
+          "mismatches": []
+        },
+        {
+          "source": "oxfmt-full-reference",
+          "strictWholeDomAndSsrEqual": true,
+          "mismatches": []
+        },
+        {
+          "source": "tag-syntax-only-reference",
+          "strictWholeDomAndSsrEqual": true,
+          "mismatches": []
+        },
+        {
+          "source": "opening-tag-only-reference",
+          "strictWholeDomAndSsrEqual": true,
+          "mismatches": []
+        }
+      ],
+      "sources": [
+        {
+          "id": "original-input",
+          "sourceSha256": "cda86e54a1e3f15b9c45652171e664c8fad2aa8e57064dfa6ee6998940e633fb",
+          "templateSha256": "77a9a04ea846f83a7e84d6d21f83b3e50d5b504a19797cd8e6567c6119d2a733",
+          "domCodeSha256": "57a0177397bb06be5cf0378e9a83539fc2e978499d1c2e810b86acc1fddd8d27",
+          "ssrCodeSha256": "509dd4483ae6e81c8dd75e9a22acce0f1e21220e3f3b9fcaccdef299fcfb47b8",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!--v-if--></p></div>",
+              "domText": "MyList Total 3 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"1\">MyList</button><p> Total 3 items (page 1)</p></div>",
+              "domText": "MyList Total 3 items (page 1)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"1\">MyList</button><p> Total 3 items<!--[--> (page 1)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"2\">MyList</button><p> Total 3 items (page 2)</p></div>",
+              "domText": "MyList Total 3 items (page 2)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"2\">MyList</button><p> Total 3 items<!--[--> (page 2)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[]\" data-selected=\"0\">MyList</button><p> Total 0 items<!--v-if--></p></div>",
+              "domText": "MyList Total 0 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[]\" data-selected=\"0\">MyList</button><p> Total 0 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[&quot;日本語&quot;,&quot;a&amp;b&quot;]\" data-selected=\"10\">MyList</button><p> Total 2 items (page 10)</p></div>",
+              "domText": "MyList Total 2 items (page 10)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[&quot;日本語&quot;,&quot;a&amp;b&quot;]\" data-selected=\"10\">MyList</button><p> Total 2 items<!--[--> (page 10)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[9]\" data-selected=\"-1\">MyList</button><p> Total 1 items<!--v-if--></p></div>",
+              "domText": "MyList Total 1 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[9]\" data-selected=\"-1\">MyList</button><p> Total 1 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!--v-if--></p></div>",
+              "domText": "MyList Total 3 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!----></p></div>",
+              "emittedClickCalls": 1
+            }
+          ]
+        },
+        {
+          "id": "old-partial-reference",
+          "sourceSha256": "75d1acc5d580c789d5e35934d841dc294ce0fd8fc721daea0b4b0268f82af7a6",
+          "templateSha256": "0059c92cb0c272755a03ffd8fab17b72de21183293dba6af02949edb94815a79",
+          "domCodeSha256": "bad3d005c2ab447527d28d64464f9dbe0cff95d53704b2fcb4c87b8ebf129657",
+          "ssrCodeSha256": "2fbf1a941931b7094f3d9e31fe45ebb40e66cb838ca3104daee43c50d189f817",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!--v-if--></p></div>",
+              "domText": "MyList Total 3 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"1\">MyList</button><p> Total 3 items (page 1)</p></div>",
+              "domText": "MyList Total 3 items (page 1)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"1\">MyList</button><p> Total 3 items<!--[--> (page 1)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"2\">MyList</button><p> Total 3 items (page 2)</p></div>",
+              "domText": "MyList Total 3 items (page 2)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"2\">MyList</button><p> Total 3 items<!--[--> (page 2)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[]\" data-selected=\"0\">MyList</button><p> Total 0 items<!--v-if--></p></div>",
+              "domText": "MyList Total 0 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[]\" data-selected=\"0\">MyList</button><p> Total 0 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[&quot;日本語&quot;,&quot;a&amp;b&quot;]\" data-selected=\"10\">MyList</button><p> Total 2 items (page 10)</p></div>",
+              "domText": "MyList Total 2 items (page 10)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[&quot;日本語&quot;,&quot;a&amp;b&quot;]\" data-selected=\"10\">MyList</button><p> Total 2 items<!--[--> (page 10)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[9]\" data-selected=\"-1\">MyList</button><p> Total 1 items<!--v-if--></p></div>",
+              "domText": "MyList Total 1 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[9]\" data-selected=\"-1\">MyList</button><p> Total 1 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!--v-if--></p></div>",
+              "domText": "MyList Total 3 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!----></p></div>",
+              "emittedClickCalls": 1
+            }
+          ]
+        },
+        {
+          "id": "oxfmt-full-reference",
+          "sourceSha256": "c3ffb9d885576319dd553da7e09260ca97e69bb5cfa710267b2662abdaa7adbe",
+          "templateSha256": "6e309a9b150c5dc73bcf958ef44da37b5c993ba0d7fd70ca38f0fc043e0a4da9",
+          "domCodeSha256": "bad3d005c2ab447527d28d64464f9dbe0cff95d53704b2fcb4c87b8ebf129657",
+          "ssrCodeSha256": "2fbf1a941931b7094f3d9e31fe45ebb40e66cb838ca3104daee43c50d189f817",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!--v-if--></p></div>",
+              "domText": "MyList Total 3 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"1\">MyList</button><p> Total 3 items (page 1)</p></div>",
+              "domText": "MyList Total 3 items (page 1)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"1\">MyList</button><p> Total 3 items<!--[--> (page 1)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"2\">MyList</button><p> Total 3 items (page 2)</p></div>",
+              "domText": "MyList Total 3 items (page 2)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"2\">MyList</button><p> Total 3 items<!--[--> (page 2)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[]\" data-selected=\"0\">MyList</button><p> Total 0 items<!--v-if--></p></div>",
+              "domText": "MyList Total 0 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[]\" data-selected=\"0\">MyList</button><p> Total 0 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[&quot;日本語&quot;,&quot;a&amp;b&quot;]\" data-selected=\"10\">MyList</button><p> Total 2 items (page 10)</p></div>",
+              "domText": "MyList Total 2 items (page 10)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[&quot;日本語&quot;,&quot;a&amp;b&quot;]\" data-selected=\"10\">MyList</button><p> Total 2 items<!--[--> (page 10)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[9]\" data-selected=\"-1\">MyList</button><p> Total 1 items<!--v-if--></p></div>",
+              "domText": "MyList Total 1 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[9]\" data-selected=\"-1\">MyList</button><p> Total 1 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!--v-if--></p></div>",
+              "domText": "MyList Total 3 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!----></p></div>",
+              "emittedClickCalls": 1
+            }
+          ]
+        },
+        {
+          "id": "tag-syntax-only-reference",
+          "sourceSha256": "fe35d86eb201e7ac35335199f81951ba69f9bc28a96aa9fa47fee3e381d885ea",
+          "templateSha256": "3597a6839d362229b5d57388dc2a93adf68f8ad6517db59790c99e25cb72ebb8",
+          "domCodeSha256": "bad3d005c2ab447527d28d64464f9dbe0cff95d53704b2fcb4c87b8ebf129657",
+          "ssrCodeSha256": "2fbf1a941931b7094f3d9e31fe45ebb40e66cb838ca3104daee43c50d189f817",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!--v-if--></p></div>",
+              "domText": "MyList Total 3 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"1\">MyList</button><p> Total 3 items (page 1)</p></div>",
+              "domText": "MyList Total 3 items (page 1)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"1\">MyList</button><p> Total 3 items<!--[--> (page 1)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"2\">MyList</button><p> Total 3 items (page 2)</p></div>",
+              "domText": "MyList Total 3 items (page 2)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"2\">MyList</button><p> Total 3 items<!--[--> (page 2)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[]\" data-selected=\"0\">MyList</button><p> Total 0 items<!--v-if--></p></div>",
+              "domText": "MyList Total 0 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[]\" data-selected=\"0\">MyList</button><p> Total 0 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[&quot;日本語&quot;,&quot;a&amp;b&quot;]\" data-selected=\"10\">MyList</button><p> Total 2 items (page 10)</p></div>",
+              "domText": "MyList Total 2 items (page 10)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[&quot;日本語&quot;,&quot;a&amp;b&quot;]\" data-selected=\"10\">MyList</button><p> Total 2 items<!--[--> (page 10)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[9]\" data-selected=\"-1\">MyList</button><p> Total 1 items<!--v-if--></p></div>",
+              "domText": "MyList Total 1 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[9]\" data-selected=\"-1\">MyList</button><p> Total 1 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!--v-if--></p></div>",
+              "domText": "MyList Total 3 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!----></p></div>",
+              "emittedClickCalls": 1
+            }
+          ]
+        },
+        {
+          "id": "opening-tag-only-reference",
+          "sourceSha256": "e379010d0e5b534b84dad6f3d6774c599e59ed7845243799ca42ec62432190c7",
+          "templateSha256": "2a6cbd62bbb288b20c6061faeea333cb0d682d13bcf0d386b34a3c9ebc65fbee",
+          "domCodeSha256": "bad3d005c2ab447527d28d64464f9dbe0cff95d53704b2fcb4c87b8ebf129657",
+          "ssrCodeSha256": "2fbf1a941931b7094f3d9e31fe45ebb40e66cb838ca3104daee43c50d189f817",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!--v-if--></p></div>",
+              "domText": "MyList Total 3 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"1\">MyList</button><p> Total 3 items (page 1)</p></div>",
+              "domText": "MyList Total 3 items (page 1)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"1\">MyList</button><p> Total 3 items<!--[--> (page 1)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"2\">MyList</button><p> Total 3 items (page 2)</p></div>",
+              "domText": "MyList Total 3 items (page 2)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"2\">MyList</button><p> Total 3 items<!--[--> (page 2)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[]\" data-selected=\"0\">MyList</button><p> Total 0 items<!--v-if--></p></div>",
+              "domText": "MyList Total 0 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[]\" data-selected=\"0\">MyList</button><p> Total 0 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[&quot;日本語&quot;,&quot;a&amp;b&quot;]\" data-selected=\"10\">MyList</button><p> Total 2 items (page 10)</p></div>",
+              "domText": "MyList Total 2 items (page 10)",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[&quot;日本語&quot;,&quot;a&amp;b&quot;]\" data-selected=\"10\">MyList</button><p> Total 2 items<!--[--> (page 10)<!--]--></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[9]\" data-selected=\"-1\">MyList</button><p> Total 1 items<!--v-if--></p></div>",
+              "domText": "MyList Total 1 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[9]\" data-selected=\"-1\">MyList</button><p> Total 1 items<!----></p></div>",
+              "emittedClickCalls": 1
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!--v-if--></p></div>",
+              "domText": "MyList Total 3 items",
+              "ssrHtml": "<div><button type=\"button\" data-pages=\"[1,2,3]\" data-selected=\"0\">MyList</button><p> Total 3 items<!----></p></div>",
+              "emittedClickCalls": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "original-paragraph",
+      "strictWholeDomAndSsrEqual": true,
+      "comparisons": [
+        {
+          "source": "paragraph-oxfmt-reference",
+          "strictWholeDomAndSsrEqual": true,
+          "mismatches": []
+        },
+        {
+          "source": "paragraph-tag-syntax-only-reference",
+          "strictWholeDomAndSsrEqual": true,
+          "mismatches": []
+        },
+        {
+          "source": "paragraph-opening-tag-only-reference",
+          "strictWholeDomAndSsrEqual": true,
+          "mismatches": []
+        }
+      ],
+      "sources": [
+        {
+          "id": "paragraph-input",
+          "sourceSha256": "ce4b33adbc4020a0bb717558a3d82ab123206736c9d1b2ef15a6683086e8f738",
+          "templateSha256": "226d54fcf5214d31fa34c116e1d2d49d28179f19e4b7f676a19c97f88dd8b696",
+          "domCodeSha256": "895e13248461411b4e20422bfeb51a01d18b7eb0e46da08cdf32d62e5f8c581f",
+          "ssrCodeSha256": "a5be1016c68eb23ba9fb0435779a9751159145d768a0808d9294dfd963685847",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<p> Total 3 items (page 1)</p>",
+              "domText": " Total 3 items (page 1)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 1)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<p> Total 3 items (page 2)</p>",
+              "domText": " Total 3 items (page 2)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 2)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<p> Total 0 items<!--v-if--></p>",
+              "domText": " Total 0 items",
+              "ssrHtml": "<p> Total 0 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<p> Total 2 items (page 10)</p>",
+              "domText": " Total 2 items (page 10)",
+              "ssrHtml": "<p> Total 2 items<!--[--> (page 10)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<p> Total 1 items<!--v-if--></p>",
+              "domText": " Total 1 items",
+              "ssrHtml": "<p> Total 1 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            }
+          ]
+        },
+        {
+          "id": "paragraph-oxfmt-reference",
+          "sourceSha256": "5ba55cfd9b464cb485364260a69c88e0de7e4968c7118a3ccf602b8673787d99",
+          "templateSha256": "38f9793c7efa4ca4edc9bf6f8fbe0ffbd4b66016d3af8b3627f63b34359fb9a8",
+          "domCodeSha256": "895e13248461411b4e20422bfeb51a01d18b7eb0e46da08cdf32d62e5f8c581f",
+          "ssrCodeSha256": "a5be1016c68eb23ba9fb0435779a9751159145d768a0808d9294dfd963685847",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<p> Total 3 items (page 1)</p>",
+              "domText": " Total 3 items (page 1)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 1)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<p> Total 3 items (page 2)</p>",
+              "domText": " Total 3 items (page 2)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 2)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<p> Total 0 items<!--v-if--></p>",
+              "domText": " Total 0 items",
+              "ssrHtml": "<p> Total 0 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<p> Total 2 items (page 10)</p>",
+              "domText": " Total 2 items (page 10)",
+              "ssrHtml": "<p> Total 2 items<!--[--> (page 10)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<p> Total 1 items<!--v-if--></p>",
+              "domText": " Total 1 items",
+              "ssrHtml": "<p> Total 1 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            }
+          ]
+        },
+        {
+          "id": "paragraph-tag-syntax-only-reference",
+          "sourceSha256": "942abf5ab39de8428d98430b2d6f8f0c38bcc6a080bf030a1d3b3ef55b503096",
+          "templateSha256": "80037a7d8e9a28cbef86597cdfa45af21222abac3c3d22cb1e52bda32dac2931",
+          "domCodeSha256": "895e13248461411b4e20422bfeb51a01d18b7eb0e46da08cdf32d62e5f8c581f",
+          "ssrCodeSha256": "a5be1016c68eb23ba9fb0435779a9751159145d768a0808d9294dfd963685847",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<p> Total 3 items (page 1)</p>",
+              "domText": " Total 3 items (page 1)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 1)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<p> Total 3 items (page 2)</p>",
+              "domText": " Total 3 items (page 2)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 2)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<p> Total 0 items<!--v-if--></p>",
+              "domText": " Total 0 items",
+              "ssrHtml": "<p> Total 0 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<p> Total 2 items (page 10)</p>",
+              "domText": " Total 2 items (page 10)",
+              "ssrHtml": "<p> Total 2 items<!--[--> (page 10)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<p> Total 1 items<!--v-if--></p>",
+              "domText": " Total 1 items",
+              "ssrHtml": "<p> Total 1 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            }
+          ]
+        },
+        {
+          "id": "paragraph-opening-tag-only-reference",
+          "sourceSha256": "e4195a97b98c6fd0cf5911522d0fb89ab08cd11a0b742c145f8917d326b60c68",
+          "templateSha256": "67c40bec7b1c0b3acf43770a869d28c9075f2bbf26fbe1000d69f5be73fa6faa",
+          "domCodeSha256": "895e13248461411b4e20422bfeb51a01d18b7eb0e46da08cdf32d62e5f8c581f",
+          "ssrCodeSha256": "a5be1016c68eb23ba9fb0435779a9751159145d768a0808d9294dfd963685847",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<p> Total 3 items (page 1)</p>",
+              "domText": " Total 3 items (page 1)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 1)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<p> Total 3 items (page 2)</p>",
+              "domText": " Total 3 items (page 2)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 2)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<p> Total 0 items<!--v-if--></p>",
+              "domText": " Total 0 items",
+              "ssrHtml": "<p> Total 0 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<p> Total 2 items (page 10)</p>",
+              "domText": " Total 2 items (page 10)",
+              "ssrHtml": "<p> Total 2 items<!--[--> (page 10)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<p> Total 1 items<!--v-if--></p>",
+              "domText": " Total 1 items",
+              "ssrHtml": "<p> Total 1 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "narrow-state",
+      "strictWholeDomAndSsrEqual": false,
+      "comparisons": [
+        {
+          "source": "narrow-state-oxfmt-reference",
+          "strictWholeDomAndSsrEqual": false,
+          "mismatches": [
+            {
+              "state": "false-page-zero",
+              "original": {
+                "state": {
+                  "id": "false-page-zero",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 0
+                },
+                "domHtml": "<p>Total 3 items<!--v-if--></p>",
+                "domText": "Total 3 items",
+                "ssrHtml": "<p>Total 3 items<!----></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "false-page-zero",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 0
+                },
+                "domHtml": "<p> Total 3 items<!--v-if--></p>",
+                "domText": " Total 3 items",
+                "ssrHtml": "<p> Total 3 items<!----></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "true-page-one",
+              "original": {
+                "state": {
+                  "id": "true-page-one",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 1
+                },
+                "domHtml": "<p>Total 3 items (page 1)</p>",
+                "domText": "Total 3 items (page 1)",
+                "ssrHtml": "<p>Total 3 items<!--[--> (page 1)<!--]--></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "true-page-one",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 1
+                },
+                "domHtml": "<p> Total 3 items (page 1)</p>",
+                "domText": " Total 3 items (page 1)",
+                "ssrHtml": "<p> Total 3 items<!--[--> (page 1)<!--]--></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "true-page-two",
+              "original": {
+                "state": {
+                  "id": "true-page-two",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 2
+                },
+                "domHtml": "<p>Total 3 items (page 2)</p>",
+                "domText": "Total 3 items (page 2)",
+                "ssrHtml": "<p>Total 3 items<!--[--> (page 2)<!--]--></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "true-page-two",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 2
+                },
+                "domHtml": "<p> Total 3 items (page 2)</p>",
+                "domText": " Total 3 items (page 2)",
+                "ssrHtml": "<p> Total 3 items<!--[--> (page 2)<!--]--></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "false-empty-pages",
+              "original": {
+                "state": {
+                  "id": "false-empty-pages",
+                  "pages": [],
+                  "page": 0
+                },
+                "domHtml": "<p>Total 0 items<!--v-if--></p>",
+                "domText": "Total 0 items",
+                "ssrHtml": "<p>Total 0 items<!----></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "false-empty-pages",
+                  "pages": [],
+                  "page": 0
+                },
+                "domHtml": "<p> Total 0 items<!--v-if--></p>",
+                "domText": " Total 0 items",
+                "ssrHtml": "<p> Total 0 items<!----></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "true-page-unicode-items",
+              "original": {
+                "state": {
+                  "id": "true-page-unicode-items",
+                  "pages": [
+                    "日本語",
+                    "a&b"
+                  ],
+                  "page": 10
+                },
+                "domHtml": "<p>Total 2 items (page 10)</p>",
+                "domText": "Total 2 items (page 10)",
+                "ssrHtml": "<p>Total 2 items<!--[--> (page 10)<!--]--></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "true-page-unicode-items",
+                  "pages": [
+                    "日本語",
+                    "a&b"
+                  ],
+                  "page": 10
+                },
+                "domHtml": "<p> Total 2 items (page 10)</p>",
+                "domText": " Total 2 items (page 10)",
+                "ssrHtml": "<p> Total 2 items<!--[--> (page 10)<!--]--></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "false-negative-page",
+              "original": {
+                "state": {
+                  "id": "false-negative-page",
+                  "pages": [
+                    9
+                  ],
+                  "page": -1
+                },
+                "domHtml": "<p>Total 1 items<!--v-if--></p>",
+                "domText": "Total 1 items",
+                "ssrHtml": "<p>Total 1 items<!----></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "false-negative-page",
+                  "pages": [
+                    9
+                  ],
+                  "page": -1
+                },
+                "domHtml": "<p> Total 1 items<!--v-if--></p>",
+                "domText": " Total 1 items",
+                "ssrHtml": "<p> Total 1 items<!----></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "back-to-zero",
+              "original": {
+                "state": {
+                  "id": "back-to-zero",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 0
+                },
+                "domHtml": "<p>Total 3 items<!--v-if--></p>",
+                "domText": "Total 3 items",
+                "ssrHtml": "<p>Total 3 items<!----></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "back-to-zero",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 0
+                },
+                "domHtml": "<p> Total 3 items<!--v-if--></p>",
+                "domText": " Total 3 items",
+                "ssrHtml": "<p> Total 3 items<!----></p>",
+                "emittedClickCalls": 0
+              }
+            }
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "id": "narrow-state-input",
+          "sourceSha256": "29c8c7f460e49dc56aec92fe068f5537a22a497df4f05f111b0c88bf06055d12",
+          "templateSha256": "3f6a713656aa397f8d20f066291701f8a72d325898958aa9da7353e25fde7a1e",
+          "domCodeSha256": "cb50688bb00fe407309c6fa1325217ca484ee1588882bed4cafb811c1d5366ab",
+          "ssrCodeSha256": "bd89f9919134272f02d44380c3fdaa5fffe37389fb2193e2e4ae156d1f15d96d",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p>Total 3 items<!--v-if--></p>",
+              "domText": "Total 3 items",
+              "ssrHtml": "<p>Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<p>Total 3 items (page 1)</p>",
+              "domText": "Total 3 items (page 1)",
+              "ssrHtml": "<p>Total 3 items<!--[--> (page 1)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<p>Total 3 items (page 2)</p>",
+              "domText": "Total 3 items (page 2)",
+              "ssrHtml": "<p>Total 3 items<!--[--> (page 2)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<p>Total 0 items<!--v-if--></p>",
+              "domText": "Total 0 items",
+              "ssrHtml": "<p>Total 0 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<p>Total 2 items (page 10)</p>",
+              "domText": "Total 2 items (page 10)",
+              "ssrHtml": "<p>Total 2 items<!--[--> (page 10)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<p>Total 1 items<!--v-if--></p>",
+              "domText": "Total 1 items",
+              "ssrHtml": "<p>Total 1 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p>Total 3 items<!--v-if--></p>",
+              "domText": "Total 3 items",
+              "ssrHtml": "<p>Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            }
+          ]
+        },
+        {
+          "id": "narrow-state-oxfmt-reference",
+          "sourceSha256": "ef02538835f9c02e76a7a82ba01e90a262a7ecc992e441ddf67ab75fbe182b33",
+          "templateSha256": "577a32aaed4e5327bd46a576e846aca10668826c368cc05e804677ff96b4ab29",
+          "domCodeSha256": "5bd1c20cb9e315d3e39a34e47cdff48bbc2e24a6e8e6ad1a2c1c74c23b75c463",
+          "ssrCodeSha256": "462fde58eba756d34576d168f076ce1a3a4517f3ab3e03e7b0ad0d6f33c7beae",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<p> Total 3 items (page 1)</p>",
+              "domText": " Total 3 items (page 1)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 1)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<p> Total 3 items (page 2)</p>",
+              "domText": " Total 3 items (page 2)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 2)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<p> Total 0 items<!--v-if--></p>",
+              "domText": " Total 0 items",
+              "ssrHtml": "<p> Total 0 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<p> Total 2 items (page 10)</p>",
+              "domText": " Total 2 items (page 10)",
+              "ssrHtml": "<p> Total 2 items<!--[--> (page 10)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<p> Total 1 items<!--v-if--></p>",
+              "domText": " Total 1 items",
+              "ssrHtml": "<p> Total 1 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "narrow-page",
+      "strictWholeDomAndSsrEqual": false,
+      "comparisons": [
+        {
+          "source": "narrow-page-oxfmt-reference",
+          "strictWholeDomAndSsrEqual": false,
+          "mismatches": [
+            {
+              "state": "false-page-zero",
+              "original": {
+                "state": {
+                  "id": "false-page-zero",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 0
+                },
+                "domHtml": "<p>Total 3 items<!--v-if--></p>",
+                "domText": "Total 3 items",
+                "ssrHtml": "<p>Total 3 items<!----></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "false-page-zero",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 0
+                },
+                "domHtml": "<p> Total 3 items<!--v-if--></p>",
+                "domText": " Total 3 items",
+                "ssrHtml": "<p> Total 3 items<!----></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "true-page-one",
+              "original": {
+                "state": {
+                  "id": "true-page-one",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 1
+                },
+                "domHtml": "<p>Total 3 items (page 1)</p>",
+                "domText": "Total 3 items (page 1)",
+                "ssrHtml": "<p>Total 3 items<!--[--> (page 1)<!--]--></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "true-page-one",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 1
+                },
+                "domHtml": "<p> Total 3 items (page 1)</p>",
+                "domText": " Total 3 items (page 1)",
+                "ssrHtml": "<p> Total 3 items<!--[--> (page 1)<!--]--></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "true-page-two",
+              "original": {
+                "state": {
+                  "id": "true-page-two",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 2
+                },
+                "domHtml": "<p>Total 3 items (page 2)</p>",
+                "domText": "Total 3 items (page 2)",
+                "ssrHtml": "<p>Total 3 items<!--[--> (page 2)<!--]--></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "true-page-two",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 2
+                },
+                "domHtml": "<p> Total 3 items (page 2)</p>",
+                "domText": " Total 3 items (page 2)",
+                "ssrHtml": "<p> Total 3 items<!--[--> (page 2)<!--]--></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "false-empty-pages",
+              "original": {
+                "state": {
+                  "id": "false-empty-pages",
+                  "pages": [],
+                  "page": 0
+                },
+                "domHtml": "<p>Total 0 items<!--v-if--></p>",
+                "domText": "Total 0 items",
+                "ssrHtml": "<p>Total 0 items<!----></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "false-empty-pages",
+                  "pages": [],
+                  "page": 0
+                },
+                "domHtml": "<p> Total 0 items<!--v-if--></p>",
+                "domText": " Total 0 items",
+                "ssrHtml": "<p> Total 0 items<!----></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "true-page-unicode-items",
+              "original": {
+                "state": {
+                  "id": "true-page-unicode-items",
+                  "pages": [
+                    "日本語",
+                    "a&b"
+                  ],
+                  "page": 10
+                },
+                "domHtml": "<p>Total 2 items (page 10)</p>",
+                "domText": "Total 2 items (page 10)",
+                "ssrHtml": "<p>Total 2 items<!--[--> (page 10)<!--]--></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "true-page-unicode-items",
+                  "pages": [
+                    "日本語",
+                    "a&b"
+                  ],
+                  "page": 10
+                },
+                "domHtml": "<p> Total 2 items (page 10)</p>",
+                "domText": " Total 2 items (page 10)",
+                "ssrHtml": "<p> Total 2 items<!--[--> (page 10)<!--]--></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "false-negative-page",
+              "original": {
+                "state": {
+                  "id": "false-negative-page",
+                  "pages": [
+                    9
+                  ],
+                  "page": -1
+                },
+                "domHtml": "<p>Total 1 items<!--v-if--></p>",
+                "domText": "Total 1 items",
+                "ssrHtml": "<p>Total 1 items<!----></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "false-negative-page",
+                  "pages": [
+                    9
+                  ],
+                  "page": -1
+                },
+                "domHtml": "<p> Total 1 items<!--v-if--></p>",
+                "domText": " Total 1 items",
+                "ssrHtml": "<p> Total 1 items<!----></p>",
+                "emittedClickCalls": 0
+              }
+            },
+            {
+              "state": "back-to-zero",
+              "original": {
+                "state": {
+                  "id": "back-to-zero",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 0
+                },
+                "domHtml": "<p>Total 3 items<!--v-if--></p>",
+                "domText": "Total 3 items",
+                "ssrHtml": "<p>Total 3 items<!----></p>",
+                "emittedClickCalls": 0
+              },
+              "reference": {
+                "state": {
+                  "id": "back-to-zero",
+                  "pages": [
+                    1,
+                    2,
+                    3
+                  ],
+                  "page": 0
+                },
+                "domHtml": "<p> Total 3 items<!--v-if--></p>",
+                "domText": " Total 3 items",
+                "ssrHtml": "<p> Total 3 items<!----></p>",
+                "emittedClickCalls": 0
+              }
+            }
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "id": "narrow-page-input",
+          "sourceSha256": "7b2a78b0f811fe8bbc6776197c07fac496f05d762bab5de10f0c4a22088074af",
+          "templateSha256": "813526b42b5afb2570f5505edccea50e2c048040066a83650946125af82ab12f",
+          "domCodeSha256": "b1c1a451d5271e69f24f4532a85d9157e28c14f688b9af62ccd7b519bad2e305",
+          "ssrCodeSha256": "2ddf0bad6511bab3c535b0a3b34234cc898302ea091054726348c194e731c749",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p>Total 3 items<!--v-if--></p>",
+              "domText": "Total 3 items",
+              "ssrHtml": "<p>Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<p>Total 3 items (page 1)</p>",
+              "domText": "Total 3 items (page 1)",
+              "ssrHtml": "<p>Total 3 items<!--[--> (page 1)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<p>Total 3 items (page 2)</p>",
+              "domText": "Total 3 items (page 2)",
+              "ssrHtml": "<p>Total 3 items<!--[--> (page 2)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<p>Total 0 items<!--v-if--></p>",
+              "domText": "Total 0 items",
+              "ssrHtml": "<p>Total 0 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<p>Total 2 items (page 10)</p>",
+              "domText": "Total 2 items (page 10)",
+              "ssrHtml": "<p>Total 2 items<!--[--> (page 10)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<p>Total 1 items<!--v-if--></p>",
+              "domText": "Total 1 items",
+              "ssrHtml": "<p>Total 1 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p>Total 3 items<!--v-if--></p>",
+              "domText": "Total 3 items",
+              "ssrHtml": "<p>Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            }
+          ]
+        },
+        {
+          "id": "narrow-page-oxfmt-reference",
+          "sourceSha256": "a6cc60d0d8f2aa32b49e583817789dad329cbf0832b903028efe4a015fd32564",
+          "templateSha256": "a5451a74ce925a3a6d6426b36bd6f04089b54e1a2071a738cdffe5795046c254",
+          "domCodeSha256": "f31938f0bc0a9618267a47c216b93175df9ebf9c75d8573f2a10cf8c2bb28657",
+          "ssrCodeSha256": "b1e3fb217cf0c618ffbee079d980d1da778c0dc51838c9505fe65339308bd358",
+          "observations": [
+            {
+              "state": {
+                "id": "false-page-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-one",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 1
+              },
+              "domHtml": "<p> Total 3 items (page 1)</p>",
+              "domText": " Total 3 items (page 1)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 1)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-two",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 2
+              },
+              "domHtml": "<p> Total 3 items (page 2)</p>",
+              "domText": " Total 3 items (page 2)",
+              "ssrHtml": "<p> Total 3 items<!--[--> (page 2)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-empty-pages",
+                "pages": [],
+                "page": 0
+              },
+              "domHtml": "<p> Total 0 items<!--v-if--></p>",
+              "domText": " Total 0 items",
+              "ssrHtml": "<p> Total 0 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "true-page-unicode-items",
+                "pages": [
+                  "日本語",
+                  "a&b"
+                ],
+                "page": 10
+              },
+              "domHtml": "<p> Total 2 items (page 10)</p>",
+              "domText": " Total 2 items (page 10)",
+              "ssrHtml": "<p> Total 2 items<!--[--> (page 10)<!--]--></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "false-negative-page",
+                "pages": [
+                  9
+                ],
+                "page": -1
+              },
+              "domHtml": "<p> Total 1 items<!--v-if--></p>",
+              "domText": " Total 1 items",
+              "ssrHtml": "<p> Total 1 items<!----></p>",
+              "emittedClickCalls": 0
+            },
+            {
+              "state": {
+                "id": "back-to-zero",
+                "pages": [
+                  1,
+                  2,
+                  3
+                ],
+                "page": 0
+              },
+              "domHtml": "<p> Total 3 items<!--v-if--></p>",
+              "domText": " Total 3 items",
+              "ssrHtml": "<p> Total 3 items<!----></p>",
+              "emittedClickCalls": 0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
