@@ -1,7 +1,6 @@
 //! Trace the unchanged original partial-application law through the editor.
 #![expect(
     clippy::disallowed_types,
-    clippy::expect_used,
     reason = "complete test custody uses std strings and fails closed by panicking"
 )]
 
