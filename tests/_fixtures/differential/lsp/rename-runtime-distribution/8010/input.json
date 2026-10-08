@@ -63,7 +63,7 @@
       "TextTrackListEventMap"
     ],
     "lib.webworker.d.ts": [
-      "CookieStoreEventMap"
+      "PermissionStatusEventMap"
     ],
     "source": "src/Toggle.vue",
     "sourceIdentifier": "change",

@@ -63,7 +63,10 @@ impl RuntimeDistribution {
             }
         }
         let physical = copied.canonicalize().unwrap();
-        assert!(physical.starts_with(project.canonicalize().unwrap()));
+        assert_eq!(
+            physical,
+            project.canonicalize().unwrap().join("runtime-distribution")
+        );
         assert!(
             !physical
                 .components()
@@ -83,12 +86,14 @@ impl RuntimeDistribution {
                 let quoted = executable.to_str().unwrap().replace('\'', "'\\''");
                 std::fs::write(&wrapper, format!("#!/bin/sh\nexec '{quoted}' \"$@\"\n")).unwrap();
                 std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
-                assert!(
-                    !wrapper
-                        .canonicalize()
-                        .unwrap()
-                        .starts_with(project.canonicalize().unwrap())
+                let physical_owner = owner.path().canonicalize().unwrap();
+                let physical_project = project.canonicalize().unwrap();
+                assert_eq!(
+                    wrapper.canonicalize().unwrap(),
+                    physical_owner.join("native-relay")
                 );
+                assert_eq!(physical_owner.parent(), physical_project.parent());
+                assert_ne!(physical_owner, physical_project);
                 (wrapper, Some(owner))
             }
             #[cfg(not(unix))]
