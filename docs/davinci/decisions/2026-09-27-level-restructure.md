@@ -243,7 +243,7 @@ Tracked in [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) and [#6855
 
 ## Vue Fes Japan (2026-10-24)
 
-- **In scope:** Vue (templates and every Vue dialect), JS/TS, JSX/TSX.
+- **In scope:** Vue (templates and every Vue dialect), JS/TS, JSX/TSX. The [current P0 acceptance ledger](../../release/2026-10-08-p0-delivery-ledger.md) retains all 108 original issues and added #8142, with protected source delivery separate from installed-public qualification. Remaining roadmap, upstream, historical failure-cause and latency criteria stay open; root coordinates finite queue and publication, and n8n upstream stays read-only.
 - **TSRX:** not a priority; nice to have if something runs.
 - **Other frameworks:** only the neutral types and names are designed before the talk. Flow is not in scope at all.
 - **Goal (A):** for the in-scope inputs, all five products run on the shared L1/L2 structure as far as native work goes, with per-product native-only acceptance rates.
