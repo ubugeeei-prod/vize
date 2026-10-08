@@ -78,9 +78,12 @@ must remain fresh; source and fixture fields do not bypass their checks.
 The hosted source suite also rejected stale CLI `explain` examples. Only the
 owned slot page gains the documented bound example in each of the three existing
 locales; all other 398 pages remain byte-exact per locale. The whole actual EN
-slot page matches the retained hosted output. A separate inherited casing-page
-drift is root-owned and requires its own fresh source repair; JA/ZH runtime output
-was not observed after the first EN assertion failed.
+slot page matches the retained hosted output. The complete actual EN assertion
+left/right differs only in slot; both executed strings already have the imported
+casing example. An earlier two-page comparison used the older declared PR-head
+snapshot instead of the executed right packet and is explicitly corrected.
+Fresh signed main already owns casing freshness. JA/ZH runtime output was not
+observed after the first EN assertion failed.
 
 ## Retained wider research
 
