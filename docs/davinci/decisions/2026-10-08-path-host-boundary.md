@@ -64,3 +64,12 @@ The same existing build recipe now cleans and attests changed Carton as well
 as L0 on both sides. Original 400-provider inputs, RPC checks, methodology,
 limits and historical/cut routes remain unchanged. Actual measurements still
 require fresh hosted execution.
+
+Source `57f165` subsequently passed all four required checks, native CLI,
+all seven original laws in 16,874 Rust tests, the full canonical corpus and
+the original 400 Vue/134 TS input replay. Both L0 and Carton were freshly
+built; all 79 complete public RPC rows per side and notifications matched.
+Preserve that source observation as historical after the genuine `a5384b78`
+main union: retain its complete types-presence collector, changing only the
+existing qualified path owner, and refresh the same exact 60-body map.
+The composed successor requires its own Actions and actual signed delivery.

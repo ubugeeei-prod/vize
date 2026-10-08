@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "originalSource": "6d26d84b4240e9356cf5078b6d277e181d311a42",
-  "transformedSource": "cda9cc870a51c5cf94f441ec34b8a26f6eb0c2d6",
+  "originalSource": "a5384b78c94ff8b11c111dcfce00721a9b60711b",
+  "transformedSource": "0383febeae79d19681b90a4d56684d0a2e23feae",
   "originalPathSHA256": "6baa58e143416eaed0d9b82984de455d76006dd5fd4dfa81b80190765307e7e3",
   "files": [
     [
@@ -176,8 +176,8 @@
     ],
     [
       "crates/vize/src/commands/check/tsconfig_inputs/type_references/tsconfig_types.rs",
-      "4396a029f736b627f77dace851797a2078c0a82f972f473bd8702039cdde740d",
-      "511147d84905e968f4ad06f80c8d1ff34179a66103acf716dcf139ff36c0253b"
+      "f3df8d8758eb48ddbce0a757a3bf2a65dec6baec5c748904d170605ecb6fb8c3",
+      "17f24ff3928b4e2fd8c57e8a5ecfdee952babdfc62ef1b0e1d22f62b487ee54d"
     ],
     [
       "crates/vize/src/commands/doctor/discovery.rs",
