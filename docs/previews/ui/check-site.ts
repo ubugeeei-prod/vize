@@ -4,13 +4,14 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
+import type { AddressInfo } from "node:net";
 
 import { resolvePuppeteerExecutablePath } from "../../browser-path.js";
 
 const docsRoot = path.resolve(import.meta.dirname, "../..");
 const root = path.join(docsRoot, "dist");
 const require = createRequire(path.join(docsRoot, "package.json"));
-const mime = {
+const mime: Record<string, string> = {
   ".html": "text/html",
   ".js": "text/javascript",
   ".css": "text/css",
@@ -19,7 +20,7 @@ const mime = {
   ".png": "image/png",
 };
 const server = createServer((request, response) => {
-  const url = new URL(request.url, "http://localhost");
+  const url = new URL(request.url!, "http://localhost");
   let file = path.resolve(root, `.${decodeURIComponent(url.pathname)}`);
   if (!file.startsWith(`${root}${path.sep}`) && file !== root) {
     response.writeHead(404).end();
@@ -41,12 +42,12 @@ const server = createServer((request, response) => {
   });
   response.end(readFileSync(file));
 });
-await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-const { chromium } = require("playwright");
+await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+const { chromium } = require("playwright") as typeof import("playwright");
 const browser = await chromium.launch({ executablePath: resolvePuppeteerExecutablePath() });
 try {
-  const base = `http://127.0.0.1:${server.address().port}`;
-  const checkedLinks = new Set();
+  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  const checkedLinks = new Set<string>();
   for (const width of [1440, 390]) {
     const page = await browser.newPage({
       viewport: { width, height: 1000 },
@@ -64,7 +65,7 @@ try {
         "/ja/guide/musea/",
       ]) {
         const response = await page.goto(`${base}${route}`, { waitUntil: "domcontentloaded" });
-        assert.equal(response.status(), 200, route);
+        assert.equal(response!.status(), 200, route);
         assert.ok(await page.locator("h1").first().textContent(), `${route}: heading`);
         assert.equal(
           await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
@@ -73,7 +74,13 @@ try {
         );
         for (const href of await page
           .locator("main a[href], main img[src], main iframe[src]")
-          .evaluateAll((elements) => elements.map((element) => element.href ?? element.src))) {
+          .evaluateAll((elements) =>
+            elements.map(
+              (element) =>
+                (element as HTMLAnchorElement & HTMLImageElement).href ??
+                (element as HTMLAnchorElement & HTMLImageElement).src,
+            ),
+          )) {
           const target = new URL(href, page.url());
           if (target.origin !== base || checkedLinks.has(target.href)) continue;
           target.hash = "";
@@ -108,7 +115,7 @@ try {
   );
 } finally {
   await browser.close();
-  await new Promise((resolve, reject) =>
+  await new Promise<void>((resolve, reject) =>
     server.close((error) => (error ? reject(error) : resolve())),
   );
 }

@@ -4,7 +4,7 @@
  * "Drop-in replacement for `@vitejs/plugin-vue`" is true for Vue 3 SFCs and not
  * for the legacy dialects, the non-Vite bundlers, or the full plugin-option
  * surface. These tests pin the boundary in the English docs (locale pages are
- * machine-generated from them by `docs/scripts/i18n/generate.mjs`) and in the
+ * machine-generated from them by `docs/scripts/i18n/generate.ts`) and in the
  * release notes, so the claim cannot widen silently.
  */
 

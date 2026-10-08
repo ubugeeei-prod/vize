@@ -18,18 +18,18 @@ test("docs build prepares its browser before previews and checks the rendered si
   };
 
   assert.deepEqual(packageJson.scripts.build.split(" && "), [
-    "node ./scripts/ensure-browser.mjs",
+    "node ./scripts/ensure-browser.ts",
     "pnpm generate:ui-previews",
     "pnpm generate:reference",
     "vp build",
     "pnpm check:ui-docs",
   ]);
-  assert.equal(packageJson.scripts["generate:ui-previews"], "node ./scripts/build-ui-previews.mjs");
+  assert.equal(packageJson.scripts["generate:ui-previews"], "node ./scripts/build-ui-previews.ts");
   assert.equal(
     packageJson.scripts["generate:reference"],
     "node ../npm/ui/scripts/generate-reference-docs.ts",
   );
-  assert.equal(packageJson.scripts["check:ui-docs"], "node ./previews/ui/check-site.mjs");
+  assert.equal(packageJson.scripts["check:ui-docs"], "node ./previews/ui/check-site.ts");
 });
 
 test("docs browser helper reuses an existing browser path without invoking Playwright install", () => {
@@ -37,7 +37,7 @@ test("docs browser helper reuses an existing browser path without invoking Playw
   const binDir = path.join(tempDir, "bin");
   const fakeBrowserPath = path.join(tempDir, "chromium");
   const playwrightLogPath = path.join(tempDir, "playwright.log");
-  const helperPath = path.join(repoRoot, "docs", "scripts", "ensure-browser.mjs");
+  const helperPath = path.join(repoRoot, "docs", "scripts", "ensure-browser.ts");
 
   try {
     fs.mkdirSync(binDir, { recursive: true });

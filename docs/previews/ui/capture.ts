@@ -1,24 +1,32 @@
 import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import type { Browser } from "playwright";
 
 import { featuredExamples } from "../../../npm/ui/scripts/reference-docs/examples.ts";
 import { previewExamples } from "./build-config.ts";
 
 /** Browser evidence is generated from the same SFC source shown in the docs. */
-export async function captureUiPreviews(browser, baseUrl, outputRoot) {
+export async function captureUiPreviews(browser: Browser, baseUrl: string, outputRoot: string) {
   mkdirSync(outputRoot, { recursive: true });
   const page = await browser.newPage({
     viewport: { width: 720, height: 440 },
     deviceScaleFactor: 1,
     reducedMotion: "reduce",
   });
-  const errors = [];
+  const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
     if (message.type() === "error" || message.type() === "warning") errors.push(message.text());
   });
-  const receipts = [];
+  const receipts: Array<{
+    family: string;
+    sourceSha256: string | null;
+    screenshot: string;
+    interactions: string;
+    narrowViewport: number;
+    browserDiagnostics: string[];
+  }> = [];
   try {
     for (const family of featuredExamples) {
       await page.goto(`${baseUrl}index.html?family=${family}`, { waitUntil: "networkidle" });
@@ -26,7 +34,7 @@ export async function captureUiPreviews(browser, baseUrl, outputRoot) {
       const sourceSha256 = await page.locator("html").getAttribute("data-preview-source-sha256");
       assert.equal(
         sourceSha256,
-        previewExamples.find(({ entry }) => entry.canonicalName === family).sourceSha256,
+        previewExamples.find(({ entry }) => entry.canonicalName === family)!.sourceSha256,
       );
       if (family === "button") {
         await page.getByRole("button", { name: "Save draft" }).click();
