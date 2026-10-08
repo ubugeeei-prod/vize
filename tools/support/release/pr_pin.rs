@@ -28,6 +28,7 @@ mod integration;
 pub(super) mod lock;
 #[path = "pr_pin_metadata.rs"]
 mod metadata;
+pub use metadata::rewrite_guest_lock;
 #[cfg(test)]
 #[path = "pr_pin_recovery_tests.rs"]
 mod recovery_tests;

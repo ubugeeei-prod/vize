@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { runMoonScript } from "../_helpers/moonbit.ts";
+import { repoRoot, runMoonScript } from "../_helpers/moonbit.ts";
 import { writeFakeCommand } from "./fake-command.ts";
 
 export interface RepositoryGuardOptions {
@@ -20,6 +20,7 @@ export interface RepositoryGuardOptions {
   manifestTestFails?: boolean;
   guardFails?: boolean;
   packageManifests?: Record<string, object>;
+  guestLocks?: Record<string, string>;
 }
 
 export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
@@ -31,8 +32,21 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
   const guardShimPath = path.join(tempDir, "release-local-guard-shim.mjs");
   const cargoTomlPath = path.join(tempDir, "Cargo.toml");
   const cargoToml = '[workspace.package]\nversion = "0.290.0"\n';
+  const realCargo = (process.env.PATH ?? "")
+    .split(path.delimiter)
+    .map((directory) => path.join(directory, process.platform === "win32" ? "cargo.exe" : "cargo"))
+    .find((command) => fs.existsSync(command));
   fs.mkdirSync(binDir, { recursive: true });
   fs.mkdirSync(path.join(tempDir, "npm"));
+  if (options.guestLocks) {
+    fs.symlinkSync(path.join(repoRoot, "tools"), path.join(tempDir, "tools"), "dir");
+    for (const [relativePath, contents] of Object.entries(options.guestLocks)) {
+      const lockPath = path.join(tempDir, relativePath);
+      fs.mkdirSync(path.dirname(lockPath), { recursive: true });
+      fs.writeFileSync(lockPath, contents);
+      fs.writeFileSync(lockPath.replace(/Cargo\.lock$/, "Cargo.toml"), "[workspace]\n");
+    }
+  }
   for (const [relativePath, manifest] of Object.entries(options.packageManifests ?? {})) {
     const manifestPath = path.join(tempDir, relativePath);
     fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
@@ -53,7 +67,30 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
     guardShimPath,
     "process.exit(process.env.TEST_GUARD_FAILS === 'true' ? 1 : 0);\n",
   );
-  writeFakeCommand(binDir, "cargo", "process.exit(0);");
+  writeFakeCommand(
+    binDir,
+    "cargo",
+    `
+    const fs = require('node:fs');
+    const args = process.argv.slice(2);
+    if (args[0] !== 'update' && ${Boolean(options.guestLocks)}) {
+      const result = require('node:child_process').spawnSync(${JSON.stringify(realCargo)}, args, { stdio: 'inherit' });
+      process.exit(result.status ?? 1);
+    }
+    const index = args.indexOf('--manifest-path');
+    if (index !== -1 && args.includes('vize_guest')) {
+      const file = args[index + 1].replace(/Cargo\\.toml$/, 'Cargo.lock');
+      // Reproduce the authenticated offline-resolver downgrade if preparation
+      // accidentally calls Cargo for a standalone SDK lock again.
+      fs.writeFileSync(file, fs.readFileSync(file, 'utf8')
+        .replace('version = "1.0.104"', 'version = "1.0.103"')
+        .replace('version = "2.13.2"', 'version = "2.13.1"')
+        .replace('version = "1.0.5"', 'version = "1.0.4"')
+        .replace('version = "0.290.0"', 'version = "0.290.1"'));
+    }
+    process.exit(0);
+    `,
+  );
   writeFakeCommand(
     binDir,
     "git",

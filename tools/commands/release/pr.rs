@@ -6,7 +6,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: pre-merge-catalog-v3.
+//! Driver source pin: guest-lock-version-only-v4.
 
 #[path = "../../support/release/pr_checks.rs"]
 mod pr_checks;
@@ -47,6 +47,7 @@ fn run() -> Result<(), String> {
         .collect::<Vec<_>>()
         .as_slice()
     {
+        ["rewrite-guest-lock", path, old, new] => pr_pin::rewrite_guest_lock(path, old, new, &root),
         ["start", bump] => pr_start::start(bump, &root),
         ["start", bump, "--pin"] => pr_start::start_pinned(bump, &root),
         ["resume", number] => {
