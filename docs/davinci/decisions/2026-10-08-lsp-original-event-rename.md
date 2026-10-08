@@ -158,3 +158,10 @@ source correction or oracle change is authorized by an empty diagnostic alone.
 Fresh source execution must determine the cause and still satisfy all 92 bodies.
 
 Paired selector and diagnostic-witness decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6049857114) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6049857287).
+
+Genuinely compose signed actual main `18ce7841e6`, retaining both ancestries
+and the incoming 12 slot sessions byte-for-byte. The combined generator remains
+851 lines; resolve only derived census metadata through the unchanged generator.
+The fresh complete original-report capture universe is 82 contexts (16 original,
+48 named-type, six event and 12 slot), alongside the separate 22 library-authority
+contexts. Historical event or slot success grants no current-source credit.

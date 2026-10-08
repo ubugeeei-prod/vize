@@ -42,6 +42,14 @@ impl Linter {
                 &mut result,
                 None,
             );
+            if super::super::css_rules::has_active_builtin_css_rules(self) {
+                super::super::css_rules::append_builtin_css_diagnostics(
+                    self,
+                    descriptor,
+                    &mut result,
+                    None,
+                );
+            }
             return result;
         };
 
@@ -94,6 +102,17 @@ impl Linter {
             &mut result,
             (!has_fatal_parse_errors).then_some((&root, template.loc.start as u32)),
         );
+        if super::super::css_rules::has_active_builtin_css_rules(self) {
+            super::super::css_rules::append_builtin_css_diagnostics(
+                self,
+                descriptor,
+                &mut result,
+                (!has_fatal_parse_errors
+                    && template.src.is_none()
+                    && template.lang.as_deref().is_none_or(|lang| lang == "html"))
+                .then_some(&root),
+            );
+        }
         result
     }
 
@@ -159,6 +178,7 @@ impl Linter {
                     self,
                     descriptor,
                     &mut template_result,
+                    None,
                 );
             }
             return self.append_sfc_document_rule_diagnostics(
@@ -178,16 +198,7 @@ impl Linter {
             let template_result = match shared_descriptor {
                 Some(descriptor) => {
                     profile!("patina.sfc.descriptor_rules", {
-                        let mut result =
-                            self.lint_sfc_with_descriptor(filename, descriptor, derived);
-                        if super::super::css_rules::has_active_builtin_css_rules(self) {
-                            super::super::css_rules::append_builtin_css_diagnostics(
-                                self,
-                                descriptor,
-                                &mut result,
-                            );
-                        }
-                        result
+                        self.lint_sfc_with_descriptor(filename, descriptor, derived)
                     })
                 }
                 None => self.fast_template_lint_or_empty(source, filename),

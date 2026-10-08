@@ -7,7 +7,7 @@ use std::{collections::BTreeMap, path::Path};
 use vize_armature::Parser;
 use vize_atelier_sfc::{
     SfcParseOptions,
-    croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+    croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_occurrences as capture_sfc},
     parse_sfc,
 };
 use vize_croquis::{EffectGraphScript, build_effect_graph_from_sfc_scripts};
@@ -164,9 +164,9 @@ fn add_sfc(
                 message: error.message.clone(),
             });
         }
-        analyze_sfc_descriptor_with_context(&descriptor, Some(&root), SfcCroquisOptions::full())
+        capture_sfc(&descriptor, Some(&root), SfcCroquisOptions::full()).0
     } else {
-        analyze_sfc_descriptor_with_context(&descriptor, None, SfcCroquisOptions::full())
+        capture_sfc(&descriptor, None, SfcCroquisOptions::full()).0
     };
     let effect_summary = build_effect_graph_from_sfc_scripts(
         descriptor

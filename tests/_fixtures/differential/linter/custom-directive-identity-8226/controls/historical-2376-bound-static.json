@@ -1,0 +1,23 @@
+{
+  "id": "historical-2376-bound-static",
+  "source": "<div :id=\"a\" id=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "historical-2376-bound-static.vue",
+    "errorCount": 1,
+    "warningCount": 0,
+    "diagnostics": [
+      {
+        "rule": "vue/no-duplicate-attributes",
+        "severity": "Error",
+        "message": "Duplicate attribute 'id'",
+        "start": 13,
+        "end": 19,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  }
+}

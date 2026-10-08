@@ -1,0 +1,9 @@
+<script setup lang="ts">
+function readTitle(window) {
+  if (typeof window !== "undefined") { document.title; }
+}
+readTitle("server value");
+</script>
+<template>
+  <p>Ready</p>
+</template>

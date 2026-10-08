@@ -1,0 +1,12 @@
+{
+  "id": "custom-compound-dynamic",
+  "source": "<div v-custom:[arg+suffix]=\"a\" v-custom:arg=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "custom-compound-dynamic.vue",
+    "errorCount": 0,
+    "warningCount": 0,
+    "diagnostics": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "issue": 8226,
+  "project": "ant-design-vue",
+  "revision": "7483836f0adac76516e527df893c3d84a7cd4005",
+  "matrixSource": "fd6241bf8ea5466794cc955138a59a9b75a8aac2",
+  "matrixRun": 37700140534,
+  "matrixArtifact": 11517048451,
+  "matrixArtifactSha256": "4590683d9f8e4153084185f59ec7c16a6bc50d2fbfec871645e0a0defd159828",
+  "argv": ["lint", "<file>", "--format", "json", "--no-config", "--preset", "ecosystem"],
+  "files": [
+    {
+      "path": "site/src/components/DemoBox.vue",
+      "source": "originals/DemoBox.vue.txt",
+      "bytes": 9463,
+      "sha256": "e9dd3d2ba730b48b42a3cfef7b0c95c191a6b7c571231d0c2366220e2ce98fde",
+      "blob": "90b503fda9a0da3a679784692c3c61cca4d38578"
+    },
+    {
+      "path": "site/src/theme/template/IconDisplay/CopyableIcon.vue",
+      "source": "originals/CopyableIcon.vue.txt",
+      "bytes": 1109,
+      "sha256": "784c17d2633010d58aebc104f845cfc87c8883cb1494b5a161bb80581ccf1139",
+      "blob": "a6124ae25f5688812b4a2c871acaa2dc3f3fadba"
+    }
+  ]
+}

@@ -765,7 +765,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ambient.emit_return(&mut ts, &setup_return_fields, &mut mappings);
 
     ts.push_str("}\n\n");
-
     // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
     semantic_links.extend(script_module::emit_exports(
@@ -793,6 +792,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let slots_is_generic = emit_slots_type(
         &mut ts,
         summary,
+        MacroTypeMappings::new(&mut mappings, script_content, &script_source_offset),
         generic_injection.as_ref(),
         !module_plan.exported_types.contains("Slots"),
         inferred_slots,

@@ -1,0 +1,12 @@
+{
+  "id": "custom-case-sensitive-name",
+  "source": "<div v-custom=\"a\" v-Custom=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "custom-case-sensitive-name.vue",
+    "errorCount": 0,
+    "warningCount": 0,
+    "diagnostics": []
+  }
+}

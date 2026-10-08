@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineSlots<{ "item-row"(props: { title: string }): unknown }>();
+</script>
+<template><slot name="item-row" title="Other" /></template>

@@ -12,6 +12,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
     call: &CallExpression<'_>,
     source: &str,
 ) {
+    super::super::super::ssr_calls::note_call(result, call);
     result.refuse_type_arguments(call.type_arguments.as_deref());
     // First, walk the callee (might be a chained call like foo.bar().baz())
     walk_expression(result, &call.callee, source);

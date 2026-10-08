@@ -16,6 +16,8 @@
 //! <div :class="foo"></div>
 //! ```
 
+mod directive_identity;
+
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
@@ -23,6 +25,7 @@ use vize_l0::FxHashSet;
 use vize_l0::String;
 use vize_l0::ToCompactString;
 use vize_l0::cstr;
+use vize_l0::is_builtin_directive;
 use vize_relief::{ElementNode, PropNode};
 
 static META: RuleMeta = RuleMeta {
@@ -58,6 +61,7 @@ impl Rule for NoDuplicateAttributes {
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         let mut seen_attrs: FxHashSet<String> = FxHashSet::default();
         let mut seen_directives: FxHashSet<String> = FxHashSet::default();
+        let mut seen_custom_directives: FxHashSet<String> = FxHashSet::default();
 
         for prop in element.props.iter() {
             match prop {
@@ -183,7 +187,15 @@ impl Rule for NoDuplicateAttributes {
                         }
                     } else {
                         let name = dir.raw_name.unwrap_or(dir.name);
-                        if !seen_directives.insert(name.to_compact_string()) {
+                        let Some(key) = directive_identity::key(dir) else {
+                            continue;
+                        };
+                        let seen = if is_builtin_directive(dir.name) {
+                            &mut seen_directives
+                        } else {
+                            &mut seen_custom_directives
+                        };
+                        if !seen.insert(key) {
                             ctx.error_with_help(
                                 ctx.t_fmt("vue/no-duplicate-attributes.message", &[("attr", name)]),
                                 &dir.loc,

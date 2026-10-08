@@ -1,6 +1,8 @@
 //! Public Doctor projection consumes the same frozen original sources as lint.
 use std::{fs, path::Path, process::Command};
 use vize_doctor::DoctorReport;
+#[path = "support/browser_origin_current_reference.rs"]
+mod current_reference;
 
 #[test]
 fn browser_diagnostics_use_authored_script_and_template_bytes() {
@@ -9,6 +11,7 @@ fn browser_diagnostics_use_authored_script_and_template_bytes() {
         serde_json::from_slice(&fs::read(corpus.join("source.json")).unwrap()).unwrap();
     let workspace = tempfile::tempdir().unwrap();
     let cases = source["cases"].as_array().unwrap();
+    let current = current_reference::validate(&corpus, &source).unwrap();
     assert_eq!(cases.len(), 11);
     for case in cases {
         let filename = case["path"].as_str().unwrap();
@@ -42,7 +45,12 @@ fn browser_diagnostics_use_authored_script_and_template_bytes() {
                 (finding.primary.start, finding.primary.end)
             })
             .collect();
-        let expected: Vec<_> = case["doctorLocations"]
+        let locations = if case["path"] == current["path"] {
+            &current["currentDoctorLocations"]
+        } else {
+            &case["doctorLocations"]
+        };
+        let expected: Vec<_> = locations
             .as_array()
             .unwrap()
             .iter()
@@ -54,6 +62,9 @@ fn browser_diagnostics_use_authored_script_and_template_bytes() {
             })
             .collect();
         assert_eq!(actual, expected, "{filename}: {output:?}");
+        if case["path"] == current["path"] {
+            assert_ne!(locations, &case["doctorLocations"]);
+        }
         assert_eq!(fs::read(workspace.path().join(filename)).unwrap(), input);
         fs::remove_file(workspace.path().join(filename)).unwrap();
     }

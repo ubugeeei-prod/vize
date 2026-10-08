@@ -1,0 +1,24 @@
+<script setup vapor>
+import { ref } from "vue";
+import Child from "./Child.vue";
+const children = ref([]);
+const solo = ref(null);
+const numbers = ref([1, 2]);
+const show = ref(true);
+const remove = () => { numbers.value = numbers.value.slice(1); };
+const clear = () => { numbers.value = []; };
+const hide = () => { show.value = false; };
+const read = () => ({
+  loop: children.value.map(child => child.hello),
+  solo: solo.value?.hello ?? null,
+  array: Array.isArray(children.value),
+  scalar: !Array.isArray(solo.value),
+});
+defineExpose({ remove, clear, hide, read });
+</script>
+<template>
+  <section>
+    <Child v-for="n in numbers" :key="n" ref="children" />
+    <Child v-if="show" ref="solo" />
+  </section>
+</template>

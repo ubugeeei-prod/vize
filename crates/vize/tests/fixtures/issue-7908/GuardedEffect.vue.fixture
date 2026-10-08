@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { ref, watchEffect } from "vue";
+
+const lang = ref("en");
+watchEffect(() => {
+  if (import.meta.env.SSR) return;
+  document.documentElement.lang = lang.value;
+});
+</script>
+
+<template>
+  <p>{{ lang }}</p>
+</template>

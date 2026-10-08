@@ -1,9 +1,11 @@
 pub(crate) mod defaults;
 mod emits;
 mod expose;
+mod slots;
 mod tracker;
 
 pub use expose::{ExposeBinding, ExposeDefinition};
+pub use slots::SlotsDefinition;
 
 use vize_carton::{CompactString, FxHashMap};
 pub const DEFINE_PROPS: &str = "defineProps";
@@ -313,15 +315,6 @@ pub struct TopLevelAwait {
     pub expression: CompactString,
 }
 
-/// Slots definition from defineSlots
-#[derive(Debug, Clone)]
-pub struct SlotsDefinition {
-    /// Slot name
-    pub name: CompactString,
-    /// Slot props type (if known)
-    pub props_type: Option<CompactString>,
-}
-
 /// Musea art metadata from defineArt(component, options).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArtDefinition {
@@ -372,6 +365,8 @@ pub struct MacroTracker {
     expose_incomplete: bool,
     /// Slots from defineSlots
     slots: Vec<SlotsDefinition>,
+    slot_declarations: Vec<Option<(u32, u32)>>,
+    slot_type_argument_range: Option<(u32, u32)>,
     /// Art metadata from defineArt
     art: Option<ArtDefinition>,
     define_options_name: Option<CompactString>,
@@ -477,6 +472,7 @@ impl MacroTracker {
     /// Add a slot definition
     #[inline]
     pub fn add_slot(&mut self, slot: SlotsDefinition) {
+        self.slot_declarations.push(None);
         self.slots.push(slot);
     }
 

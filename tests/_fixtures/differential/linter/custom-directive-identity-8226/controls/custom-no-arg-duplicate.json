@@ -1,0 +1,23 @@
+{
+  "id": "custom-no-arg-duplicate",
+  "source": "<div v-custom=\"a\" v-custom=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "custom-no-arg-duplicate.vue",
+    "errorCount": 1,
+    "warningCount": 0,
+    "diagnostics": [
+      {
+        "rule": "vue/no-duplicate-attributes",
+        "severity": "Error",
+        "message": "Duplicate attribute 'v-custom'",
+        "start": 18,
+        "end": 30,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  }
+}

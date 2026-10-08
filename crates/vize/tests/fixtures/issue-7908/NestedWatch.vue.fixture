@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { watch as observe } from "vue";
+function initialize() {
+  observe(0, () => { document.title; });
+}
+initialize();
+</script>
+<template>
+  <p>Ready</p>
+</template>

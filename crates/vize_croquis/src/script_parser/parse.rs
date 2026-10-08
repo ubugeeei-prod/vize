@@ -63,6 +63,7 @@ pub(crate) fn parse_script_setup_for_unused<const BUILTIN_TYPES: bool>(
         occurrences,
     );
     if !ret.diagnostics.is_empty() {
+        result.setup_context.clear_ssr_facts();
         result.occurrence_capture = None;
         if BUILTIN_TYPES {
             result.types.clear_builtin_reactive_types();
@@ -327,6 +328,7 @@ pub(crate) fn parse_script_with_options_source_type(
     );
 
     if !ret.diagnostics.is_empty() {
+        result.setup_context.clear_ssr_facts();
         result.occurrence_capture = None;
     }
     result.macros.invalidate_default_objects();
