@@ -1,0 +1,25 @@
+{
+  "sourceRevision": "26e56ac6a0de3f9f838db55bbdb71757317f2435",
+  "sourceInventoryCount": 10186,
+  "sourceInventoryUnchanged": true,
+  "beforeSourceInventorySha256": "1628382c67f66d4ee5f09a36d78d6b14be59a112002494b5abdb2c4a57d9d4a6",
+  "driverSha256": "172e7b0ba02de8476dc5cc538dd968f4c9e24d4b0311bc93b4de2398ce53474c",
+  "buildLogSha256": "506543818babac90089da7e8962d88379b06dc5c121d63ef1dcda1d563ae2db8",
+  "beforeReceipt": {
+    "sourceRevision": "26e56ac6a0de3f9f838db55bbdb71757317f2435",
+    "binarySha256": "4172bcb0657b5f029ccf6cc80a6faf57e57e0fbcb1c1cda393236cfa8025929a",
+    "driverSha256": "172e7b0ba02de8476dc5cc538dd968f4c9e24d4b0311bc93b4de2398ce53474c",
+    "status": 0,
+    "signal": null,
+    "error": null,
+    "command": [
+      "/tmp/vize-n8n-bound-slot-producer-20261008/native-before",
+      "/tmp/vize-n8n-bound-slot-producer-20261008/input.json",
+      "/tmp/vize-n8n-bound-slot-producer-20261008/native-before.json"
+    ],
+    "inputSha256": "6871d9b2dda202a9b4507f10599217d453a5c5b07fd072a7135b9ca7549ad04d",
+    "rawSha256": "4af69f9fbf5219aebc13dc7991ee237730b5dbda0a927dc844fc1e8fdd48a96c",
+    "scope": "Actual fresh-main source Linter API BEFORE, own private target and declared Rust1.99; no CLI/public/performance claim"
+  },
+  "qualification": "Freshmain26e56 source API BEFORE; all10186 indexed source/manifest/config entries unchanged through private build and40 repeated cases; no CLI/public/performance credit."
+}

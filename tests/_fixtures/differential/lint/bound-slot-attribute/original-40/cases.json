@@ -1,0 +1,1112 @@
+{
+  "schema": "vize.bound-slot-attribute.corpus",
+  "version": 1,
+  "rule": "vue/no-deprecated-slot-attribute",
+  "cases": [
+    {
+      "id": "static-child--scripted",
+      "filename": "static-child--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div slot=\"header\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "9adc192f626310fdfec5442a77c1039b6328ebed10041f12918821f64cb5a0ce",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 187,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 183
+          }
+        ],
+        "error_count": 1,
+        "filename": "static-child--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "static-child--scriptless",
+      "filename": "static-child--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div slot=\"header\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "a299001f8290e875501e990abd6e7d33636d53246737aec2db963a19d6f68ac3",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 34,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 30
+          }
+        ],
+        "error_count": 2,
+        "filename": "static-child--scriptless.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "static-template--scripted",
+      "filename": "static-template--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><template slot=\"header\"><div>Title</div></template></FancyPanel>\n</template>\n",
+      "sourceSha256": "c11ddc96af99a1a4ed7943117d8ee590c6dc623ef145846a8a2256226548db57",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 192,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 188
+          }
+        ],
+        "error_count": 1,
+        "filename": "static-template--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "static-template--scriptless",
+      "filename": "static-template--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><template slot=\"header\"><div>Title</div></template></FancyPanel>\n</template>\n",
+      "sourceSha256": "a934c45012b72afa4f0487534412b4779b293b14ecbb7979cb2d2ee9ad078376",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 39,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 35
+          }
+        ],
+        "error_count": 2,
+        "filename": "static-template--scriptless.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "short-bound--scripted",
+      "filename": "short-bound--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :slot=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "65b81a67ef6e2e7166c449f10846bbdf6a869f03a2467eb6f59d112097dd0373",
+      "scriptless": false,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 188,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 183
+          }
+        ],
+        "error_count": 1,
+        "filename": "short-bound--scripted.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot"
+    },
+    {
+      "id": "short-bound--scriptless",
+      "filename": "short-bound--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div :slot=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "8c9f5378310e00a26f7a465708ed03c7fa35201056b67db88c6139ced4ade270",
+      "scriptless": true,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 35,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 30
+          }
+        ],
+        "error_count": 2,
+        "filename": "short-bound--scriptless.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot"
+    },
+    {
+      "id": "long-bound--scripted",
+      "filename": "long-bound--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div v-bind:slot=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "f1b4f9090c75f3bb1e4bebe7b0eebdd7e1eb3a5bb6fb6265ccfd738326cec8b2",
+      "scriptless": false,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 194,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 183
+          }
+        ],
+        "error_count": 1,
+        "filename": "long-bound--scripted.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": "v-bind:slot"
+    },
+    {
+      "id": "long-bound--scriptless",
+      "filename": "long-bound--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div v-bind:slot=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "9899876e88f9d1c1069a84d0b5742bdbb0ef345b327d043f3e8b78449f28d00f",
+      "scriptless": true,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 41,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 30
+          }
+        ],
+        "error_count": 2,
+        "filename": "long-bound--scriptless.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": "v-bind:slot"
+    },
+    {
+      "id": "bound-template--scripted",
+      "filename": "bound-template--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><template :slot=\"name\"><div>Title</div></template></FancyPanel>\n</template>\n",
+      "sourceSha256": "2cbb5a350569ddc4abcb573c5ac55054567e063ac507cf9a5bfc0c0520fbc7d7",
+      "scriptless": false,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 193,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 188
+          }
+        ],
+        "error_count": 1,
+        "filename": "bound-template--scripted.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot"
+    },
+    {
+      "id": "bound-template--scriptless",
+      "filename": "bound-template--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><template :slot=\"name\"><div>Title</div></template></FancyPanel>\n</template>\n",
+      "sourceSha256": "ecc1dd2ef08c1b3264c85f8541a4ebc289e3a6ed0e19759b1011db8140df7788",
+      "scriptless": true,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 40,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 35
+          }
+        ],
+        "error_count": 2,
+        "filename": "bound-template--scriptless.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot"
+    },
+    {
+      "id": "same-name-shorthand--scripted",
+      "filename": "same-name-shorthand--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :slot>Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "59a5a605826e51d7b05f6391b663b9f292ba04a338abb617bd0ee47addea49d0",
+      "scriptless": false,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 188,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 183
+          }
+        ],
+        "error_count": 1,
+        "filename": "same-name-shorthand--scripted.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot"
+    },
+    {
+      "id": "same-name-shorthand--scriptless",
+      "filename": "same-name-shorthand--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div :slot>Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "f0092ccfc9651ce20223b85788bda58d059b40cbab0c2714d2c03964a8f236a7",
+      "scriptless": true,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 35,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 30
+          }
+        ],
+        "error_count": 2,
+        "filename": "same-name-shorthand--scriptless.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot"
+    },
+    {
+      "id": "bound-prop-modifier--scripted",
+      "filename": "bound-prop-modifier--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :slot.prop=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "962522e6da80c01f38b4409797e9ada7670a08a1396e65b913d8140fea3536a0",
+      "scriptless": false,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 193,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 183
+          }
+        ],
+        "error_count": 1,
+        "filename": "bound-prop-modifier--scripted.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot.prop"
+    },
+    {
+      "id": "bound-prop-modifier--scriptless",
+      "filename": "bound-prop-modifier--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div :slot.prop=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "1a019df4501ec251557bfa180b9c3eb6d360da8a0a2dfb7cd746494d64ca95db",
+      "scriptless": true,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 40,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 30
+          }
+        ],
+        "error_count": 2,
+        "filename": "bound-prop-modifier--scriptless.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot.prop"
+    },
+    {
+      "id": "bound-camel-modifier--scripted",
+      "filename": "bound-camel-modifier--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div v-bind:slot.camel=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "9bc37c1aad60bb98a5277c105c7727a612a2ee5ce0333d134e016d3f4cf4bb41",
+      "scriptless": false,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 200,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 183
+          }
+        ],
+        "error_count": 1,
+        "filename": "bound-camel-modifier--scripted.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": "v-bind:slot.camel"
+    },
+    {
+      "id": "bound-camel-modifier--scriptless",
+      "filename": "bound-camel-modifier--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div v-bind:slot.camel=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "5e7e608bfc9f1aac2ec1877d87d86f87c5f73305e4dc9c0271ad9812e9c3ce4d",
+      "scriptless": true,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 47,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 30
+          }
+        ],
+        "error_count": 2,
+        "filename": "bound-camel-modifier--scriptless.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": "v-bind:slot.camel"
+    },
+    {
+      "id": "dynamic-argument--scripted",
+      "filename": "dynamic-argument--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :[slot]=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "4dfd7c1a3beb2e049e7da2dc97f0670c081573e5a357a2edd57f8f0ba6691b1a",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-argument--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "dynamic-argument--scriptless",
+      "filename": "dynamic-argument--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div :[slot]=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "ec8d52991531bfb5ac0a3852a356e9c40f596274c481f5a7ab235ab484bb622d",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "dynamic-argument--scriptless.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "literal-dynamic-argument--scripted",
+      "filename": "literal-dynamic-argument--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :['slot']=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "d668682c1ebe756141c2ed51bd675dbcc91d483df57deda8df5832caa6c6a511",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "literal-dynamic-argument--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "literal-dynamic-argument--scriptless",
+      "filename": "literal-dynamic-argument--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div :['slot']=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "bdc9a043c528448654ce16d03cec123e4d7df7ef25b102735aceb5c22b6e1f7d",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "literal-dynamic-argument--scriptless.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "object-binding--scripted",
+      "filename": "object-binding--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div v-bind=\"{ slot: name }\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "3ca25a41c2b1bae9c75e8dbbe195410a98b502e680e1b657454c66ab5717ec62",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "object-binding--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "object-binding--scriptless",
+      "filename": "object-binding--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div v-bind=\"{ slot: name }\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "155ed454504ee53608df16acbf516050c6db7b96caaeaabf9fb8c95b051e5074",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "object-binding--scriptless.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "modern-static-slot--scripted",
+      "filename": "modern-static-slot--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><template #header><div>Title</div></template></FancyPanel>\n</template>\n",
+      "sourceSha256": "2d322c79503ea191a78b496ba3b78802b507dc1d4c3338db76614c34e09d9843",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "modern-static-slot--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "modern-static-slot--scriptless",
+      "filename": "modern-static-slot--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><template #header><div>Title</div></template></FancyPanel>\n</template>\n",
+      "sourceSha256": "bb0cb506ec1988d45e75f3a459a9131f448eccfc4d414fe2042fbb07ce58d652",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "modern-static-slot--scriptless.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "modern-dynamic-slot--scripted",
+      "filename": "modern-dynamic-slot--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><template #[name]><div>Title</div></template></FancyPanel>\n</template>\n",
+      "sourceSha256": "49efce42718d9fa87ae38aff73e1e056000a0b08676490301f3dad369507b7c4",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "modern-dynamic-slot--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "modern-dynamic-slot--scriptless",
+      "filename": "modern-dynamic-slot--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><template #[name]><div>Title</div></template></FancyPanel>\n</template>\n",
+      "sourceSha256": "546dca37208efa032aa7fd0e9d75d0f75e1009d804838f62701595f2f5759149",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "modern-dynamic-slot--scriptless.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "modern-long-slot--scripted",
+      "filename": "modern-long-slot--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><template v-slot:header><div>Title</div></template></FancyPanel>\n</template>\n",
+      "sourceSha256": "dc5edc6276e4e3f6ad546f314a64027a7fa531fafaf1445662d374677cad994f",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 201,
+            "fix": {
+              "edits": [
+                {
+                  "end": 195,
+                  "new_text": "#",
+                  "start": 188
+                }
+              ],
+              "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+            },
+            "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+            "labels": [],
+            "message": "Expected '#header' instead of 'v-slot:header'",
+            "rule_name": "vue/v-slot-style",
+            "severity": "error",
+            "start": 188
+          }
+        ],
+        "error_count": 1,
+        "filename": "modern-long-slot--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "modern-long-slot--scriptless",
+      "filename": "modern-long-slot--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><template v-slot:header><div>Title</div></template></FancyPanel>\n</template>\n",
+      "sourceSha256": "77dffb3f685780dc319e69122233734afeecdb69880577ac4c49aa9f96158454",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 48,
+            "fix": {
+              "edits": [
+                {
+                  "end": 42,
+                  "new_text": "#",
+                  "start": 35
+                }
+              ],
+              "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+            },
+            "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+            "labels": [],
+            "message": "Expected '#header' instead of 'v-slot:header'",
+            "rule_name": "vue/v-slot-style",
+            "severity": "error",
+            "start": 35
+          }
+        ],
+        "error_count": 2,
+        "filename": "modern-long-slot--scriptless.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "unrelated-data-slot--scripted",
+      "filename": "unrelated-data-slot--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :data-slot=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "7d71d19df89ca17212be3eb6016f8509180f94d7383e91b09acef767c06ebffc",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "unrelated-data-slot--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "unrelated-data-slot--scriptless",
+      "filename": "unrelated-data-slot--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div :data-slot=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "55aab04bbeeca16425bfd8c0bcd6eb8e31f53d6bb7d208ff858d0294afc73ed7",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "unrelated-data-slot--scriptless.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "unrelated-slots--scripted",
+      "filename": "unrelated-slots--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div v-bind:slots=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "35463cac615767ed41ca7212ca9483f241a1f76e0bd087b4706bed92ec159c7c",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "unrelated-slots--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "unrelated-slots--scriptless",
+      "filename": "unrelated-slots--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div v-bind:slots=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "25f5dd169cdffaa06163756a1a396fc98b9193b586b3acd5ab82162a572571a4",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "unrelated-slots--scriptless.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "unrelated-bound-slot-scope--scripted",
+      "filename": "unrelated-bound-slot-scope--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :slot-scope=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "ee765f636af073afa95e8baf4981cb450aa5b06ce3fdf2bae5e244d57e6eb7a5",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "unrelated-bound-slot-scope--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "unrelated-bound-slot-scope--scriptless",
+      "filename": "unrelated-bound-slot-scope--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div :slot-scope=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "c5c721953adaea19c1adde5859c25d378e9482f665c1819e90c5a43b3981fbd8",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "unrelated-bound-slot-scope--scriptless.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "duplicate-static-and-bound--scripted",
+      "filename": "duplicate-static-and-bound--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div slot=\"header\" :slot=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "7708677f1ca2312136782fb74ca754ed6214f70ca9074591f07074b6db982e3a",
+      "scriptless": false,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 209,
+            "fix": null,
+            "help": "Remove the duplicate attribute",
+            "labels": [],
+            "message": "Duplicate attribute 'v-bind:slot'",
+            "rule_name": "vue/no-duplicate-attributes",
+            "severity": "error",
+            "start": 197
+          },
+          {
+            "end": 187,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 183
+          },
+          {
+            "end": 202,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 197
+          }
+        ],
+        "error_count": 3,
+        "filename": "duplicate-static-and-bound--scripted.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot"
+    },
+    {
+      "id": "duplicate-static-and-bound--scriptless",
+      "filename": "duplicate-static-and-bound--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div slot=\"header\" :slot=\"name\">Title</div></FancyPanel>\n</template>\n",
+      "sourceSha256": "5a278b3cb573830d2491c9ccb6692d5473cf60660488d0acb79fbefda0c887fc",
+      "scriptless": true,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 56,
+            "fix": null,
+            "help": "Remove the duplicate attribute",
+            "labels": [],
+            "message": "Duplicate attribute 'v-bind:slot'",
+            "rule_name": "vue/no-duplicate-attributes",
+            "severity": "error",
+            "start": 44
+          },
+          {
+            "end": 34,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 30
+          },
+          {
+            "end": 49,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 44
+          }
+        ],
+        "error_count": 4,
+        "filename": "duplicate-static-and-bound--scriptless.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot"
+    },
+    {
+      "id": "bound-with-unrelated-html--scripted",
+      "filename": "bound-with-unrelated-html--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :slot=\"name\"><span v-html=\"value\" /></div></FancyPanel>\n</template>\n",
+      "sourceSha256": "314494a7f37264b258e2e90cd7cf9eed77b48d4fbbc9d8c65d5dc384b6f369f4",
+      "scriptless": false,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 188,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 183
+          },
+          {
+            "end": 216,
+            "fix": null,
+            "help": "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+            "labels": [],
+            "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+            "rule_name": "vue/no-v-html",
+            "severity": "error",
+            "start": 202
+          }
+        ],
+        "error_count": 2,
+        "filename": "bound-with-unrelated-html--scripted.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot"
+    },
+    {
+      "id": "bound-with-unrelated-html--scriptless",
+      "filename": "bound-with-unrelated-html--scriptless.vue",
+      "source": "<template>\n  <FancyPanel><div :slot=\"name\"><span v-html=\"value\" /></div></FancyPanel>\n</template>\n",
+      "sourceSha256": "439014bf0e14c9ecf76a981b6f18318a5d53152d8ba269a3264a7aa7f29048e5",
+      "scriptless": true,
+      "addedTargets": 1,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 35,
+            "fix": null,
+            "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+            "labels": [],
+            "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+            "rule_name": "vue/no-deprecated-slot-attribute",
+            "severity": "error",
+            "start": 30
+          },
+          {
+            "end": 63,
+            "fix": null,
+            "help": "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+            "labels": [],
+            "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+            "rule_name": "vue/no-v-html",
+            "severity": "error",
+            "start": 49
+          }
+        ],
+        "error_count": 3,
+        "filename": "bound-with-unrelated-html--scriptless.vue",
+        "warning_count": 0
+      },
+      "newBoundKey": ":slot"
+    },
+    {
+      "id": "bound-with-template-disable--scripted",
+      "filename": "bound-with-template-disable--scripted.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel>\n    <!-- eslint-disable-next-line vue/no-deprecated-slot-attribute -->\n    <div :slot=\"name\">Title</div>\n  </FancyPanel>\n</template>\n",
+      "sourceSha256": "d9201fdfb7c1a362d9cc2dc314a07e29d5594a5598141601595c78aba1348970",
+      "scriptless": false,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "bound-with-template-disable--scripted.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "bound-with-template-disable--scriptless",
+      "filename": "bound-with-template-disable--scriptless.vue",
+      "source": "<template>\n  <FancyPanel>\n    <!-- eslint-disable-next-line vue/no-deprecated-slot-attribute -->\n    <div :slot=\"name\">Title</div>\n  </FancyPanel>\n</template>\n",
+      "sourceSha256": "0cd935d898cc4f362294e40dc40569a6dc2f1485ab0e9c56f933ed3ed8e806e7",
+      "scriptless": true,
+      "addedTargets": 0,
+      "native": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "bound-with-template-disable--scriptless.vue",
+        "warning_count": 0
+      }
+    }
+  ]
+}

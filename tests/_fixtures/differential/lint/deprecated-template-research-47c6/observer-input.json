@@ -1,0 +1,592 @@
+[
+  {
+    "id": "functional-template--boolean--scripted",
+    "filename": "functional-template--boolean--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template functional>\n  <div />\n</template>\n"
+  },
+  {
+    "id": "functional-template--boolean--scriptless",
+    "filename": "functional-template--boolean--scriptless.vue",
+    "source": "<template functional>\n  <div />\n</template>\n"
+  },
+  {
+    "id": "functional-template--literal-false--scripted",
+    "filename": "functional-template--literal-false--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template functional=\"false\">\n  <div />\n</template>\n"
+  },
+  {
+    "id": "functional-template--literal-false--scriptless",
+    "filename": "functional-template--literal-false--scriptless.vue",
+    "source": "<template functional=\"false\">\n  <div />\n</template>\n"
+  },
+  {
+    "id": "functional-template--absent--scripted",
+    "filename": "functional-template--absent--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div />\n</template>\n"
+  },
+  {
+    "id": "functional-template--absent--scriptless",
+    "filename": "functional-template--absent--scriptless.vue",
+    "source": "<template>\n  <div />\n</template>\n"
+  },
+  {
+    "id": "functional-template--bound-root--scripted",
+    "filename": "functional-template--bound-root--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template :functional=\"enabled\">\n  <div />\n</template>\n"
+  },
+  {
+    "id": "functional-template--bound-root--scriptless",
+    "filename": "functional-template--bound-root--scriptless.vue",
+    "source": "<template :functional=\"enabled\">\n  <div />\n</template>\n"
+  },
+  {
+    "id": "functional-template--nested-template--scripted",
+    "filename": "functional-template--nested-template--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div><template functional><span /></template></div>\n</template>\n"
+  },
+  {
+    "id": "functional-template--nested-template--scriptless",
+    "filename": "functional-template--nested-template--scriptless.vue",
+    "source": "<template>\n  <div><template functional><span /></template></div>\n</template>\n"
+  },
+  {
+    "id": "html-element-is--html-literal--scripted",
+    "filename": "html-element-is--html-literal--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div is=\"FancyPanel\" />\n</template>\n"
+  },
+  {
+    "id": "html-element-is--html-literal--scriptless",
+    "filename": "html-element-is--html-literal--scriptless.vue",
+    "source": "<template>\n  <div is=\"FancyPanel\" />\n</template>\n"
+  },
+  {
+    "id": "html-element-is--html-bound--scripted",
+    "filename": "html-element-is--html-bound--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div :is=\"kind\" />\n</template>\n"
+  },
+  {
+    "id": "html-element-is--html-bound--scriptless",
+    "filename": "html-element-is--html-bound--scriptless.vue",
+    "source": "<template>\n  <div :is=\"kind\" />\n</template>\n"
+  },
+  {
+    "id": "html-element-is--svg-literal--scripted",
+    "filename": "html-element-is--svg-literal--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <svg><circle is=\"FancyPanel\" /></svg>\n</template>\n"
+  },
+  {
+    "id": "html-element-is--svg-literal--scriptless",
+    "filename": "html-element-is--svg-literal--scriptless.vue",
+    "source": "<template>\n  <svg><circle is=\"FancyPanel\" /></svg>\n</template>\n"
+  },
+  {
+    "id": "html-element-is--math-literal--scripted",
+    "filename": "html-element-is--math-literal--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <math><mi is=\"FancyPanel\">x</mi></math>\n</template>\n"
+  },
+  {
+    "id": "html-element-is--math-literal--scriptless",
+    "filename": "html-element-is--math-literal--scriptless.vue",
+    "source": "<template>\n  <math><mi is=\"FancyPanel\">x</mi></math>\n</template>\n"
+  },
+  {
+    "id": "html-element-is--vue-prefix--scripted",
+    "filename": "html-element-is--vue-prefix--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div is=\"vue:FancyPanel\" />\n</template>\n"
+  },
+  {
+    "id": "html-element-is--vue-prefix--scriptless",
+    "filename": "html-element-is--vue-prefix--scriptless.vue",
+    "source": "<template>\n  <div is=\"vue:FancyPanel\" />\n</template>\n"
+  },
+  {
+    "id": "html-element-is--component-is--scripted",
+    "filename": "html-element-is--component-is--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <component :is=\"kind\" />\n</template>\n"
+  },
+  {
+    "id": "html-element-is--component-is--scriptless",
+    "filename": "html-element-is--component-is--scriptless.vue",
+    "source": "<template>\n  <component :is=\"kind\" />\n</template>\n"
+  },
+  {
+    "id": "html-element-is--custom-element--scripted",
+    "filename": "html-element-is--custom-element--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <custom-panel is=\"FancyPanel\" />\n</template>\n"
+  },
+  {
+    "id": "html-element-is--custom-element--scriptless",
+    "filename": "html-element-is--custom-element--scriptless.vue",
+    "source": "<template>\n  <custom-panel is=\"FancyPanel\" />\n</template>\n"
+  },
+  {
+    "id": "html-element-is--dynamic-argument--scripted",
+    "filename": "html-element-is--dynamic-argument--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div :[name]=\"kind\" />\n</template>\n"
+  },
+  {
+    "id": "html-element-is--dynamic-argument--scriptless",
+    "filename": "html-element-is--dynamic-argument--scriptless.vue",
+    "source": "<template>\n  <div :[name]=\"kind\" />\n</template>\n"
+  },
+  {
+    "id": "inline-template--component-literal--scripted",
+    "filename": "inline-template--component-literal--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel inline-template><div /></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "inline-template--component-literal--scriptless",
+    "filename": "inline-template--component-literal--scriptless.vue",
+    "source": "<template>\n  <FancyPanel inline-template><div /></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "inline-template--native-literal--scripted",
+    "filename": "inline-template--native-literal--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div inline-template><span /></div>\n</template>\n"
+  },
+  {
+    "id": "inline-template--native-literal--scriptless",
+    "filename": "inline-template--native-literal--scriptless.vue",
+    "source": "<template>\n  <div inline-template><span /></div>\n</template>\n"
+  },
+  {
+    "id": "inline-template--absent--scripted",
+    "filename": "inline-template--absent--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><div /></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "inline-template--absent--scriptless",
+    "filename": "inline-template--absent--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><div /></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "inline-template--bound--scripted",
+    "filename": "inline-template--bound--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel :inline-template=\"enabled\" />\n</template>\n"
+  },
+  {
+    "id": "inline-template--bound--scriptless",
+    "filename": "inline-template--bound--scriptless.vue",
+    "source": "<template>\n  <FancyPanel :inline-template=\"enabled\" />\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--pascal-literal--scripted",
+    "filename": "router-link-tag-prop--pascal-literal--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport { RouterLink } from \"vue-router\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <RouterLink to=\"/\" tag=\"span\">Home</RouterLink>\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--pascal-literal--scriptless",
+    "filename": "router-link-tag-prop--pascal-literal--scriptless.vue",
+    "source": "<template>\n  <RouterLink to=\"/\" tag=\"span\">Home</RouterLink>\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--kebab-bound--scripted",
+    "filename": "router-link-tag-prop--kebab-bound--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport { RouterLink } from \"vue-router\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <router-link to=\"/\" :tag=\"kind\">Home</router-link>\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--kebab-bound--scriptless",
+    "filename": "router-link-tag-prop--kebab-bound--scriptless.vue",
+    "source": "<template>\n  <router-link to=\"/\" :tag=\"kind\">Home</router-link>\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--pascal-long-bound--scripted",
+    "filename": "router-link-tag-prop--pascal-long-bound--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport { RouterLink } from \"vue-router\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <RouterLink to=\"/\" v-bind:tag=\"kind\">Home</RouterLink>\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--pascal-long-bound--scriptless",
+    "filename": "router-link-tag-prop--pascal-long-bound--scriptless.vue",
+    "source": "<template>\n  <RouterLink to=\"/\" v-bind:tag=\"kind\">Home</RouterLink>\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--absent--scripted",
+    "filename": "router-link-tag-prop--absent--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport { RouterLink } from \"vue-router\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <RouterLink to=\"/\">Home</RouterLink>\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--absent--scriptless",
+    "filename": "router-link-tag-prop--absent--scriptless.vue",
+    "source": "<template>\n  <RouterLink to=\"/\">Home</RouterLink>\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--unrelated-component--scripted",
+    "filename": "router-link-tag-prop--unrelated-component--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel tag=\"span\">Home</FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--unrelated-component--scriptless",
+    "filename": "router-link-tag-prop--unrelated-component--scriptless.vue",
+    "source": "<template>\n  <FancyPanel tag=\"span\">Home</FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--dynamic-argument--scripted",
+    "filename": "router-link-tag-prop--dynamic-argument--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport { RouterLink } from \"vue-router\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <RouterLink to=\"/\" :[name]=\"kind\">Home</RouterLink>\n</template>\n"
+  },
+  {
+    "id": "router-link-tag-prop--dynamic-argument--scriptless",
+    "filename": "router-link-tag-prop--dynamic-argument--scriptless.vue",
+    "source": "<template>\n  <RouterLink to=\"/\" :[name]=\"kind\">Home</RouterLink>\n</template>\n"
+  },
+  {
+    "id": "scope-attribute--template-scope--scripted",
+    "filename": "scope-attribute--template-scope--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template scope=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "scope-attribute--template-scope--scriptless",
+    "filename": "scope-attribute--template-scope--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><template scope=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "scope-attribute--native-table-header--scripted",
+    "filename": "scope-attribute--native-table-header--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <table><thead><tr><th scope=\"col\">Title</th></tr></thead></table>\n</template>\n"
+  },
+  {
+    "id": "scope-attribute--native-table-header--scriptless",
+    "filename": "scope-attribute--native-table-header--scriptless.vue",
+    "source": "<template>\n  <table><thead><tr><th scope=\"col\">Title</th></tr></thead></table>\n</template>\n"
+  },
+  {
+    "id": "scope-attribute--bound-template--scripted",
+    "filename": "scope-attribute--bound-template--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template :scope=\"value\"><span /></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "scope-attribute--bound-template--scriptless",
+    "filename": "scope-attribute--bound-template--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><template :scope=\"value\"><span /></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "scope-attribute--modern-slot--scripted",
+    "filename": "scope-attribute--modern-slot--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template #default=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "scope-attribute--modern-slot--scriptless",
+    "filename": "scope-attribute--modern-slot--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><template #default=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-attribute--native-child-literal--scripted",
+    "filename": "slot-attribute--native-child-literal--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><div slot=\"header\">Title</div></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-attribute--native-child-literal--scriptless",
+    "filename": "slot-attribute--native-child-literal--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><div slot=\"header\">Title</div></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-attribute--template-literal--scripted",
+    "filename": "slot-attribute--template-literal--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template slot=\"header\"><span>Title</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-attribute--template-literal--scriptless",
+    "filename": "slot-attribute--template-literal--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><template slot=\"header\"><span>Title</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-attribute--bound-child--scripted",
+    "filename": "slot-attribute--bound-child--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><div :slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-attribute--bound-child--scriptless",
+    "filename": "slot-attribute--bound-child--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><div :slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-attribute--unrelated-native-parent--scripted",
+    "filename": "slot-attribute--unrelated-native-parent--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div><span slot=\"header\">Title</span></div>\n</template>\n"
+  },
+  {
+    "id": "slot-attribute--unrelated-native-parent--scriptless",
+    "filename": "slot-attribute--unrelated-native-parent--scriptless.vue",
+    "source": "<template>\n  <div><span slot=\"header\">Title</span></div>\n</template>\n"
+  },
+  {
+    "id": "slot-attribute--modern-slot--scripted",
+    "filename": "slot-attribute--modern-slot--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template #header><span>Title</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-attribute--modern-slot--scriptless",
+    "filename": "slot-attribute--modern-slot--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><template #header><span>Title</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-scope-attribute--template--scripted",
+    "filename": "slot-scope-attribute--template--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template slot-scope=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-scope-attribute--template--scriptless",
+    "filename": "slot-scope-attribute--template--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><template slot-scope=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-scope-attribute--native-child--scripted",
+    "filename": "slot-scope-attribute--native-child--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><div slot-scope=\"slotData\">{{ slotData.label }}</div></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-scope-attribute--native-child--scriptless",
+    "filename": "slot-scope-attribute--native-child--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><div slot-scope=\"slotData\">{{ slotData.label }}</div></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-scope-attribute--bound--scripted",
+    "filename": "slot-scope-attribute--bound--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template :slot-scope=\"value\"><span /></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-scope-attribute--bound--scriptless",
+    "filename": "slot-scope-attribute--bound--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><template :slot-scope=\"value\"><span /></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-scope-attribute--modern-slot--scripted",
+    "filename": "slot-scope-attribute--modern-slot--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template #default=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "slot-scope-attribute--modern-slot--scriptless",
+    "filename": "slot-scope-attribute--modern-slot--scriptless.vue",
+    "source": "<template>\n  <FancyPanel><template #default=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--component-short--scripted",
+    "filename": "v-bind-sync--component-short--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel :value.sync=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--component-short--scriptless",
+    "filename": "v-bind-sync--component-short--scriptless.vue",
+    "source": "<template>\n  <FancyPanel :value.sync=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--native-long--scripted",
+    "filename": "v-bind-sync--native-long--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div v-bind:title.sync=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--native-long--scriptless",
+    "filename": "v-bind-sync--native-long--scriptless.vue",
+    "source": "<template>\n  <div v-bind:title.sync=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--object--scripted",
+    "filename": "v-bind-sync--object--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel v-bind.sync=\"bag\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--object--scriptless",
+    "filename": "v-bind-sync--object--scriptless.vue",
+    "source": "<template>\n  <FancyPanel v-bind.sync=\"bag\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--dynamic-argument--scripted",
+    "filename": "v-bind-sync--dynamic-argument--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel :[name].sync=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--dynamic-argument--scriptless",
+    "filename": "v-bind-sync--dynamic-argument--scriptless.vue",
+    "source": "<template>\n  <FancyPanel :[name].sync=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--mixed-modifiers--scripted",
+    "filename": "v-bind-sync--mixed-modifiers--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel :value.prop.sync=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--mixed-modifiers--scriptless",
+    "filename": "v-bind-sync--mixed-modifiers--scriptless.vue",
+    "source": "<template>\n  <FancyPanel :value.prop.sync=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--ordinary-bind--scripted",
+    "filename": "v-bind-sync--ordinary-bind--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel :value=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--ordinary-bind--scriptless",
+    "filename": "v-bind-sync--ordinary-bind--scriptless.vue",
+    "source": "<template>\n  <FancyPanel :value=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--modern-model--scripted",
+    "filename": "v-bind-sync--modern-model--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel v-model:value=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--modern-model--scriptless",
+    "filename": "v-bind-sync--modern-model--scriptless.vue",
+    "source": "<template>\n  <FancyPanel v-model:value=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--literal-lookalike--scripted",
+    "filename": "v-bind-sync--literal-lookalike--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div data-sync=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-bind-sync--literal-lookalike--scriptless",
+    "filename": "v-bind-sync--literal-lookalike--scriptless.vue",
+    "source": "<template>\n  <div data-sync=\"value\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--component--scripted",
+    "filename": "v-on-native-modifier--component--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel @click.native=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--component--scriptless",
+    "filename": "v-on-native-modifier--component--scriptless.vue",
+    "source": "<template>\n  <FancyPanel @click.native=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--native-element--scripted",
+    "filename": "v-on-native-modifier--native-element--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <button @click.native=\"onClick\">Go</button>\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--native-element--scriptless",
+    "filename": "v-on-native-modifier--native-element--scriptless.vue",
+    "source": "<template>\n  <button @click.native=\"onClick\">Go</button>\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--dynamic-argument--scripted",
+    "filename": "v-on-native-modifier--dynamic-argument--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel @[name].native=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--dynamic-argument--scriptless",
+    "filename": "v-on-native-modifier--dynamic-argument--scriptless.vue",
+    "source": "<template>\n  <FancyPanel @[name].native=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--ordinary-event--scripted",
+    "filename": "v-on-native-modifier--ordinary-event--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel @click=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--ordinary-event--scriptless",
+    "filename": "v-on-native-modifier--ordinary-event--scriptless.vue",
+    "source": "<template>\n  <FancyPanel @click=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--native-event-name--scripted",
+    "filename": "v-on-native-modifier--native-event-name--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel @native=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--native-event-name--scriptless",
+    "filename": "v-on-native-modifier--native-event-name--scriptless.vue",
+    "source": "<template>\n  <FancyPanel @native=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--literal-lookalike--scripted",
+    "filename": "v-on-native-modifier--literal-lookalike--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div data-native=\"yes\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-native-modifier--literal-lookalike--scriptless",
+    "filename": "v-on-native-modifier--literal-lookalike--scriptless.vue",
+    "source": "<template>\n  <div data-native=\"yes\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--known-code-13--scripted",
+    "filename": "v-on-number-modifiers--known-code-13--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.13=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--known-code-13--scriptless",
+    "filename": "v-on-number-modifiers--known-code-13--scriptless.vue",
+    "source": "<template>\n  <input @keyup.13=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--known-code-27--scripted",
+    "filename": "v-on-number-modifiers--known-code-27--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input v-on:keydown.27=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--known-code-27--scriptless",
+    "filename": "v-on-number-modifiers--known-code-27--scriptless.vue",
+    "source": "<template>\n  <input v-on:keydown.27=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--unknown-code-999--scripted",
+    "filename": "v-on-number-modifiers--unknown-code-999--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.999=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--unknown-code-999--scriptless",
+    "filename": "v-on-number-modifiers--unknown-code-999--scriptless.vue",
+    "source": "<template>\n  <input @keyup.999=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--dynamic-argument--scripted",
+    "filename": "v-on-number-modifiers--dynamic-argument--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @[name].13=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--dynamic-argument--scriptless",
+    "filename": "v-on-number-modifiers--dynamic-argument--scriptless.vue",
+    "source": "<template>\n  <input @[name].13=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--digit-0--scripted",
+    "filename": "v-on-number-modifiers--digit-0--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.0=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--digit-0--scriptless",
+    "filename": "v-on-number-modifiers--digit-0--scriptless.vue",
+    "source": "<template>\n  <input @keyup.0=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--digit-9--scripted",
+    "filename": "v-on-number-modifiers--digit-9--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.9=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--digit-9--scriptless",
+    "filename": "v-on-number-modifiers--digit-9--scriptless.vue",
+    "source": "<template>\n  <input @keyup.9=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--named-key--scripted",
+    "filename": "v-on-number-modifiers--named-key--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.enter=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--named-key--scriptless",
+    "filename": "v-on-number-modifiers--named-key--scriptless.vue",
+    "source": "<template>\n  <input @keyup.enter=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--first-digit-0-followed-13--scripted",
+    "filename": "v-on-number-modifiers--first-digit-0-followed-13--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.0.13=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--first-digit-0-followed-13--scriptless",
+    "filename": "v-on-number-modifiers--first-digit-0-followed-13--scriptless.vue",
+    "source": "<template>\n  <input @keyup.0.13=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--numeric-prefix-13x--scripted",
+    "filename": "v-on-number-modifiers--numeric-prefix-13x--scripted.vue",
+    "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.13x=\"onClick\" />\n</template>\n"
+  },
+  {
+    "id": "v-on-number-modifiers--numeric-prefix-13x--scriptless",
+    "filename": "v-on-number-modifiers--numeric-prefix-13x--scriptless.vue",
+    "source": "<template>\n  <input @keyup.13x=\"onClick\" />\n</template>\n"
+  }
+]

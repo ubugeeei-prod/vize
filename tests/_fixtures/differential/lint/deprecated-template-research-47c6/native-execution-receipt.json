@@ -1,0 +1,32 @@
+{
+  "schema": "vize.n8n.authored-source-api-execution.v1",
+  "sourceRevision": "47c6f998d49cd6c7b790550098b3378639b949f7",
+  "observerReceipt": "/tmp/vize-n8n-next-semantic-gap-20261008/research-47c6/receipt.json",
+  "observerReceiptSha256": "8ca276d3cad3383f8061b85e1a7a8b44cfddc307928dfb6d71865d7d4cea74eb",
+  "binarySha256": "e78028b4c31709037f85edf1d053f7d69974b2be4117ec788836eca3c3a6fdc7",
+  "command": [
+    "/tmp/vize-n8n-next-semantic-gap-20261008/research-47c6/n8n_source_research_47c6",
+    "/tmp/vize-n8n-deprecated-template-audit-20261008/observer-input.json",
+    "/tmp/vize-n8n-deprecated-template-audit-20261008/native-source-47c6.json"
+  ],
+  "status": 0,
+  "files": {
+    "observer-input.json": {
+      "sha256": "546d03d90024f4e57869a2e250b339fb85a15c86703f8c039efce8d8fff40398",
+      "bytes": 39295
+    },
+    "native-source-47c6.json": {
+      "sha256": "25a9f91e4b952dbe2fbdaf7e530e54de41aeb3aff13d3d43e4557f9b40d87ac9",
+      "bytes": 190912
+    },
+    "native-source-47c6.stdout.txt": {
+      "sha256": "dcf648123bf65132259bc7001c15a8614a4d9e288cbf6b3825741a0594ae490c",
+      "bytes": 88
+    },
+    "native-source-47c6.stderr.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "scope": "Authored Rust Linter::lint_sfc source API research at committed47c6 only. Not current main, native CLI, installed/public product, hosted/protected qualification, performance or full51 semantic parity."
+}

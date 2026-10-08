@@ -1,0 +1,11 @@
+{
+  "sourceRevision": "26e56ac6a0de3f9f838db55bbdb71757317f2435+bound-slot-working-tree",
+  "binarySha256": "346154986dd63d5111cc0aede0003a4be7a7e28d89e1bd3ee94f2b9e31957f07",
+  "driverSha256": "366afe6f130cdbd386cbc705ce0bfd6a8caa35d0b643aaab5321651075c4f767",
+  "ruleSourceSha256": "1b18f6600f8411314d277f4f36e04828414739d69b03c229f5b91bdebca1d703",
+  "status": 0,
+  "signal": null,
+  "inputSha256": "6871d9b2dda202a9b4507f10599217d453a5c5b07fd072a7135b9ca7549ad04d",
+  "rawSha256": "3eb19002f1ee60e5db1778b43063e2899a1c9d044a226a232a8999f0fa793ba1",
+  "scope": "Actual26e56 + focused working-tree bound-slot producer Linter API AFTER; own private target and declared Rust1.99; not committed-head/CLI/public/performance"
+}

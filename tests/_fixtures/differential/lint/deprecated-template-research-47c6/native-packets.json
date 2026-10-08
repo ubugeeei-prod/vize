@@ -1,0 +1,4652 @@
+{
+  "cases": [
+    {
+      "filename": "functional-template--boolean--scripted.vue",
+      "id": "functional-template--boolean--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 199,
+              "fix": null,
+              "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+              "labels": [],
+              "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-functional-template",
+              "severity": "error",
+              "start": 178
+            }
+          ],
+          "error_count": 1,
+          "filename": "functional-template--boolean--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 199,
+              "fix": null,
+              "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+              "labels": [],
+              "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-functional-template",
+              "severity": "error",
+              "start": 178
+            }
+          ],
+          "error_count": 1,
+          "filename": "functional-template--boolean--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template functional>\n  <div />\n</template>\n"
+    },
+    {
+      "filename": "functional-template--boolean--scriptless.vue",
+      "id": "functional-template--boolean--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 21,
+              "fix": null,
+              "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+              "labels": [],
+              "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-functional-template",
+              "severity": "error",
+              "start": 0
+            }
+          ],
+          "error_count": 1,
+          "filename": "functional-template--boolean--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 21,
+              "fix": null,
+              "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+              "labels": [],
+              "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-functional-template",
+              "severity": "error",
+              "start": 0
+            }
+          ],
+          "error_count": 1,
+          "filename": "functional-template--boolean--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template functional>\n  <div />\n</template>\n"
+    },
+    {
+      "filename": "functional-template--literal-false--scripted.vue",
+      "id": "functional-template--literal-false--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 207,
+              "fix": null,
+              "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+              "labels": [],
+              "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-functional-template",
+              "severity": "error",
+              "start": 178
+            }
+          ],
+          "error_count": 1,
+          "filename": "functional-template--literal-false--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 207,
+              "fix": null,
+              "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+              "labels": [],
+              "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-functional-template",
+              "severity": "error",
+              "start": 178
+            }
+          ],
+          "error_count": 1,
+          "filename": "functional-template--literal-false--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template functional=\"false\">\n  <div />\n</template>\n"
+    },
+    {
+      "filename": "functional-template--literal-false--scriptless.vue",
+      "id": "functional-template--literal-false--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 29,
+              "fix": null,
+              "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+              "labels": [],
+              "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-functional-template",
+              "severity": "error",
+              "start": 0
+            }
+          ],
+          "error_count": 1,
+          "filename": "functional-template--literal-false--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 29,
+              "fix": null,
+              "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+              "labels": [],
+              "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-functional-template",
+              "severity": "error",
+              "start": 0
+            }
+          ],
+          "error_count": 1,
+          "filename": "functional-template--literal-false--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template functional=\"false\">\n  <div />\n</template>\n"
+    },
+    {
+      "filename": "functional-template--absent--scripted.vue",
+      "id": "functional-template--absent--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--absent--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--absent--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div />\n</template>\n"
+    },
+    {
+      "filename": "functional-template--absent--scriptless.vue",
+      "id": "functional-template--absent--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--absent--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--absent--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <div />\n</template>\n"
+    },
+    {
+      "filename": "functional-template--bound-root--scripted.vue",
+      "id": "functional-template--bound-root--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--bound-root--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--bound-root--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template :functional=\"enabled\">\n  <div />\n</template>\n"
+    },
+    {
+      "filename": "functional-template--bound-root--scriptless.vue",
+      "id": "functional-template--bound-root--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--bound-root--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--bound-root--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template :functional=\"enabled\">\n  <div />\n</template>\n"
+    },
+    {
+      "filename": "functional-template--nested-template--scripted.vue",
+      "id": "functional-template--nested-template--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--nested-template--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--nested-template--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div><template functional><span /></template></div>\n</template>\n"
+    },
+    {
+      "filename": "functional-template--nested-template--scriptless.vue",
+      "id": "functional-template--nested-template--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--nested-template--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "functional-template--nested-template--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <div><template functional><span /></template></div>\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--html-literal--scripted.vue",
+      "id": "html-element-is--html-literal--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 211,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 196
+            }
+          ],
+          "error_count": 1,
+          "filename": "html-element-is--html-literal--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 211,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 196
+            }
+          ],
+          "error_count": 1,
+          "filename": "html-element-is--html-literal--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div is=\"FancyPanel\" />\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--html-literal--scriptless.vue",
+      "id": "html-element-is--html-literal--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 33,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 18
+            }
+          ],
+          "error_count": 1,
+          "filename": "html-element-is--html-literal--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 33,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 18
+            }
+          ],
+          "error_count": 1,
+          "filename": "html-element-is--html-literal--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <div is=\"FancyPanel\" />\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--html-bound--scripted.vue",
+      "id": "html-element-is--html-bound--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--html-bound--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--html-bound--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div :is=\"kind\" />\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--html-bound--scriptless.vue",
+      "id": "html-element-is--html-bound--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--html-bound--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--html-bound--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <div :is=\"kind\" />\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--svg-literal--scripted.vue",
+      "id": "html-element-is--svg-literal--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 219,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 204
+            }
+          ],
+          "error_count": 1,
+          "filename": "html-element-is--svg-literal--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 219,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 204
+            }
+          ],
+          "error_count": 1,
+          "filename": "html-element-is--svg-literal--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <svg><circle is=\"FancyPanel\" /></svg>\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--svg-literal--scriptless.vue",
+      "id": "html-element-is--svg-literal--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 41,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 26
+            }
+          ],
+          "error_count": 1,
+          "filename": "html-element-is--svg-literal--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 41,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 26
+            }
+          ],
+          "error_count": 1,
+          "filename": "html-element-is--svg-literal--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <svg><circle is=\"FancyPanel\" /></svg>\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--math-literal--scripted.vue",
+      "id": "html-element-is--math-literal--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 197,
+              "fix": null,
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 191
+            },
+            {
+              "end": 217,
+              "fix": null,
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 197
+            },
+            {
+              "end": 216,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 201
+            }
+          ],
+          "error_count": 3,
+          "filename": "html-element-is--math-literal--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 197,
+              "fix": null,
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 191
+            },
+            {
+              "end": 217,
+              "fix": null,
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 197
+            },
+            {
+              "end": 216,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 201
+            }
+          ],
+          "error_count": 3,
+          "filename": "html-element-is--math-literal--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <math><mi is=\"FancyPanel\">x</mi></math>\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--math-literal--scriptless.vue",
+      "id": "html-element-is--math-literal--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 19,
+              "fix": null,
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 13
+            },
+            {
+              "end": 39,
+              "fix": null,
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 19
+            },
+            {
+              "end": 38,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 23
+            }
+          ],
+          "error_count": 3,
+          "filename": "html-element-is--math-literal--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 19,
+              "fix": null,
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 13
+            },
+            {
+              "end": 39,
+              "fix": null,
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 19
+            },
+            {
+              "end": 38,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 23
+            }
+          ],
+          "error_count": 3,
+          "filename": "html-element-is--math-literal--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <math><mi is=\"FancyPanel\">x</mi></math>\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--vue-prefix--scripted.vue",
+      "id": "html-element-is--vue-prefix--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--vue-prefix--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--vue-prefix--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div is=\"vue:FancyPanel\" />\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--vue-prefix--scriptless.vue",
+      "id": "html-element-is--vue-prefix--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--vue-prefix--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--vue-prefix--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <div is=\"vue:FancyPanel\" />\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--component-is--scripted.vue",
+      "id": "html-element-is--component-is--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--component-is--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--component-is--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <component :is=\"kind\" />\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--component-is--scriptless.vue",
+      "id": "html-element-is--component-is--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--component-is--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--component-is--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <component :is=\"kind\" />\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--custom-element--scripted.vue",
+      "id": "html-element-is--custom-element--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 204,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 192
+            },
+            {
+              "end": 223,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 204,
+                    "new_text": "CustomPanel",
+                    "start": 192
+                  }
+                ],
+                "message": "Use PascalCase for component names"
+              },
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 191
+            },
+            {
+              "end": 220,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 3,
+          "filename": "html-element-is--custom-element--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 204,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 192
+            },
+            {
+              "end": 223,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 204,
+                    "new_text": "CustomPanel",
+                    "start": 192
+                  }
+                ],
+                "message": "Use PascalCase for component names"
+              },
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 191
+            },
+            {
+              "end": 220,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 3,
+          "filename": "html-element-is--custom-element--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <custom-panel is=\"FancyPanel\" />\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--custom-element--scriptless.vue",
+      "id": "html-element-is--custom-element--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 26,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 45,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 26,
+                    "new_text": "CustomPanel",
+                    "start": 14
+                  }
+                ],
+                "message": "Use PascalCase for component names"
+              },
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 13
+            },
+            {
+              "end": 42,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 27
+            }
+          ],
+          "error_count": 3,
+          "filename": "html-element-is--custom-element--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 26,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 45,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 26,
+                    "new_text": "CustomPanel",
+                    "start": 14
+                  }
+                ],
+                "message": "Use PascalCase for component names"
+              },
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 13
+            },
+            {
+              "end": 42,
+              "fix": null,
+              "help": "Use `<component :is=\"...\">` for dynamic components, or prefix the value with `vue:` (e.g. `is=\"vue:MyComponent\"`) for a customized built-in element.",
+              "labels": [],
+              "message": "the `is` attribute on native HTML elements (component substitution) was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-html-element-is",
+              "severity": "error",
+              "start": 27
+            }
+          ],
+          "error_count": 3,
+          "filename": "html-element-is--custom-element--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <custom-panel is=\"FancyPanel\" />\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--dynamic-argument--scripted.vue",
+      "id": "html-element-is--dynamic-argument--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--dynamic-argument--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--dynamic-argument--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div :[name]=\"kind\" />\n</template>\n"
+    },
+    {
+      "filename": "html-element-is--dynamic-argument--scriptless.vue",
+      "id": "html-element-is--dynamic-argument--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "html-element-is--dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <div :[name]=\"kind\" />\n</template>\n"
+    },
+    {
+      "filename": "inline-template--component-literal--scripted.vue",
+      "id": "inline-template--component-literal--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 261,
+              "fix": null,
+              "help": "Move the markup into the child component or pass it through slots instead of `inline-template`.",
+              "labels": [],
+              "message": "the `inline-template` attribute was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-inline-template",
+              "severity": "error",
+              "start": 246
+            }
+          ],
+          "error_count": 1,
+          "filename": "inline-template--component-literal--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 261,
+              "fix": null,
+              "help": "Move the markup into the child component or pass it through slots instead of `inline-template`.",
+              "labels": [],
+              "message": "the `inline-template` attribute was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-inline-template",
+              "severity": "error",
+              "start": 246
+            }
+          ],
+          "error_count": 1,
+          "filename": "inline-template--component-literal--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel inline-template><div /></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "inline-template--component-literal--scriptless.vue",
+      "id": "inline-template--component-literal--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 40,
+              "fix": null,
+              "help": "Move the markup into the child component or pass it through slots instead of `inline-template`.",
+              "labels": [],
+              "message": "the `inline-template` attribute was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-inline-template",
+              "severity": "error",
+              "start": 25
+            }
+          ],
+          "error_count": 2,
+          "filename": "inline-template--component-literal--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 40,
+              "fix": null,
+              "help": "Move the markup into the child component or pass it through slots instead of `inline-template`.",
+              "labels": [],
+              "message": "the `inline-template` attribute was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-inline-template",
+              "severity": "error",
+              "start": 25
+            }
+          ],
+          "error_count": 2,
+          "filename": "inline-template--component-literal--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel inline-template><div /></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "inline-template--native-literal--scripted.vue",
+      "id": "inline-template--native-literal--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 211,
+              "fix": null,
+              "help": "Move the markup into the child component or pass it through slots instead of `inline-template`.",
+              "labels": [],
+              "message": "the `inline-template` attribute was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-inline-template",
+              "severity": "error",
+              "start": 196
+            }
+          ],
+          "error_count": 1,
+          "filename": "inline-template--native-literal--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 211,
+              "fix": null,
+              "help": "Move the markup into the child component or pass it through slots instead of `inline-template`.",
+              "labels": [],
+              "message": "the `inline-template` attribute was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-inline-template",
+              "severity": "error",
+              "start": 196
+            }
+          ],
+          "error_count": 1,
+          "filename": "inline-template--native-literal--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div inline-template><span /></div>\n</template>\n"
+    },
+    {
+      "filename": "inline-template--native-literal--scriptless.vue",
+      "id": "inline-template--native-literal--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 33,
+              "fix": null,
+              "help": "Move the markup into the child component or pass it through slots instead of `inline-template`.",
+              "labels": [],
+              "message": "the `inline-template` attribute was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-inline-template",
+              "severity": "error",
+              "start": 18
+            }
+          ],
+          "error_count": 1,
+          "filename": "inline-template--native-literal--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 33,
+              "fix": null,
+              "help": "Move the markup into the child component or pass it through slots instead of `inline-template`.",
+              "labels": [],
+              "message": "the `inline-template` attribute was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-inline-template",
+              "severity": "error",
+              "start": 18
+            }
+          ],
+          "error_count": 1,
+          "filename": "inline-template--native-literal--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <div inline-template><span /></div>\n</template>\n"
+    },
+    {
+      "filename": "inline-template--absent--scripted.vue",
+      "id": "inline-template--absent--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "inline-template--absent--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "inline-template--absent--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><div /></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "inline-template--absent--scriptless.vue",
+      "id": "inline-template--absent--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "inline-template--absent--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "inline-template--absent--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div /></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "inline-template--bound--scripted.vue",
+      "id": "inline-template--bound--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "inline-template--bound--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "inline-template--bound--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel :inline-template=\"enabled\" />\n</template>\n"
+    },
+    {
+      "filename": "inline-template--bound--scriptless.vue",
+      "id": "inline-template--bound--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "inline-template--bound--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "inline-template--bound--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel :inline-template=\"enabled\" />\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--pascal-literal--scripted.vue",
+      "id": "router-link-tag-prop--pascal-literal--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 261,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 251
+            }
+          ],
+          "error_count": 1,
+          "filename": "router-link-tag-prop--pascal-literal--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 261,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 251
+            }
+          ],
+          "error_count": 1,
+          "filename": "router-link-tag-prop--pascal-literal--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { RouterLink } from \"vue-router\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <RouterLink to=\"/\" tag=\"span\">Home</RouterLink>\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--pascal-literal--scriptless.vue",
+      "id": "router-link-tag-prop--pascal-literal--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 42,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 32
+            }
+          ],
+          "error_count": 1,
+          "filename": "router-link-tag-prop--pascal-literal--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 42,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 32
+            }
+          ],
+          "error_count": 1,
+          "filename": "router-link-tag-prop--pascal-literal--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <RouterLink to=\"/\" tag=\"span\">Home</RouterLink>\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--kebab-bound--scripted.vue",
+      "id": "router-link-tag-prop--kebab-bound--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 264,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 244,
+                    "new_text": "RouterLink",
+                    "start": 233
+                  },
+                  {
+                    "end": 281,
+                    "new_text": "RouterLink",
+                    "start": 270
+                  }
+                ],
+                "message": "Use PascalCase for component names"
+              },
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 232
+            },
+            {
+              "end": 263,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 252
+            }
+          ],
+          "error_count": 2,
+          "filename": "router-link-tag-prop--kebab-bound--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 264,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 244,
+                    "new_text": "RouterLink",
+                    "start": 233
+                  },
+                  {
+                    "end": 281,
+                    "new_text": "RouterLink",
+                    "start": 270
+                  }
+                ],
+                "message": "Use PascalCase for component names"
+              },
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 232
+            },
+            {
+              "end": 263,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 252
+            }
+          ],
+          "error_count": 2,
+          "filename": "router-link-tag-prop--kebab-bound--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { RouterLink } from \"vue-router\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <router-link to=\"/\" :tag=\"kind\">Home</router-link>\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--kebab-bound--scriptless.vue",
+      "id": "router-link-tag-prop--kebab-bound--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 45,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 25,
+                    "new_text": "RouterLink",
+                    "start": 14
+                  },
+                  {
+                    "end": 62,
+                    "new_text": "RouterLink",
+                    "start": 51
+                  }
+                ],
+                "message": "Use PascalCase for component names"
+              },
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 13
+            },
+            {
+              "end": 44,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 33
+            }
+          ],
+          "error_count": 2,
+          "filename": "router-link-tag-prop--kebab-bound--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 45,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 25,
+                    "new_text": "RouterLink",
+                    "start": 14
+                  },
+                  {
+                    "end": 62,
+                    "new_text": "RouterLink",
+                    "start": 51
+                  }
+                ],
+                "message": "Use PascalCase for component names"
+              },
+              "help": "Use PascalCase for component names",
+              "labels": [],
+              "message": "Component should use PascalCase",
+              "rule_name": "vue/component-name-in-template-casing",
+              "severity": "error",
+              "start": 13
+            },
+            {
+              "end": 44,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 33
+            }
+          ],
+          "error_count": 2,
+          "filename": "router-link-tag-prop--kebab-bound--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <router-link to=\"/\" :tag=\"kind\">Home</router-link>\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--pascal-long-bound--scripted.vue",
+      "id": "router-link-tag-prop--pascal-long-bound--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 268,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 251
+            }
+          ],
+          "error_count": 1,
+          "filename": "router-link-tag-prop--pascal-long-bound--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 268,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 251
+            }
+          ],
+          "error_count": 1,
+          "filename": "router-link-tag-prop--pascal-long-bound--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { RouterLink } from \"vue-router\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <RouterLink to=\"/\" v-bind:tag=\"kind\">Home</RouterLink>\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--pascal-long-bound--scriptless.vue",
+      "id": "router-link-tag-prop--pascal-long-bound--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 49,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 32
+            }
+          ],
+          "error_count": 1,
+          "filename": "router-link-tag-prop--pascal-long-bound--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 49,
+              "fix": null,
+              "help": "Remove the `tag` prop and render the element yourself using `v-slot` (it exposes `href`, `navigate`, and `isActive`).",
+              "labels": [],
+              "message": "The `tag` prop on `<router-link>` was removed in Vue Router 4; use the v-slot API instead",
+              "rule_name": "vue/no-deprecated-router-link-tag-prop",
+              "severity": "error",
+              "start": 32
+            }
+          ],
+          "error_count": 1,
+          "filename": "router-link-tag-prop--pascal-long-bound--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <RouterLink to=\"/\" v-bind:tag=\"kind\">Home</RouterLink>\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--absent--scripted.vue",
+      "id": "router-link-tag-prop--absent--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "router-link-tag-prop--absent--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "router-link-tag-prop--absent--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { RouterLink } from \"vue-router\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <RouterLink to=\"/\">Home</RouterLink>\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--absent--scriptless.vue",
+      "id": "router-link-tag-prop--absent--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "router-link-tag-prop--absent--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "router-link-tag-prop--absent--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <RouterLink to=\"/\">Home</RouterLink>\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--unrelated-component--scripted.vue",
+      "id": "router-link-tag-prop--unrelated-component--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "router-link-tag-prop--unrelated-component--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "router-link-tag-prop--unrelated-component--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel tag=\"span\">Home</FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--unrelated-component--scriptless.vue",
+      "id": "router-link-tag-prop--unrelated-component--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "router-link-tag-prop--unrelated-component--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "router-link-tag-prop--unrelated-component--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel tag=\"span\">Home</FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--dynamic-argument--scripted.vue",
+      "id": "router-link-tag-prop--dynamic-argument--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "router-link-tag-prop--dynamic-argument--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "router-link-tag-prop--dynamic-argument--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport { RouterLink } from \"vue-router\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <RouterLink to=\"/\" :[name]=\"kind\">Home</RouterLink>\n</template>\n"
+    },
+    {
+      "filename": "router-link-tag-prop--dynamic-argument--scriptless.vue",
+      "id": "router-link-tag-prop--dynamic-argument--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "router-link-tag-prop--dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "router-link-tag-prop--dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <RouterLink to=\"/\" :[name]=\"kind\">Home</RouterLink>\n</template>\n"
+    },
+    {
+      "filename": "scope-attribute--template-scope--scripted.vue",
+      "id": "scope-attribute--template-scope--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 272,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `scope` attribute on <template> was deprecated in Vue 2.5 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-scope-attribute",
+              "severity": "error",
+              "start": 256
+            }
+          ],
+          "error_count": 1,
+          "filename": "scope-attribute--template-scope--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 272,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `scope` attribute on <template> was deprecated in Vue 2.5 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-scope-attribute",
+              "severity": "error",
+              "start": 256
+            }
+          ],
+          "error_count": 1,
+          "filename": "scope-attribute--template-scope--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template scope=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "scope-attribute--template-scope--scriptless.vue",
+      "id": "scope-attribute--template-scope--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 51,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `scope` attribute on <template> was deprecated in Vue 2.5 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-scope-attribute",
+              "severity": "error",
+              "start": 35
+            }
+          ],
+          "error_count": 2,
+          "filename": "scope-attribute--template-scope--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 51,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `scope` attribute on <template> was deprecated in Vue 2.5 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-scope-attribute",
+              "severity": "error",
+              "start": 35
+            }
+          ],
+          "error_count": 2,
+          "filename": "scope-attribute--template-scope--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template scope=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "scope-attribute--native-table-header--scripted.vue",
+      "id": "scope-attribute--native-table-header--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "scope-attribute--native-table-header--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "scope-attribute--native-table-header--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <table><thead><tr><th scope=\"col\">Title</th></tr></thead></table>\n</template>\n"
+    },
+    {
+      "filename": "scope-attribute--native-table-header--scriptless.vue",
+      "id": "scope-attribute--native-table-header--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "scope-attribute--native-table-header--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "scope-attribute--native-table-header--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <table><thead><tr><th scope=\"col\">Title</th></tr></thead></table>\n</template>\n"
+    },
+    {
+      "filename": "scope-attribute--bound-template--scripted.vue",
+      "id": "scope-attribute--bound-template--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "scope-attribute--bound-template--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "scope-attribute--bound-template--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template :scope=\"value\"><span /></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "scope-attribute--bound-template--scriptless.vue",
+      "id": "scope-attribute--bound-template--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "scope-attribute--bound-template--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "scope-attribute--bound-template--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template :scope=\"value\"><span /></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "scope-attribute--modern-slot--scripted.vue",
+      "id": "scope-attribute--modern-slot--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "scope-attribute--modern-slot--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "scope-attribute--modern-slot--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template #default=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "scope-attribute--modern-slot--scriptless.vue",
+      "id": "scope-attribute--modern-slot--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "scope-attribute--modern-slot--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "scope-attribute--modern-slot--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template #default=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-attribute--native-child-literal--scripted.vue",
+      "id": "slot-attribute--native-child-literal--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 255,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 251
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--native-child-literal--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 255,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 251
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--native-child-literal--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><div slot=\"header\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-attribute--native-child-literal--scriptless.vue",
+      "id": "slot-attribute--native-child-literal--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 34,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 30
+            }
+          ],
+          "error_count": 2,
+          "filename": "slot-attribute--native-child-literal--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 34,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 30
+            }
+          ],
+          "error_count": 2,
+          "filename": "slot-attribute--native-child-literal--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div slot=\"header\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-attribute--template-literal--scripted.vue",
+      "id": "slot-attribute--template-literal--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 260,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 256
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--template-literal--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 260,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 256
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--template-literal--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template slot=\"header\"><span>Title</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-attribute--template-literal--scriptless.vue",
+      "id": "slot-attribute--template-literal--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 39,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 35
+            }
+          ],
+          "error_count": 2,
+          "filename": "slot-attribute--template-literal--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 39,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 35
+            }
+          ],
+          "error_count": 2,
+          "filename": "slot-attribute--template-literal--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template slot=\"header\"><span>Title</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-attribute--bound-child--scripted.vue",
+      "id": "slot-attribute--bound-child--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-attribute--bound-child--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-attribute--bound-child--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><div :slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-attribute--bound-child--scriptless.vue",
+      "id": "slot-attribute--bound-child--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--bound-child--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--bound-child--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div :slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-attribute--unrelated-native-parent--scripted.vue",
+      "id": "slot-attribute--unrelated-native-parent--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 206,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 202
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--unrelated-native-parent--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 206,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 202
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--unrelated-native-parent--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div><span slot=\"header\">Title</span></div>\n</template>\n"
+    },
+    {
+      "filename": "slot-attribute--unrelated-native-parent--scriptless.vue",
+      "id": "slot-attribute--unrelated-native-parent--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 28,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 24
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--unrelated-native-parent--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 28,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 24
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--unrelated-native-parent--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <div><span slot=\"header\">Title</span></div>\n</template>\n"
+    },
+    {
+      "filename": "slot-attribute--modern-slot--scripted.vue",
+      "id": "slot-attribute--modern-slot--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-attribute--modern-slot--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-attribute--modern-slot--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template #header><span>Title</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-attribute--modern-slot--scriptless.vue",
+      "id": "slot-attribute--modern-slot--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--modern-slot--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-attribute--modern-slot--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template #header><span>Title</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-scope-attribute--template--scripted.vue",
+      "id": "slot-scope-attribute--template--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 277,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-scope-attribute",
+              "severity": "error",
+              "start": 256
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-scope-attribute--template--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 277,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-scope-attribute",
+              "severity": "error",
+              "start": 256
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-scope-attribute--template--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template slot-scope=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-scope-attribute--template--scriptless.vue",
+      "id": "slot-scope-attribute--template--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 56,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-scope-attribute",
+              "severity": "error",
+              "start": 35
+            }
+          ],
+          "error_count": 2,
+          "filename": "slot-scope-attribute--template--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 56,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-scope-attribute",
+              "severity": "error",
+              "start": 35
+            }
+          ],
+          "error_count": 2,
+          "filename": "slot-scope-attribute--template--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template slot-scope=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-scope-attribute--native-child--scripted.vue",
+      "id": "slot-scope-attribute--native-child--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 272,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-scope-attribute",
+              "severity": "error",
+              "start": 251
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-scope-attribute--native-child--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 272,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-scope-attribute",
+              "severity": "error",
+              "start": 251
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-scope-attribute--native-child--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><div slot-scope=\"slotData\">{{ slotData.label }}</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-scope-attribute--native-child--scriptless.vue",
+      "id": "slot-scope-attribute--native-child--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 51,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-scope-attribute",
+              "severity": "error",
+              "start": 30
+            }
+          ],
+          "error_count": 2,
+          "filename": "slot-scope-attribute--native-child--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 51,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot=\"props\">`).",
+              "labels": [],
+              "message": "the `slot-scope` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-scope-attribute",
+              "severity": "error",
+              "start": 30
+            }
+          ],
+          "error_count": 2,
+          "filename": "slot-scope-attribute--native-child--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div slot-scope=\"slotData\">{{ slotData.label }}</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-scope-attribute--bound--scripted.vue",
+      "id": "slot-scope-attribute--bound--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-scope-attribute--bound--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-scope-attribute--bound--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template :slot-scope=\"value\"><span /></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-scope-attribute--bound--scriptless.vue",
+      "id": "slot-scope-attribute--bound--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-scope-attribute--bound--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-scope-attribute--bound--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template :slot-scope=\"value\"><span /></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-scope-attribute--modern-slot--scripted.vue",
+      "id": "slot-scope-attribute--modern-slot--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-scope-attribute--modern-slot--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-scope-attribute--modern-slot--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel><template #default=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "slot-scope-attribute--modern-slot--scriptless.vue",
+      "id": "slot-scope-attribute--modern-slot--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-scope-attribute--modern-slot--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-scope-attribute--modern-slot--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template #default=\"slotData\"><span>{{ slotData.label }}</span></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--component-short--scripted.vue",
+      "id": "v-bind-sync--component-short--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 257,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 253
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--component-short--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 257,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 253
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--component-short--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel :value.sync=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--component-short--scriptless.vue",
+      "id": "v-bind-sync--component-short--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 36,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 32
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-bind-sync--component-short--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 36,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 32
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-bind-sync--component-short--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel :value.sync=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--native-long--scripted.vue",
+      "id": "v-bind-sync--native-long--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 213,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 209
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--native-long--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 213,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 209
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--native-long--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div v-bind:title.sync=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--native-long--scriptless.vue",
+      "id": "v-bind-sync--native-long--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 35,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 31
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--native-long--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 35,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 31
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--native-long--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <div v-bind:title.sync=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--object--scripted.vue",
+      "id": "v-bind-sync--object--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 257,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 253
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--object--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 257,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 253
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--object--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel v-bind.sync=\"bag\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--object--scriptless.vue",
+      "id": "v-bind-sync--object--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 36,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 32
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-bind-sync--object--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 36,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 32
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-bind-sync--object--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel v-bind.sync=\"bag\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--dynamic-argument--scripted.vue",
+      "id": "v-bind-sync--dynamic-argument--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 258,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 254
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--dynamic-argument--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 258,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 254
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--dynamic-argument--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel :[name].sync=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--dynamic-argument--scriptless.vue",
+      "id": "v-bind-sync--dynamic-argument--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 37,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 33
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-bind-sync--dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 37,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 33
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-bind-sync--dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel :[name].sync=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--mixed-modifiers--scripted.vue",
+      "id": "v-bind-sync--mixed-modifiers--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 262,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 258
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--mixed-modifiers--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 262,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 258
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--mixed-modifiers--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel :value.prop.sync=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--mixed-modifiers--scriptless.vue",
+      "id": "v-bind-sync--mixed-modifiers--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 41,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 37
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-bind-sync--mixed-modifiers--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 41,
+              "fix": null,
+              "help": "Vue 3 removed the `.sync` modifier and folded its two-way binding into argumented `v-model`. Replace it with `v-model:<prop>` (e.g. `:title.sync=\"title\"` -> `v-model:title=\"title\"`).",
+              "labels": [],
+              "message": "the .sync modifier on v-bind was removed in Vue 3; use v-model:<prop> instead",
+              "rule_name": "vue/no-deprecated-v-bind-sync",
+              "severity": "error",
+              "start": 37
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-bind-sync--mixed-modifiers--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel :value.prop.sync=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--ordinary-bind--scripted.vue",
+      "id": "v-bind-sync--ordinary-bind--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-bind-sync--ordinary-bind--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-bind-sync--ordinary-bind--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel :value=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--ordinary-bind--scriptless.vue",
+      "id": "v-bind-sync--ordinary-bind--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--ordinary-bind--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--ordinary-bind--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel :value=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--modern-model--scripted.vue",
+      "id": "v-bind-sync--modern-model--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-bind-sync--modern-model--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-bind-sync--modern-model--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel v-model:value=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--modern-model--scriptless.vue",
+      "id": "v-bind-sync--modern-model--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--modern-model--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-bind-sync--modern-model--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel v-model:value=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--literal-lookalike--scripted.vue",
+      "id": "v-bind-sync--literal-lookalike--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-bind-sync--literal-lookalike--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-bind-sync--literal-lookalike--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div data-sync=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-bind-sync--literal-lookalike--scriptless.vue",
+      "id": "v-bind-sync--literal-lookalike--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-bind-sync--literal-lookalike--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-bind-sync--literal-lookalike--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <div data-sync=\"value\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--component--scripted.vue",
+      "id": "v-on-native-modifier--component--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 259,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 253
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--component--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 259,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 253
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--component--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel @click.native=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--component--scriptless.vue",
+      "id": "v-on-native-modifier--component--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 38,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 32
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-on-native-modifier--component--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 38,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 32
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-on-native-modifier--component--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel @click.native=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--native-element--scripted.vue",
+      "id": "v-on-native-modifier--native-element--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 212,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 206
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--native-element--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 212,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 206
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--native-element--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <button @click.native=\"onClick\">Go</button>\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--native-element--scriptless.vue",
+      "id": "v-on-native-modifier--native-element--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 34,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 28
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--native-element--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 34,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 28
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--native-element--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <button @click.native=\"onClick\">Go</button>\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--dynamic-argument--scripted.vue",
+      "id": "v-on-native-modifier--dynamic-argument--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 260,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 254
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--dynamic-argument--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 260,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 254
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--dynamic-argument--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel @[name].native=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--dynamic-argument--scriptless.vue",
+      "id": "v-on-native-modifier--dynamic-argument--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 39,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 33
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-on-native-modifier--dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 39,
+              "fix": null,
+              "help": "Vue 3 removed the `.native` modifier: listeners that are not declared component events fall through to the root element automatically. Remove `.native` (e.g. `@click.native` -> `@click`).",
+              "labels": [],
+              "message": ".native modifier on v-on is deprecated and was removed in Vue 3",
+              "rule_name": "vue/no-deprecated-v-on-native-modifier",
+              "severity": "error",
+              "start": 33
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-on-native-modifier--dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel @[name].native=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--ordinary-event--scripted.vue",
+      "id": "v-on-native-modifier--ordinary-event--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-native-modifier--ordinary-event--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-native-modifier--ordinary-event--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel @click=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--ordinary-event--scriptless.vue",
+      "id": "v-on-native-modifier--ordinary-event--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--ordinary-event--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--ordinary-event--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel @click=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--native-event-name--scripted.vue",
+      "id": "v-on-native-modifier--native-event-name--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-native-modifier--native-event-name--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-native-modifier--native-event-name--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <FancyPanel @native=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--native-event-name--scriptless.vue",
+      "id": "v-on-native-modifier--native-event-name--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--native-event-name--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-native-modifier--native-event-name--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel @native=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--literal-lookalike--scripted.vue",
+      "id": "v-on-native-modifier--literal-lookalike--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-native-modifier--literal-lookalike--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-native-modifier--literal-lookalike--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <div data-native=\"yes\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-native-modifier--literal-lookalike--scriptless.vue",
+      "id": "v-on-native-modifier--literal-lookalike--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-native-modifier--literal-lookalike--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-native-modifier--literal-lookalike--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <div data-native=\"yes\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--known-code-13--scripted.vue",
+      "id": "v-on-number-modifiers--known-code-13--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 207,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--known-code-13--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 207,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--known-code-13--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.13=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--known-code-13--scriptless.vue",
+      "id": "v-on-number-modifiers--known-code-13--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 29,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 27
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--known-code-13--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 29,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 27
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--known-code-13--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <input @keyup.13=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--known-code-27--scripted.vue",
+      "id": "v-on-number-modifiers--known-code-27--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 213,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 211
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--known-code-27--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 213,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 211
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--known-code-27--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input v-on:keydown.27=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--known-code-27--scriptless.vue",
+      "id": "v-on-number-modifiers--known-code-27--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 35,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 33
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--known-code-27--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 35,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 33
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--known-code-27--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <input v-on:keydown.27=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--unknown-code-999--scripted.vue",
+      "id": "v-on-number-modifiers--unknown-code-999--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 208,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.999' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--unknown-code-999--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 208,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.999' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--unknown-code-999--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.999=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--unknown-code-999--scriptless.vue",
+      "id": "v-on-number-modifiers--unknown-code-999--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 30,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.999' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 27
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--unknown-code-999--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 30,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.999' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 27
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--unknown-code-999--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <input @keyup.999=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--dynamic-argument--scripted.vue",
+      "id": "v-on-number-modifiers--dynamic-argument--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 208,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 206
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--dynamic-argument--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 208,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 206
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--dynamic-argument--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @[name].13=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--dynamic-argument--scriptless.vue",
+      "id": "v-on-number-modifiers--dynamic-argument--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 30,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 28
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 30,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 28
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <input @[name].13=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--digit-0--scripted.vue",
+      "id": "v-on-number-modifiers--digit-0--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 206,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.0' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--digit-0--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 206,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.0' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--digit-0--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.0=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--digit-0--scriptless.vue",
+      "id": "v-on-number-modifiers--digit-0--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 28,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.0' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 27
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--digit-0--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 28,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.0' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 27
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--digit-0--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <input @keyup.0=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--digit-9--scripted.vue",
+      "id": "v-on-number-modifiers--digit-9--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 206,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.9' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--digit-9--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 206,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.9' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--digit-9--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.9=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--digit-9--scriptless.vue",
+      "id": "v-on-number-modifiers--digit-9--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 28,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.9' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 27
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--digit-9--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 28,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.9' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 27
+            }
+          ],
+          "error_count": 1,
+          "filename": "v-on-number-modifiers--digit-9--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <input @keyup.9=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--named-key--scripted.vue",
+      "id": "v-on-number-modifiers--named-key--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-number-modifiers--named-key--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-number-modifiers--named-key--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.enter=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--named-key--scriptless.vue",
+      "id": "v-on-number-modifiers--named-key--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-number-modifiers--named-key--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-number-modifiers--named-key--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <input @keyup.enter=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--first-digit-0-followed-13--scripted.vue",
+      "id": "v-on-number-modifiers--first-digit-0-followed-13--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 206,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.0' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 205
+            },
+            {
+              "end": 209,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 207
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-on-number-modifiers--first-digit-0-followed-13--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 206,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.0' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 205
+            },
+            {
+              "end": 209,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 207
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-on-number-modifiers--first-digit-0-followed-13--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.0.13=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--first-digit-0-followed-13--scriptless.vue",
+      "id": "v-on-number-modifiers--first-digit-0-followed-13--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 28,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.0' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 27
+            },
+            {
+              "end": 31,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 29
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-on-number-modifiers--first-digit-0-followed-13--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 28,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.0' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 27
+            },
+            {
+              "end": 31,
+              "fix": null,
+              "help": "Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13).",
+              "labels": [],
+              "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+              "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+              "severity": "error",
+              "start": 29
+            }
+          ],
+          "error_count": 2,
+          "filename": "v-on-number-modifiers--first-digit-0-followed-13--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <input @keyup.0.13=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--numeric-prefix-13x--scripted.vue",
+      "id": "v-on-number-modifiers--numeric-prefix-13x--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-number-modifiers--numeric-prefix-13x--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-number-modifiers--numeric-prefix-13x--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nlet value = \"value\";\nconst enabled = true;\nconst name = \"click\";\nconst kind = \"div\";\nconst bag = { title: \"Title\" };\nconst onClick = () => {};\n</script>\n<template>\n  <input @keyup.13x=\"onClick\" />\n</template>\n"
+    },
+    {
+      "filename": "v-on-number-modifiers--numeric-prefix-13x--scriptless.vue",
+      "id": "v-on-number-modifiers--numeric-prefix-13x--scriptless",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-number-modifiers--numeric-prefix-13x--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "v-on-number-modifiers--numeric-prefix-13x--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <input @keyup.13x=\"onClick\" />\n</template>\n"
+    }
+  ],
+  "completedCases": 118,
+  "configuration": {
+    "issue": 8275,
+    "linter": {
+      "enabled": true,
+      "preset": "incremental",
+      "ruleOptions": {
+        "vue/attribute-hyphenation": "always",
+        "vue/component-name-in-template-casing": {
+          "casing": "PascalCase"
+        },
+        "vue/sfc-element-order": {
+          "order": [
+            "script",
+            "template",
+            "style"
+          ]
+        }
+      },
+      "rules": {
+        "script/no-deprecated-dollar-listeners-api": "error",
+        "script/no-deprecated-dollar-scopedslots-api": "error",
+        "script/no-ref-as-operand": "error",
+        "script/no-use-computed-property-like-method": "error",
+        "script/require-valid-default-prop": "error",
+        "vue/attribute-hyphenation": "error",
+        "vue/component-name-in-template-casing": "error",
+        "vue/no-child-content": "error",
+        "vue/no-deprecated-functional-template": "error",
+        "vue/no-deprecated-html-element-is": "error",
+        "vue/no-deprecated-inline-template": "error",
+        "vue/no-deprecated-router-link-tag-prop": "error",
+        "vue/no-deprecated-scope-attribute": "error",
+        "vue/no-deprecated-slot-attribute": "error",
+        "vue/no-deprecated-slot-scope-attribute": "error",
+        "vue/no-deprecated-v-bind-sync": "error",
+        "vue/no-deprecated-v-on-native-modifier": "error",
+        "vue/no-deprecated-v-on-number-modifiers": "error",
+        "vue/no-dupe-v-else-if": "error",
+        "vue/no-duplicate-attributes": "error",
+        "vue/no-multiple-template-root": "error",
+        "vue/no-template-key": "error",
+        "vue/no-textarea-mustache": "error",
+        "vue/no-unused-components": "error",
+        "vue/no-unused-vars": "error",
+        "vue/no-use-v-if-with-v-for": "error",
+        "vue/no-useless-template-attributes": "error",
+        "vue/no-v-for-template-key-on-child": "error",
+        "vue/no-v-html": "error",
+        "vue/require-component-is": "error",
+        "vue/require-component-registration": "error",
+        "vue/require-toggle-inside-transition": "error",
+        "vue/require-v-for-key": "error",
+        "vue/sfc-element-order": "error",
+        "vue/use-v-on-exact": "error",
+        "vue/v-slot-style": "error",
+        "vue/valid-attribute-name": "error",
+        "vue/valid-template-root": "error",
+        "vue/valid-v-bind": "error",
+        "vue/valid-v-cloak": "error",
+        "vue/valid-v-else": "error",
+        "vue/valid-v-for": "error",
+        "vue/valid-v-html": "error",
+        "vue/valid-v-if": "error",
+        "vue/valid-v-memo": "error",
+        "vue/valid-v-model": "error",
+        "vue/valid-v-on": "error",
+        "vue/valid-v-once": "error",
+        "vue/valid-v-show": "error",
+        "vue/valid-v-slot": "error",
+        "vue/valid-v-text": "error"
+      }
+    },
+    "oracleRules": {
+      "script/no-deprecated-dollar-listeners-api": "vue/no-deprecated-dollar-listeners-api",
+      "script/no-deprecated-dollar-scopedslots-api": "vue/no-deprecated-dollar-scopedslots-api",
+      "script/no-ref-as-operand": "vue/no-ref-as-operand",
+      "script/no-use-computed-property-like-method": "vue/no-use-computed-property-like-method",
+      "script/require-valid-default-prop": "vue/require-valid-default-prop",
+      "vue/attribute-hyphenation": "vue/attribute-hyphenation",
+      "vue/component-name-in-template-casing": "vue/component-name-in-template-casing",
+      "vue/no-child-content": "vue/no-child-content",
+      "vue/no-deprecated-functional-template": "vue/no-deprecated-functional-template",
+      "vue/no-deprecated-html-element-is": "vue/no-deprecated-html-element-is",
+      "vue/no-deprecated-inline-template": "vue/no-deprecated-inline-template",
+      "vue/no-deprecated-router-link-tag-prop": "vue/no-deprecated-router-link-tag-prop",
+      "vue/no-deprecated-scope-attribute": "vue/no-deprecated-scope-attribute",
+      "vue/no-deprecated-slot-attribute": "vue/no-deprecated-slot-attribute",
+      "vue/no-deprecated-slot-scope-attribute": "vue/no-deprecated-slot-scope-attribute",
+      "vue/no-deprecated-v-bind-sync": "vue/no-deprecated-v-bind-sync",
+      "vue/no-deprecated-v-on-native-modifier": "vue/no-deprecated-v-on-native-modifier",
+      "vue/no-deprecated-v-on-number-modifiers": "vue/no-deprecated-v-on-number-modifiers",
+      "vue/no-dupe-v-else-if": "vue/no-dupe-v-else-if",
+      "vue/no-duplicate-attributes": "vue/no-duplicate-attributes",
+      "vue/no-multiple-template-root": "vue/no-multiple-template-root",
+      "vue/no-template-key": "vue/no-template-key",
+      "vue/no-textarea-mustache": "vue/no-textarea-mustache",
+      "vue/no-unused-components": "vue/no-unused-components",
+      "vue/no-unused-vars": "vue/no-unused-vars",
+      "vue/no-use-v-if-with-v-for": "vue/no-use-v-if-with-v-for",
+      "vue/no-useless-template-attributes": "vue/no-useless-template-attributes",
+      "vue/no-v-for-template-key-on-child": "vue/no-v-for-template-key-on-child",
+      "vue/no-v-html": "vue/no-v-html",
+      "vue/require-component-is": "vue/require-component-is",
+      "vue/require-component-registration": "vue/no-undef-components",
+      "vue/require-toggle-inside-transition": "vue/require-toggle-inside-transition",
+      "vue/require-v-for-key": "vue/require-v-for-key",
+      "vue/sfc-element-order": "vue/block-order",
+      "vue/use-v-on-exact": "vue/use-v-on-exact",
+      "vue/v-slot-style": "vue/v-slot-style",
+      "vue/valid-attribute-name": "vue/valid-attribute-name",
+      "vue/valid-template-root": "vue/valid-template-root",
+      "vue/valid-v-bind": "vue/valid-v-bind",
+      "vue/valid-v-cloak": "vue/valid-v-cloak",
+      "vue/valid-v-else": "vue/valid-v-else",
+      "vue/valid-v-for": "vue/valid-v-for",
+      "vue/valid-v-html": "vue/valid-v-html",
+      "vue/valid-v-if": "vue/valid-v-if",
+      "vue/valid-v-memo": "vue/valid-v-memo",
+      "vue/valid-v-model": "vue/valid-v-model",
+      "vue/valid-v-on": "vue/valid-v-on",
+      "vue/valid-v-once": "vue/valid-v-once",
+      "vue/valid-v-show": "vue/valid-v-show",
+      "vue/valid-v-slot": "vue/valid-v-slot",
+      "vue/valid-v-text": "vue/valid-v-text"
+    },
+    "requirements": {
+      "configPath": "packages/@n8n/oxlint-config/src/configs/vize.ts",
+      "revision": "5c2a2cf3d837b6538a3330a4d7cc817e4b6f04e2",
+      "sha256": "d7b32f5a7bbf42ba301220b2ffee9a1dc372c252ab062e2f71ae3790149e46b5",
+      "sourcePolicy": "read-only requirement evidence; branch source is not redistributed or executed",
+      "url": "https://github.com/n8n-io/n8n/pull/40393"
+    },
+    "schema": "vize.ref-factory-identity.config"
+  },
+  "executionStatus": "completed",
+  "inputPath": "/tmp/vize-n8n-deprecated-template-audit-20261008/observer-input.json",
+  "repeatCount": 2,
+  "schema": "vize.n8n.authored-source-api-research.v1",
+  "sourceRevision": "47c6f998d49cd6c7b790550098b3378639b949f7"
+}

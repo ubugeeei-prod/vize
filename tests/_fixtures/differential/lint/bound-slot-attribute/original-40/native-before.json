@@ -1,0 +1,1687 @@
+{
+  "cases": [
+    {
+      "filename": "static-child--scripted.vue",
+      "id": "static-child--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 187,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 183
+            }
+          ],
+          "error_count": 1,
+          "filename": "static-child--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 187,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 183
+            }
+          ],
+          "error_count": 1,
+          "filename": "static-child--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div slot=\"header\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "static-child--scriptless.vue",
+      "id": "static-child--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 34,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 30
+            }
+          ],
+          "error_count": 2,
+          "filename": "static-child--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 34,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 30
+            }
+          ],
+          "error_count": 2,
+          "filename": "static-child--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div slot=\"header\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "static-template--scripted.vue",
+      "id": "static-template--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 192,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 188
+            }
+          ],
+          "error_count": 1,
+          "filename": "static-template--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 192,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 188
+            }
+          ],
+          "error_count": 1,
+          "filename": "static-template--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><template slot=\"header\"><div>Title</div></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "static-template--scriptless.vue",
+      "id": "static-template--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 39,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 35
+            }
+          ],
+          "error_count": 2,
+          "filename": "static-template--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 39,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 35
+            }
+          ],
+          "error_count": 2,
+          "filename": "static-template--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template slot=\"header\"><div>Title</div></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "short-bound--scripted.vue",
+      "id": "short-bound--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "short-bound--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "short-bound--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "short-bound--scriptless.vue",
+      "id": "short-bound--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "short-bound--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "short-bound--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div :slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "long-bound--scripted.vue",
+      "id": "long-bound--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "long-bound--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "long-bound--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div v-bind:slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "long-bound--scriptless.vue",
+      "id": "long-bound--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "long-bound--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "long-bound--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div v-bind:slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "bound-template--scripted.vue",
+      "id": "bound-template--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "bound-template--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "bound-template--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><template :slot=\"name\"><div>Title</div></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "bound-template--scriptless.vue",
+      "id": "bound-template--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "bound-template--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "bound-template--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template :slot=\"name\"><div>Title</div></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "same-name-shorthand--scripted.vue",
+      "id": "same-name-shorthand--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "same-name-shorthand--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "same-name-shorthand--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :slot>Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "same-name-shorthand--scriptless.vue",
+      "id": "same-name-shorthand--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "same-name-shorthand--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "same-name-shorthand--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div :slot>Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "bound-prop-modifier--scripted.vue",
+      "id": "bound-prop-modifier--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "bound-prop-modifier--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "bound-prop-modifier--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :slot.prop=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "bound-prop-modifier--scriptless.vue",
+      "id": "bound-prop-modifier--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "bound-prop-modifier--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "bound-prop-modifier--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div :slot.prop=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "bound-camel-modifier--scripted.vue",
+      "id": "bound-camel-modifier--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "bound-camel-modifier--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "bound-camel-modifier--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div v-bind:slot.camel=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "bound-camel-modifier--scriptless.vue",
+      "id": "bound-camel-modifier--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "bound-camel-modifier--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "bound-camel-modifier--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div v-bind:slot.camel=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "dynamic-argument--scripted.vue",
+      "id": "dynamic-argument--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-argument--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-argument--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :[slot]=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "dynamic-argument--scriptless.vue",
+      "id": "dynamic-argument--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div :[slot]=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "literal-dynamic-argument--scripted.vue",
+      "id": "literal-dynamic-argument--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "literal-dynamic-argument--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "literal-dynamic-argument--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :['slot']=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "literal-dynamic-argument--scriptless.vue",
+      "id": "literal-dynamic-argument--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "literal-dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "literal-dynamic-argument--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div :['slot']=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "object-binding--scripted.vue",
+      "id": "object-binding--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "object-binding--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "object-binding--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div v-bind=\"{ slot: name }\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "object-binding--scriptless.vue",
+      "id": "object-binding--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "object-binding--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "object-binding--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div v-bind=\"{ slot: name }\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "modern-static-slot--scripted.vue",
+      "id": "modern-static-slot--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "modern-static-slot--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "modern-static-slot--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><template #header><div>Title</div></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "modern-static-slot--scriptless.vue",
+      "id": "modern-static-slot--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "modern-static-slot--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "modern-static-slot--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template #header><div>Title</div></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "modern-dynamic-slot--scripted.vue",
+      "id": "modern-dynamic-slot--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "modern-dynamic-slot--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "modern-dynamic-slot--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><template #[name]><div>Title</div></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "modern-dynamic-slot--scriptless.vue",
+      "id": "modern-dynamic-slot--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "modern-dynamic-slot--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "modern-dynamic-slot--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template #[name]><div>Title</div></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "modern-long-slot--scripted.vue",
+      "id": "modern-long-slot--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 201,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 195,
+                    "new_text": "#",
+                    "start": 188
+                  }
+                ],
+                "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+              },
+              "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+              "labels": [],
+              "message": "Expected '#header' instead of 'v-slot:header'",
+              "rule_name": "vue/v-slot-style",
+              "severity": "error",
+              "start": 188
+            }
+          ],
+          "error_count": 1,
+          "filename": "modern-long-slot--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 201,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 195,
+                    "new_text": "#",
+                    "start": 188
+                  }
+                ],
+                "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+              },
+              "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+              "labels": [],
+              "message": "Expected '#header' instead of 'v-slot:header'",
+              "rule_name": "vue/v-slot-style",
+              "severity": "error",
+              "start": 188
+            }
+          ],
+          "error_count": 1,
+          "filename": "modern-long-slot--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><template v-slot:header><div>Title</div></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "modern-long-slot--scriptless.vue",
+      "id": "modern-long-slot--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 48,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 42,
+                    "new_text": "#",
+                    "start": 35
+                  }
+                ],
+                "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+              },
+              "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+              "labels": [],
+              "message": "Expected '#header' instead of 'v-slot:header'",
+              "rule_name": "vue/v-slot-style",
+              "severity": "error",
+              "start": 35
+            }
+          ],
+          "error_count": 2,
+          "filename": "modern-long-slot--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 48,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 42,
+                    "new_text": "#",
+                    "start": 35
+                  }
+                ],
+                "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+              },
+              "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+              "labels": [],
+              "message": "Expected '#header' instead of 'v-slot:header'",
+              "rule_name": "vue/v-slot-style",
+              "severity": "error",
+              "start": 35
+            }
+          ],
+          "error_count": 2,
+          "filename": "modern-long-slot--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><template v-slot:header><div>Title</div></template></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "unrelated-data-slot--scripted.vue",
+      "id": "unrelated-data-slot--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "unrelated-data-slot--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "unrelated-data-slot--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :data-slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "unrelated-data-slot--scriptless.vue",
+      "id": "unrelated-data-slot--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "unrelated-data-slot--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "unrelated-data-slot--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div :data-slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "unrelated-slots--scripted.vue",
+      "id": "unrelated-slots--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "unrelated-slots--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "unrelated-slots--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div v-bind:slots=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "unrelated-slots--scriptless.vue",
+      "id": "unrelated-slots--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "unrelated-slots--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "unrelated-slots--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div v-bind:slots=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "unrelated-bound-slot-scope--scripted.vue",
+      "id": "unrelated-bound-slot-scope--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "unrelated-bound-slot-scope--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "unrelated-bound-slot-scope--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :slot-scope=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "unrelated-bound-slot-scope--scriptless.vue",
+      "id": "unrelated-bound-slot-scope--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "unrelated-bound-slot-scope--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "unrelated-bound-slot-scope--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div :slot-scope=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "duplicate-static-and-bound--scripted.vue",
+      "id": "duplicate-static-and-bound--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 209,
+              "fix": null,
+              "help": "Remove the duplicate attribute",
+              "labels": [],
+              "message": "Duplicate attribute 'v-bind:slot'",
+              "rule_name": "vue/no-duplicate-attributes",
+              "severity": "error",
+              "start": 197
+            },
+            {
+              "end": 187,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 183
+            }
+          ],
+          "error_count": 2,
+          "filename": "duplicate-static-and-bound--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 209,
+              "fix": null,
+              "help": "Remove the duplicate attribute",
+              "labels": [],
+              "message": "Duplicate attribute 'v-bind:slot'",
+              "rule_name": "vue/no-duplicate-attributes",
+              "severity": "error",
+              "start": 197
+            },
+            {
+              "end": 187,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 183
+            }
+          ],
+          "error_count": 2,
+          "filename": "duplicate-static-and-bound--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div slot=\"header\" :slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "duplicate-static-and-bound--scriptless.vue",
+      "id": "duplicate-static-and-bound--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 56,
+              "fix": null,
+              "help": "Remove the duplicate attribute",
+              "labels": [],
+              "message": "Duplicate attribute 'v-bind:slot'",
+              "rule_name": "vue/no-duplicate-attributes",
+              "severity": "error",
+              "start": 44
+            },
+            {
+              "end": 34,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 30
+            }
+          ],
+          "error_count": 3,
+          "filename": "duplicate-static-and-bound--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 56,
+              "fix": null,
+              "help": "Remove the duplicate attribute",
+              "labels": [],
+              "message": "Duplicate attribute 'v-bind:slot'",
+              "rule_name": "vue/no-duplicate-attributes",
+              "severity": "error",
+              "start": 44
+            },
+            {
+              "end": 34,
+              "fix": null,
+              "help": "Use `v-slot` instead (e.g. `<template v-slot:header>`).",
+              "labels": [],
+              "message": "the `slot` attribute was deprecated in Vue 2.6 and removed in Vue 3",
+              "rule_name": "vue/no-deprecated-slot-attribute",
+              "severity": "error",
+              "start": 30
+            }
+          ],
+          "error_count": 3,
+          "filename": "duplicate-static-and-bound--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div slot=\"header\" :slot=\"name\">Title</div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "bound-with-unrelated-html--scripted.vue",
+      "id": "bound-with-unrelated-html--scripted",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 216,
+              "fix": null,
+              "help": "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+              "labels": [],
+              "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+              "rule_name": "vue/no-v-html",
+              "severity": "error",
+              "start": 202
+            }
+          ],
+          "error_count": 1,
+          "filename": "bound-with-unrelated-html--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 216,
+              "fix": null,
+              "help": "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+              "labels": [],
+              "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+              "rule_name": "vue/no-v-html",
+              "severity": "error",
+              "start": 202
+            }
+          ],
+          "error_count": 1,
+          "filename": "bound-with-unrelated-html--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel><div :slot=\"name\"><span v-html=\"value\" /></div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "bound-with-unrelated-html--scriptless.vue",
+      "id": "bound-with-unrelated-html--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 63,
+              "fix": null,
+              "help": "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+              "labels": [],
+              "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+              "rule_name": "vue/no-v-html",
+              "severity": "error",
+              "start": 49
+            }
+          ],
+          "error_count": 2,
+          "filename": "bound-with-unrelated-html--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            },
+            {
+              "end": 63,
+              "fix": null,
+              "help": "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+              "labels": [],
+              "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+              "rule_name": "vue/no-v-html",
+              "severity": "error",
+              "start": 49
+            }
+          ],
+          "error_count": 2,
+          "filename": "bound-with-unrelated-html--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel><div :slot=\"name\"><span v-html=\"value\" /></div></FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "bound-with-template-disable--scripted.vue",
+      "id": "bound-with-template-disable--scripted",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "bound-with-template-disable--scripted.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "bound-with-template-disable--scripted.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst value = \"<b>Text</b>\";\n</script>\n<template>\n  <FancyPanel>\n    <!-- eslint-disable-next-line vue/no-deprecated-slot-attribute -->\n    <div :slot=\"name\">Title</div>\n  </FancyPanel>\n</template>\n"
+    },
+    {
+      "filename": "bound-with-template-disable--scriptless.vue",
+      "id": "bound-with-template-disable--scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "bound-with-template-disable--scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "bound-with-template-disable--scriptless.vue",
+          "warning_count": 0
+        }
+      ],
+      "source": "<template>\n  <FancyPanel>\n    <!-- eslint-disable-next-line vue/no-deprecated-slot-attribute -->\n    <div :slot=\"name\">Title</div>\n  </FancyPanel>\n</template>\n"
+    }
+  ],
+  "completedCases": 40,
+  "configuration": {
+    "files": 1369,
+    "fixtureRevision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+    "limits": [
+      "Owned functional settings projection, not an actual upstream package artifact",
+      "Whole original CLI packet replay is config/scope execution, not independent 51-rule accuracy parity",
+      "Retired rules, type-aware Vue and complete workspace/plugin/checker adoption remain unfinished"
+    ],
+    "linter": {
+      "enabled": true,
+      "preset": "incremental",
+      "ruleOptions": {
+        "vue/attribute-hyphenation": "always",
+        "vue/component-name-in-template-casing": {
+          "casing": "PascalCase"
+        },
+        "vue/sfc-element-order": {
+          "order": [
+            "script",
+            "template",
+            "style"
+          ]
+        }
+      },
+      "rules": {
+        "script/no-deprecated-dollar-listeners-api": "error",
+        "script/no-deprecated-dollar-scopedslots-api": "error",
+        "script/no-ref-as-operand": "error",
+        "script/no-use-computed-property-like-method": "error",
+        "script/require-valid-default-prop": "error",
+        "vue/attribute-hyphenation": "error",
+        "vue/component-name-in-template-casing": "error",
+        "vue/no-child-content": "error",
+        "vue/no-deprecated-functional-template": "error",
+        "vue/no-deprecated-html-element-is": "error",
+        "vue/no-deprecated-inline-template": "error",
+        "vue/no-deprecated-router-link-tag-prop": "error",
+        "vue/no-deprecated-scope-attribute": "error",
+        "vue/no-deprecated-slot-attribute": "error",
+        "vue/no-deprecated-slot-scope-attribute": "error",
+        "vue/no-deprecated-v-bind-sync": "error",
+        "vue/no-deprecated-v-on-native-modifier": "error",
+        "vue/no-deprecated-v-on-number-modifiers": "error",
+        "vue/no-dupe-v-else-if": "error",
+        "vue/no-duplicate-attributes": "error",
+        "vue/no-multiple-template-root": "error",
+        "vue/no-template-key": "error",
+        "vue/no-textarea-mustache": "error",
+        "vue/no-unused-components": "error",
+        "vue/no-unused-vars": "error",
+        "vue/no-use-v-if-with-v-for": "error",
+        "vue/no-useless-template-attributes": "error",
+        "vue/no-v-for-template-key-on-child": "error",
+        "vue/no-v-html": "error",
+        "vue/require-component-is": "error",
+        "vue/require-component-registration": "error",
+        "vue/require-toggle-inside-transition": "error",
+        "vue/require-v-for-key": "error",
+        "vue/sfc-element-order": "error",
+        "vue/use-v-on-exact": "error",
+        "vue/v-slot-style": "error",
+        "vue/valid-attribute-name": "error",
+        "vue/valid-template-root": "error",
+        "vue/valid-v-bind": "error",
+        "vue/valid-v-cloak": "error",
+        "vue/valid-v-else": "error",
+        "vue/valid-v-for": "error",
+        "vue/valid-v-html": "error",
+        "vue/valid-v-if": "error",
+        "vue/valid-v-memo": "error",
+        "vue/valid-v-model": "error",
+        "vue/valid-v-on": "error",
+        "vue/valid-v-once": "error",
+        "vue/valid-v-show": "error",
+        "vue/valid-v-slot": "error",
+        "vue/valid-v-text": "error"
+      }
+    },
+    "oracleRules": {
+      "script/no-deprecated-dollar-listeners-api": "vue/no-deprecated-dollar-listeners-api",
+      "script/no-deprecated-dollar-scopedslots-api": "vue/no-deprecated-dollar-scopedslots-api",
+      "script/no-ref-as-operand": "vue/no-ref-as-operand",
+      "script/no-use-computed-property-like-method": "vue/no-use-computed-property-like-method",
+      "script/require-valid-default-prop": "vue/require-valid-default-prop",
+      "vue/attribute-hyphenation": "vue/attribute-hyphenation",
+      "vue/component-name-in-template-casing": "vue/component-name-in-template-casing",
+      "vue/no-child-content": "vue/no-child-content",
+      "vue/no-deprecated-functional-template": "vue/no-deprecated-functional-template",
+      "vue/no-deprecated-html-element-is": "vue/no-deprecated-html-element-is",
+      "vue/no-deprecated-inline-template": "vue/no-deprecated-inline-template",
+      "vue/no-deprecated-router-link-tag-prop": "vue/no-deprecated-router-link-tag-prop",
+      "vue/no-deprecated-scope-attribute": "vue/no-deprecated-scope-attribute",
+      "vue/no-deprecated-slot-attribute": "vue/no-deprecated-slot-attribute",
+      "vue/no-deprecated-slot-scope-attribute": "vue/no-deprecated-slot-scope-attribute",
+      "vue/no-deprecated-v-bind-sync": "vue/no-deprecated-v-bind-sync",
+      "vue/no-deprecated-v-on-native-modifier": "vue/no-deprecated-v-on-native-modifier",
+      "vue/no-deprecated-v-on-number-modifiers": "vue/no-deprecated-v-on-number-modifiers",
+      "vue/no-dupe-v-else-if": "vue/no-dupe-v-else-if",
+      "vue/no-duplicate-attributes": "vue/no-duplicate-attributes",
+      "vue/no-multiple-template-root": "vue/no-multiple-template-root",
+      "vue/no-template-key": "vue/no-template-key",
+      "vue/no-textarea-mustache": "vue/no-textarea-mustache",
+      "vue/no-unused-components": "vue/no-unused-components",
+      "vue/no-unused-vars": "vue/no-unused-vars",
+      "vue/no-use-v-if-with-v-for": "vue/no-use-v-if-with-v-for",
+      "vue/no-useless-template-attributes": "vue/no-useless-template-attributes",
+      "vue/no-v-for-template-key-on-child": "vue/no-v-for-template-key-on-child",
+      "vue/no-v-html": "vue/no-v-html",
+      "vue/require-component-is": "vue/require-component-is",
+      "vue/require-component-registration": "vue/no-undef-components",
+      "vue/require-toggle-inside-transition": "vue/require-toggle-inside-transition",
+      "vue/require-v-for-key": "vue/require-v-for-key",
+      "vue/sfc-element-order": "vue/block-order",
+      "vue/use-v-on-exact": "vue/use-v-on-exact",
+      "vue/v-slot-style": "vue/v-slot-style",
+      "vue/valid-attribute-name": "vue/valid-attribute-name",
+      "vue/valid-template-root": "vue/valid-template-root",
+      "vue/valid-v-bind": "vue/valid-v-bind",
+      "vue/valid-v-cloak": "vue/valid-v-cloak",
+      "vue/valid-v-else": "vue/valid-v-else",
+      "vue/valid-v-for": "vue/valid-v-for",
+      "vue/valid-v-html": "vue/valid-v-html",
+      "vue/valid-v-if": "vue/valid-v-if",
+      "vue/valid-v-memo": "vue/valid-v-memo",
+      "vue/valid-v-model": "vue/valid-v-model",
+      "vue/valid-v-on": "vue/valid-v-on",
+      "vue/valid-v-once": "vue/valid-v-once",
+      "vue/valid-v-show": "vue/valid-v-show",
+      "vue/valid-v-slot": "vue/valid-v-slot",
+      "vue/valid-v-text": "vue/valid-v-text"
+    },
+    "packageVueFileCounts": {
+      "packages/@n8n/mcp-apps": 5,
+      "packages/@n8n/mcp-browser-extension": 5,
+      "packages/frontend/@n8n/chat": 16,
+      "packages/frontend/@n8n/design-system": 182,
+      "packages/frontend/editor-ui": 1114,
+      "packages/modules/insights/frontend": 12,
+      "packages/modules/mcp/frontend": 27,
+      "packages/modules/otel/frontend": 4,
+      "packages/modules/type-availability-policies/frontend": 4
+    },
+    "requirements": {
+      "configPath": "packages/@n8n/oxlint-config/src/configs/vize.ts",
+      "revision": "5c2a2cf3d837b6538a3330a4d7cc817e4b6f04e2",
+      "sha256": "d7b32f5a7bbf42ba301220b2ffee9a1dc372c252ab062e2f71ae3790149e46b5",
+      "sourcePolicy": "read-only requirement evidence; branch source is not redistributed or executed",
+      "url": "https://github.com/n8n-io/n8n/pull/40393"
+    },
+    "schema": "vize.n8n.cli-config-acceptance",
+    "scopes": {
+      "packages/frontend/@n8n/design-system": {
+        "entries": [
+          {
+            "files": [
+              "src/components/N8nDatatable/Datatable.vue"
+            ],
+            "linter": {
+              "rules": {
+                "vue/require-v-for-key": "off"
+              }
+            }
+          }
+        ]
+      },
+      "packages/frontend/editor-ui": {
+        "entries": [
+          {
+            "files": [
+              "src/features/roles/components/RoleHoverPopover.vue",
+              "src/features/shared/nodeCreator/views/NodeCreation.vue",
+              "src/features/workflows/canvas/components/elements/edges/CanvasConnectionLine.vue",
+              "src/features/workflows/canvas/components/elements/edges/CanvasEdge.vue",
+              "src/features/workflows/canvas/components/elements/nodes/render-types/CanvasNodeStickyNote.vue"
+            ],
+            "linter": {
+              "rules": {
+                "vue/no-multiple-template-root": "off"
+              }
+            }
+          }
+        ],
+        "rules": {
+          "vue/attribute-hyphenation": "warn"
+        }
+      }
+    },
+    "scriptlessFiles": 19,
+    "trackingIssue": 8142,
+    "version": 1
+  },
+  "executionStatus": "completed",
+  "inputPath": "/tmp/vize-n8n-bound-slot-producer-20261008/input.json",
+  "repeatCount": 2,
+  "schema": "vize.n8n.authored-source-api-research.v1",
+  "sourceRevision": "26e56ac6a0de3f9f838db55bbdb71757317f2435"
+}

@@ -956,9 +956,9 @@ linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_router_link_
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs	34	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs	35	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs	35	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs	35	l0	L0	stage	vize_l0	preferred	1
-linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs	35	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	test/dev	crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs	81	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs	36	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs	36	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	test/dev	crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs	115	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs	30	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs	30	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs	39	l0	L0	stage	vize_l0	preferred	1
@@ -1121,6 +1121,7 @@ linter	Linter	source	crates/vize_patina/src/visitor/root.rs	5	old_ast	old AST/pa
 linter	Linter	test/dev	crates/vize_patina/tests/accessible_content.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/aria_hidden_static_focus.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/aria_hidden_static_focus.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
+linter	Linter	test/dev	crates/vize_patina/tests/bound_slot_attribute.rs	122	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/content_directives_history.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/css_external_target_history.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/css_global_compound_ownership.rs	4	l0	L0	stage	vize_l0	preferred	1
