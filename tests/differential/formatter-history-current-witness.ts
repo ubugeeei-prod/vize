@@ -123,7 +123,7 @@ const OWNERS: Record<
   // #7876 adds a read-only lock query; the complete original placement law is unchanged.
   "crates/vize_glyph/src/template/formatter/suppression.rs": {
     originalSha256: "94b99ca1dcf0833d5706b73f95e41c9cdf280160e1dccdb751340ad86607b675",
-    actualMainSha256: "f3b627a268702cf355e78e44806960e0255d0f58f005a23de5f9f100b7798b8c",
+    actualMainSha256: "46581bd3d7aeed777c746405fdb6bb2135ba792a569e8d7440d2dafe87aa154a",
     functions: {
       ranges_track_pragma_placement:
         "8120d76a61ca7b815e73c633c93431ba5399f1227d8274a699d09c7d2a5a5400",

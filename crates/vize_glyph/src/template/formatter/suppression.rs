@@ -129,6 +129,11 @@ impl<'s> LineJoiner<'s> {
         self.current.is_some()
     }
 
+    pub(super) fn hugged_closing_name(&self, start: usize, end: usize) -> Option<&[u8]> {
+        let context = (self.source, self.opening, self.previous_end);
+        super::child_width::hugged_closing_name(context, start, end)
+    }
+
     /// A sole interpolation touching both parent tags shares their layout depth.
     pub(super) fn interpolation_depth(&self, start: usize, end: usize, depth: usize) -> usize {
         let Some((tag_start, tag_end)) = self.opening else {

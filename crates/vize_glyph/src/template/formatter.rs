@@ -15,6 +15,7 @@ use super::{
     },
 };
 
+mod child_width;
 mod interpolation;
 mod opening_attributes;
 mod preserved_text;
