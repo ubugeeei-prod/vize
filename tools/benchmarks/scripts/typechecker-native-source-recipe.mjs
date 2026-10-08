@@ -15,6 +15,44 @@ export const WORKFLOW = ".github/workflows/typechecker-native-phases.yml";
 export const STEP =
   "Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor";
 const REPO = "ubugeeei-prod/vize";
+const INLINE_BEGIN = "  # VIZE_NATIVE_SOURCE_INLINE_BEGIN\n";
+const INLINE_END = "  # VIZE_NATIVE_SOURCE_INLINE_END\n";
+const WRAPPER_PREFIX =
+  [
+    "set -euo pipefail",
+    '[[ "$GITHUB_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags origin "$GITHUB_WORKFLOW_SHA"',
+    'for helper in typechecker-native-source-recipe.mjs typechecker-native-release-metadata.mjs; do git show "$GITHUB_WORKFLOW_SHA:tools/benchmarks/scripts/$helper" > "$RUNNER_TEMP/$helper"; done',
+    'recipe="$(node "$RUNNER_TEMP/typechecker-native-source-recipe.mjs")"',
+    'if [[ -n "$recipe" ]]; then',
+    `  if [[ "$(node -p 'Boolean(JSON.parse(require("node:fs").readFileSync(process.env.RUNNER_TEMP+"/native-source-recipe.json")).originalEnvironment.VIZE_TSCONFIG_TYPES_CAPTURE)')" != true ]]; then unset VIZE_TSCONFIG_TYPES_CAPTURE; fi; unset GH_TOKEN; bash --noprofile --norc -e -o pipefail "$recipe"`,
+    "else",
+  ].join("\n") + "\n";
+
+/** Execute source-owned commands once; never recurse through a future source wrapper. */
+export function declaredSourceRecipe(run) {
+  assert.equal(typeof run, "string");
+  if (!run.includes("VIZE_NATIVE_SOURCE_INLINE_")) {
+    assert.ok(
+      run.startsWith(
+        'set -euo pipefail\nunset VIZE_TEST_DISABLE_TSGO\ncd "$NATIVE_PHASE_SOURCE_ROOT"\n',
+      ),
+    );
+    return { kind: "whole-source-step", recipe: run };
+  }
+  assert.equal(run.split(INLINE_BEGIN).length, 2, "Missing/duplicate inline begin marker");
+  assert.equal(run.split(INLINE_END).length, 2, "Missing/duplicate inline end marker");
+  const [prefix, rest] = run.split(INLINE_BEGIN),
+    [inline, suffix] = rest.split(INLINE_END);
+  assert.equal(prefix, WRAPPER_PREFIX, "Unrecognized commands outside source inline recipe");
+  assert.equal(suffix, "fi\n", "Unrecognized source wrapper suffix");
+  assert.ok(
+    inline.startsWith('  unset VIZE_TEST_DISABLE_TSGO\n  cd "$NATIVE_PHASE_SOURCE_ROOT"\n'),
+  );
+  assert.ok(inline.endsWith("-- --nocapture\n"));
+  assert.ok(!inline.includes("VIZE_NATIVE_SOURCE_INLINE_"));
+  return { kind: "source-inline", recipe: "set -euo pipefail\n" + inline };
+}
+
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const sha = (value) => {
   assert.match(value ?? "", /^[0-9a-f]{40}$/u);
@@ -142,11 +180,12 @@ export function selectSourceRecipe({ root, env, event, permission, pin, parse })
   const step = steps[0];
   assert.equal(step.if, "github.event_name == 'pull_request'");
   assert.equal(step.env.VIZE_TEST_REQUIRE_TSGO, "1");
-  assert.ok(
-    step.run.startsWith(
-      'set -euo pipefail\nunset VIZE_TEST_DISABLE_TSGO\ncd "$NATIVE_PHASE_SOURCE_ROOT"\n',
-    ),
-  );
+  const declared = declaredSourceRecipe(step.run);
+  const executionEnvironment = { ...step.env };
+  if (declared.kind === "source-inline") {
+    assert.equal(executionEnvironment.GH_TOKEN, "${{ github.token }}");
+    delete executionEnvironment.GH_TOKEN;
+  }
   return {
     ...ordinary,
     mode: "immutable-source-step",
@@ -156,11 +195,16 @@ export function selectSourceRecipe({ root, env, event, permission, pin, parse })
     pinTree: tree(root, pin),
     changes,
     sourceWorkflowSha256: hash(bytes),
-    recipeSha256: hash(step.run),
-    recipe: step.run,
+    sourceStepSha256: hash(step.run),
+    recipeKind: declared.kind,
+    recipeSha256: hash(declared.recipe),
+    recipe: declared.recipe,
     originalEnvironment: step.env,
+    executionEnvironment,
     authentication: { pullRequest: pr, permission, pinCommit: git(root, "cat-file", "-p", pin) },
-    unavailableCurrentCapture: "tsconfig-types-extends",
+    unavailableCurrentCapture: step.env.VIZE_TSCONFIG_TYPES_CAPTURE
+      ? null
+      : "tsconfig-types-extends",
   };
 }
 
@@ -216,7 +260,7 @@ async function main() {
   }
   const selected = selectSourceRecipe({ root, env, event, permission, pin, parse });
   if (selected.recipe !== null) {
-    for (const [key, value] of Object.entries(selected.originalEnvironment)) {
+    for (const [key, value] of Object.entries(selected.executionEnvironment)) {
       assert.equal(typeof value, "string", `Unrecognized original environment ${key}`);
       const expected = value.replaceAll("${{ runner.temp }}", env.RUNNER_TEMP);
       assert.ok(!expected.includes("${{"), `Unresolved original environment ${key}`);

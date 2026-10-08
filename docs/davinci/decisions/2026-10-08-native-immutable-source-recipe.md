@@ -51,3 +51,20 @@ native recipe, but hosted check-js rejects all six unawaited test registrations.
 The successor awaits these registrations, following the original custody test
 pattern, without changing any body, input or expectation. The zero-warning gate
 and all fresh source/native/protected obligations remain mandatory.
+
+Future version-only cuts may themselves contain this wrapper. Unique declared
+inline boundaries select every source-owned command exactly once; the complete
+source step and executed script receive separate SHA-256 receipts. Only the
+recognized wrapper prefix/suffix may surround these boundaries, so extra
+commands, missing/duplicate boundaries and malformed wrappers are refused.
+Unwrapped H339 still executes its whole original seven-target script byte for
+byte. The current complete nine-target script is unchanged inside the boundaries.
+
+The source's declared capture environment is preserved, including the newer
+tsconfig capture when present. The bootstrap's symbolic GitHub-token entry is
+retained as source metadata, excluded from execution-environment validation, and
+the actual token is unset before Bash execution; no actual token is serialized.
+The future-cut real-Git control checks both hashes, all original inline bytes,
+non-recursion, Bash syntax, capture preservation and wrong-cut/flag/target refusals.
+The same PR requires fresh Actions after this correction; previous native success
+on 0ac remains historical evidence and does not qualify the successor.

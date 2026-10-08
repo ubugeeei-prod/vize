@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import {
+  declaredSourceRecipe,
   selectSourceRecipe,
   verifyVersionCut,
   WORKFLOW,
@@ -39,6 +40,8 @@ await test("complete authenticated actual C6d/H339 metadata selects all original
     );
     assert.equal(selected.recipe, step.run);
     assert.equal(selected.recipeSha256, hash(step.run));
+    assert.equal(selected.sourceStepSha256, hash(step.run));
+    assert.equal(selected.recipeKind, "whole-source-step");
     const firstCargo = selected.recipe.split("\n").find((line) => line.includes("cargo test"));
     assert.deepEqual(
       [...firstCargo.matchAll(/--test ([a-z0-9_]+)/gu)].map((m) => m[1]),
@@ -71,12 +74,7 @@ await test("ordinary source retains complete incoming nine-target script and ori
       "native-phases"
     ].steps.find((s) => s.name === STEP).run;
     const run = parse(currentBytes).jobs["native-phases"].steps.find((s) => s.name === STEP).run;
-    const inline =
-      "set -euo pipefail\n" +
-      run
-        .split("\nelse\n")[1]
-        .replace(/\nfi\n$/u, "\n")
-        .replace(/^  /gmu, "");
+    const inline = declaredSourceRecipe(run).recipe.replace(/^  /gmu, "");
     assert.equal(inline, currentOriginalRun);
     assert.equal([...inline.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 9);
     assert.ok(inline.includes("--test lsp_bare_script_symbols_cli"));
@@ -283,5 +281,56 @@ await test("exact rewrite preserves benchmark, foreign dependency and non-versio
       next,
     ),
     "1.2.4\n<!-- benchmark:readme:start -->\n1.2.3\n<!-- benchmark:readme:end -->\n1.2.4\n",
+  );
+});
+
+await test("future version-only sources execute their complete inline commands once with authenticated source bytes", () => {
+  fixture(
+    (f) => {
+      const selected = selectSourceRecipe(f);
+      const step = parse(currentBytes).jobs["native-phases"].steps.find((s) => s.name === STEP);
+      const declared = declaredSourceRecipe(step.run);
+      assert.equal(selected.recipeKind, "source-inline");
+      assert.equal(selected.sourceStepSha256, hash(step.run));
+      assert.equal(selected.recipeSha256, hash(declared.recipe));
+      assert.equal(selected.recipe, declared.recipe);
+      assert.equal(selected.recipe.replace(/^  /gmu, ""), currentOriginalRun);
+      assert.ok(!selected.recipe.includes("typechecker-native-source-recipe.mjs"));
+      const syntax = spawnSync("bash", ["-n"], { input: selected.recipe, encoding: "utf8" });
+      assert.equal(syntax.status, 0, syntax.stderr);
+      assert.equal(selected.unavailableCurrentCapture, null);
+      assert.equal(selected.originalEnvironment.GH_TOKEN, "${{ github.token }}");
+      assert.equal(Object.hasOwn(selected.executionEnvironment, "GH_TOKEN"), false);
+      assert.equal(
+        selected.executionEnvironment.VIZE_TSCONFIG_TYPES_CAPTURE,
+        step.env.VIZE_TSCONFIG_TYPES_CAPTURE,
+      );
+      for (const altered of [
+        step.run.replace("VIZE_NATIVE_SOURCE_INLINE_BEGIN", "VIZE_NATIVE_SOURCE_INLINE_END"),
+        step.run.replace(
+          "  # VIZE_NATIVE_SOURCE_INLINE_BEGIN",
+          "  # VIZE_NATIVE_SOURCE_INLINE_BEGIN\n  # VIZE_NATIVE_SOURCE_INLINE_BEGIN",
+        ),
+        step.run.replace(
+          "  # VIZE_NATIVE_SOURCE_INLINE_END",
+          "  # VIZE_NATIVE_SOURCE_INLINE_END\n  # VIZE_NATIVE_SOURCE_INLINE_END",
+        ),
+        step.run.replace('recipe="$(node', 'recipe="$(forged'),
+        step.run.replace("\nfi\n", "\nfi\necho forged\n"),
+      ])
+        assert.throws(() => declaredSourceRecipe(altered));
+      assert.throws(() =>
+        selectSourceRecipe({ ...f, env: { ...f.env, MAIN_SOURCE_SHA: f.source } }),
+      );
+      for (const change of [
+        (bytes) => bytes.replace("--locked", "--offline"),
+        (bytes) => bytes.replace(" --test lsp_bare_script_symbols_cli", ""),
+      ]) {
+        git(f.root, "checkout", "--detach", f.source);
+        put(f.root, WORKFLOW, change(currentBytes));
+        assert.throws(() => verifyVersionCut(f.root, f.cut, commit(f.root), "0.435.1", "0.436.0"));
+      }
+    },
+    { workflow: currentBytes },
   );
 });

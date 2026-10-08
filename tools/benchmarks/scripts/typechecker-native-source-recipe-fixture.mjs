@@ -51,7 +51,7 @@ export function commit(root) {
   git(root, "commit", "-m", "authored custody control");
   return git(root, "rev-parse", "HEAD");
 }
-export function fixture(run) {
+export function fixture(run, { workflow } = {}) {
   const root = mkdtempSync(join(os.tmpdir(), "native-source-recipe-"));
   try {
     git(root, "init", "--initial-branch=main");
@@ -64,8 +64,10 @@ export function fixture(run) {
       put(root, row.path, row.before);
     }
     put(root, "crates/vize/src/recipe-control.rs", "// unchanged production control\n");
+    if (workflow !== undefined) put(root, WORKFLOW, workflow);
     const cut = commit(root);
-    for (const row of frozen.files) put(root, row.path, row.after);
+    for (const row of frozen.files)
+      put(root, row.path, row.path === WORKFLOW && workflow !== undefined ? workflow : row.after);
     const source = commit(root);
     const pr = {
       number: 8249,
