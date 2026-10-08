@@ -1,0 +1,17 @@
+{
+  "api": {
+    "diagnostics": [],
+    "errorCount": 0,
+    "filename": "ordinary-comment.vue",
+    "warningCount": 0
+  },
+  "id": "ordinary-comment",
+  "packet": [
+    {
+      "errorCount": 0,
+      "file": "ordinary-comment.vue",
+      "messages": [],
+      "warningCount": 0
+    }
+  ]
+}

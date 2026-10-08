@@ -1,0 +1,5 @@
+{
+  "id": "html-element-scriptless",
+  "source": "<template><div v-html=\"content\"><span>child</span></div></template>\n",
+  "expectedChildContent": true
+}

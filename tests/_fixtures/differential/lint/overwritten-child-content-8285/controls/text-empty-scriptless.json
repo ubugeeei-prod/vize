@@ -1,0 +1,5 @@
+{
+  "id": "text-empty-scriptless",
+  "source": "<template><div v-text=\"content\"></div></template>\n",
+  "expectedChildContent": false
+}

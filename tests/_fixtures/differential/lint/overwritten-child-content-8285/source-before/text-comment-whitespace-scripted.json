@@ -1,0 +1,17 @@
+{
+  "api": {
+    "diagnostics": [],
+    "errorCount": 0,
+    "filename": "text-comment-whitespace-scripted.vue",
+    "warningCount": 0
+  },
+  "id": "text-comment-whitespace-scripted",
+  "packet": [
+    {
+      "errorCount": 0,
+      "file": "text-comment-whitespace-scripted.vue",
+      "messages": [],
+      "warningCount": 0
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "baseRevision": "68e0dc38973a8690bac8ce1c0d6b6349eb4a491a",
+  "productionSha256": "fdece893913566ca15d795684437f3f0e9c183d10a995b2ce90b308026bc064c",
+  "binarySha256": "9182ce60a04ac4e91b8d6b59228027821bc53484916aa69bc8c8e4f7f6f341cd",
+  "rawPacketsSha256": "a4729c6ca9326bc0a230b18cd7c9e8b2410a0adc223d0c43167972a73b97619e",
+  "changedCases": [
+    "html-comment-scriptless",
+    "html-empty-comment-scriptless",
+    "html-comment-whitespace-scriptless",
+    "html-comment-scripted",
+    "html-empty-comment-scripted",
+    "html-comment-whitespace-scripted",
+    "text-comment-scriptless",
+    "text-empty-comment-scriptless",
+    "text-comment-whitespace-scriptless",
+    "text-comment-scripted",
+    "text-empty-comment-scripted",
+    "text-comment-whitespace-scripted"
+  ],
+  "privateTarget": "target/no-child-content-source",
+  "compiler": "rustc1.99.0 b940084d7eb6a299eb4bfeb8e34901bc051e7ac4",
+  "qualification": "Dirty owned source tree; exact-head Actions remain required"
+}

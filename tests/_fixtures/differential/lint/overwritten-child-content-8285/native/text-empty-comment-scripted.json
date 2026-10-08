@@ -1,0 +1,39 @@
+{
+  "api": {
+    "diagnostics": [
+      {
+        "end": 87,
+        "fix": null,
+        "help": null,
+        "labels": [],
+        "message": "Child content of element with v-text will be overwritten",
+        "rule": "vue/no-child-content",
+        "severity": "error",
+        "start": 65
+      }
+    ],
+    "errorCount": 1,
+    "filename": "text-empty-comment-scripted.vue",
+    "warningCount": 0
+  },
+  "id": "text-empty-comment-scripted",
+  "packet": [
+    {
+      "errorCount": 1,
+      "file": "text-empty-comment-scripted.vue",
+      "messages": [
+        {
+          "column": 11,
+          "endColumn": 33,
+          "endLine": 4,
+          "line": 4,
+          "message": "[vize:vue/no-child-content] Child content of element with v-text will be overwritten",
+          "ruleDocsPath": "docs/content/rules/vue.md",
+          "ruleId": "vue/no-child-content",
+          "severity": 2
+        }
+      ],
+      "warningCount": 0
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "id": "html-empty-comment-scriptless",
+  "result": [
+    {
+      "filePath": "html-empty-comment-scriptless.vue",
+      "messages": [
+        {
+          "ruleId": "vue/no-v-html",
+          "severity": 2,
+          "message": "'v-html' directive can lead to XSS attack.",
+          "line": 1,
+          "column": 16,
+          "messageId": "unexpected",
+          "endLine": 1,
+          "endColumn": 32
+        },
+        {
+          "ruleId": "vue/no-child-content",
+          "severity": 2,
+          "message": "Child content is disallowed because it will be overwritten by the v-html directive.",
+          "line": 1,
+          "column": 33,
+          "messageId": "disallowedChildContent",
+          "endLine": 1,
+          "endColumn": 40,
+          "suggestions": [
+            {
+              "messageId": "removeChildContent",
+              "fix": {
+                "range": [
+                  32,
+                  39
+                ],
+                "text": ""
+              },
+              "desc": "Remove child content."
+            }
+          ]
+        }
+      ],
+      "suppressedMessages": [],
+      "errorCount": 2,
+      "fatalErrorCount": 0,
+      "warningCount": 0,
+      "fixableErrorCount": 0,
+      "fixableWarningCount": 0,
+      "source": "<template><div v-html=\"content\"><!----></div></template>\n",
+      "usedDeprecatedRules": []
+    }
+  ]
+}

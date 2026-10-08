@@ -1,0 +1,5 @@
+{
+  "id": "html-whitespace-scripted",
+  "source": "<script setup lang=\"ts\">\nconst content = \"\";\n</script>\n<template><div v-html=\"content\"> \n  </div></template>\n",
+  "expectedChildContent": false
+}

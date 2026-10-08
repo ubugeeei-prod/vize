@@ -1,0 +1,41 @@
+{
+  "id": "text-text-scriptless",
+  "result": [
+    {
+      "filePath": "text-text-scriptless.vue",
+      "messages": [
+        {
+          "ruleId": "vue/no-child-content",
+          "severity": 2,
+          "message": "Child content is disallowed because it will be overwritten by the v-text directive.",
+          "line": 1,
+          "column": 33,
+          "messageId": "disallowedChildContent",
+          "endLine": 1,
+          "endColumn": 38,
+          "suggestions": [
+            {
+              "messageId": "removeChildContent",
+              "fix": {
+                "range": [
+                  32,
+                  37
+                ],
+                "text": ""
+              },
+              "desc": "Remove child content."
+            }
+          ]
+        }
+      ],
+      "suppressedMessages": [],
+      "errorCount": 1,
+      "fatalErrorCount": 0,
+      "warningCount": 0,
+      "fixableErrorCount": 0,
+      "fixableWarningCount": 0,
+      "source": "<template><div v-text=\"content\">child</div></template>\n",
+      "usedDeprecatedRules": []
+    }
+  ]
+}

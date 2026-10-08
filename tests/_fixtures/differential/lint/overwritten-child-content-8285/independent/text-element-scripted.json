@@ -1,0 +1,41 @@
+{
+  "id": "text-element-scripted",
+  "result": [
+    {
+      "filePath": "text-element-scripted.vue",
+      "messages": [
+        {
+          "ruleId": "vue/no-child-content",
+          "severity": 2,
+          "message": "Child content is disallowed because it will be overwritten by the v-text directive.",
+          "line": 4,
+          "column": 33,
+          "messageId": "disallowedChildContent",
+          "endLine": 4,
+          "endColumn": 51,
+          "suggestions": [
+            {
+              "messageId": "removeChildContent",
+              "fix": {
+                "range": [
+                  87,
+                  105
+                ],
+                "text": ""
+              },
+              "desc": "Remove child content."
+            }
+          ]
+        }
+      ],
+      "suppressedMessages": [],
+      "errorCount": 1,
+      "fatalErrorCount": 0,
+      "warningCount": 0,
+      "fixableErrorCount": 0,
+      "fixableWarningCount": 0,
+      "source": "<script setup lang=\"ts\">\nconst content = \"\";\n</script>\n<template><div v-text=\"content\"><span>child</span></div></template>\n",
+      "usedDeprecatedRules": []
+    }
+  ]
+}

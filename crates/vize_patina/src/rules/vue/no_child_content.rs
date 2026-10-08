@@ -61,6 +61,7 @@ impl NoChildContent {
                     return true;
                 }
                 TemplateChildNode::Element(_)
+                | TemplateChildNode::Comment(_)
                 | TemplateChildNode::Interpolation(_)
                 | TemplateChildNode::If(_)
                 | TemplateChildNode::For(_) => {

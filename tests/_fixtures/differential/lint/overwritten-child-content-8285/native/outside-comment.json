@@ -1,0 +1,17 @@
+{
+  "api": {
+    "diagnostics": [],
+    "errorCount": 0,
+    "filename": "outside-comment.vue",
+    "warningCount": 0
+  },
+  "id": "outside-comment",
+  "packet": [
+    {
+      "errorCount": 0,
+      "file": "outside-comment.vue",
+      "messages": [],
+      "warningCount": 0
+    }
+  ]
+}

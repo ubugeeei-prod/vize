@@ -1,0 +1,193 @@
+{
+  "providers": {
+    "eslint": {
+      "version": "10.4.1",
+      "sha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2"
+    },
+    "eslint-plugin-vue": {
+      "version": "10.9.2",
+      "sha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017"
+    },
+    "vue-eslint-parser": {
+      "version": "10.4.1",
+      "sha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087"
+    },
+    "@typescript-eslint/parser": {
+      "version": "8.65.0",
+      "sha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966"
+    }
+  },
+  "node": "v24.14.0",
+  "officialBase": {
+    "processor": "vue/vue",
+    "infrastructureRules": [
+      "vue/comment-directive",
+      "vue/jsx-uses-vars"
+    ]
+  },
+  "rules": {
+    "vue/attribute-hyphenation": [
+      "error",
+      "always"
+    ],
+    "vue/component-name-in-template-casing": [
+      "error",
+      "PascalCase"
+    ],
+    "vue/no-child-content": [
+      "error"
+    ],
+    "vue/no-deprecated-functional-template": [
+      "error"
+    ],
+    "vue/no-deprecated-html-element-is": [
+      "error"
+    ],
+    "vue/no-deprecated-inline-template": [
+      "error"
+    ],
+    "vue/no-deprecated-router-link-tag-prop": [
+      "error"
+    ],
+    "vue/no-deprecated-scope-attribute": [
+      "error"
+    ],
+    "vue/no-deprecated-slot-attribute": [
+      "error"
+    ],
+    "vue/no-deprecated-slot-scope-attribute": [
+      "error"
+    ],
+    "vue/no-deprecated-v-bind-sync": [
+      "error"
+    ],
+    "vue/no-deprecated-v-on-native-modifier": [
+      "error"
+    ],
+    "vue/no-deprecated-v-on-number-modifiers": [
+      "error"
+    ],
+    "vue/no-dupe-v-else-if": [
+      "error"
+    ],
+    "vue/no-duplicate-attributes": [
+      "error"
+    ],
+    "vue/no-multiple-template-root": [
+      "error"
+    ],
+    "vue/no-template-key": [
+      "error"
+    ],
+    "vue/no-textarea-mustache": [
+      "error"
+    ],
+    "vue/no-unused-components": [
+      "error"
+    ],
+    "vue/no-unused-vars": [
+      "error"
+    ],
+    "vue/no-use-v-if-with-v-for": [
+      "error"
+    ],
+    "vue/no-useless-template-attributes": [
+      "error"
+    ],
+    "vue/no-v-for-template-key-on-child": [
+      "error"
+    ],
+    "vue/no-v-html": [
+      "error"
+    ],
+    "vue/require-component-is": [
+      "error"
+    ],
+    "vue/no-undef-components": [
+      "error"
+    ],
+    "vue/require-toggle-inside-transition": [
+      "error"
+    ],
+    "vue/require-v-for-key": [
+      "error"
+    ],
+    "vue/block-order": [
+      "error",
+      {
+        "order": [
+          "script",
+          "template",
+          "style"
+        ]
+      }
+    ],
+    "vue/use-v-on-exact": [
+      "error"
+    ],
+    "vue/v-slot-style": [
+      "error"
+    ],
+    "vue/valid-attribute-name": [
+      "error"
+    ],
+    "vue/valid-template-root": [
+      "error"
+    ],
+    "vue/valid-v-bind": [
+      "error"
+    ],
+    "vue/valid-v-cloak": [
+      "error"
+    ],
+    "vue/valid-v-else": [
+      "error"
+    ],
+    "vue/valid-v-for": [
+      "error"
+    ],
+    "vue/valid-v-html": [
+      "error"
+    ],
+    "vue/valid-v-if": [
+      "error"
+    ],
+    "vue/valid-v-memo": [
+      "error"
+    ],
+    "vue/valid-v-model": [
+      "error"
+    ],
+    "vue/valid-v-on": [
+      "error"
+    ],
+    "vue/valid-v-once": [
+      "error"
+    ],
+    "vue/valid-v-show": [
+      "error"
+    ],
+    "vue/valid-v-slot": [
+      "error"
+    ],
+    "vue/valid-v-text": [
+      "error"
+    ],
+    "vue/no-deprecated-dollar-listeners-api": [
+      "error"
+    ],
+    "vue/no-deprecated-dollar-scopedslots-api": [
+      "error"
+    ],
+    "vue/no-ref-as-operand": [
+      "error"
+    ],
+    "vue/no-use-computed-property-like-method": [
+      "error"
+    ],
+    "vue/require-valid-default-prop": [
+      "error"
+    ]
+  },
+  "normalization": "Only absolute authored filePath becomes the same owned relative filename; no findings or metadata are filtered"
+}

@@ -1,0 +1,17 @@
+{
+  "api": {
+    "diagnostics": [],
+    "errorCount": 0,
+    "filename": "text-empty-comment-scriptless.vue",
+    "warningCount": 0
+  },
+  "id": "text-empty-comment-scriptless",
+  "packet": [
+    {
+      "errorCount": 0,
+      "file": "text-empty-comment-scriptless.vue",
+      "messages": [],
+      "warningCount": 0
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "id": "outside-comment",
+  "source": "<template><!--outside--><div v-text=\"content\"></div></template>\n",
+  "expectedChildContent": false
+}

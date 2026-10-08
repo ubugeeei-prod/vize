@@ -1,0 +1,17 @@
+{
+  "api": {
+    "diagnostics": [],
+    "errorCount": 0,
+    "filename": "text-comment-scripted.vue",
+    "warningCount": 0
+  },
+  "id": "text-comment-scripted",
+  "packet": [
+    {
+      "errorCount": 0,
+      "file": "text-comment-scripted.vue",
+      "messages": [],
+      "warningCount": 0
+    }
+  ]
+}

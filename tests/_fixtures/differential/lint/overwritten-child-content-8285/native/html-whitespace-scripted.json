@@ -1,0 +1,39 @@
+{
+  "api": {
+    "diagnostics": [
+      {
+        "end": 86,
+        "fix": null,
+        "help": null,
+        "labels": [],
+        "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "rule": "vue/no-v-html",
+        "severity": "error",
+        "start": 70
+      }
+    ],
+    "errorCount": 1,
+    "filename": "html-whitespace-scripted.vue",
+    "warningCount": 0
+  },
+  "id": "html-whitespace-scripted",
+  "packet": [
+    {
+      "errorCount": 1,
+      "file": "html-whitespace-scripted.vue",
+      "messages": [
+        {
+          "column": 16,
+          "endColumn": 32,
+          "endLine": 4,
+          "line": 4,
+          "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+          "ruleDocsPath": "docs/content/rules/vue.md",
+          "ruleId": "vue/no-v-html",
+          "severity": 2
+        }
+      ],
+      "warningCount": 0
+    }
+  ]
+}

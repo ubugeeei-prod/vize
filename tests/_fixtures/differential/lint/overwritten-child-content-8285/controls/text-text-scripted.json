@@ -1,0 +1,5 @@
+{
+  "id": "text-text-scripted",
+  "source": "<script setup lang=\"ts\">\nconst content = \"\";\n</script>\n<template><div v-text=\"content\">child</div></template>\n",
+  "expectedChildContent": true
+}
