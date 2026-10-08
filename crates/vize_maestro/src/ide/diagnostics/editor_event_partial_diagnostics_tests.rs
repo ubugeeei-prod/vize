@@ -1,9 +1,8 @@
 //! Trace the unchanged original partial-application law through the editor.
 #![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros,
-    reason = "complete authored/native diagnostic custody"
+    clippy::expect_used,
+    reason = "complete test custody uses std strings and fails closed by panicking"
 )]
 
 use serde_json::{Value, json};

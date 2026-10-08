@@ -1,9 +1,8 @@
 //! Original project/configuration and existing editor assembly trace boundary.
 #![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros,
-    reason = "full fixture bytes and typed diagnostic custody"
+    clippy::expect_used,
+    reason = "complete test custody uses std strings and fails closed by panicking"
 )]
 
 use std::path::{Path, PathBuf};
