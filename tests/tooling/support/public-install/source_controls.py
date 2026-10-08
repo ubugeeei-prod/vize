@@ -162,18 +162,48 @@ class SourceControls(unittest.TestCase):
         with self.assertRaises(ValueError):
             source_identity(self.root, self.cut, head, "v0.999.0", "123")
 
-    def test_genuine_repository_h_wrong_version_refuses_before_fake_node(self):
-        raw = subprocess.check_output(["git", "--no-replace-objects", "cat-file", "commit", self.actual_head], cwd=ROOT)
-        parents = [line[7:].decode() for line in raw.split(b"\n\n", 1)[0].splitlines() if line.startswith(b"parent ")]
-        self.assertEqual(len(parents), 1)
+    def test_copied_committed_shape_wrong_version_refuses_before_fake_node(self):
+        # PR checkouts may be shallow two-parent merge commits. Copy their raw
+        # manifest/catalog bytes into owned actual C -> H history for this law.
+        # The copied shape is inert control data, never publication authority.
+        for name in (*self.paths, "pnpm-workspace.yaml", "npm/cli/bin/vize"):
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(source_file(ROOT, self.actual_head, name))
+        head = self.commit()
+        self.assertEqual(source_identity(self.root, self.cut, head, "v0.999999.0", "123")["H"], head)
         sentinel = self.root / "node-started"
         node = self.root / "fake-node"
         node.write_text("#!/bin/sh\ntouch '" + str(sentinel) + "'\nexit 99\n")
         node.chmod(0o700)
-        args = types.SimpleNamespace(root=str(ROOT), cut=parents[0], head=self.actual_head,
+        args = types.SimpleNamespace(root=str(self.root), cut=self.cut, head=head,
             tag="v0.999999.0", run="123", install_root=str(self.root), node=str(node),
             output=str(self.root / "receipt.json"), collector_sha256=producer_authority(ROOT)["sha256"])
         with self.assertRaisesRegex(ValueError, "catalog version"):
+            COLLECTOR["collect"](args)
+        self.assertFalse(sentinel.exists())
+        self.assertFalse((self.root / "receipt.json").exists())
+
+    def test_genuine_two_parent_checkout_is_refused_before_any_probe(self):
+        main = self.git("symbolic-ref", "--short", "HEAD")
+        self.commit()
+        self.git("branch", "inert-side", self.cut)
+        self.git("checkout", "-q", "inert-side")
+        self.git("commit", "--allow-empty", "-qm", "inert side")
+        self.git("checkout", "-q", main)
+        self.git("merge", "--no-ff", "inert-side", "-m", "genuine inert checkout merge")
+        head = self.git("rev-parse", "HEAD")
+        raw = self.git("--no-replace-objects", "cat-file", "commit", head)
+        parents = [line[7:] for line in raw.split("\n\n", 1)[0].splitlines() if line.startswith("parent ")]
+        self.assertEqual(len(parents), 2)
+        sentinel = self.root / "node-started"
+        node = self.root / "fake-node"
+        node.write_text("#!/bin/sh\ntouch '" + str(sentinel) + "'\nexit 99\n")
+        node.chmod(0o700)
+        args = types.SimpleNamespace(root=str(self.root), cut=parents[0], head=head,
+            tag="v0.999.0", run="123", install_root=str(self.root), node=str(node),
+            output=str(self.root / "receipt.json"), collector_sha256=producer_authority(ROOT)["sha256"])
+        with self.assertRaisesRegex(ValueError, "exact single-parent"):
             COLLECTOR["collect"](args)
         self.assertFalse(sentinel.exists())
         self.assertFalse((self.root / "receipt.json").exists())

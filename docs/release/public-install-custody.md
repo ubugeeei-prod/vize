@@ -105,6 +105,18 @@ The legacy `provenanceSourceH`/`provenanceR` fields record that bounded payload
 binding, and do not claim authenticated certificate/DSSE verification. Corsa's
 receipt is third-party public archive custody, not Vize source/run provenance.
 
+Prospective cryptographic verification is separate. The
+[official npm verification guide](https://docs.npmjs.com/verifying-registry-signatures/)
+and [audit command](https://docs.npmjs.com/cli/v12/commands/npm-audit/)
+describe `npm audit signatures --json --include-attestations`. Require retained,
+per-package verified signed-bundle coverage for the same four exact Vize versions,
+H/R/workflow/ref and SHA512 subject/SRI. Exit zero alone permits missing
+provenance and does not prove that coverage. The reviewed
+[npm 12.1 implementation](https://github.com/npm/cli/blob/v12.1.0/lib/commands/audit.js)
+loads the actual installed tree; a lock-only consumer cannot supply this coverage.
+Full installed-file equality remains a separate check. This producer has performed
+none of that cryptographic verification.
+
 Only the genuine Darwin ARM64 host is supported. The absolute Node executable
 and CLI wrapper are checked, and the wrapper must equal frozen H. The Node hook
 observes the original `.node` loader with the same `this` and arguments, and
@@ -145,6 +157,17 @@ access is denied throughout the inert parser controls. These tests do
 not simulate a successful native load and establish no public product credit.
 The ordinary tooling selector discovers the test in its existing broad PR and
 full merge suites; no gate or instruction budget is relaxed.
+
+The first draft's [tooling shard 3](https://github.com/ubugeeei-prod/vize/actions/runs/37750957115/job/113223849641)
+failed because its wrong-version fixture assumed the Actions checkout had one
+raw parent; the PR checkout was a two-parent merge. That law now copies the
+committed checkout's exact manifest/catalog bytes using raw Git reads into an
+owned scratch repository, commits an actual C-to-single-parent-H relation, and
+requires wrong-version refusal before the fake Node or receipt output. A
+separate actual two-parent scratch checkout must refuse before any probe.
+This copied committed shape is inert control data, not a publication H. No
+parent objects are fetched or inferred from shallow checkout history; the
+production requirement for complete raw C/H and H's sole parent C is unchanged.
 
 Remaining work: actual held-source qualification and owner-authenticated public
 publication, cryptographic npm provenance verification, genuine fresh public
