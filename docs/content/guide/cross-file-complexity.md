@@ -129,7 +129,7 @@ The scoped slot contributes no points but puts its children at depth 1. The comp
 | That condition's `&&`                          |     0 |          1 |         1 |
 | **Total**                                      |       |     **13** |    **25** |
 
-**Good for this rule:** moving the row's branches into a child leaves a small parent template:
+**Good for this rule:** a parent that delegates list rendering can have a small template:
 
 ```vue
 <template>
