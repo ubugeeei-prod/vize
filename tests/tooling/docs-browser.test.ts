@@ -11,13 +11,23 @@ import { writeFakeCommand } from "./support/fake-command.ts";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 test("docs build prepares its browser before previews and checks the rendered site", () => {
-  const packageJson = JSON.parse(
+  const packageJson: unknown = JSON.parse(
     fs.readFileSync(path.join(repoRoot, "docs", "package.json"), "utf8"),
-  ) as {
-    scripts: Record<string, string>;
-  };
+  );
+  assert(typeof packageJson === "object" && packageJson !== null && "scripts" in packageJson);
+  const scripts = packageJson.scripts;
+  assert(typeof scripts === "object" && scripts !== null);
+  function script(name: string): string {
+    assert(
+      typeof scripts === "object" && scripts !== null && name in scripts,
+      `Missing Docs script ${name}`,
+    );
+    const command: unknown = Reflect.get(scripts, name);
+    assert(typeof command === "string", `Docs script ${name} must be a string`);
+    return command;
+  }
 
-  assert.deepEqual(packageJson.scripts.build.split(" && "), [
+  assert.deepEqual(script("build").split(" && "), [
     "node ./scripts/ensure-browser.ts",
     "pnpm generate:ui-previews",
     "pnpm generate:reference",
@@ -25,13 +35,10 @@ test("docs build prepares its browser before previews and checks the rendered si
     "pnpm generate:og-images",
     "pnpm check:ui-docs",
   ]);
-  assert.equal(packageJson.scripts["generate:ui-previews"], "node ./scripts/build-ui-previews.ts");
-  assert.equal(
-    packageJson.scripts["generate:reference"],
-    "node ../npm/ui/scripts/generate-reference-docs.ts",
-  );
-  assert.equal(packageJson.scripts["check:ui-docs"], "node ./previews/ui/check-site.ts");
-  assert.equal(packageJson.scripts["generate:og-images"], "node ./scripts/generate-og-images.mjs");
+  assert.equal(script("generate:ui-previews"), "node ./scripts/build-ui-previews.ts");
+  assert.equal(script("generate:reference"), "node ../npm/ui/scripts/generate-reference-docs.ts");
+  assert.equal(script("check:ui-docs"), "node ./previews/ui/check-site.ts");
+  assert.equal(script("generate:og-images"), "node ./scripts/generate-og-images.ts");
 });
 
 test("docs browser helper reuses an existing browser path without invoking Playwright install", () => {

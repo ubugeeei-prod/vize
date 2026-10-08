@@ -4,6 +4,7 @@ import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import {
   DEFAULT_MARKDOWN_EXTENSIONS,
   generateOgImages,
@@ -19,9 +20,30 @@ import {
   pageMetadata,
   pageRoute,
   readDocumentMetadata,
-} from "../theme/open-graph.mjs";
-import { buildOgTemplate } from "./og-template.mjs";
-import { CATALOGUE_SOURCES } from "./materialize-content.mjs";
+} from "../theme/open-graph.ts";
+import { buildOgTemplate } from "./og-template.ts";
+import { CATALOGUE_SOURCES } from "./materialize-content.ts";
+
+type GeneratedPage = ReturnType<typeof pageMetadata> & {
+  htmlPath: string;
+  imagePath: string;
+  originalHtml: string;
+};
+
+function providerChromiumPath(provider: unknown): string {
+  assert(typeof provider === "object" && provider !== null && "chromium" in provider);
+  const { chromium: providerChromium } = provider;
+  assert(
+    typeof providerChromium === "object" &&
+      providerChromium !== null &&
+      "executablePath" in providerChromium &&
+      typeof providerChromium.executablePath === "function",
+    "OG provider must expose its Chromium executable path",
+  );
+  const executablePath: unknown = providerChromium.executablePath();
+  assert(typeof executablePath === "string" && executablePath.length > 0);
+  return executablePath;
+}
 
 const docsRoot = path.resolve(import.meta.dirname, "..");
 // The native staging step preserves authored routes. Enumerate their authority,
@@ -30,27 +52,31 @@ const content = path.join(docsRoot, "content");
 const dist = path.join(docsRoot, "dist");
 const require = createRequire(import.meta.url);
 const providerRequire = createRequire(require.resolve("@ox-content/vite-plugin"));
-const providerPlaywright = providerRequire("playwright");
-if (!existsSync(providerPlaywright.chromium.executablePath())) {
+const providerModule: unknown = await import(
+  pathToFileURL(providerRequire.resolve("playwright")).href
+);
+assert(
+  typeof providerModule === "object" && providerModule !== null && "default" in providerModule,
+  "OG provider Playwright module must expose its CommonJS default export",
+);
+const providerPlaywright = providerModule.default;
+if (!existsSync(providerChromiumPath(providerPlaywright))) {
   const cli = path.join(path.dirname(providerRequire.resolve("playwright/package.json")), "cli.js");
   const result = spawnSync(process.execPath, [cli, "install", "chromium"], { stdio: "inherit" });
   if (result.status !== 0) throw new Error("Cannot install the OG provider's Chromium");
 }
-assert(
-  existsSync(providerPlaywright.chromium.executablePath()),
-  "OG provider Chromium is required",
-);
+assert(existsSync(providerChromiumPath(providerPlaywright)), "OG provider Chromium is required");
 
-async function markdownFiles(directory, prefix = "") {
-  const result = [];
+async function markdownFiles(directory: string, prefix = ""): Promise<string[]> {
+  const result: string[] = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const relative = path.posix.join(prefix, entry.name);
     if (entry.isDirectory())
       result.push(...(await markdownFiles(path.join(directory, entry.name), relative)));
     else if (
       entry.isFile() &&
-      DEFAULT_MARKDOWN_EXTENSIONS.includes(path.extname(entry.name)) &&
-      !CATALOGUE_SOURCES.includes(relative)
+      DEFAULT_MARKDOWN_EXTENSIONS.some((extension) => extension === path.extname(entry.name)) &&
+      !CATALOGUE_SOURCES.some((source: string) => source === relative)
     )
       result.push(relative);
   }
@@ -58,8 +84,8 @@ async function markdownFiles(directory, prefix = "") {
 }
 
 const { template, assetFingerprint } = await buildOgTemplate(docsRoot);
-const pages = [];
-const routes = new Set();
+const pages: GeneratedPage[] = [];
+const routes = new Set<string>();
 const browser = await chromium.launch({
   executablePath: resolvePuppeteerExecutablePath(),
   headless: true,
@@ -102,6 +128,13 @@ for (const page of pages) {
   assertPngDimensions(await readFile(page.imagePath), page.route);
   await writeFile(page.htmlPath, applyOpenGraphMetadata(page.originalHtml, page));
 }
+const source = spawnSync("git", ["rev-parse", "HEAD"], {
+  cwd: docsRoot,
+  encoding: "utf8",
+});
+assert.equal(source.status, 0, "OG manifest must identify the actual Git source");
+const sourceSha = source.stdout.trim();
+assert(/^[a-f\d]{40}$/u.test(sourceSha), "OG manifest must contain a complete source SHA");
 await writeFile(
   path.join(dist, "_og", "manifest.json"),
   `${JSON.stringify(
@@ -110,10 +143,7 @@ await writeFile(
       width: ogWidth,
       height: ogHeight,
       assetFingerprint,
-      sourceSha: spawnSync("git", ["rev-parse", "HEAD"], {
-        cwd: docsRoot,
-        encoding: "utf8",
-      }).stdout.trim(),
+      sourceSha,
       pages: pages.map(
         ({
           htmlPath: _htmlPath,

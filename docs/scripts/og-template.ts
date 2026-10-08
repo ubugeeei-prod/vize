@@ -4,8 +4,13 @@ import path from "node:path";
 import { build } from "vite-plus";
 import vize from "@vizejs/vite-plugin";
 
+interface OgTemplateBuild {
+  template: string;
+  assetFingerprint: string;
+}
+
 /** Use the real Vite CSS pipeline; Ox Content 2.81's bare Rolldown Vue loader cannot. */
-export async function buildOgTemplate(docsRoot) {
+export async function buildOgTemplate(docsRoot: string): Promise<OgTemplateBuild> {
   const output = path.join(docsRoot, ".cache", "og-template");
   const componentDir = path.join(output, "ssr");
   const styleDir = path.join(output, "styles");
@@ -22,7 +27,7 @@ export async function buildOgTemplate(docsRoot) {
       minify: false,
       rolldownOptions: {
         external: ["vue", "vue/server-renderer"],
-        output: { entryFileNames: "component.mjs", assetFileNames: "[name][extname]" },
+        output: { entryFileNames: "component.js", assetFileNames: "[name][extname]" },
       },
     },
   });
@@ -56,7 +61,7 @@ export async function buildOgTemplate(docsRoot) {
   ).join("\n");
   if (!css.includes("--og-paper"))
     throw new Error("Native OG template build emitted no stylesheet");
-  const component = await readFile(path.join(componentDir, "component.mjs"), "utf8");
+  const component = await readFile(path.join(componentDir, "component.js"), "utf8");
   const logo = await readFile(path.join(docsRoot, "public", "logo.svg"));
   const assetFingerprint = createHash("sha256")
     .update(component)
@@ -64,14 +69,26 @@ export async function buildOgTemplate(docsRoot) {
     .update(logo)
     .digest("hex");
   const template = path.join(output, "template.ts");
+  // The native SSR bundle is generated JavaScript. Describe its public Vue
+  // component contract so the generated TypeScript adapter remains checkable.
+  await writeFile(
+    path.join(componentDir, "component.d.ts"),
+    [
+      'import type { Component } from "vue";',
+      "declare const component: Component;",
+      "export default component;",
+      "",
+    ].join("\n"),
+  );
   await writeFile(
     template,
     [
       'import { createSSRApp } from "vue";',
       'import { renderToString } from "vue/server-renderer";',
-      'import Component from "./ssr/component.mjs";',
+      'import type { OgImageTemplateProps } from "@ox-content/vite-plugin";',
+      'import Component from "./ssr/component.js";',
       `const css = ${JSON.stringify(css)};`,
-      "export default async function render(props) {",
+      "export default async function render(props: OgImageTemplateProps): Promise<string> {",
       "  const html = await renderToString(createSSRApp(Component, props));",
       '  return "<style>" + css + "</style>" + html;',
       "}",

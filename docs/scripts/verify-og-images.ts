@@ -7,14 +7,40 @@ import { parseArgs } from "node:util";
 import { chromium } from "playwright";
 import { DEFAULT_MARKDOWN_EXTENSIONS } from "@ox-content/vite-plugin";
 import { resolvePuppeteerExecutablePath } from "../browser-path.js";
-import { CATALOGUE_SOURCES } from "./materialize-content.mjs";
+import { CATALOGUE_SOURCES } from "./materialize-content.ts";
 import {
   assertPngDimensions,
   docsSiteUrl,
   ogHeight,
   ogWidth,
   pageRoute,
-} from "../theme/open-graph.mjs";
+  isPageMetadata,
+} from "../theme/open-graph.ts";
+import type { PageMetadata } from "../theme/open-graph.ts";
+
+type OgManifest = {
+  version: number;
+  width: number;
+  height: number;
+  assetFingerprint: string;
+  sourceSha: string;
+  pages: PageMetadata[];
+};
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function assertManifest(value: unknown): asserts value is OgManifest {
+  assert(isRecord(value), "OG manifest must be an object");
+  assert.equal(value.version, 1, "OG manifest version");
+  assert.equal(typeof value.width, "number");
+  assert.equal(typeof value.height, "number");
+  assert.equal(typeof value.assetFingerprint, "string");
+  assert.equal(typeof value.sourceSha, "string");
+  assert(
+    Array.isArray(value.pages) && value.pages.every(isPageMetadata),
+    "Complete typed page metadata",
+  );
+}
 
 const { values } = parseArgs({
   options: {
@@ -33,7 +59,9 @@ const expectedSha =
   values["expected-sha"] ??
   process.env.GITHUB_SHA ??
   spawnSync("git", ["rev-parse", "HEAD"], { cwd: docsRoot, encoding: "utf8" }).stdout.trim();
-async function readAsset(relative, text = false) {
+async function readAsset(relative: string, text: true): Promise<string>;
+async function readAsset(relative: string, text?: false): Promise<Buffer>;
+async function readAsset(relative: string, text = false): Promise<string | Buffer> {
   if (!values.site) return readFile(path.join(dist, relative), text ? "utf8" : undefined);
   const response = await fetch(new URL(relative, values.site));
   assert.equal(response.status, 200, relative);
@@ -44,7 +72,8 @@ async function readAsset(relative, text = false) {
   );
   return text ? response.text() : Buffer.from(await response.arrayBuffer());
 }
-const manifest = JSON.parse(await readAsset("_og/manifest.json", true));
+const manifest: unknown = JSON.parse(await readAsset("_og/manifest.json", true));
+assertManifest(manifest);
 assert.equal(manifest.width, ogWidth);
 assert.equal(manifest.height, ogHeight);
 assert.match(manifest.sourceSha, /^[0-9a-f]{40}$/u, "Manifest must identify its actual source");
@@ -55,7 +84,11 @@ assert.equal(
 );
 const contentDir = path.join(docsRoot, "content");
 const expectedRoutes = (await readdir(contentDir, { recursive: true, withFileTypes: true }))
-  .filter((file) => file.isFile() && DEFAULT_MARKDOWN_EXTENSIONS.includes(path.extname(file.name)))
+  .filter(
+    (file) =>
+      file.isFile() &&
+      DEFAULT_MARKDOWN_EXTENSIONS.some((extension) => extension === path.extname(file.name)),
+  )
   .map((file) =>
     path.relative(contentDir, path.join(file.parentPath, file.name)).replaceAll("\\", "/"),
   )
@@ -100,7 +133,7 @@ const browser = await chromium.launch({
   headless: true,
 });
 const checked = [];
-const representativeHashes = new Map();
+const representativeHashes = new Map<string, string>();
 try {
   const parser = await browser.newPage();
   for (const entry of manifest.pages) {
@@ -207,8 +240,10 @@ for (const route of [
   assert.equal(checked.find((entry) => entry.route === route).descriptionOrigin, "content", route);
 }
 if (values.site) {
+  const after: unknown = JSON.parse(await readAsset("_og/manifest.json", true));
+  assertManifest(after);
   assert.equal(
-    JSON.parse(await readAsset("_og/manifest.json", true)).sourceSha,
+    after.sourceSha,
     expectedSha,
     "Public deployment changed during whole-site verification",
   );

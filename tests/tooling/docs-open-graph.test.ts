@@ -5,7 +5,7 @@ import {
   assertPngDimensions,
   pageMetadata,
   pageRoute,
-} from "../../docs/theme/open-graph.mjs";
+} from "../../docs/theme/open-graph.ts";
 
 const english = {
   title: "Getting Started",

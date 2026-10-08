@@ -77,7 +77,7 @@ jobs:
         run: vp node docs/scripts/verify-navigation-render.ts
 
       - name: Verify every page's Open Graph metadata and image
-        run: vp node docs/scripts/verify-og-images.mjs
+        run: vp node docs/scripts/verify-og-images.ts
 
       - name: Upload rendered docs screenshots
         if: ${{ always() }}

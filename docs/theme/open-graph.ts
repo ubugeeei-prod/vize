@@ -1,4 +1,36 @@
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
 import { createHash } from "node:crypto";
+
+export type DocumentMetadata = {
+  title: string;
+  socialTitle: string;
+  description: string;
+  paragraph: string;
+  language: string;
+};
+export type PageProps = {
+  title: string;
+  description: string;
+  siteName: string;
+  category: string;
+  locale: Locale;
+  localeName: string;
+  route: string;
+  isHome: boolean;
+  assetFingerprint: string;
+};
+export type PageMetadata = {
+  route: string;
+  title: string;
+  description: string;
+  descriptionOrigin: "authored" | "content" | "fallback";
+  locale: string;
+  type: "article" | "website";
+  url: string;
+  image: string;
+  props: PageProps;
+};
 
 export const docsSiteUrl = "https://vizejs.dev";
 export const ogWidth = 1200;
@@ -14,6 +46,47 @@ const localeSettings = {
   },
   fr: { name: "Français", og: "fr_FR", fallback: "Outils Vue.js haute performance en Rust" },
 };
+type Locale = keyof typeof localeSettings;
+function isLocale(value: string | undefined): value is Locale {
+  return value !== undefined && Object.hasOwn(localeSettings, value);
+}
+export function isPageMetadata(value: unknown): value is PageMetadata {
+  if (!isRecord(value)) return false;
+  const entry = value;
+  if (
+    !["route", "title", "description", "locale", "url", "image"].every(
+      (key) => typeof entry[key] === "string",
+    )
+  )
+    return false;
+  if (
+    (entry.descriptionOrigin !== "authored" &&
+      entry.descriptionOrigin !== "content" &&
+      entry.descriptionOrigin !== "fallback") ||
+    (entry.type !== "article" && entry.type !== "website")
+  )
+    return false;
+  const props = entry.props;
+  if (!isRecord(props)) return false;
+  const fields = props;
+  return (
+    [
+      "title",
+      "description",
+      "siteName",
+      "category",
+      "localeName",
+      "route",
+      "assetFingerprint",
+    ].every((key) => typeof fields[key] === "string") &&
+    typeof fields.isHome === "boolean" &&
+    typeof fields.locale === "string" &&
+    isLocale(fields.locale)
+  );
+}
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 const categories = {
   guide: ["Guide", "ガイド", "指南", "Guia", "Guide"],
   rules: [
@@ -31,15 +104,16 @@ const categories = {
 };
 
 /** Runs inside Chromium against the actual generated document. */
-export function readDocumentMetadata(html) {
+export function readDocumentMetadata(html: string): DocumentMetadata {
   const document = new DOMParser().parseFromString(html, "text/html");
-  const normalize = (value) => value?.replace(/\s+/gu, " ").trim() ?? "";
+  const normalize = (value: string | null | undefined) => value?.replace(/\s+/gu, " ").trim() ?? "";
   const description = document.head
     .querySelector('meta[name="description"]')
     ?.getAttribute("content");
   const paragraphs = [...document.querySelectorAll(".content p")];
   const paragraph = paragraphs.find((element) => {
     const clone = element.cloneNode(true);
+    if (!(clone instanceof Element)) throw new Error("Generated paragraph is not an element");
     clone.querySelectorAll("a").forEach((link) => link.remove());
     return /[\p{L}\p{N}]/u.test(clone.textContent ?? "");
   });
@@ -57,7 +131,7 @@ export function readDocumentMetadata(html) {
   };
 }
 
-export function pageRoute(relativeFile) {
+export function pageRoute(relativeFile: string) {
   const route = `/${relativeFile
     .replaceAll("\\", "/")
     .replace(/\.(?:md|markdown|mdx)$/u, "")
@@ -65,9 +139,15 @@ export function pageRoute(relativeFile) {
   return `${route.replace(/\/+$/u, "")}/`;
 }
 
-export function pageMetadata(route, document, assetFingerprint) {
+export function pageMetadata(
+  route: string,
+  document: DocumentMetadata,
+  assetFingerprint: string,
+): PageMetadata {
   const segments = route.split("/").filter(Boolean);
-  const locale = Object.hasOwn(localeSettings, segments[0]) ? segments.shift() : "en";
+  const firstSegment = segments[0];
+  const locale = isLocale(firstSegment) ? firstSegment : "en";
+  if (isLocale(firstSegment)) segments.shift();
   const settings = localeSettings[locale];
   if (document.language !== locale)
     throw new Error(`${route}: HTML language ${document.language} differs from route ${locale}`);
@@ -120,7 +200,7 @@ export function pageMetadata(route, document, assetFingerprint) {
   };
 }
 
-export function escapeAttribute(value) {
+export function escapeAttribute(value: string) {
   return value
     .replaceAll("&", "&amp;")
     .replaceAll('"', "&quot;")
@@ -128,7 +208,7 @@ export function escapeAttribute(value) {
     .replaceAll(">", "&gt;");
 }
 
-export function applyOpenGraphMetadata(html, page) {
+export function applyOpenGraphMetadata(html: string, page: PageMetadata) {
   const properties = {
     "og:title": page.title,
     "og:description": page.description,
@@ -160,20 +240,24 @@ export function applyOpenGraphMetadata(html, page) {
   ];
   if (!/<head\b[^>]*>[\s\S]*?<\/head>/iu.test(html))
     throw new Error(`${page.route}: generated HTML has no head`);
-  return html.replace(/(<head\b[^>]*>)\s*([\s\S]*?)(<\/head>)/iu, (_, head, content, end) => {
-    const retained = content.replace(/<meta\b[^>]*>/giu, (tag) => {
-      const key = /\b(property|name)\s*=\s*["']([^"']+)["']/iu.exec(tag);
-      return key && Object.hasOwn(key[1].toLowerCase() === "property" ? properties : names, key[2])
-        ? ""
-        : tag;
-    });
-    // Keep the authored charset and other existing head nodes first. A long
-    // localized social description must not push charset beyond its first KB.
-    return `${head}${retained.trim()}\n${tags.join("\n")}\n${end}`;
-  });
+  return html.replace(
+    /(<head\b[^>]*>)\s*([\s\S]*?)(<\/head>)/iu,
+    (_: string, head: string, content: string, end: string) => {
+      const retained = content.replace(/<meta\b[^>]*>/giu, (tag: string) => {
+        const key = /\b(property|name)\s*=\s*["']([^"']+)["']/iu.exec(tag);
+        return key &&
+          Object.hasOwn(key[1].toLowerCase() === "property" ? properties : names, key[2])
+          ? ""
+          : tag;
+      });
+      // Keep the authored charset and other existing head nodes first. A long
+      // localized social description must not push charset beyond its first KB.
+      return `${head}${retained.trim()}\n${tags.join("\n")}\n${end}`;
+    },
+  );
 }
 
-export function assertPngDimensions(bytes, label) {
+export function assertPngDimensions(bytes: Buffer, label: string) {
   if (
     bytes.length < 24 ||
     bytes.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a" ||

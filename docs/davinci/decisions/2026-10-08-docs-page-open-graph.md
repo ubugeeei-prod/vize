@@ -58,6 +58,17 @@ Only then write escaped absolute OG/Twitter image URLs, matching descriptions,
 image dimensions/alt text, page URL, site name, type and locale into each page.
 Retain a route/metadata/image manifest and representative generated PNG evidence.
 
+## Strict TypeScript boundary
+
+The handwritten image generator, native Vue adapter, metadata module, independent
+verifier and their tooling tests use strict TypeScript. Keep tracked renames in a
+move-only commit. Validate imported provider packets as unknown values before
+using them; retain the complete PNG/metadata inventory and fatal provider errors.
+The sole Vue SFC remains the image design authority. Its native emitted JavaScript
+and generated component declaration are build artifacts, not handwritten image
+renderers. The bounded Docs project checks Node entrypoints with the real public
+Vue/Vite/Playwright types and DOM libraries, alongside the existing Check gate.
+
 ## Acceptance and remaining work
 
 Unit controls cover locale/route identity, authored/content descriptions,
