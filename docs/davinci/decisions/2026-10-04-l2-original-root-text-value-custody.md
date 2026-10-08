@@ -126,6 +126,10 @@ actually merged as `ff53f40f`. The original L2 preparation
 `8bad93c713b1cecde6ff6876fe85287c9bca5687`, including its preceding checked
 Text extraction, is retained as ancestry rather than recreated. The delivery
 branch composes it with actual main `3e493feb7f98ef664cdaf2ce53d1ba94cb25c86b`.
+That main contains the actually merged [#8257](https://github.com/ubugeeei-prod/vize/pull/8257);
+its [protected Check](https://github.com/ubugeeei-prod/vize/actions/runs/37726736355)
+is terminal success. This is incoming-main evidence and grants no source
+qualification to the new Text provider.
 Every original production body and law remains unchanged; the current
 storage inventory retains all incoming rows with only the two reviewed
 File-owned vector uses added.
