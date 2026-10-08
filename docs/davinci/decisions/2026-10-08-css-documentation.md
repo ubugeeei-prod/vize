@@ -40,7 +40,10 @@ Rust lookup tables follow the source provider's first-name-wins policy.
 The source contains 888 properties, 2,148 property-owned values, 25 at-rules,
 111 pseudo-class rows and 90 pseudo-element rows. Duplicate names remain in
 the frozen input and produce 110/88 effective pseudo entries respectively.
-Generation and verification are offline development operations.
+The separate pinned named-color source retains 148 named hex colors plus
+`currentColor` and `transparent`. Five CSS-wide keywords and `var()`/`calc()`
+use the linked W3C specifications. Generation and verification are offline
+development operations.
 
 ## Request cost
 
@@ -56,6 +59,11 @@ catalog identity; hover builds only the selected entry's Markdown. Keep
 insertion and replacement fields intact during resolve. Lazy documentation
 also applies to the original Vue entries wherever resolve is supported;
 unsupported resolve configurations retain useful direct documentation.
+Initialize records the client's exact `resolveSupport.documentation` support
+in one conservative per-server flag, independently of typecheck configuration.
+Style-only hover/completion bypass Corsa before initialization; selected CSS
+resolve runs before all native typecheck routing. Property replacement ranges
+are computed once per request and shared by the prefix-filtered items.
 
 ## Validation and remaining evidence
 
@@ -69,7 +77,12 @@ Use the existing source Actions and ordinary LSP/performance paths. Compare
 repeated completion, resolve and hover against the existing server baseline,
 including long comments/strings and a representative large style block.
 Record actual latency and available instruction/allocation observations;
-no speedup, unchanged budget or delivery claim precedes measurement.
+The existing Benchmark workflow reuses its identical-profile base/head CLI
+builds for repeated real stdio CSS observations. Raw latency samples, response
+sizes and exact binary hashes distinguish the previous four-item behavior
+from the new product responses. The existing path has no instruction/server
+allocation instrumentation; those counters stay unavailable, not inferred.
+No speedup, unchanged budget or delivery claim precedes measurement.
 Existing full corpus, source checks, instruction ceilings, protected queue
 and actual signed delivery remain required. This bounded CSS slice does not
 close broad LSP fix history or product readiness issues.

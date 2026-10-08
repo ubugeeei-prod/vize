@@ -34,5 +34,6 @@
     "snapshot_transform": "Complete original colors and colorKeywords string maps, decoded as JSON without executing upstream TypeScript. Named hex values and keyword descriptions remain exact.",
     "named_color_count": 148,
     "keyword_count": 2
-  }
+  },
+  "license_line_endings": "LF; the complete original MIT license text is retained"
 }
