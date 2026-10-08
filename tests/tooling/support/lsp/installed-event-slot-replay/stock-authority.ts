@@ -29,8 +29,22 @@ export function playgroundImporter(lock: string): string {
 
 export function verifyEventFixtureSource(sourceRoot: string) {
   const repository = new RawGitRepository(sourceRoot);
-  const original = repository.file(originalHead, "pnpm-lock.yaml");
-  const event = repository.file(eventSourceHead, "pnpm-lock.yaml");
+  const sources = (head: string) =>
+    Object.fromEntries(
+      Object.keys(originalFiles).map((file) => [file, repository.file(head, file)]),
+    );
+  return compareEventFixtureSources(sources(originalHead), sources(eventSourceHead));
+}
+
+/** Pure comparison uses the same complete pinned bytes; it never supplies a runtime source fallback. */
+export function compareEventFixtureSources(
+  originalSources: Record<string, Buffer>,
+  eventSources: Record<string, Buffer>,
+) {
+  for (const sources of [originalSources, eventSources])
+    assert.deepEqual(Object.keys(sources).toSorted(), Object.keys(originalFiles).toSorted());
+  const original = originalSources["pnpm-lock.yaml"],
+    event = eventSources["pnpm-lock.yaml"];
   assert.equal(digest(original), originalFiles["pnpm-lock.yaml"]);
   assert.equal(digest(event), eventLockSha256);
   const importer = playgroundImporter(event.toString("utf8"));
@@ -44,9 +58,10 @@ export function verifyEventFixtureSource(sourceRoot: string) {
     Object.entries(originalFiles)
       .filter(([name]) => name !== "pnpm-lock.yaml")
       .map(([name, sha]) => {
-        const bytes = repository.file(eventSourceHead, name);
+        const bytes = eventSources[name];
         assert.equal(digest(bytes), sha);
-        assert.deepEqual(bytes, repository.file(originalHead, name));
+        assert.equal(digest(originalSources[name]), sha);
+        assert.deepEqual(bytes, originalSources[name]);
         return [name, { sha256: sha, bytesEqual: true }];
       }),
   );

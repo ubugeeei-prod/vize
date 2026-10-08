@@ -20,6 +20,10 @@ Corsa payload is rehashed before and after sessions against integrity-verified
 public archives. Initial source, Node and Corsa overrides remain empty. A source
 binary, workspace Corsa path or stale dependency link grants no public credit.
 
+The library configuration retains its original empty typeChecker object after
+removing only the explicit workspace corsaPath. Whole adapted config comparison
+refuses hidden options; all original flags and tsconfig bytes remain exact.
+
 Keep the original Vue 3.6.0-rc.6 / TypeScript 6.0.3 graph separate from the public
 Vize installation. The event/library and bound source heads require an explicit
 comparison of their committed Playground importer and exact twenty-six package
@@ -39,7 +43,9 @@ location/list expectations. Observation does not weaken a contracted query.
 
 Keep every diagnostic publication, including duplicates and late publications.
 The eleven allowed whole publication values do not imply an eleven-entry stream:
-the authentic source streams contain 242 packets across twenty sessions. Apply
+historical9fe contains242 packets and freshf6 contains241 across twenty
+sessions. Both whole streams are retained; no fixed aggregate count replaces
+the original membership law. Apply
 the complete first returned rename edit to all authored files, persist its full
 version-2 disk/diagnostics, then independently install every complete version-3
 golden. The final audit repeats after shutdown. Preserve original shutdown ID
@@ -115,3 +121,10 @@ same-version altered integrity. These are dependency/observer proofs, not public
 Vize/native/Corsa execution or P0 completion.
 
 Raw identity/transport decision: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6056146032) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6056146378).
+
+The ordinary pure stock comparison tests consume digest-pinned compressed copies
+of both full original lockfiles, manifest and helper. This removes a shallow CI
+checkout's unrelated historical object availability dependency. The runtime
+consumer still requires real SHA-authenticated c2bc/9fe commit/tree/blob reads;
+the pure fixture files supply no runtime fallback. A refusal law proves that an
+empty repository cannot inherit source authority from the fixture copies.
