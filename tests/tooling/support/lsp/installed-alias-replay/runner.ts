@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { inspect } from "node:util";
 import type { VizePublicRegistryInstallAuthority } from "./authority-schema.ts";
 import { recheckPublicBytes } from "./authority.ts";
 import { loadFrozenAliasCases, rebindFrozenExpected } from "./cases.ts";
@@ -115,7 +116,15 @@ export async function replayInstalledAliases(options: ReplayOptions) {
     } catch (error) {
       outcome.error =
         error instanceof Error
-          ? { message: error.message, stack: error.stack, cause: String(error.cause ?? "") }
+          ? {
+              message: error.message,
+              stack: error.stack,
+              cause: inspect(error.cause, {
+                depth: null,
+                maxArrayLength: null,
+                maxStringLength: null,
+              }),
+            }
           : String(error);
     } finally {
       if (session) outcome.terminal = await session.shutdown();
