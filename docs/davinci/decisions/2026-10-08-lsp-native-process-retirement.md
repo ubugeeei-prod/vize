@@ -67,4 +67,30 @@ requires the fixed source to pass all three original sessions, all 40 cycles,
 the unchanged process/RSS limits and complete authored feature/lifecycle
 oracles. The full 134-project acceptance and publication remain separate.
 
-Before/after Actions evidence will be appended after terminal qualification.
+## Narrow original resource qualification
+
+The process correction #8276 actually merged at signed/valid
+`91699ec9cd636436c476c69d7d3f3cbf55922182`, after full protected Check
+[37745430116](https://github.com/ubugeeei-prod/vize/actions/runs/37745430116).
+That actual source includes the separately delivered streaming RSS correction
+#8277. A 19-blob audit authenticates both reviewed producer changes and every
+unchanged original workload/control input before the one immutable-source
+baseline dispatch.
+
+The original three-session × 40-cycle Misskey replay
+[37748903750](https://github.com/ubugeeei-prod/vize/actions/runs/37748903750)
+passes all sessions at that actual source. Its official artifact `11537218719`
+ZIP SHA256 is `8c78a429ad3bab0c8f5633a7b39e98022d003beac71c2b20e2c756f396bd8148`.
+Independent whole raw-wire audit rederives all 600 authored observations. The
+50 ms sampled process maxima are 3/3/3, with no over-ceiling samples and empty
+shutdown-survivor arrays. The original test's root RSS maxima are
+110.23/119.73/118.08 MiB; separate external sampled whole-tree maxima are
+331.31/333.75/330.62 MiB. Process 3, root 128 MiB and tree 384 MiB ceilings,
+all original inputs, sessions/cycles, scale 1 and Rayon 4 stay unchanged.
+
+This qualifies the reproduced single-fixture process/RSS correction. Sampling
+does not establish an unsampled true peak or a shutdown leak; the historical
+failure also had no survivors. The full 134-project authored feature/lifecycle
+acceptance, installed/public release and 10x performance target remain
+unfinished. #3952 remains open. The exact-source/raw receipts are paired on
+[#3952](https://github.com/ubugeeei-prod/vize/issues/3952#issuecomment-6055136669).
