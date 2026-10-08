@@ -69,7 +69,11 @@ fn historical_h_inputs_keep_the_three_complete_original_sha256_without_a_runtime
             "482ef0c05cc06e4e84910734b9aa986c8902a59611c75664f890faf5d9df2279",
         ),
     ] {
-        assert_eq!(format!("{:x}", Sha256::digest(source.as_bytes())), expected);
+        let actual = Sha256::digest(source.as_bytes())
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>();
+        assert_eq!(actual, expected);
     }
 }
 
