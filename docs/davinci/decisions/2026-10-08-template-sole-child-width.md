@@ -171,3 +171,47 @@ substituting source authority. Keep every original formatter product/corpus
 and history pin, the complete incoming 350 canonical rows and all peer clauses.
 The new exact source, all 104 and native-phase gates must run afresh; earlier
 greens are not transferred, and child/queue admission remains pending.
+
+Fresh exact `d5fa74e48d01cfe7dfd9a21f41a5d2bc41d42fff` instruction run
+[37739274859](https://github.com/ubugeeei-prod/vize/actions/runs/37739274859)
+passes all 104 unchanged ceilings across three identical repetitions:
+script 927636, simple 287658, reuse 268793, complex 243799 (cap 244347).
+Retain formatter artifact 11533830022, digest
+`59f56dd784c9fb574ca31fe4748028dc6b83eeb2a249c8f8efc9493b25969da0`,
+and level artifact 11533431347, digest
+`50cc207013ab191afe1710ca78448cff8d36710bd5a8a03ae624c440a7fe5ab7`.
+These measurements qualify only this exact head.
+
+Its fresh full source Check
+[37739279068](https://github.com/ubugeeei-prod/vize/actions/runs/37739279068)
+exposes an inherited BOM CLI failure in source-coverage job 113185989482:
+`malformed_plain_and_bom_configs_preserve_whole_original_cli_failure`,
+`direct/bom/explicit=false`, emits ANSI-colored `Error:` where the original
+whole stderr authority is plain. Keep both complete outputs and the 294862-byte
+raw log, SHA `fb1d46d20a40d0d1fdb72eadb08b7e067bbbd5322c8feaea2491dc370db17a2d`.
+No formatter assertion failed in that job. Keep the native requirements and
+whole stderr oracle; route the source repair to its owner, then genuinely
+refresh ancestry and require all successor source/native/instruction checks.
+Closing-child and queue admission stay pending; no failed job is skipped and
+no prior green is borrowed.
+
+Fresh review checks register an ID before loading its sealed authority row.
+Eight existing current-reference/custody controls pass; every input, expected
+output, configuration, witness, manifest and authority hash stays unchanged.
+Retain the original absolute provider entry/realEntry paths as observed capture
+metadata: no loader resolves or executes them, and the actual stock provider
+resolver is checkout-relative with exact package-version and entry-byte checks.
+These public-owner provenance fields contain no credentials. Preserve the
+whole independently authored authority rather than normalize and re-hash it;
+the review itself confirms there is no CI path-comparison failure.
+
+The next closing-only slice stays pending exact parent source qualification.
+Read-only replay of its independently sealed 13-vector packet reproduces all
+26 complete original/expected stock Vue compiler packets and 104 runtime states,
+including native-button submit events. This is stock-reference evidence only:
+zero Vize CLI calls, no changed formatter behavior and no installed acceptance.
+Its complete template packets include the first LF/CRLF. A future observer
+must compare those full packets directly; the prior sole-child authority's
+separate author-recipe trimming is not applicable to this new packet. Keep
+10 independent closing positives plus three unchanged fit/suppression controls,
+all complete original reporter carriers and the broader composite gap open.

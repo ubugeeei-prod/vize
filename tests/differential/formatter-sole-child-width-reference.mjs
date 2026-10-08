@@ -71,8 +71,8 @@ export function soleChildVueAuthority(root) {
 }
 
 function currentReference(root, id, input, historical) {
-  const row = soleChildVueAuthority(root).records.find((record) => record.id === id);
   assert(IDS.includes(id), "unregistered shared current reference");
+  const row = soleChildVueAuthority(root).records.find((record) => record.id === id);
   assert.equal(hash(input), row.input.sha256, "original whole input changed");
   assert.equal(hash(historical), row.historical.sha256, "whole historical output changed");
   const file = path.posix.join(
