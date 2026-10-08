@@ -26,11 +26,13 @@ export const manual6 = {
   "vue/component-name-in-template-casing": {
     bad: {
       language: "vue",
-      source: '<script setup>\nimport MyComponent from "./MyComponent.vue";\n</script>\n<template>\n  <my-component />\n  <myComponent />\n</template>',
+      source:
+        '<script setup>\nimport MyComponent from "./MyComponent.vue";\n</script>\n<template>\n  <my-component />\n  <myComponent />\n</template>',
     },
     good: {
       language: "vue",
-      source: '<script setup>\nimport MyComponent from "./MyComponent.vue";\n</script>\n<template>\n  <MyComponent />\n  <RouterView />\n  <slot />\n</template>',
+      source:
+        '<script setup>\nimport MyComponent from "./MyComponent.vue";\n</script>\n<template>\n  <MyComponent />\n  <RouterView />\n  <slot />\n</template>',
     },
     evidence: "docs/content/rules/vue-components.md",
   },
