@@ -1,0 +1,1383 @@
+{
+  "schema": "vize.patina.slot-fallback-key-owned-corpus",
+  "version": 1,
+  "trackingIssue": 8281,
+  "adoptionIssue": 8142,
+  "originalEvidence": {
+    "fixtureRevision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+    "file": "packages/frontend/@n8n/design-system/src/components/N8nDatatable/Datatable.vue",
+    "gitBlob": "56fc5c2ec8bc9df82f2de32b36b10d95a580a831",
+    "sourceSha256": "541ce048e84512920a5ca3b8b135315433d81013bafefc7c52fa9f42b9e6d4ca",
+    "observedNativeRevision": "5e1dceb1b117687bb6084d7a76d6fec4ab1e645a",
+    "sourcePolicy": "Licensed master original observation only; upstream branch source is not executed, redistributed, or changed"
+  },
+  "qualification": "Owned focused key-slot regression and explicit historical policy limits only; does not establish all51 semantics, full monorepo adoption, or performance",
+  "providers": {
+    "eslint": {
+      "version": "10.4.1",
+      "publicEntrypoint": "lib/api.js",
+      "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+      "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+    },
+    "eslint-plugin-vue": {
+      "version": "10.9.2",
+      "publicEntrypoint": "dist/index.js",
+      "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+      "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+    },
+    "vue-eslint-parser": {
+      "version": "10.4.1",
+      "publicEntrypoint": "dist/index.cjs",
+      "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+      "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+    },
+    "@typescript-eslint/parser": {
+      "version": "8.65.0",
+      "publicEntrypoint": "dist/index.js",
+      "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+      "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+    }
+  },
+  "selectedRules": {
+    "vue/attribute-hyphenation": [
+      "error",
+      "always"
+    ],
+    "vue/component-name-in-template-casing": [
+      "error",
+      "PascalCase"
+    ],
+    "vue/no-child-content": "error",
+    "vue/no-deprecated-functional-template": "error",
+    "vue/no-deprecated-html-element-is": "error",
+    "vue/no-deprecated-inline-template": "error",
+    "vue/no-deprecated-router-link-tag-prop": "error",
+    "vue/no-deprecated-scope-attribute": "error",
+    "vue/no-deprecated-slot-attribute": "error",
+    "vue/no-deprecated-slot-scope-attribute": "error",
+    "vue/no-deprecated-v-bind-sync": "error",
+    "vue/no-deprecated-v-on-native-modifier": "error",
+    "vue/no-deprecated-v-on-number-modifiers": "error",
+    "vue/no-dupe-v-else-if": "error",
+    "vue/no-duplicate-attributes": "error",
+    "vue/no-multiple-template-root": "error",
+    "vue/no-template-key": "error",
+    "vue/no-textarea-mustache": "error",
+    "vue/no-unused-components": "error",
+    "vue/no-unused-vars": "error",
+    "vue/no-use-v-if-with-v-for": "error",
+    "vue/no-useless-template-attributes": "error",
+    "vue/no-v-for-template-key-on-child": "error",
+    "vue/no-v-html": "error",
+    "vue/require-component-is": "error",
+    "vue/no-undef-components": "error",
+    "vue/require-toggle-inside-transition": "error",
+    "vue/require-v-for-key": "error",
+    "vue/block-order": [
+      "error",
+      {
+        "order": [
+          "script",
+          "template",
+          "style"
+        ]
+      }
+    ],
+    "vue/use-v-on-exact": "error",
+    "vue/v-slot-style": "error",
+    "vue/valid-attribute-name": "error",
+    "vue/valid-template-root": "error",
+    "vue/valid-v-bind": "error",
+    "vue/valid-v-cloak": "error",
+    "vue/valid-v-else": "error",
+    "vue/valid-v-for": "error",
+    "vue/valid-v-html": "error",
+    "vue/valid-v-if": "error",
+    "vue/valid-v-memo": "error",
+    "vue/valid-v-model": "error",
+    "vue/valid-v-on": "error",
+    "vue/valid-v-once": "error",
+    "vue/valid-v-show": "error",
+    "vue/valid-v-slot": "error",
+    "vue/valid-v-text": "error",
+    "vue/no-deprecated-dollar-listeners-api": "error",
+    "vue/no-deprecated-dollar-scopedslots-api": "error",
+    "vue/no-ref-as-operand": "error",
+    "vue/no-use-computed-property-like-method": "error",
+    "vue/require-valid-default-prop": "error"
+  },
+  "mandatoryInfrastructure": {
+    "source": "Installed eslint-plugin-vue flat/base vue/base/setup-for-vue configuration",
+    "name": "vue/base/setup-for-vue",
+    "processor": "vue/vue",
+    "rules": {
+      "vue/comment-directive": "error",
+      "vue/jsx-uses-vars": "error"
+    }
+  },
+  "cases": [
+    {
+      "id": "slot-keyed-fallback-clean",
+      "filename": "slot-keyed-fallback-clean.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <slot :row=\"row\"><tr :key=\"row.id\"><td>{{ row.id }}</td></tr></slot>\n    </template>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 0,
+      "expectedNativePacket": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "slot-keyed-fallback-clean.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "slot-unkeyed-fallback-positive",
+      "filename": "slot-unkeyed-fallback-positive.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <slot :row=\"row\"><tr><td>{{ row.id }}</td></tr></slot>\n    </template>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 1,
+      "expectedNativePacket": {
+        "diagnostics": [
+          {
+            "end": 112,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 93
+          }
+        ],
+        "error_count": 1,
+        "filename": "slot-unkeyed-fallback-positive.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "ordinary-wrapper-keyed-descendant-positive",
+      "filename": "ordinary-wrapper-keyed-descendant-positive.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <div><span :key=\"row.id\">{{ row.id }}</span></div>\n    </template>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 1,
+      "expectedNativePacket": {
+        "diagnostics": [
+          {
+            "end": 112,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 93
+          }
+        ],
+        "error_count": 1,
+        "filename": "ordinary-wrapper-keyed-descendant-positive.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "nested-transparent-keyed-fallback-clean",
+      "filename": "nested-transparent-keyed-fallback-clean.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <template><slot :row=\"row\"><template><tr :key=\"row.id\"><td>{{ row.id }}</td></tr></template></slot></template>\n    </template>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 0,
+      "expectedNativePacket": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "nested-transparent-keyed-fallback-clean.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "slot-ordinary-wrapper-positive",
+      "filename": "slot-ordinary-wrapper-positive.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <slot :row=\"row\"><div><span :key=\"row.id\">{{ row.id }}</span></div></slot>\n    </template>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 1,
+      "expectedNativePacket": {
+        "diagnostics": [
+          {
+            "end": 112,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 93
+          }
+        ],
+        "error_count": 1,
+        "filename": "slot-ordinary-wrapper-positive.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "direct-element-key-clean",
+      "filename": "direct-element-key-clean.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <tr v-for=\"row in rows\" :key=\"row.id\"><td>{{ row.id }}</td></tr>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 0,
+      "expectedNativePacket": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "direct-element-key-clean.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "direct-element-missing-key-positive",
+      "filename": "direct-element-missing-key-positive.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <tr v-for=\"row in rows\"><td>{{ row.id }}</td></tr>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 1,
+      "expectedNativePacket": {
+        "diagnostics": [
+          {
+            "end": 106,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 87
+          }
+        ],
+        "error_count": 1,
+        "filename": "direct-element-missing-key-positive.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "direct-template-key-clean",
+      "filename": "direct-template-key-clean.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\" :key=\"row.id\"><slot :row=\"row\"><tr><td>{{ row.id }}</td></tr></slot></template>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 0,
+      "expectedNativePacket": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "direct-template-key-clean.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "direct-child-key-history",
+      "filename": "direct-child-key-history.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <tr :key=\"row.id\"><td>{{ row.id }}</td></tr>\n    </template>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 0,
+      "expectedNativePacket": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "direct-child-key-history.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "object-bind-key-history",
+      "filename": "object-bind-key-history.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <tr v-for=\"row in rows\" v-bind=\"{ key: row.id }\"><td>{{ row.id }}</td></tr>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 0,
+      "policyLimit": "Native intentionally recognizes object-bound keys beyond the pinned official rule.",
+      "expectedNativePacket": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "object-bind-key-history.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "static-key-history",
+      "filename": "static-key-history.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <tr v-for=\"row in rows\" key=\"static\"><td>{{ row.id }}</td></tr>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 0,
+      "policyLimit": "Native intentionally accepts a static key beyond the pinned official rule.",
+      "expectedNativePacket": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "static-key-history.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "empty-slot-policy-limit",
+      "filename": "empty-slot-policy-limit.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <slot :row=\"row\" />\n    </template>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 1,
+      "policyLimit": "Native still requires a discoverable bound descendant key for a template loop; the official rule accepts an empty slot. This slice does not change that policy.",
+      "expectedNativePacket": {
+        "diagnostics": [
+          {
+            "end": 112,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+            "rule_name": "vue/require-v-for-key",
+            "severity": "error",
+            "start": 93
+          }
+        ],
+        "error_count": 1,
+        "filename": "empty-slot-policy-limit.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "multiple-child-any-key-policy-limit",
+      "filename": "multiple-child-any-key-policy-limit.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <tr :key=\"row.id\"><td>{{ row.id }}</td></tr><tr><td>{{ row.id }}</td></tr>\n    </template>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 0,
+      "policyLimit": "Native preserves the historical any directly keyed child contract; the official rule checks each ordinary child.",
+      "expectedNativePacket": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "multiple-child-any-key-policy-limit.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "mixed-fallback-any-key-policy-limit",
+      "filename": "mixed-fallback-any-key-policy-limit.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <slot :row=\"row\"><tr :key=\"row.id\"><td>{{ row.id }}</td></tr><tr><td>{{ row.id }}</td></tr></slot>\n    </template>\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 0,
+      "policyLimit": "Transparent traversal preserves the native any bound child key policy; the official rule checks each fallback child.",
+      "expectedNativePacket": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "mixed-fallback-any-key-policy-limit.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "slot-v-for-outlet-history",
+      "filename": "slot-v-for-outlet-history.vue",
+      "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <slot v-for=\"row in rows\" :row=\"row\" />\n  </tbody></table>\n</template>\n",
+      "expectedNativeDiagnostics": 0,
+      "expectedNativePacket": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "slot-v-for-outlet-history.vue",
+        "warning_count": 0
+      }
+    },
+    {
+      "id": "dynamic-slot-forwarding-history",
+      "filename": "dynamic-slot-forwarding-history.vue",
+      "source": "<script setup>\nimport MyWidget from \"./MyWidget.vue\";\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <MyWidget>\n    <template v-for=\"row in rows\" #[`row.${row.id}`]>\n      <slot :name=\"`row.${row.id}`\" :row=\"row\" />\n    </template>\n  </MyWidget>\n</template>\n",
+      "expectedNativeDiagnostics": 0,
+      "expectedNativePacket": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-slot-forwarding-history.vue",
+        "warning_count": 0
+      }
+    }
+  ],
+  "oracleCapture": {
+    "providers": {
+      "eslint": {
+        "version": "10.4.1",
+        "publicEntrypoint": "lib/api.js",
+        "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+        "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+      },
+      "eslint-plugin-vue": {
+        "version": "10.9.2",
+        "publicEntrypoint": "dist/index.js",
+        "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+        "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+      },
+      "vue-eslint-parser": {
+        "version": "10.4.1",
+        "publicEntrypoint": "dist/index.cjs",
+        "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+        "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+      },
+      "@typescript-eslint/parser": {
+        "version": "8.65.0",
+        "publicEntrypoint": "dist/index.js",
+        "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+        "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+      }
+    },
+    "configuration": {
+      "selectedRules": {
+        "vue/attribute-hyphenation": [
+          "error",
+          "always"
+        ],
+        "vue/component-name-in-template-casing": [
+          "error",
+          "PascalCase"
+        ],
+        "vue/no-child-content": "error",
+        "vue/no-deprecated-functional-template": "error",
+        "vue/no-deprecated-html-element-is": "error",
+        "vue/no-deprecated-inline-template": "error",
+        "vue/no-deprecated-router-link-tag-prop": "error",
+        "vue/no-deprecated-scope-attribute": "error",
+        "vue/no-deprecated-slot-attribute": "error",
+        "vue/no-deprecated-slot-scope-attribute": "error",
+        "vue/no-deprecated-v-bind-sync": "error",
+        "vue/no-deprecated-v-on-native-modifier": "error",
+        "vue/no-deprecated-v-on-number-modifiers": "error",
+        "vue/no-dupe-v-else-if": "error",
+        "vue/no-duplicate-attributes": "error",
+        "vue/no-multiple-template-root": "error",
+        "vue/no-template-key": "error",
+        "vue/no-textarea-mustache": "error",
+        "vue/no-unused-components": "error",
+        "vue/no-unused-vars": "error",
+        "vue/no-use-v-if-with-v-for": "error",
+        "vue/no-useless-template-attributes": "error",
+        "vue/no-v-for-template-key-on-child": "error",
+        "vue/no-v-html": "error",
+        "vue/require-component-is": "error",
+        "vue/no-undef-components": "error",
+        "vue/require-toggle-inside-transition": "error",
+        "vue/require-v-for-key": "error",
+        "vue/block-order": [
+          "error",
+          {
+            "order": [
+              "script",
+              "template",
+              "style"
+            ]
+          }
+        ],
+        "vue/use-v-on-exact": "error",
+        "vue/v-slot-style": "error",
+        "vue/valid-attribute-name": "error",
+        "vue/valid-template-root": "error",
+        "vue/valid-v-bind": "error",
+        "vue/valid-v-cloak": "error",
+        "vue/valid-v-else": "error",
+        "vue/valid-v-for": "error",
+        "vue/valid-v-html": "error",
+        "vue/valid-v-if": "error",
+        "vue/valid-v-memo": "error",
+        "vue/valid-v-model": "error",
+        "vue/valid-v-on": "error",
+        "vue/valid-v-once": "error",
+        "vue/valid-v-show": "error",
+        "vue/valid-v-slot": "error",
+        "vue/valid-v-text": "error",
+        "vue/no-deprecated-dollar-listeners-api": "error",
+        "vue/no-deprecated-dollar-scopedslots-api": "error",
+        "vue/no-ref-as-operand": "error",
+        "vue/no-use-computed-property-like-method": "error",
+        "vue/require-valid-default-prop": "error"
+      },
+      "mandatoryInfrastructure": {
+        "name": "vue/base/setup-for-vue",
+        "processor": "vue/vue",
+        "rules": {
+          "vue/comment-directive": "error",
+          "vue/jsx-uses-vars": "error"
+        }
+      },
+      "languageOptions": {
+        "parser": "vue-eslint-parser",
+        "parserOptions": {
+          "parser": "@typescript-eslint/parser",
+          "ecmaVersion": "latest",
+          "sourceType": "module"
+        }
+      }
+    },
+    "captures": [
+      {
+        "caseId": "slot-keyed-fallback-clean",
+        "packets": [
+          {
+            "filePath": "owned/slot-keyed-fallback-clean.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "slot-unkeyed-fallback-positive",
+        "packets": [
+          {
+            "filePath": "owned/slot-unkeyed-fallback-positive.vue",
+            "messages": [
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 7,
+                "column": 24,
+                "messageId": "requireKey",
+                "endLine": 7,
+                "endColumn": 28
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <slot :row=\"row\"><tr><td>{{ row.id }}</td></tr></slot>\n    </template>\n  </tbody></table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "ordinary-wrapper-keyed-descendant-positive",
+        "packets": [
+          {
+            "filePath": "owned/ordinary-wrapper-keyed-descendant-positive.vue",
+            "messages": [
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 7,
+                "column": 7,
+                "messageId": "requireKey",
+                "endLine": 7,
+                "endColumn": 12
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <div><span :key=\"row.id\">{{ row.id }}</span></div>\n    </template>\n  </tbody></table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "nested-transparent-keyed-fallback-clean",
+        "packets": [
+          {
+            "filePath": "owned/nested-transparent-keyed-fallback-clean.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "slot-ordinary-wrapper-positive",
+        "packets": [
+          {
+            "filePath": "owned/slot-ordinary-wrapper-positive.vue",
+            "messages": [
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 7,
+                "column": 24,
+                "messageId": "requireKey",
+                "endLine": 7,
+                "endColumn": 29
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <slot :row=\"row\"><div><span :key=\"row.id\">{{ row.id }}</span></div></slot>\n    </template>\n  </tbody></table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "direct-element-key-clean",
+        "packets": [
+          {
+            "filePath": "owned/direct-element-key-clean.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "direct-element-missing-key-positive",
+        "packets": [
+          {
+            "filePath": "owned/direct-element-missing-key-positive.vue",
+            "messages": [
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 6,
+                "column": 5,
+                "messageId": "requireKey",
+                "endLine": 6,
+                "endColumn": 29
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <tr v-for=\"row in rows\"><td>{{ row.id }}</td></tr>\n  </tbody></table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "direct-template-key-clean",
+        "packets": [
+          {
+            "filePath": "owned/direct-template-key-clean.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "direct-child-key-history",
+        "packets": [
+          {
+            "filePath": "owned/direct-child-key-history.vue",
+            "messages": [
+              {
+                "ruleId": "vue/no-v-for-template-key-on-child",
+                "severity": 2,
+                "message": "`<template v-for>` key should be placed on the `<template>` tag.",
+                "line": 7,
+                "column": 11,
+                "messageId": "vForTemplateKeyPlacement",
+                "endLine": 7,
+                "endColumn": 24
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <tr :key=\"row.id\"><td>{{ row.id }}</td></tr>\n    </template>\n  </tbody></table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "object-bind-key-history",
+        "packets": [
+          {
+            "filePath": "owned/object-bind-key-history.vue",
+            "messages": [
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 6,
+                "column": 5,
+                "messageId": "requireKey",
+                "endLine": 6,
+                "endColumn": 54
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <tr v-for=\"row in rows\" v-bind=\"{ key: row.id }\"><td>{{ row.id }}</td></tr>\n  </tbody></table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "static-key-history",
+        "packets": [
+          {
+            "filePath": "owned/static-key-history.vue",
+            "messages": [
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 6,
+                "column": 5,
+                "messageId": "requireKey",
+                "endLine": 6,
+                "endColumn": 42
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <tr v-for=\"row in rows\" key=\"static\"><td>{{ row.id }}</td></tr>\n  </tbody></table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "empty-slot-policy-limit",
+        "packets": [
+          {
+            "filePath": "owned/empty-slot-policy-limit.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "multiple-child-any-key-policy-limit",
+        "packets": [
+          {
+            "filePath": "owned/multiple-child-any-key-policy-limit.vue",
+            "messages": [
+              {
+                "ruleId": "vue/no-v-for-template-key-on-child",
+                "severity": 2,
+                "message": "`<template v-for>` key should be placed on the `<template>` tag.",
+                "line": 7,
+                "column": 11,
+                "messageId": "vForTemplateKeyPlacement",
+                "endLine": 7,
+                "endColumn": 24
+              },
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 7,
+                "column": 51,
+                "messageId": "requireKey",
+                "endLine": 7,
+                "endColumn": 55
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 2,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <tr :key=\"row.id\"><td>{{ row.id }}</td></tr><tr><td>{{ row.id }}</td></tr>\n    </template>\n  </tbody></table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "mixed-fallback-any-key-policy-limit",
+        "packets": [
+          {
+            "filePath": "owned/mixed-fallback-any-key-policy-limit.vue",
+            "messages": [
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 7,
+                "column": 68,
+                "messageId": "requireKey",
+                "endLine": 7,
+                "endColumn": 72
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup>\nconst rows = [{ id: 1 }];\n</script>\n<template>\n  <table><tbody>\n    <template v-for=\"row in rows\">\n      <slot :row=\"row\"><tr :key=\"row.id\"><td>{{ row.id }}</td></tr><tr><td>{{ row.id }}</td></tr></slot>\n    </template>\n  </tbody></table>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "slot-v-for-outlet-history",
+        "packets": [
+          {
+            "filePath": "owned/slot-v-for-outlet-history.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      },
+      {
+        "caseId": "dynamic-slot-forwarding-history",
+        "packets": [
+          {
+            "filePath": "owned/dynamic-slot-forwarding-history.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        "providerError": null
+      }
+    ]
+  },
+  "nativeBeforeCapture": {
+    "origin": {
+      "phase": "before",
+      "sourceRevision": "f399905053ced78738f387a8b940e8e0ed514d7d",
+      "producerSourceSha256": "2c0d2760fdcbeec3263e67e4c0f7453f0d6c23a9b73a1875958bb99c10403b90",
+      "observerSourceSha256": "a6da64f2defb0ddce00fc1e1c7450e1e4881a0233df35a32e0199beeef813b6c",
+      "cargoLockSha256": "29c04664c582321e5a91d4992c8dee62e7db9846962e472855ce55e546fed910",
+      "rustc": "1.99.0",
+      "rustcCommit": "b940084d7eb6a299eb4bfeb8e34901bc051e7ac4",
+      "cargo": "1.99.0 (5f94df478 2026-08-27)",
+      "host": "aarch64-apple-darwin",
+      "llvm": "23.1.1",
+      "privateTarget": "/tmp/vize-cargo-slot-fallback-key-8281-rust199-20261008",
+      "observerBinarySha256": "85cc46d9521e73f6d07e131493335591c70a5331de8f1662fefa53f7b43141e5",
+      "command": [
+        "cargo",
+        "test",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_patina",
+        "--test",
+        "require_v_for_key_slot_fallback",
+        "--",
+        "--nocapture"
+      ],
+      "declaredToolchain": true,
+      "ignoreRustVersion": false,
+      "result": "Expected test failure on keyed-slot clean assertion; all16 packets retained before assertions",
+      "producerAuthority": "Actual public Linter API on fresh-main source plus owned test harness; not a CLI run, native/package migration, all51 semantics or performance qualification",
+      "rawPacketsSha256": "88ed3eb6751bc23beaa79fec5aff4b0bf2433a08cd7104a9c81ceab3a30a6a17"
+    },
+    "packets": [
+      {
+        "caseId": "slot-keyed-fallback-clean",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-keyed-fallback-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-unkeyed-fallback-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-unkeyed-fallback-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "ordinary-wrapper-keyed-descendant-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "ordinary-wrapper-keyed-descendant-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-transparent-keyed-fallback-clean",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "nested-transparent-keyed-fallback-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-ordinary-wrapper-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-ordinary-wrapper-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-element-key-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-element-key-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-element-missing-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 106,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 87
+            }
+          ],
+          "error_count": 1,
+          "filename": "direct-element-missing-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-template-key-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-template-key-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-child-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-child-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "object-bind-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "object-bind-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "static-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "static-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "empty-slot-policy-limit",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "empty-slot-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "multiple-child-any-key-policy-limit",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "multiple-child-any-key-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "mixed-fallback-any-key-policy-limit",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "mixed-fallback-any-key-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-v-for-outlet-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-v-for-outlet-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "dynamic-slot-forwarding-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-slot-forwarding-history.vue",
+          "warning_count": 0
+        }
+      }
+    ]
+  },
+  "nativeAfterCapture": {
+    "origin": {
+      "phase": "after",
+      "sourceRevision": "f399905053ced78738f387a8b940e8e0ed514d7d",
+      "producerSourceSha256": "b5b5339911de5f5fd6e19055189424262a09536239f88efb263f08d0871af53f",
+      "observerSourceSha256": "d6e174ae3abd1305473e29760d94b0d6ad251d5f401484ee00c5bd2eb48379f2",
+      "cargoLockSha256": "29c04664c582321e5a91d4992c8dee62e7db9846962e472855ce55e546fed910",
+      "rustc": "1.99.0",
+      "rustcCommit": "b940084d7eb6a299eb4bfeb8e34901bc051e7ac4",
+      "cargo": "1.99.0 (5f94df478 2026-08-27)",
+      "host": "aarch64-apple-darwin",
+      "llvm": "23.1.1",
+      "privateTarget": "/tmp/vize-cargo-slot-fallback-key-8281-rust199-20261008",
+      "observerBinarySha256": "3855695ac98b935a1694c802febd7a3b21cee9aff173975df65a42f95ee0fb0b",
+      "command": [
+        "cargo",
+        "test",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_patina",
+        "--test",
+        "require_v_for_key_slot_fallback",
+        "--",
+        "--nocapture"
+      ],
+      "declaredToolchain": true,
+      "ignoreRustVersion": false,
+      "result": "Passed all16 whole public source API packet comparisons and independently authored counts; all16 raw packets retained before assertions",
+      "producerAuthority": "Actual public Linter API on fresh-main source plus owned test harness; not a CLI run, native/package migration, all51 semantics or performance qualification",
+      "rawPacketsSha256": "a3c1719f3836028f94fbe4e96db07201b27e070f253087dfe599c0e94dc25c60",
+      "producerPatchSha256": "6e7b1a7e7538352cf4d9f50a212960e7a572e1b22620ac9164eeb2d581e83ea9",
+      "buildInputFixtureSha256": "cbf926dbbc498e90416942a3755301edb86a7cc913810276b1493047cad15890",
+      "semanticInputsSha256": "38f8917860d0dcb05934acb44f67df40f4f2194df83497a5bdc2de83cf67cf31",
+      "sourceContext": "Fresh-main base plus the recorded uncommitted producer patch and owned test harness; sourceRevision identifies the base, not an exact clean after commit"
+    },
+    "packets": [
+      {
+        "caseId": "slot-keyed-fallback-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-keyed-fallback-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-unkeyed-fallback-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-unkeyed-fallback-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "ordinary-wrapper-keyed-descendant-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "ordinary-wrapper-keyed-descendant-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "nested-transparent-keyed-fallback-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "nested-transparent-keyed-fallback-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-ordinary-wrapper-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "slot-ordinary-wrapper-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-element-key-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-element-key-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-element-missing-key-positive",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 106,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <tr>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 87
+            }
+          ],
+          "error_count": 1,
+          "filename": "direct-element-missing-key-positive.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-template-key-clean",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-template-key-clean.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "direct-child-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "direct-child-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "object-bind-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "object-bind-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "static-key-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "static-key-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "empty-slot-policy-limit",
+        "packet": {
+          "diagnostics": [
+            {
+              "end": 112,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
+              "rule_name": "vue/require-v-for-key",
+              "severity": "error",
+              "start": 93
+            }
+          ],
+          "error_count": 1,
+          "filename": "empty-slot-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "multiple-child-any-key-policy-limit",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "multiple-child-any-key-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "mixed-fallback-any-key-policy-limit",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "mixed-fallback-any-key-policy-limit.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "slot-v-for-outlet-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "slot-v-for-outlet-history.vue",
+          "warning_count": 0
+        }
+      },
+      {
+        "caseId": "dynamic-slot-forwarding-history",
+        "packet": {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-slot-forwarding-history.vue",
+          "warning_count": 0
+        }
+      }
+    ]
+  }
+}

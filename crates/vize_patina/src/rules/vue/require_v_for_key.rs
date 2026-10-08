@@ -29,6 +29,7 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, PropertyKey};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
+use vize_l0::ensure_sufficient_stack;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -111,6 +112,14 @@ fn has_markup_template_v_for_key(element: &MarkupElement<'_>, exact: bool) -> bo
                         binding.arg_name_eq("key")
                     };
             });
+            // Template/slot carriers do not render an ordinary wrapper. Keep
+            // the historical child-key policy, but inspect their fallbacks.
+            if !found
+                && (matches!(child.tag(), "template" | "slot")
+                    || (!exact && (child.is_tag("template") || child.is_tag("slot"))))
+            {
+                found = ensure_sufficient_stack(|| has_markup_template_v_for_key(&child, exact));
+            }
         }
     });
     found
@@ -221,6 +230,8 @@ fn relief_template_v_for_has_key(element: &ElementNode<'_>) -> bool {
                     .props
                     .iter()
                     .any(|prop| matches!(prop, PropNode::Directive(dir) if relief_directive_is_bound_key(dir)))
+                    || (matches!(child.tag, "template" | "slot")
+                        && ensure_sufficient_stack(|| relief_template_v_for_has_key(child)))
             )
         })
 }
