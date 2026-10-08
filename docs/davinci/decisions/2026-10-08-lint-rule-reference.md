@@ -117,3 +117,10 @@ table. petite-vue navigation uses the existing English/Japanese locale override 
 locales have no authored petite-vue page; every locale has aligned labels. Seven terse Japanese
 rationales gain literal-specific context. Purpose escaping preserves existing inline-code spans
 so angle brackets inside backticks remain readable rather than becoming literal entities.
+
+The next exact-head Docs run completed the desktop pages and whole EN/JA packet checks, then
+exposed the verifier selecting the hidden desktop theme toggle on mobile. The mobile screenshot
+pass now clicks the existing visible `[data-mobile-theme]` footer button; both native controls
+use the same production theme controller. Root data-theme and persisted theme assertions remain
+strict, with the actual control selector included in each screenshot receipt. No styles or theme
+controller are changed, and only a fresh complete run qualifies the corrected head.

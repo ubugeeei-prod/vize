@@ -205,14 +205,15 @@ try {
       await page.screenshot({ path: path.join(output, screenshot), fullPage: true });
       const themeScreenshots = [];
       if (/^\/(?:ja\/)?rules\//.test(route)) {
+        const controlSelector = device === "mobile" ? "[data-mobile-theme]" : ".theme-toggle";
         for (const theme of ["light", "dark"]) {
           if ((await page.locator("html").getAttribute("data-theme")) !== theme)
-            await page.locator(".theme-toggle").click();
+            await page.locator(controlSelector).click();
           assert.equal(await page.locator("html").getAttribute("data-theme"), theme);
           assert.equal(await page.evaluate(() => localStorage.getItem("theme")), theme);
           const file = `${name}-${device}-${theme}.png`;
           await page.screenshot({ path: path.join(output, file), fullPage: true });
-          themeScreenshots.push({ theme, screenshot: file });
+          themeScreenshots.push({ theme, screenshot: file, controlSelector });
         }
       }
       reports.push({
