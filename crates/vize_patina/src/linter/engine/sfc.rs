@@ -161,7 +161,7 @@ impl Linter {
 
         #[cfg(not(target_arch = "wasm32"))]
         if super::super::native_type_aware::has_active_type_aware_rules(self) {
-            let mut template_result = profile!(
+            let template_result = profile!(
                 "patina.type_aware.lint_sfc_with_corsa",
                 super::super::native_type_aware::lint_sfc_with_corsa_descriptor(
                     self,
@@ -171,16 +171,6 @@ impl Linter {
                     derived,
                 )
             );
-            if super::super::css_rules::has_active_builtin_css_rules(self)
-                && let Some(descriptor) = shared_descriptor
-            {
-                super::super::css_rules::append_builtin_css_diagnostics(
-                    self,
-                    descriptor,
-                    &mut template_result,
-                    None,
-                );
-            }
             return self.append_sfc_document_rule_diagnostics(
                 source,
                 filename,

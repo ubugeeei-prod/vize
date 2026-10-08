@@ -1,0 +1,18 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/7976",
+  "scope": "Reuse the existing native type-aware template root before it is dropped; no new parse or pipeline stage.",
+  "originalCorpus": [
+    {
+      "path": "crates/vize_patina/tests/fixtures/issue-7976/cases.json",
+      "sha256": "1aa4e88765c66a7872f53ad8b7f29f9f62aceae02ffe65514bb6493ccb061c53"
+    },
+    {
+      "path": "crates/vize_patina/tests/fixtures/issue-7976-global/cases.json",
+      "sha256": "42921a6f64b7aa0b424d2e44c3f9314804dd93b5d0f47313eb628dd7cb867596"
+    },
+    {
+      "path": "crates/vize_patina/tests/fixtures/issue-7976-compound/cases.json",
+      "sha256": "8544832d6f63006f4f9f350df25faf931c4d02001ddb277714493a09a0dc37a6"
+    }
+  ]
+}

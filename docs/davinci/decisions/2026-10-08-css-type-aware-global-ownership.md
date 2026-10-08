@@ -1,0 +1,60 @@
+# CSS global ownership on the native type-aware route
+
+Issue: [#7976](https://github.com/ubugeeei-prod/vize/issues/7976).
+
+## Decision
+
+The native type-aware driver owns the existing parsed template until every
+script and type diagnostic has been collected. Append the existing CSS pass
+there, before releasing that root, and remove the caller's rootless CSS append.
+Every existing early return and the ordinary completion use the same finalizer.
+CSS therefore runs exactly once after script/type diagnostics, including
+scriptless, empty-script, static-warning and empty-query exits.
+
+The CSS ownership input is the same already parsed root, with no additional
+template parse, serialized intermediate or pipeline stage. Fatal parses supply
+no root. External `src` templates and non-HTML template languages also supply no
+ownership evidence; their existing conservative CSS findings remain unchanged.
+An absent template retains the same conservative behavior. Native type severity
+application still happens after the driver; CSS retains its existing rule
+override and count accounting.
+
+## Durable evidence
+
+`crates/vize_patina/tests/fixtures/issue-7976-type-aware/cases.json` independently
+authors 16 complete native-route diagnostic packets. The test explicitly enables
+`type/require-typed-props` together with `css/no-display-none`, and a unit law pins
+that this selection activates the actual native driver. An intentionally missing
+Corsa path makes accidental runtime queries visible instead of silently skipping
+the regressions.
+
+The packets cover foreign/local global subjects in scripted and scriptless
+components, empty scripts, query-free collector completion, missing/external/
+non-HTML/fatal templates, explicitly HTML templates, multiple styles, original
+deep/slotted exemptions, and a complete script-error → type-warning → CSS-warning
+order. Whole diagnostic fields and error/warning counts are checked repeatedly
+with normal CSS severity, CSS promoted to error, and CSS disabled. The original
+54-case external-target, 66-case global and 62-case compound corpora are retained
+byte for byte; their hashes are recorded in the companion `source.json`.
+
+## Qualification
+
+This is source preparation. The root delivery task owns the paired issue comment
+and canonical record clause, fresh exact-head source/whole-history/API/CLI
+Actions, protected queue qualification, actual merge and installed release
+replay. Historical source greens grant no current delivery or publication credit.
+No upstream comment or change is part of this work.
+
+## Canonical clause for root integration
+
+[#7976 native type-aware CSS ownership](./2026-10-08-css-type-aware-global-ownership.md)
+reuses the driver's already parsed template before it is dropped; every existing
+early exit and completion appends CSS exactly once after all script/type findings,
+with no additional parse or pipeline stage. Fatal, absent, external and non-HTML
+template roots remain conservative. Sixteen independently authored complete
+native-route packets pin actual type-rule activation without Corsa, global
+foreign/local controls, script/type/CSS order, repeated counts, severity and CSS
+disable behavior while all original CSS corpus bytes remain unchanged. This is
+source preparation; fresh exact-head whole-history/API/CLI Actions, protected
+queue acceptance, actual merge and supported installed-release replay remain
+root-owned requirements before closure or publication credit.

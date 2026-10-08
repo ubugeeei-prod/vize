@@ -1,3 +1,4 @@
+mod css;
 mod planning;
 mod probes;
 use super::super::engine::{SfcTemplateLintInput, TemplateAnalysis};
@@ -45,6 +46,17 @@ pub(super) fn lint_with_descriptor<'a>(
     let template_has_fatal_parse_errors = template_ast
         .as_ref()
         .is_some_and(|(_, _, _, has_fatal)| *has_fatal);
+    // Finish while the parsed template is alive, including every no-query exit.
+    let finish = |result| {
+        css::finish(
+            linter,
+            descriptor,
+            result,
+            template_ast
+                .as_ref()
+                .and_then(|(root, _, _, fatal)| (!*fatal).then_some(root)),
+        )
+    };
     let analysis = profile!("patina.type_aware.croquis", {
         super::super::engine::analyze_descriptor_for_lint(
             descriptor,
@@ -101,7 +113,7 @@ pub(super) fn lint_with_descriptor<'a>(
     let script_content = script_block.map_or("", |block| block.content.as_ref());
     let script_offset = script_block.map_or(0, |block| block.loc.start as u32);
     if script_content.is_empty() && !include_boolean_queries {
-        return result;
+        return finish(result);
     }
 
     let needs_prop_probe = profile!("patina.type_aware.plan_prop_queries", {
@@ -122,7 +134,7 @@ pub(super) fn lint_with_descriptor<'a>(
         && !include_reactivity_queries
         && !include_boolean_queries
     {
-        return result;
+        return finish(result);
     }
 
     let template_offset = template_ast
@@ -256,7 +268,7 @@ pub(super) fn lint_with_descriptor<'a>(
             .as_ref()
             .is_none_or(strict_boolean::Plan::is_empty)
     {
-        return result;
+        return finish(result);
     }
 
     let mut should_warn_for_props = false;
@@ -329,5 +341,5 @@ pub(super) fn lint_with_descriptor<'a>(
         },
     );
 
-    result
+    finish(result)
 }

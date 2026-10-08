@@ -1,0 +1,266 @@
+{
+  "schema": "vize.css.type-aware-ownership.corpus",
+  "version": 1,
+  "authority": "Independently authored source and complete diagnostics. Byte spans identify original tokens; no captured product output. Explicit type rule selection enters the native driver, and a missing Corsa path rejects accidental queries.",
+  "cases": [
+    {
+      "id": "scripted-foreign-fragment",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<script setup lang=\"ts\">\ndefineProps(['value']);\n</script>\n<template><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:global(.foreign) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "type/require-typed-props",
+          "message": "Prop should have a type definition",
+          "help": "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
+          "start": 25,
+          "end": 47,
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "scripted-local-global",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<script setup lang=\"ts\">\ndefineProps(['value']);\n</script>\n<template><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:global(.local) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "type/require-typed-props",
+          "message": "Prop should have a type definition",
+          "help": "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
+          "start": 25,
+          "end": 47,
+          "severity": "warning"
+        },
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 154,
+          "end": 161,
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "scriptless-foreign-fragment",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<template><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:global(.foreign) { display: none; }\n</style>\n",
+      "expected": []
+    },
+    {
+      "id": "scriptless-local-global",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<template><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:global(.local) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 95,
+          "end": 102,
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "simple-script-foreign-no-query",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<script setup lang=\"ts\">\nconst ready = true;\n</script>\n<template><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:global(.foreign) { display: none; }\n</style>\n",
+      "expected": []
+    },
+    {
+      "id": "simple-script-local-no-query",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<script setup lang=\"ts\">\nconst ready = true;\n</script>\n<template><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:global(.local) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 150,
+          "end": 157,
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "empty-script-foreign",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<script setup lang=\"ts\"></script>\n<template><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:global(.foreign) { display: none; }\n</style>\n",
+      "expected": []
+    },
+    {
+      "id": "missing-template-unknown",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<style scoped>\n:global(section) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 34,
+          "end": 41,
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "external-template-unknown",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<template src=\"./External.html\"></template>\n<style scoped>\n:global(section) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 78,
+          "end": 85,
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "unsupported-template-unknown",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<template lang=\"md\">plain text</template>\n<style scoped>\n:global(section) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 76,
+          "end": 83,
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "fatal-template-unknown",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<template><div><aside></aside></template>\n<style scoped>\n:global(section) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "parser/template",
+          "message": "Element is missing end tag.",
+          "help": null,
+          "start": 10,
+          "end": 15,
+          "severity": "error"
+        },
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 76,
+          "end": 83,
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "script-type-css-order",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<script setup lang=\"ts\">\ngetCurrentInstance();\ndefineProps(['value']);\n</script>\n<template><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:global(.local) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "script/no-get-current-instance",
+          "message": "getCurrentInstance() is not supported in Vapor-oriented components",
+          "help": "Avoid instance-level access in Vapor mode because getCurrentInstance() returns null. Prefer explicit Composition API bindings, provide/inject, template refs, or lifecycle hooks instead.",
+          "start": 25,
+          "end": 43,
+          "severity": "error"
+        },
+        {
+          "rule": "type/require-typed-props",
+          "message": "Prop should have a type definition",
+          "help": "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
+          "start": 47,
+          "end": 69,
+          "severity": "warning"
+        },
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 176,
+          "end": 183,
+          "severity": "warning"
+        }
+      ],
+      "extraRules": [
+        "script/no-get-current-instance"
+      ]
+    },
+    {
+      "id": "multiple-style-blocks-once",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<template><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:global(.foreign) { display: none; }\n</style>\n<style scoped>\n:global(.local) { display: none; }\n</style>\n<style scoped>\n:global(.local) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 156,
+          "end": 163,
+          "severity": "warning"
+        },
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 215,
+          "end": 222,
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "deep-slotted-historical-exemptions",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<script setup lang=\"ts\">\ndefineProps(['value']);\n</script>\n<template><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:deep(.foreign) { display: none; }\n:slotted(.foreign) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "type/require-typed-props",
+          "message": "Prop should have a type definition",
+          "help": "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
+          "start": 25,
+          "end": 47,
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "explicit-html-root",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<template lang=\"html\"><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:global(.foreign) { display: none; }\n</style>\n<style scoped>\n:global(.local) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 168,
+          "end": 175,
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "id": "query-free-collection-return",
+      "filename": "TypeAwareOwnership.vue",
+      "source": "<script setup lang=\"ts\">\nconst ready = true;\n</script>\n<template><div class=\"local\"></div><aside></aside></template>\n<style scoped>\n:global(.foreign) { display: none; }\n</style>\n<style scoped>\n:global(.local) { display: none; }\n</style>\n",
+      "expected": [
+        {
+          "rule": "css/no-display-none",
+          "message": "Consider using v-show directive instead of display: none",
+          "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles",
+          "start": 211,
+          "end": 218,
+          "severity": "warning"
+        }
+      ],
+      "extraRules": [
+        "type/no-unsafe-template-binding"
+      ]
+    }
+  ]
+}
