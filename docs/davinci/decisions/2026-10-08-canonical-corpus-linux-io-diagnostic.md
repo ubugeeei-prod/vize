@@ -30,7 +30,9 @@ Root normalization is therefore an unproven hypothesis.
 ## Decision and executable evidence
 
 Run `node tools/support/compat/github/canonical-corpus-io-probe.mjs` after the
-ordinary canonical snapshot on the SSR-pug worker. The diagnostic authenticates
+unchanged original SSR/pug command, provided ordinary canonical snapshot
+custody succeeded. This avoids additional diagnostic warming before the
+original source reader. The diagnostic authenticates
 the current checkout/run/tree, unchanged source collector, whole fixed snapshot
 vector, all 148 gitlinks, Jellyfin pin and complete per-file snapshot digests.
 It runs the exact extracted original Rust collector and tests every fixed input
@@ -52,8 +54,8 @@ stderr, all per-input operation records, prefix observations, vectors, toolchain
 and generated harness identities are uploaded through the ordinary worker
 artifact. The frame digest binds every successful Rust byte comparison.
 
-A diagnostic failure is collected without preventing the original full SSR
-worker from running, then an explicit required step fails the job. Existing
+A diagnostic failure is collected after the original full SSR worker, including
+when that worker fails, then an explicit required step fails the job. Existing
 SSR, pug, observer and aggregate failures remain fatal. Nothing is excluded,
 deduplicated, cropped or retried through a fallback, and no production reader,
 collector, oracle, accepted error or resource ceiling changes.
@@ -89,8 +91,17 @@ The old ELOOP remains unexplained. Neither root normalization nor a cache
 repair is justified by these results. This first Check still failed the
 diagnostic tests' four floating-Promise warnings under the unchanged zero
 warning budget; explicit test registrations correct those warnings without
-altering execution. Fresh complete source and protected delivery checks
-remain required. Preserve the original failure alongside successful evidence.
+altering execution. Its diagnostic receipt also inherited the snapshot schema
+label through object spread; correcting that diagnostic metadata and covering
+serialized source custody leaves all IO records and counters intact. Fresh
+complete source and protected delivery checks remain required. Preserve the
+original failure alongside successful evidence.
+
+The first attempt ran its diagnostic before the ordinary SSR command. Later
+diagnostic revisions execute after that command, with an `always()` condition
+and authenticated snapshot prerequisite, so the original source reader runs
+without this additional pre-read. No historical success substitutes for fresh
+qualification of the final order and receipt metadata.
 
 ## Remaining work
 

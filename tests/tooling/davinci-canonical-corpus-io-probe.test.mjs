@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { after, test } from "node:test";
 import {
   compileProbe,
+  diagnosticReceipt,
   literalPath,
   literalPrefixes,
   probeVariant,
@@ -30,6 +31,29 @@ const rows = (directory) =>
     .trim()
     .split("\n")
     .map((line) => JSON.parse(line));
+
+void test("serialized IO evidence retains source custody without becoming a snapshot receipt", () => {
+  const identity = Object.freeze({
+    schema: "vize.canonical-corpus-identity",
+    version: 1,
+    repository: "ubugeeei-prod/vize",
+    sha: "a".repeat(40),
+    tree: "b".repeat(40),
+    runId: 123,
+    attempt: 2,
+  });
+  const summaries = [
+    { name: "full-short", success: true },
+    { name: "full-manifest", success: false },
+  ];
+  const receipt = JSON.parse(JSON.stringify(diagnosticReceipt(identity, summaries)));
+  assert.equal(receipt.schema, "vize.canonical-corpus-io-diagnostic");
+  for (const key of ["repository", "sha", "tree", "runId", "attempt"])
+    assert.equal(receipt[key], identity[key]);
+  assert.deepEqual(receipt.summaries, summaries);
+  assert.equal(receipt.success, false, "A failing original case cannot be reported as successful");
+  assert.equal(identity.schema, "vize.canonical-corpus-identity");
+});
 
 void test("literal manifest spelling survives every source operation and prefix observation", () => {
   const workspace = join(temporary, "cycle");
@@ -135,12 +159,17 @@ void test("diagnostics cannot suppress the ordinary SSR worker or become an acce
   const ssr = workflow.indexOf("- name: Run L4 SSR and pug L1 differential corpora");
   const fatal = workflow.indexOf("- name: Require complete source IO diagnostic success");
   const upload = workflow.indexOf("- name: Upload required observer evidence");
-  assert(diagnostic > 0 && diagnostic < ssr && ssr < fatal && fatal < upload);
-  assert.match(workflow.slice(diagnostic, ssr), /continue-on-error: true/);
+  assert(ssr > 0 && ssr < diagnostic && diagnostic < fatal && fatal < upload);
+  assert.match(workflow.slice(diagnostic, fatal), /continue-on-error: true/);
+  assert.match(
+    workflow.slice(diagnostic, fatal),
+    /always\(\).*steps\.corpus_snapshot\.outcome == 'success'/,
+    "Collect diagnostic evidence after an original SSR failure without adding warmup before it",
+  );
   assert.match(workflow.slice(fatal, upload), /always\(\).*steps\.corpus_io\.outcome != 'success'/);
   assert.match(workflow.slice(fatal, upload), /exit 1/);
   assert.match(
-    workflow.slice(ssr, fatal),
+    workflow.slice(ssr, diagnostic),
     /cargo test -p vize_atelier_ssr[\s\S]*&& VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests\/_fixtures\/_git cargo test -p vize_l1_to_l2/,
   );
 });

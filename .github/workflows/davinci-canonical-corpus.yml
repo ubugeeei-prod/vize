@@ -58,12 +58,8 @@ jobs:
           rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs hydrate 2>&1 | tee real-project-davinci-dom-corpus/initial-hydration.log
           node tools/support/compat/github/canonical-corpus-observer.mjs rehydrate
       - name: Capture canonical corpus identity
+        id: corpus_snapshot
         run: node tools/support/compat/github/canonical-corpus-observer.mjs snapshot
-      - name: Diagnose complete original corpus source IO
-        id: corpus_io
-        if: ${{ matrix.observer == 'ssr-pug' }}
-        continue-on-error: true
-        run: node tools/support/compat/github/canonical-corpus-io-probe.mjs
       - name: Run L2 DOM differential corpus
         if: ${{ matrix.observer == 'dom' }}
         id: davinci_dom_corpus
@@ -75,6 +71,11 @@ jobs:
         run: |
           set -o pipefail
           (VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture && VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture) 2>&1 | tee real-project-davinci-dom-corpus/ssr-pug.log
+      - name: Diagnose complete original corpus source IO
+        id: corpus_io
+        if: ${{ always() && matrix.observer == 'ssr-pug' && steps.corpus_snapshot.outcome == 'success' }}
+        continue-on-error: true
+        run: node tools/support/compat/github/canonical-corpus-io-probe.mjs
       - name: Measure Davinci production reach on the hydrated corpus
         id: production_reach
         if: ${{ matrix.observer == 'reach' }}

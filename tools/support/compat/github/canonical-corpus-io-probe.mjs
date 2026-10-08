@@ -284,6 +284,19 @@ function pinnedMinimal(cwd, directory, collector) {
   };
 }
 
+export function diagnosticReceipt(identity, summaries) {
+  return {
+    ...identity,
+    schema: "vize.canonical-corpus-io-diagnostic",
+    version: 1,
+    files: 44367,
+    jellyfinFiles: 5576,
+    gitlinks: 148,
+    summaries,
+    success: summaries.every((summary) => summary.success),
+  };
+}
+
 export function runCanonicalProbe(cwd, output, env = process.env) {
   assert.equal(process.platform, "linux", "Complete hosted qualification requires Linux");
   const artifact = join(cwd, "real-project-davinci-dom-corpus");
@@ -363,16 +376,7 @@ export function runCanonicalProbe(cwd, output, env = process.env) {
       ...probeVariant({ ...probe, binary: tools.binary, directory: join(output, probe.name) }),
     });
   }
-  const receipt = {
-    schema: "vize.canonical-corpus-io-diagnostic",
-    version: 1,
-    ...actual,
-    files: paths.length,
-    jellyfinFiles: 5576,
-    gitlinks: 148,
-    summaries,
-    success: summaries.every((summary) => summary.success),
-  };
+  const receipt = diagnosticReceipt(actual, summaries);
   save(join(output, "receipt.json"), receipt);
   console.log(JSON.stringify(receipt));
   return receipt;
