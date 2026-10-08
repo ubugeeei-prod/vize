@@ -10,6 +10,7 @@ await test("nested cache posts save the validated target inputs after step outpu
     cacheFixture((fixture) => {
       const context = {
         ...fixture.context(),
+        role: "docs-example",
         targetPath,
         secondaryRole: "benchmark-base",
         secondarySuffix: "Linux-X64",
@@ -45,10 +46,14 @@ await test("the old output-based path loses the seed while its warning lets clea
       step.with.path = "${{ steps.cache-policy.outputs.target-path }}";
   }
   cacheFixture((fixture) => {
-    const { status, trace } = executeCacheAction(fixture, fixture.context(), {
-      nestedPost: true,
-      steps: action.runs.steps,
-    });
+    const { status, trace } = executeCacheAction(
+      fixture,
+      { ...fixture.context(), role: "docs-example" },
+      {
+        nestedPost: true,
+        steps: action.runs.steps,
+      },
+    );
     assert.equal(status, 0);
     const post = trace.find((row) => row.kind === "cache-post" && row.name === "target");
     assert.equal(post.warning, "Input required and not supplied: path");
@@ -76,6 +81,7 @@ await test("a versioned nested seed restores both targets in a PR and a failed-m
   for (const targetPath of ["target", "head/target", "tests/fuzz/target"])
     cacheFixture((fixture) => {
       const paths = {
+        role: "docs-example",
         targetPath,
         secondaryPath: "base/target",
         secondaryRole: "benchmark-base",
@@ -154,6 +160,7 @@ await test("an absolute-path reader cannot use a relative-path seed despite an i
     }
   cacheFixture((fixture) => {
     const paths = {
+      role: "docs-example",
       secondaryPath: "secondary",
       secondaryRole: "second",
       secondarySuffix: "Linux-X64",
@@ -193,7 +200,11 @@ await test("a stored seed cannot bypass nested path validation for either target
     { secondaryPath: "../outside", secondaryRole: "second", secondarySuffix: "Linux-X64" },
   ])
     cacheFixture((fixture) => {
-      executeCacheAction(fixture, fixture.context(), { storedCache: true, nestedPost: true });
+      executeCacheAction(
+        fixture,
+        { ...fixture.context(), role: "docs-example" },
+        { storedCache: true, nestedPost: true },
+      );
       const before = readFileSync(resolve(fixture.cwd, "stored-cache.json"), "utf8");
       const result = executeCacheAction(
         fixture,

@@ -105,7 +105,7 @@ await test("a prior compatible target can still restore, then current input is r
 await test("primary and secondary role eligibility remain independent", () => {
   for (const [primary, secondary] of [
     ["coverage-source", "docs-example"],
-    ["test-scripts", "clippy-test"],
+    ["docs-example", "clippy-test"],
   ]) {
     cacheFixture((fixture) => {
       const result = executeCacheAction(fixture, {
@@ -132,7 +132,7 @@ await test("primary and secondary role eligibility remain independent", () => {
   }
 });
 
-await test("ordinary roles still save while every untrusted role remains restore-only", () => {
+await test("eligible ordinary roles still save while every untrusted role remains restore-only", () => {
   for (const role of ["test-scripts", "nextest-ci", "coverage", "new-role", ...largeRoles]) {
     cacheFixture((fixture) => {
       const context = { ...fixture.context(), role };
@@ -140,7 +140,7 @@ await test("ordinary roles still save while every untrusted role remains restore
       assert.equal(trusted.status, 0);
       assert.equal(
         trusted.trace.filter((row) => row.kind === "cache-post" && row.name === "target").length,
-        largeRoles.includes(role) ? 0 : 1,
+        largeRoles.includes(role) || role === "test-scripts" ? 0 : 1,
       );
       const untrusted = executeCacheAction(fixture, {
         ...fixture.context("merge_group", "refs/heads/gh-readonly-queue/main/pr-1-a"),
@@ -159,6 +159,104 @@ await test("ordinary roles still save while every untrusted role remains restore
       assert.equal(untrusted.trace.filter((row) => row.kind === "workload").length, 1);
     });
   }
+});
+
+await test("mounted tooling omits its archive post while the original conditions reproduce it", () => {
+  const original = structuredClone(action.runs.steps);
+  for (const step of original) {
+    if (step.name === "Cache Rust target or seed it from the trusted sticky clone")
+      step.if = "${{ steps.cache-policy.outputs.target-save == 'true' }}";
+    if (step.name === "Restore a Rust target without registering a save")
+      step.if = "${{ steps.cache-policy.outputs.target-save == 'false' }}";
+  }
+  for (const event of ["push", "schedule", "workflow_dispatch"])
+    for (const hit of [false, "partial", true])
+      for (const role of ["test-scripts", "Test-Scripts"])
+        cacheFixture((fixture) => {
+          const context = {
+            ...fixture.context(event),
+            role,
+            secondaryRole: "docs-example",
+            secondarySuffix: "Linux-X64",
+            secondaryPath: "secondary",
+          };
+          const verify = (result) => {
+            assert.equal(result.status, 0);
+            const target = result.trace.filter(
+              (row) => row.kind === "cache" && row.name === "target",
+            );
+            assert.equal(target.length, 1);
+            assert.equal(target[0].restoreOnly, true);
+            assert.equal(target[0].lookup, true);
+            const posts = result.trace.filter((row) => row.kind === "cache-post");
+            assert.deepEqual(
+              posts.map((row) => row.name),
+              ["secondary", "git", "registry"],
+            );
+            const workload = result.trace.filter((row) => row.kind === "workload");
+            assert.equal(workload.length, 1);
+            assert.equal(
+              readFileSync(join(fixture.cwd, "target/cache-artifact.txt"), "utf8"),
+              `compiled:${workload[0].artifact}`,
+            );
+            const unmount = result.trace.findIndex((row) => row.kind === "sticky-post");
+            assert.equal(result.trace.filter((row) => row.kind === "sticky-post").length, 4);
+            assert.ok(result.trace.indexOf(workload[0]) < unmount);
+            assert.ok(posts.every((row) => result.trace.indexOf(row) < unmount));
+          };
+          const old = executeCacheAction(fixture, context, {
+            hit,
+            nestedPost: true,
+            steps: original,
+          });
+          assert.equal(old.status, 0);
+          assert.equal(
+            old.trace.filter((row) => row.kind === "cache-post" && row.name === "target").length,
+            1,
+          );
+          assert.throws(() => verify(old), assert.AssertionError);
+          verify(executeCacheAction(fixture, context, { hit, nestedPost: true }));
+        });
+});
+
+await test("tooling mount failures and hosted fallbacks retain saves and a secondary tooling role is independent", () => {
+  for (const event of ["push", "schedule", "workflow_dispatch"])
+    for (const mode of ["failed-mount", "github-hosted", "ordinary-primary"])
+      for (const hit of [false, "partial", true])
+        cacheFixture((fixture) => {
+          const context = {
+            ...fixture.context(event),
+            role: mode === "ordinary-primary" ? "docs-example" : "test-scripts",
+            runnerEnvironment: mode === "github-hosted" ? "github-hosted" : "self-hosted",
+            secondaryRole: "test-scripts",
+            secondarySuffix: "Linux-X64",
+            secondaryPath: "secondary",
+          };
+          const result = executeCacheAction(fixture, context, {
+            hit,
+            nestedPost: true,
+            mountFailures: mode === "failed-mount" ? ["target"] : [],
+          });
+          assert.equal(result.status, 0);
+          for (const name of ["target", "secondary"]) {
+            const cache = result.trace.find((row) => row.kind === "cache" && row.name === name);
+            assert.equal(cache.restoreOnly, false);
+            assert.equal(
+              cache.lookup,
+              mode !== "github-hosted" && (name === "secondary" || mode === "ordinary-primary"),
+            );
+            const posts = result.trace.filter(
+              (row) => row.kind === "cache-post" && row.name === name,
+            );
+            assert.equal(posts.length, 1);
+            const workload = result.trace.find((row) => row.kind === "workload");
+            assert.ok(result.trace.indexOf(workload) < result.trace.indexOf(posts[0]));
+            if (name === "target" && hit !== true)
+              assert.equal(posts[0].saved, `compiled:${workload.artifact}`);
+          }
+          assert.equal(result.trace.filter((row) => row.kind === "cache").length, 4);
+          assert.equal(result.trace.filter((row) => row.kind === "cache-post").length, 4);
+        });
 });
 
 await test("save omission never bypasses malformed path or event validation", () => {
