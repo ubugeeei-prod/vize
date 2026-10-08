@@ -256,13 +256,17 @@ assert.equal(
   "Representative pages must render distinct image bytes; a reused homepage image is invalid",
 );
 for (const route of ["/getting-started/", "/ja/getting-started/"]) {
-  assert.equal(checked.find((entry) => entry.route === route).descriptionOrigin, "authored", route);
+  const entry = checked.find((entry) => entry.route === route);
+  assert(entry, `Missing authored guide ${route}`);
+  assert.equal(entry.descriptionOrigin, "authored", route);
 }
 for (const route of [
   "/rules/reference/vue-component-name-in-template-casing/",
   "/ja/rules/reference/vue-component-name-in-template-casing/",
 ]) {
-  assert.equal(checked.find((entry) => entry.route === route).descriptionOrigin, "content", route);
+  const entry = checked.find((entry) => entry.route === route);
+  assert(entry, `Missing content rule ${route}`);
+  assert.equal(entry.descriptionOrigin, "content", route);
 }
 if (values.site) {
   const after: unknown = JSON.parse(await readAsset("_og/manifest.json", true));
