@@ -4,10 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { aliasHostPaths } from "./warm-type-backed-alias-host.ts";
-import { htmlHoverPaths } from "./warm-type-backed-html-hover-host.ts";
 import { finiteCut } from "./warm-type-backed-cut.ts";
 import { gitBodyDigest, qualifyPathHostMove } from "./warm-type-backed-path-host.ts";
 import { qualifyTimingHostMove } from "./warm-type-backed-timing-host.ts";
+import { htmlHoverPaths } from "./warm-type-backed-html-hover-host.ts";
 
 import {
   driverRoot,

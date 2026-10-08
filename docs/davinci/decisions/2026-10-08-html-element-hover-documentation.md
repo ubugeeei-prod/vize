@@ -72,3 +72,15 @@ same performance gate, not an additional collector or campaign.
 The feature is unfinished until its exact-head Actions pass and the protected
 queue delivers it to main. Source validation does not claim publication or
 installed-host acceptance.
+
+## Queue composition
+
+The [paired implementation note](https://github.com/ubugeeei-prod/vize/issues/3957#issuecomment-6061409236)
+records a preflight against #8310's actual queued candidate
+`9d974d27b6823772d36a6855557cbbc27b3c1cd1`: its import and the HTML helper import
+were inserted at the same location. Moving only `htmlHoverPaths` after
+`qualifyTimingHostMove` keeps both independently reviewable changes composable.
+The seven literals, workflow body, original400/134 inputs and complete outputs,
+recipes, and numeric caps stay intact. No queued source is copied or used as a
+branch base. HTML producer, test, and fixture bytes remain exact to the qualified
+`e21cf419fa` head; fresh full Actions must qualify the new head before admission.
