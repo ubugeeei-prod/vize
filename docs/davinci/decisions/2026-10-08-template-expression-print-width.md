@@ -89,3 +89,14 @@ single parse, real ancestors, all outputs, original inputs and every ceiling.
 Independent review finds no semantic or depth blocker. Performance success
 requires a fresh three-run hosted measurement of all 104 original ceilings,
 fresh source controls and a new protected candidate before actual delivery.
+
+The deferred-budget successor `844834c2af59d4e6f67e284ccca23e9e16880c79`
+measures 245172 against 244347 in three identical hosted runs: a reduction of
+97 still leaves 825 instructions over the original complex-template ceiling.
+All 100 level ceilings continue to hold. Avoid repeated Unicode trim scans
+only when both expression edges are graphic ASCII bytes (33 through 126),
+where the original trim is exactly a no-op. Empty, whitespace, every control
+including DEL, and non-ASCII edges retain the original trim predicate. Inner
+raw literal bytes, sequence ownership and the existing program-output trim
+remain exact. Independent review confirms these slice and classification laws;
+performance and successor runtime qualification still require fresh Actions.

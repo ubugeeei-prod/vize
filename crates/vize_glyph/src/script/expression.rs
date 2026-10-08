@@ -10,6 +10,20 @@ use oxc_formatter_core::LineWidth;
 use oxc_span::SourceType;
 use vize_l0::{String, ToCompactString};
 
+#[inline]
+fn trim_expression(expression: &str) -> &str {
+    let bytes = expression.as_bytes();
+    // Graphic ASCII edges make Unicode trimming a no-op. Whitespace,
+    // controls and non-ASCII edges retain the original predicate.
+    if bytes.first().is_some_and(|byte| byte.is_ascii_graphic())
+        && bytes.last().is_some_and(|byte| byte.is_ascii_graphic())
+    {
+        expression
+    } else {
+        expression.trim()
+    }
+}
+
 thread_local! {
     /// Per-thread scratch reused across template-expression formats. A single
     /// template can call `format_js_expression` thousands of times (once per
@@ -64,7 +78,7 @@ fn format_expression_with_layout(
     quote_style: Option<QuoteStyle>,
     attribute_depth: Option<usize>,
 ) -> Option<FormattedExpression> {
-    let trimmed = expr.trim();
+    let trimmed = trim_expression(expr);
     if trimmed.is_empty() {
         return Some(FormattedExpression {
             code: String::default(),
@@ -118,7 +132,7 @@ fn format_expression_with_layout(
             .print()
             .ok()?
             .into_code();
-            let code = code.trim();
+            let code = trim_expression(&code);
             return Some(FormattedExpression {
                 code: code.to_compact_string(),
                 retained_bare_sequence: false,
@@ -142,7 +156,7 @@ fn format_expression_with_layout(
         let inner = expression_wrapper::unwrap_argument(inner, &parsed.program, trimmed)?;
 
         Some(FormattedExpression {
-            code: inner.text.trim().to_compact_string(),
+            code: trim_expression(inner.text).to_compact_string(),
             retained_bare_sequence: inner.retained_bare_sequence,
             owns_attribute_lines: false,
         })
