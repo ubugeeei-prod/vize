@@ -114,6 +114,7 @@ typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/co
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/default_exclude_tests.rs	17	l0	L0	stage	vize_l0	preferred	2
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/glob.rs	94	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/hidden_include_tests.rs	10	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/jsonc/bom_tests.rs	4	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/loader.rs	10	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/nuxt_manifest_tests.rs	10	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/ownership_shared_tests.rs	5	l0	L0	stage	vize_l0	preferred	1
