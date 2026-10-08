@@ -228,3 +228,27 @@ build recipes, native custody and three-process / 128MiB ceilings. Fresh full
 before/after execution and all normal source/protected gates remain required.
 
 Paired decision: [#8011 comment](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6054220460).
+
+## Current-main workflow and source pairing
+
+Predecessor `bef49f82e6d9f240bb5e23236d5eaeb5bcf6c753` completed Check
+`37740479087`, native phase `37740478351` and original400 source qualification
+`37740478289`. Its verified artifact `11534032391` links Croquis with
+`fresh: false` on both real sources; all four cold, one background and twenty
+warm whole packets match. This grants producer/source qualification only. Raw
+peaks still observe four processes on both sides, so #3952 resource-budget
+acceptance remains separate and pending.
+
+The newer n8n workflow separately failed `37740478342`, job `113189788402`,
+before witnesses: the older head lacked its required
+`n8n-cli-config-contract.test.mjs`. Preserve the authentic complete log under
+`supplemental/historical-bef-n8n-pair/`. Actual main
+`8106d61dfd243638a4d9940be0089276bd195940` includes delivered #8270 and
+that source. Archive bef and refresh the clean unqueued child onto this genuine
+main. All 107 owned non-document blobs stay byte-exact; all 350 incoming canonical
+rows and the complete owned diagnostic clause are retained. All three unchanged
+authoritative inventories pass. Keep native Stack #8271 and rerun exact-head
+Actions; predecessor success grants no new-head, protected or public-release
+acceptance. No queue admission or individual auto-merge occurs in the refresh.
+
+Paired decision: [#8011 comment](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6054824428).
