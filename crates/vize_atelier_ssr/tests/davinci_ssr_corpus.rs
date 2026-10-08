@@ -24,7 +24,6 @@
 
 use std::collections::BTreeMap;
 
-use davinci_test_support::corpus::read_corpus_source;
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_atelier_ssr::differential::{SsrLaneComparison, compare_ssr_lanes};
 use vize_atelier_ssr::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
@@ -34,6 +33,8 @@ mod group_template;
 
 #[path = "davinci_ssr_corpus/production.rs"]
 mod production;
+#[path = "davinci_ssr_corpus/source_io_trace.rs"]
+mod source_io_trace;
 
 const BATTERY: &[(&str, &str)] = &[
     (
@@ -304,10 +305,11 @@ fn ssr_lanes_agree_on_sfc_templates_body() {
         eprintln!("VIZE_DAVINCI_DIFFERENTIAL_CORPUS unset: committed battery only");
         return;
     };
+    source_io_trace::archive_sweep(&sweep);
     let mut corpus = Report::default();
     let mut reach = production::ProductionReport::default();
-    for file in &sweep.files {
-        let source = read_corpus_source(file);
+    for (ordinal, file) in sweep.files.iter().enumerate() {
+        let source = source_io_trace::read(ordinal, file);
         let name = file.to_string_lossy();
         compare_sfc(name.as_ref(), &source, &mut corpus);
         production::compare(name.as_ref(), &source, &mut reach);

@@ -65,12 +65,17 @@ jobs:
         id: davinci_dom_corpus
         continue-on-error: true
         run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run
+      - name: Setup original reader syscall observation
+        if: ${{ matrix.observer == 'ssr-pug' }}
+        run: |
+          if ! command -v strace >/dev/null; then sudo apt-get update && sudo apt-get install --yes strace; fi
+          strace --version
       - name: Run L4 SSR and pug L1 differential corpora
         id: ssr_pug
         if: ${{ matrix.observer == 'ssr-pug' }}
         run: |
           set -o pipefail
-          (VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture && VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture) 2>&1 | tee real-project-davinci-dom-corpus/ssr-pug.log
+          (VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git rust-script tools/commands/fixtures/canonical-corpus-ssr-syscalls.rs -- cargo test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture && VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture) 2>&1 | tee real-project-davinci-dom-corpus/ssr-pug.log
       - name: Diagnose complete original corpus source IO
         id: corpus_io
         if: ${{ always() && matrix.observer == 'ssr-pug' && steps.corpus_snapshot.outcome == 'success' }}
