@@ -103,6 +103,13 @@ positive can qualify a genuine HTML result. Existing differential suites and
 all instruction ceilings remain enforced. Local source or registry binaries
 cannot substitute for hosted source identity.
 
+Initial source `b74f35bd` failed Rust test compilation before any producer
+observation: `sha2` 0.11's digest array does not implement `LowerHex`. Render each
+byte with its scalar hexadecimal formatter and remove the unused test import.
+Preserve all 45 authored cases, source/config/ignore bytes, full expected sets,
+counts and ceilings. The failed source grants no runtime acceptance; the
+successor requires fresh compiled Actions and all 90 actual observations.
+
 Source qualification, protected queue validation and actual merge are separate
 steps. Until those are terminal, this is prepared internal work. Even after
 merge, the wrapper and installed acceptance stay unqualified.

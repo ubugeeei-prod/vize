@@ -5,7 +5,7 @@
 )]
 use std::collections::BTreeMap;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
@@ -193,11 +193,13 @@ fn original_html_profiles_match_independently_authored_corpus() {
     let corpus: Corpus = serde_json::from_str(LEDGER).unwrap();
     for (filename, expected) in &corpus.source_sha256 {
         let actual = Sha256::digest(fs::read(Path::new(CORPUS).join(filename)).unwrap());
-        assert_eq!(
-            vize_carton::cstr!("{actual:x}").as_str(),
-            expected,
-            "frozen literal source identity"
-        );
+        let hex = actual
+            .iter()
+            .fold(vize_carton::String::default(), |mut hex, byte| {
+                hex.push_str(&vize_carton::cstr!("{byte:02x}"));
+                hex
+            });
+        assert_eq!(hex.as_str(), expected, "frozen literal source identity");
     }
     assert_eq!(
         corpus.profiles.get("Oxlint178").unwrap(),
