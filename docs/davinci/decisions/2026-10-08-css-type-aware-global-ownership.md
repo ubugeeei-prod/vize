@@ -72,3 +72,15 @@ disable behavior while all original CSS corpus bytes remain unchanged. This is
 source preparation; fresh exact-head whole-history/API/CLI Actions, protected
 queue acceptance, actual merge and supported installed-release replay remain
 root-owned requirements before closure or publication credit.
+
+## First source qualification correction
+
+Exact source `e5652013` compiles the affected Rust tests, but
+[Check 37730888883](https://github.com/ubugeeei-prod/vize/actions/runs/37730888883)
+rejects the stale Croquis census in tooling shards 1 and 2. The shared
+`SfcDescriptor` helper signature adds one genuine occurrence: only the Patina
+census shard changes from 16/25 to 17/26. Regenerate with the actual
+`croquis-consumers.mjs` producer, retaining all other 19 files, product sources,
+fixture bytes, complete expectations and gates. The generator check passes
+all 20 artifacts. Preserve the failed source record; this inventory-only
+correction still requires fresh successor Actions and protected qualification.
