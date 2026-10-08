@@ -164,3 +164,8 @@ Use checked `get` on the same derived inclusive edge-trim range, preserving
 all token interpretation, complete sources/expectations and 182/858 obligations.
 Retain the real failed log; require fresh successor source/native/protected
 qualification without a lint waiver or failed-head runtime transfer.
+
+The genuine consumer generator adds one test/dev L0 import row for the new
+compound API corpus. This owning shard was generated locally but omitted from
+the initial staging set; include the exact row in the successor. All other
+inventory, source/oracle and 182/858 obligations remain unchanged.
