@@ -29,7 +29,7 @@ pub(in crate::ide::rename) enum CanonicalRename<'a> {
     Unavailable,
     Refused,
     Owned {
-        edit: WorkspaceEdit,
+        edit: Box<WorkspaceEdit>,
         scope: corsa_support::RenameScope<'a>,
     },
 }
@@ -52,7 +52,10 @@ pub(in crate::ide::rename) async fn rename<'a>(
     match answer {
         Answer::Unavailable => CanonicalRename::Unavailable,
         Answer::Available(None) => CanonicalRename::Refused,
-        Answer::Available(Some(edit)) => CanonicalRename::Owned { edit, scope },
+        Answer::Available(Some(edit)) => CanonicalRename::Owned {
+            edit: Box::new(edit),
+            scope,
+        },
     }
 }
 
