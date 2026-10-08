@@ -45,6 +45,12 @@ in use. It also refuses to write anything rather than fall back to a file your l
 
 ## Basic Usage With `vp lint`
 
+> [!WARNING]
+> `vp lint` uses the direct Oxlint JS plugin lifecycle. With Oxlint 1.78 and 1.86, a `.vue` file
+> without `<script>` or `<script setup>` never invokes Vize's per-file rules, even when they are
+> enabled in the `lint` block. `vp check` has the same limitation when it runs that lint path.
+> For template-only SFCs, use the native Vize task described below or `oxlint-vize`.
+
 `createVizeLintConfig()` returns a complete Vite+ `lint` block, so the `jsPlugins` entry that loads
 the bridge cannot go missing. The default preset is `"happy-path"`/`"general-recommended"`: use it
 when you want a safe Vue baseline without taking a position on stronger style or framework choices.
@@ -109,6 +115,21 @@ export default defineConfig({
 The exported fragments include `flatConfigs.recommended`, `flatConfigs.happyPath`,
 `flatConfigs.essential`, `flatConfigs.ecosystem`, `flatConfigs.nuxt`, `flatConfigs.opinionated`,
 and `flatConfigs.all`, plus the same `*WithTypeAware` variants as `configs`.
+
+For native Vue linting, including template-only SFCs, install `vize` and `@vizejs/vite-plugin`
+and use its Vite+ configuration:
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: { vize: { preset: "happy-path" } },
+});
+```
+
+Run the generated task with `vp run lint`. If a package script already uses `lint`, the generated
+task is `vp run vize:lint`; explicit task names take precedence. See [Rules](../rules/index.md)
+for native rule options. Calling `vp lint` still selects the direct Oxlint path.
 
 ## Basic Usage With `oxlint` And `oxlint-vize`
 
@@ -234,7 +255,8 @@ continue to use Oxlint's reporting policy.
 
 ## Current Limitations
 
-- Raw `oxlint` can still miss some `.vue` files without `<script>` or `<script setup>`. Use
+- Direct `oxlint`, `vp lint`, and the corresponding `vp check` lint path omit Vize callbacks for
+  scriptless `.vue` files in Oxlint 1.78 and 1.86. Use the native `vp run lint` task or
   `oxlint-vize` if your project includes template-only SFCs.
 - Oxlint JS plugins still anchor ranges to the extracted script program, so template and style
   diagnostics do not yet preserve original SFC ranges in every formatter.
@@ -243,6 +265,11 @@ continue to use Oxlint's reporting policy.
   positions.
 - Type-aware rule exports are experimental. Use a `*WithTypeAware` config and set
   `settings.vize.typeAware: true` when you want the shared full-file pass to run those rules eagerly.
+
+The source-built n8n fixture replay checks all 1,369 licensed SFCs, 51 configured Vize rules/options,
+and six per-file rule overrides through the native bridge and `oxlint-vize`. This includes 19 scriptless
+inputs; it does not establish direct SDK callback coverage for them. The two n8n-local plugins
+and its complete workspace configuration remain outside that qualification.
 
 ## Local Development
 
