@@ -191,7 +191,10 @@ fn classify(content: &str, offset: usize) -> Option<CssContext<'_>> {
             span: (token_start, token_end),
         });
     }
-    if declarations && colon.is_none() && trivia_end(bytes, start, token_start) == Some(token_start)
+    let property_head = bytes.get(start..token_start)?;
+    if declarations
+        && colon.is_none()
+        && trivia_end(property_head, 0, property_head.len()) == Some(property_head.len())
     {
         let limit = token_end.saturating_add(MAX_LOOKAHEAD).min(bytes.len());
         let next = trivia_end(bytes, token_end, limit)?;

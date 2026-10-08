@@ -100,7 +100,14 @@ fn v_bind_is_documented_in_a_plain_style_block_and_unknown_css_has_no_hover() {
 fn other_style_dialects_keep_original_vue_features_without_standard_css_candidates() {
     for language in ["sass", "stylus", "unknown"] {
         for feature in ["v-bind", ":deep", ":slotted", ":global"] {
-            let source = format!("<style lang=\"{language}\">{feature}|(theme)</style>");
+            let source = [
+                "<style lang=\"",
+                language,
+                "\">",
+                feature,
+                "|(theme)</style>",
+            ]
+            .concat();
             let document = Document::marked(&source, false);
             let items = document.complete();
             assert_eq!(items.len(), 4);
@@ -112,7 +119,7 @@ fn other_style_dialects_keep_original_vue_features_without_standard_css_candidat
             );
         }
         let document = Document::marked(
-            &format!("<style lang=\"{language}\">.a {{ co|lor: red; }}</style>"),
+            &["<style lang=\"", language, "\">.a { co|lor: red; }</style>"].concat(),
             false,
         );
         assert_eq!(document.complete().len(), 4);

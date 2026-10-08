@@ -52,6 +52,9 @@ handwritten generators and manifests, with no new formatting exclusion.
 Use the already resident style-block boundary and borrowed cursor spans.
 One allocation-free lexical prefix scan is bounded to 64 KiB; a truncated
 or unsafe context conservatively falls back to the original Vue entries.
+An intentionally complete declaration-head slice ends at the cursor, so
+adjacent whitespace still permits an empty property prefix. The separate
+right-hand lookahead retains its conservative 1 KiB truncation guard.
 Do not add a full stylesheet parser, document analysis stage, request-time
 JSON parsing, network requests or a native type-checker query.
 
@@ -89,6 +92,8 @@ Eager clients request completion and hover; only clients advertising resolve
 support request and measure completion resolve.
 Keep the original eight scenarios and also measure an empty prefix with all
 candidates and 48 KiB unterminated comments/strings with bounded fallback.
+Malformed observation cursors remain inside the style body; the original
+strict style-end boundary is preserved.
 Raw latency samples, response sizes and exact binary hashes distinguish the previous four-item behavior
 from the new product responses. The existing path has no instruction/server
 allocation instrumentation; those counters stay unavailable, not inferred.
@@ -115,10 +120,13 @@ frozen unrelated TypeScript migration are outside this change.
 ## Stack delivery
 
 The CSS child follows HTML documentation PR [#8316](https://github.com/ubugeeei-prod/vize/pull/8316),
-rebased onto its actual `49227acb1f86b89636010a45e2dba90201fd3b36` source.
-That genuine parent descends from `04ec4c43d9c84c46892fc33f013917d2561bfe78`;
-the earlier CSS measurement base `2f9fe178ab7ce2d66a17c9e7fe84570cc86cfbb5`
-is not the child's current ancestry. Root owns native Stack registration and
+rebased onto its actual `e21cf419fab928c8538e0b5f2ac1acd3d9e06e2c` source
+after its earlier queue conflict was removed. That genuine parent descends
+from actual signed main `81aa0c449cdeb2daf2959d3c9a272ff880bf4765`.
+The earlier `85f0240debf14ea810782045840a3f26a84ec59d` CSS source is retained
+with its real test-macro, empty-prefix and malformed-observation failures;
+it supplies no qualification credit to this refresh.
+Root owns native Stack registration and
 protected admission. After a parent prefix actually merges, rebase and retarget
 any remaining child onto fresh main, then rerun its source Actions. Earlier
 parent or CSS measurements do not qualify a new combined source.

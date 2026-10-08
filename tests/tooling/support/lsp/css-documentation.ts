@@ -91,13 +91,13 @@ function scenarios(): Scenario[] {
     scenario("large-style", `${large}\n.demo { color: red; col }`, "col", "color"),
     scenario("empty-prefix", ".demo { color: red;  }", "; ", "color"),
     {
-      ...scenario("unterminated-comment", `/*${"x".repeat(48_000)} col`, "col", "v-bind", "col"),
+      ...scenario("unterminated-comment", `/*${"x".repeat(48_000)} col `, "col", "v-bind", "col"),
       fallback: true,
     },
     {
       ...scenario(
         "unterminated-string",
-        `.demo { content: "${"x".repeat(48_000)} col`,
+        `.demo { content: "${"x".repeat(48_000)} col `,
         "col",
         "v-bind",
         "col",
@@ -226,7 +226,7 @@ export async function observeCss(
       );
       const item = items.find((item) => item.label === row.label) ?? items[0]!;
       if (assertProduct) {
-        assert.equal(item.label, row.label);
+        assert.equal(item.label, row.label, row.name);
         if (lazy) {
           assert.equal(item.documentation, undefined);
           assert.ok(record(item.data).vizeCss);

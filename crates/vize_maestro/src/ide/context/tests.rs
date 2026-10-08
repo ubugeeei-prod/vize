@@ -9,7 +9,7 @@ const CONTEXT_SFC: &str = "<script setup>\r\nconst count = 1\r\n</script>\r\n<te
 fn completion_request_consumes_its_snapshot_and_keeps_every_cursor_boundary() {
     let state = ServerState::new();
     for path in ["App.vue", "Example.art.vue", "plain.html"] {
-        let uri = Url::parse(&format!("file:///workspace/{path}")).unwrap();
+        let uri = Url::parse(&["file:///workspace/", path].concat()).unwrap();
         for source in [
             CONTEXT_SFC,
             "<script></script><script setup>雪😀</script>",

@@ -334,3 +334,6 @@ fn urls_keep_literal_slashes_and_resume_the_next_declaration() {
         assert_eq!(at(&source, offset), CssContext::Unknown, "{source}");
     }
 }
+
+#[path = "empty_prefix_tests.rs"]
+mod empty_prefix_tests;
