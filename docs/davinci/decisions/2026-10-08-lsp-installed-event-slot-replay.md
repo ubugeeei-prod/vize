@@ -1,0 +1,80 @@
+# Installed event, slot and library transactions
+
+The source provider's finite event and slot contracts must also hold on the
+public npm provider. Prepare a dependent runner for the complete original six
+event sessions, twelve slot sessions, twenty-two event/library sessions and
+twenty bound-event casing sessions. These sixty sessions retain the original
+source bytes, independently authored whole expectations, query order, native
+invalid/repair diagnostics, actual edits, disk results and independent repairs.
+Preparation is not public-provider evidence and does not assign an installation
+or publication identity.
+
+Paired decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6055912054) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6055912452).
+
+## Public authority and original dependency
+
+Reuse the separately reviewed public installation authority, original loader
+return and automatic public bundled Corsa selection. Require the actual signed
+source fixes to be included in immutable public C/H. Every routing, native and
+Corsa payload is rehashed before and after sessions against integrity-verified
+public archives. Initial source, Node and Corsa overrides remain empty. A source
+binary, workspace Corsa path or stale dependency link grants no public credit.
+
+Keep the original Vue 3.6.0-rc.6 / TypeScript 6.0.3 graph separate from the public
+Vize installation. The event/library and bound source heads require an explicit
+comparison of their committed Playground importer and exact twenty-six package
+graph with the authenticated original c2bc fixture authority. Different whole
+lockfile hashes cannot be silently relabeled; graph digests name their precise
+serialization algorithm. The approved owned Vue dependency link is recorded in
+each fresh project.
+
+## Whole bound-event contract
+
+The independently authored bound-event cases cover twenty LF/CRLF forms and
+thirty-three references/definition/rename query triples per session. All 660
+references and rename replies are complete contracts. The first eight definition
+positions per session are retained observations, including whole error or null
+responses; the remaining 500 definitions must match one of their complete
+location/list expectations. Observation does not weaken a contracted query.
+
+Keep every diagnostic publication, including duplicates and late publications.
+The eleven allowed whole publication values do not imply an eleven-entry stream:
+the authentic source streams contain 242 packets across twenty sessions. Apply
+the complete first returned rename edit to all authored files, persist its full
+version-2 disk/diagnostics, then independently install every complete version-3
+golden. The final audit repeats after shutdown. Preserve original shutdown ID
+101 with whole result:null, leave stdin open after exit, and retain the original
+five-second exit deadline separately from the twenty-second message deadline.
+
+The bounded pure controller authenticates the pre-query cases and original
+content-mapper project configuration. It reads no captured actual result as an
+oracle. Pure custody/application laws and an audit of already authenticated
+source packets validate the observer only; they execute no installed provider.
+
+## Library sessions and remaining ownership work
+
+The library slice preserves twelve safe sessions, two cold collision sessions,
+four mutable ambiguous sessions and four deliberate client-subset applications.
+Safe queries rename before references. Unsaved emoji buffers remain distinct
+from original disk bytes; unopened parents use their original versioned open.
+A guard repair changes the buffer while its disk remains invalid, and both
+ordered diagnostic publications remain visible under one transaction deadline.
+Deliberate partial application is a client control, not a producer partial-edit
+failure. Preserve complete partial disk and native diagnostics before independent
+repair. The historical batch witness has no independently authored whole stdout
+golden, so retaining its raw stdout/stderr/status cannot grant whole-batch parity.
+
+TODO: the additional fourteen original source-native ownership/refusal sessions
+remain a separate installed acceptance scope. They include original mutable,
+importer, copied-runtime, outside-root relay and authored package controls. Typed
+source ownership laws are not native packets. The authored opened package SFC
+must stay permitted; unowned library files remain refused. Copied runtime tests
+need separately authenticated configured-copy authority and preserve the original
+40 MiB cap. These sixty sessions alone cannot close every #8010 ownership
+requirement. #8010 and #8011 remain open until their complete actual source and
+public acceptance scopes pass.
+
+Register the eventual follow-up above the installed32 helper in the existing
+GitHub native Stack. Queue only a fresh exact-head-green contiguous prefix after
+actual prior delivery, and genuinely refresh any remaining child. No individual
+layer auto-merge, native local rebuild or upstream comment/change is introduced.
