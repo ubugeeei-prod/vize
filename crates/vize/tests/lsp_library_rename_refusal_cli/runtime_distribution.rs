@@ -268,10 +268,10 @@ fn copied_distribution_preserves_complete_sfc_and_imported_alias_packets() {
             );
             std::fs::write(fixture.project.path().join("src/Probe.vue"), &applied).unwrap();
             version += 1;
-            fixture.change("src/Probe.vue", &applied, version, json!([]));
+            fixture.change_with_native_completion("src/Probe.vue", &applied, version, json!([]));
             std::fs::write(fixture.project.path().join("src/Probe.vue"), &probe).unwrap();
             version += 1;
-            fixture.change("src/Probe.vue", &probe, version, json!([]));
+            fixture.change_with_native_completion("src/Probe.vue", &probe, version, json!([]));
             assert_eq!(
                 std::fs::read(
                     fixture

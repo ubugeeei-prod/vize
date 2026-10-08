@@ -183,24 +183,7 @@ impl Fixture {
     }
 
     fn recv_checked(&mut self, mut matches: impl FnMut(&Value) -> bool) -> Value {
-        let expected = &self.publications;
-        let mismatches = &mut self.mismatches;
-        self.lsp.recv_matching(|message| {
-            if message["method"] == "textDocument/publishDiagnostics" {
-                println!("whole publication: {message}");
-                let _: lsp_types::PublishDiagnosticsParams =
-                    serde_json::from_value(message["params"].clone())
-                        .expect("typed whole publication");
-                let key = (
-                    message["params"]["uri"].as_str().unwrap().to_owned(),
-                    message["params"]["version"].as_i64().unwrap(),
-                );
-                if expected.get(&key) != Some(message) {
-                    mismatches.push(json!({"actual":message,"expected":expected.get(&key)}));
-                }
-            }
-            matches(message)
-        })
+        self.recv_checked_with(|message, _| matches(message))
     }
 
     fn request(&mut self, file: &str, method: &str, position: Value, extra: Value) -> Value {

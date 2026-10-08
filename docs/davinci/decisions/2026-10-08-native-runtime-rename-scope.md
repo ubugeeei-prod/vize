@@ -46,8 +46,11 @@ Unix relay outside the writable root executing the copied native binary inside
 it. Fifteen complete read-only reference vectors stay available while all
 fifteen full unsafe rename results must be null. Two positive sessions retain
 the independently authored flip-two and imported-alias-three edit packets,
-apply only the SFC file to disk, require version-2 empty diagnostics, and restore
-the independent original with empty diagnostics. A user `lib.custom.d.ts` with
+apply only the SFC file to disk, and preauthor both the empty prompt and complete
+native publication for every changed version before sending the change. A single
+receive loop keeps the original deadline and checks the entire ordered pair
+before restoring the independent original or sending the next query. The same
+barrier strengthens the original NativeGuard TS2322-to-empty producer witness. A user `lib.custom.d.ts` with
 a no-default-lib header in the copied directory stays byte-exact; these are
 Vue-local alias positives, not declaration-exporter write qualification.
 
@@ -66,3 +69,12 @@ is not an installed-distribution catalog or universal product-parity claim.
 Unix hardlink laws and relay controls do not qualify Windows hardlink handling.
 Malformed legacy responses still use their existing unavailable-route policy;
 the new recognized-WorkspaceEdit target laws do not qualify malformed replies.
+
+The earlier `df7994428d` source run executed all seven copied-runtime sessions
+and qualified the whole null/reference/edit packets and unchanged asset hashes.
+Its first empty changed-version notification was only the prompt; the applied
+positive source could be restored before native completion. That diagnostic
+completion gap has a separate historical receipt and grants no successor
+qualification. The shared two-packet receiver lives once in the existing
+`native_probe.rs` leaf in both independent source branches; no new module,
+timeout, product change, or native query is introduced.
