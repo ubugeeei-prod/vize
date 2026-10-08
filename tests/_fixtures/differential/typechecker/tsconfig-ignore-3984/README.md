@@ -32,3 +32,10 @@ unchanged actual-main and successor production collectors preserve every whole
 vector in `generated-before-after-helper-receipts.json`. Those bounded compiled
 helpers use path/extension test adapters; they supply no whole CLI/native credit
 and do not claim complete stock authority for the existing generated policy.
+
+The test-only literal-package replay layer now requires all original seven-root
+public packets, fresh-explicit runs and six-to-seven-root cache transitions.
+Its separate POSIX boundary file adds one unrelated raw endpoint and symlink;
+selected remains manifestless. Whole raw package/path/link receipts are retained
+before assertions. Authentic current native execution and protected delivery
+remain pending; the old failure and all original input/gold bytes are unchanged.

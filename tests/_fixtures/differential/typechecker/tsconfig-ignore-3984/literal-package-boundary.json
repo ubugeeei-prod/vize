@@ -1,0 +1,9 @@
+{
+  "scope": "Separate POSIX raw endpoint conservation control; original literal package inputs and manifestless selected directory remain unchanged.",
+  "files": {
+    "raw-sentinel/unchanged.txt": "raw endpoint must remain byte-exact\n"
+  },
+  "links": {
+    "node_modules/raw-sentinel-link": "../raw-sentinel"
+  }
+}

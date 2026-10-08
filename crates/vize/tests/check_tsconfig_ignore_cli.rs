@@ -5,6 +5,9 @@
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 
+#[path = "check_tsconfig_ignore_cli/literal_package.rs"]
+mod literal_package;
+
 use serde_json::{Value, json};
 use std::{
     path::{Path, PathBuf},
@@ -51,7 +54,7 @@ fn expected(case: &Value, broken: bool) -> Value {
         .collect::<Vec<_>>();
     json!({"files":files,"programs":[{"root":".","tsconfig":"tsconfig.json",
         "compilerOptions":case["compilerOptions"],"files":case["programFiles"]}],
-        "errorCount":if broken {4} else {0},"warningCount":0,"fileCount":6})
+        "errorCount":if broken {4} else {0},"warningCount":0,"fileCount":case["reportedFiles"].as_array().unwrap().len()})
 }
 
 fn run_case(name: &str, native: &Path) {
@@ -72,11 +75,17 @@ fn run_case(name: &str, native: &Path) {
         packet(Command::new(native).arg("--version")),
         json!({"exitCode":0,"stdout":"Version 7.0.2\n","stderr":""})
     );
-    let config = packet(Command::new(native).current_dir(&root).args([
-        "--project",
-        "tsconfig.json",
-        "--showConfig",
-    ]));
+    let config = literal_package::guarded_packet(
+        name,
+        "initial",
+        "show-config",
+        &root,
+        Command::new(native).current_dir(&root).args([
+            "--project",
+            "tsconfig.json",
+            "--showConfig",
+        ]),
+    );
     assert_eq!(
         config, case["officialShowConfig"]["typescript-7.0.2"],
         "whole {name} native config"
@@ -92,12 +101,18 @@ fn run_case(name: &str, native: &Path) {
                 &corpus["commonFiles"]
             },
         );
-        let stock = packet(Command::new(native).current_dir(&root).args([
-            "--project",
-            "tsconfig.json",
-            "--pretty",
-            "false",
-        ]));
+        let stock = literal_package::guarded_packet(
+            name,
+            phase,
+            "stock",
+            &root,
+            Command::new(native).current_dir(&root).args([
+                "--project",
+                "tsconfig.json",
+                "--pretty",
+                "false",
+            ]),
+        );
         assert_eq!(
             stock, case["officialWholeOutputs"]["typescript-7.0.2"][phase],
             "whole {name}/{phase} native diagnostics"
@@ -114,7 +129,13 @@ fn run_case(name: &str, native: &Path) {
                     command.arg(file.as_str().unwrap());
                 }
             }
-            let whole = packet(&mut command);
+            let whole = literal_package::guarded_packet(
+                name,
+                phase,
+                if explicit { "explicit" } else { "default" },
+                &root,
+                &mut command,
+            );
             assert_eq!(whole["exitCode"], i32::from(phase == "broken"), "{whole}");
             assert_eq!(whole["stderr"], "", "{whole}");
             let response: Value = serde_json::from_str(whole["stdout"].as_str().unwrap()).unwrap();
@@ -160,4 +181,12 @@ fn inherited_ignored_ts_vue_and_declaration_roots_keep_whole_diagnostics_and_rep
         return;
     };
     run_case("inherited", &native);
+}
+
+#[test]
+fn original_literal_package_keeps_all_seven_roots_in_default_then_explicit_runs() {
+    let Some(native) = corsa_requirement::required_or_skip(None::<PathBuf>) else {
+        return;
+    };
+    run_case("literal-dependency", &native);
 }
