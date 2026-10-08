@@ -128,10 +128,11 @@ pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Valu
                 json!({"name":d["name"],"kind":d["kind"],"target":d["target"],"optional":d["optional"],"rename":d["rename"],"localPath":local_path,"req":d["req"],"source":d["source"],"registry":d["registry"],"features":d["features"],"usesDefaultFeatures":d["uses_default_features"]})
             }).collect();
             dependencies.sort_by_key(Value::to_string);
-            let mut targets = package["targets"]
-                .as_array()
-                .ok_or("Missing crate targets")?
-                .clone();
+            let mut targets = publication_targets(
+                package["targets"]
+                    .as_array()
+                    .ok_or("Missing crate targets")?,
+            );
             for target in &mut targets {
                 if let Some(source) = target["src_path"].as_str() {
                     let relative = Path::new(source)
@@ -179,6 +180,23 @@ pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Valu
         let _ = fs::remove_dir_all(&directory);
     }
     result
+}
+
+pub(super) fn publication_targets(targets: &[Value]) -> Vec<Value> {
+    // Auto-discovered dev targets are not the shipping catalog. Unknown or
+    // mixed kinds remain fully represented and cannot evade strict equality.
+    targets
+        .iter()
+        .filter(|target| {
+            !target["kind"].as_array().is_some_and(|kinds| {
+                !kinds.is_empty()
+                    && kinds
+                        .iter()
+                        .all(|kind| matches!(kind.as_str(), Some("test" | "bench" | "example")))
+            })
+        })
+        .cloned()
+        .collect()
 }
 
 fn native_catalog(content: &str, version: &str) -> Vec<String> {
